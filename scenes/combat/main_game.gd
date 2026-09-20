@@ -35,6 +35,11 @@ func _ready() -> void:
 	hud.update_credits(player.run_credits)
 	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 
+	# Iniciar música de combate
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_music"):
+		audio_mgr.play_music("combat")
+
 	# Spawnear el primer satélite
 	_spawn_next_satellite(Vector2(1400, 450))
 

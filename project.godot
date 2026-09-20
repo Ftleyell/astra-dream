@@ -22,6 +22,7 @@ config/features=PackedStringArray("4.7", "Mobile")
 
 [autoload]
 
+AudioManager="*res://core/autoloads/audio_manager.gd"
 Dialogic="*uid://ds2q0uclmolvu"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 

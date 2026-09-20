@@ -66,6 +66,10 @@ func _fire_active_laser() -> void:
 	laser.setup(global_position, aim_dir, ctx)
 	get_tree().current_scene.add_child(laser)
 
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("laser")
+
 	if player and player.inventory:
 		player.inventory.process_hit_procs(ctx, player)
 
@@ -98,3 +102,7 @@ func _fire_passive_missile() -> void:
 	var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
 	missile.setup(global_position, aim_dir, ctx)
 	get_tree().current_scene.add_child(missile)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("missile")

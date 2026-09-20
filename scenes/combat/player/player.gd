@@ -110,11 +110,17 @@ func _handle_dash(delta: float) -> void:
 		dash_timer = DASH_DURATION
 		dash_cooldown_timer = DASH_COOLDOWN
 		dash_direction = velocity.normalized() if velocity.length_squared() > 0.1 else (get_global_mouse_position() - global_position).normalized()
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("dash")
 
 func _handle_actions() -> void:
 	if Input.is_action_just_pressed("bomb") and bomb_count > 0:
 		bomb_count -= 1
 		bomb_used.emit(bomb_count)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("bomb")
 		if bullet_server:
 			bullet_server.bomb_clear_all()
 
@@ -135,6 +141,9 @@ func take_damage(amount: float) -> void:
 	if is_dashing:
 		return
 	current_health -= amount
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("player_hit")
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
 	if current_health <= 0.0:
 		player_died.emit()
