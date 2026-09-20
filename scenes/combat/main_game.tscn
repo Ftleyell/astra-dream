@@ -1,0 +1,73 @@
+[gd_scene load_steps=6 format=3 uid="uid://c6xk4yp51l4q1"]
+
+[ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="1_bullet_server"]
+[ext_resource type="Script" path="res://scenes/combat/player/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://scenes/combat/player/weapon_controller.gd" id="3_weapon_controller"]
+[ext_resource type="Script" path="res://scenes/combat/danmaku_test_emitter.gd" id="4_emitter"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_core"]
+radius = 5.0
+
+[node name="MainGame" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="BulletServer" type="MultiMeshInstance2D" parent="."]
+script = ExtResource("1_bullet_server")
+
+[node name="Player" type="CharacterBody2D" parent="." node_paths=PackedStringArray("bullet_server")]
+position = Vector2(960, 800)
+script = ExtResource("2_player")
+bullet_server = NodePath("../BulletServer")
+
+[node name="VisualPlaceholder" type="Polygon2D" parent="Player"]
+color = Color(0.2, 0.7, 1, 1)
+polygon = PackedVector2Array(-12, 16, 0, -18, 12, 16, 0, 8)
+
+[node name="HitboxCore" type="Polygon2D" parent="Player"]
+color = Color(1, 0.2, 0.4, 1)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("CircleShape2D_core")
+
+[node name="WeaponController" type="Node2D" parent="Player" node_paths=PackedStringArray("player")]
+script = ExtResource("3_weapon_controller")
+player = NodePath("..")
+
+[node name="WeaponVisual" type="Polygon2D" parent="Player/WeaponController"]
+position = Vector2(16, 0)
+color = Color(1, 0.8, 0.2, 1)
+polygon = PackedVector2Array(-6, -3, 10, -2, 10, 2, -6, 3)
+
+[node name="EmitterTopLeft" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
+position = Vector2(400, 250)
+script = ExtResource("4_emitter")
+bullet_server = NodePath("../BulletServer")
+player = NodePath("../Player")
+
+[node name="Visual" type="Polygon2D" parent="EmitterTopLeft"]
+color = Color(1, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="EmitterTopRight" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
+position = Vector2(1520, 250)
+script = ExtResource("4_emitter")
+bullet_server = NodePath("../BulletServer")
+player = NodePath("../Player")
+
+[node name="Visual" type="Polygon2D" parent="EmitterTopRight"]
+color = Color(1, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Instructions" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 600.0
+offset_bottom = 120.0
+text = "Astra Dream - Prototipo Greybox Danmaku
+[WASD] Moverse | [Shift] Dash con i-frames | [Click Izq] Disparo 360°
+[Espacio] Bomba Limpiadora de Pantalla O(1)"

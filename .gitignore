@@ -1,0 +1,15 @@
+# Godot 4+ specific ignores
+.godot/
+*.translation
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Builds and binaries
+builds/
+exports/
+*.exe
+*.apk
+*.aab
