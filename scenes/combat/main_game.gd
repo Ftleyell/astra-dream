@@ -9,16 +9,21 @@ extends Node2D
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var combat_dialogue: CombatDialogueBox = $CombatDialogueBox
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
+@onready var camera: GameCamera2D = $Camera2D
 
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
 var current_satellite: SatelliteBeacon = null
+var _last_player_hp: float = 100.0
 
 func _ready() -> void:
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)
 	player.level_up_requested.connect(_on_level_up_requested)
+	player.bomb_used.connect(_on_player_bomb_used)
+	player.health_changed.connect(_on_player_health_changed)
+	_last_player_hp = player.current_health
 
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
@@ -88,3 +93,13 @@ func _spawn_additional_wave_emitter(pos: Vector2) -> void:
 	emitter.bullet_server = bullet_server
 	emitter.player = player
 	add_child(emitter)
+
+func _on_player_bomb_used(_remaining: int) -> void:
+	if camera:
+		camera.add_trauma(0.6)
+
+func _on_player_health_changed(current: float, _max_val: float) -> void:
+	if current < _last_player_hp:
+		if camera:
+			camera.add_trauma(0.4)
+	_last_player_hp = current

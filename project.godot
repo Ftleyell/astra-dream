@@ -25,6 +25,7 @@ window/stretch/aspect="keep"
 
 renderer/rendering_method="mobile"
 textures/canvas_textures/default_texture_filter=1
+environment/defaults/default_clear_color=Color(0.025, 0.025, 0.055, 1)
 
 [physics]
 

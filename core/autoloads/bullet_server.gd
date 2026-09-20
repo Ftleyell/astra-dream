@@ -4,11 +4,9 @@ extends MultiMeshInstance2D
 const MAX_BULLETS: int = 5000
 const FLOATS_PER_INSTANCE: int = 12
 
-# Bounding limits
-var bound_min_x: float = -64.0
-var bound_max_x: float = 1920.0 + 64.0
-var bound_min_y: float = -64.0
-var bound_max_y: float = 1080.0 + 64.0
+# Dynamic Bounding limits (relative to player/camera)
+var cull_distance_x: float = 1600.0
+var cull_distance_y: float = 1200.0
 
 # Structure of Arrays (Zero-Allocation Pool)
 var pos_x: PackedFloat32Array
@@ -155,12 +153,12 @@ func _physics_process(delta: float) -> void:
 		pos_x[i] = cur_x
 		pos_y[i] = cur_y
 
-		if cur_x < bound_min_x or cur_x > bound_max_x or cur_y < bound_min_y or cur_y > bound_max_y:
-			_swap_and_pop(i)
-			continue
-
 		var dx: float = cur_x - px
 		var dy: float = cur_y - py
+
+		if absf(dx) > cull_distance_x or absf(dy) > cull_distance_y:
+			_swap_and_pop(i)
+			continue
 		var dist_sq: float = dx * dx + dy * dy
 
 		if not player_invulnerable:
