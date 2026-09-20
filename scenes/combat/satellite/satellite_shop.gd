@@ -43,10 +43,12 @@ func open_shop(credits: int) -> void:
 	current_credits = credits
 	_update_credits_display()
 	_roll_shop_items()
+	get_tree().paused = true
 	show()
 
 func close_shop() -> void:
 	hide()
+	get_tree().paused = false
 	shop_closed.emit()
 
 func _update_credits_display() -> void:

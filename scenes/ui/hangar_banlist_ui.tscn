@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkn7h201l894"]
+
+[ext_resource type="Script" path="res://scenes/ui/hangar_banlist_ui.gd" id="1_hangar"]
+
+[node name="HangarBanlistUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hangar")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.09, 0.13, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "HANGAR NAVAL - SELECCIÓN DE HEROÍNA Y BANLIST DE SUMINISTROS (MEGABONK)"
+
+[node name="CharSelectRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CharInfoPanel" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CharDesc" type="Label" parent="VBoxContainer/CharInfoPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Descripción del personaje seleccionado..."
+
+[node name="BanlistHeader" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer/BanlistHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Matriz de Bloqueo de Ítems (Veta los ítems que no deseas en la pool):"
+
+[node name="BanCounterLabel" type="Label" parent="VBoxContainer/BanlistHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Baneos Activos: 0 / 5"
+
+[node name="ItemsScroll" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemsGrid" type="GridContainer" parent="VBoxContainer/ItemsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 4
+
+[node name="BottomBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="LaunchButton" type="Button" parent="VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "DESPEGAR A LA MISIÓN →"
