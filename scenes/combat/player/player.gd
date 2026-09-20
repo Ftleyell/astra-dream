@@ -38,6 +38,7 @@ signal player_died()
 var current_health: float = 100.0
 
 func _ready() -> void:
+	add_to_group("player")
 	if not character_data:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
@@ -109,13 +110,16 @@ func add_exp(amount: float) -> void:
 		level_up_requested.emit(current_level)
 	exp_changed.emit(current_exp, exp_to_next, current_level)
 
-func _on_bullet_hit() -> void:
+func take_damage(amount: float) -> void:
 	if is_dashing:
 		return
-	current_health -= 10.0
+	current_health -= amount
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
 	if current_health <= 0.0:
 		player_died.emit()
+
+func _on_bullet_hit() -> void:
+	take_damage(10.0)
 
 func _on_bullet_grazed(bullet_pos: Vector2) -> void:
 	add_exp(2.0) # Cada roce con balas suma experiencia

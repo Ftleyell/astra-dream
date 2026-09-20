@@ -30,14 +30,20 @@ layout_mode = 2
 text = "100 / 100"
 
 [node name="HealthBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(240, 24)
+custom_minimum_size = Vector2(200, 22)
 layout_mode = 2
+size_flags_vertical = 4
 value = 100.0
 show_percentage = false
 
 [node name="BombLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
 text = "Bombas: 2"
+
+[node name="LaserCDLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Láser: [LISTO]"
 
 [node name="CreditsLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2

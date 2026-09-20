@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=13 format=3 uid="uid://c6xk4yp51l4q1"]
 
 [ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
 [ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/level_up_modal.tscn" id="9_level_modal"]
 [ext_resource type="Script" path="res://core/autoloads/audio_duck_manager.gd" id="10_audio_duck"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dialogic_combat_box/combat_dialogue_box.tscn" id="11_combat_dialogue"]
+[ext_resource type="Script" path="res://scenes/combat/enemies/enemy_spawner.gd" id="12_spawner"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
@@ -75,3 +76,6 @@ stat_deck_manager = NodePath("../StatDeckManager")
 player = NodePath("../Player")
 
 [node name="CombatDialogueBox" parent="." instance=ExtResource("11_combat_dialogue")]
+ 
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("12_spawner")

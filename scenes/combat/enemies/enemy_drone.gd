@@ -1,0 +1,78 @@
+class_name EnemyDrone
+extends CharacterBody2D
+
+@export var max_health: float = 60.0
+@export var move_speed: float = 150.0
+@export var contact_damage: float = 12.0
+@export var exp_reward: float = 15.0
+@export var credits_reward: int = 5
+
+var current_health: float = 60.0
+var player: Player = null
+var is_dying: bool = false
+
+@onready var visual: Polygon2D = $Visual
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+
+signal enemy_died(enemy: EnemyDrone)
+
+func _ready() -> void:
+	add_to_group("enemies")
+	current_health = max_health
+	if not player:
+		player = get_tree().get_first_node_in_group("player") as Player
+
+var contact_cooldown: float = 0.0
+
+func _physics_process(delta: float) -> void:
+	if is_dying:
+		return
+
+	if contact_cooldown > 0.0:
+		contact_cooldown -= delta
+
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+		if not player:
+			return
+
+	# Persecución continua hacia el jugador
+	var dir := (player.global_position - global_position).normalized()
+	velocity = dir * move_speed
+	rotation = dir.angle()
+	move_and_slide()
+
+	# Daño por contacto con el jugador
+	if contact_cooldown <= 0.0 and global_position.distance_squared_to(player.global_position) <= 24.0 * 24.0:
+		contact_cooldown = 0.6
+		if player.has_method("take_damage"):
+			player.take_damage(contact_damage)
+
+func take_damage(ctx: HitContext) -> void:
+	if is_dying:
+		return
+
+	current_health -= ctx.final_damage
+
+	# Hit flash blanco
+	modulate = Color(3.0, 3.0, 3.0, 1.0)
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", Color.WHITE, 0.08)
+
+	if current_health <= 0.0:
+		_die()
+
+func _die() -> void:
+	is_dying = true
+	enemy_died.emit(self)
+
+	if is_instance_valid(player):
+		player.add_exp(exp_reward)
+		player.add_credits(credits_reward)
+
+	# Efecto visual de desintegración/explosión
+	collision_shape.set_deferred("disabled", true)
+	var tween := create_tween()
+	tween.tween_property(self, "scale", Vector2(1.6, 1.6), 0.15)
+	tween.parallel().tween_property(self, "modulate", Color(1.0, 0.4, 0.1, 0.0), 0.15)
+	tween.tween_callback(queue_free)

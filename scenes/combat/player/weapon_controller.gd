@@ -1,11 +1,13 @@
 class_name WeaponController
 extends Node2D
 
+signal laser_cooldown_updated(current: float, max_val: float)
+
 @export var weapon_data: WeaponData
 @export var player: Player
 
 var active_cooldown: float = 0.0
-var passive_timer: float = 0.0
+var passive_timer: float = 0.1 # Inicia disparando inmediatamente al spawnear
 
 var laser_scene: PackedScene = preload("res://scenes/combat/weapons/screen_laser_beam.tscn")
 var missile_scene: PackedScene = preload("res://scenes/combat/weapons/homing_missile.tscn")
@@ -14,11 +16,12 @@ func _ready() -> void:
 	if not weapon_data:
 		weapon_data = WeaponData.new()
 		weapon_data.weapon_name = "Cañón Rail-Launcher Mk.I"
-		weapon_data.base_damage = 35.0
-		weapon_data.base_cooldown = 1.2 # Cooldown del láser
-		weapon_data.passive_interval = 1.8 # Intervalo del misil auto-aim
+		weapon_data.base_damage = 40.0
+		weapon_data.base_cooldown = 1.0 # Cooldown del láser
+		weapon_data.passive_interval = 1.6 # Intervalo del misil auto-aim
 
-	passive_timer = weapon_data.passive_interval
+	# Disparo pasivo inicial inmediato
+	passive_timer = 0.1
 
 func _process(delta: float) -> void:
 	_handle_aim()
@@ -33,13 +36,18 @@ func _handle_active_fire(delta: float) -> void:
 	if active_cooldown > 0.0:
 		active_cooldown -= delta
 
+	var max_cd: float = weapon_data.base_cooldown / maxf(0.1, player.stats.get_stat(&"attack_speed") if player else 1.0)
+	laser_cooldown_updated.emit(maxf(0.0, active_cooldown), max_cd)
+
 	if Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
-		var atk_speed: float = player.stats.get_stat(&"attack_speed") if player else 1.0
-		active_cooldown = weapon_data.base_cooldown / maxf(0.1, atk_speed)
+		active_cooldown = max_cd
 		_fire_active_laser()
 
 func _fire_active_laser() -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
+
 	var base_dmg: float = weapon_data.base_damage + (player.stats.get_stat(&"base_damage") if player else 0.0)
 	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
@@ -54,12 +62,10 @@ func _fire_active_laser() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient
 	ctx.hit_position = global_position
 
-	# Instanciar el rayo láser de pantalla completa
 	var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
-	get_tree().current_scene.add_child(laser)
 	laser.setup(global_position, aim_dir, ctx)
+	get_tree().current_scene.add_child(laser)
 
-	# Procesar procs en el inventario del jugador
 	if player and player.inventory:
 		player.inventory.process_hit_procs(ctx, player)
 
@@ -72,6 +78,9 @@ func _handle_passive_fire(delta: float) -> void:
 
 func _fire_passive_missile() -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.UP
+
 	var base_dmg: float = (weapon_data.base_damage * 0.75) + (player.stats.get_stat(&"base_damage") if player else 0.0)
 	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
@@ -86,7 +95,6 @@ func _fire_passive_missile() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient * 0.6
 	ctx.hit_position = global_position
 
-	# Instanciar el misil teledirigido
 	var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
-	get_tree().current_scene.add_child(missile)
 	missile.setup(global_position, aim_dir, ctx)
+	get_tree().current_scene.add_child(missile)
