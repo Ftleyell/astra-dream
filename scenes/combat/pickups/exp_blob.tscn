@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://e4xpb10b001"]
+
+[ext_resource type="Script" path="res://scenes/combat/pickups/exp_blob.gd" id="1_blob"]
+
+[node name="ExpBlob" type="Node2D"]
+script = ExtResource("1_blob")
+
+[node name="VisualOuter" type="Polygon2D" parent="."]
+color = Color(0.2, 0.9, 1, 0.8)
+polygon = PackedVector2Array(0, -8, 6, -4, 8, 0, 6, 4, 0, 8, -6, 4, -8, 0, -6, -4)
+
+[node name="VisualCore" type="Polygon2D" parent="."]
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(0, -4, 3, -2, 4, 0, 3, 2, 0, 4, -3, 2, -4, 0, -3, -2)

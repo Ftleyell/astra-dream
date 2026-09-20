@@ -41,8 +41,14 @@ func take_damage(ctx: HitContext) -> void:
 	tween.tween_property(self, "modulate", Color.WHITE, 0.1)
 
 	if current_health <= 0.0:
+		var blob_scene: PackedScene = load("res://scenes/combat/pickups/exp_blob.tscn")
+		if blob_scene:
+			var blob := blob_scene.instantiate() as Node2D
+			if blob.has_method("setup"):
+				blob.setup(40.0, global_position)
+			get_parent().add_child(blob)
+
 		if player:
-			player.add_exp(30.0)
 			player.add_credits(20)
 		# Regenerar vida y reubicarse ligeramente
 		current_health = 200.0

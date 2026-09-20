@@ -62,13 +62,25 @@ func take_damage(ctx: HitContext) -> void:
 	if current_health <= 0.0:
 		_die()
 
+var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.tscn")
+
 func _die() -> void:
 	is_dying = true
 	enemy_died.emit(self)
 
 	if is_instance_valid(player):
-		player.add_exp(exp_reward)
 		player.add_credits(credits_reward)
+
+	# Soltar gema/blob de EXP en el campo
+	if exp_blob_scene:
+		var blob := exp_blob_scene.instantiate() as Node2D
+		if blob.has_method("setup"):
+			blob.setup(exp_reward, global_position)
+		var parent_node := get_parent() if is_inside_tree() else null
+		if not parent_node and is_inside_tree():
+			parent_node = get_tree().current_scene
+		if parent_node:
+			parent_node.add_child(blob)
 
 	# Efecto visual de desintegración/explosión
 	collision_shape.set_deferred("disabled", true)
