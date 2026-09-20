@@ -5,8 +5,8 @@ const MAX_BULLETS: int = 5000
 const FLOATS_PER_INSTANCE: int = 12
 
 # Dynamic Bounding limits (relative to player/camera)
-var cull_distance_x: float = 1600.0
-var cull_distance_y: float = 1200.0
+var cull_distance_x: float = 3600.0
+var cull_distance_y: float = 3600.0
 
 # Structure of Arrays (Zero-Allocation Pool)
 var pos_x: PackedFloat32Array
@@ -38,6 +38,7 @@ signal player_hit()
 signal player_grazed(pos: Vector2)
 
 func _ready() -> void:
+	top_level = true
 	_init_memory_pools()
 	_setup_multimesh()
 
@@ -78,13 +79,16 @@ func _setup_multimesh() -> void:
 	mm.use_custom_data = true
 	mm.instance_count = MAX_BULLETS
 	mm.visible_instance_count = 0
+	# Definir AABB global masivo para que el motor jamás culle el MultiMesh al moverse la cámara
+	mm.custom_aabb = AABB(Vector3(-100000.0, -100000.0, -100.0), Vector3(200000.0, 200000.0, 200.0))
 
 	var quad: QuadMesh = QuadMesh.new()
-	quad.size = Vector2(20.0, 20.0)
+	quad.size = Vector2(24.0, 24.0)
 	mm.mesh = quad
 
 	self.multimesh = mm
 	multimesh_rid = mm.get_rid()
+	RenderingServer.canvas_item_set_custom_rect(get_canvas_item(), true, Rect2(-100000.0, -100000.0, 200000.0, 200000.0))
 
 	var shader_material := ShaderMaterial.new()
 	shader_material.shader = preload("res://core/shaders/danmaku_bullet.gdshader")

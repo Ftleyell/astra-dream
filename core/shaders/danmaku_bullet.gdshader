@@ -1,5 +1,5 @@
 shader_type canvas_item;
-render_mode blend_add;
+render_mode blend_add, unshaded;
 
 varying vec4 v_custom;
 
