@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # REGLAS DE ARQUITECTURA Y CONVENCIONES - ASTRA DREAM
 ## Directrices de Desarrollo para Antigravity y Desarrolladores
 
