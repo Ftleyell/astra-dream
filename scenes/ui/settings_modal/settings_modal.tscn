@@ -4,7 +4,7 @@
 
 [node name="SettingsModal" type="CanvasLayer"]
 process_mode = 3
-layer = 25
+layer = 45
 script = ExtResource("1_settings")
 
 [node name="Backdrop" type="ColorRect" parent="."]
@@ -13,7 +13,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0, 0, 0, 0.75)
 
 [node name="Panel" type="Panel" parent="."]
 anchors_preset = 8
@@ -21,10 +21,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -220.0
-offset_right = 280.0
-offset_bottom = 220.0
+offset_left = -440.0
+offset_top = -320.0
+offset_right = 440.0
+offset_bottom = 320.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -33,86 +33,219 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = -24.0
-offset_bottom = -20.0
+offset_left = 28.0
+offset_top = 22.0
+offset_right = -28.0
+offset_bottom = -22.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "CONFIGURACIÓN DEL SISTEMA"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+[node name="TabContainer" type="TabContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="Pantalla_Audio" type="MarginContainer" parent="Panel/VBoxContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+metadata/_tab_index = 0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DisplayHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "🖥️ PANTALLA Y RESOLUCIÓN"
+
+[node name="DisplayGrid" type="GridContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="ResLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid"]
+layout_mode = 2
+text = "Resolución de Ventana:"
+
+[node name="ResolutionOption" type="OptionButton" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid"]
+custom_minimum_size = Vector2(340, 36)
 layout_mode = 2
 
-[node name="AudioGrid" type="GridContainer" parent="Panel/VBoxContainer"]
+[node name="FullscreenLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid"]
 layout_mode = 2
-theme_override_constants/h_separation = 16
+text = "Modo Pantalla Completa:"
+
+[node name="FullscreenCheck" type="CheckBox" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid"]
+layout_mode = 2
+text = "Activar pantalla completa exclusiva"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+
+[node name="AudioHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "🔊 NIVELES DE AUDIO"
+
+[node name="AudioGrid" type="GridContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 14
 columns = 2
 
-[node name="MasterLabel" type="Label" parent="Panel/VBoxContainer/AudioGrid"]
+[node name="MasterLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
 layout_mode = 2
 text = "Volumen Maestro:"
 
-[node name="MasterSlider" type="HSlider" parent="Panel/VBoxContainer/AudioGrid"]
-custom_minimum_size = Vector2(240, 24)
+[node name="MasterSlider" type="HSlider" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
+custom_minimum_size = Vector2(340, 24)
 layout_mode = 2
-size_flags_horizontal = 3
 max_value = 1.0
 step = 0.05
 value = 0.8
 
-[node name="MusicLabel" type="Label" parent="Panel/VBoxContainer/AudioGrid"]
+[node name="MusicLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
 layout_mode = 2
 text = "Volumen Música:"
 
-[node name="MusicSlider" type="HSlider" parent="Panel/VBoxContainer/AudioGrid"]
-custom_minimum_size = Vector2(240, 24)
+[node name="MusicSlider" type="HSlider" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
+custom_minimum_size = Vector2(340, 24)
 layout_mode = 2
-size_flags_horizontal = 3
 max_value = 1.0
 step = 0.05
 value = 0.75
 
-[node name="SfxLabel" type="Label" parent="Panel/VBoxContainer/AudioGrid"]
+[node name="SfxLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
 layout_mode = 2
-text = "Efectos / Danmaku:"
+text = "Efectos y Danmaku:"
 
-[node name="SfxSlider" type="HSlider" parent="Panel/VBoxContainer/AudioGrid"]
-custom_minimum_size = Vector2(240, 24)
+[node name="SfxSlider" type="HSlider" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
+custom_minimum_size = Vector2(340, 24)
 layout_mode = 2
-size_flags_horizontal = 3
 max_value = 1.0
 step = 0.05
 value = 0.85
 
-[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+[node name="Teclado_Raton" type="MarginContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+metadata/_tab_index = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/TabContainer/Teclado_Raton"]
 layout_mode = 2
 
-[node name="DisplayRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="RebindList" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Teclado_Raton/ScrollContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
 
-[node name="FullscreenLabel" type="Label" parent="Panel/VBoxContainer/DisplayRow"]
+[node name="Mando_Joystick" type="MarginContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
-text = "Modo Pantalla Completa:"
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+metadata/_tab_index = 2
 
-[node name="FullscreenCheck" type="CheckBox" parent="Panel/VBoxContainer/DisplayRow"]
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick"]
 layout_mode = 2
-text = "Activar"
+theme_override_constants/separation = 16
 
-[node name="Spacer" type="Control" parent="Panel/VBoxContainer"]
+[node name="JoyHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 17
+text = "🎮 MAPEO DE MANDO / JOYSTICK (CONECTA CUALQUIER CONTROL USB/BLUETOOTH)"
+
+[node name="JoyMappingInfo" type="RichTextLabel" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+bbcode_enabled = true
+text = "[color=#66ddff]• Stick Izquierdo / Cruceta (D-Pad):[/color] Movimiento 360° y navegación por menús
+[color=#66ddff]• Gatillo R2 / Botón R1 / Botón X (Cuadrado):[/color] Disparar Láser de Pantalla
+[color=#66ddff]• Botón A (Cruz) / Botón L1:[/color] Dash con 0.25s de invulnerabilidad
+[color=#66ddff]• Botón Y (Triángulo) / Botón B (Círculo):[/color] Bomba limpiadora de Danmaku
+[color=#66ddff]• Botón Start / Options:[/color] Abrir Menú de Pausa
+[color=#66ddff]• Botón X (Cuadrado):[/color] Saltar transmisiones de diálogo Dialogic 2.0"
+
+[node name="DeadzoneRow" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DeadzoneLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/DeadzoneRow"]
+layout_mode = 2
+text = "Sensibilidad de Zona Muerta (Deadzone):"
+
+[node name="DeadzoneSlider" type="HSlider" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/DeadzoneRow"]
+custom_minimum_size = Vector2(240, 24)
+layout_mode = 2
+min_value = 0.05
+max_value = 0.5
+step = 0.05
+value = 0.25
+
+[node name="DeadzoneValue" type="Label" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/DeadzoneRow"]
+layout_mode = 2
+text = "0.25"
 
 [node name="CloseButton" type="Button" parent="Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 17
 text = "GUARDAR Y CERRAR"
+
+[node name="RebindPopup" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -120.0
+offset_right = 260.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="RebindPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="PromptLabel" type="Label" parent="RebindPopup/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "Presiona una tecla o clic del ratón..."
+horizontal_alignment = 1
+autowrap_mode = 2

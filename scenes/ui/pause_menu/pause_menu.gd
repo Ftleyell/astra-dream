@@ -37,6 +37,7 @@ func open_pause_menu() -> void:
 	get_tree().paused = true
 	_refresh_build_inspector()
 	show()
+	resume_button.grab_focus()
 
 func resume_game() -> void:
 	hide()
@@ -75,7 +76,7 @@ func _populate_items() -> void:
 		panel.custom_minimum_size = Vector2(0, 48)
 
 		var hbox := HBoxContainer.new()
-		hbox.theme_override_constants.set("separation", 10)
+		hbox.add_theme_constant_override("separation", 10)
 
 		var count_lbl := Label.new()
 		count_lbl.text = " x%d " % count
@@ -115,7 +116,7 @@ func _populate_upgrades() -> void:
 	for card: StatCardData in player.chosen_stat_cards:
 		var panel := PanelContainer.new()
 		var hbox := HBoxContainer.new()
-		hbox.theme_override_constants.set("separation", 10)
+		hbox.add_theme_constant_override("separation", 10)
 
 		var tier_badge := Label.new()
 		var tier_text := "[COMÚN]"

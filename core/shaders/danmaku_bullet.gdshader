@@ -1,25 +1,41 @@
 shader_type canvas_item;
 render_mode blend_add;
 
-uniform int h_frames = 8;
-uniform int v_frames = 8;
-
 varying vec4 v_custom;
 
 void vertex() {
 	v_custom = INSTANCE_CUSTOM;
-	float frame = INSTANCE_CUSTOM.r;
-	
-	float u_width = 1.0 / float(h_frames);
-	float v_height = 1.0 / float(v_frames);
-	float u_offset = mod(frame, float(h_frames)) * u_width;
-	float v_offset = floor(frame / float(h_frames)) * v_height;
-	
-	UV.x = UV.x * u_width + u_offset;
-	UV.y = UV.y * v_height + v_offset;
 }
 
 void fragment() {
-	vec4 tex = texture(TEXTURE, UV);
-	COLOR = tex * vec4(v_custom.gba, 1.0);
+	// Coordenadas centradas en el quad: [-1.0, 1.0]
+	vec2 p = (UV - vec2(0.5)) * 2.0;
+	float dist_sq = dot(p, p);
+	
+	// Si sale del círculo unitario, descartar
+	if (dist_sq > 1.0) {
+		discard;
+	}
+	
+	// Identificar tipo de proyectil (red channel de custom data)
+	int b_type = int(v_custom.r);
+	vec3 base_color = vec3(1.0, 0.22, 0.35); // Tipo 0: Carmesí de choque
+	
+	if (b_type == 1) {
+		base_color = vec3(1.0, 0.8, 0.15); // Tipo 1: Oro solar / Ámbar
+	} else if (b_type == 2) {
+		base_color = vec3(0.2, 0.85, 1.0); // Tipo 2: Cian eléctrico
+	} else if (b_type == 3) {
+		base_color = vec3(0.85, 0.3, 1.0); // Tipo 3: Púrpura gravitatorio
+	}
+	
+	// Núcleo blanco brillante en el centro + halo exterior de color
+	float dist = sqrt(dist_sq);
+	float core = smoothstep(0.45, 0.05, dist);
+	float halo = smoothstep(1.0, 0.2, dist);
+	
+	vec3 final_color = mix(base_color, vec3(1.0), core);
+	
+	// Salida con emisión luminosa (bloom) y atenuación radial suave
+	COLOR = vec4(final_color * 1.8, halo);
 }

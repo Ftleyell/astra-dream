@@ -174,18 +174,25 @@ func _physics_process(delta: float) -> void:
 
 		var base: int = i * FLOATS_PER_INSTANCE
 		var spd_sq: float = vx * vx + vy * vy
-		if spd_sq > 0.001:
+		var c: float = 1.0
+		var s: float = 0.0
+		if spd_sq > 0.0001:
 			var inv_spd: float = 1.0 / sqrt(spd_sq)
-			var c: float = vx * inv_spd
-			var s: float = vy * inv_spd
-			render_buffer[base + 0] = c
-			render_buffer[base + 1] = -s
-			render_buffer[base + 4] = s
-			render_buffer[base + 5] = c
+			c = vx * inv_spd
+			s = vy * inv_spd
 
+		render_buffer[base + 0] = c
+		render_buffer[base + 1] = -s
+		render_buffer[base + 2] = 0.0
 		render_buffer[base + 3] = cur_x
+		render_buffer[base + 4] = s
+		render_buffer[base + 5] = c
+		render_buffer[base + 6] = 0.0
 		render_buffer[base + 7] = cur_y
 		render_buffer[base + 8] = bullet_type[i]
+		render_buffer[base + 9] = 1.0
+		render_buffer[base + 10] = 1.0
+		render_buffer[base + 11] = 1.0
 
 	RenderingServer.multimesh_set_buffer(multimesh_rid, render_buffer)
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, active_count)
