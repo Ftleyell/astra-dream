@@ -7,6 +7,8 @@ extends Node2D
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
+@onready var combat_dialogue: CombatDialogueBox = $CombatDialogueBox
+@onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
 
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
@@ -21,12 +23,21 @@ func _ready() -> void:
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
 
+	# Conexión de audio con el diálogo cinemático
+	combat_dialogue.audio_duck_manager = audio_duck_manager
+
 	# Inicializar HUD
 	hud.update_credits(player.run_credits)
 	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 
 	# Spawnear el primer satélite
 	_spawn_next_satellite(Vector2(1400, 450))
+
+func _input(event: InputEvent) -> void:
+	# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_T:
+			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
 	if current_satellite:
@@ -46,6 +57,10 @@ func _on_satellite_planted(index: int, pos: Vector2) -> void:
 	# Abre la tienda del satélite con los créditos actuales del jugador
 	satellite_shop.open_shop(player.run_credits)
 
+	# Al activar el 2do satélite, se dispara la transmisión cinemática del primer jefe
+	if index == 2:
+		trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
+
 func _on_satellite_exited(index: int) -> void:
 	# El jugador salió del perímetro: avanza la carrera contra el reloj
 	current_satellite_idx += 1
@@ -55,6 +70,9 @@ func _on_satellite_exited(index: int) -> void:
 
 	# Spawn de emisor adicional que incrementa la dificultad
 	_spawn_additional_wave_emitter(next_pos + Vector2(-200, -200))
+
+func trigger_boss_transmission(speaker: String, text: String) -> void:
+	combat_dialogue.trigger_dialogue(speaker, text, Color(1.0, 0.35, 0.35))
 
 func _on_item_purchased(item: ItemData, cost: int) -> void:
 	player.run_credits -= cost

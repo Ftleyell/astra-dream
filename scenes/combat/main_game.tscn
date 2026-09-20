@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=12 format=3 uid="uid://c6xk4yp51l4q1"]
 
 [ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
 [ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/hud.tscn" id="7_hud"]
 [ext_resource type="PackedScene" path="res://scenes/combat/satellite/satellite_shop.tscn" id="8_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/level_up_modal.tscn" id="9_level_modal"]
+[ext_resource type="Script" path="res://core/autoloads/audio_duck_manager.gd" id="10_audio_duck"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dialogic_combat_box/combat_dialogue_box.tscn" id="11_combat_dialogue"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
@@ -18,6 +20,9 @@ script = ExtResource("1_maingame")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(960, 540)
+
+[node name="AudioDuckManager" type="Node" parent="."]
+script = ExtResource("10_audio_duck")
 
 [node name="StatDeckManager" type="Node" parent="."]
 script = ExtResource("6_stat_deck")
@@ -68,3 +73,5 @@ player = NodePath("../Player")
 [node name="LevelUpModal" parent="." node_paths=PackedStringArray("stat_deck_manager", "player") instance=ExtResource("9_level_modal")]
 stat_deck_manager = NodePath("../StatDeckManager")
 player = NodePath("../Player")
+
+[node name="CombatDialogueBox" parent="." instance=ExtResource("11_combat_dialogue")]
