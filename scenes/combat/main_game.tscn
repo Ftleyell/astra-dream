@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=18 format=3 uid="uid://c6xk4yp51l4q1"]
 
 [ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
 [ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
@@ -14,6 +14,9 @@
 [ext_resource type="Script" path="res://scenes/combat/enemies/enemy_spawner.gd" id="12_spawner"]
 [ext_resource type="Script" path="res://scenes/combat/environment/game_camera.gd" id="13_camera"]
 [ext_resource type="PackedScene" path="res://scenes/combat/environment/space_background.tscn" id="14_space_bg"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="15_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hold_to_reset_overlay.tscn" id="16_reset"]
+[ext_resource type="PackedScene" path="res://scenes/combat/player/overhead_health_bar.tscn" id="17_overhp"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
@@ -61,6 +64,9 @@ position = Vector2(16, 0)
 color = Color(1, 0.8, 0.2, 1)
 polygon = PackedVector2Array(-6, -3, 12, -2, 12, 2, -6, 3)
 
+[node name="OverheadHealthBar" parent="Player" node_paths=PackedStringArray("player") instance=ExtResource("17_overhp")]
+player = NodePath("..")
+
 [node name="EmitterCenter" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
 position = Vector2(960, 320)
 script = ExtResource("5_emitter")
@@ -84,3 +90,8 @@ player = NodePath("../Player")
  
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("12_spawner")
+
+[node name="PauseMenu" parent="." node_paths=PackedStringArray("player") instance=ExtResource("15_pause")]
+player = NodePath("../Player")
+
+[node name="HoldToResetOverlay" parent="." instance=ExtResource("16_reset")]

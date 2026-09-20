@@ -14,6 +14,7 @@ var item_pool_manager: ItemPoolManager = ItemPoolManager.new()
 @onready var ban_counter_label: Label = $VBoxContainer/BanlistHeader/BanCounterLabel
 @onready var items_grid: GridContainer = $VBoxContainer/ItemsScroll/ItemsGrid
 @onready var launch_button: Button = $VBoxContainer/BottomBar/LaunchButton
+@onready var back_button: Button = $VBoxContainer/BottomBar/BackButton
 
 var character_roster = {
 	&"nova": {"name": "Nova", "title": "Piloto de Vanguardia", "desc": "Alta movilidad y daño ígneo a media distancia. Capa activa de plasma."},
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_setup_character_buttons()
 	_select_character(&"nova")
 	launch_button.pressed.connect(_on_launch_pressed)
+	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/ui/character_select/character_select.tscn"))
 
 func _setup_character_buttons() -> void:
 	for child in char_buttons_container.get_children():

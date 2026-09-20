@@ -9,7 +9,7 @@ config_version=5
 config/name="Astra Dream"
 config/description="Roguelite Danmaku Arena Shooter with Visual Novel Storytelling"
 config/version="0.1.0"
-run/main_scene="res://scenes/ui/hangar_banlist_ui.tscn"
+run/main_scene="res://scenes/ui/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
 
 [display]

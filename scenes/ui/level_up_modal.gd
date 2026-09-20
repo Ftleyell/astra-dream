@@ -69,6 +69,7 @@ func _create_stat_card_ui(card: StatCardData) -> void:
 	btn.pressed.connect(func():
 		if stat_deck_manager and player:
 			stat_deck_manager.apply_card_to_stats(card, player.stats)
+			player.chosen_stat_cards.append(card)
 		hide()
 		get_tree().paused = false
 		card_chosen.emit(card)

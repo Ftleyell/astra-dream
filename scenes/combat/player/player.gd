@@ -23,6 +23,7 @@ var run_credits: int = 120
 var current_level: int = 1
 var current_exp: float = 0.0
 var exp_to_next: float = 40.0
+var chosen_stat_cards: Array[StatCardData] = []
 
 # Core Hitbox Node
 @onready var hitbox_core: Node2D = $HitboxCore
