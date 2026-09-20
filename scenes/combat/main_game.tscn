@@ -1,29 +1,38 @@
-[gd_scene load_steps=6 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=10 format=3 uid="uid://c6xk4yp51l4q1"]
 
-[ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="1_bullet_server"]
-[ext_resource type="Script" path="res://scenes/combat/player/player.gd" id="2_player"]
-[ext_resource type="Script" path="res://scenes/combat/player/weapon_controller.gd" id="3_weapon_controller"]
-[ext_resource type="Script" path="res://scenes/combat/danmaku_test_emitter.gd" id="4_emitter"]
+[ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
+[ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
+[ext_resource type="Script" path="res://scenes/combat/player/player.gd" id="3_player"]
+[ext_resource type="Script" path="res://scenes/combat/player/weapon_controller.gd" id="4_weapon_controller"]
+[ext_resource type="Script" path="res://scenes/combat/danmaku_test_emitter.gd" id="5_emitter"]
+[ext_resource type="Script" path="res://core/types/stat_deck_manager.gd" id="6_stat_deck"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/hud.tscn" id="7_hud"]
+[ext_resource type="PackedScene" path="res://scenes/combat/satellite/satellite_shop.tscn" id="8_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/level_up_modal.tscn" id="9_level_modal"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
 
 [node name="MainGame" type="Node2D"]
+script = ExtResource("1_maingame")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(960, 540)
 
+[node name="StatDeckManager" type="Node" parent="."]
+script = ExtResource("6_stat_deck")
+
 [node name="BulletServer" type="MultiMeshInstance2D" parent="."]
-script = ExtResource("1_bullet_server")
+script = ExtResource("2_bullet_server")
 
 [node name="Player" type="CharacterBody2D" parent="." node_paths=PackedStringArray("bullet_server")]
-position = Vector2(960, 800)
-script = ExtResource("2_player")
+position = Vector2(960, 750)
+script = ExtResource("3_player")
 bullet_server = NodePath("../BulletServer")
 
 [node name="VisualPlaceholder" type="Polygon2D" parent="Player"]
 color = Color(0.2, 0.7, 1, 1)
-polygon = PackedVector2Array(-12, 16, 0, -18, 12, 16, 0, 8)
+polygon = PackedVector2Array(-14, 16, 0, -20, 14, 16, 0, 8)
 
 [node name="HitboxCore" type="Polygon2D" parent="Player"]
 color = Color(1, 0.2, 0.4, 1)
@@ -33,41 +42,29 @@ polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
 shape = SubResource("CircleShape2D_core")
 
 [node name="WeaponController" type="Node2D" parent="Player" node_paths=PackedStringArray("player")]
-script = ExtResource("3_weapon_controller")
+script = ExtResource("4_weapon_controller")
 player = NodePath("..")
 
 [node name="WeaponVisual" type="Polygon2D" parent="Player/WeaponController"]
 position = Vector2(16, 0)
 color = Color(1, 0.8, 0.2, 1)
-polygon = PackedVector2Array(-6, -3, 10, -2, 10, 2, -6, 3)
+polygon = PackedVector2Array(-6, -3, 12, -2, 12, 2, -6, 3)
 
-[node name="EmitterTopLeft" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
-position = Vector2(400, 250)
-script = ExtResource("4_emitter")
+[node name="EmitterCenter" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
+position = Vector2(960, 320)
+script = ExtResource("5_emitter")
 bullet_server = NodePath("../BulletServer")
 player = NodePath("../Player")
 
-[node name="Visual" type="Polygon2D" parent="EmitterTopLeft"]
+[node name="Visual" type="Polygon2D" parent="EmitterCenter"]
 color = Color(1, 0.3, 0.3, 1)
-polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+polygon = PackedVector2Array(-12, -12, 12, -12, 12, 12, -12, 12)
 
-[node name="EmitterTopRight" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
-position = Vector2(1520, 250)
-script = ExtResource("4_emitter")
-bullet_server = NodePath("../BulletServer")
+[node name="HUD" parent="." node_paths=PackedStringArray("player") instance=ExtResource("7_hud")]
 player = NodePath("../Player")
 
-[node name="Visual" type="Polygon2D" parent="EmitterTopRight"]
-color = Color(1, 0.3, 0.3, 1)
-polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+[node name="SatelliteShop" parent="." instance=ExtResource("8_shop")]
 
-[node name="HUD" type="CanvasLayer" parent="."]
-
-[node name="Instructions" type="Label" parent="HUD"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 600.0
-offset_bottom = 120.0
-text = "Astra Dream - Prototipo Greybox Danmaku
-[WASD] Moverse | [Shift] Dash con i-frames | [Click Izq] Disparo 360°
-[Espacio] Bomba Limpiadora de Pantalla O(1)"
+[node name="LevelUpModal" parent="." node_paths=PackedStringArray("stat_deck_manager", "player") instance=ExtResource("9_level_modal")]
+stat_deck_manager = NodePath("../StatDeckManager")
+player = NodePath("../Player")

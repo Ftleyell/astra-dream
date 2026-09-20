@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5v8m30w8l12"]
+
+[ext_resource type="Script" path="res://scenes/ui/level_up_modal.gd" id="1_level_modal"]
+
+[node name="LevelUpModal" type="CanvasLayer"]
+process_mode = 3
+layer = 30
+script = ExtResource("1_level_modal")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -200.0
+offset_right = 440.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "¡SUBIDA DE NIVEL! SELECCIONA UNA MEJORA"
+horizontal_alignment = 1
+
+[node name="CardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+alignment = 1

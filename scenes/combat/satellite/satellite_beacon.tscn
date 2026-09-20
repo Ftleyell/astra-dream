@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7vskm44o2q10"]
+
+[ext_resource type="Script" path="res://scenes/combat/satellite/satellite_beacon.gd" id="1_beacon"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_radius"]
+radius = 180.0
+
+[node name="SatelliteBeacon" type="Node2D"]
+script = ExtResource("1_beacon")
+
+[node name="PerimeterArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PerimeterArea"]
+shape = SubResource("CircleShape2D_radius")
+
+[node name="VisualCore" type="Polygon2D" parent="."]
+color = Color(0.2, 0.6, 1, 1)
+polygon = PackedVector2Array(-16, -16, 16, -16, 24, 0, 16, 16, -16, 16, -24, 0)
+
+[node name="SolarPanelLeft" type="Polygon2D" parent="."]
+position = Vector2(-40, 0)
+color = Color(0.1, 0.3, 0.6, 1)
+polygon = PackedVector2Array(-20, -10, 10, -10, 10, 10, -20, 10)
+
+[node name="SolarPanelRight" type="Polygon2D" parent="."]
+position = Vector2(40, 0)
+color = Color(0.1, 0.3, 0.6, 1)
+polygon = PackedVector2Array(-10, -10, 20, -10, 20, 10, -10, 10)
+
+[node name="RadiusVisual" type="Line2D" parent="."]
+width = 2.0
+default_color = Color(0.2, 0.6, 1, 0.4)

@@ -5,6 +5,7 @@ extends CharacterBody2D
 @export var bullet_server: BulletServer
 
 var stats: CharacterStats = CharacterStats.new()
+var inventory: InventoryComponent = InventoryComponent.new()
 
 # Dash state
 var is_dashing: bool = false
@@ -14,8 +15,14 @@ const DASH_DURATION: float = 0.25
 const DASH_COOLDOWN: float = 1.0
 var dash_direction: Vector2 = Vector2.RIGHT
 
-# Bombs
+# Bombs & Economy
 var bomb_count: int = 2
+var run_credits: int = 120
+
+# EXP & Leveling
+var current_level: int = 1
+var current_exp: float = 0.0
+var exp_to_next: float = 40.0
 
 # Core Hitbox Node
 @onready var hitbox_core: Node2D = $HitboxCore
@@ -23,6 +30,9 @@ var bomb_count: int = 2
 
 signal health_changed(current: float, max_val: float)
 signal bomb_used(remaining: int)
+signal credits_changed(amount: int)
+signal exp_changed(current: float, max_val: float, level: int)
+signal level_up_requested(level: int)
 signal player_died()
 
 var current_health: float = 100.0
@@ -32,6 +42,9 @@ func _ready() -> void:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
 	current_health = stats.get_stat(&"max_health")
+
+	inventory.character_stats = stats
+	add_child(inventory)
 
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)
@@ -83,6 +96,19 @@ func _handle_actions() -> void:
 		if bullet_server:
 			bullet_server.bomb_clear_all()
 
+func add_credits(amount: int) -> void:
+	run_credits += amount
+	credits_changed.emit(run_credits)
+
+func add_exp(amount: float) -> void:
+	current_exp += amount
+	if current_exp >= exp_to_next:
+		current_exp -= exp_to_next
+		current_level += 1
+		exp_to_next *= 1.35
+		level_up_requested.emit(current_level)
+	exp_changed.emit(current_exp, exp_to_next, current_level)
+
 func _on_bullet_hit() -> void:
 	if is_dashing:
 		return
@@ -92,5 +118,4 @@ func _on_bullet_hit() -> void:
 		player_died.emit()
 
 func _on_bullet_grazed(bullet_pos: Vector2) -> void:
-	# Graze score / particles
-	pass
+	add_exp(2.0) # Cada roce con balas suma experiencia

@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3m0c7q35k89"]
+
+[ext_resource type="Script" path="res://scenes/ui/hud/hud.gd" id="1_hud"]
+
+[node name="GameHUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HealthLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+text = "100 / 100"
+
+[node name="HealthBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(240, 24)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="BombLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+text = "Bombas: 2"
+
+[node name="CreditsLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+text = "Créditos: 100 C"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "00:00 | Amenaza: 1.0x"
+
+[node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="LevelLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "NV. 1"
+
+[node name="ExpBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BottomRow"]
+custom_minimum_size = Vector2(300, 16)
+layout_mode = 2
+size_flags_vertical = 4
+show_percentage = false
+
+[node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SatelliteRadarLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Satélite #1: 450 m [→]"
