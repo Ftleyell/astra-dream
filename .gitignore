@@ -1,15 +1,48 @@
-# Godot 4+ specific ignores
+# ==========================================
+# Godot Engine 4+ GitIgnore
+# ==========================================
+
+# Godot-specific cache & imported assets (MUST be ignored)
 .godot/
 *.translation
 
-# OS-generated files
+# Local AI / MCP development tooling
+addons/godot_ai/
+
+# Mono / .NET / C# builds (if applicable)
+.mono/
+[Bb]in/
+[Oo]bj/
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# OS specific files
 .DS_Store
 Thumbs.db
+ehthumbs.db
 desktop.ini
+$RECYCLE.BIN/
 
-# Builds and binaries
-builds/
-exports/
-*.exe
+# Game export / build artifacts
+build/
+export/
+dist/
+release/
 *.apk
 *.aab
+*.exe
+*.dll
+*.so
+*.dylib
+*.zip
+*.tar.gz
+
+# Crash logs and debug traces
+*.log
+crash_dump*
