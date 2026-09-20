@@ -79,7 +79,18 @@ custom_minimum_size = Vector2(260, 260)
 layout_mode = 2
 size_flags_horizontal = 0
 
+[node name="PortraitTexture" type="TextureRect" parent="MarginContainer/HBoxContainer/RightPanel/PortraitFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="PortraitEmblem" type="Polygon2D" parent="MarginContainer/HBoxContainer/RightPanel/PortraitFrame"]
+visible = false
 position = Vector2(130, 130)
 color = Color(1, 0.4, 0.2, 1)
 polygon = PackedVector2Array(-40, 50, 0, -60, 40, 50, 0, 20)

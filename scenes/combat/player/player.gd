@@ -48,6 +48,21 @@ func _ready() -> void:
 	inventory.character_stats = stats
 	add_child(inventory)
 
+	# Carga de exo-armadura visual con fallback no destructivo
+	var exo_path := "res://assets/characters/player_exo_vanguard.png"
+	if ResourceLoader.exists(exo_path):
+		var tex := load(exo_path) as Texture2D
+		if tex:
+			var spr := Sprite2D.new()
+			spr.name = "ExoArmorSprite"
+			spr.texture = tex
+			spr.scale = Vector2(0.55, 0.55)
+			add_child(spr)
+			move_child(spr, 0)
+			var placeholder := get_node_or_null("VisualPlaceholder") as CanvasItem
+			if placeholder:
+				placeholder.visible = false
+
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)
 		bullet_server.player_grazed.connect(_on_bullet_grazed)
@@ -56,6 +71,11 @@ func _physics_process(delta: float) -> void:
 	_handle_dash(delta)
 	_handle_movement(delta)
 	_handle_actions()
+
+	# Orientación 360° del exotraje hacia el apuntado
+	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0
 
 	if bullet_server:
 		bullet_server.player_pos = global_position

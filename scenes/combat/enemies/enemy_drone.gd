@@ -22,6 +22,20 @@ func _ready() -> void:
 	if not player:
 		player = get_tree().get_first_node_in_group("player") as Player
 
+	# Carga de sprite de dron con fallback
+	var drone_tex_path := "res://assets/enemies/enemy_drone.png"
+	if ResourceLoader.exists(drone_tex_path):
+		var tex := load(drone_tex_path) as Texture2D
+		if tex:
+			var spr := Sprite2D.new()
+			spr.name = "DroneSprite"
+			spr.texture = tex
+			spr.scale = Vector2(0.4, 0.4)
+			add_child(spr)
+			move_child(spr, 0)
+			if visual:
+				visual.visible = false
+
 var contact_cooldown: float = 0.0
 
 func _physics_process(delta: float) -> void:
