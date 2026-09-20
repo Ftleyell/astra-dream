@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://dm0k83p47l51"]
+
+[ext_resource type="Script" path="res://scenes/combat/weapons/screen_laser_beam.gd" id="1_laser"]
+
+[node name="ScreenLaserBeam" type="Node2D"]
+script = ExtResource("1_laser")
+
+[node name="OuterLine" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 100, 0)
+width = 8.0
+default_color = Color(0.2, 0.8, 1, 0.9)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CoreLine" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 100, 0)
+width = 3.0
+default_color = Color(1, 1, 1, 1)
+begin_cap_mode = 2
+end_cap_mode = 2
