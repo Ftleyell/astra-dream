@@ -8,6 +8,7 @@
 
 # Local AI / MCP development tooling
 addons/godot_ai/
+.gemini/
 
 # Mono / .NET / C# builds (if applicable)
 .mono/
