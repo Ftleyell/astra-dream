@@ -32,6 +32,7 @@ func initialize(char_data: CharacterData) -> void:
 		&"crit_damage": char_data.crit_damage,
 		&"luck": char_data.luck,
 		&"pickup_radius": char_data.pickup_radius,
+		&"projectile_count": char_data.projectile_count if "projectile_count" in char_data else 1.0,
 	}
 	for key in _base_stats.keys():
 		_modifiers[key] = []
@@ -64,5 +65,7 @@ func _recalculate_stat(stat_name: StringName) -> void:
 			flat_sum += mod.value
 
 	var final_val: float = (base_val + flat_sum) * maxf(0.0, 1.0 + percent_sum)
+	if stat_name == &"projectile_count":
+		final_val = maxf(1.0, round(final_val))
 	_cached_values[stat_name] = final_val
 	_is_dirty[stat_name] = false

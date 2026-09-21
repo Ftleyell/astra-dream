@@ -31,7 +31,9 @@ func _generate_default_cards() -> void:
 		{"id": &"card_crit_dmg", "title": "+40% Daño Crítico", "stat": &"crit_damage", "val": 0.40, "pct": true, "tier": Enums.Tier.TIER_2},
 		{"id": &"card_hp_up", "title": "+25 Vida Máxima", "stat": &"max_health", "val": 25.0, "pct": false, "tier": Enums.Tier.TIER_1},
 		{"id": &"card_speed_up", "title": "+10% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.10, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2}
+		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_proj_up_1", "title": "+1 Proyectil Adicional", "stat": &"projectile_count", "val": 1.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_proj_up_2", "title": "+2 Proyectiles Adicionales", "stat": &"projectile_count", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_3}
 	]
 	for def in stats_to_create:
 		var c := StatCardData.new()

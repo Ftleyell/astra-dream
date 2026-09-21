@@ -48,6 +48,10 @@ func _fire_active_laser() -> void:
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.RIGHT
 
+	var count := 1
+	if weapon_data.scales_with_projectile_count and weapon_data.active_scales_with_projectiles and player:
+		count = maxi(1, int(player.stats.get_stat(&"projectile_count")))
+
 	var base_dmg: float = weapon_data.base_damage + (player.stats.get_stat(&"base_damage") if player else 0.0)
 	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
@@ -62,9 +66,12 @@ func _fire_active_laser() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient
 	ctx.hit_position = global_position
 
-	var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
-	laser.setup(global_position, aim_dir, ctx)
-	get_tree().current_scene.add_child(laser)
+	for i in range(count):
+		var offset_rad := deg_to_rad((float(i) - float(count - 1) / 2.0) * weapon_data.active_spread_deg)
+		var laser_dir := aim_dir.rotated(offset_rad)
+		var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
+		laser.setup(global_position, laser_dir, ctx)
+		get_tree().current_scene.add_child(laser)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
@@ -85,6 +92,10 @@ func _fire_passive_missile() -> void:
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.UP
 
+	var count := 1
+	if weapon_data.scales_with_projectile_count and weapon_data.passive_scales_with_projectiles and player:
+		count = maxi(1, int(player.stats.get_stat(&"projectile_count")))
+
 	var base_dmg: float = (weapon_data.base_damage * 0.75) + (player.stats.get_stat(&"base_damage") if player else 0.0)
 	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
@@ -99,9 +110,20 @@ func _fire_passive_missile() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient * 0.6
 	ctx.hit_position = global_position
 
-	var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
-	missile.setup(global_position, aim_dir, ctx)
-	get_tree().current_scene.add_child(missile)
+	var candidates: Array[Node2D] = []
+	for node in get_tree().get_nodes_in_group("enemies") + get_tree().get_nodes_in_group("emitters"):
+		if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
+			candidates.append(node as Node2D)
+	candidates.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
+
+	var spread_deg: float = 16.0
+	for i in range(count):
+		var offset_rad := deg_to_rad((float(i) - float(count - 1) / 2.0) * spread_deg)
+		var m_dir := aim_dir.rotated(offset_rad)
+		var assigned_target: Node2D = candidates[i % candidates.size()] if not candidates.is_empty() else null
+		var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
+		missile.setup(global_position, m_dir, ctx, assigned_target)
+		get_tree().current_scene.add_child(missile)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):

@@ -16,13 +16,15 @@ var max_trail: int = 10
 @onready var trail_line: Line2D = $TrailLine
 @onready var missile_body: Polygon2D = $MissileBody
 
-func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext) -> void:
+func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext, p_target: Node2D = null) -> void:
 	global_position = p_origin
 	var dir := p_initial_dir.normalized() if p_initial_dir.length_squared() > 0.001 else Vector2.RIGHT
 	current_velocity = dir * (max_speed * 0.5)
 	rotation = current_velocity.angle()
 	hit_context = p_ctx
-	if is_inside_tree():
+	if p_target and is_instance_valid(p_target):
+		target = p_target
+	elif is_inside_tree():
 		_acquire_nearest_target()
 
 func _ready() -> void:

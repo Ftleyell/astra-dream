@@ -16,10 +16,15 @@ extends Resource
 @export_group("Active Layer (Manual Aim / Mouse Click)")
 @export var active_projectile_scene: PackedScene
 @export var active_burst_count: int = 1
-@export var active_spread_deg: float = 0.0
+@export var active_spread_deg: float = 12.0
 
 @export_group("Passive Layer (Autonomous Auto-Fire)")
 @export var passive_interval: float = 2.0
 @export var passive_search_radius: float = 300.0
 @export var passive_target_mode: Enums.TargetMode = Enums.TargetMode.NEAREST
 @export var passive_sub_attack_scene: PackedScene
+
+@export_group("Projectile Scaling")
+@export var scales_with_projectile_count: bool = true
+@export var active_scales_with_projectiles: bool = true
+@export var passive_scales_with_projectiles: bool = true
