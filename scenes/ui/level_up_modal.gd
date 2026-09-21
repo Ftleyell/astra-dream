@@ -12,6 +12,9 @@ signal card_chosen(card: StatCardData)
 
 var current_offered_cards: Array[StatCardData] = []
 var select_buttons: Array[Button] = []
+var card_panels: Array[PanelContainer] = []
+var card_tier_colors: Array[Color] = []
+var current_selected_idx: int = 0
 
 const STAT_ICON_MAP = {
 	&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -51,63 +54,95 @@ func show_level_up(level: int) -> void:
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 4)
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
-		var idx := -1
 		match event.keycode:
+			# Atajos numéricos directos (1, 2, 3, 4)
 			KEY_1, KEY_KP_1:
-				idx = 0
+				_select_card_by_index(0)
+				get_viewport().set_input_as_handled()
+				return
 			KEY_2, KEY_KP_2:
-				idx = 1
+				_select_card_by_index(1)
+				get_viewport().set_input_as_handled()
+				return
 			KEY_3, KEY_KP_3:
-				idx = 2
+				_select_card_by_index(2)
+				get_viewport().set_input_as_handled()
+				return
 			KEY_4, KEY_KP_4:
-				idx = 3
-			KEY_A, KEY_LEFT:
-				_navigate_focus(SIDE_LEFT)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_D, KEY_RIGHT:
-				_navigate_focus(SIDE_RIGHT)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_SPACE:
-				var focused := get_viewport().gui_get_focus_owner() as Button
-				if focused and is_instance_valid(focused) and not focused.disabled:
-					focused.pressed.emit()
-				elif not select_buttons.is_empty():
-					select_buttons[0].pressed.emit()
+				_select_card_by_index(3)
 				get_viewport().set_input_as_handled()
 				return
 
-		if idx >= 0 and idx < current_offered_cards.size():
-			_select_card(current_offered_cards[idx])
-			get_viewport().set_input_as_handled()
+			# Navegación con ASDW y Flechas Direccionales
+			KEY_A, KEY_LEFT, KEY_W, KEY_UP:
+				_change_selection(-1)
+				get_viewport().set_input_as_handled()
+				return
+			KEY_D, KEY_RIGHT, KEY_S, KEY_DOWN:
+				_change_selection(1)
+				get_viewport().set_input_as_handled()
+				return
 
-func _navigate_focus(side: Side) -> void:
-	var focused := get_viewport().gui_get_focus_owner() as Control
-	if not focused or not is_instance_valid(focused):
-		if not select_buttons.is_empty():
-			select_buttons[0].grab_focus()
+			# Confirmación con Barra Espaciadora o Enter
+			KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
+				_confirm_current_selection()
+				get_viewport().set_input_as_handled()
+				return
+
+func _change_selection(direction: int) -> void:
+	if card_panels.is_empty():
 		return
+	var new_idx := (current_selected_idx + direction) % card_panels.size()
+	if new_idx < 0:
+		new_idx += card_panels.size()
+	_update_card_selection(new_idx)
 
-	var neighbor_path := focused.get_focus_neighbor(side)
-	if neighbor_path:
-		var neighbor := focused.get_node_or_null(neighbor_path) as Control
-		if neighbor and is_instance_valid(neighbor) and neighbor is Button:
-			neighbor.grab_focus()
-			return
+func _update_card_selection(idx: int) -> void:
+	if idx < 0 or idx >= card_panels.size():
+		return
+	current_selected_idx = idx
 
-	var next := focused.find_valid_focus_neighbor(side)
-	if next and is_instance_valid(next):
-		next.grab_focus()
+	for i in range(card_panels.size()):
+		var panel := card_panels[i]
+		var color := card_tier_colors[i]
+		var style := StyleBoxFlat.new()
+		style.set_corner_radius_all(8)
+		style.set_content_margin_all(10.0)
+
+		if i == current_selected_idx:
+			style.bg_color = Color(0.10, 0.14, 0.22, 0.98)
+			style.set_border_width_all(3)
+			style.border_color = color.lightened(0.3)
+			style.shadow_color = color * Color(1.0, 1.0, 1.0, 0.45)
+			style.shadow_size = 8
+			if i < select_buttons.size() and is_instance_valid(select_buttons[i]):
+				select_buttons[i].grab_focus()
+		else:
+			style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
+			style.set_border_width_all(2)
+			style.border_color = color * Color(1.0, 1.0, 1.0, 0.5)
+			style.shadow_size = 0
+
+		panel.add_theme_stylebox_override("panel", style)
+
+func _confirm_current_selection() -> void:
+	_select_card_by_index(current_selected_idx)
+
+func _select_card_by_index(idx: int) -> void:
+	if idx >= 0 and idx < current_offered_cards.size():
+		_select_card(current_offered_cards[idx])
 
 func _on_cards_offered(cards: Array[StatCardData], _cost: int) -> void:
 	current_offered_cards = cards
 	select_buttons.clear()
+	card_panels.clear()
+	card_tier_colors.clear()
+	current_selected_idx = 0
 
 	for child in cards_container.get_children():
 		child.queue_free()
@@ -115,11 +150,7 @@ func _on_cards_offered(cards: Array[StatCardData], _cost: int) -> void:
 	for i in range(cards.size()):
 		_create_stat_card_ui(cards[i], i)
 
-	call_deferred("_setup_focus")
-
-func _setup_focus() -> void:
-	if not select_buttons.is_empty():
-		select_buttons[0].grab_focus()
+	call_deferred("_update_card_selection", 0)
 
 func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	# Respaldo automático de icono según la estadística afectada si viene nulo
@@ -133,14 +164,27 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 
 	var card_panel := PanelContainer.new()
 	card_panel.custom_minimum_size = Vector2(220, 310)
+	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
 	card_style.set_border_width_all(2)
-	card_style.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.6)
+	card_style.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.5)
 	card_style.set_corner_radius_all(8)
 	card_style.set_content_margin_all(10.0)
 	card_panel.add_theme_stylebox_override("panel", card_style)
+
+	# Interacción táctil/mouse sobre toda la superficie de la carta
+	card_panel.mouse_entered.connect(func():
+		_update_card_selection(index)
+	)
+	card_panel.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.is_pressed() and ev.button_index == MOUSE_BUTTON_LEFT:
+			_select_card(card)
+	)
+
+	card_panels.append(card_panel)
+	card_tier_colors.append(tier_color)
 
 	var vbox := VBoxContainer.new()
 	vbox.set("theme_override_constants/separation", 8)
@@ -204,6 +248,10 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	select_btn.text = "Elegir [%d]" % (index + 1)
 	select_btn.pressed.connect(func():
 		_select_card(card)
+	)
+	select_btn.focus_entered.connect(func():
+		if current_selected_idx != index:
+			_update_card_selection(index)
 	)
 
 	vbox.add_child(hotkey_lbl)
