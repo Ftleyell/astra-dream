@@ -3,14 +3,14 @@ extends CanvasLayer
 
 const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 
-signal item_purchased(item: ItemData, cost: int)
+signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
 
-@export var available_items_pool: Array[ItemData] = []
+@export var available_items_pool: Array[Resource] = []
 
 var current_credits: int = 100
 var reroll_cost: int = 15
-var current_offered_items: Array[ItemData] = []
+var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
 
 @onready var panel: Panel = $ShopPanel
@@ -30,7 +30,22 @@ func _ready() -> void:
 		_generate_default_shop_items()
 
 func _generate_default_shop_items() -> void:
-	available_items_pool = ItemPoolManager.create_canonical_stat_items()
+	var items: Array[ItemData] = ItemPoolManager.create_canonical_stat_items()
+	for it in items:
+		available_items_pool.append(it)
+
+	# Añadir las 4 armas exclusivas de la tienda
+	var shop_weapon_paths: Array[String] = [
+		"res://data/weapons/shop/nova_flak.tres",
+		"res://data/weapons/shop/dimensional_blade.tres",
+		"res://data/weapons/shop/solar_beam.tres",
+		"res://data/weapons/shop/cluster_submunition.tres"
+	]
+	for p in shop_weapon_paths:
+		if ResourceLoader.exists(p):
+			var w = load(p)
+			if w:
+				available_items_pool.append(w)
 
 func open_shop(credits: int) -> void:
 	current_credits = credits
@@ -144,14 +159,15 @@ func _roll_shop_items() -> void:
 
 	var count := mini(3, pool_copy.size())
 	for i in range(count):
-		var item: ItemData = pool_copy[i]
-		current_offered_items.append(item)
-		_create_item_card_ui(item, i)
+		var entry: Resource = pool_copy[i]
+		current_offered_items.append(entry)
+		_create_item_card_ui(entry, i)
 
 	_setup_focus_and_grab()
 
-func _create_item_card_ui(item: ItemData, index: int) -> void:
-	var rarity_color := _get_rarity_color(item.rarity)
+func _create_item_card_ui(entry: Resource, index: int) -> void:
+	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
+	var rarity_color := _get_rarity_color(entry_rarity)
 
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(230, 310)
@@ -174,8 +190,16 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hotkey_lbl.add_theme_font_size_override("font_size", 12)
 
+	var display_title: String = ""
+	if entry is WeaponData:
+		display_title = "[ARMA] " + (entry as WeaponData).weapon_name
+	elif "item_name" in entry:
+		display_title = entry.item_name
+	else:
+		display_title = "Mejora Espacial"
+
 	var name_lbl := Label.new()
-	name_lbl.text = item.item_name
+	name_lbl.text = display_title
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_lbl.add_theme_color_override("font_color", rarity_color)
@@ -198,18 +222,18 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	if item.icon:
-		icon_rect.texture = item.icon
+	if entry.get("icon"):
+		icon_rect.texture = entry.get("icon")
 		icon_rect.modulate = rarity_color
 	icon_panel.add_child(icon_rect)
 
 	var desc_lbl := Label.new()
-	desc_lbl.text = item.description
+	desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	var cost: int = item.cost if "cost" in item and item.cost > 0 else item.get_meta("cost", 35)
+	var cost: int = entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
 	UIFocusHelper.apply_cyber_focus(buy_btn)
@@ -220,7 +244,7 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 			_update_credits_display()
 			buy_btn.disabled = true
 			buy_btn.text = "¡Adquirido!"
-			item_purchased.emit(item, cost)
+			item_purchased.emit(entry, cost)
 			# Si aún hay créditos y otros botones, enfocar el siguiente disponible
 			_focus_next_available_buy_button()
 	)

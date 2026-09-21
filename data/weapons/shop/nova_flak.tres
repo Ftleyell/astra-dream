@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_07"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"nova_flak"
+weapon_name = "Batería Antiaérea 'Nova-Flak'"
+description = "Artillería pesada espacial que estalla en floraciones de metralla para pulverizar formaciones densas de cazas y drones."
+icon = ExtResource("2_ico")
+rarity = 1
+tags = [&"flak", &"explosive", &"aoe"]
+cost = 55
+base_damage = 44.0
+base_cooldown = 1.25
+proc_coefficient = 0.8
+damage_growth_per_level = 0.25
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 3
+active_spread_deg = 20.0
+active_behavior_type = &"projectile"
+passive_interval = 2.0
+passive_search_radius = 500.0
+passive_target_mode = 0
+passive_behavior_type = &"mortar"
+scales_with_projectile_count = true
+active_scales_with_projectiles = true
+passive_scales_with_projectiles = true

@@ -99,6 +99,12 @@ func _ready() -> void:
 		bullet_server.player_hit.connect(_on_bullet_hit)
 		bullet_server.player_grazed.connect(_on_bullet_grazed)
 
+	# Equipar arma inicial del personaje en el WeaponController
+	var w_ctrl := get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl and character_data and character_data.starting_weapon:
+		w_ctrl.equipped_weapons.clear()
+		w_ctrl.add_weapon(character_data.starting_weapon)
+
 
 func _apply_visual_theme() -> void:
 	if not character_data:

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_val_02"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_glasses.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"sniper_rifle"
+weapon_name = "Fusil de Iones 'Ojo de Águila'"
+description = "Lanza fotónica de hiper-velocidad con alto multiplicador crítico y baliza orbital pasiva sobre el enemigo más resistente."
+icon = ExtResource("2_ico")
+rarity = 1
+tags = [&"sniper", &"critical", &"kinetic"]
+cost = 65
+base_damage = 60.0
+base_cooldown = 1.35
+proc_coefficient = 1.2
+damage_growth_per_level = 0.3
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.1
+active_burst_count = 1
+active_spread_deg = 8.0
+active_behavior_type = &"projectile"
+passive_interval = 2.4
+passive_search_radius = 650.0
+passive_target_mode = 1
+passive_behavior_type = &"missile"
+scales_with_projectile_count = true
+active_scales_with_projectiles = true
+passive_scales_with_projectiles = true

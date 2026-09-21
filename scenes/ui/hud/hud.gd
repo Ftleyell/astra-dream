@@ -13,6 +13,7 @@ extends CanvasLayer
 @onready var exp_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/ExpBar
 @onready var level_label: Label = $MarginContainer/VBoxContainer/BottomRow/LevelLabel
 @onready var inventory_row: HBoxContainer = $MarginContainer/VBoxContainer/InventoryRow
+@onready var weapon_slots_row: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/WeaponSlotsRow")
 
 var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
@@ -43,6 +44,8 @@ func _ready() -> void:
 		var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 		if weapon_ctrl:
 			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
+			weapon_ctrl.weapons_updated.connect(update_weapon_slots)
+			update_weapon_slots(weapon_ctrl.equipped_weapons)
 
 func _process(delta: float) -> void:
 	run_time += delta
@@ -82,11 +85,65 @@ func update_laser_cooldown(current: float, max_val: float) -> void:
 	if not laser_cd_label:
 		return
 	if current <= 0.0:
-		laser_cd_label.text = "Láser: [LISTO]"
+		laser_cd_label.text = "Disparo Activo: [LISTO]"
 		laser_cd_label.modulate = Color(0.2, 1.0, 1.0, 1.0)
 	else:
-		laser_cd_label.text = "Láser: [%.1fs]" % current
+		laser_cd_label.text = "Disparo Activo: [%.1fs]" % current
 		laser_cd_label.modulate = Color(1.0, 0.7, 0.2, 1.0)
+
+func update_weapon_slots(weapons: Array) -> void:
+	if not weapon_slots_row:
+		return
+	for child in weapon_slots_row.get_children():
+		child.queue_free()
+
+	for inst in weapons:
+		if not inst or not ("weapon_data" in inst):
+			continue
+		var wdata: WeaponData = inst.weapon_data
+		var w_level: int = inst.level
+
+		var chip := PanelContainer.new()
+		chip.custom_minimum_size = Vector2(36, 36)
+		chip.tooltip_text = "%s (Nivel %d)\n%s" % [wdata.weapon_name, w_level, wdata.description]
+
+		var rarity_color := _get_rarity_color(wdata.rarity)
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.04, 0.06, 0.12, 0.95)
+		style.set_border_width_all(2)
+		style.border_color = rarity_color
+		style.set_corner_radius_all(6)
+		chip.add_theme_stylebox_override("panel", style)
+
+		var icon_rect := TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(24, 24)
+		icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		if wdata.icon:
+			icon_rect.texture = wdata.icon
+			icon_rect.modulate = rarity_color
+
+		var margin := MarginContainer.new()
+		margin.set("theme_override_constants/margin_left", 2)
+		margin.set("theme_override_constants/margin_right", 2)
+		margin.set("theme_override_constants/margin_top", 2)
+		margin.set("theme_override_constants/margin_bottom", 2)
+
+		var lvl_lbl := Label.new()
+		lvl_lbl.text = str(w_level)
+		lvl_lbl.add_theme_font_size_override("font_size", 11)
+		lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+		lvl_lbl.add_theme_color_override("font_shadow_color", Color.BLACK)
+		lvl_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
+		lvl_lbl.size_flags_vertical = Control.SIZE_SHRINK_END
+
+		chip.add_child(icon_rect)
+		margin.add_child(lvl_lbl)
+		chip.add_child(margin)
+
+		weapon_slots_row.add_child(chip)
 
 func set_active_satellite(pos: Vector2, index: int) -> void:
 	active_satellite_pos = pos

@@ -101,6 +101,10 @@ text = "00:00 | Amenaza: 1.0x"
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
 [node name="InventoryRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 6

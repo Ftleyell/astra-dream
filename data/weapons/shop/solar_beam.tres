@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_09"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"solar_beam"
+weapon_name = "Rayo Solar Orbital"
+description = "Haz continuo de microondas solares de alta radiación térmica que perfora blindajes de manera sostenida."
+icon = ExtResource("2_ico")
+rarity = 3
+tags = [&"solar", &"beam", &"thermal"]
+cost = 85
+base_damage = 50.0
+base_cooldown = 1.4
+proc_coefficient = 1.0
+damage_growth_per_level = 0.3
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 1
+active_spread_deg = 0.0
+active_behavior_type = &"solar"
+passive_interval = 2.6
+passive_search_radius = 550.0
+passive_target_mode = 0
+passive_behavior_type = &"missile"
+scales_with_projectile_count = false
+active_scales_with_projectiles = false
+passive_scales_with_projectiles = false

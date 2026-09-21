@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
 [ext_resource type="Texture2D" path="res://assets/portraits/portrait_kira.png" id="2_tex"]
+[ext_resource type="Resource" path="res://data/weapons/roster/hive_cannon.tres" id="3_wpn"]
 
 [resource]
 script = ExtResource("1_char")
@@ -10,6 +11,7 @@ display_name = "Kira"
 title = "Ingeniera de Enjambre"
 description = "Despliega nanobots y munición de racimo automática. Su cadencia pasiva de misiles y drones satélites es un 35% más veloz."
 portrait_icon = ExtResource("2_tex")
+starting_weapon = ExtResource("3_wpn")
 color = Color(1, 0.8, 0.1, 1)
 pts = PackedVector2Array(-50, 20, -25, -40, 25, -40, 50, 20, 0, 50)
 sort_order = 2

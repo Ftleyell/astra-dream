@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_08"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"dimensional_blade"
+weapon_name = "Cuchilla Dimensional"
+description = "Discos de plasma que viajan rebanando formaciones enemigas y regresan a la nave en trayectoria bumerán."
+icon = ExtResource("2_ico")
+rarity = 2
+tags = [&"blade", &"boomerang", &"piercing"]
+cost = 70
+base_damage = 38.0
+base_cooldown = 1.1
+proc_coefficient = 0.85
+damage_growth_per_level = 0.28
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 2
+active_spread_deg = 16.0
+active_behavior_type = &"boomerang"
+passive_interval = 1.8
+passive_search_radius = 420.0
+passive_target_mode = 0
+passive_behavior_type = &"boomerang"
+scales_with_projectile_count = true
+active_scales_with_projectiles = true
+passive_scales_with_projectiles = true

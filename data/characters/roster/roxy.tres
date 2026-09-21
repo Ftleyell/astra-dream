@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
 [ext_resource type="Texture2D" path="res://assets/portraits/portrait_roxy.png" id="2_tex"]
+[ext_resource type="Resource" path="res://data/weapons/roster/titan_shotgun.tres" id="3_wpn"]
 
 [resource]
 script = ExtResource("1_char")
@@ -10,6 +11,7 @@ display_name = "Roxanne"
 title = "Especialista Pesada"
 description = "Blindaje de casco reforzado y escopeta sísmica de metralla. Comienza con escudo cinético que absorbe impactos directos."
 portrait_icon = ExtResource("2_tex")
+starting_weapon = ExtResource("3_wpn")
 color = Color(0.2, 0.95, 0.5, 1)
 pts = PackedVector2Array(-50, -30, 50, -30, 45, 50, -45, 50)
 sort_order = 4

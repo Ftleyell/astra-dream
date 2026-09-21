@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_10"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_bomb.png" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"cluster_submunition"
+weapon_name = "Lanzador de Racimo 'Clúster'"
+description = "Cápsula balística pesada que estalla liberando submuniciones explosivas en cadena hacia el área designada."
+icon = ExtResource("2_ico")
+rarity = 2
+tags = [&"cluster", &"explosive", &"aoe"]
+cost = 70
+base_damage = 52.0
+base_cooldown = 1.5
+proc_coefficient = 0.85
+damage_growth_per_level = 0.28
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 1
+active_spread_deg = 0.0
+active_behavior_type = &"cluster"
+passive_interval = 2.4
+passive_search_radius = 450.0
+passive_target_mode = 0
+passive_behavior_type = &"mortar"
+scales_with_projectile_count = true
+active_scales_with_projectiles = true
+passive_scales_with_projectiles = true

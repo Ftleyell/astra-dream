@@ -233,9 +233,14 @@ func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> voi
 	var layout = Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
 	_setup_dialogic_audio(layout)
 
-func _on_item_purchased(item: ItemData, cost: int) -> void:
+func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	player.run_credits -= cost
-	player.inventory.add_item(item, 1)
+	if item_or_weapon is WeaponData:
+		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl:
+			w_ctrl.add_weapon(item_or_weapon as WeaponData)
+	elif item_or_weapon is ItemData:
+		player.inventory.add_item(item_or_weapon as ItemData, 1)
 	hud.update_credits(player.run_credits)
 
 func _on_level_up_requested(level: int) -> void:

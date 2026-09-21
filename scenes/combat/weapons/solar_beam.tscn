@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://slrbm001"]
+
+[ext_resource type="Script" path="res://scenes/combat/weapons/solar_beam.gd" id="1_slr"]
+
+[node name="SolarBeam" type="Node2D"]
+script = ExtResource("1_slr")
+
+[node name="OuterLine" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 100, 0)
+width = 16.0
+default_color = Color(1, 0.6, 0.1, 0.85)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CoreLine" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 100, 0)
+width = 6.0
+default_color = Color(1, 0.95, 0.8, 1)
+begin_cap_mode = 2
+end_cap_mode = 2

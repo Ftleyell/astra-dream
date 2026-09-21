@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_echo_06"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"tesla_arc"
+weapon_name = "Proyector de Plasma 'Arco Tesla'"
+description = "Descargas de plasma cuántico que encadenan arcos eléctricos entre grupos de enemigos y emiten pulsos de latencia electromagnética."
+icon = ExtResource("2_ico")
+rarity = 2
+tags = [&"electric", &"plasma", &"chain"]
+cost = 70
+base_damage = 36.0
+base_cooldown = 0.95
+proc_coefficient = 0.9
+damage_growth_per_level = 0.26
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 1
+active_spread_deg = 0.0
+active_behavior_type = &"chain"
+passive_interval = 2.2
+passive_search_radius = 480.0
+passive_target_mode = 0
+passive_behavior_type = &"chain_pulse"
+scales_with_projectile_count = true
+active_scales_with_projectiles = true
+passive_scales_with_projectiles = true
