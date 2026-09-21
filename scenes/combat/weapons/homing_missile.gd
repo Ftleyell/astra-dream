@@ -86,6 +86,7 @@ func _explode() -> void:
 	var targets: Array[Node] = []
 	targets.append_array(get_tree().get_nodes_in_group("enemies"))
 	targets.append_array(get_tree().get_nodes_in_group("emitters"))
+	targets.append_array(get_tree().get_nodes_in_group("destructibles"))
 
 	var r_sq := explosion_radius * explosion_radius
 	for node in targets:

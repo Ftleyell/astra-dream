@@ -38,6 +38,11 @@ func _ready() -> void:
 	# Spawnear el primer satélite
 	_spawn_next_satellite(Vector2(1400, 450))
 
+	# Inyección dinámica de objetos espaciales y asteroides periódicos
+	var asteroid_spawner := AsteroidSpawner.new()
+	asteroid_spawner.name = "AsteroidSpawner"
+	add_child(asteroid_spawner)
+
 func _input(event: InputEvent) -> void:
 	# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
 	if event is InputEventKey and event.pressed and not event.echo:

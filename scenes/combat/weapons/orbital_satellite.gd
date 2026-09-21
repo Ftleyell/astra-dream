@@ -89,6 +89,7 @@ func _handle_contact_damage(delta: float) -> void:
 	var targets: Array[Node] = []
 	targets.append_array(get_tree().get_nodes_in_group("enemies"))
 	targets.append_array(get_tree().get_nodes_in_group("emitters"))
+	targets.append_array(get_tree().get_nodes_in_group("destructibles"))
 
 	for node in targets:
 		if node is Node2D and is_instance_valid(node) and node != self:
