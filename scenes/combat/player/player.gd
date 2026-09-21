@@ -44,6 +44,11 @@ func _ready() -> void:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
 	current_health = stats.get_stat(&"max_health")
+	stats.stat_changed.connect(func(stat_name: StringName, new_val: float):
+		if stat_name == &"max_health":
+			current_health = minf(current_health + 20.0, new_val)
+			health_changed.emit(current_health, new_val)
+	)
 
 	inventory.character_stats = stats
 	add_child(inventory)

@@ -8,6 +8,12 @@ extends Resource
 @export var icon: Texture2D
 @export var rarity: Enums.Rarity = Enums.Rarity.COMMON
 @export var tags: Array[StringName] = []
+@export var cost: int = 35
+
+@export_group("Stat Scaling")
+@export var stat_name: StringName = &""
+@export var stat_value: float = 0.0
+@export var is_percentage: bool = false
 
 @export_group("Stacking")
 @export var max_stacks: int = 99

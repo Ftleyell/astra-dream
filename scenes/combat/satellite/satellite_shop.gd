@@ -26,20 +26,7 @@ func _ready() -> void:
 		_generate_default_shop_items()
 
 func _generate_default_shop_items() -> void:
-	var item_defs = [
-		{"id": &"plasma_coil", "name": "Bobina de Plasma", "desc": "15% prob. al golpear de electrocutar enemigos cercanos.", "cost": 40, "rarity": Enums.Rarity.COMMON},
-		{"id": &"overcharged_core", "name": "Núcleo Sobrecargado", "desc": "+25% daño de disparos activos manuales.", "cost": 50, "rarity": Enums.Rarity.UNCOMMON},
-		{"id": &"kinetic_booster", "name": "Propulsor Cinético", "desc": "El Dash viaja un 30% más lejos e inflige daño al cruzar balas.", "cost": 60, "rarity": Enums.Rarity.RARE},
-		{"id": &"void_prism", "name": "Prisma del Vacío", "desc": "Los proyectiles críticos generan una micro-singularidad.", "cost": 85, "rarity": Enums.Rarity.EPIC}
-	]
-	for def in item_defs:
-		var item := ItemData.new()
-		item.item_id = def["id"]
-		item.item_name = def["name"]
-		item.description = def["desc"]
-		item.rarity = def["rarity"]
-		item.set_meta("cost", def["cost"])
-		available_items_pool.append(item)
+	available_items_pool = ItemPoolManager.create_canonical_stat_items()
 
 func open_shop(credits: int) -> void:
 	current_credits = credits
@@ -183,7 +170,7 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	var cost: int = item.get_meta("cost", 30)
+	var cost: int = item.cost if "cost" in item and item.cost > 0 else item.get_meta("cost", 35)
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
 

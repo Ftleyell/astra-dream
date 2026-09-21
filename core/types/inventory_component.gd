@@ -17,6 +17,12 @@ func add_item(item: ItemData, count: int = 1) -> void:
 	var new_count: int = mini(current_count + count, item.max_stacks)
 	_items[id]["count"] = new_count
 
+	# Aplicar modificador reactivo a CharacterStats si el ítem define estadísticas
+	if character_stats and item.stat_name != &"":
+		var total_bonus: float = item.stat_value * float(new_count)
+		var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, item.is_percentage, item.item_id)
+		character_stats.set_or_replace_modifier(item.stat_name, mod)
+
 	item_added.emit(item, new_count)
 
 func get_item_count(item_id: StringName) -> int:

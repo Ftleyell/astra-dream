@@ -46,6 +46,25 @@ func add_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	_is_dirty[stat_name] = true
 	stat_changed.emit(stat_name, get_stat(stat_name))
 
+func set_or_replace_modifier(stat_name: StringName, mod: StatModifier) -> void:
+	if not _modifiers.has(stat_name):
+		_modifiers[stat_name] = []
+		_base_stats[stat_name] = 0.0
+
+	var list: Array = _modifiers[stat_name]
+	var replaced := false
+	for i in range(list.size()):
+		var existing: StatModifier = list[i]
+		if existing.id == mod.id:
+			list[i] = mod
+			replaced = true
+			break
+	if not replaced:
+		list.append(mod)
+
+	_is_dirty[stat_name] = true
+	stat_changed.emit(stat_name, get_stat(stat_name))
+
 func get_stat(stat_name: StringName) -> float:
 	if not _base_stats.has(stat_name):
 		return 0.0
