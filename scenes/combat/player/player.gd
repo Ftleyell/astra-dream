@@ -44,9 +44,29 @@ func _ready() -> void:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
 	current_health = stats.get_stat(&"max_health")
+	stats.stat_changed.connect(func(stat_name: StringName, new_val: float):
+		if stat_name == &"max_health":
+			current_health = minf(current_health + 20.0, new_val)
+			health_changed.emit(current_health, new_val)
+	)
 
 	inventory.character_stats = stats
 	add_child(inventory)
+
+	# Carga de exo-armadura visual con fallback no destructivo
+	var exo_path := "res://assets/characters/player_exo_vanguard.png"
+	if ResourceLoader.exists(exo_path):
+		var tex := load(exo_path) as Texture2D
+		if tex:
+			var spr := Sprite2D.new()
+			spr.name = "ExoArmorSprite"
+			spr.texture = tex
+			spr.scale = Vector2(0.55, 0.55)
+			add_child(spr)
+			move_child(spr, 0)
+			var placeholder := get_node_or_null("VisualPlaceholder") as CanvasItem
+			if placeholder:
+				placeholder.visible = false
 
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)
@@ -56,6 +76,11 @@ func _physics_process(delta: float) -> void:
 	_handle_dash(delta)
 	_handle_movement(delta)
 	_handle_actions()
+
+	# Orientación 360° del exotraje hacia el apuntado
+	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0
 
 	if bullet_server:
 		bullet_server.player_pos = global_position
@@ -90,11 +115,17 @@ func _handle_dash(delta: float) -> void:
 		dash_timer = DASH_DURATION
 		dash_cooldown_timer = DASH_COOLDOWN
 		dash_direction = velocity.normalized() if velocity.length_squared() > 0.1 else (get_global_mouse_position() - global_position).normalized()
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("dash")
 
 func _handle_actions() -> void:
 	if Input.is_action_just_pressed("bomb") and bomb_count > 0:
 		bomb_count -= 1
 		bomb_used.emit(bomb_count)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("bomb")
 		if bullet_server:
 			bullet_server.bomb_clear_all()
 
@@ -115,6 +146,9 @@ func take_damage(amount: float) -> void:
 	if is_dashing:
 		return
 	current_health -= amount
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("player_hit")
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
 	if current_health <= 0.0:
 		player_died.emit()

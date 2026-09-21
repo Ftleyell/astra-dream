@@ -13,6 +13,7 @@ var is_dying: bool = false
 
 @onready var visual: Polygon2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
 
 signal enemy_died(enemy: EnemyDrone)
 
@@ -21,6 +22,20 @@ func _ready() -> void:
 	current_health = max_health
 	if not player:
 		player = get_tree().get_first_node_in_group("player") as Player
+
+	# Carga de sprite de dron con fallback
+	var drone_tex_path := "res://assets/enemies/enemy_drone.png"
+	if ResourceLoader.exists(drone_tex_path):
+		var tex := load(drone_tex_path) as Texture2D
+		if tex:
+			var spr := Sprite2D.new()
+			spr.name = "DroneSprite"
+			spr.texture = tex
+			spr.scale = Vector2(0.4, 0.4)
+			add_child(spr)
+			move_child(spr, 0)
+			if visual:
+				visual.visible = false
 
 var contact_cooldown: float = 0.0
 
@@ -54,6 +69,9 @@ func take_damage(ctx: HitContext) -> void:
 
 	current_health -= ctx.final_damage
 
+	if damage_accumulator and damage_accumulator.has_method("register_hit"):
+		damage_accumulator.register_hit(ctx.final_damage, ctx.is_crit)
+
 	# Hit flash blanco
 	modulate = Color(3.0, 3.0, 3.0, 1.0)
 	var tween := create_tween()
@@ -66,7 +84,13 @@ var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.
 
 func _die() -> void:
 	is_dying = true
+	if damage_accumulator and damage_accumulator.has_method("clear_on_death"):
+		damage_accumulator.clear_on_death()
 	enemy_died.emit(self)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("explosion", randf_range(0.92, 1.08))
 
 	if is_instance_valid(player):
 		player.add_credits(credits_reward)

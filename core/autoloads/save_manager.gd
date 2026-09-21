@@ -60,16 +60,15 @@ static func load_profile() -> Dictionary:
 static func _get_default_profile() -> Dictionary:
 	return {
 		"unlocked_items": [
-			&"ukulele", &"plasma_missile", &"bleed_dagger", &"energy_shield",
-			&"hyper_thruster", &"crit_lens", &"heavy_plating", &"vampiric_spark",
-			&"nanite_swarm", &"singularity_core"
+			&"botas", &"espada", &"escudo", &"corazon", &"manzana",
+			&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj"
 		] as Array[StringName],
 		"unlocked_characters": [
 			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
 		] as Array[StringName],
 		"character_banlists": {
-			&"nova": [&"heavy_plating"] as Array[StringName],
-			&"valentina": [&"vampiric_spark"] as Array[StringName]
+			&"nova": [&"escudo"] as Array[StringName],
+			&"valentina": [&"manzana"] as Array[StringName]
 		} as Dictionary
 	}
 

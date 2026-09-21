@@ -14,8 +14,11 @@ const MERGE_RADIUS_SQ: float = 52.0 * 52.0
 const PICKUP_RADIUS_SQ: float = 140.0 * 140.0
 const COLLECT_RADIUS_SQ: float = 22.0 * 22.0
 
-@onready var visual_core: Polygon2D = $VisualCore
-@onready var visual_outer: Polygon2D = $VisualOuter
+@onready var crystal_visual: Node2D = get_node_or_null("CrystalVisual")
+@onready var facet_back: Polygon2D = get_node_or_null("CrystalVisual/FacetBack")
+@onready var facet_main: Polygon2D = get_node_or_null("CrystalVisual/FacetMain")
+@onready var facet_top: Polygon2D = get_node_or_null("CrystalVisual/FacetTop")
+@onready var sparkle_core: Polygon2D = get_node_or_null("CrystalVisual/SparkleCore")
 
 func _ready() -> void:
 	add_to_group("exp_blobs")
@@ -29,6 +32,15 @@ func setup(p_exp: float, p_pos: Vector2) -> void:
 	global_position = p_pos
 	if is_inside_tree():
 		_update_visuals()
+
+func _process(delta: float) -> void:
+	# Animación de levitación y oscilación suave del cristal
+	if crystal_visual and not is_being_absorbed and not is_collected:
+		var time := Time.get_ticks_msec() * 0.004
+		crystal_visual.position.y = sin(time) * 3.5
+		crystal_visual.rotation = sin(time * 0.7) * 0.12
+		if sparkle_core:
+			sparkle_core.rotation += delta * 1.5
 
 func _physics_process(delta: float) -> void:
 	if is_being_absorbed or is_collected:
@@ -59,7 +71,6 @@ func _check_merging() -> void:
 
 		var dist_sq := global_position.distance_squared_to(other.global_position)
 		if dist_sq <= MERGE_RADIUS_SQ:
-			# Para evitar doble fusión simultánea: el que tiene mayor ID absorbe al menor
 			if get_instance_id() > other.get_instance_id():
 				absorb_blob(other)
 				break
@@ -77,7 +88,7 @@ func absorb_blob(other: ExpBlob) -> void:
 	exp_value += added_exp
 	_update_visuals()
 
-	# Pulso de fusión del blob receptor
+	# Pulso de fusión del cristal receptor
 	var pulse := create_tween()
 	pulse.tween_property(self, "scale", scale * 1.35, 0.08)
 	pulse.tween_property(self, "scale", _get_target_scale(), 0.12)
@@ -91,7 +102,6 @@ func _handle_player_magnet(delta: float) -> void:
 	var to_player := player.global_position - global_position
 	var dist_sq := to_player.length_squared()
 
-	# Aumento de rango si el jugador hace dash
 	var effective_pickup_sq := PICKUP_RADIUS_SQ
 	if player.is_dashing:
 		effective_pickup_sq *= 2.2
@@ -108,6 +118,11 @@ func _collect() -> void:
 	is_collected = true
 	if is_instance_valid(player):
 		player.add_exp(exp_value)
+
+	# Sonido SFX de cristal recogido
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("exp", randf_range(0.95, 1.15))
 
 	# Animación de absorción en el jugador
 	var tween := create_tween()
@@ -126,24 +141,32 @@ func _get_target_scale() -> Vector2:
 		return Vector2(2.25, 2.25)
 
 func _update_visuals() -> void:
-	if not visual_core or not visual_outer:
-		return
-
 	scale = _get_target_scale()
 
+	if not facet_main or not facet_top or not facet_back:
+		return
+
 	if exp_value < 45.0:
-		# Tier 1: Cian eléctrico
-		visual_core.color = Color(1.0, 1.0, 1.0, 1.0)
-		visual_outer.color = Color(0.2, 0.9, 1.0, 0.8)
+		# Tier 1: Cristal Esmeralda Radiante
+		facet_back.color = Color(0.02, 0.55, 0.28, 0.95)
+		facet_main.color = Color(0.0, 0.95, 0.50, 0.90)
+		facet_top.color = Color(0.65, 1.0, 0.82, 0.98)
+		if sparkle_core: sparkle_core.color = Color.WHITE
 	elif exp_value < 150.0:
-		# Tier 2: Amatista / Magenta radiante
-		visual_core.color = Color(1.0, 0.85, 1.0, 1.0)
-		visual_outer.color = Color(0.85, 0.3, 1.0, 0.85)
+		# Tier 2: Cristal Diamante Cian Glaciar
+		facet_back.color = Color(0.0, 0.45, 0.75, 0.95)
+		facet_main.color = Color(0.0, 0.85, 1.0, 0.90)
+		facet_top.color = Color(0.70, 0.95, 1.0, 0.98)
+		if sparkle_core: sparkle_core.color = Color.WHITE
 	elif exp_value < 450.0:
-		# Tier 3: Oro solar
-		visual_core.color = Color(1.0, 1.0, 0.9, 1.0)
-		visual_outer.color = Color(1.0, 0.85, 0.2, 0.9)
+		# Tier 3: Cristal Prisma Dorado
+		facet_back.color = Color(0.65, 0.45, 0.0, 0.95)
+		facet_main.color = Color(1.0, 0.82, 0.1, 0.90)
+		facet_top.color = Color(1.0, 0.96, 0.65, 0.98)
+		if sparkle_core: sparkle_core.color = Color.WHITE
 	else:
-		# Tier 4: Supernova carmesí
-		visual_core.color = Color(1.0, 0.95, 0.95, 1.0)
-		visual_outer.color = Color(1.0, 0.25, 0.45, 0.95)
+		# Tier 4: Cristal Amatista Cuántico
+		facet_back.color = Color(0.45, 0.05, 0.65, 0.95)
+		facet_main.color = Color(0.85, 0.25, 1.0, 0.90)
+		facet_top.color = Color(0.95, 0.75, 1.0, 0.98)
+		if sparkle_core: sparkle_core.color = Color.WHITE

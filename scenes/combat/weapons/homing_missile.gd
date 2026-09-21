@@ -6,6 +6,7 @@ extends Node2D
 @export var turn_rate: float = 9.0
 @export var lifetime: float = 4.5
 @export var explosion_radius: float = 70.0
+@export var tracking_range: float = 520.0
 
 var hit_context: HitContext
 var target: Node2D = null
@@ -16,13 +17,15 @@ var max_trail: int = 10
 @onready var trail_line: Line2D = $TrailLine
 @onready var missile_body: Polygon2D = $MissileBody
 
-func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext) -> void:
+func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext, p_target: Node2D = null) -> void:
 	global_position = p_origin
 	var dir := p_initial_dir.normalized() if p_initial_dir.length_squared() > 0.001 else Vector2.RIGHT
 	current_velocity = dir * (max_speed * 0.5)
 	rotation = current_velocity.angle()
 	hit_context = p_ctx
-	if is_inside_tree():
+	if p_target and is_instance_valid(p_target):
+		target = p_target
+	elif is_inside_tree():
 		_acquire_nearest_target()
 
 func _ready() -> void:
@@ -73,9 +76,10 @@ func _acquire_nearest_target() -> void:
 	candidates.append_array(get_tree().get_nodes_in_group("emitters"))
 
 	var nearest: Node2D = null
-	var min_dist_sq := INF
+	var max_dist_sq := tracking_range * tracking_range
+	var min_dist_sq := max_dist_sq
 	for node in candidates:
-		if node is Node2D and is_instance_valid(node) and node != self:
+		if node is Node2D and is_instance_valid(node) and node != self and not node.get("is_dying"):
 			var d_sq := global_position.distance_squared_to(node.global_position)
 			if d_sq < min_dist_sq:
 				min_dist_sq = d_sq

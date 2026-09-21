@@ -36,6 +36,10 @@ func _process(delta: float) -> void:
 		spawn_timer = current_interval
 		_try_spawn_drone()
 
+func set_wave(wave_num: int) -> void:
+	base_spawn_interval = maxf(0.4, 2.0 - float(wave_num - 1) * 0.25)
+	max_enemies = 50 + (wave_num - 1) * 10
+
 func _acquire_player() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player

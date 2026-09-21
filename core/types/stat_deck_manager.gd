@@ -31,8 +31,24 @@ func _generate_default_cards() -> void:
 		{"id": &"card_crit_dmg", "title": "+40% Daño Crítico", "stat": &"crit_damage", "val": 0.40, "pct": true, "tier": Enums.Tier.TIER_2},
 		{"id": &"card_hp_up", "title": "+25 Vida Máxima", "stat": &"max_health", "val": 25.0, "pct": false, "tier": Enums.Tier.TIER_1},
 		{"id": &"card_speed_up", "title": "+10% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.10, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2}
+		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_proj_up_1", "title": "+1 Proyectil Adicional", "stat": &"projectile_count", "val": 1.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_proj_up_2", "title": "+2 Proyectiles Adicionales", "stat": &"projectile_count", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_3}
 	]
+	var stat_icon_map := {
+		&"base_damage": "res://assets/icons/items/icon_sword.svg",
+		&"attack_speed": "res://assets/icons/items/icon_gauntlet.svg",
+		&"crit_chance": "res://assets/icons/items/icon_glasses.svg",
+		&"crit_damage": "res://assets/icons/items/icon_lens.svg",
+		&"max_health": "res://assets/icons/items/icon_heart.svg",
+		&"move_speed": "res://assets/icons/items/icon_boots.svg",
+		&"luck": "res://assets/icons/items/icon_clover.svg",
+		&"projectile_count": "res://assets/icons/items/icon_quiver.svg",
+		&"armor": "res://assets/icons/items/icon_shield.svg",
+		&"health_regen": "res://assets/icons/items/icon_apple.svg",
+		&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
+	}
+
 	for def in stats_to_create:
 		var c := StatCardData.new()
 		c.card_id = def["id"]
@@ -42,6 +58,9 @@ func _generate_default_cards() -> void:
 		c.is_percentage = def["pct"]
 		c.tier = def["tier"]
 		c.base_weight = 100.0
+		var stat_key: StringName = def["stat"]
+		if stat_icon_map.has(stat_key) and ResourceLoader.exists(stat_icon_map[stat_key]):
+			c.icon = load(stat_icon_map[stat_key]) as Texture2D
 		all_stat_cards.append(c)
 
 func offer_cards(char_stats: CharacterStats, level: int, count: int = 4) -> void:

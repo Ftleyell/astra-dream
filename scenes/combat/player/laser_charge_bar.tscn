@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://laserchg001"]
+
+[ext_resource type="Script" path="res://scenes/combat/player/laser_charge_bar.gd" id="1_laserchg"]
+
+[node name="LaserChargeBar" type="Node2D"]
+z_index = 25
+script = ExtResource("1_laserchg")

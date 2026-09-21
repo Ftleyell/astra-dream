@@ -2,80 +2,55 @@ class_name WeaponController
 extends Node2D
 
 signal laser_cooldown_updated(current: float, max_val: float)
+signal laser_charge_updated(current: float, max_val: float, is_full: bool, is_memorized: bool)
+signal laser_charge_ended()
 
 @export var weapon_data: WeaponData
 @export var player: Player
-@export var equip_plasma_on_start: bool = true
 
 var active_cooldown: float = 0.0
 var passive_timer: float = 0.1 # Inicia disparando inmediatamente al spawnear
 
-# Escenas por defecto (Rail-Launcher)
+# Carga de la capa activa (Láser)
+var is_charging: bool = false
+var charge_timer: float = 0.0
+var max_charge_time: float = 3.0
+var is_fully_charged: bool = false
+
+# Memoria de carga en pausa (Charge Memory)
+var has_charge_memory: bool = false
+var memory_charge_timer: float = 0.0
+var memory_is_fully_charged: bool = false
+var memory_grace_timer: float = 0.0
+const MEMORY_GRACE_MAX: float = 6.0
+
 var laser_scene: PackedScene = preload("res://scenes/combat/weapons/screen_laser_beam.tscn")
 var missile_scene: PackedScene = preload("res://scenes/combat/weapons/homing_missile.tscn")
 
-# Escenas de Plasma Shotgun
-var plasma_pellet_scene: PackedScene = preload("res://scenes/combat/weapons/plasma_pellet.tscn")
-var orbital_satellite_scene: PackedScene = preload("res://scenes/combat/weapons/orbital_satellite.tscn")
-var plasma_shotgun_res: WeaponData = preload("res://data/weapons/plasma_shotgun.tres")
-
-# Satélites orbitales activos
-var active_satellites: Array[OrbitalSatellite] = []
-const REQUIRED_SATELLITES: int = 2
-
-@onready var weapon_visual: Polygon2D = get_node_or_null("WeaponVisual")
-
 func _ready() -> void:
-	if not player and is_inside_tree():
-		var p := get_parent()
-		if p is Player:
-			player = p
+	if not weapon_data:
+		weapon_data = WeaponData.new()
+		weapon_data.weapon_name = "Cañón Rail-Launcher Mk.I"
+		weapon_data.base_damage = 40.0
+		weapon_data.base_cooldown = 1.0 # Cooldown del láser
+		weapon_data.passive_interval = 1.6 # Intervalo del misil auto-aim
+		weapon_data.passive_search_radius = 520.0 # Rango de mitad de pantalla para auto-lock
 
-	if equip_plasma_on_start and plasma_shotgun_res:
-		equip_weapon(plasma_shotgun_res)
-	elif not weapon_data:
-		_setup_default_railgun()
-
+	# Disparo pasivo inicial inmediato
 	passive_timer = 0.1
 
-func _unhandled_input(event: InputEvent) -> void:
-	# Teclas de desarrollo para alternar armas durante el gameplay sin modificar main_game.tscn
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_1:
-			_setup_default_railgun()
-		elif event.keycode == KEY_2 and plasma_shotgun_res:
-			equip_weapon(plasma_shotgun_res)
-
-func _setup_default_railgun() -> void:
-	_cleanup_satellites()
-	weapon_data = WeaponData.new()
-	weapon_data.weapon_id = &"weapon_default"
-	weapon_data.weapon_name = "Cañón Rail-Launcher Mk.I"
-	weapon_data.base_damage = 40.0
-	weapon_data.base_cooldown = 1.0 # Cooldown del láser
-	weapon_data.passive_interval = 1.6 # Intervalo del misil auto-aim
-	weapon_data.proc_coefficient = 1.0
-
-	if weapon_visual:
-		weapon_visual.color = Color(1.0, 0.8, 0.2, 1.0) # Dorado/Ámbar
-
-func equip_weapon(new_data: WeaponData) -> void:
-	_cleanup_satellites()
-	weapon_data = new_data
-	active_cooldown = 0.0
-
-	if weapon_data.weapon_id == &"plasma_shotgun":
-		if weapon_visual:
-			weapon_visual.color = Color(0.2, 0.85, 1.0, 1.0) # Azul Plasma
-		call_deferred("_ensure_satellites")
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PAUSED:
+		if is_charging and charge_timer > 0.05:
+			has_charge_memory = true
+			memory_charge_timer = charge_timer
+			memory_is_fully_charged = is_fully_charged
+			memory_grace_timer = MEMORY_GRACE_MAX
 
 func _process(delta: float) -> void:
 	_handle_aim()
 	_handle_active_fire(delta)
 	_handle_passive_fire(delta)
-
-	if weapon_data and weapon_data.weapon_id == &"plasma_shotgun":
-		_ensure_satellites()
 
 func _handle_aim() -> void:
 	var mouse_pos := get_global_mouse_position()
@@ -84,65 +59,101 @@ func _handle_aim() -> void:
 func _handle_active_fire(delta: float) -> void:
 	if active_cooldown > 0.0:
 		active_cooldown -= delta
+		if is_charging:
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			has_charge_memory = false
+			laser_charge_ended.emit()
 
-	var atk_speed: float = player.stats.get_stat(&"attack_speed") if (player and player.stats) else 1.0
-	var max_cd: float = weapon_data.base_cooldown / maxf(0.1, atk_speed)
+	var max_cd: float = weapon_data.base_cooldown / maxf(0.1, player.stats.get_stat(&"attack_speed") if player else 1.0)
 	laser_cooldown_updated.emit(maxf(0.0, active_cooldown), max_cd)
 
-	if Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
-		active_cooldown = max_cd
-		if weapon_data.weapon_id == &"plasma_shotgun":
-			_fire_active_plasma_shotgun()
+	# Gestión de Memoria de Carga post-pausa:
+	if has_charge_memory:
+		if Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
+			# El jugador re-holdeó el ratón o nunca lo soltó (ej. seleccionó con hotkeys 1-4)
+			is_charging = true
+			charge_timer = memory_charge_timer
+			is_fully_charged = memory_is_fully_charged
+			has_charge_memory = false
+		elif Input.is_action_just_released("fire_active"):
+			# El jugador soltó el clic al salir de la pausa
+			var was_focused := memory_is_fully_charged or (memory_charge_timer >= max_charge_time)
+			_fire_active_laser(was_focused)
+			active_cooldown = max_cd
+			has_charge_memory = false
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			laser_charge_ended.emit()
+			return
 		else:
-			_fire_active_laser()
+			# El jugador aún no ha pulsado el botón: mantenemos la carga viva durante la ventana de gracia (6s)
+			memory_grace_timer -= delta
+			laser_charge_updated.emit(memory_charge_timer, max_charge_time, memory_is_fully_charged, true)
+			if memory_grace_timer <= 0.0:
+				has_charge_memory = false
+				laser_charge_ended.emit()
+			return
 
-func _fire_active_plasma_shotgun() -> void:
+	# 1. Liberación del clic (Disparo on release / tap)
+	if Input.is_action_just_released("fire_active"):
+		if is_charging:
+			var was_focused := is_fully_charged or (charge_timer >= max_charge_time)
+			_fire_active_laser(was_focused)
+			active_cooldown = max_cd
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			has_charge_memory = false
+			laser_charge_ended.emit()
+
+	# 2. Mantenimiento del clic para cargar (si cooldown == 0)
+	elif Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
+		if not is_charging:
+			is_charging = true
+			charge_timer = 0.0
+			is_fully_charged = false
+
+		charge_timer += delta
+		if charge_timer >= max_charge_time:
+			charge_timer = max_charge_time
+			if not is_fully_charged:
+				is_fully_charged = true
+				var audio_mgr := get_node_or_null("/root/AudioManager")
+				if audio_mgr and audio_mgr.has_method("play_sfx"):
+					audio_mgr.play_sfx("ui_click", 2.0, -2.0)
+
+		laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged, false)
+
+	# 3. Si no se presiona ni se libera y seguía en estado de carga
+	else:
+		if is_charging:
+			if charge_timer > 0.05:
+				has_charge_memory = true
+				memory_charge_timer = charge_timer
+				memory_is_fully_charged = is_fully_charged
+				memory_grace_timer = MEMORY_GRACE_MAX
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			if not has_charge_memory:
+				laser_charge_ended.emit()
+
+func _fire_active_laser(is_focused: bool = false) -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.RIGHT
 
-	var base_dmg: float = weapon_data.base_damage + (player.stats.get_stat(&"base_damage") if (player and player.stats) else 0.0)
-	var crit_chance: float = player.stats.get_stat(&"crit_chance") if (player and player.stats) else 0.05
+	var count := 1
+	if weapon_data.scales_with_projectile_count and weapon_data.active_scales_with_projectiles and player:
+		count = maxi(1, int(player.stats.get_stat(&"projectile_count")))
+
+	var base_dmg: float = weapon_data.base_damage + (player.stats.get_stat(&"base_damage") if player else 0.0)
+	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
-	var crit_mult: float = player.stats.get_stat(&"crit_damage") if (player and player.stats) else 1.5
-	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
-
-	var burst_count: int = max(1, weapon_data.active_burst_count)
-	var spread_deg: float = weapon_data.active_spread_deg
-	var spread_rad: float = deg_to_rad(spread_deg)
-	var start_angle: float = aim_dir.angle() - (spread_rad * 0.5)
-	var step: float = spread_rad / float(burst_count - 1) if burst_count > 1 else 0.0
-
-	var root_scene := get_tree().current_scene if is_inside_tree() else null
-
-	for i in range(burst_count):
-		var pellet_angle: float = start_angle + float(i) * step
-		var pellet_dir := Vector2.from_angle(pellet_angle)
-
-		var ctx := HitContext.new()
-		ctx.attacker = player
-		ctx.raw_damage = base_dmg
-		ctx.final_damage = final_dmg
-		ctx.is_crit = is_crit
-		ctx.proc_coefficient = weapon_data.proc_coefficient
-		ctx.hit_position = global_position
-
-		var pellet: PlasmaPellet = plasma_pellet_scene.instantiate() as PlasmaPellet
-		pellet.setup(global_position, pellet_dir, ctx)
-		if root_scene:
-			root_scene.add_child(pellet)
-
-	_trigger_weapon_recoil()
-
-func _fire_active_laser() -> void:
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.RIGHT
-
-	var base_dmg: float = weapon_data.base_damage + (player.stats.get_stat(&"base_damage") if (player and player.stats) else 0.0)
-	var crit_chance: float = player.stats.get_stat(&"crit_chance") if (player and player.stats) else 0.05
-	var is_crit := randf() <= crit_chance
-	var crit_mult: float = player.stats.get_stat(&"crit_damage") if (player and player.stats) else 1.5
+	var crit_mult: float = player.stats.get_stat(&"crit_damage") if player else 1.5
 	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
 
 	var ctx := HitContext.new()
@@ -153,21 +164,29 @@ func _fire_active_laser() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient
 	ctx.hit_position = global_position
 
-	var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
-	laser.setup(global_position, aim_dir, ctx)
-	get_tree().current_scene.add_child(laser)
+	for i in range(count):
+		var offset_rad := 0.0
+		if not is_focused and count > 1:
+			offset_rad = deg_to_rad((float(i) - float(count - 1) / 2.0) * weapon_data.active_spread_deg)
+		var laser_dir := aim_dir.rotated(offset_rad)
+		var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
+		laser.setup(global_position, laser_dir, ctx)
+		get_tree().current_scene.add_child(laser)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		if is_focused:
+			audio_mgr.play_sfx("laser", 0.85, 2.0)
+		else:
+			audio_mgr.play_sfx("laser", 1.0, 0.0)
 
 	if player and player.inventory:
 		player.inventory.process_hit_procs(ctx, player)
 
 func _handle_passive_fire(delta: float) -> void:
-	if weapon_data.weapon_id == &"plasma_shotgun":
-		# En PlasmaShotgun la capa pasiva son los satélites autónomos persistentes
-		return
-
 	passive_timer -= delta
 	if passive_timer <= 0.0:
-		var atk_speed: float = player.stats.get_stat(&"attack_speed") if (player and player.stats) else 1.0
+		var atk_speed: float = player.stats.get_stat(&"attack_speed") if player else 1.0
 		passive_timer = weapon_data.passive_interval / maxf(0.1, atk_speed)
 		_fire_passive_missile()
 
@@ -176,10 +195,14 @@ func _fire_passive_missile() -> void:
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.UP
 
-	var base_dmg: float = (weapon_data.base_damage * 0.75) + (player.stats.get_stat(&"base_damage") if (player and player.stats) else 0.0)
-	var crit_chance: float = player.stats.get_stat(&"crit_chance") if (player and player.stats) else 0.05
+	var count := 1
+	if weapon_data.scales_with_projectile_count and weapon_data.passive_scales_with_projectiles and player:
+		count = maxi(1, int(player.stats.get_stat(&"projectile_count")))
+
+	var base_dmg: float = (weapon_data.base_damage * 0.75) + (player.stats.get_stat(&"base_damage") if player else 0.0)
+	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
 	var is_crit := randf() <= crit_chance
-	var crit_mult: float = player.stats.get_stat(&"crit_damage") if (player and player.stats) else 1.5
+	var crit_mult: float = player.stats.get_stat(&"crit_damage") if player else 1.5
 	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
 
 	var ctx := HitContext.new()
@@ -190,59 +213,25 @@ func _fire_passive_missile() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient * 0.6
 	ctx.hit_position = global_position
 
-	var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
-	missile.setup(global_position, aim_dir, ctx)
-	get_tree().current_scene.add_child(missile)
+	var max_range: float = weapon_data.passive_search_radius if weapon_data else 520.0
+	var max_range_sq := max_range * max_range
 
-func _ensure_satellites() -> void:
-	if not is_inside_tree() or not is_instance_valid(player):
-		return
+	var candidates: Array[Node2D] = []
+	for node in get_tree().get_nodes_in_group("enemies") + get_tree().get_nodes_in_group("emitters"):
+		if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
+			if global_position.distance_squared_to(node.global_position) <= max_range_sq:
+				candidates.append(node as Node2D)
+	candidates.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
 
-	var valid: Array[OrbitalSatellite] = []
-	for sat in active_satellites:
-		if is_instance_valid(sat) and sat.is_inside_tree():
-			valid.append(sat)
-	active_satellites = valid
+	var spread_deg: float = 16.0
+	for i in range(count):
+		var offset_rad := deg_to_rad((float(i) - float(count - 1) / 2.0) * spread_deg)
+		var m_dir := aim_dir.rotated(offset_rad)
+		var assigned_target: Node2D = candidates[i % candidates.size()] if not candidates.is_empty() else null
+		var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
+		missile.setup(global_position, m_dir, ctx, assigned_target)
+		get_tree().current_scene.add_child(missile)
 
-	if active_satellites.size() < REQUIRED_SATELLITES:
-		var root_scene := get_tree().current_scene
-		if not root_scene:
-			return
-
-		for i in range(REQUIRED_SATELLITES):
-			var exists := false
-			for sat in active_satellites:
-				if sat.orbit_index == i:
-					exists = true
-					break
-
-			if not exists:
-				var new_sat: OrbitalSatellite = orbital_satellite_scene.instantiate() as OrbitalSatellite
-				root_scene.add_child(new_sat)
-
-				var ctx := HitContext.new()
-				ctx.attacker = player
-				ctx.raw_damage = weapon_data.base_damage * 0.8
-				ctx.final_damage = weapon_data.base_damage * 0.8
-				ctx.proc_coefficient = 0.25
-
-				new_sat.setup(player, i, REQUIRED_SATELLITES, ctx)
-				if player and player.bullet_server:
-					new_sat.bullet_server = player.bullet_server
-				active_satellites.append(new_sat)
-
-func _trigger_weapon_recoil() -> void:
-	if weapon_visual:
-		var original_x := 16.0
-		weapon_visual.position.x = original_x - 6.0
-		var tween := weapon_visual.create_tween()
-		tween.tween_property(weapon_visual, "position:x", original_x, 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-
-func _cleanup_satellites() -> void:
-	for sat in active_satellites:
-		if is_instance_valid(sat):
-			sat.queue_free()
-	active_satellites.clear()
-
-func _exit_tree() -> void:
-	_cleanup_satellites()
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("missile")
