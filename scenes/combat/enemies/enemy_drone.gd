@@ -13,7 +13,7 @@ var is_dying: bool = false
 
 @onready var visual: Polygon2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var damage_accumulator: DamageAccumulator = get_node_or_null("DamageAccumulator") as DamageAccumulator
+@onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
 
 signal enemy_died(enemy: EnemyDrone)
 
@@ -69,7 +69,7 @@ func take_damage(ctx: HitContext) -> void:
 
 	current_health -= ctx.final_damage
 
-	if damage_accumulator:
+	if damage_accumulator and damage_accumulator.has_method("register_hit"):
 		damage_accumulator.register_hit(ctx.final_damage, ctx.is_crit)
 
 	# Hit flash blanco
@@ -84,7 +84,7 @@ var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.
 
 func _die() -> void:
 	is_dying = true
-	if damage_accumulator:
+	if damage_accumulator and damage_accumulator.has_method("clear_on_death"):
 		damage_accumulator.clear_on_death()
 	enemy_died.emit(self)
 
