@@ -20,6 +20,10 @@ config/version="0.1.0"
 run/main_scene="res://scenes/ui/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
+[audio]
+
+buses/default_bus_layout="uid://cbus001"
+
 [autoload]
 
 AudioManager="*res://core/autoloads/audio_manager.gd"

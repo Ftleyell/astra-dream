@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://c6mainmenu001"]
+[gd_scene format=3 uid="uid://c6mainmenu001"]
 
-[ext_resource type="Script" path="res://scenes/ui/main_menu/main_menu.gd" id="1_mainmenu"]
-[ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="2_settings"]
-[ext_resource type="Texture2D" path="res://assets/ui/panel_scifi.png" id="3_panel"]
+[ext_resource type="Script" uid="uid://ceim4loohgglr" path="res://scenes/ui/main_menu/main_menu.gd" id="1_mainmenu"]
+[ext_resource type="PackedScene" uid="uid://c8setmod001" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="2_settings"]
+[ext_resource type="Texture2D" uid="uid://cuf57wyhjv1o1" path="res://assets/ui/panel_scifi.png" id="3_panel"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1964824263]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainmenu")
 
-[node name="BackgroundDark" type="ColorRect" parent="."]
+[node name="BackgroundDark" type="ColorRect" parent="." unique_id=928902956]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,11 +22,11 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.025, 0.05, 1)
 
-[node name="StarDecor1" type="Polygon2D" parent="."]
+[node name="StarDecor1" type="Polygon2D" parent="." unique_id=1492922487]
 color = Color(0.4, 0.7, 1, 0.15)
 polygon = PackedVector2Array(200, 100, 1720, 200, 1800, 950, 150, 980)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=984814079]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,16 +34,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1858109603]
 layout_mode = 2
 theme_override_constants/separation = 40
 alignment = 1
 
-[node name="TitleGroup" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="TitleGroup" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=746111206]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer/TitleGroup"]
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer/TitleGroup" unique_id=1785832114]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_colors/font_shadow_color = Color(0.2, 0.6, 1, 0.5)
@@ -53,62 +53,53 @@ theme_override_font_sizes/font_size = 64
 text = "ASTRA DREAM"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer/TitleGroup"]
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer/TitleGroup" unique_id=1691095656]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 0.85)
 theme_override_font_sizes/font_size = 20
 text = "DANMAKU ROGUELITE ARENA"
 horizontal_alignment = 1
 
-[node name="ButtonsContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="ButtonsContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=1864722940]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 16
 
-[node name="PanelBackground" type="NinePatchRect" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+[node name="PanelBackground" type="NinePatchRect" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=1549119453]
 show_behind_parent = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -24.0
-offset_top = -20.0
-offset_right = 24.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 texture = ExtResource("3_panel")
 patch_margin_left = 16
 patch_margin_top = 16
 patch_margin_right = 16
 patch_margin_bottom = 16
 
-[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=1399677482]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "JUGAR"
 
-[node name="HubButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+[node name="HubButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=916673686]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "HUB"
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=142453347]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "CONFIGURACIÓN"
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=1011190915]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "SALIR"
 
-[node name="VersionLabel" type="Label" parent="."]
+[node name="VersionLabel" type="Label" parent="." unique_id=1220943921]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -126,6 +117,6 @@ theme_override_font_sizes/font_size = 14
 text = "v0.3.0 Alpha | Milestone 1"
 horizontal_alignment = 2
 
-[node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
+[node name="SettingsModal" parent="." unique_id=23686834 instance=ExtResource("2_settings")]
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/ButtonsContainer/HubButton" to="." method="_on_hub_pressed"]

@@ -33,6 +33,10 @@ func initialize(char_data: CharacterData) -> void:
 		&"luck": char_data.luck,
 		&"pickup_radius": char_data.pickup_radius,
 		&"projectile_count": char_data.projectile_count if "projectile_count" in char_data else 1.0,
+		&"projectile_speed": char_data.projectile_speed if "projectile_speed" in char_data else 1.0,
+		&"weapon_size": char_data.weapon_size if "weapon_size" in char_data else 1.0,
+		&"cooldown_reduction": char_data.cooldown_reduction if "cooldown_reduction" in char_data else 0.0,
+		&"exp_multiplier": char_data.exp_multiplier if "exp_multiplier" in char_data else 1.0,
 	}
 	for key in _base_stats.keys():
 		_modifiers[key] = []

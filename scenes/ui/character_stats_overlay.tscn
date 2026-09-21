@@ -1,20 +1,28 @@
-[gd_scene load_steps=3 format=3 uid="uid://charstatsoverlay001"]
+[gd_scene load_steps=4 format=3 uid="uid://charstatsoverlay001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_stats_overlay.gd" id="1_overlay"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.04, 0.05, 0.08, 0.95)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0, 0.94, 1, 0.8)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main"]
+bg_color = Color(0.03, 0.04, 0.07, 0.96)
+border_width_left = 2
+border_width_top = 4
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.94, 1, 1)
 corner_radius_top_left = 0
 corner_radius_top_right = 0
 corner_radius_bottom_right = 0
 corner_radius_bottom_left = 0
-shadow_color = Color(0, 0.94, 1, 0.15)
-shadow_size = 12
+shadow_color = Color(0, 0.94, 1, 0.2)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
+bg_color = Color(0.06, 0.08, 0.12, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.94, 1, 0.8)
 
 [node name="CharacterStatsOverlay" type="CanvasLayer"]
 process_mode = 3
@@ -27,7 +35,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.03, 0.06, 0.88)
+color = Color(0.015, 0.02, 0.035, 0.92)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 anchors_preset = 15
@@ -37,127 +45,130 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(980, 580)
+custom_minimum_size = Vector2(1100, 640)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_override_styles/panel = SubResource("StyleBoxFlat_main")
 
 [node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 20
 
 [node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 14
 
 [node name="TopBar" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 alignment = 1
 
-[node name="PilotHeader" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/TopBar"]
+[node name="CockpitTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
-
-[node name="PortraitFrame" type="Control" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-
-[node name="PortraitTexture" type="TextureRect" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader/PortraitFrame"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PortraitEmblem" type="Polygon2D" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader/PortraitFrame"]
-position = Vector2(32, 32)
-scale = Vector2(0.8, 0.8)
-
-[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader"]
-layout_mode = 2
-alignment = 1
-
-[node name="PilotNameLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader/InfoVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "NOVA"
-
-[node name="PilotTitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/PilotHeader/InfoVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
-theme_override_font_sizes/font_size = 13
-text = "AS DE LA VANGUARDIA"
-
-[node name="LevelContainer" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="LevelLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/LevelContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 14
-text = "NIVEL DE COMBATE: 1"
-horizontal_alignment = 1
-
-[node name="BiomassLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TopBar/LevelContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
-theme_override_font_sizes/font_size = 13
-text = "BIOMASA TOTAL: 0 u."
-horizontal_alignment = 1
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "✦ CUADRO DE MANDO TÁCTICO // TELEMETRÍA Y SISTEMAS DE NAVE"
 
 [node name="CloseButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TopBar"]
-custom_minimum_size = Vector2(120, 36)
+custom_minimum_size = Vector2(130, 38)
 layout_mode = 2
 size_flags_vertical = 4
 text = "CERRAR [C]"
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
 
 [node name="ContentHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 24
 
-[node name="StatsColumn" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+[node name="LeftColumn" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+custom_minimum_size = Vector2(330, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsColumn"]
+[node name="PortraitContainer" type="CenterContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 15
-text = "ESTADÍSTICAS TÁCTICAS Y SISTEMAS"
 
-[node name="StatsGrid" type="GridContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsColumn"]
+[node name="PortraitPanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/PortraitContainer"]
+custom_minimum_size = Vector2(160, 160)
 layout_mode = 2
-size_flags_vertical = 3
-columns = 2
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_box")
 
-[node name="SkillsColumn" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+[node name="PortraitTexture" type="TextureRect" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/PortraitContainer/PortraitPanel"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Title" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/SkillsColumn"]
+[node name="PortraitEmblem" type="Polygon2D" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/PortraitContainer/PortraitPanel"]
+position = Vector2(80, 80)
+scale = Vector2(0.9, 0.9)
+
+[node name="PilotNameLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.94, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "PROTOCOLOS DE CONSTELACIÓN ACTIVOS"
+theme_override_font_sizes/font_size = 24
+text = "VALENTINA"
+horizontal_alignment = 1
 
-[node name="Scroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/SkillsColumn"]
+[node name="PilotTitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+text = "FRANCOTIRADORA TÁCTICA"
+horizontal_alignment = 1
+
+[node name="InfoPanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_box")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LevelLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/InfoPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "NIVEL DE COMBATE: 1"
+
+[node name="BiomassLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/InfoPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "BIOMASA TOTAL: 0 u."
+
+[node name="PerksTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "PROTOCOLOS ACTIVOS (HUB):"
+
+[node name="PerksScroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="SkillsList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/SkillsColumn/Scroll"]
+[node name="PerksList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/LeftColumn/PerksScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
+
+[node name="VSeparator" type="VSeparator" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+layout_mode = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Scroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/RightColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/RightColumn/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
