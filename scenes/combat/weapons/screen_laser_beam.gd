@@ -59,6 +59,7 @@ func _apply_laser_damage(start_point: Vector2, end_point: Vector2) -> void:
 	var targets: Array[Node] = []
 	targets.append_array(get_tree().get_nodes_in_group("enemies"))
 	targets.append_array(get_tree().get_nodes_in_group("emitters"))
+	targets.append_array(get_tree().get_nodes_in_group("destructibles"))
 
 	for node in targets:
 		if node is Node2D and is_instance_valid(node):
