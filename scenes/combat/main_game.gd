@@ -33,7 +33,8 @@ func _ready() -> void:
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)
-	player.biomass_changed.connect(hud.update_biomass)
+	if not player.biomass_changed.is_connected(hud.update_biomass):
+		player.biomass_changed.connect(hud.update_biomass)
 	player.level_up_requested.connect(_on_level_up_requested)
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
