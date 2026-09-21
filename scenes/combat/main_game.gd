@@ -100,11 +100,6 @@ func _spawn_satellite_in_player_direction() -> void:
 	wave_satellites_spawned += 1
 	_spawn_next_satellite(spawn_pos)
 
-	# Inyección dinámica de objetos espaciales y asteroides periódicos
-	var asteroid_spawner := AsteroidSpawner.new()
-	asteroid_spawner.name = "AsteroidSpawner"
-	add_child(asteroid_spawner)
-
 func _input(event: InputEvent) -> void:
 	# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
 	if event is InputEventKey and event.pressed and not event.echo:

@@ -26,6 +26,7 @@ var base_xp: int = 0
 
 
 func _ready() -> void:
+	add_to_group("asteroids")
 	if not fragment_scene:
 		fragment_scene = load("res://scenes/combat/environment/asteroid.tscn") as PackedScene
 
