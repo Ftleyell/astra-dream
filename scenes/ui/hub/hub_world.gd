@@ -101,7 +101,13 @@ func _ready() -> void:
 	_apply_psychopop_styles()
 	_build_pilot_selector_buttons()
 	_update_materials_display()
-	_select_pilot(0, false)
+	var saved_cid := SaveManager.get_selected_character()
+	var init_idx: int = 0
+	for i in range(PILOT_ROSTER.size()):
+		if PILOT_ROSTER[i]["id"] == saved_cid:
+			init_idx = i
+			break
+	_select_pilot(init_idx, false)
 	_setup_navigation()
 	_setup_skill_tree_integration()
 	_animate_entrance()
@@ -280,6 +286,7 @@ func _select_pilot(index: int, animate_card: bool = true) -> void:
 		return
 	current_pilot_index = index
 	var data: Dictionary = PILOT_ROSTER[index]
+	SaveManager.set_selected_character(data["id"])
 
 	if card_name:
 		card_name.text = String(data["name"]).to_upper()

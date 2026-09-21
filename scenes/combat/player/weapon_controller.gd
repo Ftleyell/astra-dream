@@ -230,7 +230,8 @@ func _fire_passive_missile() -> void:
 		var assigned_target: Node2D = candidates[i % candidates.size()] if not candidates.is_empty() else null
 		var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
 		missile.setup(global_position, m_dir, ctx, assigned_target)
-		get_tree().current_scene.add_child(missile)
+		var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
+		spawn_parent.add_child(missile)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):

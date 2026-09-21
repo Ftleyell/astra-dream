@@ -42,8 +42,17 @@ var current_health: float = 100.0
 
 func _ready() -> void:
 	add_to_group("player")
-	if not character_data:
-		character_data = CharacterData.new()
+	if not character_data or character_data.character_id == &"survivor_default":
+		var sel_id := SaveManager.get_selected_character()
+		var roster := CharacterData.load_roster()
+		if roster.has(sel_id):
+			character_data = roster[sel_id]
+		elif not roster.is_empty():
+			character_data = roster.values()[0]
+		else:
+			character_data = CharacterData.new()
+
+	_apply_visual_theme()
 	stats.initialize(character_data)
 
 	# Aplicar bonos permanentes del Árbol de Habilidades cibernético (4 ramas)
@@ -60,9 +69,9 @@ func _ready() -> void:
 				speed_count += 1
 			elif s.begins_with("damage_"):
 				damage_count += 1
-			elif s.begins_with("hp_"):
+			elif s.begins_with("hp_") or s.begins_with("hull_"):
 				hp_count += 1
-			elif s.begins_with("crit_"):
+			elif s.begins_with("crit_") or s.begins_with("overclock_") or s.begins_with("focus_"):
 				crit_count += 1
 
 		if speed_count > 0:
@@ -85,24 +94,23 @@ func _ready() -> void:
 	inventory.character_stats = stats
 	add_child(inventory)
 
-	# Carga de exo-armadura visual con fallback no destructivo
-	var exo_path := "res://assets/characters/player_exo_vanguard.png"
-	if ResourceLoader.exists(exo_path):
-		var tex := load(exo_path) as Texture2D
-		if tex:
-			var spr := Sprite2D.new()
-			spr.name = "ExoArmorSprite"
-			spr.texture = tex
-			spr.scale = Vector2(0.55, 0.55)
-			add_child(spr)
-			move_child(spr, 0)
-			var placeholder := get_node_or_null("VisualPlaceholder") as CanvasItem
-			if placeholder:
-				placeholder.visible = false
-
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)
 		bullet_server.player_grazed.connect(_on_bullet_grazed)
+
+
+func _apply_visual_theme() -> void:
+	if not character_data:
+		return
+	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
+	if placeholder:
+		placeholder.color = character_data.color
+		placeholder.visible = true
+		if character_data.pts.size() >= 3:
+			var scaled_pts := PackedVector2Array()
+			for pt in character_data.pts:
+				scaled_pts.append(pt * 0.35)
+			placeholder.polygon = scaled_pts
 
 func _physics_process(delta: float) -> void:
 	_handle_dash(delta)

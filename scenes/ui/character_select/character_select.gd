@@ -40,7 +40,10 @@ func _ready() -> void:
 	roster_ordered = CharacterData.load_roster_ordered()
 	roster_dict = CharacterData.load_roster()
 	_populate_roster()
-	if not roster_ordered.is_empty():
+	var saved_char := SaveManager.get_selected_character()
+	if roster_dict.has(saved_char):
+		_select_character(saved_char)
+	elif not roster_ordered.is_empty():
 		_select_character(roster_ordered[0].character_id)
 	else:
 		_select_character(&"nova")
@@ -64,6 +67,7 @@ func _populate_roster() -> void:
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id
+	SaveManager.set_selected_character(char_id)
 	var data: CharacterData = roster_dict.get(char_id, null)
 	if not data:
 		roster_dict = CharacterData.load_roster()
@@ -99,6 +103,7 @@ func _select_character(char_id: StringName) -> void:
 			portrait_emblem.visible = true
 
 func _on_launch_pressed() -> void:
+	SaveManager.set_selected_character(current_character_id)
 	get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
 
 func _on_loadout_pressed() -> void:

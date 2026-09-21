@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var resume_button: Button = $Panel/VBoxContainer/BottomBar/ResumeButton
 @onready var settings_button: Button = $Panel/VBoxContainer/BottomBar/SettingsButton
 @onready var restart_button: Button = $Panel/VBoxContainer/BottomBar/RestartButton
+@onready var hub_button: Button = $Panel/VBoxContainer/BottomBar/HubButton
 @onready var menu_button: Button = $Panel/VBoxContainer/BottomBar/MenuButton
 
 @onready var items_container: VBoxContainer = $Panel/VBoxContainer/ContentHBox/ItemsColumn/ItemsScroll/ItemsList
@@ -19,6 +20,8 @@ func _ready() -> void:
 	resume_button.pressed.connect(resume_game)
 	settings_button.pressed.connect(_on_settings_pressed)
 	restart_button.pressed.connect(_on_restart_pressed)
+	if hub_button:
+		hub_button.pressed.connect(_on_hub_pressed)
 	menu_button.pressed.connect(_on_menu_pressed)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -151,6 +154,10 @@ func _on_settings_pressed() -> void:
 func _on_restart_pressed() -> void:
 	resume_game()
 	get_tree().reload_current_scene()
+
+func _on_hub_pressed() -> void:
+	resume_game()
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_menu_pressed() -> void:
 	resume_game()

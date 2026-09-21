@@ -123,27 +123,33 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="ResumeButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 15
 text = "▶ REANUDAR"
 
 [node name="SettingsButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "⚙ CONFIGURACIÓN"
+theme_override_font_sizes/font_size = 15
+text = "⚙ AJUSTES"
 
 [node name="RestartButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 15
 text = "🔄 REINICIAR"
 
-[node name="MenuButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(200, 50)
+[node name="HubButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "🏠 MENÚ PRINCIPAL"
+theme_override_font_sizes/font_size = 15
+text = "🪐 IR AL HUB"
+
+[node name="MenuButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(170, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🏠 MENÚ"
 
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]

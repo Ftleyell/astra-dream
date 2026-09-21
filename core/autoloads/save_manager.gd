@@ -4,7 +4,7 @@ extends Node
 const SAVE_PATH := "user://profile_data.json"
 const SCHEMA_VERSION := 1
 
-static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1, p_antimatter: int = -1, p_skills: Variant = null) -> Error:
+static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1, p_antimatter: int = -1, p_skills: Variant = null, p_selected_char: StringName = &"") -> Error:
 	var current_biomass: int = p_biomass
 	if current_biomass < 0:
 		current_biomass = get_biomass()
@@ -19,6 +19,11 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 		current_skills = prof.get("character_skills", {})
 	else:
 		current_skills = p_skills
+
+	var current_char: StringName = p_selected_char
+	if current_char == &"":
+		var prof := load_profile()
+		current_char = StringName(str(prof.get("selected_character", "nova")))
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
@@ -55,7 +60,8 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 		"character_banlists": bans_serializable,
 		"biomass": current_biomass,
 		"antimatter": current_antimatter,
-		"character_skills": skills_serializable
+		"character_skills": skills_serializable,
+		"selected_character": String(current_char)
 	}
 
 	var json_str := JSON.stringify(payload, "\t")
@@ -98,7 +104,8 @@ static func _get_default_profile() -> Dictionary:
 		} as Dictionary,
 		"biomass": 0,
 		"antimatter": 0,
-		"character_skills": {} as Dictionary
+		"character_skills": {} as Dictionary,
+		"selected_character": &"nova"
 	}
 
 static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
@@ -108,7 +115,8 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"character_banlists": {} as Dictionary,
 		"biomass": int(raw.get("biomass", 0)),
 		"antimatter": int(raw.get("antimatter", 0)),
-		"character_skills": {} as Dictionary
+		"character_skills": {} as Dictionary,
+		"selected_character": StringName(str(raw.get("selected_character", "nova")))
 	}
 
 	if raw.has("unlocked_items"):
@@ -190,6 +198,8 @@ static func get_character_unlocked_nodes(char_id: StringName) -> Array[StringNam
 		var s := StringName(str(n))
 		if not result.has(s):
 			result.append(s)
+	if not result.has(&"core"):
+		result.append(&"core")
 	return result
 
 ## Verifica si un nodo específico está desbloqueado
@@ -218,6 +228,8 @@ static func unlock_character_skill_node(char_id: StringName, node_id: StringName
 	var str_list: Array[StringName] = []
 	for n in list:
 		str_list.append(StringName(str(n)))
+	if not str_list.has(&"core"):
+		str_list.append(&"core")
 
 	# Si ya está desbloqueado, no volver a comprar
 	if str_list.has(node_id):
@@ -263,3 +275,21 @@ static func refund_character_skills(char_id: StringName, node_cost: int = 25) ->
 
 	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
 	return refund_biomass
+
+## Obtiene el ID del personaje seleccionado actualmente para el combate
+static func get_selected_character() -> StringName:
+	var profile := load_profile()
+	return StringName(str(profile.get("selected_character", "nova")))
+
+## Establece el ID del personaje seleccionado para el combate y guarda el perfil
+static func set_selected_character(char_id: StringName) -> void:
+	if char_id == &"":
+		return
+	var profile := load_profile()
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id)

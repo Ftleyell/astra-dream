@@ -57,8 +57,11 @@ func play_music(track_name: String) -> void:
 		return
 	if stream is AudioStreamWAV:
 		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	music_player.stream = stream
-	music_player.play()
+	if not music_player:
+		_init_music_player()
+	if music_player:
+		music_player.stream = stream
+		music_player.play()
 	current_music_track = track_name
 
 func stop_music() -> void:
