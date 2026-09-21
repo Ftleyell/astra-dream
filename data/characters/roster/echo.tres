@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
+[ext_resource type="Texture2D" path="res://assets/portraits/portrait_echo.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_char")
+character_id = &"echo"
+display_name = "Echo"
+title = "Androide Ciber-Guerra"
+description = "Inyecta virus de latencia cuántica que encadenan arcos eléctricos y procs infinitos entre grupos densos de enemigos."
+portrait_icon = ExtResource("2_tex")
+color = Color(0.5, 0.85, 1, 1)
+pts = PackedVector2Array(-30, -50, 0, -20, 30, -50, 20, 50, -20, 50)
+sort_order = 5
+stats_summary = "HP: 80 | Vel: 360 px/s | Daño: 42 | Crítico: 12% | Suerte: +10"
+max_health = 80.0
+health_regen = 0.3
+move_speed = 360.0
+armor = 0.0
+base_damage = 42.0
+attack_speed = 1.2
+crit_chance = 0.12
+crit_damage = 1.6
+luck = 10.0
+pickup_radius = 120.0
+projectile_count = 2.0
+banned_tags = []
+inherent_item_banlist = []

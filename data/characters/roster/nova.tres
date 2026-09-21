@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
+[ext_resource type="Texture2D" path="res://assets/portraits/portrait_nova.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_char")
+character_id = &"nova"
+display_name = "Nova"
+title = "Piloto de Vanguardia"
+description = "Especialista en asaltos frontales a hiper-velocidad. Su reactor sobrecalienta armas térmicas aumentando el daño base a quemarropa."
+portrait_icon = ExtResource("2_tex")
+color = Color(0.1, 0.9, 1, 1)
+pts = PackedVector2Array(-40, 50, 0, -60, 40, 50, 0, 20)
+sort_order = 0
+stats_summary = "HP: 100 | Vel: 340 px/s | Daño: 40 | Crítico: 5% | Suerte: 0"
+max_health = 100.0
+health_regen = 0.5
+move_speed = 340.0
+armor = 0.0
+base_damage = 40.0
+attack_speed = 1.0
+crit_chance = 0.05
+crit_damage = 1.5
+luck = 0.0
+pickup_radius = 100.0
+projectile_count = 2.0
+banned_tags = []
+inherent_item_banlist = []

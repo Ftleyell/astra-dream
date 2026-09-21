@@ -47,3 +47,7 @@ release/
 # Crash logs and debug traces
 *.log
 crash_dump*
+
+# Teamwork multi-agent artifacts
+.agents/
+ORIGINAL_REQUEST.md

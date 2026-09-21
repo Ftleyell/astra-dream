@@ -90,6 +90,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "JUGAR"
 
+[node name="HubButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "HUB"
+
 [node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
@@ -121,3 +127,5 @@ text = "v0.3.0 Alpha | Milestone 1"
 horizontal_alignment = 2
 
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/ButtonsContainer/HubButton" to="." method="_on_hub_pressed"]

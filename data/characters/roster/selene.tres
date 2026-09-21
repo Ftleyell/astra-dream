@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
+[ext_resource type="Texture2D" path="res://assets/portraits/portrait_selene.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_char")
+character_id = &"selene"
+display_name = "Selene"
+title = "Ocultista del Vacío"
+description = "Canaliza anomalías de gravedad negativa. Ralentiza proyectiles enemigos entrantes y tiene el doble de rango de aspiración de EXP."
+portrait_icon = ExtResource("2_tex")
+color = Color(0.75, 0.4, 1, 1)
+pts = PackedVector2Array(-40, -40, 40, -40, 50, 10, 0, 60, -50, 10)
+sort_order = 3
+stats_summary = "HP: 110 | Vel: 290 px/s | Daño: 38 | Crítico: 6% | Suerte: +20"
+max_health = 110.0
+health_regen = 0.8
+move_speed = 290.0
+armor = 2.0
+base_damage = 38.0
+attack_speed = 1.0
+crit_chance = 0.06
+crit_damage = 1.5
+luck = 20.0
+pickup_radius = 200.0
+projectile_count = 2.0
+banned_tags = []
+inherent_item_banlist = []

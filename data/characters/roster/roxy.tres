@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
+[ext_resource type="Texture2D" path="res://assets/portraits/portrait_roxy.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_char")
+character_id = &"roxy"
+display_name = "Roxanne"
+title = "Especialista Pesada"
+description = "Blindaje de casco reforzado y escopeta sísmica de metralla. Comienza con escudo cinético que absorbe impactos directos."
+portrait_icon = ExtResource("2_tex")
+color = Color(0.2, 0.95, 0.5, 1)
+pts = PackedVector2Array(-50, -30, 50, -30, 45, 50, -45, 50)
+sort_order = 4
+stats_summary = "HP: 150 | Vel: 260 px/s | Daño: 48 | Crítico: 4% | Suerte: -5"
+max_health = 150.0
+health_regen = 1.0
+move_speed = 260.0
+armor = 10.0
+base_damage = 48.0
+attack_speed = 0.85
+crit_chance = 0.04
+crit_damage = 1.5
+luck = -5.0
+pickup_radius = 90.0
+projectile_count = 4.0
+banned_tags = []
+inherent_item_banlist = []

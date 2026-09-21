@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/characters/character_data.gd" id="1_char"]
+[ext_resource type="Texture2D" path="res://assets/portraits/portrait_valentina.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_char")
+character_id = &"valentina"
+display_name = "Valentina"
+title = "Francotiradora Táctica"
+description = "Calculista orbital de precisión quirúrgica. Sus lásers de telemetría perforan blindajes con un multiplicador de daño crítico masivo."
+portrait_icon = ExtResource("2_tex")
+color = Color(1, 0.35, 0.4, 1)
+pts = PackedVector2Array(-20, 60, -10, -50, 0, -70, 10, -50, 20, 60, 0, 30)
+sort_order = 1
+stats_summary = "HP: 85 | Vel: 300 px/s | Daño: 55 | Crítico: 18% | Suerte: +5"
+max_health = 85.0
+health_regen = 0.5
+move_speed = 300.0
+armor = 0.0
+base_damage = 55.0
+attack_speed = 1.0
+crit_chance = 0.18
+crit_damage = 2.0
+luck = 5.0
+pickup_radius = 100.0
+projectile_count = 1.0
+banned_tags = []
+inherent_item_banlist = []
