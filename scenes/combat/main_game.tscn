@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=19 format=3 uid="uid://c6xk4yp51l4q1"]
 
 [ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
 [ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="15_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hold_to_reset_overlay.tscn" id="16_reset"]
 [ext_resource type="PackedScene" path="res://scenes/combat/player/overhead_health_bar.tscn" id="17_overhp"]
+[ext_resource type="PackedScene" path="res://scenes/combat/player/laser_charge_bar.tscn" id="18_laserchg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
@@ -66,6 +67,10 @@ polygon = PackedVector2Array(-6, -3, 12, -2, 12, 2, -6, 3)
 
 [node name="OverheadHealthBar" parent="Player" node_paths=PackedStringArray("player") instance=ExtResource("17_overhp")]
 player = NodePath("..")
+
+[node name="LaserChargeBar" parent="Player" node_paths=PackedStringArray("weapon_controller") instance=ExtResource("18_laserchg")]
+position = Vector2(0, -20)
+weapon_controller = NodePath("../WeaponController")
 
 [node name="EmitterCenter" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
 position = Vector2(960, 320)

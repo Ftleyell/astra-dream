@@ -18,7 +18,7 @@ extends Resource
 @export var crit_damage: float = 1.5
 @export var luck: float = 1.0
 @export var pickup_radius: float = 100.0
-@export var projectile_count: float = 1.0
+@export var projectile_count: float = 2.0
 
 @export_group("Loadout")
 @export var starting_weapon: WeaponData

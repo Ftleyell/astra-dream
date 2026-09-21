@@ -2,12 +2,20 @@ class_name WeaponController
 extends Node2D
 
 signal laser_cooldown_updated(current: float, max_val: float)
+signal laser_charge_updated(current: float, max_val: float, is_full: bool)
+signal laser_charge_ended()
 
 @export var weapon_data: WeaponData
 @export var player: Player
 
 var active_cooldown: float = 0.0
 var passive_timer: float = 0.1 # Inicia disparando inmediatamente al spawnear
+
+# Carga de la capa activa (Láser)
+var is_charging: bool = false
+var charge_timer: float = 0.0
+var max_charge_time: float = 3.0
+var is_fully_charged: bool = false
 
 var laser_scene: PackedScene = preload("res://scenes/combat/weapons/screen_laser_beam.tscn")
 var missile_scene: PackedScene = preload("res://scenes/combat/weapons/homing_missile.tscn")
@@ -35,15 +43,53 @@ func _handle_aim() -> void:
 func _handle_active_fire(delta: float) -> void:
 	if active_cooldown > 0.0:
 		active_cooldown -= delta
+		if is_charging:
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			laser_charge_ended.emit()
 
 	var max_cd: float = weapon_data.base_cooldown / maxf(0.1, player.stats.get_stat(&"attack_speed") if player else 1.0)
 	laser_cooldown_updated.emit(maxf(0.0, active_cooldown), max_cd)
 
-	if Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
-		active_cooldown = max_cd
-		_fire_active_laser()
+	# 1. Liberación del clic (Disparo on release / tap)
+	if Input.is_action_just_released("fire_active"):
+		if is_charging:
+			var was_focused := is_fully_charged or (charge_timer >= max_charge_time)
+			_fire_active_laser(was_focused)
+			active_cooldown = max_cd
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			laser_charge_ended.emit()
 
-func _fire_active_laser() -> void:
+	# 2. Mantenimiento del clic para cargar (si cooldown == 0)
+	elif Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
+		if not is_charging:
+			is_charging = true
+			charge_timer = 0.0
+			is_fully_charged = false
+
+		charge_timer += delta
+		if charge_timer >= max_charge_time:
+			charge_timer = max_charge_time
+			if not is_fully_charged:
+				is_fully_charged = true
+				var audio_mgr := get_node_or_null("/root/AudioManager")
+				if audio_mgr and audio_mgr.has_method("play_sfx"):
+					audio_mgr.play_sfx("ui_click", 2.0, -2.0)
+
+		laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged)
+
+	# 3. Si no se presiona ni se libera y seguía en estado de carga
+	else:
+		if is_charging:
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			laser_charge_ended.emit()
+
+func _fire_active_laser(is_focused: bool = false) -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.RIGHT
@@ -67,7 +113,9 @@ func _fire_active_laser() -> void:
 	ctx.hit_position = global_position
 
 	for i in range(count):
-		var offset_rad := deg_to_rad((float(i) - float(count - 1) / 2.0) * weapon_data.active_spread_deg)
+		var offset_rad := 0.0
+		if not is_focused and count > 1:
+			offset_rad = deg_to_rad((float(i) - float(count - 1) / 2.0) * weapon_data.active_spread_deg)
 		var laser_dir := aim_dir.rotated(offset_rad)
 		var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
 		laser.setup(global_position, laser_dir, ctx)
@@ -75,7 +123,10 @@ func _fire_active_laser() -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser")
+		if is_focused:
+			audio_mgr.play_sfx("laser", 0.85, 2.0)
+		else:
+			audio_mgr.play_sfx("laser", 1.0, 0.0)
 
 	if player and player.inventory:
 		player.inventory.process_hit_procs(ctx, player)
