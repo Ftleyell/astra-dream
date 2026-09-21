@@ -33,7 +33,15 @@ func _generate_default_cards() -> void:
 		{"id": &"card_speed_up", "title": "+10% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.10, "pct": true, "tier": Enums.Tier.TIER_1},
 		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2},
 		{"id": &"card_proj_up_1", "title": "+1 Proyectil Adicional", "stat": &"projectile_count", "val": 1.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_proj_up_2", "title": "+2 Proyectiles Adicionales", "stat": &"projectile_count", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_3}
+		{"id": &"card_proj_up_2", "title": "+2 Proyectiles Adicionales", "stat": &"projectile_count", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_3},
+		{"id": &"card_armor_1", "title": "+3 Armadura", "stat": &"armor", "val": 3.0, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_armor_2", "title": "+7 Armadura", "stat": &"armor", "val": 7.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_regen_1", "title": "+0.8 Regen/s", "stat": &"health_regen", "val": 0.8, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_regen_2", "title": "+2.0 Regen/s", "stat": &"health_regen", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_magnet_1", "title": "+40 px Imán", "stat": &"pickup_radius", "val": 40.0, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_magnet_2", "title": "+90 px Imán", "stat": &"pickup_radius", "val": 90.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_exp_1", "title": "+15% EXP Ganada", "stat": &"exp_multiplier", "val": 0.15, "pct": true, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_exp_2", "title": "+35% EXP Ganada", "stat": &"exp_multiplier", "val": 0.35, "pct": true, "tier": Enums.Tier.TIER_2}
 	]
 	var stat_icon_map := {
 		&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -47,6 +55,7 @@ func _generate_default_cards() -> void:
 		&"armor": "res://assets/icons/items/icon_shield.svg",
 		&"health_regen": "res://assets/icons/items/icon_apple.svg",
 		&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
+		&"exp_multiplier": "res://assets/icons/items/icon_lens.svg",
 	}
 
 	for def in stats_to_create:

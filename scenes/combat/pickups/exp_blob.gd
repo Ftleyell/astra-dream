@@ -110,7 +110,11 @@ func _handle_player_magnet(delta: float) -> void:
 	var to_player := player.global_position - global_position
 	var dist_sq := to_player.length_squared()
 
-	var effective_pickup_sq := PICKUP_RADIUS_SQ
+	var p_radius: float = 100.0
+	if is_instance_valid(player) and player.stats:
+		p_radius = player.stats.get_stat(&"pickup_radius")
+	var effective_radius := p_radius * 1.4
+	var effective_pickup_sq := effective_radius * effective_radius
 	if player.is_dashing:
 		effective_pickup_sq *= 2.2
 

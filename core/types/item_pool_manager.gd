@@ -22,7 +22,8 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		{"id": &"lupa", "name": "Lupa", "desc": "+30% Multiplicador de Daño Crítico.", "stat": &"crit_damage", "val": 0.30, "pct": true, "cost": 55, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"offense", &"crit"]},
 		{"id": &"guante", "name": "Guante", "desc": "+12% Velocidad de Ataque y Cadencia.", "stat": &"attack_speed", "val": 0.12, "pct": true, "cost": 55, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"offense", &"speed"]},
 		{"id": &"trebol", "name": "Trébol", "desc": "+20% Atributo de Suerte (Mejores Tiers).", "stat": &"luck", "val": 0.20, "pct": true, "cost": 55, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"utility", &"luck"]},
-		{"id": &"carcaj", "name": "Carcaj", "desc": "+1 Proyectil Adicional en todas las armas.", "stat": &"projectile_count", "val": 1.0, "pct": false, "cost": 90, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"projectiles"]}
+		{"id": &"carcaj", "name": "Carcaj", "desc": "+1 Proyectil Adicional en todas las armas.", "stat": &"projectile_count", "val": 1.0, "pct": false, "cost": 90, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"projectiles"]},
+		{"id": &"chip_telemetria", "name": "Chip de Telemetría", "desc": "+20% EXP obtenida en combate.", "stat": &"exp_multiplier", "val": 0.20, "pct": true, "cost": 45, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"utility", &"exp"]}
 	]
 	var icon_map := {
 		&"botas": "res://assets/icons/items/icon_boots.svg",
@@ -36,6 +37,7 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		&"guante": "res://assets/icons/items/icon_gauntlet.svg",
 		&"trebol": "res://assets/icons/items/icon_clover.svg",
 		&"carcaj": "res://assets/icons/items/icon_quiver.svg",
+		&"chip_telemetria": "res://assets/icons/items/icon_lens.svg",
 	}
 
 	var items: Array[ItemData] = []

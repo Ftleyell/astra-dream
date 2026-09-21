@@ -123,6 +123,7 @@ func _physics_process(delta: float) -> void:
 	_handle_dash(delta)
 	_handle_movement(delta)
 	_handle_actions()
+	_handle_health_regen(delta)
 
 	# Orientación 360° del exotraje hacia el apuntado
 	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
@@ -188,7 +189,9 @@ func add_biomass(amount: int) -> void:
 	biomass_changed.emit(run_biomass, total_persistent)
 
 func add_exp(amount: float) -> void:
-	current_exp += amount
+	var exp_mult: float = stats.get_stat(&"exp_multiplier") if stats else 1.0
+	var effective_amount: float = amount * maxf(0.1, exp_mult)
+	current_exp += effective_amount
 	if current_exp >= exp_to_next:
 		current_exp -= exp_to_next
 		current_level += 1
@@ -199,7 +202,14 @@ func add_exp(amount: float) -> void:
 func take_damage(amount: float) -> void:
 	if is_dashing:
 		return
-	current_health -= amount
+	var armor_val: float = stats.get_stat(&"armor") if stats else 0.0
+	var mitigated_dmg: float = amount
+	if armor_val >= 0.0:
+		mitigated_dmg = maxf(1.0, amount * (100.0 / (100.0 + armor_val)))
+	else:
+		mitigated_dmg = amount * (2.0 - (100.0 / (100.0 - armor_val)))
+
+	current_health -= mitigated_dmg
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")
@@ -207,8 +217,20 @@ func take_damage(amount: float) -> void:
 	if current_health <= 0.0:
 		player_died.emit()
 
+func _handle_health_regen(delta: float) -> void:
+	if not stats:
+		return
+	var max_hp := stats.get_stat(&"max_health")
+	if current_health < max_hp and current_health > 0.0:
+		var regen := stats.get_stat(&"health_regen")
+		if regen > 0.0:
+			var old_val := current_health
+			current_health = minf(max_hp, current_health + regen * delta)
+			if int(old_val * 2.0) != int(current_health * 2.0) or current_health >= max_hp:
+				health_changed.emit(current_health, max_hp)
+
 func _on_bullet_hit() -> void:
 	take_damage(10.0)
 
 func _on_bullet_grazed(bullet_pos: Vector2) -> void:
-	add_exp(2.0) # Cada roce con balas suma experiencia
+	add_exp(2.0) # Cada roce con balas suma experiencia y escala con exp_multiplier
