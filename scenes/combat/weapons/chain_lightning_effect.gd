@@ -8,42 +8,75 @@ extends Node2D
 var hit_context: HitContext
 var bolt_points: Array[Vector2] = []
 
+var origin_pos: Vector2 = Vector2.ZERO
+var target_pos: Vector2 = Vector2.ZERO
+var has_generated: bool = false
+
 @onready var line: Line2D = $BoltLine
 
 func setup(p_origin: Vector2, p_target_pos: Vector2, p_ctx: HitContext, p_jumps: int = 4) -> void:
 	global_position = Vector2.ZERO
+	origin_pos = p_origin
+	target_pos = p_target_pos
 	hit_context = p_ctx
 	max_jumps = p_jumps
-	_generate_chain(p_origin, p_target_pos)
+	if is_inside_tree():
+		_generate_chain()
 
-func _generate_chain(start_pos: Vector2, first_target_pos: Vector2) -> void:
+func _ready() -> void:
+	if not has_generated and (origin_pos != Vector2.ZERO or target_pos != Vector2.ZERO):
+		_generate_chain()
+
+func _generate_chain() -> void:
+	if has_generated:
+		return
+	has_generated = true
+
 	if not line:
 		line = $BoltLine
 
 	bolt_points.clear()
-	bolt_points.append(start_pos)
-	bolt_points.append(first_target_pos)
+	bolt_points.append(origin_pos)
+	bolt_points.append(target_pos)
 
-	var current_pos := first_target_pos
+	var current_pos := target_pos
 	var hit_nodes: Array[Node2D] = []
-
-	if not is_inside_tree():
-		_draw_bolt()
-		return
 
 	var tree := get_tree()
 	if not tree:
 		_draw_bolt()
 		return
 
-	# Dañar primer objetivo si existe
+	# Dañar primer objetivo si existe o buscar el más cercano al cursor o al jugador
 	var enemies := tree.get_nodes_in_group("enemies") + tree.get_nodes_in_group("destructibles") + tree.get_nodes_in_group("emitters")
+	var initial_target: Node2D = null
+	var best_first_d_sq := 320.0 * 320.0
+
 	for node in enemies:
-		if is_instance_valid(node) and node is Node2D:
-			if node.global_position.distance_squared_to(first_target_pos) <= 64.0 * 64.0:
-				hit_nodes.append(node as Node2D)
-				_damage_target(node as Node2D, 1.0)
-				break
+		if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
+			var n2d := node as Node2D
+			var d_sq: float = n2d.global_position.distance_squared_to(target_pos)
+			if d_sq <= best_first_d_sq:
+				best_first_d_sq = d_sq
+				initial_target = n2d
+
+	# Si no había nadie cerca del cursor, buscar el más cercano al jugador dentro de rango
+	if not initial_target:
+		var best_player_d_sq := 520.0 * 520.0
+		for node in enemies:
+			if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
+				var n2d := node as Node2D
+				var d_sq: float = n2d.global_position.distance_squared_to(origin_pos)
+				if d_sq <= best_player_d_sq:
+					best_player_d_sq = d_sq
+					initial_target = n2d
+
+	if initial_target:
+		hit_nodes.append(initial_target)
+		target_pos = initial_target.global_position
+		bolt_points[1] = target_pos
+		current_pos = target_pos
+		_damage_target(initial_target, 1.0)
 
 	# Encadenamiento subsiguiente
 	var jumps_left := max_jumps - 1
@@ -54,7 +87,7 @@ func _generate_chain(start_pos: Vector2, first_target_pos: Vector2) -> void:
 		var best_d_sq: float = jump_r_sq
 
 		for node in enemies:
-			if not is_instance_valid(node) or not (node is Node2D):
+			if not is_instance_valid(node) or not (node is Node2D) or node.get("is_dying"):
 				continue
 			var cand := node as Node2D
 			if hit_nodes.has(cand):
@@ -68,8 +101,8 @@ func _generate_chain(start_pos: Vector2, first_target_pos: Vector2) -> void:
 			hit_nodes.append(best_next)
 			current_pos = best_next.global_position
 			bolt_points.append(current_pos)
-			var falloff := 1.0 - (float(max_jumps - jumps_left) * 0.15)
-			_damage_target(best_next, maxf(0.3, falloff))
+			var falloff := 1.0 - (float(max_jumps - jumps_left) * 0.08) # Mantiene daño alto en todos los saltos
+			_damage_target(best_next, maxf(0.65, falloff))
 			jumps_left -= 1
 		else:
 			break
@@ -84,10 +117,11 @@ func _damage_target(target: Node2D, multiplier: float) -> void:
 			c.raw_damage = hit_context.raw_damage * multiplier
 			c.final_damage = hit_context.final_damage * multiplier
 			c.is_crit = hit_context.is_crit
+			c.proc_coefficient = hit_context.proc_coefficient
 		else:
 			c.raw_damage = 30.0 * multiplier
 			c.final_damage = 30.0 * multiplier
-		c.proc_coefficient = 0.5
+			c.proc_coefficient = 0.5
 		c.hit_position = target.global_position
 		target.take_damage(c)
 

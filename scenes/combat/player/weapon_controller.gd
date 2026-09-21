@@ -114,89 +114,121 @@ func _handle_active_fire(delta: float) -> void:
 		if inst.active_cooldown > 0.0:
 			inst.active_cooldown -= delta
 
-	# Para el HUD emitimos el cooldown de la primera arma principal equipada
-	if not equipped_weapons.is_empty():
+	# Comprobar si hay al menos un arma láser equipada
+	var laser_inst: WeaponInstanceData = null
+	for inst in equipped_weapons:
+		if inst.weapon_data and inst.weapon_data.active_behavior_type == &"laser":
+			laser_inst = inst
+			break
+
+	# Para el HUD emitimos el cooldown (del láser prioritariamente, o del arma primaria)
+	if laser_inst:
+		var max_cd := laser_inst.get_effective_cooldown(player.stats if player else null)
+		laser_cooldown_updated.emit(maxf(0.0, laser_inst.active_cooldown), max_cd)
+	elif not equipped_weapons.is_empty():
 		var primary := equipped_weapons[0]
 		var max_cd := primary.get_effective_cooldown(player.stats if player else null)
 		laser_cooldown_updated.emit(maxf(0.0, primary.active_cooldown), max_cd)
 
-	# Gestión de memoria de carga
-	if has_charge_memory:
-		memory_grace_timer -= delta
-		if memory_grace_timer <= 0.0:
-			has_charge_memory = false
-			laser_charge_ended.emit()
-		else:
-			laser_charge_updated.emit(memory_charge_timer, max_charge_time, memory_is_fully_charged, true)
+	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
 
-	# 1. Liberación del clic -> Fuego coordinado de todas las armas
-	if Input.is_action_just_released("fire_active"):
-		var ready_to_fire := false
-		var charge_to_use := 0.0
-		var full_to_use := false
-
-		if is_charging:
-			charge_to_use = charge_timer
-			full_to_use = is_fully_charged
-			ready_to_fire = true
-		elif has_charge_memory:
-			charge_to_use = memory_charge_timer
-			full_to_use = memory_is_fully_charged
-			ready_to_fire = true
-
-		if ready_to_fire:
-			_fire_all_active_weapons(full_to_use, charge_to_use)
-
-		is_charging = false
-		charge_timer = 0.0
-		is_fully_charged = false
-		has_charge_memory = false
-		laser_charge_ended.emit()
-
-	# 2. Mantenimiento del clic para cargar
-	elif Input.is_action_pressed("fire_active"):
-		# Se puede cargar si al menos una arma tiene cooldown <= 0
-		var can_charge := false
+	# 1. DISPARO INSTANTÁNEO / TAP PARA TODAS LAS ARMAS NO-LÁSER
+	# Se disparan inmediatamente al presionar o mantener fire_active si su cooldown está listo
+	if Input.is_action_pressed("fire_active"):
 		for inst in equipped_weapons:
-			if inst.active_cooldown <= 0.0:
-				can_charge = true
-				break
+			if inst.weapon_data and inst.weapon_data.active_behavior_type != &"laser":
+				if inst.active_cooldown <= 0.0:
+					_dispatch_weapon_active_fire(inst, aim_dir, false, 0.0)
+					inst.active_cooldown = inst.get_effective_cooldown(player.stats if player else null)
 
-		if can_charge:
-			if not is_charging:
-				is_charging = true
-				charge_timer = 0.0
-				is_fully_charged = false
-
-			charge_timer += delta
-			if charge_timer >= max_charge_time:
-				charge_timer = max_charge_time
-				if not is_fully_charged:
-					is_fully_charged = true
-					var audio_mgr := get_node_or_null("/root/AudioManager")
-					if audio_mgr and audio_mgr.has_method("play_sfx"):
-						audio_mgr.play_sfx("ui_click", 2.0, -2.0)
-
-			laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged, false)
-		else:
-			if is_charging:
-				is_charging = false
-				charge_timer = 0.0
+	# 2. MECÁNICA DE CARGA EXCLUSIVA PARA EL LÁSER
+	if laser_inst:
+		# Gestión de memoria de carga
+		if has_charge_memory:
+			memory_grace_timer -= delta
+			if memory_grace_timer <= 0.0:
+				has_charge_memory = false
 				laser_charge_ended.emit()
+			else:
+				laser_charge_updated.emit(memory_charge_timer, max_charge_time, memory_is_fully_charged, true)
 
-	# 3. Estado inactivo
-	else:
-		if is_charging:
-			if charge_timer > 0.05:
-				has_charge_memory = true
-				memory_charge_timer = charge_timer
-				memory_is_fully_charged = is_fully_charged
-				memory_grace_timer = MEMORY_GRACE_MAX
+		# Mantenimiento del clic -> Cargar láser
+		if Input.is_action_pressed("fire_active"):
+			if laser_inst.active_cooldown <= 0.0:
+				if not is_charging:
+					is_charging = true
+					charge_timer = 0.0
+					is_fully_charged = false
+
+				charge_timer += delta
+				if charge_timer >= max_charge_time:
+					charge_timer = max_charge_time
+					if not is_fully_charged:
+						is_fully_charged = true
+						var audio_mgr := get_node_or_null("/root/AudioManager")
+						if audio_mgr and audio_mgr.has_method("play_sfx"):
+							audio_mgr.play_sfx("ui_click", 2.0, -2.0)
+
+				laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged, false)
+			else:
+				if is_charging:
+					is_charging = false
+					charge_timer = 0.0
+					laser_charge_ended.emit()
+
+		# Liberación del clic -> Fuego del láser
+		elif Input.is_action_just_released("fire_active"):
+			var ready_to_fire := false
+			var charge_to_use := 0.0
+			var full_to_use := false
+
+			if is_charging:
+				charge_to_use = charge_timer
+				full_to_use = is_fully_charged
+				ready_to_fire = true
+			elif has_charge_memory:
+				charge_to_use = memory_charge_timer
+				full_to_use = memory_is_fully_charged
+				ready_to_fire = true
+			elif laser_inst.active_cooldown <= 0.0:
+				ready_to_fire = true
+
+			if ready_to_fire:
+				for inst in equipped_weapons:
+					if inst.weapon_data and inst.weapon_data.active_behavior_type == &"laser":
+						if inst.active_cooldown <= 0.0:
+							_dispatch_weapon_active_fire(inst, aim_dir, full_to_use, charge_to_use)
+							inst.active_cooldown = inst.get_effective_cooldown(player.stats if player else null)
+
 			is_charging = false
 			charge_timer = 0.0
 			is_fully_charged = false
-			if not has_charge_memory:
-				laser_charge_ended.emit()
+			has_charge_memory = false
+			laser_charge_ended.emit()
+
+		# Sin presionar botón activo
+		else:
+			if is_charging:
+				if charge_timer > 0.05:
+					has_charge_memory = true
+					memory_charge_timer = charge_timer
+					memory_is_fully_charged = is_fully_charged
+					memory_grace_timer = MEMORY_GRACE_MAX
+				is_charging = false
+				charge_timer = 0.0
+				is_fully_charged = false
+				if not has_charge_memory:
+					laser_charge_ended.emit()
+	else:
+		# Si no hay láser equipado, apagar cualquier estado de carga residual
+		if is_charging or has_charge_memory:
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			has_charge_memory = false
+			laser_charge_ended.emit()
 
 func _fire_all_active_weapons(is_focused: bool, charge_amount: float) -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
@@ -234,6 +266,9 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 
 	match wdata.active_behavior_type:
 		&"laser":
+			var dmg_mult := 2.2 if is_focused else lerpf(1.0, 1.6, clampf(charge_ratio / max_charge_time, 0.0, 1.0))
+			ctx.raw_damage *= dmg_mult
+			ctx.final_damage *= dmg_mult
 			for i in range(count):
 				var offset_rad := 0.0
 				if not is_focused and count > 1:

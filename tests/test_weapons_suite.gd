@@ -119,6 +119,50 @@ func _ready() -> void:
 	add_child(solar)
 	print("  ✓ SolarBeam instanciado")
 
+	# 5. Probar exclusividad de carga para el Láser y disparo instantáneo / tap para armas normales
+	print("\n[5/5] Testing Laser Charge Exclusivity & Non-Laser Instant Tap-Fire...")
+	var echo_controller := WeaponController.new()
+	var tesla_res: WeaponData = load("res://data/weapons/roster/tesla_arc.tres")
+	echo_controller.weapon_data = tesla_res
+	add_child(echo_controller)
+	assert(echo_controller.equipped_weapons.size() == 1, "Echo debe tener equipado tesla_arc")
+	var tesla_inst := echo_controller.equipped_weapons[0]
+	assert(tesla_inst.active_cooldown == 0.0, "Cooldown inicial de tesla debe ser 0")
+
+	# Simular Input pressed con el arma de Echo
+	Input.action_press("fire_active")
+	echo_controller._handle_active_fire(0.016)
+	assert(echo_controller.is_charging == false, "El arma de Echo NO debe cargar")
+	assert(echo_controller.charge_timer == 0.0, "Charge timer de Echo debe ser 0")
+	assert(tesla_inst.active_cooldown > 0.0, "El arma de Echo debe disparar inmediatamente en tap/press")
+	print("  ✓ Arma de Echo dispara instantáneamente al presionar, SIN activar carga")
+
+	Input.action_release("fire_active")
+	echo_controller._handle_active_fire(0.016)
+	assert(echo_controller.is_charging == false, "Echo permanece sin carga al soltar")
+	echo_controller.queue_free()
+
+	# Probar con el Láser de Nova
+	var nova_controller := WeaponController.new()
+	var rail_res: WeaponData = load("res://data/weapons/roster/rail_launcher.tres")
+	nova_controller.weapon_data = rail_res
+	add_child(nova_controller)
+	var rail_inst := nova_controller.equipped_weapons[0]
+
+	Input.action_press("fire_active")
+	nova_controller._handle_active_fire(0.05)
+	assert(nova_controller.is_charging == true, "El arma láser DEBE activar la carga al mantener")
+	assert(nova_controller.charge_timer > 0.0, "Charge timer de láser debe avanzar")
+	assert(rail_inst.active_cooldown == 0.0, "El láser retiene el disparo mientras se carga")
+	print("  ✓ Cañón Láser activa y acumula carga correctamente al mantener presionado")
+
+	Input.action_release("fire_active")
+	nova_controller._handle_active_fire(0.016)
+	assert(nova_controller.is_charging == false, "La carga del láser finaliza al soltar")
+	assert(rail_inst.active_cooldown > 0.0, "El láser dispara y entra en cooldown al soltar")
+	print("  ✓ Cañón Láser dispara al soltar con carga y entra en cooldown")
+	nova_controller.queue_free()
+
 	print("\n==========================================")
 	print(">>> ALL WEAPON & MULTI-SLOT TESTS PASSED (100%) <<<")
 	print("==========================================\n")
