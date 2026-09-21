@@ -50,17 +50,17 @@ func _apply_visuals() -> void:
 			glow_polygon.color = Color(0.12, 0.95, 0.5, 0.35)
 			icon_sprite.texture = load("res://assets/icons/items/icon_heart.svg")
 			icon_sprite.modulate = Color(0.2, 1.0, 0.6)
-			icon_sprite.scale = Vector2(0.6, 0.6)
+			icon_sprite.scale = Vector2(0.055, 0.055)
 		ConsumableType.MAGNET:
 			glow_polygon.color = Color(0.05, 0.8, 1.0, 0.35)
 			icon_sprite.texture = load("res://assets/icons/items/icon_magnet.svg")
 			icon_sprite.modulate = Color(0.2, 0.9, 1.0)
-			icon_sprite.scale = Vector2(0.6, 0.6)
+			icon_sprite.scale = Vector2(0.055, 0.055)
 		ConsumableType.BOMB:
 			glow_polygon.color = Color(1.0, 0.35, 0.1, 0.35)
 			icon_sprite.texture = load("res://assets/icons/icon_bomb.png")
 			icon_sprite.modulate = Color(1.0, 0.55, 0.2)
-			icon_sprite.scale = Vector2(0.5, 0.5)
+			icon_sprite.scale = Vector2(0.48, 0.48)
 
 func _physics_process(delta: float) -> void:
 	if is_collected:
