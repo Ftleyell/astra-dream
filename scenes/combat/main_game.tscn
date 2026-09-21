@@ -72,16 +72,6 @@ player = NodePath("..")
 position = Vector2(0, -20)
 weapon_controller = NodePath("../WeaponController")
 
-[node name="EmitterCenter" type="Node2D" parent="." node_paths=PackedStringArray("bullet_server", "player")]
-position = Vector2(960, 320)
-script = ExtResource("5_emitter")
-bullet_server = NodePath("../BulletServer")
-player = NodePath("../Player")
-
-[node name="Visual" type="Polygon2D" parent="EmitterCenter"]
-color = Color(1, 0.3, 0.3, 1)
-polygon = PackedVector2Array(-12, -12, 12, -12, 12, 12, -12, 12)
-
 [node name="HUD" parent="." node_paths=PackedStringArray("player") instance=ExtResource("7_hud")]
 player = NodePath("../Player")
 

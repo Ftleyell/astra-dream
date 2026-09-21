@@ -17,6 +17,12 @@ var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
 var has_satellite: bool = false
 var satellite_index: int = 1
+var current_wave: int = 1
+var wave_time_left: float = 60.0
+var wave_satellites_spawned: int = 0
+var max_wave_satellites: int = 3
+var current_travel_dist: float = 0.0
+var required_travel_dist: float = 600.0
 
 func _ready() -> void:
 	if player:
@@ -31,10 +37,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	run_time += delta
-	var minutes: int = int(run_time) / 60
-	var seconds: int = int(run_time) % 60
-	var threat: float = 1.0 + (run_time * 0.02)
-	timer_label.text = "%02d:%02d | Amenaza: %.1fx" % [minutes, seconds, threat]
+	var wave_m: int = int(wave_time_left) / 60
+	var wave_s: int = int(wave_time_left) % 60
+	timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
 
 	if has_satellite and player:
 		var dist: float = player.global_position.distance_to(active_satellite_pos)
@@ -45,6 +50,24 @@ func _process(delta: float) -> void:
 		else:
 			arrow = "↓" if dir.y > 0 else "↑"
 		satellite_radar_label.text = "Satélite #%d: %d m [%s]" % [satellite_index, int(dist), arrow]
+	else:
+		if wave_satellites_spawned < max_wave_satellites:
+			satellite_radar_label.text = "Buscando satélite: %d / %d m" % [int(current_travel_dist), int(required_travel_dist)]
+		else:
+			satellite_radar_label.text = "Satélites de oleada agotados. Resiste hasta la prox. oleada"
+
+func update_wave_status(wave: int, time_left: float, satellites_spawned: int, max_satellites: int) -> void:
+	current_wave = wave
+	wave_time_left = time_left
+	wave_satellites_spawned = satellites_spawned
+	max_wave_satellites = max_satellites
+
+func update_satellite_travel_dist(current_d: float, req_d: float) -> void:
+	current_travel_dist = current_d
+	required_travel_dist = req_d
+
+func clear_satellite() -> void:
+	has_satellite = false
 
 func update_laser_cooldown(current: float, max_val: float) -> void:
 	if not laser_cd_label:
