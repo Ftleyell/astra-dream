@@ -1,6 +1,9 @@
 [gd_scene load_steps=2 format=3 uid="uid://c8setmod001"]
 
 [ext_resource type="Script" path="res://scenes/ui/settings_modal/settings_modal.gd" id="1_settings"]
+[ext_resource type="Texture2D" path="res://assets/icons/display.svg" id="2_display"]
+[ext_resource type="Texture2D" path="res://assets/icons/audio.svg" id="3_audio"]
+[ext_resource type="Texture2D" path="res://assets/icons/gamepad.svg" id="4_gamepad"]
 
 [node name="SettingsModal" type="CanvasLayer"]
 process_mode = 3
@@ -65,11 +68,23 @@ metadata/_tab_index = 0
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="DisplayHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+[node name="DisplayHeader" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayHeader"]
+modulate = Color(0.4, 0.85, 1, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("2_display")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 17
-text = "🖥️ PANTALLA Y RESOLUCIÓN"
+text = "PANTALLA Y RESOLUCIÓN"
 
 [node name="DisplayGrid" type="GridContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
 layout_mode = 2
@@ -96,11 +111,23 @@ text = "Activar pantalla completa exclusiva"
 [node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
 layout_mode = 2
 
-[node name="AudioHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+[node name="AudioHeader" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioHeader"]
+modulate = Color(0.4, 0.85, 1, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("3_audio")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 17
-text = "🔊 NIVELES DE AUDIO"
+text = "NIVELES DE AUDIO"
 
 [node name="AudioGrid" type="GridContainer" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox"]
 layout_mode = 2
@@ -171,11 +198,23 @@ metadata/_tab_index = 2
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="JoyHeader" type="Label" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
+[node name="JoyHeader" type="HBoxContainer" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/JoyHeader"]
+modulate = Color(1, 0.85, 0.2, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("4_gamepad")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/JoyHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 17
-text = "🎮 MAPEO DE MANDO / JOYSTICK (CONECTA CUALQUIER CONTROL USB/BLUETOOTH)"
+text = "MAPEO DE MANDO / JOYSTICK (CONECTA CUALQUIER CONTROL USB/BLUETOOTH)"
 
 [node name="JoyMappingInfo" type="RichTextLabel" parent="Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox"]
 layout_mode = 2
