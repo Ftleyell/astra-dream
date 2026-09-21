@@ -6,6 +6,7 @@ extends Node2D
 @export var turn_rate: float = 9.0
 @export var lifetime: float = 4.5
 @export var explosion_radius: float = 70.0
+@export var tracking_range: float = 520.0
 
 var hit_context: HitContext
 var target: Node2D = null
@@ -75,9 +76,10 @@ func _acquire_nearest_target() -> void:
 	candidates.append_array(get_tree().get_nodes_in_group("emitters"))
 
 	var nearest: Node2D = null
-	var min_dist_sq := INF
+	var max_dist_sq := tracking_range * tracking_range
+	var min_dist_sq := max_dist_sq
 	for node in candidates:
-		if node is Node2D and is_instance_valid(node) and node != self:
+		if node is Node2D and is_instance_valid(node) and node != self and not node.get("is_dying"):
 			var d_sq := global_position.distance_squared_to(node.global_position)
 			if d_sq < min_dist_sq:
 				min_dist_sq = d_sq

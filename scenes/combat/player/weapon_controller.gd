@@ -34,6 +34,7 @@ func _ready() -> void:
 		weapon_data.base_damage = 40.0
 		weapon_data.base_cooldown = 1.0 # Cooldown del láser
 		weapon_data.passive_interval = 1.6 # Intervalo del misil auto-aim
+		weapon_data.passive_search_radius = 520.0 # Rango de mitad de pantalla para auto-lock
 
 	# Disparo pasivo inicial inmediato
 	passive_timer = 0.1
@@ -212,10 +213,14 @@ func _fire_passive_missile() -> void:
 	ctx.proc_coefficient = weapon_data.proc_coefficient * 0.6
 	ctx.hit_position = global_position
 
+	var max_range: float = weapon_data.passive_search_radius if weapon_data else 520.0
+	var max_range_sq := max_range * max_range
+
 	var candidates: Array[Node2D] = []
 	for node in get_tree().get_nodes_in_group("enemies") + get_tree().get_nodes_in_group("emitters"):
 		if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
-			candidates.append(node as Node2D)
+			if global_position.distance_squared_to(node.global_position) <= max_range_sq:
+				candidates.append(node as Node2D)
 	candidates.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
 
 	var spread_deg: float = 16.0

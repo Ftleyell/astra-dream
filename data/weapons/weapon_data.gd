@@ -20,7 +20,7 @@ extends Resource
 
 @export_group("Passive Layer (Autonomous Auto-Fire)")
 @export var passive_interval: float = 2.0
-@export var passive_search_radius: float = 300.0
+@export var passive_search_radius: float = 520.0
 @export var passive_target_mode: Enums.TargetMode = Enums.TargetMode.NEAREST
 @export var passive_sub_attack_scene: PackedScene
 
