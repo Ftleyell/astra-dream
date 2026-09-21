@@ -1,0 +1,201 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Godot: Quick Launch",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "${input:godotLaunchMode}",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+
+    {
+      "label": "Projectless",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "projectless",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+
+    {
+      "label": "Development",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "development",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true
+      }
+    },
+
+    {
+      "label": "Production",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "production",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true
+      }
+    },
+
+    {
+      "label": "Development (no CMD)",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "cmdless_development",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+
+    {
+      "label": "Production (no CMD)",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "cmdless_production",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "godotLaunchMode",
+      "type": "pickString",
+      "description": "Select Godot launch action:",
+      "options": [
+        {
+          "label": "1. Starts Godot with no project",
+          "value": "projectless"
+        },
+
+        {
+          "label": "2. Starts Godot with the project to be edited",
+          "value": "development"
+        },
+
+        {
+          "label": "3. Starts Godot with the project to be edited but no visible CMD",
+          "value": "cmdless_development"
+        },
+
+        {
+          "label": "4. Starts Godot with the project to be played",
+          "value": "production"
+        },
+
+        {
+          "label": "5. Starts Godot with the project to be played but no visible CMD",
+          "value": "cmdless_production"
+        }
+      ],
+      "default": "2. Starts Godot with the project to be edited"
+    }
+  ]
+}

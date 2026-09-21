@@ -1,0 +1,6 @@
+join echo right
+echo: [wave amp=15.0 freq=3.0]¡Oleada contenida con éxito![/wave] Registrando dispersión de chatarra en el sector.
+join nova left
+nova: El chasis resiste, pero mis sensores marcan fluctuaciones anómalas en el radar de largo alcance.
+echo: Es la distorsión previa del [color=#ff4444]Centinela Titán[/color]. Reabastécete en la baliza y mantén la guardia.
+leave --All--

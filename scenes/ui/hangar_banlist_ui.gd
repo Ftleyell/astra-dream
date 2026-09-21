@@ -4,6 +4,8 @@ extends Control
 signal launch_run_requested(character_id: StringName, banned_items: Array[StringName])
 
 const MAX_BANS: int = 5
+const ICON_CHECK: Texture2D = preload("res://assets/icons/check.svg")
+const ICON_CROSS: Texture2D = preload("res://assets/icons/cross.svg")
 
 var current_character_id: StringName = &"nova"
 var profile_data: Dictionary = {}
@@ -26,6 +28,9 @@ var character_roster = {
 }
 
 func _ready() -> void:
+	UIFocusHelper.apply_cyber_focus(launch_button)
+	UIFocusHelper.apply_cyber_focus(back_button)
+
 	add_child(item_pool_manager)
 	profile_data = SaveManager.load_profile()
 	_setup_character_buttons()
@@ -37,13 +42,21 @@ func _setup_character_buttons() -> void:
 	for child in char_buttons_container.get_children():
 		child.queue_free()
 
+	var first_btn: Button = null
 	for char_id in character_roster.keys():
 		var info: Dictionary = character_roster[char_id]
 		var btn := Button.new()
 		btn.text = "%s\n(%s)" % [info["name"], info["title"]]
 		btn.custom_minimum_size = Vector2(140, 50)
 		btn.pressed.connect(func(): _select_character(char_id))
+		btn.focus_entered.connect(func(): _select_character(char_id))
+		UIFocusHelper.apply_cyber_focus(btn)
+		if not first_btn:
+			first_btn = btn
 		char_buttons_container.add_child(btn)
+
+	if first_btn:
+		first_btn.grab_focus()
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id
@@ -87,12 +100,16 @@ func _create_item_ban_card(item: ItemData, is_banned: bool, active_bans: Array[S
 	desc_lbl.add_theme_font_size_override("font_size", 12)
 
 	var toggle_btn := Button.new()
+	toggle_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if is_banned:
-		toggle_btn.text = "BANEADO [✗] (Excluido de la Run)"
+		toggle_btn.text = "BANEADO (Excluido de la Run)"
+		toggle_btn.icon = ICON_CROSS
 		toggle_btn.modulate = Color(1.0, 0.3, 0.3)
 	else:
-		toggle_btn.text = "ACTIVO [✓] (Disponible)"
+		toggle_btn.text = "ACTIVO (Disponible)"
+		toggle_btn.icon = ICON_CHECK
 		toggle_btn.modulate = Color(0.3, 1.0, 0.4)
+	UIFocusHelper.apply_cyber_focus(toggle_btn)
 
 	toggle_btn.pressed.connect(func():
 		var bans: Array[StringName] = _get_current_character_bans()

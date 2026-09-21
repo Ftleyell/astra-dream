@@ -18,8 +18,19 @@ func _ready() -> void:
 		settings_button.pressed.connect(_on_settings_pressed)
 	if quit_button and not quit_button.pressed.is_connected(_on_quit_pressed):
 		quit_button.pressed.connect(_on_quit_pressed)
+
+	if play_button:
+		UIFocusHelper.apply_cyber_focus(play_button)
+	if hub_button:
+		UIFocusHelper.apply_cyber_focus(hub_button)
+	if settings_button:
+		UIFocusHelper.apply_cyber_focus(settings_button)
+	if quit_button:
+		UIFocusHelper.apply_cyber_focus(quit_button)
+
 	if play_button and is_inside_tree():
 		play_button.grab_focus()
+
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_music"):

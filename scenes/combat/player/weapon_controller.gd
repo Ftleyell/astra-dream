@@ -28,6 +28,7 @@ var laser_scene: PackedScene = preload("res://scenes/combat/weapons/screen_laser
 var missile_scene: PackedScene = preload("res://scenes/combat/weapons/homing_missile.tscn")
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if not weapon_data:
 		weapon_data = WeaponData.new()
 		weapon_data.weapon_name = "Cañón Rail-Launcher Mk.I"

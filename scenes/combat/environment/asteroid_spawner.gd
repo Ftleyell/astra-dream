@@ -19,6 +19,7 @@ var spawn_timer: float = 0.0
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	spawn_timer = initial_spawn_delay
 
 

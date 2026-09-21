@@ -90,6 +90,17 @@ signal signal_event(argument: Variant)
 @warning_ignore("unused_signal") # This is emitted by the text subsystem.
 signal text_signal(argument: String)
 
+var _dialogic_char_loader := DialogicCharacterFormatLoader.new()
+var _dialogic_tml_loader := DialogicTimelineFormatLoader.new()
+
+func _enter_tree() -> void:
+	ResourceLoader.add_resource_format_loader(_dialogic_char_loader)
+	ResourceLoader.add_resource_format_loader(_dialogic_tml_loader)
+
+func _exit_tree() -> void:
+	ResourceLoader.remove_resource_format_loader(_dialogic_char_loader)
+	ResourceLoader.remove_resource_format_loader(_dialogic_tml_loader)
+
 
 # Careful, this section is repopulated automatically at certain moments.
 #region SUBSYSTEMS

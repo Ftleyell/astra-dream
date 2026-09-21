@@ -10,7 +10,6 @@
 [ext_resource type="PackedScene" path="res://scenes/combat/satellite/satellite_shop.tscn" id="8_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/level_up_modal.tscn" id="9_level_modal"]
 [ext_resource type="Script" path="res://core/autoloads/audio_duck_manager.gd" id="10_audio_duck"]
-[ext_resource type="PackedScene" path="res://scenes/ui/dialogic_combat_box/combat_dialogue_box.tscn" id="11_combat_dialogue"]
 [ext_resource type="Script" path="res://scenes/combat/enemies/enemy_spawner.gd" id="12_spawner"]
 [ext_resource type="Script" path="res://scenes/combat/environment/game_camera.gd" id="13_camera"]
 [ext_resource type="PackedScene" path="res://scenes/combat/environment/space_background.tscn" id="14_space_bg"]
@@ -82,8 +81,6 @@ player = NodePath("../Player")
 stat_deck_manager = NodePath("../StatDeckManager")
 player = NodePath("../Player")
 
-[node name="CombatDialogueBox" parent="." instance=ExtResource("11_combat_dialogue")]
- 
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("12_spawner")
 
@@ -91,6 +88,25 @@ script = ExtResource("12_spawner")
 player = NodePath("../Player")
 
 [node name="HoldToResetOverlay" parent="." instance=ExtResource("16_reset")]
- 
 [node name="CharacterStatsOverlay" parent="." node_paths=PackedStringArray("player") instance=ExtResource("19_stats_overlay")]
 player = NodePath("../Player")
+
+[node name="SkipBadgeLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 110
+
+[node name="MarginContainer" type="MarginContainer" parent="SkipBadgeLayer"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -230.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 64.0
+grow_horizontal = 0
+
+[node name="SkipButton" type="Button" parent="SkipBadgeLayer/MarginContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "[ESC] SALTAR INTRO"

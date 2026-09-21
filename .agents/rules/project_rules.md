@@ -90,6 +90,7 @@ Este archivo es leído por Antigravity para mantener la coherencia de código, e
      - A. Subir los cambios a la rama principal (`main`/`master`).
      - B. Subir los cambios a una nueva rama llamada `<nombre_de_rama_generado_por_IA>`.
      - C. Subir los cambios a una nueva rama personalizada.
+     - D. No subir los cambios.
      *(Nota: La opción Custom viene integrada por defecto en la UI)*.
 
 2. **SI EL USUARIO NO ESTÁ TRABAJANDO EN LA RAMA PRINCIPAL (`feat/...` u otra):**
@@ -100,6 +101,7 @@ Este archivo es leído por Antigravity para mantener la coherencia de código, e
      - B. Subir los cambios a la rama principal (`main`/`master`).
      - C. Subir los cambios a una nueva rama llamada `<nombre_de_rama_generado_por_IA>`.
      - D. Subir los cambios a una nueva rama personalizada.
+     - E. No subir los cambios.
 
 3. **SI EL USUARIO ELIGIÓ LA OPCIÓN DE "NUEVA RAMA PERSONALIZADA" (Opción C en paso 1 u Opción D en paso 2):**
    Lanzar cuestionario:
@@ -173,4 +175,3 @@ Este archivo es leído por Antigravity para mantener la coherencia de código, e
   - `refactor(<scope>): <description>` (ej. `refactor(player): decouple weapon controller logic`)
   - `build(<scope>): <description>` (ej. `build(git): update gitignore patterns`)
   - `revert(<scope>): <description>` (ej. `revert(weapons): temporarily remove plasma shotgun from master`)
-

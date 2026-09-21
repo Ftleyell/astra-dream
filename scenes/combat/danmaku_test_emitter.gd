@@ -11,6 +11,7 @@ var spiral_timer: float = 0.0
 var current_health: float = 200.0
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	visible = is_active
 	set_process(is_active)
 	if is_active:

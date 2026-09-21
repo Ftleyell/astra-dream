@@ -17,6 +17,23 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
 
+	UIFocusHelper.apply_cyber_focus(resume_button)
+	UIFocusHelper.apply_cyber_focus(settings_button)
+	UIFocusHelper.apply_cyber_focus(restart_button)
+	UIFocusHelper.apply_cyber_focus(menu_button)
+
+	resume_button.focus_neighbor_right = settings_button.get_path()
+	resume_button.focus_neighbor_left = menu_button.get_path()
+
+	settings_button.focus_neighbor_left = resume_button.get_path()
+	settings_button.focus_neighbor_right = restart_button.get_path()
+
+	restart_button.focus_neighbor_left = settings_button.get_path()
+	restart_button.focus_neighbor_right = menu_button.get_path()
+
+	menu_button.focus_neighbor_left = restart_button.get_path()
+	menu_button.focus_neighbor_right = resume_button.get_path()
+
 	resume_button.pressed.connect(resume_game)
 	settings_button.pressed.connect(_on_settings_pressed)
 	restart_button.pressed.connect(_on_restart_pressed)

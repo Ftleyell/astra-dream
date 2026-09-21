@@ -28,6 +28,7 @@ const DESPAWN_CHECK_RATE: float = 2.0
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("destructibles")
 	_acquire_player()
 

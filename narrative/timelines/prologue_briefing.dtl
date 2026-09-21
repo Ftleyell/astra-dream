@@ -1,0 +1,20 @@
+join nova left
+join echo right
+echo: [wave amp=20.0 freq=4.0]Iniciando enlace orbital de telemetría...[/wave] Escáneres detectan anomalías gravitatorias en el sector.
+nova: Cabina presurizada y reactores listos. ¿Cuál es el estado de la baliza satelital?
+echo: Señal intermitente por interferencia del enjambre. [wait=0.4] Antes del contacto, tenemos excedente de energía para una calibración táctica inmediata.
+echo: ¿En qué sistema autorizas canalizar la reserva de despegue?
+- [color=#ffd700]Financiamiento de Emergencia[/color] (+100 Créditos)
+	nova: Transfiere los fondos. Necesitaremos comprar suministros de inmediato en las balizas.
+	[signal arg="briefing_credits"]
+	echo: 100 créditos orbitales depositados en tu terminal de vuelo.
+- [color=#00e5ff]Sobrecarga de Reactores[/color] (+15% Velocidad)
+	nova: Pasa toda la potencia a las toberas. Necesito máxima agilidad para esquivar danmaku.
+	[signal arg="briefing_speed"]
+	echo: Limitadores de inercia retirados. Vector de aceleración optimizado.
+- [color=#00ff88]Blindaje Refractario[/color] (+25 HP Máx)
+	nova: Refuerza el chasis con placas de carburo comprimido.
+	[signal arg="briefing_hull"]
+	echo: Capas refractarias selladas. Integridad de la nave reforzada.
+echo: [shake rate=15.0 level=5]¡Alerta de aproximación masiva de drones![/shake] Despliegue de combate activo. ¡Buena suerte, Nova!
+leave --All--

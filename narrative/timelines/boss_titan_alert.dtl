@@ -1,0 +1,6 @@
+join echo right
+echo: [shake rate=25.0 level=6][color=#ff3333]¡ALERTA DE DISTORSIÓN CRÍTICA![/color][/shake]
+echo: Firma energética de clase acorazada detectada en órbita: ¡[color=#ff4444]CENTINELA TITÁN[/color] ha entrado en el sector!
+join nova left
+nova: Detectores fijados. Todas las armas a potencia máxima. ¡Prepararse para el impacto!
+leave --All--
