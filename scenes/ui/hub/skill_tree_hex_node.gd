@@ -4,7 +4,7 @@ extends Control
 ## SkillTreeHexNode.gd
 ## Nodo hexagonal procedimental para el Árbol de Habilidades en constelación radial.
 ## Renderiza un hexágono cibernético con estados (Locked, Available, Unlocked, Selected),
-## biseles de luz, icono temático y respuesta a clics del ratón.
+## biseles de luz, icono vectorial SVG temático y respuesta a clics del ratón.
 
 signal selected(node_ref: SkillTreeHexNode)
 signal hovered(node_ref: SkillTreeHexNode, is_hovered: bool)
@@ -15,11 +15,20 @@ enum State {
 	UNLOCKED
 }
 
+const ICON_LOCK: Texture2D = preload("res://assets/icons/skills/skill_locked.svg")
+
 @export var node_id: StringName = &"speed_1"
 @export var title: String = "IMPULSO CINÉTICO I"
 @export var branch_name: String = "VELOCIDAD"
 @export var stat_bonus_text: String = "+20% Velocidad de Movimiento"
-@export var glyph_icon: String = "⚡"
+@export var icon_texture: Texture2D = null
+@export var icon_path: String = "":
+	set(val):
+		icon_path = val
+		if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+			icon_texture = load(icon_path)
+			queue_redraw()
+@export var glyph_icon: String = "" # Fallback legacy
 @export var cost: int = 25
 @export var req_node_id: StringName = &"core"
 
@@ -42,12 +51,26 @@ func _init() -> void:
 func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	if not icon_texture and not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon_texture = load(icon_path)
 
 
 func _process(delta: float) -> void:
 	if state == State.AVAILABLE:
 		_pulse_timer += delta * 4.0
 		queue_redraw()
+
+
+func set_icon_path(path: String) -> void:
+	icon_path = path
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon_texture = load(icon_path)
+	queue_redraw()
+
+
+func set_icon_texture(tex: Texture2D) -> void:
+	icon_texture = tex
+	queue_redraw()
 
 
 func set_node_state(new_state: State, selected_flag: bool = false) -> void:
@@ -98,25 +121,41 @@ func _draw() -> void:
 		sel_pts.append(sel_pts[0])
 		draw_polyline(sel_pts, Color.WHITE, 2.0, true)
 
-	# 3. Dibujar glifo / icono central
-	var font := ThemeDB.fallback_font
-	var font_size: int = 24 if node_id == &"core" else 18
-	var text_col: Color
-	match state:
-		State.UNLOCKED:
-			text_col = Color.WHITE
-		State.AVAILABLE:
-			text_col = theme_color.lightened(0.5)
-		State.LOCKED:
-			text_col = Color(0.4, 0.45, 0.5, 0.6)
-
-	var text_str := glyph_icon
+	# 3. Dibujar glifo / icono central SVG
+	var active_texture: Texture2D = null
 	if state == State.LOCKED and node_id != &"core":
-		text_str = "🔒"
+		active_texture = ICON_LOCK
+	else:
+		active_texture = icon_texture
 
-	var text_size := font.get_string_size(text_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
-	var text_pos := center - Vector2(text_size.x * 0.5, -text_size.y * 0.32)
-	draw_string(font, text_pos, text_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, text_col)
+	if active_texture:
+		var icon_col: Color
+		match state:
+			State.UNLOCKED:
+				icon_col = Color.WHITE
+			State.AVAILABLE:
+				icon_col = theme_color.lightened(0.5)
+			State.LOCKED:
+				icon_col = Color(0.4, 0.45, 0.5, 0.6)
+
+		var icon_dim: float = 34.0 if node_id == &"core" else 26.0
+		var icon_rect := Rect2(center - Vector2(icon_dim, icon_dim) * 0.5, Vector2(icon_dim, icon_dim))
+		draw_texture_rect(active_texture, icon_rect, false, icon_col)
+	elif not glyph_icon.is_empty():
+		var font := ThemeDB.fallback_font
+		var font_size: int = 24 if node_id == &"core" else 18
+		var text_col: Color
+		match state:
+			State.UNLOCKED:
+				text_col = Color.WHITE
+			State.AVAILABLE:
+				text_col = theme_color.lightened(0.5)
+			State.LOCKED:
+				text_col = Color(0.4, 0.45, 0.5, 0.6)
+
+		var text_size := font.get_string_size(glyph_icon, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
+		var text_pos := center - Vector2(text_size.x * 0.5, -text_size.y * 0.32)
+		draw_string(font, text_pos, glyph_icon, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, text_col)
 
 
 func _calculate_hex_points(center: Vector2, radius: float) -> PackedVector2Array:

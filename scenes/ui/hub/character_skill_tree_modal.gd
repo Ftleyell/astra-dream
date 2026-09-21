@@ -21,7 +21,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "NÚCLEO",
 		"title": "NÚCLEO DE PILOTO",
 		"desc": "Matriz neural primaria del piloto. Punto de origen de todas las rutas de hiper-conducción.",
-		"glyph": "⚛",
+		"icon_path": "res://assets/icons/skills/skill_core.svg",
 		"pos": Vector2(0, 0),
 		"cost": 0,
 		"req": &""
@@ -32,7 +32,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "VELOCIDAD",
 		"title": "IMPULSO VECTORIAL I",
 		"desc": "+20% Velocidad de movimiento permanente en combate.",
-		"glyph": "⚡",
+		"icon_path": "res://assets/icons/skills/skill_winged_boot.svg",
 		"pos": Vector2(0, -115),
 		"cost": 25,
 		"req": &"core"
@@ -42,7 +42,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "VELOCIDAD",
 		"title": "IMPULSO VECTORIAL II",
 		"desc": "+20% Velocidad de movimiento permanente (+40% acumulado).",
-		"glyph": "⚡",
+		"icon_path": "res://assets/icons/skills/skill_speed_vector.svg",
 		"pos": Vector2(0, -225),
 		"cost": 25,
 		"req": &"speed_1"
@@ -52,7 +52,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "VELOCIDAD",
 		"title": "SOBRECARGA DE POSTQUEMADOR",
 		"desc": "+20% Velocidad de movimiento permanente (+60% acumulado).",
-		"glyph": "⚡",
+		"icon_path": "res://assets/icons/skills/skill_afterburner.svg",
 		"pos": Vector2(0, -335),
 		"cost": 25,
 		"req": &"speed_2"
@@ -63,7 +63,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "DAÑO",
 		"title": "SOBREALIMENTACIÓN TÉRMICA I",
 		"desc": "+15% Daño general infligido permanente en combate.",
-		"glyph": "⚔",
+		"icon_path": "res://assets/icons/skills/skill_damage_blades.svg",
 		"pos": Vector2(150, 0),
 		"cost": 25,
 		"req": &"core"
@@ -73,7 +73,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "DAÑO",
 		"title": "SOBREALIMENTACIÓN TÉRMICA II",
 		"desc": "+15% Daño general permanente (+30% acumulado).",
-		"glyph": "⚔",
+		"icon_path": "res://assets/icons/skills/skill_thermal_overload.svg",
 		"pos": Vector2(280, 0),
 		"cost": 25,
 		"req": &"damage_1"
@@ -83,7 +83,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "DAÑO",
 		"title": "FUSIÓN DE CAÑÓN CUÁNTICO",
 		"desc": "+15% Daño general permanente (+45% acumulado).",
-		"glyph": "⚔",
+		"icon_path": "res://assets/icons/skills/skill_quantum_cannon.svg",
 		"pos": Vector2(410, 0),
 		"cost": 25,
 		"req": &"damage_2"
@@ -94,7 +94,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "SUPERVIVENCIA",
 		"title": "NANO-BLINDAJE REGENERATIVO I",
 		"desc": "+25 Puntos de Salud Máxima permanente en combate.",
-		"glyph": "🛡",
+		"icon_path": "res://assets/icons/skills/skill_shield.svg",
 		"pos": Vector2(0, 115),
 		"cost": 25,
 		"req": &"core"
@@ -104,7 +104,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "SUPERVIVENCIA",
 		"title": "NANO-BLINDAJE REGENERATIVO II",
 		"desc": "+25 Puntos de Salud Máxima permanente (+50 HP acumulado).",
-		"glyph": "🛡",
+		"icon_path": "res://assets/icons/skills/skill_shield.svg",
 		"pos": Vector2(0, 225),
 		"cost": 25,
 		"req": &"hp_1"
@@ -114,7 +114,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "SUPERVIVENCIA",
 		"title": "MATRIZ DE CASCO TITÁN",
 		"desc": "+25 Puntos de Salud Máxima permanente (+75 HP acumulado).",
-		"glyph": "🛡",
+		"icon_path": "res://assets/icons/skills/skill_titan_armor.svg",
 		"pos": Vector2(0, 335),
 		"cost": 25,
 		"req": &"hp_2"
@@ -125,7 +125,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "UTILIDAD",
 		"title": "TELEMETRÍA DE PRECISIÓN I",
 		"desc": "+5% Probabilidad Crítica y +5% Cadencia de ataque permanente.",
-		"glyph": "✦",
+		"icon_path": "res://assets/icons/skills/skill_telemetry.svg",
 		"pos": Vector2(-150, 0),
 		"cost": 25,
 		"req": &"core"
@@ -135,7 +135,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "UTILIDAD",
 		"title": "TELEMETRÍA DE PRECISIÓN II",
 		"desc": "+5% Probabilidad Crítica y +5% Cadencia (+10% acumulado).",
-		"glyph": "✦",
+		"icon_path": "res://assets/icons/skills/skill_telemetry.svg",
 		"pos": Vector2(-280, 0),
 		"cost": 25,
 		"req": &"crit_1"
@@ -145,7 +145,7 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 		"branch": "UTILIDAD",
 		"title": "SINCRONIZADOR HIPER-ÓPTICO",
 		"desc": "+5% Probabilidad Crítica y +5% Cadencia (+15% acumulado).",
-		"glyph": "✦",
+		"icon_path": "res://assets/icons/skills/skill_hyper_optics.svg",
 		"pos": Vector2(-410, 0),
 		"cost": 25,
 		"req": &"crit_2"
@@ -173,8 +173,9 @@ var canvas_base_pos: Vector2 = Vector2.ZERO
 
 # Panel Lateral de Detalle
 @onready var detail_panel: PanelContainer = $DetailPanel
-@onready var node_category_label: Label = $DetailPanel/Margin/VBox/CategoryLabel
-@onready var node_title_label: Label = $DetailPanel/Margin/VBox/TitleLabel
+@onready var node_icon_rect: TextureRect = $DetailPanel/Margin/VBox/HeaderHBox/NodeIconRect
+@onready var node_category_label: Label = $DetailPanel/Margin/VBox/HeaderHBox/LabelsVBox/CategoryLabel
+@onready var node_title_label: Label = $DetailPanel/Margin/VBox/HeaderHBox/LabelsVBox/TitleLabel
 @onready var node_desc_label: Label = $DetailPanel/Margin/VBox/DescLabel
 @onready var node_cost_label: Label = $DetailPanel/Margin/VBox/CostLabel
 @onready var btn_activate_node: Button = $DetailPanel/Margin/VBox/ActivateButton
@@ -263,7 +264,7 @@ func _apply_pilot_theming() -> void:
 
 	# 3. Actualizar nodos
 	for nid in hex_nodes.keys():
-		var hex = hex_nodes[nid]
+		var hex: SkillTreeHexNode = hex_nodes[nid]
 		if is_instance_valid(hex):
 			hex.set_theme_color(current_theme_color)
 
@@ -283,7 +284,9 @@ func _build_or_update_hex_nodes() -> void:
 			hex.branch_name = def["branch"]
 			hex.title = def["title"]
 			hex.stat_bonus_text = def["desc"]
-			hex.glyph_icon = def["glyph"]
+			hex.icon_path = def.get("icon_path", "")
+			if not hex.icon_path.is_empty() and ResourceLoader.exists(hex.icon_path):
+				hex.icon_texture = load(hex.icon_path)
 			hex.cost = def["cost"]
 			hex.req_node_id = def["req"]
 			hex.position = def["pos"] - (hex.size * 0.5)
@@ -299,7 +302,7 @@ func _refresh_nodes_state() -> void:
 
 	for def in NODE_DEFINITIONS:
 		var nid: StringName = def["id"]
-		var hex = hex_nodes.get(nid, null)
+		var hex: SkillTreeHexNode = hex_nodes.get(nid, null)
 		if not hex:
 			continue
 
@@ -357,6 +360,15 @@ func _update_detail_panel() -> void:
 	if node_desc_label:
 		node_desc_label.text = def["desc"]
 
+	if node_icon_rect:
+		var hex: SkillTreeHexNode = hex_nodes.get(selected_node_id, null)
+		if hex and hex.icon_texture:
+			node_icon_rect.texture = hex.icon_texture
+			node_icon_rect.modulate = Color.WHITE if is_unlocked else (current_theme_color if is_req_met else Color(0.4, 0.45, 0.5, 0.6))
+		elif def.has("icon_path") and ResourceLoader.exists(def["icon_path"]):
+			node_icon_rect.texture = load(def["icon_path"])
+			node_icon_rect.modulate = Color.WHITE if is_unlocked else (current_theme_color if is_req_met else Color(0.4, 0.45, 0.5, 0.6))
+
 	if node_cost_label:
 		if cost == 0:
 			node_cost_label.text = "COSTE: NÚCLEO INICIAL (0 BioMasa)"
@@ -371,13 +383,13 @@ func _update_detail_panel() -> void:
 		sb_act.set_border_width_all(2)
 
 		if is_unlocked:
-			btn_activate_node.text = "NODO ACTIVO ✓"
+			btn_activate_node.text = "NODO ACTIVO [SISTEMA CONECTADO]"
 			btn_activate_node.disabled = true
 			sb_act.bg_color = Color(0.08, 0.22, 0.14, 0.8)
 			sb_act.border_color = Color("#00FF9D")
 			btn_activate_node.add_theme_color_override("font_color", Color("#00FF9D"))
 		elif not is_req_met:
-			btn_activate_node.text = "BLOQUEADO 🔒 (Requiere anterior)"
+			btn_activate_node.text = "BLOQUEADO [REQUIERE NODO PREVIO]"
 			btn_activate_node.disabled = true
 			sb_act.bg_color = Color(0.08, 0.08, 0.12, 0.7)
 			sb_act.border_color = Color(0.3, 0.35, 0.4)
@@ -389,7 +401,7 @@ func _update_detail_panel() -> void:
 			sb_act.border_color = Color("#FF3366")
 			btn_activate_node.add_theme_color_override("font_color", Color("#FF3366"))
 		else:
-			btn_activate_node.text = "⚡ ACTIVAR NODO (25 BioMasa)"
+			btn_activate_node.text = "ACTIVAR NODO (25 BioMasa)"
 			btn_activate_node.disabled = false
 			sb_act.bg_color = current_theme_color
 			sb_act.border_color = Color.WHITE
@@ -441,7 +453,7 @@ func _on_add_biomass_pressed() -> void:
 
 
 func _on_refund_pressed() -> void:
-	var refunded := SaveManager.refund_character_skills(current_character_id, NODE_COST)
+	var _refunded := SaveManager.refund_character_skills(current_character_id, NODE_COST)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")

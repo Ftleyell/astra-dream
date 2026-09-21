@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Shackle (Upper U-arch) -->
+  <path d="M156 240 L156 160 C156 94 200 48 256 48 C312 48 356 94 356 160 L356 240" fill="none" stroke="#ffffff" stroke-width="48" stroke-linecap="round"/>
+  <!-- Padlock Body (Solid Chamfered Cyber Body) -->
+  <path fill="#ffffff" d="M100 230 L412 230 L430 450 L82 450 Z"/>
+  <!-- Tech Bevels on Body in Negative -->
+  <polygon points="100,230 130,260 382,260 412,230" fill="#000000"/>
+  <line x1="120" y1="410" x2="392" y2="410" stroke="#000000" stroke-width="14"/>
+  <!-- Central Keyhole / Cyber Notch -->
+  <circle cx="256" cy="320" r="26" fill="#000000"/>
+  <polygon points="244,320 268,320 274,380 238,380" fill="#000000"/>
+</svg>

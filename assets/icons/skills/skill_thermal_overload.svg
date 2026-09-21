@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 8-Point Star Flare Burst -->
+  <polygon points="256,20 286,180 446,140 330,256 492,256 330,286 446,402 286,332 256,492 226,332 66,402 182,286 20,256 182,226 66,110 226,180" fill="#ffffff"/>
+  <!-- Inner Negative Star -->
+  <polygon points="256,120 274,210 364,190 298,256 392,256 298,274 364,340 274,302 256,392 238,302 148,340 214,274 120,256 214,238 148,164 238,210" fill="#000000"/>
+  <!-- Central Glowing Plasma Core -->
+  <circle cx="256" cy="256" r="48" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="24" fill="#000000"/>
+  <circle cx="256" cy="256" r="12" fill="#ffffff"/>
+</svg>

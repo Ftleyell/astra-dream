@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Hexagonal Armored Bulkhead Base -->
+  <polygon points="256,36 450,146 450,366 256,476 62,366 62,146" fill="#ffffff"/>
+  <!-- Inset Border -->
+  <polygon points="256,76 414,166 414,346 256,436 98,346 98,166" fill="#000000"/>
+  <!-- Inner Segmented Plates -->
+  <!-- Top Plate -->
+  <polygon points="256,104 386,180 256,236 126,180" fill="#ffffff"/>
+  <!-- Left Plate -->
+  <polygon points="120,206 242,256 242,408 120,336" fill="#ffffff"/>
+  <!-- Right Plate -->
+  <polygon points="392,206 270,256 270,408 392,336" fill="#ffffff"/>
+  <!-- Heavy Bolted Rivets -->
+  <circle cx="256" cy="144" r="12" fill="#000000"/>
+  <circle cx="170" cy="300" r="12" fill="#000000"/>
+  <circle cx="342" cy="300" r="12" fill="#000000"/>
+  <circle cx="256" cy="320" r="16" fill="#000000"/>
+  <circle cx="256" cy="320" r="8" fill="#ffffff"/>
+</svg>

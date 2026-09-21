@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Chevrons moving upwards/forward -->
+  <!-- Upper Chevron -->
+  <path fill="#ffffff" d="M256 40 L440 190 L390 230 L256 120 L122 230 L72 190 Z"/>
+  <!-- Middle Chevron -->
+  <path fill="#ffffff" d="M256 170 L440 320 L390 360 L256 250 L122 360 L72 320 Z"/>
+  <!-- Lower Chevron -->
+  <path fill="#ffffff" d="M256 300 L440 450 L390 490 L256 380 L122 490 L72 450 Z"/>
+  <!-- Side Wind Trails -->
+  <rect x="236" y="400" width="40" height="90" rx="10" fill="#ffffff"/>
+  <rect x="170" y="420" width="20" height="60" rx="6" fill="#ffffff"/>
+  <rect x="322" y="420" width="20" height="60" rx="6" fill="#ffffff"/>
+</svg>

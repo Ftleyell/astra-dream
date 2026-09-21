@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Blade 1 (Top-Left to Bottom-Right) -->
+  <g transform="rotate(45 256 256)">
+    <!-- Blade tip & body -->
+    <path fill="#ffffff" d="M244 30 L256 10 L268 30 L274 340 L238 340 Z"/>
+    <!-- Blade center groove -->
+    <line x1="256" y1="50" x2="256" y2="330" stroke="#000000" stroke-width="8"/>
+    <!-- Guard -->
+    <rect x="210" y="340" width="92" height="24" rx="6" fill="#ffffff"/>
+    <!-- Hilt Handle -->
+    <rect x="240" y="364" width="32" height="96" rx="4" fill="#ffffff"/>
+    <!-- Pommel -->
+    <circle cx="256" cy="480" r="22" fill="#ffffff"/>
+    <circle cx="256" cy="480" r="10" fill="#000000"/>
+  </g>
+  <!-- Blade 2 (Top-Right to Bottom-Left) -->
+  <g transform="rotate(-45 256 256)">
+    <!-- Blade tip & body -->
+    <path fill="#ffffff" d="M244 30 L256 10 L268 30 L274 340 L238 340 Z"/>
+    <!-- Blade center groove -->
+    <line x1="256" y1="50" x2="256" y2="330" stroke="#000000" stroke-width="8"/>
+    <!-- Guard -->
+    <rect x="210" y="340" width="92" height="24" rx="6" fill="#ffffff"/>
+    <!-- Hilt Handle -->
+    <rect x="240" y="364" width="32" height="96" rx="4" fill="#ffffff"/>
+    <!-- Pommel -->
+    <circle cx="256" cy="480" r="22" fill="#ffffff"/>
+    <circle cx="256" cy="480" r="10" fill="#000000"/>
+  </g>
+  <!-- Energy Spark at Center Cross -->
+  <polygon points="256,216 268,244 296,256 268,268 256,296 244,268 216,256 244,244" fill="#ffffff"/>
+</svg>

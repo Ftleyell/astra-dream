@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Outer Armored Shield Border -->
+  <path fill="#ffffff" d="M256 30 L440 90 L440 250 C440 370 350 450 256 482 C162 450 72 370 72 250 L72 90 Z"/>
+  <!-- Inner Negative Recess -->
+  <path fill="#000000" d="M256 70 L404 120 L404 246 C404 344 330 414 256 442 C182 414 108 344 108 246 L108 120 Z"/>
+  <!-- Shield Nano-Core Matrix (Inner White Emblem) -->
+  <path fill="#ffffff" d="M256 110 L370 150 L370 240 C370 318 310 374 256 398 C202 374 142 318 142 240 L142 150 Z"/>
+  <!-- Central Circuit Notch in Negative -->
+  <polygon points="256,150 310,210 280,210 280,280 232,280 232,210 202,210" fill="#000000"/>
+  <!-- Core Node -->
+  <circle cx="256" cy="320" r="16" fill="#000000"/>
+  <circle cx="256" cy="320" r="8" fill="#ffffff"/>
+</svg>

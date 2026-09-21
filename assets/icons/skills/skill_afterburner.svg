@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thruster Nozzle at Top -->
+  <path fill="#ffffff" d="M140 40 L372 40 L340 120 L172 120 Z"/>
+  <rect x="186" y="120" width="140" height="30" rx="6" fill="#ffffff"/>
+  <!-- Side Fins -->
+  <path fill="#ffffff" d="M130 50 L60 160 L140 150 Z"/>
+  <path fill="#ffffff" d="M382 50 L452 160 L372 150 Z"/>
+  <!-- Plasma Flame Cone -->
+  <path fill="#ffffff" d="M176 160 L336 160 L310 320 L256 490 L202 320 Z"/>
+  <!-- Mach Shock Diamonds (in black to create negative space in white plume) -->
+  <polygon points="256,180 286,220 256,260 226,220" fill="#000000"/>
+  <polygon points="256,275 280,310 256,345 232,310" fill="#000000"/>
+  <polygon points="256,360 274,390 256,420 238,390" fill="#000000"/>
+  <!-- Outer Shockwave Arcs -->
+  <path d="M110 240 Q70 300 130 360" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+  <path d="M402 240 Q442 300 382 360" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+</svg>

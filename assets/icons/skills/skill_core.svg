@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Central Fusion Core -->
+  <circle cx="256" cy="256" r="54" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="30" fill="#000000"/>
+  <circle cx="256" cy="256" r="18" fill="#ffffff"/>
+  <!-- Cardinal Nodes -->
+  <circle cx="256" cy="56" r="22" fill="#ffffff"/>
+  <circle cx="256" cy="456" r="22" fill="#ffffff"/>
+  <circle cx="56" cy="256" r="22" fill="#ffffff"/>
+  <circle cx="456" cy="256" r="22" fill="#ffffff"/>
+  <circle cx="256" cy="56" r="10" fill="#000000"/>
+  <circle cx="256" cy="456" r="10" fill="#000000"/>
+  <circle cx="56" cy="256" r="10" fill="#000000"/>
+  <circle cx="456" cy="256" r="10" fill="#000000"/>
+  <!-- Orbital Ring 1: Horizontal Ellipse -->
+  <ellipse cx="256" cy="256" rx="200" ry="78" fill="none" stroke="#ffffff" stroke-width="20"/>
+  <!-- Orbital Ring 2: Rotated 60 deg -->
+  <g transform="rotate(60 256 256)">
+    <ellipse cx="256" cy="256" rx="200" ry="78" fill="none" stroke="#ffffff" stroke-width="20"/>
+    <circle cx="456" cy="256" r="16" fill="#ffffff"/>
+    <circle cx="56" cy="256" r="16" fill="#ffffff"/>
+  </g>
+  <!-- Orbital Ring 3: Rotated -60 deg -->
+  <g transform="rotate(-60 256 256)">
+    <ellipse cx="256" cy="256" rx="200" ry="78" fill="none" stroke="#ffffff" stroke-width="20"/>
+    <circle cx="456" cy="256" r="16" fill="#ffffff"/>
+    <circle cx="56" cy="256" r="16" fill="#ffffff"/>
+  </g>
+  <!-- Outer Energy Ring -->
+  <circle cx="256" cy="256" r="236" fill="none" stroke="#ffffff" stroke-width="12" stroke-dasharray="24 16"/>
+</svg>

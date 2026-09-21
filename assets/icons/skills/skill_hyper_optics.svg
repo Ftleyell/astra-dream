@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Cyber Eye / Ocular Lens Contour -->
+  <path fill="#ffffff" d="M256 80 C390 80 472 210 492 256 C472 302 390 432 256 432 C122 432 40 302 20 256 C40 210 122 80 256 80 Z"/>
+  <!-- Negative Eye Interior -->
+  <path fill="#000000" d="M256 120 C360 120 424 220 442 256 C424 292 360 392 256 392 C152 392 88 292 70 256 C88 220 152 120 256 120 Z"/>
+  <!-- Outer Iris Ring -->
+  <circle cx="256" cy="256" r="116" fill="none" stroke="#ffffff" stroke-width="16" stroke-dasharray="32 16"/>
+  <!-- Central Pupil / Multi-aperture Sensor -->
+  <circle cx="256" cy="256" r="72" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="42" fill="#000000"/>
+  <circle cx="256" cy="256" r="20" fill="#ffffff"/>
+  <!-- Radar Horizontal Sweep Line -->
+  <line x1="50" y1="256" x2="462" y2="256" stroke="#ffffff" stroke-width="8"/>
+  <line x1="256" y1="130" x2="256" y2="382" stroke="#ffffff" stroke-width="8"/>
+</svg>
