@@ -22,6 +22,8 @@ const SPAWN_AHEAD_DISTANCE: float = 1100.0
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
 var current_satellite: SatelliteBeacon = null
+var boss_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
+var current_boss: BossMothership = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -157,6 +159,7 @@ func _process(delta: float) -> void:
 		if enemy_spawner and enemy_spawner.has_method("set_wave"):
 			enemy_spawner.set_wave(current_wave)
 		_trigger_cockpit_interlude()
+		_check_wave_boss_spawn()
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -179,6 +182,45 @@ func _spawn_satellite_in_player_direction() -> void:
 	wave_satellites_spawned += 1
 	_spawn_next_satellite(spawn_pos)
 
+func _check_wave_boss_spawn() -> void:
+	# Aparece en oleadas pares (2, 4, 6...)
+	if current_wave % 2 == 0 and current_boss == null:
+		_spawn_wave_boss()
+
+func _spawn_wave_boss() -> void:
+	if current_boss != null or not is_instance_valid(player):
+		return
+
+	# Pausar la generación de drones comunes para duelo 1v1
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+
+	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
+	var boss_pos := player.global_position + forward * 650.0
+
+	current_boss = boss_scene.instantiate() as BossMothership
+	current_boss.global_position = boss_pos
+	add_child(current_boss)
+
+	# Conexiones con HUD
+	hud.show_boss(current_boss.boss_name, current_boss.max_health)
+	current_boss.health_changed.connect(hud.update_boss_health)
+	current_boss.phase_changed.connect(hud.set_boss_phase)
+	current_boss.boss_defeated.connect(_on_boss_defeated)
+
+	# Transmisión narrativa opcional
+	var bus := get_node_or_null("/root/EventBus")
+	if bus and bus.has_signal("boss_spawn_requested"):
+		bus.boss_spawn_requested.emit("boss_titan_alert", current_boss.boss_id, false)
+
+func _on_boss_defeated(_boss_id: String) -> void:
+	current_boss = null
+	hud.hide_boss()
+
+	# Reanudar la generación de drones comunes
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(false)
+
 func _input(event: InputEvent) -> void:
 	# Atajo para saltar el briefing cinematográfico con ESC o diálogo skip
 	if is_briefing_active:
@@ -188,8 +230,12 @@ func _input(event: InputEvent) -> void:
 			return
 
 	if event is InputEventKey and event.pressed and not event.echo:
+		# Tecla B para invocar o testear al jefe inmediatamente
+		if event.keycode == KEY_B:
+			if current_boss == null:
+				_spawn_wave_boss()
 		# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
-		if event.keycode == KEY_T:
+		elif event.keycode == KEY_T:
 			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
 		# Tecla C para testear en cualquier momento la secuencia de diálogo de cabina en vivo
 		elif event.keycode == KEY_C:

@@ -6,9 +6,17 @@ extends Node2D
 var player: Player = null
 var is_being_absorbed: bool = false
 var is_collected: bool = false
+var is_force_magnetized: bool = false
 var velocity: Vector2 = Vector2.ZERO
 var magnet_speed: float = 0.0
 var merge_check_timer: float = 0.0
+
+static func trigger_global_magnet(tree: SceneTree) -> void:
+	if not tree:
+		return
+	for node in tree.get_nodes_in_group("exp_blobs"):
+		if is_instance_valid(node) and node is ExpBlob:
+			(node as ExpBlob).is_force_magnetized = true
 
 const MERGE_RADIUS_SQ: float = 52.0 * 52.0
 const PICKUP_RADIUS_SQ: float = 140.0 * 140.0
@@ -106,9 +114,11 @@ func _handle_player_magnet(delta: float) -> void:
 	if player.is_dashing:
 		effective_pickup_sq *= 2.2
 
-	if dist_sq <= effective_pickup_sq:
+	if is_force_magnetized or dist_sq <= effective_pickup_sq:
 		var dir := to_player.normalized()
-		magnet_speed = move_toward(magnet_speed, 750.0, 1900.0 * delta)
+		var target_speed := 1200.0 if is_force_magnetized else 750.0
+		var accel := 3200.0 if is_force_magnetized else 1900.0
+		magnet_speed = move_toward(magnet_speed, target_speed, accel * delta)
 		global_position += dir * magnet_speed * delta
 
 		if dist_sq <= COLLECT_RADIUS_SQ:

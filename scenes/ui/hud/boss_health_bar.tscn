@@ -1,0 +1,76 @@
+[gd_scene load_steps=4 format=3 uid="uid://boss_health_bar_01"]
+
+[ext_resource type="Script" path="res://scenes/ui/hud/boss_health_bar.gd" id="1_hbar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.04, 0.08, 0.16, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.5, 0.8, 0.8)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0.18, 0.85, 0.95, 0.95)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="BossHealthBar" type="Control"]
+custom_minimum_size = Vector2(540, 58)
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -270.0
+offset_top = 52.0
+offset_right = 270.0
+offset_bottom = 110.0
+grow_horizontal = 2
+script = ExtResource("1_hbar")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="HeaderRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BossNameLabel" type="Label" parent="VBoxContainer/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚠ ALERTA DE AMENAZA: NODRIZA ORBITAL AEGIS ⚠"
+
+[node name="PhaseLabel" type="Label" parent="VBoxContainer/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = " [FASE 1]"
+
+[node name="HealthBar" type="ProgressBar" parent="VBoxContainer"]
+custom_minimum_size = Vector2(520, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+max_value = 1200.0
+value = 1200.0
+show_percentage = false
+
+[node name="HPTextLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "1200 / 1200 HP"
+horizontal_alignment = 1

@@ -14,6 +14,7 @@ extends CanvasLayer
 @onready var level_label: Label = $MarginContainer/VBoxContainer/BottomRow/LevelLabel
 @onready var inventory_row: HBoxContainer = $MarginContainer/VBoxContainer/InventoryRow
 @onready var weapon_slots_row: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/WeaponSlotsRow")
+@onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 
 var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
@@ -252,3 +253,19 @@ func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 			return Color(0.9, 0.3, 1.0, 1.0)
 		_:
 			return Color.WHITE
+
+func show_boss(boss_name: String, max_hp: float) -> void:
+	if boss_health_bar:
+		boss_health_bar.setup_boss(boss_name, max_hp)
+
+func update_boss_health(current: float, max_val: float) -> void:
+	if boss_health_bar:
+		boss_health_bar.update_health(current, max_val)
+
+func set_boss_phase(new_phase: int) -> void:
+	if boss_health_bar:
+		boss_health_bar.set_phase(new_phase)
+
+func hide_boss() -> void:
+	if boss_health_bar:
+		boss_health_bar.hide_boss()

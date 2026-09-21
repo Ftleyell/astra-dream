@@ -26,6 +26,7 @@ buses/default_bus_layout="uid://cbus001"
 
 [autoload]
 
+EventBus="*res://core/autoloads/event_bus.gd"
 AudioManager="*res://core/autoloads/audio_manager.gd"
 Dialogic="*uid://ds2q0uclmolvu"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"

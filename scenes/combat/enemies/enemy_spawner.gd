@@ -11,6 +11,10 @@ extends Node2D
 var player: Player = null
 var spawn_timer: float = 0.0
 var elapsed_time: float = 0.0
+var is_spawning_paused: bool = false
+
+func set_spawning_paused(p_paused: bool) -> void:
+	is_spawning_paused = p_paused
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -26,6 +30,9 @@ func _spawn_initial_batch() -> void:
 		_spawn_drone_at(pos)
 
 func _process(delta: float) -> void:
+	if is_spawning_paused:
+		return
+
 	elapsed_time += delta
 	spawn_timer -= delta
 

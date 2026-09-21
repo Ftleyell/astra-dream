@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://d3m0c7q35k89"]
+[gd_scene load_steps=6 format=3 uid="uid://d3m0c7q35k89"]
 
 [ext_resource type="Script" path="res://scenes/ui/hud/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_laser.png" id="2_laser_ico"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_bomb.png" id="3_bomb_ico"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_credit.png" id="4_credit_ico"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_health_bar.tscn" id="5_boss"]
 
 [node name="GameHUD" type="CanvasLayer"]
 layer = 10
@@ -132,3 +133,5 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Satélite #1: 450 m [→]"
+
+[node name="BossHealthBar" parent="." instance=ExtResource("5_boss")]
