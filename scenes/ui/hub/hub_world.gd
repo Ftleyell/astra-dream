@@ -226,7 +226,7 @@ func _on_skill_tree_closed() -> void:
 	_update_materials_display()
 
 
-func _on_skill_unlocked(_char_id: StringName, _node_idx: int) -> void:
+func _on_skill_unlocked(_char_id: StringName, _node_id: Variant) -> void:
 	_update_materials_display()
 
 

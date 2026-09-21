@@ -18,76 +18,168 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.04, 0.06, 0.88)
+mouse_filter = 2
+color = Color(0.025, 0.035, 0.045, 0.94)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CanvasContainer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
-[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1080, 560)
-layout_mode = 2
+[node name="ConstellationCanvas" type="Control" parent="CanvasContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
 
-[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 24
-
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Header" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.08, 0.58, 1)
-theme_override_font_sizes/font_size = 28
-text = "CIRCUITO NEURAL: MEJORA DE IMPULSO KINÉTICO"
-
-[node name="PilotLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.94, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "PILOTO: NOVA — DE VANGUARDIA"
-
-[node name="BiomassLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 0.62, 1)
-theme_override_font_sizes/font_size = 16
-text = "BIOMASA DISPONIBLE: 0 u."
-
-[node name="HSeparator" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
-
-[node name="NodesHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Footer" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = 88.0
+grow_horizontal = 2
 theme_override_constants/separation = 24
-alignment = 2
 
-[node name="TotalBonusLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Footer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0, 1, 0.62, 1)
-theme_override_font_sizes/font_size = 18
-text = "BONO TOTAL DE VELOCIDAD: +0%"
-
-[node name="CloseButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/Footer"]
+[node name="CloseButton" type="Button" parent="TopBar"]
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "[X] CLOSE [ESC]"
+
+[node name="HeaderVBox" type="VBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="TopBar/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "CONSTELACIÓN NEURAL // ÁRBOL DE HABILIDADES"
+
+[node name="PilotLabel" type="Label" parent="TopBar/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "PILOTO: NOVA // PILOTO DE VANGUARDIA"
+
+[node name="HudRight" type="VBoxContainer" parent="TopBar"]
+layout_mode = 2
+alignment = 1
+
+[node name="BiomassLabel" type="Label" parent="TopBar/HudRight"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.62, 1)
 theme_override_font_sizes/font_size = 16
-text = "CERRAR [ESC]"
+text = "BIOMASA: 0 u."
+horizontal_alignment = 2
+
+[node name="PointsLabel" type="Label" parent="TopBar/HudRight"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "MEJORAS ACTIVAS: 0 / 12"
+horizontal_alignment = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -270.0
+offset_right = -36.0
+offset_bottom = 270.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="DetailPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="CategoryLabel" type="Label" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "CATEGORÍA: VELOCIDAD"
+
+[node name="TitleLabel" type="Label" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "IMPULSO VECTORIAL I"
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescLabel" type="Label" parent="DetailPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "+20% Velocidad de movimiento permanente en combate."
+autowrap_mode = 2
+
+[node name="CostLabel" type="Label" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "COSTE DE ACTIVACIÓN: 25 BioMasa"
+
+[node name="ActivateButton" type="Button" parent="DetailPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "⚡ ACTIVAR NODO (25 BioMasa)"
+
+[node name="Spacer" type="Control" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSeparator2" type="HSeparator" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ToolsTitle" type="Label" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.65, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "HERRAMIENTAS DE PRUEBA / GESTIÓN"
+
+[node name="TestToolsHBox" type="HBoxContainer" parent="DetailPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AddBioButton" type="Button" parent="DetailPanel/Margin/VBox/TestToolsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "+100 BioMasa (Test)"
+
+[node name="RefundButton" type="Button" parent="DetailPanel/Margin/VBox/TestToolsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "REINICIAR NODOS"

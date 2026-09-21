@@ -43,10 +43,10 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 	var skills_serializable: Dictionary = {}
 	for cid in current_skills.keys():
 		var arr: Array = current_skills[cid]
-		var int_arr: Array[int] = []
+		var str_arr: Array[String] = []
 		for n in arr:
-			int_arr.append(int(n))
-		skills_serializable[String(cid)] = int_arr
+			str_arr.append(str(n))
+		skills_serializable[String(cid)] = str_arr
 
 	var payload := {
 		"version": SCHEMA_VERSION,
@@ -131,10 +131,10 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 	if raw.has("character_skills") and raw["character_skills"] is Dictionary:
 		for cid in raw["character_skills"].keys():
 			var arr: Array = raw["character_skills"][cid]
-			var int_arr: Array[int] = []
+			var str_arr: Array[StringName] = []
 			for n in arr:
-				int_arr.append(int(n))
-			cleaned["character_skills"][StringName(cid)] = int_arr
+				str_arr.append(StringName(str(n)))
+			cleaned["character_skills"][StringName(cid)] = str_arr
 
 	return cleaned
 
@@ -157,6 +157,10 @@ static func add_biomass(amount: int) -> int:
 	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills)
 	return new_total
 
+## Atajo de test para sumar BioMasa
+static func add_test_biomass(amount: int = 100) -> int:
+	return add_biomass(amount)
+
 ## Obtiene la cantidad persistente total de Antimateria acumulada
 static func get_antimatter() -> int:
 	var profile := load_profile()
@@ -176,26 +180,34 @@ static func add_antimatter(amount: int) -> int:
 	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills)
 	return new_total
 
-## Obtiene la lista de índices de nodos de habilidad desbloqueados para un personaje
-static func get_character_unlocked_nodes(char_id: StringName) -> Array[int]:
+## Obtiene la lista de IDs de nodos de habilidad desbloqueados para un personaje
+static func get_character_unlocked_nodes(char_id: StringName) -> Array[StringName]:
 	var profile := load_profile()
 	var skills: Dictionary = profile.get("character_skills", {})
 	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
-	var result: Array[int] = []
+	var result: Array[StringName] = []
 	for n in list:
-		result.append(int(n))
-	result.sort()
+		var s := StringName(str(n))
+		if not result.has(s):
+			result.append(s)
 	return result
 
-## Obtiene el conteo total de nodos de habilidad desbloqueados para un personaje
+## Verifica si un nodo específico está desbloqueado
+static func is_character_node_unlocked(char_id: StringName, node_id: StringName) -> bool:
+	var unlocked := get_character_unlocked_nodes(char_id)
+	return unlocked.has(node_id)
+
+## Obtiene el conteo total de nodos de habilidad desbloqueados para un personaje (sin contar el core)
 static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
-	return get_character_unlocked_nodes(char_id).size()
+	var nodes := get_character_unlocked_nodes(char_id)
+	var count: int = 0
+	for n in nodes:
+		if n != &"core":
+			count += 1
+	return count
 
 ## Desbloquea un nodo del árbol de habilidades deduciendo BioMasa y persistiendo en disco
-static func unlock_character_skill_node(char_id: StringName, node_index: int, cost: int) -> bool:
-	if node_index < 0 or node_index >= 5:
-		return false
-
+static func unlock_character_skill_node(char_id: StringName, node_id: StringName, cost: int, req_node_id: StringName = &"") -> bool:
 	var current_bio := get_biomass()
 	if current_bio < cost:
 		return false
@@ -203,21 +215,20 @@ static func unlock_character_skill_node(char_id: StringName, node_index: int, co
 	var profile := load_profile()
 	var skills: Dictionary = profile.get("character_skills", {})
 	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
-	var int_list: Array[int] = []
+	var str_list: Array[StringName] = []
 	for n in list:
-		int_list.append(int(n))
+		str_list.append(StringName(str(n)))
 
 	# Si ya está desbloqueado, no volver a comprar
-	if int_list.has(node_index):
+	if str_list.has(node_id):
 		return false
 
-	# Requiere haber desbloqueado el nodo anterior
-	if node_index > 0 and not int_list.has(node_index - 1):
+	# Requiere haber desbloqueado el nodo previo requerido (si se especifica)
+	if req_node_id != &"" and not str_list.has(req_node_id):
 		return false
 
-	int_list.append(node_index)
-	int_list.sort()
-	skills[char_id] = int_list
+	str_list.append(node_id)
+	skills[char_id] = str_list
 
 	var new_biomass := current_bio - cost
 	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
@@ -227,3 +238,28 @@ static func unlock_character_skill_node(char_id: StringName, node_index: int, co
 
 	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
 	return true
+
+## Reembolsa todos los nodos comprados para este personaje y devuelve la BioMasa
+static func refund_character_skills(char_id: StringName, node_cost: int = 25) -> int:
+	var profile := load_profile()
+	var skills: Dictionary = profile.get("character_skills", {})
+	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
+
+	var paid_nodes: int = 0
+	for n in list:
+		var s := StringName(str(n))
+		if s != &"core":
+			paid_nodes += 1
+
+	var refund_biomass := paid_nodes * node_cost
+	skills[char_id] = [&"core"] as Array[StringName]
+
+	var current_bio: int = int(profile.get("biomass", 0))
+	var new_biomass := current_bio + refund_biomass
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var antimatter: int = int(profile.get("antimatter", 0))
+
+	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
+	return refund_biomass

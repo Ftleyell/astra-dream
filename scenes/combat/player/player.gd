@@ -46,12 +46,34 @@ func _ready() -> void:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
 
-	# Aplicar bono permanente de velocidad del Árbol de Habilidades (+20% por nodo desbloqueado)
+	# Aplicar bonos permanentes del Árbol de Habilidades cibernético (4 ramas)
 	if character_data and character_data.character_id:
-		var unlocked_nodes := SaveManager.get_character_unlocked_nodes_count(character_data.character_id)
-		if unlocked_nodes > 0:
-			var speed_bonus: float = float(unlocked_nodes) * 0.20
-			stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", speed_bonus, true, self))
+		var unlocked_nodes := SaveManager.get_character_unlocked_nodes(character_data.character_id)
+		var speed_count: int = 0
+		var damage_count: int = 0
+		var hp_count: int = 0
+		var crit_count: int = 0
+
+		for nid in unlocked_nodes:
+			var s := String(nid)
+			if s.begins_with("speed_") or s in ["0", "1", "2", "3", "4"]:
+				speed_count += 1
+			elif s.begins_with("damage_"):
+				damage_count += 1
+			elif s.begins_with("hp_"):
+				hp_count += 1
+			elif s.begins_with("crit_"):
+				crit_count += 1
+
+		if speed_count > 0:
+			stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", float(speed_count) * 0.20, true, self))
+		if damage_count > 0:
+			stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"skill_tree_damage", float(damage_count) * 0.15, true, self))
+		if hp_count > 0:
+			stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"skill_tree_hp", float(hp_count) * 25.0, false, self))
+		if crit_count > 0:
+			stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"skill_tree_crit", float(crit_count) * 0.05, false, self))
+			stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"skill_tree_atk_speed", float(crit_count) * 0.05, true, self))
 
 	current_health = stats.get_stat(&"max_health")
 	stats.stat_changed.connect(func(stat_name: StringName, new_val: float):
