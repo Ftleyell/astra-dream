@@ -55,20 +55,47 @@ func _apply_laser_damage(start_point: Vector2, end_point: Vector2) -> void:
 	var hit_radius: float = 28.0 # Ancho efectivo de daño
 	var hit_radius_sq: float = hit_radius * hit_radius
 
+	var beam_vec := end_point - start_point
+	var beam_len_sq := beam_vec.length_squared()
+	if beam_len_sq <= 0.001:
+		return
+
 	# Comprobar todos los enemigos en grupos de combate
 	var targets: Array[Node] = []
 	targets.append_array(get_tree().get_nodes_in_group("enemies"))
 	targets.append_array(get_tree().get_nodes_in_group("emitters"))
 	targets.append_array(get_tree().get_nodes_in_group("destructibles"))
 
+	var hit_candidates: Array[Dictionary] = []
 	for node in targets:
 		if node is Node2D and is_instance_valid(node):
 			var dist_sq := _dist_to_segment_sq(node.global_position, start_point, end_point)
 			if dist_sq <= hit_radius_sq:
-				if node.has_method("take_damage") and hit_context:
-					var child_ctx := hit_context.fork_child_hit(hit_context.final_damage, 0.4, &"screen_laser")
-					child_ctx.hit_position = node.global_position
-					node.take_damage(child_ctx)
+				var t := clampf((node.global_position - start_point).dot(beam_vec) / beam_len_sq, 0.0, 1.0)
+				hit_candidates.append({
+					"node": node,
+					"t": t,
+					"is_destructible": node.is_in_group("destructibles")
+				})
+
+	# Ordenar secuencialmente de más cercano a más lejano desde el punto de origen del láser
+	hit_candidates.sort_custom(func(a, b): return a["t"] < b["t"])
+
+	# Atenuación progresiva: cada capa sólida destructible absorbe parte de la energía del rayo
+	var current_mult: float = 1.0
+	for item in hit_candidates:
+		var node: Node = item["node"]
+		if not is_instance_valid(node) or not node.has_method("take_damage") or not hit_context:
+			continue
+
+		var child_ctx := hit_context.fork_child_hit(hit_context.final_damage * current_mult, 0.4, &"screen_laser")
+		child_ctx.hit_position = (node as Node2D).global_position
+		node.take_damage(child_ctx)
+
+		if item["is_destructible"]:
+			current_mult *= 0.35 # Atenuación del 65% por capa atravesada
+			if current_mult < 0.05:
+				break
 
 func _dist_to_segment_sq(p: Vector2, a: Vector2, b: Vector2) -> float:
 	var ab := b - a

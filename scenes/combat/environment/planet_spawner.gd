@@ -92,7 +92,11 @@ func _cleanup_distant_planets() -> void:
 	if not is_instance_valid(player):
 		return
 
-	active_planets = active_planets.filter(func(p: Node2D) -> bool: return is_instance_valid(p))
+	# Poda segura y tipada de planetas destruidos o inválidos
+	for i in range(active_planets.size() - 1, -1, -1):
+		if not is_instance_valid(active_planets[i]):
+			active_planets.remove_at(i)
+
 	const MAX_RETAIN_DIST_SQ: float = 9000.0 * 9000.0
 
 	for planet in active_planets:

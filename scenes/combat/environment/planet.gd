@@ -62,7 +62,7 @@ func _initialize_planet() -> void:
 	if planet_core:
 		planet_core.setup_core(core_radius, planet_data.core_color, planet_data.core_type, planet_data.core_biomass_reward)
 
-	# 2. Generar Capa de Manto Profundo (50 - 120 px, 6 gajos, 700 HP)
+	# 2. Generar Capa de Manto Profundo (50 - 120 px, 6 gajos, 700 HP) -> Piedra Negra (Tipo 2)
 	_build_layer(
 		deep_mantle_container,
 		core_radius,
@@ -71,10 +71,11 @@ func _initialize_planet() -> void:
 		planet_data.deep_mantle_color,
 		planet_data.deep_mantle_color.lightened(0.2),
 		planet_data.deep_mantle_health,
-		planet_data.biomass_per_deep_mantle
+		planet_data.biomass_per_deep_mantle,
+		2
 	)
 
-	# 3. Generar Capa de Manto Intermedio (120 - 200 px, 8 gajos, 350 HP)
+	# 3. Generar Capa de Manto Intermedio (120 - 200 px, 8 gajos, 350 HP) -> Roca (Tipo 1)
 	_build_layer(
 		mid_mantle_container,
 		deep_mantle_radius,
@@ -83,10 +84,11 @@ func _initialize_planet() -> void:
 		planet_data.mid_mantle_color,
 		planet_data.mid_mantle_color.lightened(0.25),
 		planet_data.mid_mantle_health,
-		planet_data.biomass_per_mid_mantle
+		planet_data.biomass_per_mid_mantle,
+		1
 	)
 
-	# 4. Generar Capa de Corteza Exterior (200 - 300 px, 12 gajos, 120 HP)
+	# 4. Generar Capa de Corteza Exterior (200 - 300 px, 12 gajos, 120 HP) -> Tierra (Tipo 0)
 	_build_layer(
 		crust_container,
 		mid_mantle_radius,
@@ -95,11 +97,12 @@ func _initialize_planet() -> void:
 		planet_data.crust_color,
 		planet_data.crust_border_color,
 		planet_data.crust_health,
-		planet_data.biomass_per_crust
+		planet_data.biomass_per_crust,
+		0
 	)
 
 
-func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col: Color, b_col: Color, hp: float, xp_biomass: int) -> void:
+func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col: Color, b_col: Color, hp: float, xp_biomass: int, l_type: int = 0) -> void:
 	if not container or not segment_scene:
 		return
 
@@ -116,7 +119,7 @@ func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col:
 			continue
 
 		container.add_child(seg)
-		seg.setup_segment(r_in, r_out, a_start, a_end, col, b_col, hp, xp_biomass)
+		seg.setup_segment(r_in, r_out, a_start, a_end, col, b_col, hp, xp_biomass, l_type)
 
 
 func _process(delta: float) -> void:
@@ -135,7 +138,10 @@ func _handle_defender_nest(delta: float) -> void:
 	if not drone_scene or not is_inside_tree():
 		return
 
-	active_defenders = active_defenders.filter(func(d: Node2D) -> bool: return is_instance_valid(d))
+	# Poda segura y determinista de defensores destruidos sin lambdas no tipadas
+	for i in range(active_defenders.size() - 1, -1, -1):
+		if not is_instance_valid(active_defenders[i]):
+			active_defenders.remove_at(i)
 
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
