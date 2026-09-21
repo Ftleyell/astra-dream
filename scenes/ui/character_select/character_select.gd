@@ -1,6 +1,8 @@
 class_name CharacterSelectUI
 extends Control
 
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 @onready var char_list_container: VBoxContainer = $MarginContainer/HBoxContainer/LeftPanel/CharScroll/CharList
 @onready var portrait_emblem: Polygon2D = $MarginContainer/HBoxContainer/RightPanel/PortraitFrame/PortraitEmblem
 @onready var portrait_texture: TextureRect = $MarginContainer/HBoxContainer/RightPanel/PortraitFrame/PortraitTexture

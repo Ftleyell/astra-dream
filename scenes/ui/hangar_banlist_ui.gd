@@ -1,6 +1,8 @@
 class_name HangarBanlistUI
 extends Control
 
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 signal launch_run_requested(character_id: StringName, banned_items: Array[StringName])
 
 const MAX_BANS: int = 5

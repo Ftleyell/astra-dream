@@ -1,6 +1,8 @@
 class_name PauseMenu
 extends CanvasLayer
 
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 @export var player: Player
 
 @onready var resume_button: Button = $Panel/VBoxContainer/BottomBar/ResumeButton
@@ -16,6 +18,9 @@ extends CanvasLayer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
+
+	if settings_modal:
+		settings_modal.closed.connect(func(): if visible and settings_button: settings_button.grab_focus())
 
 	UIFocusHelper.apply_cyber_focus(resume_button)
 	UIFocusHelper.apply_cyber_focus(settings_button)
@@ -46,7 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if visible:
 			# Si el modal de opciones está abierto, cerrarlo primero
 			if settings_modal and settings_modal.visible:
-				settings_modal.hide()
+				settings_modal.close_settings()
 			else:
 				resume_game()
 		else:
@@ -61,8 +66,8 @@ func open_pause_menu() -> void:
 
 func resume_game() -> void:
 	hide()
-	if settings_modal:
-		settings_modal.hide()
+	if settings_modal and settings_modal.visible:
+		settings_modal.close_settings()
 	get_tree().paused = false
 
 func _refresh_build_inspector() -> void:

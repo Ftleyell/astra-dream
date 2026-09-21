@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/home.svg" id="9_home"]
 
 [node name="PauseMenu" type="CanvasLayer"]
+visible = false
 process_mode = 3
 layer = 30
 script = ExtResource("1_pause")

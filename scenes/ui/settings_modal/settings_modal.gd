@@ -1,6 +1,10 @@
 class_name SettingsModal
 extends CanvasLayer
 
+signal closed
+
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 @onready var master_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MasterSlider
 @onready var music_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MusicSlider
 @onready var sfx_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/SfxSlider
@@ -46,7 +50,7 @@ func _ready() -> void:
 	hide()
 	rebind_popup.hide()
 
-	close_button.pressed.connect(hide)
+	close_button.pressed.connect(close_settings)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	resolution_option.item_selected.connect(_on_resolution_selected)
 
@@ -74,6 +78,13 @@ func open_settings() -> void:
 	show()
 	_populate_rebind_list()
 	close_button.grab_focus()
+
+func close_settings() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click")
+	hide()
+	closed.emit()
 
 func _init_resolutions() -> void:
 	resolution_option.clear()
@@ -171,18 +182,21 @@ func _start_rebind(act: StringName, label_str: String) -> void:
 	rebind_popup.show()
 
 func _input(event: InputEvent) -> void:
-	if not is_rebinding:
+	if is_rebinding:
+		if event is InputEventKey and event.pressed and not event.echo:
+			get_viewport().set_input_as_handled()
+			if event.keycode == KEY_ESCAPE:
+				_cancel_rebind()
+				return
+			_apply_rebind(event)
+		elif event is InputEventMouseButton and event.pressed:
+			get_viewport().set_input_as_handled()
+			_apply_rebind(event)
 		return
 
-	if event is InputEventKey and event.pressed and not event.echo:
+	if visible and event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		if event.keycode == KEY_ESCAPE:
-			_cancel_rebind()
-			return
-		_apply_rebind(event)
-	elif event is InputEventMouseButton and event.pressed:
-		get_viewport().set_input_as_handled()
-		_apply_rebind(event)
+		close_settings()
 
 func _apply_rebind(new_event: InputEvent) -> void:
 	if rebind_action != &"":

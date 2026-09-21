@@ -1,6 +1,8 @@
 class_name SatelliteShop
 extends CanvasLayer
 
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 signal item_purchased(item: ItemData, cost: int)
 signal shop_closed()
 

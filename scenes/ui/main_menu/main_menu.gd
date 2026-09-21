@@ -1,6 +1,8 @@
 class_name MainMenu
 extends Control
 
+const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+
 @onready var play_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/PlayButton
 @onready var hub_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/HubButton
 @onready var settings_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/SettingsButton
@@ -18,6 +20,9 @@ func _ready() -> void:
 		settings_button.pressed.connect(_on_settings_pressed)
 	if quit_button and not quit_button.pressed.is_connected(_on_quit_pressed):
 		quit_button.pressed.connect(_on_quit_pressed)
+
+	if settings_modal and not settings_modal.closed.is_connected(_on_settings_closed):
+		settings_modal.closed.connect(_on_settings_closed)
 
 	if play_button:
 		UIFocusHelper.apply_cyber_focus(play_button)
@@ -61,6 +66,15 @@ func _on_settings_pressed() -> void:
 		audio_mgr.play_sfx("ui_click")
 	if settings_modal:
 		settings_modal.open_settings()
+
+func _on_settings_closed() -> void:
+	if settings_button:
+		settings_button.grab_focus()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if settings_modal and settings_modal.visible and event.is_action_pressed("ui_cancel"):
+		settings_modal.close_settings()
+		get_viewport().set_input_as_handled()
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
