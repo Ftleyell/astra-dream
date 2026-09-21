@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scenes/combat/environment/planet_core.gd" id="2_core"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
-radius = 60.0
+radius = 85.0
 
 [node name="Planet" type="Node2D"]
 script = ExtResource("1_planet")
@@ -13,13 +13,13 @@ script = ExtResource("1_planet")
 script = ExtResource("2_core")
 
 [node name="CoreAura" type="Polygon2D" parent="PlanetCore"]
-color = Color(0.2, 0.95, 0.6, 0.25)
+color = Color(0.2, 0.95, 0.6, 0.3)
 
 [node name="CoreVisual" type="Polygon2D" parent="PlanetCore"]
 color = Color(0.2, 0.95, 0.6, 1)
 
 [node name="CoreBorder" type="Line2D" parent="PlanetCore"]
-width = 2.0
+width = 3.0
 default_color = Color(0.6, 1, 0.8, 1)
 
 [node name="InteractionArea" type="Area2D" parent="PlanetCore"]
@@ -28,6 +28,16 @@ collision_layer = 0
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlanetCore/InteractionArea"]
 shape = SubResource("CircleShape2D_interact")
 
-[node name="MantleContainer" type="Node2D" parent="."]
+[node name="PromptLabel" type="Label" parent="PlanetCore"]
+offset_left = -140.0
+offset_top = -80.0
+offset_right = 140.0
+offset_bottom = -54.0
+text = "[E] Digitalizar Núcleo (+20 BioMasa)"
+horizontal_alignment = 1
+
+[node name="DeepMantleContainer" type="Node2D" parent="."]
+
+[node name="MidMantleContainer" type="Node2D" parent="."]
 
 [node name="CrustContainer" type="Node2D" parent="."]

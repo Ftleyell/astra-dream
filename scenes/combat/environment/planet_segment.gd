@@ -2,8 +2,9 @@ class_name PlanetSegment
 extends CharacterBody2D
 
 ## PlanetSegment.gd
-## Segmento angular destructible de una capa concéntrica planetaria (corteza o manto).
-## Gestiona su propia salud, polígono geométrico, recepción de daño y desprendimiento.
+## Segmento angular destructible con origen geométrico localizado en su propio centroide.
+## Garantiza que cada gajo tenga su propia posición espacial en el mundo, evitando que
+## armas de área o rayos afecten a múltiples fragmentos no alcanzados.
 
 signal segment_destroyed(segment: PlanetSegment)
 
@@ -13,10 +14,11 @@ signal segment_destroyed(segment: PlanetSegment)
 @export var end_angle: float = 1.0
 @export var segment_color: Color = Color(0.35, 0.45, 0.28, 1.0)
 @export var border_color: Color = Color(0.55, 0.75, 0.45, 1.0)
-@export var biomass_reward: int = 2
-@export var max_segment_health: float = 60.0
+@export var biomass_reward: int = 1
+@export var max_segment_health: float = 120.0
 
 var is_dying: bool = false
+var centroid: Vector2 = Vector2.ZERO
 var biomass_orb_scene: PackedScene = preload("res://scenes/combat/pickups/biomass_orb.tscn")
 
 @onready var visual_polygon: Polygon2D = get_node_or_null("VisualPolygon")
@@ -54,6 +56,15 @@ func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col:
 	border_color = b_col
 	max_segment_health = hp
 	biomass_reward = xp_biomass
+
+	# Calcular el centroide geométrico del sector angular
+	var mid_angle := (start_angle + end_angle) * 0.5
+	var mid_radius := (inner_radius + outer_radius) * 0.5
+	centroid = Vector2(cos(mid_angle), sin(mid_angle)) * mid_radius
+
+	# Posicionar el nodo en su centroide para que su global_position sea real en el espacio
+	position = centroid
+
 	if is_inside_tree():
 		if health_component:
 			health_component.max_health = max_segment_health
@@ -61,22 +72,24 @@ func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col:
 		rebuild_geometry()
 
 
-## Construye el polígono en forma de cuña/arco concéntrico
+## Construye el polígono en coordenadas locales respecto al centroide del gajo
 func rebuild_geometry() -> void:
 	var pts: PackedVector2Array = []
-	var steps: int = 5 # Resolución angular por segmento
+	var steps: int = 6 # Suavizado del arco
 
-	# Arco exterior (de start_angle a end_angle)
+	# Arco exterior respecto al centroide local
 	for i in range(steps + 1):
 		var t := float(i) / float(steps)
 		var ang := lerpf(start_angle, end_angle, t)
-		pts.append(Vector2(cos(ang), sin(ang)) * outer_radius)
+		var pt_from_planet := Vector2(cos(ang), sin(ang)) * outer_radius
+		pts.append(pt_from_planet - centroid)
 
-	# Arco interior (de end_angle a start_angle)
+	# Arco interior respecto al centroide local
 	for i in range(steps, -1, -1):
 		var t := float(i) / float(steps)
 		var ang := lerpf(start_angle, end_angle, t)
-		pts.append(Vector2(cos(ang), sin(ang)) * inner_radius)
+		var pt_from_planet := Vector2(cos(ang), sin(ang)) * inner_radius
+		pts.append(pt_from_planet - centroid)
 
 	if visual_polygon:
 		visual_polygon.polygon = pts
@@ -89,7 +102,7 @@ func rebuild_geometry() -> void:
 		if pts.size() > 0:
 			border_line.add_point(pts[0])
 		border_line.default_color = border_color
-		border_line.width = 1.8
+		border_line.width = 2.0
 
 	if collision_poly:
 		collision_poly.polygon = pts
@@ -97,7 +110,7 @@ func rebuild_geometry() -> void:
 		hurtbox_poly.polygon = pts
 
 
-## Contrato canónico de daño
+## Contrato canónico de combate
 func take_damage(ctx: HitContext) -> void:
 	if is_dying or not ctx:
 		return
@@ -117,25 +130,24 @@ func _die() -> void:
 	is_dying = true
 	segment_destroyed.emit(self)
 
-	# Desactivar colisiones de inmediato
+	# Desactivar colisiones inmediatamente
 	if collision_poly:
 		collision_poly.set_deferred("disabled", true)
 	if hurtbox_component:
 		hurtbox_component.set_deferred("monitoring", false)
 		hurtbox_component.set_deferred("monitorable", false)
 
-	# 1. Spawnear orbe de BioMasa
+	# 1. Liberar orbe de BioMasa en la posición del gajo
 	_spawn_biomass()
 
-	# 2. Animación de fractura y desprendimiento radial
-	var mid_angle := (start_angle + end_angle) * 0.5
-	var outward_dir := Vector2(cos(mid_angle), sin(mid_angle))
+	# 2. Desprendimiento radial outward
+	var outward_dir := centroid.normalized() if centroid.length_squared() > 0.01 else Vector2.RIGHT
 
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(self, "position", position + outward_dir * 35.0, 0.2)
-	tween.tween_property(self, "scale", scale * 1.15, 0.2)
-	tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	tween.tween_property(self, "position", position + outward_dir * 50.0, 0.25)
+	tween.tween_property(self, "scale", scale * 1.2, 0.25)
+	tween.tween_property(self, "modulate:a", 0.0, 0.25)
 	tween.chain().tween_callback(queue_free)
 
 
@@ -143,16 +155,11 @@ func _spawn_biomass() -> void:
 	if not biomass_orb_scene:
 		return
 
-	var mid_angle := (start_angle + end_angle) * 0.5
-	var mid_radius := (inner_radius + outer_radius) * 0.5
-	var spawn_pos := global_position + Vector2(cos(mid_angle), sin(mid_angle)) * mid_radius
-
 	var orb := biomass_orb_scene.instantiate() as BiomassOrb
 	if not orb:
 		return
 
-	orb.setup(biomass_reward, spawn_pos)
-	var container: Node = get_parent()
-	if not container or container is Planet:
-		container = get_tree().current_scene
-	container.add_child(orb)
+	orb.setup(biomass_reward, global_position)
+	var scene_root := get_tree().current_scene
+	if scene_root:
+		scene_root.add_child(orb)

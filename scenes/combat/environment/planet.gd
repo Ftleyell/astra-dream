@@ -2,30 +2,37 @@ class_name Planet
 extends Node2D
 
 ## Planet.gd
-## Macro-entidad planetaria destructible (~5 veces el tamaño del jugador, radio ~80 px).
-## Compuesto por un Núcleo central protegido por un Manto de 6 segmentos y una Corteza de 8 segmentos.
-## Actúa además como nido defensor desplegando drones cuando el jugador se acerca.
+## Macro-entidad planetaria colosal (radio 300 px, diámetro 600 px, ~20x la nave).
+## Consta de un Núcleo central accionable protegido por 3 capas concéntricas:
+## - Manto profundo / Roca basal (50 - 120 px, 6 segmentos, 700 HP)
+## - Manto intermedio (120 - 200 px, 8 segmentos, 350 HP)
+## - Corteza exterior (200 - 300 px, 12 segmentos, 120 HP)
+## Actúa además como nido defensor con radio de alerta de 950 px.
 
 @export var planet_data: PlanetData
-@export var core_radius: float = 30.0
-@export var mantle_radius: float = 55.0
-@export var crust_radius: float = 80.0
-@export var mantle_segments_count: int = 6
-@export var crust_segments_count: int = 8
+@export var core_radius: float = 50.0
+@export var deep_mantle_radius: float = 120.0
+@export var mid_mantle_radius: float = 200.0
+@export var crust_radius: float = 300.0
 
-@export var defender_spawn_interval: float = 7.0
-@export var max_defenders: int = 3
-@export var nest_trigger_radius: float = 750.0
+@export var deep_mantle_segments_count: int = 6
+@export var mid_mantle_segments_count: int = 8
+@export var crust_segments_count: int = 12
+
+@export var defender_spawn_interval: float = 6.0
+@export var max_defenders: int = 4
+@export var nest_trigger_radius: float = 950.0
 
 var segment_scene: PackedScene = preload("res://scenes/combat/environment/planet_segment.tscn")
 var drone_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_drone.tscn")
 
 var player: Player = null
-var defender_timer: float = 2.0 # Primer spawn a los 2 segundos si el jugador está cerca
+var defender_timer: float = 2.0
 var active_defenders: Array[Node2D] = []
 
 @onready var planet_core: PlanetCore = get_node_or_null("PlanetCore")
-@onready var mantle_container: Node2D = get_node_or_null("MantleContainer")
+@onready var deep_mantle_container: Node2D = get_node_or_null("DeepMantleContainer")
+@onready var mid_mantle_container: Node2D = get_node_or_null("MidMantleContainer")
 @onready var crust_container: Node2D = get_node_or_null("CrustContainer")
 
 
@@ -51,26 +58,38 @@ func _initialize_planet() -> void:
 	if not planet_data:
 		return
 
-	# 1. Configurar Núcleo
+	# 1. Configurar Núcleo central (radio 50 px, recompensa 20 BioMasa)
 	if planet_core:
-		planet_core.setup_core(core_radius, planet_data.core_color, planet_data.core_type)
+		planet_core.setup_core(core_radius, planet_data.core_color, planet_data.core_type, planet_data.core_biomass_reward)
 
-	# 2. Generar Capa de Manto (6 gajos)
+	# 2. Generar Capa de Manto Profundo (50 - 120 px, 6 gajos, 700 HP)
 	_build_layer(
-		mantle_container,
+		deep_mantle_container,
 		core_radius,
-		mantle_radius,
-		mantle_segments_count,
-		planet_data.mantle_color,
-		planet_data.mantle_color.lightened(0.25),
-		planet_data.mantle_health,
-		planet_data.biomass_per_mantle
+		deep_mantle_radius,
+		deep_mantle_segments_count,
+		planet_data.deep_mantle_color,
+		planet_data.deep_mantle_color.lightened(0.2),
+		planet_data.deep_mantle_health,
+		planet_data.biomass_per_deep_mantle
 	)
 
-	# 3. Generar Capa de Corteza Exterior (8 gajos)
+	# 3. Generar Capa de Manto Intermedio (120 - 200 px, 8 gajos, 350 HP)
+	_build_layer(
+		mid_mantle_container,
+		deep_mantle_radius,
+		mid_mantle_radius,
+		mid_mantle_segments_count,
+		planet_data.mid_mantle_color,
+		planet_data.mid_mantle_color.lightened(0.25),
+		planet_data.mid_mantle_health,
+		planet_data.biomass_per_mid_mantle
+	)
+
+	# 4. Generar Capa de Corteza Exterior (200 - 300 px, 12 gajos, 120 HP)
 	_build_layer(
 		crust_container,
-		mantle_radius,
+		mid_mantle_radius,
 		crust_radius,
 		crust_segments_count,
 		planet_data.crust_color,
@@ -84,7 +103,6 @@ func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col:
 	if not container or not segment_scene:
 		return
 
-	# Limpiar hijos previos si los hubiese
 	for child in container.get_children():
 		child.queue_free()
 
@@ -102,11 +120,13 @@ func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col:
 
 
 func _process(delta: float) -> void:
-	# Rotación orbital lenta e inercial de la corteza y el manto
+	# Rotación diferencial sutil de las capas
 	if crust_container:
-		crust_container.rotation += delta * 0.04
-	if mantle_container:
-		mantle_container.rotation -= delta * 0.02
+		crust_container.rotation += delta * 0.015
+	if mid_mantle_container:
+		mid_mantle_container.rotation -= delta * 0.01
+	if deep_mantle_container:
+		deep_mantle_container.rotation += delta * 0.005
 
 	_handle_defender_nest(delta)
 
@@ -115,7 +135,6 @@ func _handle_defender_nest(delta: float) -> void:
 	if not drone_scene or not is_inside_tree():
 		return
 
-	# Limpiar referencias de drones muertos
 	active_defenders = active_defenders.filter(func(d: Node2D) -> bool: return is_instance_valid(d))
 
 	if not is_instance_valid(player):
@@ -140,7 +159,7 @@ func _spawn_defender_drone() -> void:
 		return
 
 	var ang := randf() * TAU
-	var spawn_pos := global_position + Vector2(cos(ang), sin(ang)) * (crust_radius + 45.0)
+	var spawn_pos := global_position + Vector2(cos(ang), sin(ang)) * (crust_radius + 60.0)
 	drone.global_position = spawn_pos
 
 	var scene_root := get_tree().current_scene
