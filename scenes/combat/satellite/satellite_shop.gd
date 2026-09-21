@@ -20,6 +20,8 @@ var buy_buttons: Array[Button] = []
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
+	UIFocusHelper.apply_cyber_focus(close_btn)
+	UIFocusHelper.apply_cyber_focus(reroll_btn)
 	close_btn.pressed.connect(close_shop)
 	reroll_btn.pressed.connect(_on_reroll_pressed)
 	if available_items_pool.is_empty():
@@ -208,6 +210,7 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 	var cost: int = item.cost if "cost" in item and item.cost > 0 else item.get_meta("cost", 35)
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
+	UIFocusHelper.apply_cyber_focus(buy_btn)
 
 	buy_btn.pressed.connect(func():
 		if current_credits >= cost:

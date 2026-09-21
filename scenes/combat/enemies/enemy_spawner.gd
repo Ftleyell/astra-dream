@@ -13,6 +13,7 @@ var spawn_timer: float = 0.0
 var elapsed_time: float = 0.0
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	# Spawner inicial inmediato: 3 drones de prueba para probar combate al arrancar
 	call_deferred("_spawn_initial_batch")
 

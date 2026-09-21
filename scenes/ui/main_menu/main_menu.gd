@@ -10,6 +10,11 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+
+	UIFocusHelper.apply_cyber_focus(play_button)
+	UIFocusHelper.apply_cyber_focus(settings_button)
+	UIFocusHelper.apply_cyber_focus(quit_button)
+
 	play_button.grab_focus()
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")

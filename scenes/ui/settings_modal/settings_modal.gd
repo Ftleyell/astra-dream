@@ -62,9 +62,18 @@ func _ready() -> void:
 	var mode := DisplayServer.window_get_mode()
 	fullscreen_check.button_pressed = (mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 
+	UIFocusHelper.apply_cyber_focus(close_button)
+	UIFocusHelper.apply_cyber_focus(fullscreen_check)
+	UIFocusHelper.apply_cyber_focus(resolution_option)
+	UIFocusHelper.apply_cyber_focus(master_slider)
+	UIFocusHelper.apply_cyber_focus(music_slider)
+	UIFocusHelper.apply_cyber_focus(sfx_slider)
+	UIFocusHelper.apply_cyber_focus(deadzone_slider)
+
 func open_settings() -> void:
 	show()
 	_populate_rebind_list()
+	close_button.grab_focus()
 
 func _init_resolutions() -> void:
 	resolution_option.clear()

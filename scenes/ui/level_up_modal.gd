@@ -100,6 +100,10 @@ func _change_selection(direction: int) -> void:
 	var new_idx := (current_selected_idx + direction) % card_panels.size()
 	if new_idx < 0:
 		new_idx += card_panels.size()
+	if new_idx != current_selected_idx:
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click")
 	_update_card_selection(new_idx)
 
 func _update_card_selection(idx: int) -> void:

@@ -39,6 +39,7 @@ signal player_died()
 var current_health: float = 100.0
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("player")
 	if not character_data:
 		character_data = CharacterData.new()

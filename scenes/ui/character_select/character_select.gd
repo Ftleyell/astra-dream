@@ -67,16 +67,23 @@ var characters_data = {
 }
 
 func _ready() -> void:
-	_populate_roster()
-	_select_character(&"nova")
+	UIFocusHelper.apply_cyber_focus(launch_button)
+	UIFocusHelper.apply_cyber_focus(loadout_button)
+	UIFocusHelper.apply_cyber_focus(back_button)
 
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 
+	_populate_roster()
+	_select_character(&"nova")
+
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
 		child.queue_free()
+
+	var first_btn: Button = null
+	var prev_btn: Button = null
 
 	for char_id in characters_data.keys():
 		var data: Dictionary = characters_data[char_id]
@@ -85,7 +92,35 @@ func _populate_roster() -> void:
 		btn.text = "%s  —  %s" % [data["name"], data["title"]]
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.pressed.connect(func(): _select_character(char_id))
+		btn.focus_entered.connect(func(): _select_character(char_id))
+
+		UIFocusHelper.apply_cyber_focus(btn)
+
+		# Enlace lateral con WASD: presionar D/derecha va a LaunchButton
+		btn.focus_neighbor_right = launch_button.get_path()
+
+		if not first_btn:
+			first_btn = btn
+
+		if prev_btn:
+			prev_btn.focus_neighbor_bottom = btn.get_path()
+			btn.focus_neighbor_top = prev_btn.get_path()
+		prev_btn = btn
+
 		char_list_container.add_child(btn)
+
+	if prev_btn:
+		prev_btn.focus_neighbor_bottom = back_button.get_path()
+		back_button.focus_neighbor_top = prev_btn.get_path()
+		back_button.focus_neighbor_right = loadout_button.get_path()
+
+	launch_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
+	launch_button.focus_neighbor_bottom = loadout_button.get_path()
+	loadout_button.focus_neighbor_top = launch_button.get_path()
+	loadout_button.focus_neighbor_left = back_button.get_path()
+
+	if first_btn:
+		first_btn.grab_focus()
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id

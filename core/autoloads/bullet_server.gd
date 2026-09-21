@@ -38,6 +38,7 @@ signal player_hit()
 signal player_grazed(pos: Vector2)
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	top_level = true
 	_init_memory_pools()
 	_setup_multimesh()

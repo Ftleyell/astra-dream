@@ -18,6 +18,7 @@ var is_dying: bool = false
 signal enemy_died(enemy: EnemyDrone)
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	current_health = max_health
 	if not player:

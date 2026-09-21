@@ -10,6 +10,7 @@ var spiral_timer: float = 0.0
 var current_health: float = 200.0
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("emitters")
 	add_to_group("enemies")
 

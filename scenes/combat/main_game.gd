@@ -7,10 +7,11 @@ extends Node2D
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
-@onready var combat_dialogue: CombatDialogueBox = $CombatDialogueBox
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
 @onready var camera: GameCamera2D = $Camera2D
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
+@onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
+@onready var skip_button: Button = get_node_or_null("SkipBadgeLayer/MarginContainer/SkipButton")
 
 const WAVE_DURATION: float = 60.0
 const MAX_SATELLITES_PER_WAVE: int = 3
@@ -29,6 +30,9 @@ var wave_satellites_spawned: int = 0
 var satellites_collected_total: int = 0
 var last_anchor_pos: Vector2 = Vector2.ZERO
 
+var is_briefing_active: bool = true
+var prologue_bonus_chosen: bool = false
+
 func _ready() -> void:
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
@@ -41,9 +45,6 @@ func _ready() -> void:
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
 
-	# Conexión de audio con el diálogo cinemático
-	combat_dialogue.audio_duck_manager = audio_duck_manager
-
 	# Inicializar ancla de distancia al spawn del jugador
 	last_anchor_pos = player.global_position
 
@@ -52,12 +53,88 @@ func _ready() -> void:
 	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
+	# Asegurar que MainGame y Dialogic procesen durante la pausa
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	Dialogic.process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Conexión de Dialogic para briefing inicial y eventos de señal
+	Dialogic.signal_event.connect(_on_dialogic_signal)
+	Dialogic.timeline_ended.connect(_on_dialogic_timeline_ended)
+
+	if skip_button:
+		skip_button.pressed.connect(func():
+			if is_briefing_active:
+				Dialogic.end_timeline()
+		)
+
 	# Iniciar música de combate
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("combat")
 
+	# Iniciar secuencia de briefing con Dialogic 2 antes de la oleada
+	_start_prologue_briefing()
+
+func _start_prologue_briefing() -> void:
+	is_briefing_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var layout = Dialogic.start("res://narrative/timelines/prologue_briefing.dtl")
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
+
+func _setup_dialogic_audio(layout: Node) -> void:
+	if not layout:
+		return
+	var type_sound := layout.find_child("DialogicNode_TypeSounds", true, false) as DialogicNode_TypeSounds
+	if type_sound:
+		type_sound.sounds = [
+			preload("res://addons/dialogic/Example Assets/sound-effects/typing1.wav"),
+			preload("res://addons/dialogic/Example Assets/sound-effects/typing4.wav")
+		]
+		type_sound.play_every_character = 1
+		type_sound.pitch_variance = 0.2
+		type_sound.volume_variance = 0.5
+
+func _on_dialogic_signal(arg: Variant) -> void:
+	match str(arg):
+		"briefing_credits":
+			prologue_bonus_chosen = true
+			player.run_credits += 100
+			hud.update_credits(player.run_credits)
+		"briefing_speed":
+			prologue_bonus_chosen = true
+			player.stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"briefing_speed", 0.15, true, self))
+		"briefing_hull":
+			prologue_bonus_chosen = true
+			player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"briefing_hull", 25.0, false, self))
+			player.current_health = player.stats.get_stat(&"max_health")
+			player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
+
+func _on_dialogic_timeline_ended() -> void:
+	if is_briefing_active:
+		is_briefing_active = false
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+
+		# Si se saltó el diálogo sin haber seleccionado una opción, otorgar bono base
+		if not prologue_bonus_chosen:
+			prologue_bonus_chosen = true
+			player.run_credits += 50
+			hud.update_credits(player.run_credits)
+
+func _trigger_cockpit_interlude() -> void:
+	var layout = Dialogic.start("res://narrative/timelines/wave_interlude_cockpit.dtl")
+	_setup_dialogic_audio(layout)
+
 func _process(delta: float) -> void:
+	if get_tree().paused or is_briefing_active:
+		return
+
 	# Lógica del temporizador de oleada
 	wave_timer -= delta
 	if wave_timer <= 0.0:
@@ -66,6 +143,7 @@ func _process(delta: float) -> void:
 		wave_satellites_spawned = 0
 		if enemy_spawner and enemy_spawner.has_method("set_wave"):
 			enemy_spawner.set_wave(current_wave)
+		_trigger_cockpit_interlude()
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -89,10 +167,20 @@ func _spawn_satellite_in_player_direction() -> void:
 	_spawn_next_satellite(spawn_pos)
 
 func _input(event: InputEvent) -> void:
-	# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
+	# Atajo para saltar el briefing cinematográfico con ESC o diálogo skip
+	if is_briefing_active:
+		if event.is_action_pressed("dialogue_skip") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
+			get_viewport().set_input_as_handled()
+			Dialogic.end_timeline()
+			return
+
 	if event is InputEventKey and event.pressed and not event.echo:
+		# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
 		if event.keycode == KEY_T:
 			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
+		# Tecla C para testear en cualquier momento la secuencia de diálogo de cabina en vivo
+		elif event.keycode == KEY_C:
+			_trigger_cockpit_interlude()
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
 	if current_satellite:
@@ -128,8 +216,9 @@ func _on_satellite_exited(_index: int) -> void:
 
 	hud.clear_satellite()
 
-func trigger_boss_transmission(speaker: String, text: String) -> void:
-	combat_dialogue.trigger_dialogue(speaker, text, Color(1.0, 0.35, 0.35))
+func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
+	var layout = Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
+	_setup_dialogic_audio(layout)
 
 func _on_item_purchased(item: ItemData, cost: int) -> void:
 	player.run_credits -= cost
