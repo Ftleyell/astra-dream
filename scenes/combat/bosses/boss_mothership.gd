@@ -247,6 +247,20 @@ func _die() -> void:
 		if spawn_parent:
 			spawn_parent.call_deferred("add_child", blob)
 
+	# 5b. Alta probabilidad (60%) de soltar consumible de campo (Bomba, Imán o Heal)
+	if randf() <= 0.60:
+		var consumable_scene := load("res://scenes/combat/pickups/field_consumable.tscn") as PackedScene
+		if consumable_scene:
+			var consumable := consumable_scene.instantiate() as Area2D
+			if consumable:
+				var consumable_script = load("res://scenes/combat/pickups/field_consumable.gd")
+				var roll := randf()
+				var c_type: int = consumable_script.ConsumableType.BOMB if roll < 0.50 else consumable_script.ConsumableType.HEAL
+				var spawn_parent: Node = get_parent() if get_parent() else get_tree().current_scene
+				if spawn_parent:
+					spawn_parent.call_deferred("add_child", consumable)
+					consumable.call_deferred("setup", c_type, global_position + Vector2(randf_range(-35, 35), randf_range(-35, 35)))
+
 	# 6. Activar Imán Global (Magnet): succiona toda la exp del mapa hacia el jugador
 	ExpBlob.trigger_global_magnet(get_tree())
 

@@ -107,9 +107,45 @@ func _die() -> void:
 		if parent_node:
 			parent_node.add_child(blob)
 
+	# Posibilidad de soltar consumible de campo (Heal, Imán, Bomba)
+	_roll_consumable_drop()
+
 	# Efecto visual de desintegración/explosión
 	collision_shape.set_deferred("disabled", true)
 	var tween := create_tween()
 	tween.tween_property(self, "scale", Vector2(1.6, 1.6), 0.15)
 	tween.parallel().tween_property(self, "modulate", Color(1.0, 0.4, 0.1, 0.0), 0.15)
 	tween.tween_callback(queue_free)
+
+func _roll_consumable_drop() -> void:
+	var luck_val: float = 0.0
+	if is_instance_valid(player) and player.stats:
+		luck_val = player.stats.get_stat(&"luck")
+
+	# Base 3.5% + 0.1% por cada punto de Suerte (luck)
+	var drop_chance: float = clampf(0.035 + (luck_val * 0.001), 0.01, 0.40)
+	if randf() > drop_chance:
+		return
+
+	var consumable_scene := preload("res://scenes/combat/pickups/field_consumable.tscn")
+	var consumable := consumable_scene.instantiate() as Area2D
+	if not consumable:
+		return
+
+	var consumable_script = preload("res://scenes/combat/pickups/field_consumable.gd")
+	# Distribución de pesos: 60% Heal, 25% Imán, 15% Bomba
+	var roll := randf()
+	var chosen_type: int = consumable_script.ConsumableType.HEAL
+	if roll < 0.60:
+		chosen_type = consumable_script.ConsumableType.HEAL
+	elif roll < 0.85:
+		chosen_type = consumable_script.ConsumableType.MAGNET
+	else:
+		chosen_type = consumable_script.ConsumableType.BOMB
+
+	var parent_node := get_parent() if is_inside_tree() else null
+	if not parent_node and is_inside_tree():
+		parent_node = get_tree().current_scene
+	if parent_node:
+		parent_node.add_child(consumable)
+		consumable.setup(chosen_type, global_position)

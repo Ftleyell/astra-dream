@@ -164,6 +164,37 @@ def gen_ui_click():
         samples.append(val * 0.5)
     write_wav("assets/audio/sfx/ui_click.wav", samples)
 
+def gen_heal():
+    # Warm ascending major chime: C5 -> E5 -> G5 -> C6
+    duration = 0.45
+    n_samples = int(duration * SAMPLE_RATE)
+    samples = []
+    notes = [523.25, 659.25, 783.99, 1046.50]
+    for i in range(n_samples):
+        t = i / SAMPLE_RATE
+        idx = min(int(t / 0.09), len(notes) - 1)
+        freq = notes[idx]
+        t_note = t - idx * 0.09
+        env = math.exp(-12.0 * t_note)
+        # Soft sine with octave shimmer
+        val = (math.sin(2.0 * math.pi * freq * t) * 0.7 + math.sin(2.0 * math.pi * freq * 2.0 * t) * 0.3) * env
+        samples.append(val * 0.65)
+    write_wav("assets/audio/sfx/heal.wav", samples)
+
+def gen_magnet():
+    # High-tech electromagnetic sweep (400Hz up to 1800Hz with resonant oscillation)
+    duration = 0.38
+    n_samples = int(duration * SAMPLE_RATE)
+    samples = []
+    for i in range(n_samples):
+        t = i / SAMPLE_RATE
+        env = math.sin(math.pi * (t / duration)) ** 0.6
+        freq = 380.0 + 1400.0 * (t / duration) ** 1.8
+        mod = math.sin(2.0 * math.pi * 32.0 * t) * 0.3
+        val = math.sin(2.0 * math.pi * (freq * (1.0 + mod)) * t) * env
+        samples.append(val * 0.6)
+    write_wav("assets/audio/sfx/magnet.wav", samples)
+
 # --- MUSIC GENERATORS (LOOPABLE) ---
 
 def gen_combat_music():
@@ -279,6 +310,8 @@ if __name__ == "__main__":
     gen_bomb()
     gen_player_hit()
     gen_ui_click()
+    gen_heal()
+    gen_magnet()
 
     print("Generating Music Tracks...")
     gen_combat_music()

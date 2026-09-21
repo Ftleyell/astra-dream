@@ -177,6 +177,28 @@ func _handle_actions() -> void:
 		if bullet_server:
 			bullet_server.bomb_clear_all()
 
+func add_bombs(amount: int = 1) -> bool:
+	const MAX_BOMBS: int = 5
+	if bomb_count < MAX_BOMBS:
+		bomb_count = mini(MAX_BOMBS, bomb_count + amount)
+		bomb_used.emit(bomb_count)
+		return true
+	else:
+		# Límite alcanzado: detonación táctica inmediata
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("bomb")
+		if bullet_server:
+			bullet_server.bomb_clear_all()
+		return false
+
+func heal(amount: float) -> void:
+	if current_health <= 0.0:
+		return
+	var max_hp: float = stats.get_stat(&"max_health") if stats else 100.0
+	current_health = minf(max_hp, current_health + amount)
+	health_changed.emit(current_health, max_hp)
+
 func add_credits(amount: int) -> void:
 	run_credits += amount
 	credits_changed.emit(run_credits)

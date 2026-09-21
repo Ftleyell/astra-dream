@@ -24,7 +24,9 @@ func _preload_sfx() -> void:
 		"dash": "res://assets/audio/sfx/dash.wav",
 		"bomb": "res://assets/audio/sfx/bomb.wav",
 		"player_hit": "res://assets/audio/sfx/player_hit.wav",
-		"ui_click": "res://assets/audio/sfx/ui_click.wav"
+		"ui_click": "res://assets/audio/sfx/ui_click.wav",
+		"heal": "res://assets/audio/sfx/heal.wav",
+		"magnet": "res://assets/audio/sfx/magnet.wav"
 	}
 	for key in sfx_files.keys():
 		var path: String = sfx_files[key]
