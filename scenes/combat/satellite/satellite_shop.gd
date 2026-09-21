@@ -147,8 +147,18 @@ func _roll_shop_items() -> void:
 	_setup_focus_and_grab()
 
 func _create_item_card_ui(item: ItemData, index: int) -> void:
+	var rarity_color := _get_rarity_color(item.rarity)
+
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(220, 260)
+	card.custom_minimum_size = Vector2(230, 310)
+
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
+	card_style.set_border_width_all(2)
+	card_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
+	card_style.set_corner_radius_all(8)
+	card_style.set_content_margin_all(10.0)
+	card.add_theme_stylebox_override("panel", card_style)
 
 	var vbox := VBoxContainer.new()
 	vbox.set("theme_override_constants/separation", 8)
@@ -164,9 +174,34 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 	name_lbl.text = item.item_name
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	name_lbl.add_theme_color_override("font_color", rarity_color)
+
+	# Marco contenedor del icono de 64x64 px centrado
+	var icon_panel := PanelContainer.new()
+	icon_panel.custom_minimum_size = Vector2(64, 64)
+	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = Color(0.03, 0.04, 0.07, 0.95)
+	icon_style.set_border_width_all(2)
+	icon_style.border_color = rarity_color
+	icon_style.set_corner_radius_all(6)
+	icon_panel.add_theme_stylebox_override("panel", icon_style)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(50, 50)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if item.icon:
+		icon_rect.texture = item.icon
+		icon_rect.modulate = rarity_color
+	icon_panel.add_child(icon_rect)
 
 	var desc_lbl := Label.new()
 	desc_lbl.text = item.description
+	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
@@ -187,12 +222,26 @@ func _create_item_card_ui(item: ItemData, index: int) -> void:
 
 	vbox.add_child(hotkey_lbl)
 	vbox.add_child(name_lbl)
+	vbox.add_child(icon_panel)
 	vbox.add_child(desc_lbl)
 	vbox.add_child(buy_btn)
 	card.add_child(vbox)
 	items_container.add_child(card)
 
 	buy_buttons.append(buy_btn)
+
+func _get_rarity_color(rarity: Enums.Rarity) -> Color:
+	match rarity:
+		Enums.Rarity.COMMON:
+			return Color(0.5, 0.8, 1.0, 0.95)
+		Enums.Rarity.UNCOMMON:
+			return Color(0.2, 0.95, 0.4, 0.95)
+		Enums.Rarity.RARE:
+			return Color(1.0, 0.8, 0.15, 1.0)
+		Enums.Rarity.LEGENDARY:
+			return Color(0.9, 0.3, 1.0, 1.0)
+		_:
+			return Color.WHITE
 
 func _setup_focus_and_grab() -> void:
 	if buy_buttons.is_empty():

@@ -24,6 +24,20 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		{"id": &"trebol", "name": "Trébol", "desc": "+20% Atributo de Suerte (Mejores Tiers).", "stat": &"luck", "val": 0.20, "pct": true, "cost": 55, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"utility", &"luck"]},
 		{"id": &"carcaj", "name": "Carcaj", "desc": "+1 Proyectil Adicional en todas las armas.", "stat": &"projectile_count", "val": 1.0, "pct": false, "cost": 90, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"projectiles"]}
 	]
+	var icon_map := {
+		&"botas": "res://assets/icons/items/icon_boots.svg",
+		&"espada": "res://assets/icons/items/icon_sword.svg",
+		&"escudo": "res://assets/icons/items/icon_shield.svg",
+		&"corazon": "res://assets/icons/items/icon_heart.svg",
+		&"manzana": "res://assets/icons/items/icon_apple.svg",
+		&"iman": "res://assets/icons/items/icon_magnet.svg",
+		&"gafas": "res://assets/icons/items/icon_glasses.svg",
+		&"lupa": "res://assets/icons/items/icon_lens.svg",
+		&"guante": "res://assets/icons/items/icon_gauntlet.svg",
+		&"trebol": "res://assets/icons/items/icon_clover.svg",
+		&"carcaj": "res://assets/icons/items/icon_quiver.svg",
+	}
+
 	var items: Array[ItemData] = []
 	for d in defs:
 		var it := ItemData.new()
@@ -35,6 +49,8 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		it.is_percentage = d["pct"]
 		it.cost = d["cost"]
 		it.rarity = d["rarity"]
+		if icon_map.has(it.item_id) and ResourceLoader.exists(icon_map[it.item_id]):
+			it.icon = load(icon_map[it.item_id]) as Texture2D
 		var item_tags: Array[StringName] = []
 		for t in d["tags"]:
 			item_tags.append(StringName(t))
