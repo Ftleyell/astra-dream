@@ -78,8 +78,11 @@ func _populate_roster() -> void:
 
 		UIFocusHelper.apply_cyber_focus(btn)
 
+		char_list_container.add_child(btn)
+
 		# Enlace lateral con WASD: presionar D/derecha va a LaunchButton
-		btn.focus_neighbor_right = launch_button.get_path()
+		if launch_button:
+			btn.focus_neighbor_right = launch_button.get_path()
 
 		if not first_btn:
 			first_btn = btn
@@ -89,7 +92,6 @@ func _populate_roster() -> void:
 			btn.focus_neighbor_top = prev_btn.get_path()
 		prev_btn = btn
 
-		char_list_container.add_child(btn)
 
 
 	if prev_btn:
