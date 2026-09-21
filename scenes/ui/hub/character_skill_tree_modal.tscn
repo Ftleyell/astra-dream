@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6skilltree001"]
+
+[ext_resource type="Script" path="res://scenes/ui/hub/character_skill_tree_modal.gd" id="1_modal"]
+
+[node name="CharacterSkillTreeModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_modal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.04, 0.06, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1080, 560)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.08, 0.58, 1)
+theme_override_font_sizes/font_size = 28
+text = "CIRCUITO NEURAL: MEJORA DE IMPULSO KINÉTICO"
+
+[node name="PilotLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "PILOTO: NOVA — DE VANGUARDIA"
+
+[node name="BiomassLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.62, 1)
+theme_override_font_sizes/font_size = 16
+text = "BIOMASA DISPONIBLE: 0 u."
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="NodesHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Footer" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 2
+
+[node name="TotalBonusLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 1, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "BONO TOTAL DE VELOCIDAD: +0%"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/Footer"]
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "CERRAR [ESC]"

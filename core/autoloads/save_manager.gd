@@ -4,7 +4,7 @@ extends Node
 const SAVE_PATH := "user://profile_data.json"
 const SCHEMA_VERSION := 1
 
-static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1, p_antimatter: int = -1) -> Error:
+static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1, p_antimatter: int = -1, p_skills: Variant = null) -> Error:
 	var current_biomass: int = p_biomass
 	if current_biomass < 0:
 		current_biomass = get_biomass()
@@ -12,6 +12,13 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 	var current_antimatter: int = p_antimatter
 	if current_antimatter < 0:
 		current_antimatter = get_antimatter()
+
+	var current_skills: Dictionary
+	if p_skills == null:
+		var prof := load_profile()
+		current_skills = prof.get("character_skills", {})
+	else:
+		current_skills = p_skills
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
@@ -33,13 +40,22 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 	for char_id in unlocked_chars:
 		str_unlocked_chars.append(String(char_id))
 
+	var skills_serializable: Dictionary = {}
+	for cid in current_skills.keys():
+		var arr: Array = current_skills[cid]
+		var int_arr: Array[int] = []
+		for n in arr:
+			int_arr.append(int(n))
+		skills_serializable[String(cid)] = int_arr
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
 		"unlocked_characters": str_unlocked_chars,
 		"character_banlists": bans_serializable,
 		"biomass": current_biomass,
-		"antimatter": current_antimatter
+		"antimatter": current_antimatter,
+		"character_skills": skills_serializable
 	}
 
 	var json_str := JSON.stringify(payload, "\t")
@@ -81,7 +97,8 @@ static func _get_default_profile() -> Dictionary:
 			&"valentina": [&"manzana"] as Array[StringName]
 		} as Dictionary,
 		"biomass": 0,
-		"antimatter": 0
+		"antimatter": 0,
+		"character_skills": {} as Dictionary
 	}
 
 static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
@@ -90,7 +107,8 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_characters": [] as Array[StringName],
 		"character_banlists": {} as Dictionary,
 		"biomass": int(raw.get("biomass", 0)),
-		"antimatter": int(raw.get("antimatter", 0))
+		"antimatter": int(raw.get("antimatter", 0)),
+		"character_skills": {} as Dictionary
 	}
 
 	if raw.has("unlocked_items"):
@@ -110,6 +128,14 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 				bans.append(StringName(b))
 			cleaned["character_banlists"][StringName(char_id)] = bans
 
+	if raw.has("character_skills") and raw["character_skills"] is Dictionary:
+		for cid in raw["character_skills"].keys():
+			var arr: Array = raw["character_skills"][cid]
+			var int_arr: Array[int] = []
+			for n in arr:
+				int_arr.append(int(n))
+			cleaned["character_skills"][StringName(cid)] = int_arr
+
 	return cleaned
 
 ## Obtiene la cantidad persistente total de BioMasa acumulada
@@ -127,7 +153,8 @@ static func add_biomass(amount: int) -> int:
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var antimatter: int = int(profile.get("antimatter", 0))
-	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter)
+	var skills: Dictionary = profile.get("character_skills", {})
+	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills)
 	return new_total
 
 ## Obtiene la cantidad persistente total de Antimateria acumulada
@@ -145,6 +172,58 @@ static func add_antimatter(amount: int) -> int:
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var biomass: int = int(profile.get("biomass", 0))
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total)
+	var skills: Dictionary = profile.get("character_skills", {})
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills)
 	return new_total
 
+## Obtiene la lista de índices de nodos de habilidad desbloqueados para un personaje
+static func get_character_unlocked_nodes(char_id: StringName) -> Array[int]:
+	var profile := load_profile()
+	var skills: Dictionary = profile.get("character_skills", {})
+	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
+	var result: Array[int] = []
+	for n in list:
+		result.append(int(n))
+	result.sort()
+	return result
+
+## Obtiene el conteo total de nodos de habilidad desbloqueados para un personaje
+static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
+	return get_character_unlocked_nodes(char_id).size()
+
+## Desbloquea un nodo del árbol de habilidades deduciendo BioMasa y persistiendo en disco
+static func unlock_character_skill_node(char_id: StringName, node_index: int, cost: int) -> bool:
+	if node_index < 0 or node_index >= 5:
+		return false
+
+	var current_bio := get_biomass()
+	if current_bio < cost:
+		return false
+
+	var profile := load_profile()
+	var skills: Dictionary = profile.get("character_skills", {})
+	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
+	var int_list: Array[int] = []
+	for n in list:
+		int_list.append(int(n))
+
+	# Si ya está desbloqueado, no volver a comprar
+	if int_list.has(node_index):
+		return false
+
+	# Requiere haber desbloqueado el nodo anterior
+	if node_index > 0 and not int_list.has(node_index - 1):
+		return false
+
+	int_list.append(node_index)
+	int_list.sort()
+	skills[char_id] = int_list
+
+	var new_biomass := current_bio - cost
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var antimatter: int = int(profile.get("antimatter", 0))
+
+	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
+	return true

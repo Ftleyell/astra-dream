@@ -45,6 +45,14 @@ func _ready() -> void:
 	if not character_data:
 		character_data = CharacterData.new()
 	stats.initialize(character_data)
+
+	# Aplicar bono permanente de velocidad del Árbol de Habilidades (+20% por nodo desbloqueado)
+	if character_data and character_data.character_id:
+		var unlocked_nodes := SaveManager.get_character_unlocked_nodes_count(character_data.character_id)
+		if unlocked_nodes > 0:
+			var speed_bonus: float = float(unlocked_nodes) * 0.20
+			stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", speed_bonus, true, self))
+
 	current_health = stats.get_stat(&"max_health")
 	stats.stat_changed.connect(func(stat_name: StringName, new_val: float):
 		if stat_name == &"max_health":
