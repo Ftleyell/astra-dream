@@ -2,7 +2,7 @@ class_name WeaponController
 extends Node2D
 
 signal laser_cooldown_updated(current: float, max_val: float)
-signal laser_charge_updated(current: float, max_val: float, is_full: bool)
+signal laser_charge_updated(current: float, max_val: float, is_full: bool, is_memorized: bool)
 signal laser_charge_ended()
 
 @export var weapon_data: WeaponData
@@ -17,6 +17,13 @@ var charge_timer: float = 0.0
 var max_charge_time: float = 3.0
 var is_fully_charged: bool = false
 
+# Memoria de carga en pausa (Charge Memory)
+var has_charge_memory: bool = false
+var memory_charge_timer: float = 0.0
+var memory_is_fully_charged: bool = false
+var memory_grace_timer: float = 0.0
+const MEMORY_GRACE_MAX: float = 6.0
+
 var laser_scene: PackedScene = preload("res://scenes/combat/weapons/screen_laser_beam.tscn")
 var missile_scene: PackedScene = preload("res://scenes/combat/weapons/homing_missile.tscn")
 
@@ -30,6 +37,14 @@ func _ready() -> void:
 
 	# Disparo pasivo inicial inmediato
 	passive_timer = 0.1
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PAUSED:
+		if is_charging and charge_timer > 0.05:
+			has_charge_memory = true
+			memory_charge_timer = charge_timer
+			memory_is_fully_charged = is_fully_charged
+			memory_grace_timer = MEMORY_GRACE_MAX
 
 func _process(delta: float) -> void:
 	_handle_aim()
@@ -47,10 +62,39 @@ func _handle_active_fire(delta: float) -> void:
 			is_charging = false
 			charge_timer = 0.0
 			is_fully_charged = false
+			has_charge_memory = false
 			laser_charge_ended.emit()
 
 	var max_cd: float = weapon_data.base_cooldown / maxf(0.1, player.stats.get_stat(&"attack_speed") if player else 1.0)
 	laser_cooldown_updated.emit(maxf(0.0, active_cooldown), max_cd)
+
+	# Gestión de Memoria de Carga post-pausa:
+	if has_charge_memory:
+		if Input.is_action_pressed("fire_active") and active_cooldown <= 0.0:
+			# El jugador re-holdeó el ratón o nunca lo soltó (ej. seleccionó con hotkeys 1-4)
+			is_charging = true
+			charge_timer = memory_charge_timer
+			is_fully_charged = memory_is_fully_charged
+			has_charge_memory = false
+		elif Input.is_action_just_released("fire_active"):
+			# El jugador soltó el clic al salir de la pausa
+			var was_focused := memory_is_fully_charged or (memory_charge_timer >= max_charge_time)
+			_fire_active_laser(was_focused)
+			active_cooldown = max_cd
+			has_charge_memory = false
+			is_charging = false
+			charge_timer = 0.0
+			is_fully_charged = false
+			laser_charge_ended.emit()
+			return
+		else:
+			# El jugador aún no ha pulsado el botón: mantenemos la carga viva durante la ventana de gracia (6s)
+			memory_grace_timer -= delta
+			laser_charge_updated.emit(memory_charge_timer, max_charge_time, memory_is_fully_charged, true)
+			if memory_grace_timer <= 0.0:
+				has_charge_memory = false
+				laser_charge_ended.emit()
+			return
 
 	# 1. Liberación del clic (Disparo on release / tap)
 	if Input.is_action_just_released("fire_active"):
@@ -61,6 +105,7 @@ func _handle_active_fire(delta: float) -> void:
 			is_charging = false
 			charge_timer = 0.0
 			is_fully_charged = false
+			has_charge_memory = false
 			laser_charge_ended.emit()
 
 	# 2. Mantenimiento del clic para cargar (si cooldown == 0)
@@ -79,15 +124,21 @@ func _handle_active_fire(delta: float) -> void:
 				if audio_mgr and audio_mgr.has_method("play_sfx"):
 					audio_mgr.play_sfx("ui_click", 2.0, -2.0)
 
-		laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged)
+		laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged, false)
 
 	# 3. Si no se presiona ni se libera y seguía en estado de carga
 	else:
 		if is_charging:
+			if charge_timer > 0.05:
+				has_charge_memory = true
+				memory_charge_timer = charge_timer
+				memory_is_fully_charged = is_fully_charged
+				memory_grace_timer = MEMORY_GRACE_MAX
 			is_charging = false
 			charge_timer = 0.0
 			is_fully_charged = false
-			laser_charge_ended.emit()
+			if not has_charge_memory:
+				laser_charge_ended.emit()
 
 func _fire_active_laser(is_focused: bool = false) -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
