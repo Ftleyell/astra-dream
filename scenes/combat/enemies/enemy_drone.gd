@@ -13,6 +13,7 @@ var is_dying: bool = false
 
 @onready var visual: Polygon2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var damage_accumulator: DamageAccumulator = get_node_or_null("DamageAccumulator") as DamageAccumulator
 
 signal enemy_died(enemy: EnemyDrone)
 
@@ -68,6 +69,9 @@ func take_damage(ctx: HitContext) -> void:
 
 	current_health -= ctx.final_damage
 
+	if damage_accumulator:
+		damage_accumulator.register_hit(ctx.final_damage, ctx.is_crit)
+
 	# Hit flash blanco
 	modulate = Color(3.0, 3.0, 3.0, 1.0)
 	var tween := create_tween()
@@ -80,6 +84,8 @@ var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.
 
 func _die() -> void:
 	is_dying = true
+	if damage_accumulator:
+		damage_accumulator.clear_on_death()
 	enemy_died.emit(self)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
