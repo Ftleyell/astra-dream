@@ -39,6 +39,7 @@ signal player_grazed(pos: Vector2)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_to_group("bullet_server")
 	top_level = true
 	_init_memory_pools()
 	_setup_multimesh()
