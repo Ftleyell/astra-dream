@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PlanetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/planets/planet_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+planet_id = &"verdant"
+display_name = "Planeta Frondoso"
+core_color = Color(0.18, 0.95, 0.58, 1)
+mantle_color = Color(0.22, 0.56, 0.32, 1)
+crust_color = Color(0.36, 0.46, 0.28, 1)
+crust_border_color = Color(0.58, 0.82, 0.46, 1)
+crust_health = 60.0
+mantle_health = 90.0
+biomass_per_crust = 2
+biomass_per_mantle = 4
+core_type = &"biosphere_core"

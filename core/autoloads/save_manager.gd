@@ -4,10 +4,14 @@ extends Node
 const SAVE_PATH := "user://profile_data.json"
 const SCHEMA_VERSION := 1
 
-static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = []) -> Error:
+static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1) -> Error:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
 		return FileAccess.get_open_error()
+
+	var current_biomass: int = p_biomass
+	if current_biomass < 0:
+		current_biomass = get_biomass()
 
 	var bans_serializable: Dictionary = {}
 	for char_id: StringName in character_bans.keys():
@@ -29,7 +33,8 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
 		"unlocked_characters": str_unlocked_chars,
-		"character_banlists": bans_serializable
+		"character_banlists": bans_serializable,
+		"biomass": current_biomass
 	}
 
 	var json_str := JSON.stringify(payload, "\t")
@@ -69,14 +74,16 @@ static func _get_default_profile() -> Dictionary:
 		"character_banlists": {
 			&"nova": [&"escudo"] as Array[StringName],
 			&"valentina": [&"manzana"] as Array[StringName]
-		} as Dictionary
+		} as Dictionary,
+		"biomass": 0
 	}
 
 static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 	var cleaned := {
 		"unlocked_items": [] as Array[StringName],
 		"unlocked_characters": [] as Array[StringName],
-		"character_banlists": {} as Dictionary
+		"character_banlists": {} as Dictionary,
+		"biomass": int(raw.get("biomass", 0))
 	}
 
 	if raw.has("unlocked_items"):
@@ -97,3 +104,20 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 			cleaned["character_banlists"][StringName(char_id)] = bans
 
 	return cleaned
+
+## Obtiene la cantidad persistente total de BioMasa acumulada
+static func get_biomass() -> int:
+	var profile := load_profile()
+	return int(profile.get("biomass", 0))
+
+## Agrega BioMasa persistente y guarda inmediatamente el perfil
+static func add_biomass(amount: int) -> int:
+	if amount <= 0:
+		return get_biomass()
+	var profile := load_profile()
+	var new_total: int = int(profile.get("biomass", 0)) + amount
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	save_profile(unlocked_items, bans, unlocked_chars, new_total)
+	return new_total

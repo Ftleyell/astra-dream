@@ -18,6 +18,7 @@ var dash_direction: Vector2 = Vector2.RIGHT
 # Bombs & Economy
 var bomb_count: int = 2
 var run_credits: int = 120
+var run_biomass: int = 0
 
 # EXP & Leveling
 var current_level: int = 1
@@ -32,6 +33,7 @@ var chosen_stat_cards: Array[StatCardData] = []
 signal health_changed(current: float, max_val: float)
 signal bomb_used(remaining: int)
 signal credits_changed(amount: int)
+signal biomass_changed(amount: int, total_persistent: int)
 signal exp_changed(current: float, max_val: float, level: int)
 signal level_up_requested(level: int)
 signal player_died()
@@ -132,6 +134,13 @@ func _handle_actions() -> void:
 func add_credits(amount: int) -> void:
 	run_credits += amount
 	credits_changed.emit(run_credits)
+
+func add_biomass(amount: int) -> void:
+	if amount <= 0:
+		return
+	run_biomass += amount
+	var total_persistent := SaveManager.add_biomass(amount)
+	biomass_changed.emit(run_biomass, total_persistent)
 
 func add_exp(amount: float) -> void:
 	current_exp += amount

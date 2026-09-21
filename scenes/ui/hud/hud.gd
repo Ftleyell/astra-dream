@@ -36,6 +36,10 @@ func _ready() -> void:
 		if player.inventory:
 			player.inventory.item_added.connect(_on_inventory_item_added)
 
+		if player.has_signal("biomass_changed"):
+			player.biomass_changed.connect(update_biomass)
+		update_biomass(player.run_biomass, SaveManager.get_biomass())
+
 		var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 		if weapon_ctrl:
 			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
@@ -89,8 +93,20 @@ func set_active_satellite(pos: Vector2, index: int) -> void:
 	satellite_index = index
 	has_satellite = true
 
+var current_credits: int = 120
+var current_biomass: int = 0
+
 func update_credits(amount: int) -> void:
-	credits_label.text = "Créditos: %d C" % amount
+	current_credits = amount
+	_refresh_economy_label()
+
+func update_biomass(_run_amount: int, total_persistent: int) -> void:
+	current_biomass = total_persistent
+	_refresh_economy_label()
+
+func _refresh_economy_label() -> void:
+	if credits_label:
+		credits_label.text = "Créditos: %d C | BioMasa: %d" % [current_credits, current_biomass]
 
 func update_exp(current: float, max_val: float, level: int) -> void:
 	exp_bar.max_value = max_val

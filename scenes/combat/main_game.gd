@@ -33,6 +33,7 @@ func _ready() -> void:
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)
+	player.biomass_changed.connect(hud.update_biomass)
 	player.level_up_requested.connect(_on_level_up_requested)
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
@@ -61,6 +62,11 @@ func _ready() -> void:
 	var asteroid_spawner := AsteroidSpawner.new()
 	asteroid_spawner.name = "AsteroidSpawner"
 	add_child(asteroid_spawner)
+
+	# Inyección dinámica de macro-planetas y nidos de exploración
+	var planet_spawner := PlanetSpawner.new()
+	planet_spawner.name = "PlanetSpawner"
+	add_child(planet_spawner)
 
 func _process(delta: float) -> void:
 	# Lógica del temporizador de oleada
