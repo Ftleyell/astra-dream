@@ -57,6 +57,11 @@ func _ready() -> void:
 	if audio_mgr and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("combat")
 
+	# Inyección dinámica de objetos espaciales y asteroides periódicos
+	var asteroid_spawner := AsteroidSpawner.new()
+	asteroid_spawner.name = "AsteroidSpawner"
+	add_child(asteroid_spawner)
+
 func _process(delta: float) -> void:
 	# Lógica del temporizador de oleada
 	wave_timer -= delta
