@@ -3,6 +3,12 @@
 [ext_resource type="Script" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="2_settings"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel_scifi.png" id="3_panel"]
+[ext_resource type="Texture2D" path="res://assets/icons/package.svg" id="4_package"]
+[ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="5_star"]
+[ext_resource type="Texture2D" path="res://assets/icons/play.svg" id="6_play"]
+[ext_resource type="Texture2D" path="res://assets/icons/gear.svg" id="7_gear"]
+[ext_resource type="Texture2D" path="res://assets/icons/restart.svg" id="8_restart"]
+[ext_resource type="Texture2D" path="res://assets/icons/home.svg" id="9_home"]
 
 [node name="PauseMenu" type="CanvasLayer"]
 process_mode = 3
@@ -76,11 +82,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="ItemsHeader" type="Label" parent="Panel/VBoxContainer/ContentHBox/ItemsColumn"]
+[node name="ItemsHeader" type="HBoxContainer" parent="Panel/VBoxContainer/ContentHBox/ItemsColumn"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Panel/VBoxContainer/ContentHBox/ItemsColumn/ItemsHeader"]
+modulate = Color(0.4, 0.85, 1, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("4_package")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ContentHBox/ItemsColumn/ItemsHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "📦 ÍTEMS EQUIPADOS"
+text = "ÍTEMS EQUIPADOS"
 
 [node name="ItemsScroll" type="ScrollContainer" parent="Panel/VBoxContainer/ContentHBox/ItemsColumn"]
 layout_mode = 2
@@ -99,11 +117,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="UpgradesHeader" type="Label" parent="Panel/VBoxContainer/ContentHBox/UpgradesColumn"]
+[node name="UpgradesHeader" type="HBoxContainer" parent="Panel/VBoxContainer/ContentHBox/UpgradesColumn"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Panel/VBoxContainer/ContentHBox/UpgradesColumn/UpgradesHeader"]
+modulate = Color(1, 0.85, 0.2, 1)
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("5_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ContentHBox/UpgradesColumn/UpgradesHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 18
-text = "⭐ MEJORAS DE NIVEL (BROTATO)"
+text = "MEJORAS DE NIVEL (BROTATO)"
 
 [node name="UpgradesScroll" type="ScrollContainer" parent="Panel/VBoxContainer/ContentHBox/UpgradesColumn"]
 layout_mode = 2
@@ -126,24 +156,32 @@ alignment = 1
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "▶ REANUDAR"
+text = "REANUDAR"
+icon = ExtResource("6_play")
+alignment = 1
 
 [node name="SettingsButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
 custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "⚙ CONFIGURACIÓN"
+text = "CONFIGURACIÓN"
+icon = ExtResource("7_gear")
+alignment = 1
 
 [node name="RestartButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
 custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "🔄 REINICIAR"
+text = "REINICIAR"
+icon = ExtResource("8_restart")
+alignment = 1
 
 [node name="MenuButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "🏠 MENÚ PRINCIPAL"
+text = "MENÚ PRINCIPAL"
+icon = ExtResource("9_home")
+alignment = 1
 
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]

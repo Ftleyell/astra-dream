@@ -1,6 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://charselect001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
+[ext_resource type="Texture2D" path="res://assets/icons/gear.svg" id="2_gear"]
+[ext_resource type="Texture2D" path="res://assets/icons/rocket.svg" id="3_rocket"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -142,7 +144,9 @@ theme_override_constants/separation = 20
 custom_minimum_size = Vector2(240, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
-text = "⚙ CUSTOM LOADOUT / BANLIST"
+text = "CUSTOM LOADOUT / BANLIST"
+icon = ExtResource("2_gear")
+alignment = 1
 
 [node name="LaunchButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/ActionsRow"]
 custom_minimum_size = Vector2(280, 56)
@@ -150,4 +154,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
 theme_override_font_sizes/font_size = 20
-text = "🚀 DESPEGAR (INICIAR RUN)"
+text = "DESPEGAR (INICIAR RUN)"
+icon = ExtResource("3_rocket")
+alignment = 1

@@ -4,6 +4,8 @@ extends Control
 signal launch_run_requested(character_id: StringName, banned_items: Array[StringName])
 
 const MAX_BANS: int = 5
+const ICON_CHECK: Texture2D = preload("res://assets/icons/check.svg")
+const ICON_CROSS: Texture2D = preload("res://assets/icons/cross.svg")
 
 var current_character_id: StringName = &"nova"
 var profile_data: Dictionary = {}
@@ -87,11 +89,14 @@ func _create_item_ban_card(item: ItemData, is_banned: bool, active_bans: Array[S
 	desc_lbl.add_theme_font_size_override("font_size", 12)
 
 	var toggle_btn := Button.new()
+	toggle_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if is_banned:
-		toggle_btn.text = "BANEADO [✗] (Excluido de la Run)"
+		toggle_btn.text = "BANEADO (Excluido de la Run)"
+		toggle_btn.icon = ICON_CROSS
 		toggle_btn.modulate = Color(1.0, 0.3, 0.3)
 	else:
-		toggle_btn.text = "ACTIVO [✓] (Disponible)"
+		toggle_btn.text = "ACTIVO (Disponible)"
+		toggle_btn.icon = ICON_CHECK
 		toggle_btn.modulate = Color(0.3, 1.0, 0.4)
 
 	toggle_btn.pressed.connect(func():
