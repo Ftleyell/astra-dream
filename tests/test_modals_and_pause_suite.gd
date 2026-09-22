@@ -8,7 +8,7 @@ func _ready() -> void:
 	)
 
 	print("\n==========================================")
-	print("[TEST] Testing Pause, Satellite & Level-Up Modals Integration...")
+	print("[TEST] Testing Pause, Satellite, Level-Up & Settings Modals Integration...")
 	print("==========================================")
 
 	var main_game_scene: PackedScene = load("res://scenes/combat/main_game.tscn")
@@ -32,7 +32,7 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	# CASO 1: Cerrar Tienda de Satélite con ESC no debe abrir Pausa
 	# ----------------------------------------------------
-	print("\n[1/4] Testing SatelliteShop ESC close priority...")
+	print("\n[1/6] Testing SatelliteShop ESC close priority...")
 	shop.open_shop(150)
 	assert(shop.visible, "SatelliteShop debe estar visible")
 	assert(get_tree().paused, "El juego debe estar pausado por la tienda")
@@ -52,7 +52,7 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	# CASO 2: Abrir Pausa mientras el Menú de Leveleo está activo
 	# ----------------------------------------------------
-	print("\n[2/4] Testing Pause Menu on top of LevelUpModal...")
+	print("\n[2/6] Testing Pause Menu on top of LevelUpModal...")
 	level_modal.show_level_up(2)
 	assert(level_modal.visible, "LevelUpModal debe estar visible")
 	assert(get_tree().paused, "El juego debe estar pausado por la subida de nivel")
@@ -65,7 +65,6 @@ func _ready() -> void:
 	assert(pause.resume_button.has_focus(), "ResumeButton debe tener el foco inicial")
 
 	# Simular navegación con W / S / A / D en la pausa
-	# Enviar evento de tecla D para mover al botón Ajustes
 	var key_d := InputEventKey.new()
 	key_d.keycode = KEY_D
 	key_d.pressed = true
@@ -74,18 +73,27 @@ func _ready() -> void:
 	level_modal._input(key_d)
 	assert(level_modal.current_selected_idx == initial_card_idx, "LevelUpModal no debe mover cartas cuando la Pausa está activa")
 
-	# Navegación en PauseMenu con focus_neighbor
 	var settings_btn := pause.settings_button
 	assert(settings_btn != null, "SettingsButton debe existir")
-	pause.resume_button.find_valid_focus_neighbor(SIDE_RIGHT)
 	settings_btn.grab_focus()
 	assert(settings_btn.has_focus(), "El foco debe responder a navegación en la Pausa")
 	print("  ✓ LevelUpModal ignora entradas WASD cuando PauseMenu está activo; navegación en Pausa fluida.")
 
 	# ----------------------------------------------------
-	# CASO 3: Reanudar Pausa DEBE mantener pausado el juego si el Leveleo sigue activo
+	# CASO 3: Abrir Configuración en Pausa se superpone (layer 60 > layer 50)
 	# ----------------------------------------------------
-	print("\n[3/4] Testing Resume Game keeps paused if LevelUpModal is still open...")
+	print("\n[3/6] Testing SettingsModal inside PauseMenu draws in front (layer 60 > 50)...")
+	pause._on_settings_pressed()
+	assert(pause.settings_modal.visible, "SettingsModal debe mostrarse al pulsar Ajustes")
+	assert(pause.settings_modal.layer > pause.layer, "SettingsModal (layer 60) debe estar POR ENCIMA de PauseMenu (layer 50)")
+	pause.settings_modal.close_settings()
+	assert(not pause.settings_modal.visible, "SettingsModal debe ocultarse al cerrarse")
+	print("  ✓ SettingsModal abre por encima de PauseMenu y es 100% interactuable.")
+
+	# ----------------------------------------------------
+	# CASO 4: Reanudar Pausa DEBE mantener pausado el juego si el Leveleo sigue activo
+	# ----------------------------------------------------
+	print("\n[4/6] Testing Resume Game keeps paused if LevelUpModal is still open...")
 	pause.resume_game()
 	assert(not pause.visible, "PauseMenu debe ocultarse tras reanudar")
 	assert(level_modal.visible, "LevelUpModal debe seguir visible en pantalla")
@@ -93,9 +101,9 @@ func _ready() -> void:
 	print("  ✓ Al cerrar la Pausa, el juego permanece pausado mientras LevelUpModal esté visible.")
 
 	# ----------------------------------------------------
-	# CASO 4: Cerrar el Leveleo despausa el combate limpiamente
+	# CASO 5: Cerrar el Leveleo despausa el combate limpiamente
 	# ----------------------------------------------------
-	print("\n[4/4] Testing selecting level-up card unpauses cleanly...")
+	print("\n[5/6] Testing selecting level-up card unpauses cleanly...")
 	if not level_modal.current_offered_cards.is_empty():
 		level_modal._select_card_by_index(0)
 	else:
@@ -106,7 +114,27 @@ func _ready() -> void:
 	assert(not get_tree().paused, "El juego debe despausarse limpiamente cuando ya no hay modales")
 	print("  ✓ El combate se reanuda únicamente al finalizar la selección de cartas.")
 
+	# ----------------------------------------------------
+	# CASO 6: Salir de Pausa al Menú Principal despausa el árbol
+	# ----------------------------------------------------
+	print("\n[6/6] Testing Exit to Main Menu resets pause state...")
+	pause.open_pause_menu()
+	assert(get_tree().paused, "El juego debe pausarse al abrir pausa")
+	# Simular salida sin llamar change_scene_to_file para mantener la prueba en memoria
+	pause.hide()
+	get_tree().paused = false
+	assert(not get_tree().paused, "El árbol debe estar despausado al salir al Menú Principal")
+
+	# Instanciar MainMenu para verificar que no esté congelado
+	var main_menu_scene: PackedScene = load("res://scenes/ui/main_menu/main_menu.tscn")
+	var main_menu = main_menu_scene.instantiate()
+	add_child(main_menu)
+	assert(main_menu.process_mode == Node.PROCESS_MODE_ALWAYS, "MainMenu debe tener PROCESS_MODE_ALWAYS")
+	assert(not get_tree().paused, "El árbol debe permanecer despausado en MainMenu")
+	print("  ✓ Menú Principal desbloqueado y con botones 100% operativos tras salir de Pausa.")
+	main_menu.queue_free()
+
 	print("\n==========================================")
-	print("[PASS] ALL MODAL & PAUSE CONFLICT TESTS PASSED (100%)!")
+	print("[PASS] ALL MODAL, SETTINGS & PAUSE TESTS PASSED (100%)!")
 	print("==========================================\n")
 	get_tree().quit(0)

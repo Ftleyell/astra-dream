@@ -46,7 +46,7 @@ var actions_to_rebind: Array[Dictionary] = [
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	layer = 45 # Asegura estar siempre por encima del menú de pausa (layer 30) y HUD (layer 10)
+	layer = 60 # Asegura estar siempre por encima del menú de pausa (layer 50) y modales (layer 30/20)
 	hide()
 	rebind_popup.hide()
 

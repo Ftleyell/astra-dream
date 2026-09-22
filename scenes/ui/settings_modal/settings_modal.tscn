@@ -8,7 +8,7 @@
 [node name="SettingsModal" type="CanvasLayer"]
 visible = false
 process_mode = 3
-layer = 45
+layer = 60
 script = ExtResource("1_settings")
 
 [node name="Backdrop" type="ColorRect" parent="."]

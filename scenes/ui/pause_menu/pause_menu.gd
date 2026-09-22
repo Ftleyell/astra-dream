@@ -245,17 +245,21 @@ func _on_save_quit_pressed() -> void:
 	if main_game and main_game.has_method("save_current_run_state"):
 		main_game.save_current_run_state()
 
-	resume_game()
+	hide()
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
 
 func _on_restart_pressed() -> void:
-	resume_game()
+	hide()
+	get_tree().paused = false
 	get_tree().reload_current_scene()
 
 func _on_hub_pressed() -> void:
-	resume_game()
+	hide()
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_menu_pressed() -> void:
-	resume_game()
+	hide()
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")

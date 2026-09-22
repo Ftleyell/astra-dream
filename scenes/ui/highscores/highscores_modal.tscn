@@ -6,7 +6,7 @@
 
 [node name="HighscoresModal" type="CanvasLayer"]
 process_mode = 3
-layer = 35
+layer = 60
 script = ExtResource("1_highscores")
 
 [node name="Backdrop" type="ColorRect" parent="."]

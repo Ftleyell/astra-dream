@@ -95,6 +95,8 @@ var _pilot_tweens: Array[Tween] = []
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = false
 	_setup_camera()
 	_collect_and_verify_sprites()
 	_setup_interactables()

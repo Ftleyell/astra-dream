@@ -11,6 +11,7 @@ const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	layer = 60
 	hide()
 	if close_button:
 		UIFocusHelper.apply_cyber_focus(close_button)

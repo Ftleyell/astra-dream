@@ -16,6 +16,8 @@ func _enter_tree() -> void:
 	_wire_hub_button()
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = false
 	_wire_hub_button()
 
 	# Configuración del botón de Continuar Run activa
