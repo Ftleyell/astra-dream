@@ -98,7 +98,13 @@ func close_stats() -> void:
 	tw.parallel().tween_property(main_container, "modulate:a", 0.0, 0.12)
 	await tw.finished
 	visible = false
-	get_tree().paused = false
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		get_tree().paused = true
+		if parent_game.has_method("restore_combat_modal_focus"):
+			parent_game.restore_combat_modal_focus()
+	else:
+		get_tree().paused = false
 
 
 func _animate_open() -> void:

@@ -55,13 +55,35 @@ func open_shop(credits: int) -> void:
 	show()
 	call_deferred("_setup_focus_and_grab")
 
+func restore_focus() -> void:
+	_setup_focus_and_grab()
+
 func close_shop() -> void:
 	hide()
-	get_tree().paused = false
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		get_tree().paused = true
+		if parent_game.has_method("restore_combat_modal_focus"):
+			parent_game.restore_combat_modal_focus()
+	else:
+		get_tree().paused = false
 	shop_closed.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
+		return
+
+	# Si la pausa está activa por encima, ignorar cualquier entrada
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active():
+		return
+	var root_pm = get_tree().root.find_child("PauseMenu", true, false)
+	if root_pm and root_pm.visible:
+		return
+
+	if event.is_action_pressed("ui_cancel"):
+		close_shop()
+		get_viewport().set_input_as_handled()
 		return
 
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():

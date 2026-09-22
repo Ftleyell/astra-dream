@@ -47,6 +47,36 @@ func _ready() -> void:
 	if hub_button:
 		hub_button.pressed.connect(_on_hub_pressed)
 	menu_button.pressed.connect(_on_menu_pressed)
+	_setup_button_navigation()
+
+func _setup_button_navigation() -> void:
+	var buttons: Array[Button] = [
+		resume_button,
+		settings_button,
+		highscores_button,
+		save_quit_button,
+		restart_button,
+		hub_button,
+		menu_button
+	]
+	var active: Array[Button] = []
+	for b in buttons:
+		if is_instance_valid(b) and b.visible:
+			active.append(b)
+
+	var count := active.size()
+	if count <= 1:
+		return
+
+	for i in range(count):
+		var btn := active[i]
+		var prev_btn := active[(i - 1 + count) % count]
+		var next_btn := active[(i + 1) % count]
+		btn.focus_neighbor_left = prev_btn.get_path()
+		btn.focus_neighbor_right = next_btn.get_path()
+		# Permitir que W y S también naveguen circularmente entre las opciones
+		btn.focus_neighbor_top = prev_btn.get_path()
+		btn.focus_neighbor_bottom = next_btn.get_path()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -57,21 +87,48 @@ func _unhandled_input(event: InputEvent) -> void:
 				settings_modal.close_settings()
 			else:
 				resume_game()
+			get_viewport().set_input_as_handled()
 		else:
+			# Si la tienda de satélite o el briefing están activos, ellos consumen ESC prioritariamente
+			var parent_game = get_parent()
+			if parent_game and parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active():
+				return
+			if parent_game and "is_briefing_active" in parent_game and parent_game.is_briefing_active:
+				return
 			open_pause_menu()
-		get_viewport().set_input_as_handled()
+			get_viewport().set_input_as_handled()
+		return
+
+	if visible:
+		# Si se pierde el foco por clic o cambio de ventana, recuperarlo con cualquier botón de dirección
+		if not get_viewport().gui_get_focus_owner():
+			if event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right") or event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down"):
+				resume_button.grab_focus()
+				get_viewport().set_input_as_handled()
+				return
 
 func open_pause_menu() -> void:
 	get_tree().paused = true
 	_refresh_build_inspector()
 	show()
+	_setup_button_navigation()
 	resume_button.grab_focus()
 
 func resume_game() -> void:
 	hide()
 	if settings_modal and settings_modal.visible:
 		settings_modal.close_settings()
-	get_tree().paused = false
+	if highscores_modal and highscores_modal.visible:
+		highscores_modal.close_highscores()
+
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		# Mantener el árbol pausado porque hay otra ventana modal activa (Leveleo, Satélite, etc.)
+		get_tree().paused = true
+		if parent_game.has_method("restore_combat_modal_focus"):
+			parent_game.restore_combat_modal_focus()
+	else:
+		get_tree().paused = false
 
 func _refresh_build_inspector() -> void:
 	_populate_items()

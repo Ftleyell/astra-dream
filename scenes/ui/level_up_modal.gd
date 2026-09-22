@@ -54,8 +54,24 @@ func show_level_up(level: int) -> void:
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 4)
 
+func restore_focus() -> void:
+	if current_selected_idx >= 0 and current_selected_idx < select_buttons.size():
+		var btn = select_buttons[current_selected_idx]
+		if is_instance_valid(btn):
+			btn.grab_focus()
+	elif not select_buttons.is_empty() and is_instance_valid(select_buttons[0]):
+		select_buttons[0].grab_focus()
+
 func _input(event: InputEvent) -> void:
 	if not visible:
+		return
+
+	# Si el Menú de Pausa está abierto por encima, ignorar cualquier entrada para no competir con el foco ni desviar WASD
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active():
+		return
+	var root_pm = get_tree().root.find_child("PauseMenu", true, false)
+	if root_pm and root_pm.visible:
 		return
 
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
@@ -302,5 +318,11 @@ func _select_card(card: StatCardData) -> void:
 		stat_deck_manager.apply_card_to_stats(card, player.stats)
 		player.chosen_stat_cards.append(card)
 	hide()
-	get_tree().paused = false
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		get_tree().paused = true
+		if parent_game.has_method("restore_combat_modal_focus"):
+			parent_game.restore_combat_modal_focus()
+	else:
+		get_tree().paused = false
 	card_chosen.emit(card)

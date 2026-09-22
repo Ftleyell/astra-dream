@@ -10,6 +10,8 @@ extends Node2D
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
 @onready var camera: GameCamera2D = $Camera2D
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
+@onready var pause_menu: PauseMenu = get_node_or_null("PauseMenu") as PauseMenu
+@onready var character_stats_overlay: CharacterStatsOverlay = get_node_or_null("CharacterStatsOverlay") as CharacterStatsOverlay
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
 @onready var skip_button: Button = get_node_or_null("SkipBadgeLayer/MarginContainer/SkipButton")
 
@@ -324,6 +326,32 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 func _on_level_up_requested(level: int) -> void:
 	level_up_modal.show_level_up(level)
 	save_current_run_state()
+
+func is_pause_menu_active() -> bool:
+	return pause_menu != null and pause_menu.visible
+
+func is_satellite_shop_active() -> bool:
+	return satellite_shop != null and satellite_shop.visible
+
+func is_level_up_modal_active() -> bool:
+	return level_up_modal != null and level_up_modal.visible
+
+func is_any_combat_modal_active() -> bool:
+	if is_briefing_active:
+		return true
+	if is_satellite_shop_active():
+		return true
+	if is_level_up_modal_active():
+		return true
+	if character_stats_overlay and character_stats_overlay.is_open:
+		return true
+	return false
+
+func restore_combat_modal_focus() -> void:
+	if is_level_up_modal_active() and level_up_modal.has_method("restore_focus"):
+		level_up_modal.restore_focus()
+	elif is_satellite_shop_active() and satellite_shop.has_method("restore_focus"):
+		satellite_shop.restore_focus()
 
 func _on_player_bomb_used(_remaining: int) -> void:
 	if camera:
