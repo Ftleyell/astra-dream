@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://v4cuumph4s301"]
+
+[ext_resource type="Script" path="res://scenes/combat/player/dash_effects/vacuum_phase_pulse.gd" id="1_pulse"]
+
+[node name="VacuumPhasePulse" type="Node2D"]
+script = ExtResource("1_pulse")

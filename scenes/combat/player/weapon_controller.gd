@@ -248,7 +248,7 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 	var wdata := inst.weapon_data
 	var base_dmg := inst.get_effective_damage(player.stats if player else null)
 	var crit_chance: float = player.stats.get_stat(&"crit_chance") if player else 0.05
-	var is_crit := randf() <= crit_chance
+	var is_crit := (randf() <= crit_chance) or (player != null and player.has_method("consume_guaranteed_crit") and player.consume_guaranteed_crit())
 	var crit_mult: float = player.stats.get_stat(&"crit_damage") if player else 1.5
 	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
 	var size_stat: float = player.stats.get_stat(&"weapon_size") if player else 1.0

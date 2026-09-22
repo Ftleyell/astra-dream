@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://f1retra1lhzd01"]
+
+[ext_resource type="Script" path="res://scenes/combat/player/dash_effects/fire_trail_hazard.gd" id="1_fire"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fire"]
+radius = 16.0
+height = 54.0
+
+[node name="FireTrailHazard" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_fire")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_fire")
+
+[node name="VisualPolygon" type="Polygon2D" parent="."]
+color = Color(1, 0.45098, 0.101961, 0.752941)
+polygon = PackedVector2Array(-24, -12, 24, -12, 32, 0, 24, 12, -24, 12, -32, 0)

@@ -41,6 +41,14 @@ size_flags_vertical = 4
 value = 100.0
 show_percentage = false
 
+[node name="VSepDash" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+
+[node name="DashLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Dash: [LISTO]"
+
 [node name="VSep1" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
 

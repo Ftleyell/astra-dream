@@ -5,6 +5,7 @@ extends CanvasLayer
 
 @onready var health_bar: ProgressBar = $MarginContainer/VBoxContainer/TopRow/HealthBar
 @onready var health_label: Label = $MarginContainer/VBoxContainer/TopRow/HealthLabel
+@onready var dash_label: Label = get_node_or_null("MarginContainer/VBoxContainer/TopRow/DashLabel")
 @onready var bomb_label: Label = $MarginContainer/VBoxContainer/TopRow/BombLabel
 @onready var laser_cd_label: Label = $MarginContainer/VBoxContainer/TopRow/LaserCDLabel
 @onready var credits_label: Label = $MarginContainer/VBoxContainer/TopRow/CreditsLabel
@@ -34,6 +35,10 @@ func _ready() -> void:
 		player.bomb_used.connect(_on_bomb_used)
 		_on_health_changed(player.current_health, player.stats.get_stat(&"max_health"))
 		_on_bomb_used(player.bomb_count)
+
+		if player.has_signal("dash_updated"):
+			player.dash_updated.connect(_on_dash_updated)
+			_on_dash_updated(player.dash_charges, player.max_dash_charges, 1.0, player.is_focus_active)
 
 		if player.inventory:
 			player.inventory.item_added.connect(_on_inventory_item_added)
@@ -269,3 +274,22 @@ func set_boss_phase(new_phase: int) -> void:
 func hide_boss() -> void:
 	if boss_health_bar:
 		boss_health_bar.hide_boss()
+
+func _on_dash_updated(current_charges: int, max_charges: int, recharge_ratio: float, is_focus: bool) -> void:
+	if not dash_label:
+		return
+	if is_focus:
+		dash_label.text = "ENFOQUE: 100% CRIT"
+		dash_label.modulate = Color(1.0, 0.3, 0.9, 1.0)
+	elif current_charges > 0:
+		if max_charges > 1:
+			var diamonds := ""
+			for i in range(max_charges):
+				diamonds += "◆ " if i < current_charges else "◇ "
+			dash_label.text = "Dash: [%s]" % diamonds.strip_edges()
+		else:
+			dash_label.text = "Dash: [LISTO]"
+		dash_label.modulate = Color(0.3, 1.0, 0.6, 1.0)
+	else:
+		dash_label.text = "Dash: [%d%%]" % int(recharge_ratio * 100.0)
+		dash_label.modulate = Color(0.7, 0.7, 0.7, 1.0)

@@ -235,6 +235,24 @@ func bomb_clear_shockwave(center: Vector2, shockwave_radius: float) -> void:
 		if dx * dx + dy * dy <= r_sq:
 			_swap_and_pop(i)
 
+func clear_bullets_in_radius(center: Vector2, radius_val: float) -> void:
+	bomb_clear_shockwave(center, radius_val)
+
+func clear_bullets_in_arc(center: Vector2, direction: Vector2, arc_degrees: float, max_dist: float) -> void:
+	var r_sq: float = max_dist * max_dist
+	var half_rad: float = deg_to_rad(arc_degrees * 0.5)
+	var forward: Vector2 = direction.normalized()
+	for i in range(active_count - 1, -1, -1):
+		var diff := Vector2(pos_x[i] - center.x, pos_y[i] - center.y)
+		var d_sq := diff.length_squared()
+		if d_sq <= r_sq and d_sq > 0.001:
+			var angle_diff := absf(forward.angle_to(diff))
+			if angle_diff <= half_rad:
+				_swap_and_pop(i)
+
+func get_active_bullet_count() -> int:
+	return active_count
+
 # PROCEDURAL DANMAKU PATTERNS
 func fire_radial_ring(origin: Vector2, count: int, speed: float, 
 					  base_rot: float = 0.0, b_type: int = 0) -> void:
