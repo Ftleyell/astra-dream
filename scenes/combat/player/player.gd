@@ -254,11 +254,11 @@ func _handle_dash(delta: float) -> void:
 
 func _execute_character_dash() -> void:
 	var cid := String(character_data.character_id) if character_data else "nova"
-	var move_vec := velocity.normalized() if velocity.length_squared() > 0.1 else (get_global_mouse_position() - global_position).normalized()
-	if move_vec.length_squared() < 0.001:
-		move_vec = Vector2.RIGHT
+	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
 
-	dash_direction = move_vec
+	dash_direction = aim_dir
 
 	match cid:
 		"nova":

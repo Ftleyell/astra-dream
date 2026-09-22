@@ -18,18 +18,20 @@ func _ready() -> void:
 	assert(roster.size() >= 6, "Debe haber al menos 6 personajes en el roster")
 
 	# ----------------------------------------------------
-	# 1. NOVA: 2 Cargas Rápidas + Rastro Ígneo
+	# 1. NOVA: 2 Cargas Rápidas + Rastro Ígneo hacia la mira
 	# ----------------------------------------------------
-	print("\n[1/6] Testing Nova: Fire Trail & 2-Charge Dash...")
+	print("\n[1/6] Testing Nova: Fire Trail & 2-Charge Dash towards aim...")
 	var nova_player: Player = _spawn_test_player(roster.get(&"nova"), bullet_server)
 	assert(nova_player.max_dash_charges == 2, "Nova debe tener 2 cargas máximas")
 	assert(nova_player.dash_charges == 2, "Nova debe empezar con 2 cargas")
 	assert(nova_player.dash_recharge_max == 1.0, "Nova debe tener recarga de 1.0s")
 
-	nova_player.velocity = Vector2.RIGHT * 200.0
-	nova_player.global_position = Vector2(100, 100)
+	# Mira hacia la derecha (0,0) desde (-100, 0), con movimiento hacia ARRIBA
+	nova_player.global_position = Vector2(-100, 0)
+	nova_player.velocity = Vector2.UP * 200.0
 	nova_player._execute_character_dash()
 	assert(nova_player.is_dashing, "Nova debe entrar en estado dashing")
+	assert(nova_player.dash_direction.is_equal_approx(Vector2.RIGHT), "Nova debe dashear en la dirección de la mira (Vector2.RIGHT)")
 
 	var found_fire := false
 	for child in get_children():
@@ -38,27 +40,27 @@ func _ready() -> void:
 			child.queue_free()
 			break
 	assert(found_fire, "Nova debe instanciar FireTrailHazard")
-	print("  ✓ Nova: 2 cargas configuradas, rastro ígneo instanciado correctamente")
+	print("  ✓ Nova: Dash hacia la mira verificado, rastro ígneo instanciado correctamente")
 	nova_player.queue_free()
 
 	# ----------------------------------------------------
-	# 2. VALENTINA: Salto Táctico + Bullet-Time + Crítico Garantizado
+	# 2. VALENTINA: Salto Táctico de Retroceso opuesto a la mira + Bullet-Time
 	# ----------------------------------------------------
 	print("\n[2/6] Testing Valentina: Tactical Leap, Bullet-Time & Guaranteed Crit...")
 	var val_player: Player = _spawn_test_player(roster.get(&"valentina"), bullet_server)
 	assert(val_player.max_dash_charges == 1, "Valentina debe tener 1 carga")
 	assert(val_player.dash_recharge_max == 1.8, "Valentina debe recargar en 1.8s")
 
-	# Posicionar a Valentina para apuntar hacia la derecha (cursor headless en 0,0)
+	# Mira hacia la derecha (0,0) desde (-100, 0), con movimiento hacia ARRIBA
 	val_player.global_position = Vector2(-100, 0)
-	val_player.velocity = Vector2.UP * 200.0 # Movimiento hacia arriba
+	val_player.velocity = Vector2.UP * 200.0
 	val_player._execute_character_dash()
 
 	assert(val_player.is_focus_active, "Valentina debe activar Sobre-Enfoque")
 	assert(val_player.has_guaranteed_crit, "Valentina debe tener crítico garantizado")
 	assert(is_equal_approx(Engine.time_scale, 0.55), "Valentina debe aplicar time_scale 0.55")
-	# Apuntado es (0,0) - (-100,0) = (1,0) (DERECHA). El retroceso debe ser hacia la IZQUIERDA
-	assert(val_player.dash_direction.is_equal_approx(Vector2.LEFT), "Valentina debe retroceder opuesto a la mira (Vector2.LEFT), no hacia su movimiento")
+	# Retroceso opuesto a la mira
+	assert(val_player.dash_direction.is_equal_approx(Vector2.LEFT), "Valentina debe retroceder opuesto a la mira (Vector2.LEFT)")
 
 	var had_crit := val_player.consume_guaranteed_crit()
 	assert(had_crit, "consume_guaranteed_crit debe retornar true en el primer consumo")
@@ -70,15 +72,17 @@ func _ready() -> void:
 	val_player.queue_free()
 
 	# ----------------------------------------------------
-	# 3. KIRA: Mina Señuelo Nanotecnológica
+	# 3. KIRA: Mina Señuelo Nanotecnológica hacia la mira
 	# ----------------------------------------------------
-	print("\n[3/6] Testing Kira: Decoy Drone Mine...")
+	print("\n[3/6] Testing Kira: Decoy Drone Mine towards aim...")
 	var kira_player: Player = _spawn_test_player(roster.get(&"kira"), bullet_server)
 	assert(kira_player.max_dash_charges == 1, "Kira debe tener 1 carga")
 	assert(kira_player.dash_recharge_max == 1.4, "Kira debe recargar en 1.4s")
 
-	kira_player.global_position = Vector2(200, 200)
+	kira_player.global_position = Vector2(-100, 0)
+	kira_player.velocity = Vector2.DOWN * 200.0
 	kira_player._execute_character_dash()
+	assert(kira_player.dash_direction.is_equal_approx(Vector2.RIGHT), "Kira debe dashear en la dirección de la mira (Vector2.RIGHT)")
 
 	var found_mine: Node2D = null
 	for child in get_children():
@@ -86,22 +90,23 @@ func _ready() -> void:
 			found_mine = child as Node2D
 			break
 	assert(found_mine != null, "Kira debe spawnear DecoyDroneMine con grupo decoy_targets")
-	assert(found_mine.global_position.distance_to(Vector2(200, 200)) < 1.0, "La mina debe colocarse en origen")
+	assert(found_mine.global_position.distance_to(Vector2(-100, 0)) < 1.0, "La mina debe colocarse en origen")
 	found_mine.queue_free()
 
-	print("  ✓ Kira: Mina señuelo desplegada en origen con grupo decoy_targets")
+	print("  ✓ Kira: Dash hacia la mira y mina señuelo desplegada en origen")
 	kira_player.queue_free()
 
 	# ----------------------------------------------------
-	# 4. SELENE: Salto de Fase del Vacío (Teleport + Succión)
+	# 4. SELENE: Salto de Fase del Vacío hacia la mira (Teleport + Succión)
 	# ----------------------------------------------------
-	print("\n[4/6] Testing Selene: Void Phase Shift & Vacuum Pulse...")
+	print("\n[4/6] Testing Selene: Void Phase Shift towards aim & Vacuum Pulse...")
 	var selene_player: Player = _spawn_test_player(roster.get(&"selene"), bullet_server)
-	selene_player.global_position = Vector2(100, 100)
-	selene_player.velocity = Vector2.RIGHT * 100.0
+	selene_player.global_position = Vector2(-100, 0)
+	selene_player.velocity = Vector2.DOWN * 100.0
 	selene_player._execute_character_dash()
 
-	assert(selene_player.global_position.x >= 330.0, "Selene debe teletransportarse 240px")
+	assert(selene_player.dash_direction.is_equal_approx(Vector2.RIGHT), "Selene debe dashear hacia la mira (Vector2.RIGHT)")
+	assert(is_equal_approx(selene_player.global_position.x, 140.0), "Selene debe teletransportarse 240px hacia la mira")
 
 	var found_pulse: Node2D = null
 	for child in get_children():
@@ -112,30 +117,32 @@ func _ready() -> void:
 	assert(found_pulse != null, "Selene debe crear VacuumPhasePulse")
 	found_pulse.queue_free()
 
-	print("  ✓ Selene: Teletransporte de 240px y pulso gravitacional de fase verificado")
+	print("  ✓ Selene: Teletransporte de 240px hacia la mira y pulso gravitacional verificado")
 	selene_player.queue_free()
 
 	# ----------------------------------------------------
-	# 5. ROXY: Embestida Sísmica Rompemuros
+	# 5. ROXY: Embestida Sísmica Rompemuros hacia la mira
 	# ----------------------------------------------------
-	print("\n[5/6] Testing Roxy: Seismic Ram & Frontal Bullet Clear...")
+	print("\n[5/6] Testing Roxy: Seismic Ram towards aim & Frontal Bullet Clear...")
 	var roxy_player: Player = _spawn_test_player(roster.get(&"roxy"), bullet_server)
-	bullet_server.spawn_bullet(50.0, 0.0, 0.0, 0.0, 0, 5.0, 10.0)
+	roxy_player.global_position = Vector2(-100, 0)
+	roxy_player.velocity = Vector2.UP * 100.0
+
+	# Bala en el arco frontal hacia la mira (hacia (0,0))
 	bullet_server.spawn_bullet(-50.0, 0.0, 0.0, 0.0, 0, 5.0, 10.0)
+	# Bala a la espalda (alejada de la mira)
+	bullet_server.spawn_bullet(-150.0, 0.0, 0.0, 0.0, 0, 5.0, 10.0)
 	assert(bullet_server.get_active_bullet_count() == 2, "Debe haber 2 balas activas")
 
-	roxy_player.global_position = Vector2.ZERO
-	roxy_player.velocity = Vector2.RIGHT * 100.0
 	roxy_player._execute_roxy_dash()
-
-	# Arco frontal debe eliminar la bala en x=50
-	assert(bullet_server.get_active_bullet_count() == 1, "Roxy debe destruir la bala en su arco frontal")
+	assert(roxy_player.dash_direction.is_equal_approx(Vector2.RIGHT), "Roxy debe embestir hacia la mira (Vector2.RIGHT)")
+	assert(bullet_server.get_active_bullet_count() == 1, "Roxy debe destruir la bala en su arco frontal hacia la mira")
 
 	# Daño y knockback de embestida
 	var dummy := CharacterBody2D.new()
 	dummy.add_to_group("enemies")
 	dummy.set_script(load("res://scenes/combat/enemies/enemy_base.gd"))
-	dummy.global_position = Vector2(15, 0)
+	dummy.global_position = Vector2(-85, 0)
 	var col := CollisionShape2D.new()
 	col.name = "CollisionShape2D"
 	dummy.add_child(col)
@@ -148,24 +155,26 @@ func _ready() -> void:
 	assert(roxy_player.roxy_ram_hit_enemies.has(dummy), "El enemigo debe agregarse a la lista de impactos de la embestida")
 	dummy.queue_free()
 
-	print("  ✓ Roxy: Limpieza de arco frontal y daño/knockback por embestida verificados")
+	print("  ✓ Roxy: Embestida hacia la mira, limpieza frontal y daño/knockback verificados")
 	roxy_player.queue_free()
 
 	# ----------------------------------------------------
-	# 6. ECHO: Flicker Cuántico & Rayos Encadenados
+	# 6. ECHO: Flicker Cuántico hacia la mira & Rayos Encadenados
 	# ----------------------------------------------------
-	print("\n[6/6] Testing Echo: Quantum Flicker & Lightning Discharge...")
+	print("\n[6/6] Testing Echo: Quantum Flicker towards aim & Lightning Discharge...")
 	var echo_player: Player = _spawn_test_player(roster.get(&"echo"), bullet_server)
-	echo_player.global_position = Vector2(50, 50)
-	echo_player.velocity = Vector2.DOWN * 100.0
+	# Mira hacia abajo (0,0) desde (0, -100)
+	echo_player.global_position = Vector2(0, -100)
+	echo_player.velocity = Vector2.LEFT * 100.0
 
 	var dummy_echo := CharacterBody2D.new()
 	dummy_echo.add_to_group("enemies")
-	dummy_echo.global_position = Vector2(50, 120)
+	dummy_echo.global_position = Vector2(0, 120)
 	add_child(dummy_echo)
 
 	echo_player._execute_character_dash()
-	assert(echo_player.global_position.y >= 240.0, "Echo debe teletransportarse 200px")
+	assert(echo_player.dash_direction.is_equal_approx(Vector2.DOWN), "Echo debe teletransportarse hacia la mira (Vector2.DOWN)")
+	assert(is_equal_approx(echo_player.global_position.y, 100.0), "Echo debe teletransportarse 200px hacia la mira")
 
 	var found_chain := false
 	for child in get_children():
@@ -176,7 +185,7 @@ func _ready() -> void:
 	assert(found_chain, "Echo debe emitir rayos encadenados al teletransportarse cerca de enemigos")
 	dummy_echo.queue_free()
 
-	print("  ✓ Echo: Flicker de 200px y descarga en cadena a 5 enemigos verificados")
+	print("  ✓ Echo: Flicker hacia la mira de 200px y descarga en cadena verificados")
 	echo_player.queue_free()
 
 	print("\n==========================================")
