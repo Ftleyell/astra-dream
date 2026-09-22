@@ -49,12 +49,16 @@ func _ready() -> void:
 	assert(val_player.max_dash_charges == 1, "Valentina debe tener 1 carga")
 	assert(val_player.dash_recharge_max == 1.8, "Valentina debe recargar en 1.8s")
 
-	val_player.velocity = Vector2.RIGHT * 200.0
+	# Posicionar a Valentina para apuntar hacia la derecha (cursor headless en 0,0)
+	val_player.global_position = Vector2(-100, 0)
+	val_player.velocity = Vector2.UP * 200.0 # Movimiento hacia arriba
 	val_player._execute_character_dash()
+
 	assert(val_player.is_focus_active, "Valentina debe activar Sobre-Enfoque")
 	assert(val_player.has_guaranteed_crit, "Valentina debe tener crítico garantizado")
 	assert(is_equal_approx(Engine.time_scale, 0.55), "Valentina debe aplicar time_scale 0.55")
-	assert(val_player.dash_direction.x < 0.0, "Valentina debe saltar hacia atrás")
+	# Apuntado es (0,0) - (-100,0) = (1,0) (DERECHA). El retroceso debe ser hacia la IZQUIERDA
+	assert(val_player.dash_direction.is_equal_approx(Vector2.LEFT), "Valentina debe retroceder opuesto a la mira (Vector2.LEFT), no hacia su movimiento")
 
 	var had_crit := val_player.consume_guaranteed_crit()
 	assert(had_crit, "consume_guaranteed_crit debe retornar true en el primer consumo")
@@ -62,7 +66,7 @@ func _ready() -> void:
 	assert(not val_player.consume_guaranteed_crit(), "Segundo consumo debe retornar false")
 
 	Engine.time_scale = 1.0
-	print("  ✓ Valentina: Salto hacia atrás, Bullet-Time (0.55x) y 100% Crítico verificado")
+	print("  ✓ Valentina: Retroceso opuesto a la mira, Bullet-Time (0.55x) y 100% Crítico verificado")
 	val_player.queue_free()
 
 	# ----------------------------------------------------

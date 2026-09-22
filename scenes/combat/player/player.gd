@@ -290,7 +290,10 @@ func _execute_nova_dash() -> void:
 		audio_mgr.play_sfx("dash", 1.2, 0.0)
 
 func _execute_valentina_dash() -> void:
-	dash_direction = -dash_direction
+	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
+	dash_direction = -aim_dir
 	is_dashing = true
 	dash_timer = 0.22
 	is_focus_active = true
