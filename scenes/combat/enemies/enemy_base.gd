@@ -5,7 +5,7 @@ extends CharacterBody2D
 ## Provee soporte común de salud, mitigación, registro de daño acumulado,
 ## drops de EXP y consumibles de campo, colisión con el jugador y ciclo de vida.
 
-signal enemy_died(enemy: EnemyBase)
+signal enemy_died(enemy: CharacterBody2D)
 
 @export var enemy_id: StringName = &"enemy_base"
 @export var max_health: float = 30.0
@@ -105,6 +105,9 @@ func _die() -> void:
 	if damage_accumulator and damage_accumulator.has_method("clear_on_death"):
 		damage_accumulator.clear_on_death()
 	enemy_died.emit(self)
+	var bus := get_node_or_null("/root/EventBus")
+	if bus and bus.has_signal("enemy_killed"):
+		bus.enemy_killed.emit(String(enemy_id))
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):

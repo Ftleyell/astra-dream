@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ceim4loohgglr" path="res://scenes/ui/main_menu/main_menu.gd" id="1_mainmenu"]
 [ext_resource type="PackedScene" uid="uid://c8setmod001" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="2_settings"]
+[ext_resource type="PackedScene" uid="uid://highscoresmod001" path="res://scenes/ui/highscores/highscores_modal.tscn" id="2_highscores"]
 [ext_resource type="Texture2D" uid="uid://cuf57wyhjv1o1" path="res://assets/ui/panel_scifi.png" id="3_panel"]
 
 [node name="MainMenu" type="Control" unique_id=1964824263]
@@ -75,17 +76,31 @@ patch_margin_top = 16
 patch_margin_right = 16
 patch_margin_bottom = 16
 
+[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=1399677481]
+visible = false
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1.0, 0.6, 1)
+theme_override_font_sizes/font_size = 22
+text = "CONTINUAR RUN"
+
 [node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=1399677482]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "JUGAR"
+text = "NUEVA RUN"
 
 [node name="HubButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=916673686]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "HUB"
+text = "HUB ESPACIAL"
+
+[node name="HighscoresButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=142453348]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "RÉCORDS Y ESTADÍSTICAS"
 
 [node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonsContainer" unique_id=142453347]
 custom_minimum_size = Vector2(0, 52)
@@ -118,5 +133,7 @@ text = "v0.3.0 Alpha | Milestone 1"
 horizontal_alignment = 2
 
 [node name="SettingsModal" parent="." unique_id=23686834 instance=ExtResource("2_settings")]
+
+[node name="HighscoresModal" parent="." unique_id=23686835 instance=ExtResource("2_highscores")]
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/ButtonsContainer/HubButton" to="." method="_on_hub_pressed"]

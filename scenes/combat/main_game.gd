@@ -34,6 +34,11 @@ var last_anchor_pos: Vector2 = Vector2.ZERO
 
 var is_briefing_active: bool = true
 var prologue_bonus_chosen: bool = false
+var run_time_elapsed: float = 0.0
+var enemies_killed_count: int = 0
+var _auto_save_timer: float = 0.0
+
+const AUTO_SAVE_INTERVAL: float = 5.0
 
 func _ready() -> void:
 	# Conexión del HUD con el jugador
@@ -44,7 +49,13 @@ func _ready() -> void:
 	player.level_up_requested.connect(_on_level_up_requested)
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
+	player.player_died.connect(_on_player_died)
 	_last_player_hp = player.current_health
+
+	# Conexión con EventBus
+	var bus := get_node_or_null("/root/EventBus")
+	if bus and bus.has_signal("enemy_killed"):
+		bus.enemy_killed.connect(_on_enemy_killed)
 
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
@@ -86,7 +97,15 @@ func _ready() -> void:
 	planet_spawner.name = "PlanetSpawner"
 	add_child(planet_spawner)
 
-	# Iniciar secuencia de briefing con Dialogic 2 antes de la oleada
+	# Chequeo de reanudación de partida activa (Mid-Run Resume)
+	if SaveManager.is_resuming_run:
+		SaveManager.is_resuming_run = false
+		var active_data := SaveManager.load_active_run()
+		if not active_data.is_empty():
+			restore_run_state(active_data)
+			return
+
+	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
 	_start_prologue_briefing()
 
 func _start_prologue_briefing() -> void:
@@ -150,6 +169,15 @@ func _process(delta: float) -> void:
 	if get_tree().paused or is_briefing_active:
 		return
 
+	# Cronómetro de tiempo total de la run
+	run_time_elapsed += delta
+
+	# Temporizador de auto-guardado periódico en segundo plano
+	_auto_save_timer += delta
+	if _auto_save_timer >= AUTO_SAVE_INTERVAL:
+		_auto_save_timer = 0.0
+		save_current_run_state()
+
 	# Lógica del temporizador de oleada
 	wave_timer -= delta
 	if wave_timer <= 0.0:
@@ -160,6 +188,7 @@ func _process(delta: float) -> void:
 			enemy_spawner.set_wave(current_wave)
 		_trigger_cockpit_interlude()
 		_check_wave_boss_spawn()
+		save_current_run_state()
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -220,6 +249,7 @@ func _on_boss_defeated(_boss_id: String) -> void:
 	# Reanudar la generación de drones comunes
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
+	save_current_run_state()
 
 func _input(event: InputEvent) -> void:
 	# Atajo para saltar el briefing cinematográfico con ESC o diálogo skip
@@ -274,6 +304,7 @@ func _on_satellite_exited(_index: int) -> void:
 		current_satellite = null
 
 	hud.clear_satellite()
+	save_current_run_state()
 
 func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
 	var layout = Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
@@ -288,9 +319,11 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	elif item_or_weapon is ItemData:
 		player.inventory.add_item(item_or_weapon as ItemData, 1)
 	hud.update_credits(player.run_credits)
+	save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
 	level_up_modal.show_level_up(level)
+	save_current_run_state()
 
 func _on_player_bomb_used(_remaining: int) -> void:
 	if camera:
@@ -301,3 +334,196 @@ func _on_player_health_changed(current: float, _max_val: float) -> void:
 		if camera:
 			camera.add_trauma(0.4)
 	_last_player_hp = current
+
+func _on_enemy_killed(_enemy_type: String) -> void:
+	enemies_killed_count += 1
+
+func _on_player_died() -> void:
+	# 1. Eliminar partida en curso (Permadeath)
+	SaveManager.clear_active_run()
+
+	# 2. Registrar resultado en la tabla de Highscores
+	var minutes := int(run_time_elapsed) / 60
+	var seconds := int(run_time_elapsed) % 60
+	var time_str := "%02d:%02d" % [minutes, seconds]
+	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
+	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
+
+	SaveManager.record_run_score({
+		"pilot_id": pilot_id,
+		"pilot_name": pilot_name,
+		"wave_reached": current_wave,
+		"time_survived_seconds": run_time_elapsed,
+		"time_survived_formatted": time_str,
+		"enemies_killed": enemies_killed_count,
+		"credits_earned": player.run_credits,
+		"victory": false
+	})
+
+	# Volver al menú principal tras una breve pausa
+	get_tree().create_timer(1.2).timeout.connect(func():
+		get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+	)
+
+# ==============================================================================
+# SERIALIZACIÓN Y RESTAURACIÓN DEL ESTADO DE LA RUN
+# ==============================================================================
+
+func get_current_run_state() -> Dictionary:
+	if not is_instance_valid(player) or player.current_health <= 0.0:
+		return {}
+
+	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
+	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
+
+	# Armas equipadas
+	var weapons_data: Array[Dictionary] = []
+	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl:
+		for inst in w_ctrl.equipped_weapons:
+			if inst.weapon_data:
+				weapons_data.append({
+					"id": String(inst.weapon_data.weapon_id),
+					"level": inst.level
+				})
+
+	# Ítems de inventario
+	var items_data: Array[Dictionary] = []
+	if player.inventory:
+		for it_entry in player.inventory.get_all_items():
+			var it_res: ItemData = it_entry.get("data")
+			if it_res:
+				items_data.append({
+					"id": String(it_res.item_id),
+					"count": int(it_entry.get("count", 1))
+				})
+
+	# Cartas de nivel (Brotato)
+	var cards_data: Array[String] = []
+	for card in player.chosen_stat_cards:
+		cards_data.append(String(card.card_id))
+
+	return {
+		"version": 1,
+		"timestamp": Time.get_unix_time_from_system(),
+		"pilot_id": pilot_id,
+		"pilot_name": pilot_name,
+		"current_wave": current_wave,
+		"wave_timer": wave_timer,
+		"wave_satellites_spawned": wave_satellites_spawned,
+		"satellites_collected_total": satellites_collected_total,
+		"current_satellite_idx": current_satellite_idx,
+		"run_time_elapsed": run_time_elapsed,
+		"enemies_killed_count": enemies_killed_count,
+		"prologue_bonus_chosen": prologue_bonus_chosen,
+		"player_health": player.current_health,
+		"player_level": player.current_level,
+		"player_exp": player.current_exp,
+		"player_exp_to_next": player.exp_to_next,
+		"run_credits": player.run_credits,
+		"run_biomass": player.run_biomass,
+		"bomb_count": player.bomb_count,
+		"equipped_weapons": weapons_data,
+		"equipped_items": items_data,
+		"chosen_stat_cards": cards_data
+	}
+
+func save_current_run_state() -> void:
+	if not is_instance_valid(player) or player.current_health <= 0.0:
+		return
+	var state := get_current_run_state()
+	if not state.is_empty():
+		SaveManager.save_active_run(state)
+
+func restore_run_state(run_data: Dictionary) -> void:
+	# 1. Variables de oleada y progresión global
+	current_wave = int(run_data.get("current_wave", 1))
+	wave_timer = float(run_data.get("wave_timer", WAVE_DURATION))
+	wave_satellites_spawned = int(run_data.get("wave_satellites_spawned", 0))
+	satellites_collected_total = int(run_data.get("satellites_collected_total", 0))
+	current_satellite_idx = int(run_data.get("current_satellite_idx", 1))
+	run_time_elapsed = float(run_data.get("run_time_elapsed", 0.0))
+	enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
+	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
+
+	is_briefing_active = false
+	get_tree().paused = false
+	if skip_badge_layer:
+		skip_badge_layer.hide()
+
+	if enemy_spawner and enemy_spawner.has_method("set_wave"):
+		enemy_spawner.set_wave(current_wave)
+
+	# 2. Restaurar estadísticas básicas del jugador
+	player.current_level = int(run_data.get("player_level", 1))
+	player.current_exp = float(run_data.get("player_exp", 0.0))
+	player.exp_to_next = float(run_data.get("player_exp_to_next", 40.0))
+	player.run_credits = int(run_data.get("run_credits", 0))
+	player.run_biomass = int(run_data.get("run_biomass", 0))
+	player.bomb_count = int(run_data.get("bomb_count", 2))
+
+	# 3. Restaurar cartas de nivel elegidas (Brotato)
+	player.chosen_stat_cards.clear()
+	var saved_cards: Array = run_data.get("chosen_stat_cards", [])
+	var card_map: Dictionary = {}
+	for card in stat_deck_manager.all_stat_cards:
+		card_map[String(card.card_id)] = card
+
+	for cid in saved_cards:
+		var s_cid := String(cid)
+		if card_map.has(s_cid):
+			var card_res: StatCardData = card_map[s_cid]
+			player.chosen_stat_cards.append(card_res)
+			stat_deck_manager.apply_card_to_stats(card_res, player.stats)
+
+	# 4. Restaurar ítems adquiridos en inventario
+	if player.inventory:
+		player.inventory.clear_items()
+		var saved_items: Array = run_data.get("equipped_items", [])
+		var item_map: Dictionary = {}
+		for it in ItemPoolManager.create_canonical_stat_items():
+			item_map[String(it.item_id)] = it
+
+		for it_entry in saved_items:
+			var i_id: String = String(it_entry.get("id", ""))
+			var i_count: int = int(it_entry.get("count", 1))
+			if item_map.has(i_id):
+				player.inventory.add_item(item_map[i_id], i_count)
+
+	# 5. Restaurar armas equipadas y sus niveles
+	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	var saved_weapons: Array = run_data.get("equipped_weapons", [])
+	if w_ctrl and not saved_weapons.is_empty():
+		w_ctrl.clear_equipped_weapons()
+		var weapon_catalog: Dictionary = {
+			"rail_launcher": "res://data/weapons/roster/rail_launcher.tres",
+			"hive_cannon": "res://data/weapons/roster/hive_cannon.tres",
+			"singularity_pulsar": "res://data/weapons/roster/singularity_pulsar.tres",
+			"sniper_rifle": "res://data/weapons/roster/sniper_rifle.tres",
+			"tesla_arc": "res://data/weapons/roster/tesla_arc.tres",
+			"titan_shotgun": "res://data/weapons/roster/titan_shotgun.tres",
+			"cluster_submunition": "res://data/weapons/shop/cluster_submunition.tres",
+			"dimensional_blade": "res://data/weapons/shop/dimensional_blade.tres",
+			"nova_flak": "res://data/weapons/shop/nova_flak.tres",
+			"solar_beam": "res://data/weapons/shop/solar_beam.tres",
+		}
+		for w_entry in saved_weapons:
+			var w_id: String = str(w_entry.get("id", ""))
+			var w_lvl: int = int(w_entry.get("level", 1))
+			if weapon_catalog.has(w_id) and ResourceLoader.exists(weapon_catalog[w_id]):
+				var w_res = load(weapon_catalog[w_id]) as WeaponData
+				if w_res:
+					w_ctrl.add_weapon(w_res)
+					for _l in range(2, w_lvl + 1):
+						w_ctrl.upgrade_weapon(StringName(w_id))
+
+	# 6. Restaurar salud
+	player.current_health = minf(float(run_data.get("player_health", 100.0)), player.stats.get_stat(&"max_health"))
+	_last_player_hp = player.current_health
+
+	# 7. Actualizar todo el HUD
+	hud.update_credits(player.run_credits)
+	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
+	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+	player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
+	player.bomb_used.emit(player.bomb_count)

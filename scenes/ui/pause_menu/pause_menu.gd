@@ -2,11 +2,14 @@ class_name PauseMenu
 extends CanvasLayer
 
 const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
+const HighscoresModalScript := preload("res://scenes/ui/highscores/highscores_modal.gd")
 
 @export var player: Player
 
 @onready var resume_button: Button = $Panel/VBoxContainer/BottomBar/ResumeButton
 @onready var settings_button: Button = $Panel/VBoxContainer/BottomBar/SettingsButton
+@onready var highscores_button: Button = $Panel/VBoxContainer/BottomBar/HighscoresButton
+@onready var save_quit_button: Button = $Panel/VBoxContainer/BottomBar/SaveQuitButton
 @onready var restart_button: Button = $Panel/VBoxContainer/BottomBar/RestartButton
 @onready var hub_button: Button = $Panel/VBoxContainer/BottomBar/HubButton
 @onready var menu_button: Button = $Panel/VBoxContainer/BottomBar/MenuButton
@@ -14,6 +17,7 @@ const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 @onready var items_container: VBoxContainer = $Panel/VBoxContainer/ContentHBox/ItemsColumn/ItemsScroll/ItemsList
 @onready var upgrades_container: VBoxContainer = $Panel/VBoxContainer/ContentHBox/UpgradesColumn/UpgradesScroll/UpgradesList
 @onready var settings_modal: SettingsModal = $SettingsModal
+@onready var highscores_modal: CanvasLayer = $HighscoresModal
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -21,26 +25,24 @@ func _ready() -> void:
 
 	if settings_modal:
 		settings_modal.closed.connect(func(): if visible and settings_button: settings_button.grab_focus())
+	if highscores_modal:
+		highscores_modal.closed.connect(func(): if visible and highscores_button: highscores_button.grab_focus())
 
 	UIFocusHelper.apply_cyber_focus(resume_button)
 	UIFocusHelper.apply_cyber_focus(settings_button)
+	UIFocusHelper.apply_cyber_focus(highscores_button)
+	UIFocusHelper.apply_cyber_focus(save_quit_button)
 	UIFocusHelper.apply_cyber_focus(restart_button)
+	if hub_button:
+		UIFocusHelper.apply_cyber_focus(hub_button)
 	UIFocusHelper.apply_cyber_focus(menu_button)
-
-	resume_button.focus_neighbor_right = settings_button.get_path()
-	resume_button.focus_neighbor_left = menu_button.get_path()
-
-	settings_button.focus_neighbor_left = resume_button.get_path()
-	settings_button.focus_neighbor_right = restart_button.get_path()
-
-	restart_button.focus_neighbor_left = settings_button.get_path()
-	restart_button.focus_neighbor_right = menu_button.get_path()
-
-	menu_button.focus_neighbor_left = restart_button.get_path()
-	menu_button.focus_neighbor_right = resume_button.get_path()
 
 	resume_button.pressed.connect(resume_game)
 	settings_button.pressed.connect(_on_settings_pressed)
+	if highscores_button:
+		highscores_button.pressed.connect(_on_highscores_pressed)
+	if save_quit_button:
+		save_quit_button.pressed.connect(_on_save_quit_pressed)
 	restart_button.pressed.connect(_on_restart_pressed)
 	if hub_button:
 		hub_button.pressed.connect(_on_hub_pressed)
@@ -49,8 +51,9 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if visible:
-			# Si el modal de opciones está abierto, cerrarlo primero
-			if settings_modal and settings_modal.visible:
+			if highscores_modal and highscores_modal.visible:
+				highscores_modal.close_highscores()
+			elif settings_modal and settings_modal.visible:
 				settings_modal.close_settings()
 			else:
 				resume_game()
@@ -172,6 +175,21 @@ func _populate_upgrades() -> void:
 func _on_settings_pressed() -> void:
 	if settings_modal:
 		settings_modal.open_settings()
+
+func _on_highscores_pressed() -> void:
+	if highscores_modal:
+		highscores_modal.open_highscores()
+
+func _on_save_quit_pressed() -> void:
+	# Guardar estado actual de la partida
+	var main_game := get_parent() as MainGame
+	if not main_game:
+		main_game = get_tree().current_scene as MainGame
+	if main_game and main_game.has_method("save_current_run_state"):
+		main_game.save_current_run_state()
+
+	resume_game()
+	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
 
 func _on_restart_pressed() -> void:
 	resume_game()

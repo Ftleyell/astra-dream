@@ -1,0 +1,160 @@
+[gd_scene load_steps=4 format=3 uid="uid://highscoresmod001"]
+
+[ext_resource type="Script" path="res://scenes/ui/highscores/highscores_modal.gd" id="1_highscores"]
+[ext_resource type="Texture2D" uid="uid://cuf57wyhjv1o1" path="res://assets/ui/panel_scifi.png" id="2_panel"]
+[ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="3_star"]
+
+[node name="HighscoresModal" type="CanvasLayer"]
+process_mode = 3
+layer = 35
+script = ExtResource("1_highscores")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.01, 0.015, 0.03, 0.85)
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -520.0
+offset_top = -320.0
+offset_right = 520.0
+offset_bottom = 320.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelBackground" type="NinePatchRect" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_panel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "HISTORIAL DE RÉCORDS — TOP 10"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TableHeader" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="RankHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "POS"
+horizontal_alignment = 1
+
+[node name="PilotHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "PILOTO"
+
+[node name="WaveHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "OLEADA"
+horizontal_alignment = 1
+
+[node name="TimeHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "TIEMPO"
+horizontal_alignment = 1
+
+[node name="KillsHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "BAJAS"
+horizontal_alignment = 1
+
+[node name="CreditsHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "CRÉDITOS"
+horizontal_alignment = 1
+
+[node name="StatusHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "ESTADO"
+horizontal_alignment = 1
+
+[node name="DateHeader" type="Label" parent="Panel/VBoxContainer/TableHeader"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "FECHA"
+horizontal_alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="BottomBar" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "CERRAR [ESC]"

@@ -54,6 +54,10 @@ func _ready() -> void:
 		default_w.passive_search_radius = 520.0
 		add_weapon(default_w)
 
+func clear_equipped_weapons() -> void:
+	equipped_weapons.clear()
+	weapons_updated.emit(equipped_weapons)
+
 func add_weapon(data: WeaponData) -> bool:
 	if not data:
 		return false

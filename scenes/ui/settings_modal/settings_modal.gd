@@ -54,17 +54,15 @@ func _ready() -> void:
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	resolution_option.item_selected.connect(_on_resolution_selected)
 
-	master_slider.value_changed.connect(func(v): _set_bus_volume("Master", v))
-	music_slider.value_changed.connect(func(v): _set_bus_volume("Music", v))
-	sfx_slider.value_changed.connect(func(v): _set_bus_volume("SFX", v))
+	master_slider.value_changed.connect(func(v): _on_volume_slider_changed("Master", v))
+	music_slider.value_changed.connect(func(v): _on_volume_slider_changed("Music", v))
+	sfx_slider.value_changed.connect(func(v): _on_volume_slider_changed("SFX", v))
 
 	deadzone_slider.value_changed.connect(_on_deadzone_changed)
 
+	_sync_ui_with_settings_manager()
 	_init_resolutions()
 	_populate_rebind_list()
-
-	var mode := DisplayServer.window_get_mode()
-	fullscreen_check.button_pressed = (mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 
 	UIFocusHelper.apply_cyber_focus(close_button)
 	UIFocusHelper.apply_cyber_focus(fullscreen_check)
@@ -74,8 +72,23 @@ func _ready() -> void:
 	UIFocusHelper.apply_cyber_focus(sfx_slider)
 	UIFocusHelper.apply_cyber_focus(deadzone_slider)
 
+func _sync_ui_with_settings_manager() -> void:
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr:
+		master_slider.value = mgr.master_volume
+		music_slider.value = mgr.music_volume
+		sfx_slider.value = mgr.sfx_volume
+		fullscreen_check.button_pressed = mgr.fullscreen
+		deadzone_slider.value = mgr.gamepad_deadzone
+		deadzone_label.text = "%.2f" % mgr.gamepad_deadzone
+	else:
+		var mode := DisplayServer.window_get_mode()
+		fullscreen_check.button_pressed = (mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+
 func open_settings() -> void:
 	show()
+	_sync_ui_with_settings_manager()
+	_init_resolutions()
 	_populate_rebind_list()
 	close_button.grab_focus()
 
@@ -88,7 +101,10 @@ func close_settings() -> void:
 
 func _init_resolutions() -> void:
 	resolution_option.clear()
-	var cur_size := DisplayServer.window_get_size()
+	var cur_size: Vector2i = DisplayServer.window_get_size()
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr:
+		cur_size = mgr.resolution_size
 	var selected_idx := 0
 
 	for i in range(resolutions.size()):
@@ -102,17 +118,34 @@ func _init_resolutions() -> void:
 func _on_resolution_selected(index: int) -> void:
 	if index >= 0 and index < resolutions.size():
 		var new_size: Vector2i = resolutions[index]["size"]
-		DisplayServer.window_set_size(new_size)
-		# Centrar ventana en la pantalla activa
-		var screen_size := DisplayServer.screen_get_size()
-		var centered_pos := (screen_size - new_size) / 2
-		DisplayServer.window_set_position(centered_pos)
+		var is_fs: bool = fullscreen_check.button_pressed
+		var mgr = get_node_or_null("/root/SettingsManager")
+		if mgr:
+			mgr.save_display_settings(new_size, is_fs)
+		else:
+			DisplayServer.window_set_size(new_size)
 
 func _on_fullscreen_toggled(button_pressed: bool) -> void:
-	if button_pressed:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	var sel_idx: int = resolution_option.selected
+	var cur_res: Vector2i = resolutions[sel_idx]["size"] if (sel_idx >= 0 and sel_idx < resolutions.size()) else Vector2i(1920, 1080)
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr:
+		mgr.save_display_settings(cur_res, button_pressed)
 	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		if button_pressed:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+		else:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+func _on_volume_slider_changed(bus_name: String, value: float) -> void:
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr:
+		var m_val: float = master_slider.value
+		var mu_val: float = music_slider.value
+		var s_val: float = sfx_slider.value
+		mgr.save_audio_settings(m_val, mu_val, s_val)
+	else:
+		_set_bus_volume(bus_name, value)
 
 func _set_bus_volume(bus_name: String, value: float) -> void:
 	var bus_idx := AudioServer.get_bus_index(bus_name)
@@ -129,6 +162,9 @@ func _on_deadzone_changed(val: float) -> void:
 	for entry in actions_to_rebind:
 		var act: StringName = entry["action"]
 		InputMap.action_set_deadzone(act, val)
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr:
+		mgr.save_deadzone_setting(val)
 
 func _populate_rebind_list() -> void:
 	for child in kb_rebind_container.get_children():
@@ -213,6 +249,10 @@ func _apply_rebind(new_event: InputEvent) -> void:
 
 		# Agregar el nuevo evento asignado
 		InputMap.action_add_event(rebind_action, new_event)
+
+		var mgr = get_node_or_null("/root/SettingsManager")
+		if mgr:
+			mgr.save_keybinding(rebind_action, new_event)
 
 	_cancel_rebind()
 	_populate_rebind_list()

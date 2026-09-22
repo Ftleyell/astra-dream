@@ -1,5 +1,6 @@
-class_name SaveManager
 extends Node
+
+static var is_resuming_run: bool = false
 
 const SAVE_PATH := "user://profile_data.json"
 const SCHEMA_VERSION := 1
@@ -293,3 +294,164 @@ static func set_selected_character(char_id: StringName) -> void:
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
 	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id)
+
+# ==============================================================================
+# MID-RUN SAVE & RESUME (Partida en Curso)
+# ==============================================================================
+
+const ACTIVE_RUN_PATH := "user://active_run.json"
+
+## Guarda el estado actual de la run en curso a disco
+static func save_active_run(run_data: Dictionary) -> Error:
+	var file := FileAccess.open(ACTIVE_RUN_PATH, FileAccess.WRITE)
+	if not file:
+		return FileAccess.get_open_error()
+
+	var json_str := JSON.stringify(run_data, "\t")
+	file.store_string(json_str)
+	file.close()
+	return OK
+
+## Comprueba si existe una run guardada en curso
+static func has_active_run() -> bool:
+	return FileAccess.file_exists(ACTIVE_RUN_PATH)
+
+## Carga los datos de la run en curso
+static func load_active_run() -> Dictionary:
+	if not has_active_run():
+		return {}
+	var file := FileAccess.open(ACTIVE_RUN_PATH, FileAccess.READ)
+	if not file:
+		return {}
+	var json_str := file.get_as_text()
+	file.close()
+	var parser := JSON.new()
+	var err := parser.parse(json_str)
+	if err != OK or not (parser.data is Dictionary):
+		return {}
+	return parser.data
+
+## Elimina el archivo de la run en curso (Permadeath / Fin de partida)
+static func clear_active_run() -> void:
+	if has_active_run():
+		DirAccess.remove_absolute(ACTIVE_RUN_PATH)
+
+# ==============================================================================
+# HIGHSCORES & RUN HISTORY (Top 10 Récords)
+# ==============================================================================
+
+const HIGHSCORES_PATH := "user://highscores.json"
+const MAX_HIGHSCORES := 10
+
+## Registra el resultado final de una partida en la tabla de Highscores
+static func record_run_score(result: Dictionary) -> int:
+	var scores := get_top_highscores()
+
+	var new_entry := {
+		"pilot_id": str(result.get("pilot_id", "nova")),
+		"pilot_name": str(result.get("pilot_name", "Nova")),
+		"wave_reached": int(result.get("wave_reached", 1)),
+		"time_survived_seconds": float(result.get("time_survived_seconds", 0.0)),
+		"time_survived_formatted": str(result.get("time_survived_formatted", "00:00")),
+		"enemies_killed": int(result.get("enemies_killed", 0)),
+		"credits_earned": int(result.get("credits_earned", 0)),
+		"victory": bool(result.get("victory", false)),
+		"date": Time.get_datetime_string_from_system(false, true)
+	}
+
+	scores.append(new_entry)
+
+	# Ordenar por: 1) Mayor oleada alcanzada, 2) Mayor tiempo de supervivencia, 3) Más enemigos eliminados
+	scores.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var wave_a: int = a.get("wave_reached", 0)
+		var wave_b: int = b.get("wave_reached", 0)
+		if wave_a != wave_b:
+			return wave_a > wave_b
+		var time_a: float = a.get("time_survived_seconds", 0.0)
+		var time_b: float = b.get("time_survived_seconds", 0.0)
+		if time_a != time_b:
+			return time_a > time_b
+		return int(a.get("enemies_killed", 0)) > int(b.get("enemies_killed", 0))
+	)
+
+	# Limitar a los 10 mejores
+	if scores.size() > MAX_HIGHSCORES:
+		scores.resize(MAX_HIGHSCORES)
+
+	var file := FileAccess.open(HIGHSCORES_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(scores, "\t"))
+		file.close()
+
+	# Retornar la posición alcanzada (1 a 10) o -1 si no entró
+	for idx in range(scores.size()):
+		if scores[idx] == new_entry:
+			return idx + 1
+	return -1
+
+## Limpia la tabla de highscores (útil para tests o reseteo)
+static func clear_highscores() -> void:
+	if FileAccess.file_exists(HIGHSCORES_PATH):
+		DirAccess.remove_absolute(HIGHSCORES_PATH)
+
+## Obtiene la lista ordenada de los 10 mejores récords locales
+static func get_top_highscores() -> Array[Dictionary]:
+	if not FileAccess.file_exists(HIGHSCORES_PATH):
+		return _get_default_highscores()
+
+	var file := FileAccess.open(HIGHSCORES_PATH, FileAccess.READ)
+	if not file:
+		return _get_default_highscores()
+
+	var json_str := file.get_as_text()
+	file.close()
+
+	var parser := JSON.new()
+	var err := parser.parse(json_str)
+	if err != OK or not (parser.data is Array):
+		return _get_default_highscores()
+
+	var res: Array[Dictionary] = []
+	for item in parser.data:
+		if item is Dictionary:
+			res.append(item)
+	return res
+
+static func _get_default_highscores() -> Array[Dictionary]:
+	# Récords iniciales de muestra
+	return [
+		{
+			"pilot_id": "nova",
+			"pilot_name": "Nova",
+			"wave_reached": 6,
+			"time_survived_seconds": 360.0,
+			"time_survived_formatted": "06:00",
+			"enemies_killed": 420,
+			"credits_earned": 350,
+			"victory": true,
+			"date": "2026-09-20 12:00"
+		},
+		{
+			"pilot_id": "echo",
+			"pilot_name": "Echo",
+			"wave_reached": 4,
+			"time_survived_seconds": 240.0,
+			"time_survived_formatted": "04:00",
+			"enemies_killed": 280,
+			"credits_earned": 210,
+			"victory": false,
+			"date": "2026-09-20 11:30"
+		},
+		{
+			"pilot_id": "selene",
+			"pilot_name": "Selene",
+			"wave_reached": 2,
+			"time_survived_seconds": 120.0,
+			"time_survived_formatted": "02:00",
+			"enemies_killed": 110,
+			"credits_earned": 95,
+			"victory": false,
+			"date": "2026-09-20 10:15"
+		}
+	]
+

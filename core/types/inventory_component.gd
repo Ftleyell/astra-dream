@@ -25,6 +25,9 @@ func add_item(item: ItemData, count: int = 1) -> void:
 
 	item_added.emit(item, new_count)
 
+func clear_items() -> void:
+	_items.clear()
+
 func get_item_count(item_id: StringName) -> int:
 	if _items.has(item_id):
 		return _items[item_id]["count"]

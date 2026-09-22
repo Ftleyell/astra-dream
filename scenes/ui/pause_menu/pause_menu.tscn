@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/ui/pause_menu/pause_menu.gd" id="1_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="2_settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/highscores/highscores_modal.tscn" id="2_highscores"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel_scifi.png" id="3_panel"]
 [ext_resource type="Texture2D" path="res://assets/icons/package.svg" id="4_package"]
 [ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="5_star"]
@@ -150,47 +151,63 @@ layout_mode = 2
 
 [node name="BottomBar" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="ResumeButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(170, 50)
+custom_minimum_size = Vector2(145, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "REANUDAR"
 icon = ExtResource("6_play")
 alignment = 1
 
 [node name="SettingsButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(170, 50)
+custom_minimum_size = Vector2(145, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "AJUSTES"
 icon = ExtResource("7_gear")
 alignment = 1
 
-[node name="RestartButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(170, 50)
+[node name="HighscoresButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(145, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
+text = "RÉCORDS"
+icon = ExtResource("5_star")
+alignment = 1
+
+[node name="SaveQuitButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(165, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "GUARDAR Y SALIR"
+icon = ExtResource("9_home")
+alignment = 1
+
+[node name="RestartButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(145, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "REINICIAR"
 icon = ExtResource("8_restart")
 alignment = 1
 
 [node name="HubButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(170, 50)
+custom_minimum_size = Vector2(145, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "IR AL HUB"
 alignment = 1
 
 [node name="MenuButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(170, 50)
+custom_minimum_size = Vector2(130, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "MENÚ"
-icon = ExtResource("9_home")
 alignment = 1
 
-
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
+
+[node name="HighscoresModal" parent="." instance=ExtResource("2_highscores")]
