@@ -12,6 +12,11 @@ extends Resource
 @export var sort_order: int = 0
 @export var stats_summary: String = ""
 
+@export_group("Visuals")
+@export var ship_sprite: Texture2D
+@export var fullbody_sprite: Texture2D
+@export var weapon_sprite: Texture2D
+
 @export_group("Base Attributes")
 @export var max_health: float = 100.0
 @export var health_regen: float = 0.5
@@ -62,7 +67,39 @@ func get_silhouette_points() -> PackedVector2Array:
 	return pts
 
 func get_portrait_texture() -> Texture2D:
-	return portrait_icon
+	if portrait_icon:
+		return portrait_icon
+	var path := "res://assets/characters/portraits/portrait_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	var path_legacy := "res://assets/portraits/portrait_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path_legacy):
+		return load(path_legacy) as Texture2D
+	return null
+
+func get_ship_texture() -> Texture2D:
+	if ship_sprite:
+		return ship_sprite
+	var path := "res://assets/characters/ships/ship_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+func get_fullbody_texture() -> Texture2D:
+	if fullbody_sprite:
+		return fullbody_sprite
+	var path := "res://assets/characters/fullbody/fullbody_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+func get_weapon_texture() -> Texture2D:
+	if weapon_sprite:
+		return weapon_sprite
+	var path := "res://assets/characters/weapons/weapon_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
 
 func get_formatted_stats() -> String:
 	if not stats_summary.is_empty():

@@ -128,8 +128,30 @@ func _ready() -> void:
 func _apply_visual_theme() -> void:
 	if not character_data:
 		return
+
 	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
-	if placeholder:
+	var ship_tex: Texture2D = character_data.get_ship_texture() if character_data.has_method("get_ship_texture") else null
+
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if not ship_spr and ship_tex:
+		ship_spr = Sprite2D.new()
+		ship_spr.name = "ShipSprite"
+		add_child(ship_spr)
+		move_child(ship_spr, 0)
+
+	if ship_spr:
+		if ship_tex:
+			ship_spr.texture = ship_tex
+			ship_spr.visible = true
+			ship_spr.scale = Vector2(0.42, 0.42)
+			if placeholder:
+				placeholder.visible = false
+		else:
+			ship_spr.visible = false
+			if placeholder:
+				placeholder.visible = true
+
+	if placeholder and (not ship_spr or not ship_spr.visible):
 		placeholder.color = character_data.color
 		placeholder.visible = true
 		if character_data.pts.size() >= 3:
@@ -138,13 +160,39 @@ func _apply_visual_theme() -> void:
 				scaled_pts.append(pt * 0.35)
 			placeholder.polygon = scaled_pts
 
+	# Configurar sprite del arma rotatoria en WeaponController
+	var w_ctrl := get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl:
+		var w_tex: Texture2D = character_data.get_weapon_texture() if character_data.has_method("get_weapon_texture") else null
+		var w_spr := w_ctrl.get_node_or_null("WeaponSprite") as Sprite2D
+		var w_poly := w_ctrl.get_node_or_null("WeaponVisual") as Polygon2D
+		if not w_spr and w_tex:
+			w_spr = Sprite2D.new()
+			w_spr.name = "WeaponSprite"
+			w_ctrl.add_child(w_spr)
+		if w_spr:
+			if w_tex:
+				w_spr.texture = w_tex
+				w_spr.position = Vector2(16, 0)
+				w_spr.scale = Vector2(0.35, 0.35)
+				w_spr.visible = true
+				if w_poly:
+					w_poly.visible = false
+			else:
+				w_spr.visible = false
+				if w_poly:
+					w_poly.visible = true
+
 func _physics_process(delta: float) -> void:
 	_handle_dash(delta)
 	_handle_movement(delta)
 	_handle_actions()
 	_handle_health_regen(delta)
 
-	# Orientación 360° del exotraje hacia el apuntado
+	# Orientación 360° de la nave hacia el apuntado (offset de PI/2 por estar dibujada hacia ARRIBA)
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if ship_spr and ship_spr.visible:
+		ship_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0
 	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
 	if exo_spr:
 		exo_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0

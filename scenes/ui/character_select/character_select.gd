@@ -78,6 +78,11 @@ func _populate_roster() -> void:
 		btn.pressed.connect(func(): _select_character(cid))
 		btn.focus_entered.connect(func(): _select_character(cid))
 
+		var icon_tex := char_data.get_portrait_texture() if char_data.has_method("get_portrait_texture") else char_data.portrait_icon
+		if icon_tex:
+			btn.icon = icon_tex
+			btn.expand_icon = true
+
 		UIFocusHelper.apply_cyber_focus(btn)
 
 		char_list_container.add_child(btn)
@@ -93,8 +98,6 @@ func _populate_roster() -> void:
 			prev_btn.focus_neighbor_bottom = btn.get_path()
 			btn.focus_neighbor_top = prev_btn.get_path()
 		prev_btn = btn
-
-
 
 	if prev_btn:
 		prev_btn.focus_neighbor_bottom = back_button.get_path()
@@ -125,16 +128,21 @@ func _select_character(char_id: StringName) -> void:
 	desc_label.text = data.description
 	stats_label.text = data.get_formatted_stats()
 
-	# Carga de retrato ilustrado o fallback a silueta poligonal
-	var tex: Texture2D = data.portrait_icon
-	if not tex:
-		var portrait_path := "res://assets/portraits/portrait_%s.png" % str(char_id).to_lower()
-		if ResourceLoader.exists(portrait_path):
-			tex = load(portrait_path) as Texture2D
+	# Carga de cuerpo completo (prioridad) o retrato ilustrado o fallback a silueta poligonal
+	var full_tex: Texture2D = data.get_fullbody_texture() if data.has_method("get_fullbody_texture") else null
+	var portrait_tex: Texture2D = data.get_portrait_texture() if data.has_method("get_portrait_texture") else data.portrait_icon
 
-	if tex:
+	var display_tex: Texture2D = full_tex if full_tex else portrait_tex
+	if not display_tex:
+		var portrait_path := "res://assets/characters/portraits/portrait_%s.png" % str(char_id).to_lower()
+		if ResourceLoader.exists(portrait_path):
+			display_tex = load(portrait_path) as Texture2D
+
+	if display_tex:
 		if portrait_texture:
-			portrait_texture.texture = tex
+			portrait_texture.texture = display_tex
+			portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			portrait_texture.visible = true
 		if portrait_emblem:
 			portrait_emblem.visible = false
