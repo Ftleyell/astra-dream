@@ -1,10 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dbx8m30w8l72"]
 
 [ext_resource type="Script" path="res://scenes/ui/title_screen/title_screen.gd" id="1_title"]
-[ext_resource type="PackedScene" uid="uid://b0fkm1b3h8xqa" path="res://scenes/combat/environment/space_background.tscn" id="2_bg"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.01, 0.015, 0.03, 0.45)
+[ext_resource type="PackedScene" uid="uid://cdeploybg001" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_bg"]
 
 [node name="TitleScreen" type="Control"]
 process_mode = 3
@@ -16,17 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="SpaceBackground" parent="." instance=ExtResource("2_bg")]
-
-[node name="DarkVignette" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+[node name="DeploymentSpaceBackground" parent="." instance=ExtResource("2_bg")]
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
