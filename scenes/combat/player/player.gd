@@ -598,7 +598,7 @@ func add_exp(amount: float) -> void:
 	var exp_mult: float = stats.get_stat(&"exp_multiplier") if stats else 1.0
 	var effective_amount: float = amount * maxf(0.1, exp_mult)
 	current_exp += effective_amount
-	if current_exp >= exp_to_next:
+	while current_exp >= exp_to_next:
 		current_exp -= exp_to_next
 		current_level += 1
 		exp_to_next *= 1.35

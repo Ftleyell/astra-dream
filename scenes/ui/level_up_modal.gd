@@ -21,6 +21,11 @@ var card_tier_colors: Array[Color] = []
 var current_selected_idx: int = 0
 var stat_card_ui_entries: Dictionary = {}
 
+var pending_levels_queue: Array[int] = []
+var is_presenting_level: bool = false
+var current_level_shown: int = 1
+var _mouse_lockout_active: bool = false
+
 const STAT_ICON_MAP = {
 	&"base_damage": "res://assets/icons/items/icon_sword.svg",
 	&"attack_speed": "res://assets/icons/items/icon_gauntlet.svg",
@@ -78,13 +83,64 @@ func _ready() -> void:
 		stat_deck_manager.cards_offered.connect(_on_cards_offered)
 
 func show_level_up(level: int) -> void:
-	level_label.text = "¡SUBIDA DE NIVEL %d! SELECCIONA UNA MEJORA" % level
+	var parent_game = get_parent()
+	var shop_active: bool = (parent_game and parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active())
+	var diag_active: bool = (parent_game and parent_game.has_method("is_dialogue_active") and parent_game.is_dialogue_active())
+
+	if is_presenting_level or visible or shop_active or diag_active:
+		if not pending_levels_queue.has(level) and level != current_level_shown:
+			pending_levels_queue.append(level)
+		_update_header_title()
+		return
+
+	_present_level(level)
+
+func queue_level_up(level: int) -> void:
+	if not pending_levels_queue.has(level) and level != current_level_shown:
+		pending_levels_queue.append(level)
+	_update_header_title()
+
+func has_pending_levels() -> bool:
+	return not pending_levels_queue.is_empty() or is_presenting_level
+
+func show_next_level_up() -> void:
+	if is_presenting_level and visible:
+		return
+	if not pending_levels_queue.is_empty():
+		var next_level: int = pending_levels_queue.pop_front()
+		_present_level(next_level)
+
+func clear_pending_levels() -> void:
+	pending_levels_queue.clear()
+	is_presenting_level = false
+
+func _update_header_title() -> void:
+	if not level_label:
+		return
+	var pending_count := pending_levels_queue.size()
+	if pending_count > 0:
+		level_label.text = "¡SUBIDA DE NIVEL %d! (+%d PENDIENTES) - SELECCIONA UNA MEJORA" % [current_level_shown, pending_count]
+	else:
+		level_label.text = "¡SUBIDA DE NIVEL %d! SELECCIONA UNA MEJORA" % current_level_shown
 	level_label.add_theme_color_override("font_color", Color(0.3, 0.9, 1.0))
+
+func _present_level(level: int) -> void:
+	is_presenting_level = true
+	current_level_shown = level
+	_mouse_lockout_active = true
+
 	get_tree().paused = true
+	_update_header_title()
 	_refresh_player_stats_display(level)
 	show()
+
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 4)
+
+	# Período de gracia contra spam de clicks de mouse involuntarios al abrir o cambiar de nivel
+	get_tree().create_timer(0.3, true, false, true).timeout.connect(func():
+		_mouse_lockout_active = false
+	)
 
 func _refresh_player_stats_display(level_override: int = -1) -> void:
 	if not is_instance_valid(player):
@@ -221,6 +277,11 @@ func _input(event: InputEvent) -> void:
 	if root_pm and root_pm.visible:
 		return
 
+	# Si el período de gracia contra spam de clicks está activo, bloquear clicks del ratón
+	if event is InputEventMouseButton and event.is_pressed() and _mouse_lockout_active:
+		get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		match event.keycode:
 			# Atajos numéricos directos (1, 2, 3, 4)
@@ -345,13 +406,9 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	card_style.set_content_margin_all(10.0)
 	card_panel.add_theme_stylebox_override("panel", card_style)
 
-	# Interacción táctil/mouse sobre toda la superficie de la carta
+	# Foco visual al pasar el cursor sobre la carta
 	card_panel.mouse_entered.connect(func():
 		_update_card_selection(index)
-	)
-	card_panel.gui_input.connect(func(ev: InputEvent):
-		if ev is InputEventMouseButton and ev.is_pressed() and ev.button_index == MOUSE_BUTTON_LEFT:
-			_select_card(card)
 	)
 
 	card_panels.append(card_panel)
@@ -414,10 +471,42 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	desc_lbl.modulate = Color(0.75, 0.8, 0.9, 0.8)
 	desc_lbl.add_theme_font_size_override("font_size", 12)
 
-	# Botón de selección interactivo
+	# Botón de selección interactivo compacto (evita miss-clicks involuntarios por spam de disparo)
 	var select_btn := Button.new()
 	select_btn.text = "Elegir [%d]" % (index + 1)
+	select_btn.custom_minimum_size = Vector2(110, 30)
+	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	select_btn.add_theme_font_size_override("font_size", 12)
+	select_btn.add_theme_color_override("font_color", tier_color.lightened(0.2))
+
+	var btn_normal := StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.08, 0.12, 0.20, 0.95)
+	btn_normal.border_color = tier_color
+	btn_normal.set_border_width_all(1)
+	btn_normal.set_corner_radius_all(5)
+	btn_normal.set_content_margin_all(4.0)
+	select_btn.add_theme_stylebox_override("normal", btn_normal)
+
+	var btn_hover := StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.12, 0.20, 0.32, 0.98)
+	btn_hover.border_color = tier_color.lightened(0.3)
+	btn_hover.set_border_width_all(2)
+	btn_hover.set_corner_radius_all(5)
+	btn_hover.set_content_margin_all(4.0)
+	select_btn.add_theme_stylebox_override("hover", btn_hover)
+
+	var btn_focus := StyleBoxFlat.new()
+	btn_focus.bg_color = Color(0.15, 0.24, 0.38, 0.98)
+	btn_focus.border_color = Color.WHITE
+	btn_focus.set_border_width_all(2)
+	btn_focus.set_corner_radius_all(5)
+	btn_focus.set_content_margin_all(4.0)
+	select_btn.add_theme_stylebox_override("focus", btn_focus)
+
 	select_btn.pressed.connect(func():
+		if _mouse_lockout_active:
+			return
 		_select_card(card)
 	)
 	select_btn.focus_entered.connect(func():
@@ -469,9 +558,19 @@ func _select_card(card: StatCardData) -> void:
 	if stat_deck_manager and player:
 		stat_deck_manager.apply_card_to_stats(card, player.stats)
 		player.chosen_stat_cards.append(card)
-		_refresh_player_stats_display()
+		_refresh_player_stats_display(current_level_shown)
 	if player and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(0.4)
+
+	card_chosen.emit(card)
+
+	# Si quedan niveles acumulados en la cola, presentamos el siguiente sin despausar ni pisarse
+	if not pending_levels_queue.is_empty():
+		var next_level: int = pending_levels_queue.pop_front()
+		_present_level(next_level)
+		return
+
+	is_presenting_level = false
 	hide()
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("notify_menu_closed"):
@@ -482,4 +581,3 @@ func _select_card(card: StatCardData) -> void:
 			parent_game.restore_combat_modal_focus()
 	else:
 		get_tree().paused = false
-	card_chosen.emit(card)

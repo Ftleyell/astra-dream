@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://levelupqueuerunner01"]
+
+[ext_resource type="Script" path="res://tests/test_level_up_queue_and_missclick_suite.gd" id="1_test_queue"]
+
+[node name="TestLevelUpQueueRunner" type="Node"]
+script = ExtResource("1_test_queue")

@@ -62,6 +62,7 @@ func _ready() -> void:
 
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
+	satellite_shop.shop_closed.connect(_on_satellite_shop_closed)
 
 	# Inicializar ancla de distancia al spawn del jugador
 	last_anchor_pos = player.global_position
@@ -170,7 +171,9 @@ func _on_dialogue_skip_requested() -> void:
 	if Dialogic.current_timeline != null:
 		Dialogic.end_timeline(true)
 
-	if not is_any_combat_modal_active():
+	if level_up_modal and level_up_modal.has_pending_levels():
+		level_up_modal.show_next_level_up()
+	elif not is_any_combat_modal_active():
 		get_tree().paused = false
 
 func _on_dialogic_timeline_ended() -> void:
@@ -194,7 +197,9 @@ func _on_dialogic_timeline_ended() -> void:
 		is_boss_transmission_active = false
 		notify_menu_closed(0.4)
 
-	if not is_any_combat_modal_active():
+	if level_up_modal and level_up_modal.has_pending_levels():
+		level_up_modal.show_next_level_up()
+	elif not is_any_combat_modal_active():
 		get_tree().paused = false
 
 func _trigger_cockpit_interlude() -> void:
@@ -375,8 +380,15 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
-	level_up_modal.show_level_up(level)
+	if is_satellite_shop_active() or is_dialogue_active():
+		level_up_modal.queue_level_up(level)
+	else:
+		level_up_modal.show_level_up(level)
 	save_current_run_state()
+
+func _on_satellite_shop_closed() -> void:
+	if level_up_modal and level_up_modal.has_pending_levels():
+		level_up_modal.show_next_level_up()
 
 func is_pause_menu_active() -> bool:
 	return pause_menu != null and pause_menu.visible
@@ -415,6 +427,8 @@ func is_any_combat_modal_active() -> bool:
 	if is_satellite_shop_active():
 		return true
 	if is_level_up_modal_active():
+		return true
+	if level_up_modal and level_up_modal.has_pending_levels():
 		return true
 	if is_pause_menu_active():
 		return true
@@ -455,6 +469,9 @@ func _on_enemy_killed(_enemy_type: String) -> void:
 	enemies_killed_count += 1
 
 func _on_player_died() -> void:
+	if level_up_modal and level_up_modal.has_method("clear_pending_levels"):
+		level_up_modal.clear_pending_levels()
+
 	# 1. Eliminar partida en curso (Permadeath)
 	SaveManager.clear_active_run()
 
