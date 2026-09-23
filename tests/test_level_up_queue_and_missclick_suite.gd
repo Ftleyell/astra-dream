@@ -150,13 +150,13 @@ func _ready() -> void:
 
 	# 5.1 Verificar tamaño compacto del botón de selección
 	assert(not level_modal.select_buttons.is_empty(), "Deben existir botones de selección")
-	var first_btn := level_modal.select_buttons[0]
+	var first_btn: Button = level_modal.select_buttons[0]
 	assert(first_btn.custom_minimum_size == Vector2(110, 30), "El botón debe tener dimensiones compactas (110x30 px)")
 	assert(first_btn.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "El botón debe estar centrado para evitar clicks involuntarios")
 	print("  ✓ Botones de selección configurados como compactos y centrados (110x30 px).")
 
 	# 5.2 Click en el panel de la carta NO debe seleccionarla
-	var first_panel := level_modal.card_panels[0]
+	var first_panel: PanelContainer = level_modal.card_panels[0]
 	var mouse_event := InputEventMouseButton.new()
 	mouse_event.button_index = MOUSE_BUTTON_LEFT
 	mouse_event.pressed = true
