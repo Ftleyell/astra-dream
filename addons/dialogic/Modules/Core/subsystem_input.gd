@@ -45,7 +45,20 @@ var manual_advance: DialogicManualAdvance = null
 #region SUBSYSTEM METHODS
 ################################################################################
 
+func _ensure_objects() -> void:
+	if auto_skip == null:
+		auto_skip = DialogicAutoSkip.new()
+		if not auto_skip.toggled.is_connected(_on_autoskip_toggled):
+			auto_skip.toggled.connect(_on_autoskip_toggled)
+		auto_skip._init()
+	if auto_advance == null:
+		auto_advance = DialogicAutoAdvance.new()
+	if manual_advance == null:
+		manual_advance = DialogicManualAdvance.new()
+
+
 func _clear_state(_clear_flag := DialogicGameHandler.ClearFlags.FULL_CLEAR) -> void:
+	_ensure_objects()
 	if not is_node_ready():
 		await ready
 
@@ -54,27 +67,30 @@ func _clear_state(_clear_flag := DialogicGameHandler.ClearFlags.FULL_CLEAR) -> v
 
 
 func _pause() -> void:
-	auto_advance.autoadvance_timer.paused = true
+	_ensure_objects()
+	if auto_advance and is_instance_valid(auto_advance.autoadvance_timer):
+		auto_advance.autoadvance_timer.paused = true
 	input_block_timer.paused = true
 	set_process(false)
 
 
 func _resume() -> void:
-	auto_advance.autoadvance_timer.paused = false
+	_ensure_objects()
+	if auto_advance and is_instance_valid(auto_advance.autoadvance_timer):
+		auto_advance.autoadvance_timer.paused = false
 	input_block_timer.paused = false
 	var is_autoskip_timer_done := _auto_skip_timer_left > 0.0
 	set_process(not is_autoskip_timer_done)
 
 
 func _post_install() -> void:
-	auto_skip = DialogicAutoSkip.new()
-	auto_advance = DialogicAutoAdvance.new()
-	manual_advance = DialogicManualAdvance.new()
+	_ensure_objects()
 
 	dialogic.Settings.connect_to_change("autoadvance_delay_modifier", auto_advance._update_autoadvance_delay_modifier)
-	auto_skip.toggled.connect(_on_autoskip_toggled)
-	auto_skip._init()
-	add_child(input_block_timer)
+	if not auto_skip.toggled.is_connected(_on_autoskip_toggled):
+		auto_skip.toggled.connect(_on_autoskip_toggled)
+	if not input_block_timer.is_inside_tree():
+		add_child(input_block_timer)
 	input_block_timer.one_shot = true
 
 
@@ -91,6 +107,7 @@ func _post_install() -> void:
 ## [signal dialogic_action] if [member action_was_consumed] has not been set
 ## to `true` inbetween.
 func handle_input() -> void:
+	_ensure_objects()
 	if dialogic.paused or is_input_blocked():
 		return
 
@@ -159,6 +176,7 @@ func handle_node_gui_input(event:InputEvent) -> void:
 
 ## Returns true if a previous call to [method block_input] is still active.
 func is_input_blocked() -> bool:
+	_ensure_objects()
 	return input_block_timer.time_left > 0.0 and not auto_skip.enabled
 
 
@@ -173,14 +191,16 @@ func block_input(time:=0.1) -> void:
 
 
 func _ready() -> void:
-
+	_ensure_objects()
 	# We use the process method to count down the auto-start_autoskip_timer timer.
 	set_process(false)
 
 
 ## Stops all timers of the subsystem. Used by the Text subsystem.
 func stop_timers() -> void:
-	auto_advance.autoadvance_timer.stop()
+	_ensure_objects()
+	if auto_advance and is_instance_valid(auto_advance.autoadvance_timer):
+		auto_advance.autoadvance_timer.stop()
 	input_block_timer.stop()
 	_auto_skip_timer_left = 0.0
 

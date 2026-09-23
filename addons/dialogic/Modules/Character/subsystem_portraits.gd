@@ -24,7 +24,8 @@ var default_portrait_scene: PackedScene = load(get_script().resource_path.get_ba
 
 func _clear_state(_clear_flag := DialogicGameHandler.ClearFlags.FULL_CLEAR) -> void:
 	for character_node in character_nodes.values():
-		_remove_character(character_node)
+		if is_instance_valid(character_node):
+			_remove_character(character_node)
 	portraits.clear()
 	character_nodes.clear()
 
@@ -213,6 +214,9 @@ func _change_portrait_extradata(character_node: Node2D, extra_data := "") -> voi
 ## Animates the node with the given animation.
 ## Is used both on the character node (most animations) and the portrait nodes (cross-fade animations)
 func _animate_node(node: Node, animation_path: String, length: float, repeats := 1, is_reversed := false, repeat_forever := false) -> DialogicAnimation:
+	if not is_instance_valid(node):
+		return null
+
 	if node.has_meta('animation_node') and is_instance_valid(node.get_meta('animation_node')):
 		node.get_meta('animation_node').queue_free()
 
@@ -279,12 +283,16 @@ func _remove_portrait(portrait_node: Node) -> void:
 
 ## Removes the given characters portrait.
 ## Only works with joined characters.
-func _remove_character(character_node:Node) -> void:
+func _remove_character(character_node: Variant) -> void:
 	if is_instance_valid(character_node) and character_node is Node:
-		character_left.emit({'character': character_node.get_meta("character")})
-		var container := character_node.get_parent()
-		container.get_parent().remove_child(container)
-		container.queue_free()
+		if character_node.has_meta("character"):
+			character_left.emit({'character': character_node.get_meta("character")})
+		var container: Node = (character_node as Node).get_parent()
+		if is_instance_valid(container):
+			var container_parent: Node = container.get_parent()
+			if is_instance_valid(container_parent):
+				container_parent.remove_child(container)
+			container.queue_free()
 		character_node.queue_free()
 
 
@@ -294,7 +302,7 @@ func _remove_character(character_node:Node) -> void:
 func _get_join_default_length() -> float:
 	var default_time: float = ProjectSettings.get_setting('dialogic/animations/join_default_length', 0.5)
 
-	if dialogic.Inputs.auto_skip.enabled:
+	if dialogic.has_subsystem("Inputs") and dialogic.Inputs.auto_skip and dialogic.Inputs.auto_skip.enabled:
 		default_time = min(default_time, dialogic.Inputs.auto_skip.time_per_event)
 
 	return default_time
@@ -305,7 +313,7 @@ func _get_join_default_length() -> float:
 func _get_leave_default_length() -> float:
 	var default_time: float = ProjectSettings.get_setting('dialogic/animations/leave_default_length', 0.5)
 
-	if dialogic.Inputs.auto_skip.enabled:
+	if dialogic.has_subsystem("Inputs") and dialogic.Inputs.auto_skip and dialogic.Inputs.auto_skip.enabled:
 		default_time = min(default_time, dialogic.Inputs.auto_skip.time_per_event)
 
 	return default_time
@@ -508,6 +516,9 @@ func leave_character(character: DialogicCharacter, animation_name:= "", animatio
 	portraits.erase(character.get_identifier())
 	character_nodes.erase(character.get_identifier())
 
+	if not is_instance_valid(character_node):
+		return
+
 	if animation_name.is_empty():
 		animation_name = ProjectSettings.get_setting('dialogic/animations/leave_default', "Fade Out Down")
 		animation_length = _get_leave_default_length()
@@ -517,7 +528,7 @@ func leave_character(character: DialogicCharacter, animation_name:= "", animatio
 
 	if not animation_name.is_empty():
 		var animation := _animate_node(character_node, animation_name, animation_length, 1, true)
-		if animation_length > 0:
+		if animation and animation_length > 0:
 			if animation_wait:
 				dialogic.current_state = DialogicGameHandler.States.ANIMATING
 				await animation.finished
@@ -527,6 +538,8 @@ func leave_character(character: DialogicCharacter, animation_name:= "", animatio
 				animation.finished.connect(_remove_character.bind(character_node))
 		else:
 			_remove_character(character_node)
+	else:
+		_remove_character(character_node)
 
 
 ## Removes all joined characters with a given animation or the default animation.

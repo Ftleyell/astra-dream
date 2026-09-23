@@ -305,9 +305,12 @@ func update_dialog_text(text: String, instant := false, additional := false, tex
 		# Reset speed multiplier
 		update_text_speed(-1, false, 1)
 		# Reset Auto-Advance temporarily and the No-Skip setting:
-		dialogic.Inputs.auto_advance.enabled_until_next_event = false
-		dialogic.Inputs.auto_advance.override_delay_for_current_event = -1
-		dialogic.Inputs.manual_advance.disabled_until_next_event = false
+		if dialogic.has_subsystem("Inputs"):
+			if dialogic.Inputs.auto_advance:
+				dialogic.Inputs.auto_advance.enabled_until_next_event = false
+				dialogic.Inputs.auto_advance.override_delay_for_current_event = -1
+			if dialogic.Inputs.manual_advance:
+				dialogic.Inputs.manual_advance.disabled_until_next_event = false
 
 		set_text_reveal_skippable(true, true)
 

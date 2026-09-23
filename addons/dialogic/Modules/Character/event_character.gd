@@ -114,7 +114,7 @@ func _execute() -> void:
 	# Calculate animation time (can be shortened during skipping)
 	var final_animation_length: float = animation_length
 	var final_position_move_time: float = transform_time
-	if dialogic.Inputs.auto_skip.enabled:
+	if dialogic.has_subsystem("Inputs") and dialogic.Inputs.auto_skip and dialogic.Inputs.auto_skip.enabled:
 		var max_time: float = dialogic.Inputs.auto_skip.time_per_event
 		final_animation_length = min(max_time, animation_length)
 		final_position_move_time = min(max_time, transform_time)

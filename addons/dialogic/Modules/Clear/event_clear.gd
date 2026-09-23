@@ -25,7 +25,7 @@ var auto_avoid_style_change := true
 func _execute() -> void:
 	var final_time := time
 
-	if dialogic.Inputs.auto_skip.enabled:
+	if dialogic.has_subsystem("Inputs") and dialogic.Inputs.auto_skip and dialogic.Inputs.auto_skip.enabled:
 		var time_per_event: float = dialogic.Inputs.auto_skip.time_per_event
 		final_time = min(time, time_per_event)
 
