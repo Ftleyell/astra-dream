@@ -162,13 +162,18 @@ func _spawn_ship(cfg: Dictionary) -> void:
 	# Estela de propulsor (Trail)
 	var trail := Line2D.new()
 	trail.name = "ThrusterTrail"
-	trail.width = 5.5
+	trail.width = 6.0
 	trail.default_color = cfg["glow"]
-	trail.top_level = true
+	trail.top_level = false
+	trail.z_index = -1
 	var curve := Curve.new()
 	curve.add_point(Vector2(0.0, 1.0))
 	curve.add_point(Vector2(1.0, 0.0))
 	trail.width_curve = curve
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1.0, 1.0, 1.0, 0.95))
+	grad.set_color(1, Color(cfg["glow"].r, cfg["glow"].g, cfg["glow"].b, 0.0))
+	trail.gradient = grad
 	ships_container.add_child(trail)
 
 	# Sprite
@@ -222,11 +227,12 @@ func _animate_ship(data: Dictionary) -> void:
 		if forward.length_squared() > 0.001:
 			node.rotation = forward.angle() + PI * 0.5
 
-		# Actualizar estela
+		# Actualizar estela (en coordenadas locales de ships_container para quedar detrás de la UI y del piloto)
 		if is_instance_valid(trail):
 			var engine_pos: Vector2 = current_pos - forward.normalized() * 16.0
+			var local_engine_pos: Vector2 = ships_container.to_local(engine_pos)
 			var pts: Array = data["trail_points"]
-			pts.push_front(engine_pos)
+			pts.push_front(local_engine_pos)
 			if pts.size() > 18:
 				pts.pop_back()
 			var packed_pts := PackedVector2Array()

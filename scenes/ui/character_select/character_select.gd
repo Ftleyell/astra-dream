@@ -252,13 +252,14 @@ func _select_character(char_id: StringName) -> void:
 
 	# Escaparate Full Body
 	if fullbody_texture:
-		var fb_tex := data.get_fullbody_texture(true) # Invertida para mirar hacia el centro/izquierda
+		var fb_tex := data.get_fullbody_texture(false)
 		if not fb_tex:
-			fb_tex = data.get_fullbody_texture(false)
+			fb_tex = data.get_fullbody_texture(true)
 		if not fb_tex:
 			fb_tex = data.get_portrait_texture()
 
 		fullbody_texture.texture = fb_tex
+		fullbody_texture.flip_h = true
 		fullbody_texture.visible = (fb_tex != null)
 
 func _on_launch_pressed() -> void:

@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://b0fkm1b3h8xqa" path="res://scenes/combat/environment/space_background.tscn" id="2_spacebg"]
 
 [node name="DeploymentSpaceBackground" type="Control"]
+z_index = -50
+z_as_relative = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
