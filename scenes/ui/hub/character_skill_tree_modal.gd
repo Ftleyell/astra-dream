@@ -186,12 +186,16 @@ var canvas_base_pos: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	visible = false
 	if close_button:
+		close_button.focus_mode = Control.FOCUS_NONE
 		close_button.pressed.connect(close_modal)
 	if btn_activate_node:
+		btn_activate_node.focus_mode = Control.FOCUS_NONE
 		btn_activate_node.pressed.connect(_on_activate_pressed)
 	if btn_add_biomass:
+		btn_add_biomass.focus_mode = Control.FOCUS_NONE
 		btn_add_biomass.pressed.connect(_on_add_biomass_pressed)
 	if btn_refund_skills:
+		btn_refund_skills.focus_mode = Control.FOCUS_NONE
 		btn_refund_skills.pressed.connect(_on_refund_pressed)
 
 	_setup_canvas_input()
@@ -394,7 +398,7 @@ func _update_detail_panel() -> void:
 			sb_act.border_color = Color("#FF3366")
 			btn_activate_node.add_theme_color_override("font_color", Color("#FF3366"))
 		else:
-			btn_activate_node.text = "⚡ ACTIVAR NODO (25 BioMasa)"
+			btn_activate_node.text = "⚡ ACTIVAR [ESPACIO] (%d BioMasa)" % cost
 			btn_activate_node.disabled = false
 			sb_act.bg_color = current_theme_color
 			sb_act.border_color = Color.WHITE
@@ -573,9 +577,93 @@ func close_modal() -> void:
 	visible = false
 
 
+func _navigate_direction(move_dir: Vector2) -> void:
+	var cur_pos := Vector2.ZERO
+	for d in NODE_DEFINITIONS:
+		if d["id"] == selected_node_id:
+			cur_pos = d["pos"]
+			break
+
+	var best_nid: StringName = &""
+	var best_score: float = 999999.0
+
+	for d in NODE_DEFINITIONS:
+		var nid: StringName = d["id"]
+		if nid == selected_node_id:
+			continue
+		var delta_pos: Vector2 = d["pos"] - cur_pos
+		var dist: float = delta_pos.length()
+		if dist < 1.0:
+			continue
+		var dir_norm := delta_pos.normalized()
+		var dot: float = dir_norm.dot(move_dir)
+		if dot > 0.35:
+			var score: float = dist + (1.0 - dot) * 140.0
+			if score < best_score:
+				best_score = score
+				best_nid = nid
+
+	if best_nid != &"":
+		_select_node(best_nid)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click")
+		var hex = hex_nodes.get(best_nid, null)
+		if hex:
+			var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(hex, "scale", Vector2(1.2, 1.2), 0.08)
+			tw.tween_property(hex, "scale", Vector2.ONE, 0.12)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
+
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
 		close_modal()
 		get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_W, KEY_UP:
+				_navigate_direction(Vector2.UP)
+				get_viewport().set_input_as_handled()
+				return
+			KEY_S, KEY_DOWN:
+				_navigate_direction(Vector2.DOWN)
+				get_viewport().set_input_as_handled()
+				return
+			KEY_A, KEY_LEFT:
+				_navigate_direction(Vector2.LEFT)
+				get_viewport().set_input_as_handled()
+				return
+			KEY_D, KEY_RIGHT:
+				_navigate_direction(Vector2.RIGHT)
+				get_viewport().set_input_as_handled()
+				return
+			KEY_SPACE, KEY_ENTER:
+				_on_activate_pressed()
+				get_viewport().set_input_as_handled()
+				return
+
+	if event.is_action_pressed("move_up") or event.is_action_pressed("ui_up"):
+		_navigate_direction(Vector2.UP)
+		get_viewport().set_input_as_handled()
+		return
+	elif event.is_action_pressed("move_down") or event.is_action_pressed("ui_down"):
+		_navigate_direction(Vector2.DOWN)
+		get_viewport().set_input_as_handled()
+		return
+	elif event.is_action_pressed("move_left") or event.is_action_pressed("ui_left"):
+		_navigate_direction(Vector2.LEFT)
+		get_viewport().set_input_as_handled()
+		return
+	elif event.is_action_pressed("move_right") or event.is_action_pressed("ui_right"):
+		_navigate_direction(Vector2.RIGHT)
+		get_viewport().set_input_as_handled()
+		return
+	elif event.is_action_pressed("ui_accept"):
+		_on_activate_pressed()
+		get_viewport().set_input_as_handled()
+		return

@@ -154,15 +154,24 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# Efecto de Parallax 3D suave según la posición de la cámara
+	# Efecto de Parallax 3D suave según la posición y proximidad de la cámara
 	if camera and is_instance_valid(camera):
-		var cam_x: float = camera.global_position.x
+		var cam_pos: Vector3 = camera.global_position
+		var approach: float = clampf((-cam_pos.z) / 7.5, 0.0, 1.0)
+
 		if parallax_near:
-			parallax_near.position.x = cam_x * 0.35
+			parallax_near.position.x = cam_pos.x * 0.35
+			parallax_near.position.y = 4.0 + (cam_pos.y - 3.2) * 0.25
+			var s_near: float = 1.0 + approach * 0.12
+			parallax_near.scale = Vector3(s_near, s_near, 1.0)
 		if parallax_mid:
-			parallax_mid.position.x = cam_x * 0.12
+			parallax_mid.position.x = cam_pos.x * 0.14
+			parallax_mid.position.y = 6.0 + (cam_pos.y - 3.2) * 0.12
+			var s_mid: float = 1.0 + approach * 0.06
+			parallax_mid.scale = Vector3(s_mid, s_mid, 1.0)
 		if parallax_deep:
-			parallax_deep.position.x = cam_x * 0.03
+			parallax_deep.position.x = cam_pos.x * 0.04
+			parallax_deep.position.y = 10.0 + (cam_pos.y - 3.2) * 0.04
 
 	# Animación idle de hologramas en las máquinas
 	_idle_time += delta

@@ -84,6 +84,12 @@ func _ready() -> void:
 	hub_world.player_controller._update_camera(1.0)
 	assert(hub_world.player_controller.camera.global_position.z <= 13.0, "La cámara no debe atravesar la pared trasera ni salirse del hangar")
 
+	# Verificar Zoom Dinámico al aproximarse al ventanal exterior (Z = -7.5)
+	hub_world.player_controller.global_position = Vector3(0, 0, -7.5)
+	hub_world.player_controller._update_camera(1.0)
+	assert(hub_world.player_controller.camera.fov < 75.0, "Al acercarse al ventanal debe activarse el zoom dinámico panorámico (FOV < 75)")
+	assert(hub_world.parallax_deep.mesh.size.x >= 300.0, "Parallax profundo debe tener amplitud >= 300m para no mostrar bordes negros")
+
 	# Verificar configuración Full Body en el PlayerController y en las heroínas
 	assert(is_equal_approx(hub_world.player_controller.visual_sprite.pixel_size, 0.0013), "Player visual_sprite debe tener pixel_size 0.0013 para Full Body")
 	assert(hub_world.player_controller.visual_sprite.offset.y == 800, "Player visual_sprite debe tener offset Y=800 para anclaje a suelo")
@@ -110,7 +116,7 @@ func _ready() -> void:
 	var floor_mesh := hub_world.get_node("HangarRoom/Floor/MeshInstance3D") as MeshInstance3D
 	var mat_floor = floor_mesh.mesh.material as StandardMaterial3D
 	assert(mat_floor != null and mat_floor.albedo_texture != null and mat_floor.emission_texture != null, "Suelo del Hangar debe tener textura de albedo y emisión asignada")
-	print("  ✓ Hangar 3D verificado: Geometría de sala, paredes modulares Kenney, 3 capas de parallax transparentes, máquinas arcade y avatares Full Body.")
+	print("  ✓ Hangar 3D verificado: Geometría de sala, paredes modulares Kenney, 3 capas de parallax gigantes transparentes, máquinas arcade y avatares Full Body.")
 
 	# ----------------------------------------------------
 	# CASO 4: Atajos de HUD en esquina y modales interactivos
@@ -142,10 +148,28 @@ func _ready() -> void:
 	assert(hub_world.skill_tree_modal != null and hub_world.skill_tree_modal.visible, "SkillTreeModal debe abrirse al hablar con la piloto")
 	assert(hub_world.player_controller.is_movement_locked, "El movimiento 3D debe bloquearse al abrir el Árbol de Habilidades")
 	assert(hub_world.skill_tree_modal.hex_nodes.size() == 13, "El Árbol de Habilidades debe tener los 13 nodos hexagonales generados y visibles")
+
+	# Probar navegación con WASD
+	assert(hub_world.skill_tree_modal.selected_node_id == &"core", "El nodo inicial seleccionado debe ser core")
+	hub_world.skill_tree_modal._navigate_direction(Vector2.UP)
+	assert(hub_world.skill_tree_modal.selected_node_id == &"speed_1", "Navegar hacia arriba [W] debe seleccionar speed_1")
+	hub_world.skill_tree_modal._navigate_direction(Vector2.UP)
+	assert(hub_world.skill_tree_modal.selected_node_id == &"speed_2", "Navegar hacia arriba [W] de nuevo debe seleccionar speed_2")
+	hub_world.skill_tree_modal._navigate_direction(Vector2.DOWN)
+	assert(hub_world.skill_tree_modal.selected_node_id == &"speed_1", "Navegar hacia abajo [S] debe regresar a speed_1")
+	hub_world.skill_tree_modal._navigate_direction(Vector2.RIGHT)
+	assert(hub_world.skill_tree_modal.selected_node_id == &"damage_1", "Navegar hacia la derecha [D] debe seleccionar rama de daño")
+
+	# Probar activación con [ESPACIO]
+	SaveManager.add_test_biomass(100)
+	hub_world.skill_tree_modal._refresh_nodes_state()
+	hub_world.skill_tree_modal._on_activate_pressed()
+	assert(SaveManager.get_character_unlocked_nodes(&"nova").has(&"damage_1"), "Presionar [ESPACIO] debe activar y desbloquear el nodo de habilidad")
+
 	# Probar cierre y desbloqueo inmediato del movimiento
 	hub_world.skill_tree_modal.close_modal()
 	assert(not hub_world.player_controller.is_movement_locked, "El movimiento 3D debe restaurarse INMEDIATAMENTE al cerrar el Árbol de Habilidades")
-	print("  ✓ Modales de Ajustes, Récords y Árbol de Talentos (13 nodos) con control de movimiento fluido en el Hub 3D.")
+	print("  ✓ Modales de Ajustes, Récords y Árbol de Talentos (13 nodos navegables con WASD y activación con ESPACIO) con control de movimiento fluido en el Hub 3D.")
 
 	print("\n==========================================")
 	print("[PASS] ALL TITLE SCREEN & 3D HUB TESTS PASSED (100%)!")

@@ -69,6 +69,12 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "PILOTO: NOVA // PILOTO DE VANGUARDIA"
 
+[node name="NavHintLabel" type="Label" parent="TopBar/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "NAVEGACIÓN: [W][A][S][D] / FLECHAS  |  ACTIVAR: [ESPACIO]  |  SALIR: [ESC]"
+
 [node name="HudRight" type="VBoxContainer" parent="TopBar"]
 layout_mode = 2
 alignment = 1

@@ -149,7 +149,20 @@ func _physics_process(delta: float) -> void:
 func _update_camera(delta: float) -> void:
 	if not camera:
 		return
-	var target_cam_pos := global_position + _cam_offset
+
+	# Factor de aproximación al gran ventanal exterior (railing en Z = -10.0)
+	var window_proximity: float = clampf((-global_position.z) / 7.5, 0.0, 1.0)
+
+	# 1. Zoom Dinámico: reduce el FOV al acercarse al ventanal para magnificar el espacio
+	# y garantizar que los bordes del parallax nunca entren en el campo de visión.
+	var target_fov: float = lerpf(85.0, 68.0, window_proximity)
+	camera.fov = lerpf(camera.fov, target_fov, clampf(6.0 * delta, 0.0, 1.0))
+
+	# 2. Desplazamiento dinámico de cámara según proximidad
+	var cur_offset_y: float = lerpf(3.2, 3.6, window_proximity)
+	var cur_offset_z: float = lerpf(5.0, 3.8, window_proximity)
+	var target_cam_pos := global_position + Vector3(0.0, cur_offset_y, cur_offset_z)
+
 	# Limitar cámara dentro de la sala para evitar que atraviese la pared trasera
 	target_cam_pos.z = clampf(target_cam_pos.z, -6.5, 12.0)
 	target_cam_pos.x = clampf(target_cam_pos.x, -9.0, 9.0)
@@ -161,7 +174,10 @@ func _update_camera(delta: float) -> void:
 	camera.global_position.z = clampf(camera.global_position.z, -6.5, 12.0)
 	camera.global_position.x = clampf(camera.global_position.x, -9.0, 9.0)
 	camera.global_position.y = clampf(camera.global_position.y, 2.2, 4.5)
-	var look_target := global_position + Vector3(0.0, 1.2, 0.0)
+
+	# 3. Elevación del punto de mira al acercarse al ventanal (enfoque hacia el horizonte cósmico)
+	var look_y: float = lerpf(1.2, 1.9, window_proximity)
+	var look_target := global_position + Vector3(0.0, look_y, 0.0)
 	camera.look_at(look_target, Vector3.UP)
 
 
