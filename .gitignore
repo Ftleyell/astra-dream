@@ -32,12 +32,14 @@ $RECYCLE.BIN/
 
 # Game export / build artifacts
 build/
+builds/
 export/
 dist/
 release/
 *.apk
 *.aab
 *.exe
+*.pck
 *.dll
 *.so
 *.dylib
