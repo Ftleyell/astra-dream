@@ -1,0 +1,96 @@
+[gd_scene load_steps=2 format=3 uid="uid://trophy_modal_001"]
+
+[ext_resource type="Script" path="res://scenes/ui/hub/trophy_details_modal.gd" id="1_modal"]
+
+[node name="TrophyDetailsModal" type="CanvasLayer"]
+process_mode = 3
+layer = 65
+script = ExtResource("1_modal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.05, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(760, 480)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TrophyTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "CORAZÓN DE NODRIZA AEGIS"
+horizontal_alignment = 1
+
+[node name="MasteryBadge" type="Label" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "★ DESBLOQUEADO - MAESTRÍA NIVEL 1"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="TrophyLore" type="Label" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Reactor de aniquilación cuántica recuperado tras abatir al dreadnought estelar."
+autowrap_mode = 2
+
+[node name="BonusPanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="BonusMargin" type="MarginContainer" parent="CenterContainer/MainPanel/Margin/VBox/BonusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="BonusLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/BonusPanel/BonusMargin"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "+10% Daño permanente a todas las heroínas (+5% por maestría)"
+autowrap_mode = 2
+
+[node name="CostLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Materia Oscura disponible: 0  |  Costo de mejora: 10"
+horizontal_alignment = 1
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="UpgradeButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ButtonsHBox"]
+custom_minimum_size = Vector2(240, 42)
+layout_mode = 2
+text = "MEJORAR MAESTRÍA"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ButtonsHBox"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+text = "VOLVER [ESC]"

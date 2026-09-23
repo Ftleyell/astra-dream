@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="1_p3b3f"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_npfnw"]
+
+[resource]
+script = ExtResource("2_npfnw")
+id = "phantom_evasion"
+name = "Evasión Fantasma"
+description_boon = "+10 Armadura espectral y +25% Velocidad"
+description_curse = "-20% Daño infligido por armas"
+quadrant = "spacetime"
+icon = ExtResource("1_p3b3f")
+color_accent = Color(0.7, 0.2, 0.9, 1)
+stat_modifiers = {
+"armor": 10.0,
+"base_damage_pct": -0.2,
+"move_speed_pct": 0.25
+}
+custom_tags = PackedStringArray()

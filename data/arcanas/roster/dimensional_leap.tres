@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="1_6cwhh"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_gkfcy"]
+
+[resource]
+script = ExtResource("2_gkfcy")
+id = "dimensional_leap"
+name = "Salto Dimensional"
+description_boon = "+45% Velocidad de maniobra y +35% Recarga de dash"
+description_curse = "-20% Resistencia e integridad de casco (Max HP)"
+quadrant = "spacetime"
+icon = ExtResource("1_6cwhh")
+color_accent = Color(0.75, 0.25, 1, 1)
+stat_modifiers = {
+"cooldown_reduction": 0.35,
+"max_health_pct": -0.2,
+"move_speed_pct": 0.45
+}
+custom_tags = PackedStringArray()

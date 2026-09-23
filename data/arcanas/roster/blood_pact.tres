@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="1_ps6v5"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_so6er"]
+
+[resource]
+script = ExtResource("2_so6er")
+id = "blood_pact"
+name = "Pacto de Sangre"
+description_boon = "+60% Daño base a todas las armas"
+description_curse = "-35% Vida máxima del chasis"
+icon = ExtResource("1_ps6v5")
+color_accent = Color(1, 0.15, 0.25, 1)
+stat_modifiers = {
+"base_damage_pct": 0.6,
+"max_health_pct": -0.35
+}
+custom_tags = PackedStringArray()

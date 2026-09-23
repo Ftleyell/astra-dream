@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_apple.svg" id="1_lbs84"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_n8jo3"]
+
+[resource]
+script = ExtResource("2_n8jo3")
+id = "vampiric_drain"
+name = "Drenaje Vampírico"
+description_boon = "+4.0 Regeneración masiva de vida continua"
+description_curse = "-20% Velocidad de desplazamiento"
+icon = ExtResource("1_lbs84")
+color_accent = Color(0.9, 0.1, 0.4, 1)
+stat_modifiers = {
+"health_regen": 4.0,
+"move_speed_pct": -0.2
+}
+custom_tags = PackedStringArray()

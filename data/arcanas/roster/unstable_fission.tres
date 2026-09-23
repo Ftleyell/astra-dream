@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/icon_missile.png" id="1_8v0ce"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_fvq84"]
+
+[resource]
+script = ExtResource("2_fvq84")
+id = "unstable_fission"
+name = "Fisión Inestable"
+description_boon = "+2 Proyectiles y +20% Probabilidad crítica"
+description_curse = "-25% Cadencia de disparo"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_8v0ce")
+color_accent = Color(0.2, 1, 0.9, 1)
+stat_modifiers = {
+"attack_speed_pct": -0.25,
+"crit_chance": 0.2,
+"projectile_count": 2.0
+}
+custom_tags = PackedStringArray()

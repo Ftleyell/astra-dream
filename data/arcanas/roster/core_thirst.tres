@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_heart.svg" id="1_ftdwj"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_bfpco"]
+
+[resource]
+script = ExtResource("2_bfpco")
+id = "core_thirst"
+name = "Sed de Núcleo"
+description_boon = "+40% Daño base y +30% Tamaño de proyectiles"
+description_curse = "-30% Radio magnético de recogida de EXP"
+icon = ExtResource("1_ftdwj")
+color_accent = Color(0.95, 0.2, 0.2, 1)
+stat_modifiers = {
+"base_damage_pct": 0.4,
+"pickup_radius_pct": -0.3,
+"weapon_size_pct": 0.3
+}
+custom_tags = PackedStringArray()

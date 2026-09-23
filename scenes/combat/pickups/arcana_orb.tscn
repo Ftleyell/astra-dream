@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/pickups/arcana_orb.gd" id="1_orb"]
+
+[node name="ArcanaOrb" type="Node2D"]
+script = ExtResource("1_orb")
+
+[node name="VisualAura" type="Polygon2D" parent="."]
+color = Color(0, 0.95, 1, 0.25)
+polygon = PackedVector2Array(-18, 0, -13, 13, 0, 18, 13, 13, 18, 0, 13, -13, 0, -18, -13, -13)
+
+[node name="VisualRing" type="Line2D" parent="."]
+points = PackedVector2Array(-14, 0, -10, 10, 0, 14, 10, 10, 14, 0, 10, -10, 0, -14, -10, -10, -14, 0)
+width = 2.0
+default_color = Color(1, 0.1, 0.6, 0.8)
+
+[node name="VisualCore" type="Polygon2D" parent="."]
+color = Color(0.1, 0.9, 1, 1)
+polygon = PackedVector2Array(-8, 0, 0, 10, 8, 0, 0, -10)

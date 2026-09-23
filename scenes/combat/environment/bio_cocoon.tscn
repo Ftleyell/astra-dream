@@ -1,0 +1,54 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/bio_cocoon.gd" id="1_cocoon"]
+[ext_resource type="Script" path="res://core/components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://core/components/hurtbox_component.gd" id="3_hurtbox"]
+[ext_resource type="Script" path="res://core/components/hit_flash_component.gd" id="4_hitflash"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 38.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurtbox"]
+radius = 42.0
+
+[node name="BioCocoon" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_cocoon")
+
+[node name="VisualBody" type="Polygon2D" parent="."]
+color = Color(0.48, 0.12, 0.35, 1)
+polygon = PackedVector2Array(-35, -12, -22, -32, 5, -36, 28, -20, 36, 5, 25, 30, -5, 36, -30, 22)
+
+[node name="VisualTendrils" type="Line2D" parent="."]
+points = PackedVector2Array(-28, -25, -10, 0, 18, -15, 0, 22, 22, 20)
+width = 3.0
+default_color = Color(0.85, 0.2, 0.4, 0.85)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CoreEgg" type="Polygon2D" parent="."]
+color = Color(0.95, 0.2, 0.3, 0.9)
+polygon = PackedVector2Array(-14, 0, 0, -18, 14, 0, 0, 18)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 180.0
+current_health = 180.0
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component")]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("3_hurtbox")
+health_component = NodePath("../HealthComponent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("CircleShape2D_hurtbox")
+
+[node name="HitFlashComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "target_visual")]
+script = ExtResource("4_hitflash")
+health_component = NodePath("../HealthComponent")
+target_visual = NodePath("../VisualBody")

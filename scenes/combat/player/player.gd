@@ -1,5 +1,8 @@
 class_name Player
 extends CharacterBody2D
+const SaveManager = preload("res://core/autoloads/save_manager.gd")
+const ArcanaData = preload("res://data/arcanas/arcana_data.gd")
+
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -45,6 +48,8 @@ var current_level: int = 1
 var current_exp: float = 0.0
 var exp_to_next: float = 40.0
 var chosen_stat_cards: Array[StatCardData] = []
+var active_arcanas: Array[ArcanaData] = []
+var run_dark_matter: int = 0
 
 # Core Hitbox Node
 @onready var hitbox_core: Node2D = $HitboxCore
@@ -54,6 +59,8 @@ signal health_changed(current: float, max_val: float)
 signal bomb_used(remaining: int)
 signal credits_changed(amount: int)
 signal biomass_changed(amount: int, total_persistent: int)
+signal dark_matter_changed(amount: int, total_persistent: int)
+signal arcana_applied(arcana: ArcanaData)
 signal exp_changed(current: float, max_val: float, level: int)
 signal level_up_requested(level: int)
 signal dash_updated(current_charges: int, max_charges: int, recharge_ratio: float, is_focus: bool)
@@ -106,6 +113,23 @@ func _ready() -> void:
 		if crit_count > 0:
 			stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"skill_tree_crit", float(crit_count) * 0.05, false, self))
 			stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"skill_tree_atk_speed", float(crit_count) * 0.05, true, self))
+
+		# Aplicar bonos permanentes globales de la Sala de Trofeos (Fase 3)
+	var trophy_bonuses := SaveManager.get_trophy_passive_bonuses()
+	if trophy_bonuses.get("base_damage_pct", 0.0) > 0.0:
+		stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"trophy_damage", trophy_bonuses["base_damage_pct"], true, "trophy"))
+	if trophy_bonuses.get("max_health", 0.0) > 0.0:
+		stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"trophy_hp", trophy_bonuses["max_health"], false, "trophy"))
+	if trophy_bonuses.get("projectile_speed_pct", 0.0) > 0.0:
+		stats.add_modifier(&"projectile_speed", CharacterStats.StatModifier.new(&"trophy_proj_speed", trophy_bonuses["projectile_speed_pct"], true, "trophy"))
+	if trophy_bonuses.get("cooldown_reduction", 0.0) > 0.0:
+		stats.add_modifier(&"cooldown_reduction", CharacterStats.StatModifier.new(&"trophy_cdr", trophy_bonuses["cooldown_reduction"], false, "trophy"))
+	if trophy_bonuses.get("crit_chance", 0.0) > 0.0:
+		stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"trophy_crit", trophy_bonuses["crit_chance"], false, "trophy"))
+	if trophy_bonuses.get("crit_damage", 0.0) > 0.0:
+		stats.add_modifier(&"crit_damage", CharacterStats.StatModifier.new(&"trophy_crit_dmg", trophy_bonuses["crit_damage"], false, "trophy"))
+	if trophy_bonuses.get("pickup_radius_pct", 0.0) > 0.0:
+		stats.add_modifier(&"pickup_radius", CharacterStats.StatModifier.new(&"trophy_magnet", trophy_bonuses["pickup_radius_pct"], true, "trophy"))
 
 	current_health = stats.get_stat(&"max_health")
 	stats.stat_changed.connect(func(stat_name: StringName, new_val: float):
@@ -584,14 +608,18 @@ func heal(amount: float) -> void:
 	health_changed.emit(current_health, max_hp)
 
 func add_credits(amount: int) -> void:
-	run_credits += amount
+	var mult: float = stats.get_stat(&"credits_multiplier") if stats else 1.0
+	var effective := int(round(float(amount) * maxf(0.1, mult)))
+	run_credits += effective
 	credits_changed.emit(run_credits)
 
 func add_biomass(amount: int) -> void:
 	if amount <= 0:
 		return
-	run_biomass += amount
-	var total_persistent := SaveManager.add_biomass(amount)
+	var mult: float = stats.get_stat(&"biomass_multiplier") if stats else 1.0
+	var effective := int(round(float(amount) * maxf(0.1, mult)))
+	run_biomass += effective
+	var total_persistent := SaveManager.add_biomass(effective)
 	biomass_changed.emit(run_biomass, total_persistent)
 
 func add_exp(amount: float) -> void:
@@ -643,3 +671,38 @@ func _on_bullet_hit() -> void:
 
 func _on_bullet_grazed(bullet_pos: Vector2) -> void:
 	add_exp(2.0) # Cada roce con balas suma experiencia y escala con exp_multiplier
+
+func get_arcana_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for arc in active_arcanas:
+		if arc:
+			ids.append(arc.id)
+	return ids
+
+func apply_arcana(arcana: ArcanaData) -> void:
+	if not arcana or active_arcanas.has(arcana):
+		return
+	active_arcanas.append(arcana)
+
+	for key in arcana.stat_modifiers.keys():
+		var val: float = float(arcana.stat_modifiers[key])
+		var s_key := String(key)
+		var stat_name := StringName(s_key.trim_suffix("_pct"))
+		var is_pct := s_key.ends_with("_pct")
+
+		var mod_id := StringName("arcana_" + arcana.id + "_" + s_key)
+		stats.add_modifier(stat_name, CharacterStats.StatModifier.new(mod_id, val, is_pct, arcana))
+
+	var max_hp := stats.get_stat(&"max_health")
+	if current_health > max_hp:
+		current_health = max_hp
+		health_changed.emit(current_health, max_hp)
+
+	arcana_applied.emit(arcana)
+
+func add_dark_matter(amount: int) -> void:
+	if amount <= 0:
+		return
+	run_dark_matter += amount
+	var total_persistent := SaveManager.add_dark_matter(amount)
+	dark_matter_changed.emit(run_dark_matter, total_persistent)

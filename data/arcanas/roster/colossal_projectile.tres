@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/icon_laser.png" id="1_83sx5"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_vpxjl"]
+
+[resource]
+script = ExtResource("2_vpxjl")
+id = "colossal_projectile"
+name = "Proyectil Colosal"
+description_boon = "+100% Tamaño colosal de proyectiles y +35% Daño"
+description_curse = "-40% Velocidad de desplazamiento de balas"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_83sx5")
+color_accent = Color(0.1, 0.85, 1, 1)
+stat_modifiers = {
+"base_damage_pct": 0.35,
+"projectile_speed_pct": -0.4,
+"weapon_size_pct": 1.0
+}
+custom_tags = PackedStringArray()

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="1_r1tfi"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_xdlt8"]
+
+[resource]
+script = ExtResource("2_xdlt8")
+id = "shield_sacrifice"
+name = "Sacrificio de Escudo"
+description_boon = "+25% Probabilidad crítica y +0.50x Daño crítico"
+description_curse = "-8 Armadura de protección reactiva"
+icon = ExtResource("1_r1tfi")
+color_accent = Color(1, 0.05, 0.3, 1)
+stat_modifiers = {
+"armor": -8.0,
+"crit_chance": 0.25,
+"crit_damage": 0.5
+}
+custom_tags = PackedStringArray()

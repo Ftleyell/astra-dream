@@ -3,9 +3,19 @@ extends Node
 static var is_resuming_run: bool = false
 
 const SAVE_PATH := "user://profile_data.json"
-const SCHEMA_VERSION := 1
+const SCHEMA_VERSION := 2
 
-static func save_profile(unlocked_items: Array[StringName], character_bans: Dictionary, unlocked_chars: Array[StringName] = [], p_biomass: int = -1, p_antimatter: int = -1, p_skills: Variant = null, p_selected_char: StringName = &"") -> Error:
+static func save_profile(
+	unlocked_items: Array[StringName],
+	character_bans: Dictionary,
+	unlocked_chars: Array[StringName] = [],
+	p_biomass: int = -1,
+	p_antimatter: int = -1,
+	p_skills: Variant = null,
+	p_selected_char: StringName = &"",
+	p_dark_matter: int = -1,
+	p_trophies: Variant = null
+) -> Error:
 	var current_biomass: int = p_biomass
 	if current_biomass < 0:
 		current_biomass = get_biomass()
@@ -13,6 +23,16 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 	var current_antimatter: int = p_antimatter
 	if current_antimatter < 0:
 		current_antimatter = get_antimatter()
+
+	var current_dark_matter: int = p_dark_matter
+	if current_dark_matter < 0:
+		current_dark_matter = get_dark_matter()
+
+	var current_trophies: Dictionary
+	if p_trophies == null:
+		current_trophies = get_unlocked_trophies()
+	else:
+		current_trophies = p_trophies
 
 	var current_skills: Dictionary
 	if p_skills == null:
@@ -54,6 +74,10 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 			str_arr.append(str(n))
 		skills_serializable[String(cid)] = str_arr
 
+	var trophies_serializable: Dictionary = {}
+	for tid in current_trophies.keys():
+		trophies_serializable[str(tid)] = int(current_trophies[tid])
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -61,6 +85,8 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 		"character_banlists": bans_serializable,
 		"biomass": current_biomass,
 		"antimatter": current_antimatter,
+		"dark_matter": current_dark_matter,
+		"trophies_unlocked": trophies_serializable,
 		"character_skills": skills_serializable,
 		"selected_character": String(current_char)
 	}
@@ -69,6 +95,7 @@ static func save_profile(unlocked_items: Array[StringName], character_bans: Dict
 	file.store_string(json_str)
 	file.close()
 	return OK
+
 
 static func load_profile() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH):
@@ -90,6 +117,7 @@ static func load_profile() -> Dictionary:
 	var data: Dictionary = parser.data
 	return _clean_and_validate_data(data)
 
+
 static func _get_default_profile() -> Dictionary:
 	return {
 		"unlocked_items": [
@@ -105,17 +133,40 @@ static func _get_default_profile() -> Dictionary:
 		} as Dictionary,
 		"biomass": 0,
 		"antimatter": 0,
+		"dark_matter": 0,
+		"trophies_unlocked": {
+			"trophy_boss_aegis": 0,
+			"trophy_biosphere_core": 0,
+			"trophy_cryo_core": 0,
+			"trophy_volcanic_core": 0,
+			"trophy_monolith_master": 0
+		},
 		"character_skills": {} as Dictionary,
 		"selected_character": &"nova"
 	}
 
+
 static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
+	var default_trophies := {
+		"trophy_boss_aegis": 0,
+		"trophy_biosphere_core": 0,
+		"trophy_cryo_core": 0,
+		"trophy_volcanic_core": 0,
+		"trophy_monolith_master": 0
+	}
+	var trophies_clean: Dictionary = default_trophies.duplicate()
+	if raw.has("trophies_unlocked") and raw["trophies_unlocked"] is Dictionary:
+		for t_id in raw["trophies_unlocked"].keys():
+			trophies_clean[str(t_id)] = int(raw["trophies_unlocked"][t_id])
+
 	var cleaned := {
 		"unlocked_items": [] as Array[StringName],
 		"unlocked_characters": [] as Array[StringName],
 		"character_banlists": {} as Dictionary,
 		"biomass": int(raw.get("biomass", 0)),
 		"antimatter": int(raw.get("antimatter", 0)),
+		"dark_matter": int(raw.get("dark_matter", 0)),
+		"trophies_unlocked": trophies_clean,
 		"character_skills": {} as Dictionary,
 		"selected_character": StringName(str(raw.get("selected_character", "nova")))
 	}
@@ -147,12 +198,15 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 
 	return cleaned
 
-## Obtiene la cantidad persistente total de BioMasa acumulada
+
+# ==============================================================================
+# ECONOMÍA: BIOMASA & ANTIMATERIA
+# ==============================================================================
+
 static func get_biomass() -> int:
 	var profile := load_profile()
 	return int(profile.get("biomass", 0))
 
-## Agrega BioMasa persistente y guarda inmediatamente el perfil
 static func add_biomass(amount: int) -> int:
 	if amount <= 0:
 		return get_biomass()
@@ -163,19 +217,19 @@ static func add_biomass(amount: int) -> int:
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills)
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills, sel_char, dark_matter, trophies)
 	return new_total
 
-## Atajo de test para sumar BioMasa
 static func add_test_biomass(amount: int = 100) -> int:
 	return add_biomass(amount)
 
-## Obtiene la cantidad persistente total de Antimateria acumulada
 static func get_antimatter() -> int:
 	var profile := load_profile()
 	return int(profile.get("antimatter", 0))
 
-## Agrega Antimateria persistente y guarda inmediatamente el perfil
 static func add_antimatter(amount: int) -> int:
 	if amount <= 0:
 		return get_antimatter()
@@ -186,10 +240,137 @@ static func add_antimatter(amount: int) -> int:
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var biomass: int = int(profile.get("biomass", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills)
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills, sel_char, dark_matter, trophies)
 	return new_total
 
-## Obtiene la lista de IDs de nodos de habilidad desbloqueados para un personaje
+
+# ==============================================================================
+# FASE 3: META-ECONOMÍA DE MATERIA OSCURA Y SALA DE TROFEOS
+# ==============================================================================
+
+static func get_dark_matter() -> int:
+	var profile := load_profile()
+	return int(profile.get("dark_matter", 0))
+
+static func add_dark_matter(amount: int) -> int:
+	if amount <= 0:
+		return get_dark_matter()
+	var profile := load_profile()
+	var new_total: int = int(profile.get("dark_matter", 0)) + amount
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_total, trophies)
+	return new_total
+
+static func get_unlocked_trophies() -> Dictionary:
+	var profile := load_profile()
+	return profile.get("trophies_unlocked", {}).duplicate()
+
+static func is_trophy_unlocked(trophy_id: StringName) -> bool:
+	var trophies := get_unlocked_trophies()
+	return int(trophies.get(str(trophy_id), 0)) > 0
+
+static func get_trophy_mastery(trophy_id: StringName) -> int:
+	var trophies := get_unlocked_trophies()
+	return int(trophies.get(str(trophy_id), 0))
+
+static func unlock_or_upgrade_trophy(trophy_id: StringName, mastery_level: int = 1) -> bool:
+	var profile := load_profile()
+	var trophies: Dictionary = profile.get("trophies_unlocked", {}).duplicate()
+	var key := str(trophy_id)
+	var current: int = int(trophies.get(key, 0))
+	var new_level: int = maxi(current, mastery_level)
+	trophies[key] = new_level
+
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies)
+	return true
+
+static func upgrade_trophy_with_dark_matter(trophy_id: StringName, cost: int) -> bool:
+	var current_dm := get_dark_matter()
+	if current_dm < cost:
+		return false
+	var profile := load_profile()
+	var trophies: Dictionary = profile.get("trophies_unlocked", {}).duplicate()
+	var key := str(trophy_id)
+	var current: int = int(trophies.get(key, 0))
+	trophies[key] = current + 1
+
+	var new_dm := current_dm - cost
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_dm, trophies)
+	return true
+
+static func get_trophy_passive_bonuses() -> Dictionary:
+	var trophies := get_unlocked_trophies()
+	var bonuses := {
+		"base_damage_pct": 0.0,
+		"max_health": 0.0,
+		"projectile_speed_pct": 0.0,
+		"cooldown_reduction": 0.0,
+		"crit_chance": 0.0,
+		"crit_damage": 0.0,
+		"pickup_radius_pct": 0.0
+	}
+
+	# 1. Nodriza Aegis: +10% Daño permanente (+5% por maestría)
+	var aegis_lvl: int = int(trophies.get("trophy_boss_aegis", 0))
+	if aegis_lvl > 0:
+		bonuses["base_damage_pct"] += 0.10 + float(aegis_lvl - 1) * 0.05
+
+	# 2. Núcleo Bioesfera: +15 HP Máximo permanente (+5 HP por maestría)
+	var bio_lvl: int = int(trophies.get("trophy_biosphere_core", 0))
+	if bio_lvl > 0:
+		bonuses["max_health"] += 15.0 + float(bio_lvl - 1) * 5.0
+
+	# 3. Núcleo Criogénico: +5% Vel. Proyectil y +5% Reducción enfriamiento (+2% por maestría)
+	var cryo_lvl: int = int(trophies.get("trophy_cryo_core", 0))
+	if cryo_lvl > 0:
+		bonuses["projectile_speed_pct"] += 0.05 + float(cryo_lvl - 1) * 0.02
+		bonuses["cooldown_reduction"] += 0.05 + float(cryo_lvl - 1) * 0.02
+
+	# 4. Núcleo Volcánico: +5% Prob. Crítica y +0.20x Daño Crítico (+2% / +0.05x por maestría)
+	var volc_lvl: int = int(trophies.get("trophy_volcanic_core", 0))
+	if volc_lvl > 0:
+		bonuses["crit_chance"] += 0.05 + float(volc_lvl - 1) * 0.02
+		bonuses["crit_damage"] += 0.20 + float(volc_lvl - 1) * 0.05
+
+	# 5. Reliquia del Monolito: +15% Rango de recogida / magnetismo (+5% por maestría)
+	var mono_lvl: int = int(trophies.get("trophy_monolith_master", 0))
+	if mono_lvl > 0:
+		bonuses["pickup_radius_pct"] += 0.15 + float(mono_lvl - 1) * 0.05
+
+	return bonuses
+
+
+# ==============================================================================
+# HABILIDADES Y PILOTOS
+# ==============================================================================
+
 static func get_character_unlocked_nodes(char_id: StringName) -> Array[StringName]:
 	var profile := load_profile()
 	var skills: Dictionary = profile.get("character_skills", {})
@@ -203,12 +384,10 @@ static func get_character_unlocked_nodes(char_id: StringName) -> Array[StringNam
 		result.append(&"core")
 	return result
 
-## Verifica si un nodo específico está desbloqueado
 static func is_character_node_unlocked(char_id: StringName, node_id: StringName) -> bool:
 	var unlocked := get_character_unlocked_nodes(char_id)
 	return unlocked.has(node_id)
 
-## Obtiene el conteo total de nodos de habilidad desbloqueados para un personaje (sin contar el core)
 static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
 	var nodes := get_character_unlocked_nodes(char_id)
 	var count: int = 0
@@ -217,7 +396,6 @@ static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
 			count += 1
 	return count
 
-## Desbloquea un nodo del árbol de habilidades deduciendo BioMasa y persistiendo en disco
 static func unlock_character_skill_node(char_id: StringName, node_id: StringName, cost: int, req_node_id: StringName = &"") -> bool:
 	var current_bio := get_biomass()
 	if current_bio < cost:
@@ -232,11 +410,9 @@ static func unlock_character_skill_node(char_id: StringName, node_id: StringName
 	if not str_list.has(&"core"):
 		str_list.append(&"core")
 
-	# Si ya está desbloqueado, no volver a comprar
 	if str_list.has(node_id):
 		return false
 
-	# Requiere haber desbloqueado el nodo previo requerido (si se especifica)
 	if req_node_id != &"" and not str_list.has(req_node_id):
 		return false
 
@@ -248,11 +424,13 @@ static func unlock_character_skill_node(char_id: StringName, node_id: StringName
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var antimatter: int = int(profile.get("antimatter", 0))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
 
-	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
+	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
 	return true
 
-## Reembolsa todos los nodos comprados para este personaje y devuelve la BioMasa
 static func refund_character_skills(char_id: StringName, node_cost: int = 25) -> int:
 	var profile := load_profile()
 	var skills: Dictionary = profile.get("character_skills", {})
@@ -273,16 +451,17 @@ static func refund_character_skills(char_id: StringName, node_cost: int = 25) ->
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
 	var antimatter: int = int(profile.get("antimatter", 0))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
 
-	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills)
+	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
 	return refund_biomass
 
-## Obtiene el ID del personaje seleccionado actualmente para el combate
 static func get_selected_character() -> StringName:
 	var profile := load_profile()
 	return StringName(str(profile.get("selected_character", "nova")))
 
-## Establece el ID del personaje seleccionado para el combate y guarda el perfil
 static func set_selected_character(char_id: StringName) -> void:
 	if char_id == &"":
 		return
@@ -293,15 +472,17 @@ static func set_selected_character(char_id: StringName) -> void:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id)
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id, dark_matter, trophies)
+
 
 # ==============================================================================
-# MID-RUN SAVE & RESUME (Partida en Curso)
+# MID-RUN SAVE & RESUME
 # ==============================================================================
 
 const ACTIVE_RUN_PATH := "user://active_run.json"
 
-## Guarda el estado actual de la run en curso a disco
 static func save_active_run(run_data: Dictionary) -> Error:
 	var file := FileAccess.open(ACTIVE_RUN_PATH, FileAccess.WRITE)
 	if not file:
@@ -312,11 +493,9 @@ static func save_active_run(run_data: Dictionary) -> Error:
 	file.close()
 	return OK
 
-## Comprueba si existe una run guardada en curso
 static func has_active_run() -> bool:
 	return FileAccess.file_exists(ACTIVE_RUN_PATH)
 
-## Carga los datos de la run en curso
 static func load_active_run() -> Dictionary:
 	if not has_active_run():
 		return {}
@@ -331,19 +510,18 @@ static func load_active_run() -> Dictionary:
 		return {}
 	return parser.data
 
-## Elimina el archivo de la run en curso (Permadeath / Fin de partida)
 static func clear_active_run() -> void:
 	if has_active_run():
 		DirAccess.remove_absolute(ACTIVE_RUN_PATH)
 
+
 # ==============================================================================
-# HIGHSCORES & RUN HISTORY (Top 10 Récords)
+# HIGHSCORES & RUN HISTORY
 # ==============================================================================
 
 const HIGHSCORES_PATH := "user://highscores.json"
 const MAX_HIGHSCORES := 10
 
-## Registra el resultado final de una partida en la tabla de Highscores
 static func record_run_score(result: Dictionary) -> int:
 	var scores := get_top_highscores()
 
@@ -361,7 +539,6 @@ static func record_run_score(result: Dictionary) -> int:
 
 	scores.append(new_entry)
 
-	# Ordenar por: 1) Mayor oleada alcanzada, 2) Mayor tiempo de supervivencia, 3) Más enemigos eliminados
 	scores.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var wave_a: int = a.get("wave_reached", 0)
 		var wave_b: int = b.get("wave_reached", 0)
@@ -374,7 +551,6 @@ static func record_run_score(result: Dictionary) -> int:
 		return int(a.get("enemies_killed", 0)) > int(b.get("enemies_killed", 0))
 	)
 
-	# Limitar a los 10 mejores
 	if scores.size() > MAX_HIGHSCORES:
 		scores.resize(MAX_HIGHSCORES)
 
@@ -383,18 +559,15 @@ static func record_run_score(result: Dictionary) -> int:
 		file.store_string(JSON.stringify(scores, "\t"))
 		file.close()
 
-	# Retornar la posición alcanzada (1 a 10) o -1 si no entró
 	for idx in range(scores.size()):
 		if scores[idx] == new_entry:
 			return idx + 1
 	return -1
 
-## Limpia la tabla de highscores (útil para tests o reseteo)
 static func clear_highscores() -> void:
 	if FileAccess.file_exists(HIGHSCORES_PATH):
 		DirAccess.remove_absolute(HIGHSCORES_PATH)
 
-## Obtiene la lista ordenada de los 10 mejores récords locales
 static func get_top_highscores() -> Array[Dictionary]:
 	if not FileAccess.file_exists(HIGHSCORES_PATH):
 		return _get_default_highscores()
@@ -418,7 +591,6 @@ static func get_top_highscores() -> Array[Dictionary]:
 	return res
 
 static func _get_default_highscores() -> Array[Dictionary]:
-	# Récords iniciales de muestra
 	return [
 		{
 			"pilot_id": "nova",
@@ -430,28 +602,5 @@ static func _get_default_highscores() -> Array[Dictionary]:
 			"credits_earned": 350,
 			"victory": true,
 			"date": "2026-09-20 12:00"
-		},
-		{
-			"pilot_id": "echo",
-			"pilot_name": "Echo",
-			"wave_reached": 4,
-			"time_survived_seconds": 240.0,
-			"time_survived_formatted": "04:00",
-			"enemies_killed": 280,
-			"credits_earned": 210,
-			"victory": false,
-			"date": "2026-09-20 11:30"
-		},
-		{
-			"pilot_id": "selene",
-			"pilot_name": "Selene",
-			"wave_reached": 2,
-			"time_survived_seconds": 120.0,
-			"time_survived_formatted": "02:00",
-			"enemies_killed": 110,
-			"credits_earned": 95,
-			"victory": false,
-			"date": "2026-09-20 10:15"
 		}
 	]
-

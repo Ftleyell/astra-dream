@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_clover.svg" id="1_au5qg"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_m7mqw"]
+
+[resource]
+script = ExtResource("2_m7mqw")
+id = "extraction_aura"
+name = "Aura de Extracción"
+description_boon = "+30 Suerte, +40% Radio de absorción y +50% BioMasa"
+description_curse = "-15% Daño infligido por armas"
+quadrant = "greed"
+icon = ExtResource("1_au5qg")
+color_accent = Color(0.9, 0.8, 0.3, 1)
+stat_modifiers = {
+"base_damage_pct": -0.15,
+"biomass_multiplier": 0.5,
+"luck": 30.0,
+"pickup_radius_pct": 0.4
+}
+custom_tags = PackedStringArray()

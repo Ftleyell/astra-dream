@@ -5,6 +5,11 @@ extends Node2D
 @onready var bullet_server: BulletServer = $BulletServer
 @onready var hud: GameHUD = $HUD
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
+const ArcanaData = preload("res://data/arcanas/arcana_data.gd")
+const ArcanaSelectionModal = preload("res://scenes/ui/arcana/arcana_selection_modal.gd")
+const SpaceObjectSpawner = preload("res://scenes/combat/environment/space_object_spawner.gd")
+var arcana_modal: ArcanaSelectionModal = null
+var _pending_arcana_picks: int = 0
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
@@ -54,12 +59,25 @@ func _ready() -> void:
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
 	player.player_died.connect(_on_player_died)
-	_last_player_hp = player.current_health
-
 	# Conexión con EventBus
 	var bus := get_node_or_null("/root/EventBus")
-	if bus and bus.has_signal("enemy_killed"):
-		bus.enemy_killed.connect(_on_enemy_killed)
+	if bus:
+		if bus.has_signal("enemy_killed"):
+			bus.enemy_killed.connect(_on_enemy_killed)
+		if bus.has_signal("arcana_orb_collected"):
+			bus.arcana_orb_collected.connect(_on_arcana_orb_collected)
+
+	# Instanciar modal de selección de Arcana si no existe en el árbol
+	arcana_modal = get_node_or_null("ArcanaSelectionModal") as ArcanaSelectionModal
+	if not arcana_modal:
+		var arc_scene := load("res://scenes/ui/arcana/arcana_selection_modal.tscn") as PackedScene
+		if arc_scene:
+			arcana_modal = arc_scene.instantiate() as ArcanaSelectionModal
+			add_child(arcana_modal)
+	if arcana_modal:
+		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
+
+	_last_player_hp = player.current_health
 
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
@@ -102,6 +120,11 @@ func _ready() -> void:
 	var planet_spawner := PlanetSpawner.new()
 	planet_spawner.name = "PlanetSpawner"
 	add_child(planet_spawner)
+
+	# Inyección dinámica de macro-objetos espaciales tácticos (Monolitos, Cápsulas, Geodas, Capullos)
+	var space_object_spawner := SpaceObjectSpawner.new()
+	space_object_spawner.name = "SpaceObjectSpawner"
+	add_child(space_object_spawner)
 
 	# Chequeo de reanudación de partida activa (Mid-Run Resume)
 	if SaveManager.is_resuming_run:
@@ -410,6 +433,26 @@ func is_pause_menu_active() -> bool:
 func is_satellite_shop_active() -> bool:
 	return satellite_shop != null and satellite_shop.visible
 
+
+func is_arcana_modal_active() -> bool:
+	return arcana_modal != null and (arcana_modal.visible or arcana_modal.is_active)
+
+func _on_arcana_orb_collected(_orb: Node2D) -> void:
+	if arcana_modal:
+		if is_arcana_modal_active():
+			_pending_arcana_picks += 1
+		else:
+			arcana_modal.show_arcana_selection(player)
+
+func _on_arcana_modal_closed() -> void:
+	if _pending_arcana_picks > 0:
+		_pending_arcana_picks -= 1
+		call_deferred("_open_next_pending_arcana")
+
+func _open_next_pending_arcana() -> void:
+	if arcana_modal and is_instance_valid(player):
+		arcana_modal.show_arcana_selection(player)
+
 func is_level_up_modal_active() -> bool:
 	return level_up_modal != null and level_up_modal.visible
 
@@ -443,6 +486,8 @@ func is_any_combat_modal_active() -> bool:
 	if is_level_up_modal_active():
 		return true
 	if level_up_modal and level_up_modal.has_pending_levels():
+		return true
+	if is_arcana_modal_active():
 		return true
 	if is_pause_menu_active():
 		return true
@@ -569,6 +614,8 @@ func get_current_run_state() -> Dictionary:
 		"player_exp_to_next": player.exp_to_next,
 		"run_credits": player.run_credits,
 		"run_biomass": player.run_biomass,
+		"run_dark_matter": player.run_dark_matter if "run_dark_matter" in player else 0,
+		"active_arcanas": player.get_arcana_ids() if player.has_method("get_arcana_ids") else [],
 		"bomb_count": player.bomb_count,
 		"equipped_weapons": weapons_data,
 		"equipped_items": items_data,
@@ -607,7 +654,16 @@ func restore_run_state(run_data: Dictionary) -> void:
 	player.exp_to_next = float(run_data.get("player_exp_to_next", 40.0))
 	player.run_credits = int(run_data.get("run_credits", 0))
 	player.run_biomass = int(run_data.get("run_biomass", 0))
+	player.run_dark_matter = int(run_data.get("run_dark_matter", 0))
 	player.bomb_count = int(run_data.get("bomb_count", 2))
+
+	# Restaurar arcanas activas (Fase 2)
+	player.active_arcanas.clear()
+	var saved_arcanas: Array = run_data.get("active_arcanas", [])
+	for arc_id in saved_arcanas:
+		var arc: ArcanaData = ArcanaData.get_arcana(String(arc_id))
+		if arc:
+			player.apply_arcana(arc)
 
 	# 3. Restaurar cartas de nivel elegidas (Brotato)
 	player.chosen_stat_cards.clear()

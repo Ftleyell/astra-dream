@@ -16,9 +16,13 @@ var pierces_left: int = 1
 var player: Node2D = null
 var current_age: float = 0.0
 var has_started_return: bool = false
+var hit_targets: Array[Node2D] = []
 
 @onready var trail_line: Line2D = get_node_or_null("TrailLine")
 @onready var visual_poly: Polygon2D = get_node_or_null("VisualPolygon")
+
+func _ready() -> void:
+	add_to_group("player_projectiles")
 
 func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_player: Node2D = null, p_speed_mult: float = 1.0, p_size_mult: float = 1.0) -> void:
 	global_position = p_origin
@@ -32,6 +36,7 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_player: Node2
 	if p_size_mult != 1.0:
 		scale = Vector2(p_size_mult, p_size_mult)
 		radius *= p_size_mult
+	add_to_group("player_projectiles")
 
 func _process(delta: float) -> void:
 	current_age += delta
@@ -71,7 +76,12 @@ func _check_collisions() -> void:
 		if not is_instance_valid(node) or not (node is Node2D):
 			continue
 		var target := node as Node2D
-		if global_position.distance_squared_to(target.global_position) <= (radius + 24.0) * (radius + 24.0):
+		if target in hit_targets:
+			continue
+		var t_radius: float = target.get("obstacle_radius") if "obstacle_radius" in target else 24.0
+		var hit_r := radius + t_radius
+		if global_position.distance_squared_to(target.global_position) <= hit_r * hit_r:
+			hit_targets.append(target)
 			_apply_hit(target)
 			if pierces_left <= 0:
 				queue_free()

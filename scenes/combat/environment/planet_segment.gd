@@ -9,6 +9,7 @@ extends CharacterBody2D
 ## 3. Deformación física en 3 fases geométricas discretas (Intacto -> Mellado -> Crítico fragmentado).
 
 signal segment_destroyed(segment: PlanetSegment)
+signal shattered(pos: Vector2, tier: int)
 
 @export var inner_radius: float = 30.0
 @export var outer_radius: float = 55.0
@@ -19,6 +20,7 @@ signal segment_destroyed(segment: PlanetSegment)
 @export var biomass_reward: int = 1
 @export var max_segment_health: float = 120.0
 @export var layer_type: int = 0 # 0: Corteza (Tierra), 1: Manto Medio (Roca), 2: Manto Profundo (Piedra Negra)
+@export var obstacle_radius: float = 40.0
 
 var is_dying: bool = false
 var centroid: Vector2 = Vector2.ZERO
@@ -77,6 +79,12 @@ func _ready() -> void:
 
 	_apply_geological_texture()
 	rebuild_geometry()
+	obstacle_radius = maxf(30.0, (outer_radius - inner_radius) * 0.75 + 10.0)
+	_register_with_bullet_server()
+
+
+func _exit_tree() -> void:
+	_unregister_from_bullet_server()
 
 
 func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col: Color, b_col: Color, hp: float, xp_biomass: int, l_type: int = 0) -> void:
@@ -109,6 +117,8 @@ func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col:
 			health_component.health_changed.connect(_on_health_changed)
 	_apply_geological_texture()
 	rebuild_geometry()
+	obstacle_radius = maxf(30.0, (outer_radius - inner_radius) * 0.75 + 10.0)
+	_register_with_bullet_server()
 
 
 ## Genera o recupera texturas estáticas procedurales para tierra, roca y piedra negra
@@ -284,6 +294,14 @@ func _die() -> void:
 		return
 	is_dying = true
 	segment_destroyed.emit(self)
+	shattered.emit(global_position, layer_type + 1)
+
+	_unregister_from_bullet_server()
+
+	# Emitir metralla cinemática geológica con knockback a enemigos
+	var shard_script = preload("res://scenes/combat/environment/shrapnel_shard.gd")
+	if shard_script:
+		shard_script.spawn_shattered_burst(self, global_position, layer_type + 1, -1, border_color)
 
 	# Desactivar colisiones inmediatamente
 	if collision_poly:
@@ -318,3 +336,23 @@ func _spawn_biomass() -> void:
 	var scene_root := get_tree().current_scene
 	if scene_root:
 		scene_root.add_child(orb)
+
+
+func _register_with_bullet_server() -> void:
+	if not is_inside_tree():
+		return
+	var bs := get_tree().get_first_node_in_group("bullet_server") as BulletServer
+	if not bs and get_tree().current_scene:
+		bs = get_tree().current_scene.get_node_or_null("BulletServer") as BulletServer
+	if bs and bs.has_method("register_obstacle"):
+		bs.register_obstacle(self, obstacle_radius)
+
+
+func _unregister_from_bullet_server() -> void:
+	if not is_inside_tree():
+		return
+	var bs := get_tree().get_first_node_in_group("bullet_server") as BulletServer
+	if not bs and get_tree().current_scene:
+		bs = get_tree().current_scene.get_node_or_null("BulletServer") as BulletServer
+	if bs and bs.has_method("unregister_obstacle"):
+		bs.unregister_obstacle(self)

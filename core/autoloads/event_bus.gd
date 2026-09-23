@@ -10,3 +10,4 @@ signal boss_spawn_requested(timeline_id: String, boss_id: String, is_secret: boo
 signal boss_defeated(boss_id: String)
 signal player_died()
 signal enemy_killed(enemy_type: String)
+signal arcana_orb_collected(orb: Node2D)

@@ -9,13 +9,17 @@ extends CharacterBody2D
 ## y despawn automático para preservar rendimiento cuando se aleja del jugador.
 
 signal destroyed(object: DestructibleSpaceObject)
+signal shattered(pos: Vector2, tier: int)
 
-# --- PROPIEDADES INERCIALES ---
+# --- PROPIEDADES INERCIALES Y BALÍSTICAS ---
 @export var drift_velocity: Vector2 = Vector2.ZERO
 @export var angular_velocity: float = 0.0
 @export var max_distance_from_player: float = 2600.0
+@export var obstacle_radius: float = 35.0
+@export var tier: int = 1
+@export var shard_color: Color = Color(0.85, 0.9, 1.0)
 
-var player: Player = null
+var player: Node2D = null
 var is_dying: bool = false
 var _despawn_timer: float = 0.0
 const DESPAWN_CHECK_RATE: float = 2.0
@@ -47,6 +51,12 @@ func _ready() -> void:
 				break
 	if hurtbox_component and health_component:
 		hurtbox_component.health_component = health_component
+
+	_register_with_bullet_server()
+
+
+func _exit_tree() -> void:
+	_unregister_from_bullet_server()
 
 
 func _physics_process(delta: float) -> void:
@@ -89,6 +99,14 @@ func _die() -> void:
 		return
 	is_dying = true
 	destroyed.emit(self)
+	shattered.emit(global_position, tier)
+
+	_unregister_from_bullet_server()
+
+	# Emitir onda de metralla cinemática con retroceso a enemigos
+	var shard_script = preload("res://scenes/combat/environment/shrapnel_shard.gd")
+	if shard_script:
+		shard_script.spawn_shattered_burst(self, global_position, tier, -1, shard_color)
 
 	# Desactivar colisiones inmediatamente
 	_disable_collisions()
@@ -98,6 +116,26 @@ func _die() -> void:
 		drop_component.spawn_drops()
 
 	queue_free()
+
+
+func _register_with_bullet_server() -> void:
+	if not is_inside_tree():
+		return
+	var bs := get_tree().get_first_node_in_group("bullet_server") as BulletServer
+	if not bs and get_tree().current_scene:
+		bs = get_tree().current_scene.get_node_or_null("BulletServer") as BulletServer
+	if bs and bs.has_method("register_obstacle"):
+		bs.register_obstacle(self, obstacle_radius)
+
+
+func _unregister_from_bullet_server() -> void:
+	if not is_inside_tree():
+		return
+	var bs := get_tree().get_first_node_in_group("bullet_server") as BulletServer
+	if not bs and get_tree().current_scene:
+		bs = get_tree().current_scene.get_node_or_null("BulletServer") as BulletServer
+	if bs and bs.has_method("unregister_obstacle"):
+		bs.unregister_obstacle(self)
 
 
 func _disable_collisions() -> void:
@@ -111,7 +149,7 @@ func _disable_collisions() -> void:
 
 func _acquire_player() -> void:
 	if not is_instance_valid(player) and is_inside_tree():
-		player = get_tree().get_first_node_in_group("player") as Player
+		player = get_tree().get_first_node_in_group("player") as Node2D
 
 
 func _check_despawn_range() -> void:
