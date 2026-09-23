@@ -129,8 +129,11 @@ func _process(delta: float) -> void:
 	_handle_passive_fire(delta)
 
 func _handle_aim() -> void:
+	if player and player.is_omega_spinning:
+		return
 	var mouse_pos := get_global_mouse_position()
 	look_at(mouse_pos)
+
 
 func _handle_active_fire(delta: float) -> void:
 	# Actualizar cooldowns individuales de todas las armas equipadas

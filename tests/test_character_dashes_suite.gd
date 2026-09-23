@@ -224,14 +224,28 @@ func _ready() -> void:
 	assert(not wc_spin.is_fully_charged, "is_fully_charged debe ser false post-spin")
 	assert(not wc_spin.is_charging, "is_charging debe ser false post-spin")
 
-	print("  ✓ Nova Omega Spin: activado correctamente (timer=0.35s), carga consumida")
+	assert(nova_spin_player.is_omega_spinning, "Nova debe tener is_omega_spinning activo")
+	print("  ✓ Nova Omega Spin: activado correctamente (timer=0.35s, is_omega_spinning=true), carga consumida")
 	nova_spin_player.queue_free()
 
+	# Limpiar cualquier láser remanente del test 7 antes de comenzar el test 8
+	var root_node := get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+	if root_node:
+		for child in root_node.get_children():
+			var child_script = child.get_script()
+			if child_script and child_script.get_global_name() == "NovaSpin360Laser":
+				child.queue_free()
+	for child in get_children():
+		var child_script = child.get_script()
+		if child_script and child_script.get_global_name() == "NovaSpin360Laser":
+			child.queue_free()
+	await get_tree().process_frame
 
 	# ----------------------------------------------------
 	# 8. NOVA: Deduplicación de hits — máx 1 hit por enemigo
 	# ----------------------------------------------------
 	print("\n[8/8] Testing Nova: Omega Spin hit deduplication (max 1 hit per enemy)...")
+
 
 	# Crear dos enemigos en posiciones opuestas (deben ser intersectados por rayos contrarios)
 	var dummy_a := CharacterBody2D.new()
@@ -250,7 +264,7 @@ func _ready() -> void:
 	dummy_b.current_health = 500.0; dummy_b.max_health = 500.0
 	add_child(dummy_b)
 
-	# Construir HitContext y disparar NovaSpin360Laser manualmente
+	# Construir HitContext y lanzar el barrido de NovaSpin360Laser
 	var ctx_dedup := HitContext.new()
 	ctx_dedup.attacker = null
 	ctx_dedup.raw_damage = 50.0
@@ -258,29 +272,30 @@ func _ready() -> void:
 	ctx_dedup.is_crit = false
 	ctx_dedup.proc_coefficient = 0.0
 
-	# Tipar como Node2D para evitar error de scope ("NovaSpin360Laser" no está en scope aquí)
+	# origin_node = null → el nodo permanece en su posición inicial (Vector2.ZERO)
+	# start_angle = 0.0 → el barrido comienza apuntando a Vector2.RIGHT (+X)
 	var spin_node: Node2D = load("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn").instantiate()
 	add_child(spin_node)
 	if spin_node.has_method("setup"):
-		spin_node.call("setup", Vector2.ZERO, ctx_dedup)
+		spin_node.call("setup", null, ctx_dedup, 0.0)
 
-	# Esperar un frame para que los rayos procesen colisiones
-	await get_tree().process_frame
+	# Aguardar la duración completa del barrido (0.35s) más un margen
+	await get_tree().create_timer(0.45).timeout
 
-	# Verificar que cada dummy recibió exactamente 1 hit
-	# Tipado explícito como float para que GDScript infiera correctamente desde la property dinámica
+	# Verificar que cada dummy recibió exactamente 1 hit durante el barrido 360°
 	var dmg_a: float = 500.0 - float(dummy_a.current_health)
 	var dmg_b: float = 500.0 - float(dummy_b.current_health)
 
-	assert(dmg_a > 0.0, "Enemigo A debe haber recibido al menos 1 hit del Omega Spin")
-	assert(dmg_b > 0.0, "Enemigo B debe haber recibido al menos 1 hit del Omega Spin")
-	# Máx 1 hit: daño máximo de 1 rayo es 50 * 1.2 * crit_mult ≈ 90.0 (con crit); sin crit = 60.0
+	assert(dmg_a > 0.0, "Enemigo A debe haber recibido al menos 1 hit durante el barrido")
+	assert(dmg_b > 0.0, "Enemigo B debe haber recibido al menos 1 hit durante el barrido")
+	# Máx 1 hit: daño = 50 * 1.2 = 60.0 (sin crit). Con crit_mult default 1.5 → 90.0
 	assert(dmg_a <= 91.0, "Enemigo A no debe recibir más de 1 hit (daño > 91 indicaría doble impacto)")
 	assert(dmg_b <= 91.0, "Enemigo B no debe recibir más de 1 hit (daño > 91 indicaría doble impacto)")
 
 	dummy_a.queue_free()
 	dummy_b.queue_free()
 	print("  ✓ Deduplicación: enemigo A recibió %.1f daño, enemigo B %.1f daño (máx 1 hit cada uno)" % [dmg_a, dmg_b])
+
 
 	print("\n==========================================")
 	print("[PASS] ALL 8 NOVA OMEGA SPIN TESTS PASSED!")

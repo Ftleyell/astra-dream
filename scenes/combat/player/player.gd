@@ -19,7 +19,12 @@ var dash_recharge_max: float = 1.6
 var dash_internal_cd: float = 0.2
 var _internal_cd_timer: float = 0.0
 
+# Nova: Omega Spin (Láser giratorio 360° continuo en dash)
+var is_omega_spinning: bool = false
+var omega_spin_angle: float = 0.0
+
 # Valentina: Sobre-Enfoque (Bullet-Time Focus & Guaranteed Crit)
+
 var is_focus_active: bool = false
 var focus_timer: float = 0.0
 var has_guaranteed_crit: bool = false
@@ -232,12 +237,19 @@ func _physics_process(delta: float) -> void:
 	_handle_health_regen(delta)
 
 	# Orientación 360° de la nave hacia el apuntado (offset de PI/2 por estar dibujada hacia ARRIBA)
-	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-	if ship_spr and ship_spr.visible:
-		ship_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0
-	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
-	if exo_spr:
-		exo_spr.rotation = (get_global_mouse_position() - global_position).angle() + PI / 2.0
+	# Durante el Omega Spin, la rotación la conduce sincronizadamente el rayo láser
+	if not is_omega_spinning:
+		var aim_angle := (get_global_mouse_position() - global_position).angle()
+		var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+		if ship_spr and ship_spr.visible:
+			ship_spr.rotation = aim_angle + PI / 2.0
+		var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+		if exo_spr:
+			exo_spr.rotation = aim_angle + PI / 2.0
+		var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
+		if placeholder and placeholder.visible:
+			placeholder.rotation = aim_angle
+
 
 	if bullet_server:
 		bullet_server.player_pos = global_position
@@ -334,6 +346,7 @@ func _handle_dash(delta: float) -> void:
 
 		if dash_timer <= 0.0:
 			is_dashing = false
+			is_omega_spinning = false
 
 	# 5. Entrada del jugador para ejecutar Dash
 	if Input.is_action_just_pressed("dash") and not is_dashing and _internal_cd_timer <= 0.0 and dash_charges > 0:
@@ -391,21 +404,17 @@ func _execute_nova_dash() -> void:
 ## Omega Spin: dash + giro 360° + láser en todas direcciones.
 ## Se activa solo cuando el láser de Nova tiene carga máxima.
 func _execute_nova_omega_spin(wc: WeaponController) -> void:
-	# 1. Dash estándar (un poco más largo para que el giro se vea completo)
+	# 1. Dash estándar (0.35s para que la vuelta 360° sea completa)
 	is_dashing = true
 	dash_timer = 0.35
+	is_omega_spinning = true
+	omega_spin_angle = dash_direction.angle()
+	update_omega_spin_rotation(omega_spin_angle)
 
 	# 2. Consumir la carga del láser antes de disparar
 	wc.consume_laser_charge()
 
-	# 3. Girar solo el Sprite2D child (preserva hitbox y dirección de movimiento)
-	var sprite: Node2D = get_node_or_null("Sprite2D") as Node2D
-	if sprite:
-		var spin_tween := create_tween()
-		spin_tween.tween_property(sprite, "rotation", TAU, 0.35).set_trans(Tween.TRANS_SINE)
-		spin_tween.tween_callback(func(): sprite.rotation = 0.0)
-
-	# 4. Construir HitContext a partir de las stats actuales del jugador
+	# 3. Construir HitContext a partir de las stats actuales del jugador
 	var base_dmg := stats.get_stat(&"base_damage")
 	var crit_chance: float = stats.get_stat(&"crit_chance")
 	var is_crit := randf() <= crit_chance
@@ -420,21 +429,38 @@ func _execute_nova_omega_spin(wc: WeaponController) -> void:
 	ctx.proc_coefficient = 0.35
 	ctx.hit_position = global_position
 
-	# 5. Instanciar y lanzar NovaSpin360Laser
+	# 4. Instanciar y lanzar NovaSpin360Laser (el haz barre desde la dirección del dash)
 	var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
 	if spawn_parent and nova_spin_scene:
 		var spin: Node2D = nova_spin_scene.instantiate() as Node2D
 		if spin:
 			spawn_parent.add_child(spin)
 			if spin.has_method("setup"):
-				spin.call("setup", global_position, ctx)
+				# Pasar: jugador (para seguir su posición y sincronizar giro), ctx de daño, ángulo inicial = dirección del dash
+				spin.call("setup", self, ctx, dash_direction.angle())
 
-
-	# 6. SFX especial (pitch alto para comunicar la potencia)
+	# 5. SFX especial (pitch alto para comunicar la potencia)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 1.6, 2.0)
 		audio_mgr.play_sfx("dash", 1.4, 3.0)
+
+## Sincroniza la rotación visual de la nave, armadura y cañón con el rayo láser en tiempo real
+func update_omega_spin_rotation(angle: float) -> void:
+	omega_spin_angle = angle
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if ship_spr and ship_spr.visible:
+		ship_spr.rotation = angle + PI / 2.0
+	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.rotation = angle + PI / 2.0
+	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
+	if placeholder and placeholder.visible:
+		placeholder.rotation = angle
+	var w_ctrl := get_node_or_null("WeaponController") as Node2D
+	if w_ctrl:
+		w_ctrl.rotation = angle
+
 
 
 
