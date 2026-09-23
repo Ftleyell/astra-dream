@@ -134,21 +134,21 @@ func _select_enemy_scene() -> PackedScene:
 			return drone_scene
 		return kamikaze_scene
 	elif current_wave == 2:
-		# Oleada 2: 60% Drones, 25% Kamikazes, 15% Artilleros
-		if roll < 0.60:
+		# Oleada 2: 65% Drones, 25% Kamikazes, 10% Artilleros
+		if roll < 0.65:
 			return drone_scene
-		elif roll < 0.85:
+		elif roll < 0.90:
 			return kamikaze_scene
 		return shooter_scene
 	else:
-		# Oleada 3+: 45% Drones, 25% Kamikazes, 20% Artilleros, 10% Tanques
-		if roll < 0.45:
+		# Oleada 3+: 50% Drones, 25% Kamikazes, 15% Tanques (bloqueo físico), 10% Artilleros (apoyo telegrafiado)
+		if roll < 0.50:
 			return drone_scene
-		elif roll < 0.70:
+		elif roll < 0.75:
 			return kamikaze_scene
 		elif roll < 0.90:
-			return shooter_scene
-		return tank_scene
+			return tank_scene
+		return shooter_scene
 
 func _trigger_swarm_rush() -> void:
 	var existing_enemies := get_tree().get_nodes_in_group("enemies")

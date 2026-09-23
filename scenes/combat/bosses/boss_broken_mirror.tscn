@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://boss_broken_mirror_01"]
+
+[ext_resource type="Script" path="res://scenes/combat/bosses/boss_broken_mirror.gd" id="1_boss"]
+[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mirror"]
+radius = 56.0
+
+[node name="BossBrokenMirror" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_boss")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_mirror")
+
+[node name="DamageAccumulator" parent="." instance=ExtResource("2_dmg")]

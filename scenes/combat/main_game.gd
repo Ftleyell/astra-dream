@@ -26,8 +26,12 @@ const SPAWN_AHEAD_DISTANCE: float = 1100.0
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
 var current_satellite: SatelliteBeacon = null
-var boss_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
-var current_boss: BossMothership = null
+var boss_mothership_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
+var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_hermit_void.tscn")
+var boss_ash_clock_scene: PackedScene = preload("res://scenes/combat/bosses/boss_ash_clock.tscn")
+var boss_broken_mirror_scene: PackedScene = preload("res://scenes/combat/bosses/boss_broken_mirror.tscn")
+var boss_overflow_vortex_scene: PackedScene = preload("res://scenes/combat/bosses/boss_overflow_vortex.tscn")
+var current_boss: Node2D = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -331,20 +335,39 @@ func _spawn_wave_boss() -> void:
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
 	var boss_pos := player.global_position + forward * 650.0
 
-	current_boss = boss_scene.instantiate() as BossMothership
+	var target_scene: PackedScene = boss_hermit_scene
+	match current_wave:
+		2:
+			target_scene = boss_hermit_scene
+		4:
+			target_scene = boss_ash_clock_scene
+		6:
+			target_scene = boss_broken_mirror_scene
+		8:
+			target_scene = boss_overflow_vortex_scene
+		_:
+			target_scene = boss_mothership_scene
+
+	current_boss = target_scene.instantiate() as Node2D
 	current_boss.global_position = boss_pos
 	add_child(current_boss)
 
 	# Conexiones con HUD
-	hud.show_boss(current_boss.boss_name, current_boss.max_health)
-	current_boss.health_changed.connect(hud.update_boss_health)
-	current_boss.phase_changed.connect(hud.set_boss_phase)
-	current_boss.boss_defeated.connect(_on_boss_defeated)
+	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
+	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
+	hud.show_boss(b_name, b_hp)
+	if current_boss.has_signal("health_changed"):
+		current_boss.connect("health_changed", hud.update_boss_health)
+	if current_boss.has_signal("phase_changed"):
+		current_boss.connect("phase_changed", hud.set_boss_phase)
+	if current_boss.has_signal("boss_defeated"):
+		current_boss.connect("boss_defeated", _on_boss_defeated)
 
 	# Transmisión narrativa opcional
 	var bus := get_node_or_null("/root/EventBus")
 	if bus and bus.has_signal("boss_spawn_requested"):
-		bus.boss_spawn_requested.emit("boss_titan_alert", current_boss.boss_id, false)
+		var b_id: String = current_boss.get("boss_id") if "boss_id" in current_boss else "boss_unknown"
+		bus.boss_spawn_requested.emit("boss_titan_alert", b_id, false)
 
 func _on_boss_defeated(_boss_id: String) -> void:
 	current_boss = null

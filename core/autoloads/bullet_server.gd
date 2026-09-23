@@ -24,6 +24,12 @@ var flags: PackedInt32Array
 
 var active_count: int = 0
 
+const FLAG_GRAZED: int = 1
+const FLAG_COMMON_ENEMY: int = 2
+
+const MAX_COMMON_ENEMY_BULLETS: int = 20
+var active_common_bullets: int = 0
+
 # GPU Buffer & RID
 var render_buffer: PackedFloat32Array
 var multimesh_rid: RID
@@ -154,6 +160,22 @@ func _physics_process(delta: float) -> void:
 			obs_y.append(opos.y)
 			obs_r_sq.append(orad * orad)
 	var active_obs_count: int = valid_obs_nodes.size()
+	var min_obs_x: float = 0.0
+	var max_obs_x: float = 0.0
+	var min_obs_y: float = 0.0
+	var max_obs_y: float = 0.0
+	if active_obs_count > 0:
+		min_obs_x = obs_x[0] - 60.0
+		max_obs_x = obs_x[0] + 60.0
+		min_obs_y = obs_y[0] - 60.0
+		max_obs_y = obs_y[0] + 60.0
+		for oi in range(1, active_obs_count):
+			var ox: float = obs_x[oi]
+			var oy: float = obs_y[oi]
+			min_obs_x = minf(min_obs_x, ox - 60.0)
+			max_obs_x = maxf(max_obs_x, ox + 60.0)
+			min_obs_y = minf(min_obs_y, oy - 60.0)
+			max_obs_y = maxf(max_obs_y, oy + 60.0)
 
 	for i in range(active_count - 1, -1, -1):
 		var t: float = time_alive[i] + delta
@@ -195,7 +217,7 @@ func _physics_process(delta: float) -> void:
 
 		# Cobertura balística dual: absorción de proyectiles por obstáculos espaciales
 		var bullet_blocked: bool = false
-		if active_obs_count > 0:
+		if active_obs_count > 0 and cur_x >= min_obs_x and cur_x <= max_obs_x and cur_y >= min_obs_y and cur_y <= max_obs_y:
 			for k in range(active_obs_count):
 				var odx: float = cur_x - obs_x[k]
 				var ody: float = cur_y - obs_y[k]
@@ -255,6 +277,8 @@ func _physics_process(delta: float) -> void:
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, active_count)
 
 func _swap_and_pop(idx: int) -> void:
+	if (flags[idx] & FLAG_COMMON_ENEMY) != 0:
+		active_common_bullets = maxi(0, active_common_bullets - 1)
 	active_count -= 1
 	if idx != active_count:
 		_copy_bullet(active_count, idx)
@@ -276,7 +300,38 @@ func _copy_bullet(src: int, dst: int) -> void:
 # SCREEN CLEAR BOMBS
 func bomb_clear_all() -> void:
 	active_count = 0
+	active_common_bullets = 0
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, 0)
+
+# MÉTODOS DE CONTROL PARA ENEMIGOS COMUNES (LÍMITE ESTRICTO ANTI-LAG A VELOCIDAD X4)
+func can_common_enemy_shoot() -> bool:
+	return active_common_bullets < MAX_COMMON_ENEMY_BULLETS
+
+func fire_common_aimed_bullet(origin: Vector2, target: Vector2, speed: float = 190.0, bullet_type_id: int = 1) -> bool:
+	if active_common_bullets >= MAX_COMMON_ENEMY_BULLETS or active_count >= MAX_BULLETS:
+		return false
+
+	var to_target: Vector2 = target - origin
+	var dir: Vector2 = to_target.normalized() if to_target.length_squared() > 1.0 else Vector2.RIGHT
+	var vel: Vector2 = dir * speed
+
+	var i: int = active_count
+	pos_x[i] = origin.x
+	pos_y[i] = origin.y
+	vel_x[i] = vel.x
+	vel_y[i] = vel.y
+	time_alive[i] = 0.0
+	max_life[i] = 8.0
+	radius[i] = 5.0
+	bullet_type[i] = float(bullet_type_id)
+	wave_amp[i] = 0.0
+	wave_freq[i] = 0.0
+	base_angle[i] = atan2(vel.y, vel.x)
+	flags[i] = FLAG_COMMON_ENEMY
+
+	active_count += 1
+	active_common_bullets += 1
+	return true
 
 func bomb_clear_shockwave(center: Vector2, shockwave_radius: float) -> void:
 	var r_sq: float = shockwave_radius * shockwave_radius

@@ -315,103 +315,316 @@ Astra Dream cuenta con un ecosistema de **7 entidades destructibles espaciales**
 
 ## 6. GRIMORIO COMPLETO DE LAS 24 ARCANAS (PACTOS MÍSTICOS)
 
-Las Arcanas son cartas cuánticas de **Alto Riesgo y Alta Recompensa** que se activan al recoger un orbe rúnico de un Monolito. Pausan el juego y ofrecen 3 elecciones estilizadas con bordes Psycho-Pop. Cada una contiene un **Bono Divino** masivo y una **Maldición Devastadora**.
+Las Arcanas son cartas cuánticas de **Alto Riesgo y Alta Recompensa** implementadas mediante el recurso `ArcanaData` (`data/arcanas/arcana_data.gd`) y almacenadas en `data/arcanas/roster/`. Se manifiestan en combate al destruir un Monolito Arcano y recolectar el **ArcanaOrb** violeta.
+Al recoger el orbe, el juego entra en pausa táctica y el modal `ArcanaSelectionModal` despliega **3 cartas seleccionadas aleatoriamente** de entre las no adquiridas. Cada arcana inyecta modificadores en el sistema reactivo `CharacterStats`, aplicando tanto un **Bono Divino** masivo como una **Maldición Devastadora**.
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                     GRIMORIO DE ARCANAS (24 CARTAS)                    │
-├─────────────────────────┬──────────────────────────┬───────────────────┤
-│ Cuadrante               │ Enfoque Táctico          │ Cantidad          │
-├─────────────────────────┼──────────────────────────┼───────────────────┤
-│ 1. Glass Cannon         │ Cañón de Cristal y Sangre│ 6 Arcanas         │
-│ 2. Danmaku Chaos        │ Caos Balístico y Ráfagas │ 6 Arcanas         │
-│ 3. Spacetime            │ Espacio-Tiempo y Evasión │ 6 Arcanas         │
-│ 4. Greed                │ Avaricia y Sobrecarga    │ 6 Arcanas         │
-└─────────────────────────┴──────────────────────────┴───────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                          GRIMORIO DE ARCANAS (24 CARTAS)                         │
+├─────────────────────────┬──────────────────────────┬─────────────┬───────────────┤
+│ Cuadrante               │ Enfoque Táctico          │ Cantidad    │ Color Acento  │
+├─────────────────────────┼──────────────────────────┼─────────────┼───────────────┤
+│ 1. Glass Cannon         │ Cañón de Cristal y Sangre│ 6 Arcanas   │ Carmesí       │
+│ 2. Danmaku Chaos        │ Caos Balístico y Ráfagas │ 6 Arcanas   │ Cian Eléctrico│
+│ 3. Spacetime            │ Espacio-Tiempo y Evasión │ 6 Arcanas   │ Violeta Vacío │
+│ 4. Greed                │ Avaricia y Sobrecarga    │ 6 Arcanas   │ Dorado Midas  │
+└─────────────────────────┴──────────────────────────┴─────────────┴───────────────┘
 ```
 
-### Cuadrante 1: Cañón de Cristal & Sangre (`glass_cannon`)
-1. **Furia Agónica (`agonic_fury.tres`):**
-   - *Bono:* +80% Daño General (`base_damage_pct: +0.80`).
-   - *Maldición:* La regeneración de salud se reduce a 0 (`health_regen: -10.0`).
-2. **Pacto de Sangre (`blood_pact.tres`):**
-   - *Bono:* +60% Probabilidad Crítica (`crit_chance: +0.60`).
-   - *Maldición:* -35% Salud Máxima (`max_health_pct: -0.35`).
-3. **Drenaje Vampírico (`vampiric_drain.tres`):**
-   - *Bono:* +3.0 HP de Regeneración continua por segundo (`health_regen: +3.0`).
-   - *Maldición:* -25% Velocidad de Movimiento (`move_speed_pct: -0.25`).
-4. **Sed del Núcleo (`core_thirst.tres`):**
-   - *Bono:* +50% Velocidad de Ataque y Cadencia (`attack_speed_pct: +0.50`).
-   - *Maldición:* -4 Armadura plana recibida (`armor: -4.0`).
-5. **Último Aliento (`last_breath.tres`):**
-   - *Bono:* +100% Daño si la salud cae por debajo del 30% (`base_damage_pct: +1.00`).
-   - *Maldición:* La nave recibe un 20% más de daño en todo momento (`armor: -2.0`).
-6. **Sacrificio de Escudo (`shield_sacrifice.tres`):**
-   - *Bono:* +1.0 Multiplicador de Daño Crítico (`crit_damage: +1.0`).
-   - *Maldición:* Se pierde 1 carga de bomba máxima (`armor: -1.0`).
+---
 
-### Cuadrante 2: Danmaku & Caos Balístico (`danmaku_chaos`)
-7. **Proyectil Colosal (`colossal_projectile.tres`):**
-   - *Bono:* +80% Tamaño y radio de proyectiles aliados (`weapon_size_pct: +0.80`).
-   - *Maldición:* -30% Velocidad de proyectil (`projectile_speed_pct: -0.30`).
-8. **Fisión Inestable (`unstable_fission.tres`):**
-   - *Bono:* +3 Proyectiles adicionales en todas las armas (`projectile_count: +3.0`).
-   - *Maldición:* -35% Daño individual de cada proyectil (`base_damage_pct: -0.35`).
-9. **Lluvia de Metralla (`shrapnel_rain.tres`):**
-   - *Bono:* Los destructibles rotos generan el doble de esquirlas cinéticas.
-   - *Maldición:* -15% Radio de recogida de orbes (`pickup_radius_pct: -0.15`).
-10. **Balística Pesada (`heavy_ballistics.tres`):**
-    - *Bono:* +60% Velocidad de proyectil y penetración perforante (`projectile_speed_pct: +0.60`).
-    - *Maldición:* -15% Cadencia de disparo (`attack_speed_pct: -0.15`).
-11. **Rebote Cuántico (`quantum_ricochet.tres`):**
-    - *Bono:* Los proyectiles rebotan una vez más contra los límites de pantalla y obstáculos.
-    - *Maldición:* -15% Daño base (`base_damage_pct: -0.15`).
-12. **Espejo Danmaku (`danmaku_mirror.tres`):**
-    - *Bono:* El Dash desvía y neutraliza proyectiles hostiles en un radio de 60 px.
-    - *Maldición:* El tiempo de recarga del Dash se incrementa un 25%.
+### 6.1. Cuadrante 1: Cañón de Cristal & Sangre (`glass_cannon`)
+Enfocado en potenciar agresivamente el daño, cadencia y críticos a costa de sacrificar vida máxima, regeneración o armadura. Ideal para builds de alta destreza y evasión perfecta.
 
-### Cuadrante 3: Espacio-Tiempo & Evasión (`spacetime`)
-13. **Dilatación Temporal (`time_dilation.tres`):**
-    - *Bono:* Los proyectiles hostiles del `BulletServer` se mueven un 25% más lento.
-    - *Maldición:* La ganancia de EXP de la partida se reduce un 15% (`exp_multiplier_pct: -0.15`).
-14. **Motor Warp (`warp_engine.tres`):**
-    - *Bono:* +40% Velocidad de Movimiento permanente (`move_speed_pct: +0.40`).
-    - *Maldición:* La nave sufre inercia resbaladiza incrementada y fricción reducida.
-15. **Salto Dimensional (`dimensional_leap.tres`):**
-    - *Bono:* +1 Carga adicional de Dash (`dash_charges: +1`).
-    - *Maldición:* -20 HP Máximo (`max_health: -20.0`).
-16. **Evasión Fantasma (`phantom_evasion.tres`):**
-    - *Bono:* 20% Probabilidad pasiva de evadir completamente cualquier daño recibido.
-    - *Maldición:* -25% Daño general infligido (`base_damage_pct: -0.25`).
-17. **Parpadeo de Fase (`phase_flicker.tres`):**
-    - *Bono:* Duplica la duración de los cuadros de invulnerabilidad tras ser impactado.
-    - *Maldición:* -20% Daño crítico (`crit_damage: -0.20`).
-18. **Vórtice Gravitatorio (`gravitational_vortex.tres`):**
-    - *Bono:* +120 px Radio de atracción de orbes e ítems (`pickup_radius: +120.0`).
-    - *Maldición:* -10% Velocidad de movimiento (`move_speed_pct: -0.10`).
+#### 1. Furia Agónica (`agonic_fury.tres`)
+* **ID Interno:** `agonic_fury` | **Cuadrante:** `glass_cannon`
+* **Bono:** +50% Cadencia de disparo ultra-rápida.
+* **Maldición:** -50% Regeneración de salud por segundo.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `attack_speed_pct`: `+0.50` (+50% velocidad de ataque y cadencia).
+  - `health_regen_pct`: `-0.50` (-50% regeneración continua de vida).
+* **Impacto Táctico:** Duplica casi la saturación de fuego de armas pesadas como el *Rail Launcher* o *Titan Shotgun*, penalizando el sustento pasivo.
 
-### Cuadrante 4: Pacto de Avaricia & Sobrecarga (`greed`)
-19. **Alquimia de Midas (`midas_alchemy.tres`):**
-    - *Bono:* +100% Créditos ganados por bajas y satélites (`credits_multiplier_pct: +1.00`).
-    - *Maldición:* Los precios de la Tienda del Satélite suben un 30%.
-20. **Cosecha Voraz (`voracious_harvest.tres`):**
-    - *Bono:* +100% BioMasa obtenida para meta-progresión (`biomass_multiplier_pct: +1.00`).
-    - *Maldición:* Los enemigos tienen un +25% de salud máxima.
-21. **Mercado Negro (`black_market.tres`):**
-    - *Bono:* La Tienda ofrece 1 slot adicional de arma o ítem de Tier superior.
-    - *Maldición:* Despliega un escuadrón élite adicional por cada oleada de satélite.
-22. **Inversión de Alto Riesgo (`high_risk_investment.tres`):**
-    - *Bono:* Otorga inmediatamente +300 Créditos directos.
-    - *Maldición:* Reduce la salud actual al 1 HP inmediatamente (requiere curación urgente).
-23. **Sobrecarga de Imán (`magnet_overload.tres`):**
-    - *Bono:* Absorbe periódicamente todos los orbes de la arena cada 45 segundos.
-    - *Maldición:* -10 Armadura contra impactos de asteroides.
-24. **Aura de Extracción (`extraction_aura.tres`):**
-    - *Bono:* Daña pasivamente a los objetos destructibles cercanos con 20 DPS continuos.
-    - *Maldición:* Reduce la suerte en -15% (`luck_pct: -0.15`).
+#### 2. Pacto de Sangre (`blood_pact.tres`)
+* **ID Interno:** `blood_pact` | **Cuadrante:** `glass_cannon`
+* **Bono:** +60% Daño base a todas las armas.
+* **Maldición:** -35% Vida máxima del chasis.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `base_damage_pct`: `+0.60` (+60% daño base en todas las fuentes ofensivas).
+  - `max_health_pct`: `-0.35` (-35% capacidad máxima de salud, clampeando la salud actual si excede el nuevo tope).
+* **Impacto Táctico:** Eleva radicalmente el DPS por impacto; requiere extrema precaución ante proyectiles densos de jefes.
 
-### Mecánica de Agotamiento de Catálogo (`quantum_overload_mastery`)
-Si un jugador con una build longeva llega a adquirir las 24 Arcanas disponibles, el modal no se bloquea: genera dinámicamente la carta especial **Sobrecarga Cuántica Infinita**, que otorga **+500 Créditos inmediatos** y **+15 unidades de Materia Oscura**, garantizando escalado infinito en partidas extensas.
+#### 3. Drenaje Vampírico (`vampiric_drain.tres`)
+* **ID Interno:** `vampiric_drain` | **Cuadrante:** `glass_cannon`
+* **Bono:** +4.0 Regeneración masiva de vida continua.
+* **Maldición:** -20% Velocidad de desplazamiento.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `health_regen`: `+4.0` (+4.0 HP planos regenerados por segundo).
+  - `move_speed_pct`: `-0.20` (-20% velocidad de traslación de la nave).
+* **Impacto Táctico:** Otorga casi invulnerabilidad contra desgaste continuo o roces danmaku a cambio de volver la nave más lenta al posicionarse.
+
+#### 4. Sed de Núcleo (`core_thirst.tres`)
+* **ID Interno:** `core_thirst` | **Cuadrante:** `glass_cannon`
+* **Bono:** +40% Daño base y +30% Tamaño de proyectiles.
+* **Maldición:** -30% Radio magnético de recogida de EXP.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `base_damage_pct`: `+0.40` (+40% daño base).
+  - `weapon_size_pct`: `+0.30` (+30% escala visual y radio de colisión de balas).
+  - `pickup_radius_pct`: `-0.30` (-30% radio de atracción de orbes).
+* **Impacto Táctico:** Incrementa el volumen del hitbox de las armas, facilitando impactos múltiples a costa de forzar al piloto a acercarse más a los orbes.
+
+#### 5. Último Aliento (`last_breath.tres`)
+* **ID Interno:** `last_breath` | **Cuadrante:** `glass_cannon`
+* **Bono:** +45% Daño base y +20% Reducción de enfriamiento.
+* **Maldición:** -40% Vida máxima total.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `base_damage_pct`: `+0.45` (+45% daño base).
+  - `cooldown_reduction`: `+0.20` (+20% reducción de enfriamiento en armas y dashes).
+  - `max_health_pct`: `-0.40` (-40% vida máxima del chasis).
+* **Impacto Táctico:** Convierte a la nave en un auténtico cañón de cristal con recargas ultra veloces de habilidades activas.
+
+#### 6. Sacrificio de Escudo (`shield_sacrifice.tres`)
+* **ID Interno:** `shield_sacrifice` | **Cuadrante:** `glass_cannon`
+* **Bono:** +25% Probabilidad crítica y +0.50x Daño crítico.
+* **Maldición:** -8 Armadura de protección reactiva.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `crit_chance`: `+0.25` (+25% probabilidad crítica plana).
+  - `crit_damage`: `+0.50` (+0.50x multiplicador de impacto crítico).
+  - `armor`: `-8.0` (-8 armadura plana, aumentando el daño neto recibido de cada impacto).
+* **Impacto Táctico:** Sinergia destructiva combinada con pilotos como Valentina, permitiendo críticos garantizados superiores a 3.0x de daño.
+
+---
+
+### 6.2. Cuadrante 2: Danmaku & Caos Balístico (`danmaku_chaos`)
+Especializado en alterar la física de los proyectiles aliados: número de balas, dispersión, escala colosal, perforación y rebotes en la arena.
+
+#### 7. Proyectil Colosal (`colossal_projectile.tres`)
+* **ID Interno:** `colossal_projectile` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +100% Tamaño colosal de proyectiles y +35% Daño.
+* **Maldición:** -40% Velocidad de desplazamiento de balas.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `weapon_size_pct`: `+1.00` (+100% tamaño, duplicando diámetro de colisión de proyectiles).
+  - `base_damage_pct`: `+0.35` (+35% daño base).
+  - `projectile_speed_pct`: `-0.40` (-40% velocidad balística).
+* **Impacto Táctico:** Las balas se convierten en gigantescas barreras de energía lentas pero devastadoras que limpian hordas enteras.
+
+#### 8. Fisión Inestable (`unstable_fission.tres`)
+* **ID Interno:** `unstable_fission` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +2 Proyectiles y +20% Probabilidad crítica.
+* **Maldición:** -25% Cadencia de disparo.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `projectile_count`: `+2.0` (+2 proyectiles adicionales por andanada).
+  - `crit_chance`: `+0.20` (+20% probabilidad crítica plana).
+  - `attack_speed_pct`: `-0.25` (-25% cadencia de disparo).
+* **Impacto Táctico:** Otorga disparos múltiples con alto índice crítico compensando el retraso entre salvas.
+
+#### 9. Lluvia de Metralla (`shrapnel_rain.tres`)
+* **ID Interno:** `shrapnel_rain` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +3 Proyectiles adicionales en cada disparo.
+* **Maldición:** -30% Daño de cada bala individual.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `projectile_count`: `+3.0` (+3 proyectiles adicionales).
+  - `base_damage_pct`: `-0.30` (-30% daño base por disparo).
+* **Impacto Táctico:** Saturación de pantalla absoluta. Aunque cada bala hace menos daño individual, el daño total por ráfaga aumenta drásticamente si impactan varias.
+
+#### 10. Balística Pesada (`heavy_ballistics.tres`)
+* **ID Interno:** `heavy_ballistics` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +50% Daño devastador y +6 Armadura frontal.
+* **Maldición:** -25% Velocidad de maniobra y giro.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `base_damage_pct`: `+0.50` (+50% daño base).
+  - `armor`: `+6.0` (+6 armadura plana para mitigación física).
+  - `move_speed_pct`: `-0.25` (-25% velocidad de movimiento).
+* **Impacto Táctico:** Transforma a la nave en una fortaleza volante pesada con capacidad de aguantar colisiones accidentales con asteroides.
+
+#### 11. Rebote Cuántico (`quantum_ricochet.tres`)
+* **ID Interno:** `quantum_ricochet` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +40% Velocidad de proyectil e hiper-penetración.
+* **Maldición:** -15% Daño base de proyectiles.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `projectile_speed_pct`: `+0.40` (+40% velocidad balística).
+  - `base_damage_pct`: `-0.15` (-15% daño base).
+* **Impacto Táctico:** Balas a hiper-velocidad que cruzan la pantalla de inmediato y castigan a enemigos lejanos antes de que puedan desplegar danmaku.
+
+#### 12. Espejo Danmaku (`danmaku_mirror.tres`)
+* **ID Interno:** `danmaku_mirror` | **Cuadrante:** `danmaku_chaos`
+* **Bono:** +4 Proyectiles en abanico y +30% Cadencia de fuego.
+* **Maldición:** -50% Tamaño de proyectil y -20% Daño base.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `projectile_count`: `+4.0` (+4 proyectiles en abanico disperso).
+  - `attack_speed_pct`: `+0.30` (+30% cadencia de disparo).
+  - `weapon_size_pct`: `-0.50` (-50% tamaño del proyectil).
+  - `base_damage_pct`: `-0.20` (-20% daño base).
+* **Impacto Táctico:** Crea un patrón de micro-balas danmaku aliado ultra denso que emula los ataques radiales de los jefes del juego.
+
+---
+
+### 6.3. Cuadrante 3: Espacio-Tiempo & Evasión (`spacetime`)
+Manipulación de las constantes físicas del espacio: dilatación de cooldowns, aceleración de maniobra y gravedad de absorción de recursos.
+
+#### 13. Dilatación Temporal (`time_dilation.tres`)
+* **ID Interno:** `time_dilation` | **Cuadrante:** `spacetime`
+* **Bono:** +40% Aceleración de recargas y +15% Crítico.
+* **Maldición:** -20% Velocidad lineal de proyectiles.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `cooldown_reduction`: `+0.40` (+40% reducción de enfriamiento en todas las habilidades y armas).
+  - `crit_chance`: `+0.15` (+15% probabilidad crítica).
+  - `projectile_speed_pct`: `-0.20` (-20% velocidad lineal de proyectil).
+* **Impacto Táctico:** Maximiza la frecuencia de uso del Dash y el spam de armas activas a costa de requerir mayor anticipación al apuntar.
+
+#### 14. Motor de Curvatura (`warp_engine.tres`)
+* **ID Interno:** `warp_engine` | **Cuadrante:** `spacetime`
+* **Bono:** +60% Velocidad extrema de traslación estelar.
+* **Maldición:** -50% Radio magnético de captación.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `move_speed_pct`: `+0.60` (+60% velocidad de movimiento).
+  - `pickup_radius_pct`: `-0.50` (-50% radio de atracción magnética).
+* **Impacto Táctico:** Hiper-maniobrabilidad para cruzar campos de balas cerrados o alcanzar satélites lejanos en segundos.
+
+#### 15. Salto Dimensional (`dimensional_leap.tres`)
+* **ID Interno:** `dimensional_leap` | **Cuadrante:** `spacetime`
+* **Bono:** +45% Velocidad de maniobra y +35% Recarga de dash.
+* **Maldición:** -20% Resistencia e integridad de casco (Max HP).
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `move_speed_pct`: `+0.45` (+45% velocidad de movimiento).
+  - `cooldown_reduction`: `+0.35` (+35% recarga de dash).
+  - `max_health_pct`: `-0.20` (-20% salud máxima).
+* **Impacto Táctico:** Permite encadenar dashes de evasión de forma casi ininterrumpida.
+
+#### 16. Evasión Fantasma (`phantom_evasion.tres`)
+* **ID Interno:** `phantom_evasion` | **Cuadrante:** `spacetime`
+* **Bono:** +10 Armadura espectral y +25% Velocidad.
+* **Maldición:** -20% Daño infligido por armas.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `armor`: `+10.0` (+10 armadura plana).
+  - `move_speed_pct`: `+0.25` (+25% velocidad de movimiento).
+  - `base_damage_pct`: `-0.20` (-20% daño base).
+* **Impacto Táctico:** Aumenta de forma drástica la capacidad de absorción de impactos y la supervivencia pasiva.
+
+#### 17. Parpadeo de Fase (`phase_flicker.tres`)
+* **ID Interno:** `phase_flicker` | **Cuadrante:** `spacetime`
+* **Bono:** +30% Velocidad y +20% Cadencia con micro-saltos cuánticos.
+* **Maldición:** -25% Capacidad máxima de salud.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `move_speed_pct`: `+0.30` (+30% velocidad de movimiento).
+  - `attack_speed_pct`: `+0.20` (+20% cadencia de ataque).
+  - `max_health_pct`: `-0.25` (-25% vida máxima).
+* **Impacto Táctico:** Incremento ágil de DPS y movilidad para partidas de alta velocidad.
+
+#### 18. Vórtice Gravitatorio (`gravitational_vortex.tres`)
+* **ID Interno:** `gravitational_vortex` | **Cuadrante:** `spacetime`
+* **Bono:** +120% Radio gravitatorio de aspiración de orbes.
+* **Maldición:** -15% Velocidad de eyección de proyectiles.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `pickup_radius_pct`: `+1.20` (+120% radio de atracción de orbes de EXP, BioMasa y Materia Oscura).
+  - `projectile_speed_pct`: `-0.15` (-15% velocidad de proyectil).
+* **Impacto Táctico:** La nave aspira orbes desde casi media pantalla sin tener que abandonar posiciones defensivas seguras.
+
+---
+
+### 6.4. Cuadrante 4: Pacto de Avaricia & Sobrecarga (`greed`)
+Pactos comerciales de alto riesgo enfocados en multiplicar la ganancia de BioMasa, Créditos, EXP y Suerte a cambio de penalizaciones severas en salud o potencia ofensiva.
+
+#### 19. Alquimia de Midas (`midas_alchemy.tres`)
+* **ID Interno:** `midas_alchemy` | **Cuadrante:** `greed`
+* **Bono:** +50 Puntos de Suerte cósmica y +50% Ganancia de EXP.
+* **Maldición:** -20% Potencia de daño base.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `luck`: `+50.0` (+50 suerte plana).
+  - `exp_multiplier_pct`: `+0.50` (+50% ganancia de experiencia).
+  - `base_damage_pct`: `-0.20` (-20% daño base).
+* **Impacto Táctico:** Dispara la aparición de cartas de nivel de Tier Épico y legendarias en la subida de nivel, acelerando el escalado de la partida.
+
+#### 20. Cosecha Voraz (`voracious_harvest.tres`)
+* **ID Interno:** `voracious_harvest` | **Cuadrante:** `greed`
+* **Bono:** +100% Cosecha duplicada de BioMasa y Créditos.
+* **Maldición:** -25% Vida máxima y -5 Armadura.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `biomass_multiplier`: `+1.00` (Duplica al 200% toda la BioMasa recolectada en la partida).
+  - `credits_multiplier`: `+1.00` (Duplica al 200% los créditos ganados por bajas y satélites).
+  - `max_health_pct`: `-0.25` (-25% vida máxima).
+  - `armor`: `-5.0` (-5 armadura plana).
+* **Impacto Táctico:** La arcana económica definitiva para farmear meta-progresión y comprar todo el catálogo de la tienda espacial.
+
+#### 21. Mercado Negro (`black_market.tres`)
+* **ID Interno:** `black_market` | **Cuadrante:** `greed`
+* **Bono:** +75% Daño crítico y +30% Daño de armas.
+* **Maldición:** -30 Suerte (peores probabilidades de botín).
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `crit_damage`: `+0.75` (+0.75x multiplicador crítico).
+  - `base_damage_pct`: `+0.30` (+30% daño base).
+  - `luck`: `-30.0` (-30 suerte plana).
+* **Impacto Táctico:** Daño devastador para pilotos que ya cuentan con builds definidas y no dependen de la suerte de las tiradas.
+
+#### 22. Inversión de Alto Riesgo (`high_risk_investment.tres`)
+* **ID Interno:** `high_risk_investment` | **Cuadrante:** `greed`
+* **Bono:** +75% Ganancia de EXP y +35% Cadencia de ataque.
+* **Maldición:** -40% Integridad de casco (Max HP).
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `exp_multiplier_pct`: `+0.75` (+75% multiplicador de EXP).
+  - `attack_speed_pct`: `+0.35` (+35% cadencia de ataque).
+  - `max_health_pct`: `-0.40` (-40% salud máxima).
+* **Impacto Táctico:** Acelera la curva de subida de nivel de forma vertiginosa a costa de dejar a la nave al borde del colapso.
+
+#### 23. Sobrecarga de Imanes (`magnet_overload.tres`)
+* **ID Interno:** `magnet_overload` | **Cuadrante:** `greed`
+* **Bono:** +150% Rango de atracción de todo mineral en pantalla.
+* **Maldición:** -20% Velocidad por sobrecarga de masa.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `pickup_radius_pct`: `+1.50` (+150% radio de absorción magnética).
+  - `move_speed_pct`: `-0.20` (-20% velocidad de movimiento).
+* **Impacto Táctico:** Limpia automáticamente la arena de minerales y esferas de experiencia sin desviarse del objetivo principal.
+
+#### 24. Aura de Extracción (`extraction_aura.tres`)
+* **ID Interno:** `extraction_aura` | **Cuadrante:** `greed`
+* **Bono:** +30 Suerte, +40% Radio de absorción y +50% BioMasa.
+* **Maldición:** -15% Daño infligido por armas.
+* **Modificadores GDScript (`stat_modifiers`):**
+  - `luck`: `+30.0` (+30 suerte).
+  - `pickup_radius_pct`: `+0.40` (+40% radio de atracción).
+  - `biomass_multiplier`: `+0.50` (+50% BioMasa adicional acumulada).
+  - `base_damage_pct`: `-0.15` (-15% daño base).
+* **Impacto Táctico:** Equilibrio ideal entre utilidad de farmeo y probabilidad de mejores recompensas en metajuego.
+
+---
+
+### 6.5. Tabla Maestra de Modificadores de las 24 Arcanas
+
+| ID Arcana | Nombre | Cuadrante | Modificador Bono (Exacto) | Modificador Maldición (Exacto) |
+| :--- | :--- | :---: | :--- | :--- |
+| `agonic_fury` | Furia Agónica | Glass Cannon | `attack_speed_pct`: +50% | `health_regen_pct`: -50% |
+| `blood_pact` | Pacto de Sangre | Glass Cannon | `base_damage_pct`: +60% | `max_health_pct`: -35% |
+| `vampiric_drain` | Drenaje Vampírico | Glass Cannon | `health_regen`: +4.0 HP/s | `move_speed_pct`: -20% |
+| `core_thirst` | Sed de Núcleo | Glass Cannon | `base_damage_pct`: +40%<br>`weapon_size_pct`: +30% | `pickup_radius_pct`: -30% |
+| `last_breath` | Último Aliento | Glass Cannon | `base_damage_pct`: +45%<br>`cooldown_reduction`: +20% | `max_health_pct`: -40% |
+| `shield_sacrifice` | Sacrificio de Escudo | Glass Cannon | `crit_chance`: +25%<br>`crit_damage`: +0.50x | `armor`: -8.0 |
+| `colossal_projectile`| Proyectil Colosal | Danmaku Chaos | `weapon_size_pct`: +100%<br>`base_damage_pct`: +35% | `projectile_speed_pct`: -40% |
+| `unstable_fission` | Fisión Inestable | Danmaku Chaos | `projectile_count`: +2<br>`crit_chance`: +20% | `attack_speed_pct`: -25% |
+| `shrapnel_rain` | Lluvia de Metralla | Danmaku Chaos | `projectile_count`: +3 | `base_damage_pct`: -30% |
+| `heavy_ballistics` | Balística Pesada | Danmaku Chaos | `base_damage_pct`: +50%<br>`armor`: +6.0 | `move_speed_pct`: -25% |
+| `quantum_ricochet` | Rebote Cuántico | Danmaku Chaos | `projectile_speed_pct`: +40% | `base_damage_pct`: -15% |
+| `danmaku_mirror` | Espejo Danmaku | Danmaku Chaos | `projectile_count`: +4<br>`attack_speed_pct`: +30% | `weapon_size_pct`: -50%<br>`base_damage_pct`: -20% |
+| `time_dilation` | Dilatación Temporal | Spacetime | `cooldown_reduction`: +40%<br>`crit_chance`: +15% | `projectile_speed_pct`: -20% |
+| `warp_engine` | Motor de Curvatura | Spacetime | `move_speed_pct`: +60% | `pickup_radius_pct`: -50% |
+| `dimensional_leap` | Salto Dimensional | Spacetime | `move_speed_pct`: +45%<br>`cooldown_reduction`: +35% | `max_health_pct`: -20% |
+| `phantom_evasion` | Evasión Fantasma | Spacetime | `armor`: +10.0<br>`move_speed_pct`: +25% | `base_damage_pct`: -20% |
+| `phase_flicker` | Parpadeo de Fase | Spacetime | `move_speed_pct`: +30%<br>`attack_speed_pct`: +20% | `max_health_pct`: -25% |
+| `gravitational_vortex`| Vórtice Gravitatorio | Spacetime | `pickup_radius_pct`: +120% | `projectile_speed_pct`: -15% |
+| `midas_alchemy` | Alquimia de Midas | Greed | `luck`: +50.0<br>`exp_multiplier_pct`: +50% | `base_damage_pct`: -20% |
+| `voracious_harvest` | Cosecha Voraz | Greed | `biomass_multiplier`: +100%<br>`credits_multiplier`: +100% | `max_health_pct`: -25%<br>`armor`: -5.0 |
+| `black_market` | Mercado Negro | Greed | `crit_damage`: +0.75x<br>`base_damage_pct`: +30% | `luck`: -30.0 |
+| `high_risk_investment`| Inversión de Alto Riesgo | Greed | `exp_multiplier_pct`: +75%<br>`attack_speed_pct`: +35% | `max_health_pct`: -40% |
+| `magnet_overload` | Sobrecarga de Imanes | Greed | `pickup_radius_pct`: +150% | `move_speed_pct`: -20% |
+| `extraction_aura` | Aura de Extracción | Greed | `luck`: +30.0<br>`pickup_radius_pct`: +40%<br>`biomass_multiplier`: +50% | `base_damage_pct`: -15% |
+
+---
+
+### 6.6. Mecánica de Agotamiento de Catálogo (`quantum_overload_mastery`)
+Si un jugador adquiere las **24 Arcanas disponibles**, el sistema no se bloquea ni genera excepciones: `ArcanaData.get_random_selection()` detecta el catálogo agotado y genera dinámicamente la carta especial **Sobrecarga Cuántica Infinita**:
+- **Efecto de Sobrecarga:**
+  * **+500 Créditos inmediatos** para gastar en la Tienda del Satélite.
+  * **+15 unidades de Materia Oscura** transferidas y persistidas de inmediato en `SaveManager`.
+- **Despausa Limpia:** Despausa el árbol de juego y reproduce el efecto audiovisual de invocación cósmica sin interrumpir el flujo de combate.
 
 ---
 
