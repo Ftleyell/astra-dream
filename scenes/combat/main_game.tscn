@@ -76,7 +76,8 @@ weapon_controller = NodePath("../WeaponController")
 [node name="HUD" parent="." node_paths=PackedStringArray("player") instance=ExtResource("7_hud")]
 player = NodePath("../Player")
 
-[node name="SatelliteShop" parent="." instance=ExtResource("8_shop")]
+[node name="SatelliteShop" parent="." node_paths=PackedStringArray("player") instance=ExtResource("8_shop")]
+player = NodePath("../Player")
 
 [node name="LevelUpModal" parent="." node_paths=PackedStringArray("stat_deck_manager", "player") instance=ExtResource("9_level_modal")]
 stat_deck_manager = NodePath("../StatDeckManager")

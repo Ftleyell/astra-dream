@@ -13,10 +13,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -510.0
-offset_top = -225.0
-offset_right = 510.0
-offset_bottom = 225.0
+offset_left = -730.0
+offset_top = -290.0
+offset_right = 730.0
+offset_bottom = 290.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -26,12 +26,12 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 18.0
 offset_right = -20.0
-offset_bottom = -20.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -39,8 +39,61 @@ theme_override_font_sizes/font_size = 22
 text = "¡SUBIDA DE NIVEL! SELECCIONA UNA MEJORA"
 horizontal_alignment = 1
 
-[node name="CardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="ContentHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 20
+
+[node name="StatsSidePanel" type="PanelContainer" parent="Panel/VBoxContainer/ContentHBox"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsHeader" type="Label" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "ESTADÍSTICAS EN LA RUN"
+horizontal_alignment = 1
+
+[node name="PilotInfo" type="Label" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "NOVA | NIVEL 1"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatsList" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="CardsVBox" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 alignment = 1
+
+[node name="ControlsHint" type="Label" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "[ 1, 2, 3, 4 ] Selección rápida  |  [ A / D ] Navegar  |  [ Espacio / Enter ] Confirmar"
+horizontal_alignment = 1

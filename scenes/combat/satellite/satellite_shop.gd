@@ -7,6 +7,7 @@ signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
 
 @export var available_items_pool: Array[Resource] = []
+@export var player: Player
 
 var current_credits: int = 100
 var reroll_cost: int = 15
@@ -14,20 +15,66 @@ var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
 
 @onready var panel: Panel = $ShopPanel
-@onready var items_container: HBoxContainer = $ShopPanel/VBoxContainer/ItemsContainer
-@onready var credits_label: Label = $ShopPanel/VBoxContainer/TopBar/CreditsLabel
-@onready var reroll_btn: Button = $ShopPanel/VBoxContainer/BottomBar/RerollButton
-@onready var close_btn: Button = $ShopPanel/VBoxContainer/BottomBar/CloseButton
+@onready var items_container: HBoxContainer = find_child("ItemsContainer", true, false) as HBoxContainer
+@onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
+@onready var reroll_btn: Button = find_child("RerollButton", true, false) as Button
+@onready var close_btn: Button = find_child("CloseButton", true, false) as Button
+@onready var inventory_side_panel: PanelContainer = find_child("InventorySidePanel", true, false) as PanelContainer
+@onready var inventory_summary_label: Label = find_child("InventorySummary", true, false) as Label
+@onready var weapons_list: VBoxContainer = find_child("WeaponsList", true, false) as VBoxContainer
+@onready var items_list: VBoxContainer = find_child("ItemsList", true, false) as VBoxContainer
+
+const STAT_ICON_MAP = {
+	&"base_damage": "res://assets/icons/items/icon_sword.svg",
+	&"attack_speed": "res://assets/icons/items/icon_gauntlet.svg",
+	&"crit_chance": "res://assets/icons/items/icon_glasses.svg",
+	&"crit_damage": "res://assets/icons/items/icon_lens.svg",
+	&"max_health": "res://assets/icons/items/icon_heart.svg",
+	&"move_speed": "res://assets/icons/items/icon_boots.svg",
+	&"luck": "res://assets/icons/items/icon_clover.svg",
+	&"projectile_count": "res://assets/icons/items/icon_quiver.svg",
+	&"armor": "res://assets/icons/items/icon_shield.svg",
+	&"health_regen": "res://assets/icons/items/icon_apple.svg",
+	&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
+}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
-	UIFocusHelper.apply_cyber_focus(close_btn)
-	UIFocusHelper.apply_cyber_focus(reroll_btn)
-	close_btn.pressed.connect(close_shop)
-	reroll_btn.pressed.connect(_on_reroll_pressed)
+
+	# Estilos translúcidos de alta tecnología
+	var shop_style := StyleBoxFlat.new()
+	shop_style.bg_color = Color(0.04, 0.06, 0.1, 0.96)
+	shop_style.set_border_width_all(2)
+	shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
+	shop_style.set_corner_radius_all(12)
+	shop_style.set_content_margin_all(16.0)
+	if panel:
+		panel.add_theme_stylebox_override("panel", shop_style)
+
+	if inventory_side_panel:
+		var inv_style := StyleBoxFlat.new()
+		inv_style.bg_color = Color(0.03, 0.04, 0.07, 0.92)
+		inv_style.set_border_width_all(1)
+		inv_style.border_color = Color(0.2, 0.5, 0.8, 0.5)
+		inv_style.set_corner_radius_all(8)
+		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
+
+	if close_btn:
+		UIFocusHelper.apply_cyber_focus(close_btn)
+		close_btn.pressed.connect(close_shop)
+	if reroll_btn:
+		UIFocusHelper.apply_cyber_focus(reroll_btn)
+		reroll_btn.pressed.connect(_on_reroll_pressed)
+
 	if available_items_pool.is_empty():
 		_generate_default_shop_items()
+
+func _ensure_player() -> void:
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+	if not is_instance_valid(player) and get_parent():
+		player = get_parent().get_node_or_null("Player") as Player
 
 func _generate_default_shop_items() -> void:
 	var items: Array[ItemData] = ItemPoolManager.create_canonical_stat_items()
@@ -49,8 +96,10 @@ func _generate_default_shop_items() -> void:
 
 func open_shop(credits: int) -> void:
 	current_credits = credits
+	_ensure_player()
 	_update_credits_display()
 	_roll_shop_items()
+	_refresh_inventory_display()
 	get_tree().paused = true
 	show()
 	call_deferred("_setup_focus_and_grab")
@@ -68,6 +117,163 @@ func close_shop() -> void:
 	else:
 		get_tree().paused = false
 	shop_closed.emit()
+
+func _refresh_inventory_display() -> void:
+	_ensure_player()
+	if not is_instance_valid(player):
+		return
+
+	# 1. Armas Equipadas
+	var weapons_count: int = 0
+	if weapons_list:
+		for child in weapons_list.get_children():
+			child.queue_free()
+
+		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl and not w_ctrl.equipped_weapons.is_empty():
+			weapons_count = w_ctrl.equipped_weapons.size()
+			for w_inst in w_ctrl.equipped_weapons:
+				var w_data: WeaponData = w_inst.weapon_data if ("weapon_data" in w_inst) else (w_inst.get("data") as WeaponData)
+				if not w_data:
+					continue
+				var w_lvl: int = w_inst.level if ("level" in w_inst) else 1
+				var w_card := _create_inventory_weapon_card(w_data, w_lvl)
+				weapons_list.add_child(w_card)
+		else:
+			var default_lbl := Label.new()
+			default_lbl.text = "• Sistema de Armas Básico"
+			default_lbl.add_theme_font_size_override("font_size", 11)
+			default_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+			weapons_list.add_child(default_lbl)
+			weapons_count = 1
+
+	# 2. Ítems Pasivos
+	var items_count: int = 0
+	if items_list:
+		for child in items_list.get_children():
+			child.queue_free()
+
+		var all_items: Array[Dictionary] = []
+		if player.inventory:
+			all_items = player.inventory.get_all_items()
+
+		items_count = all_items.size()
+		if all_items.is_empty():
+			var empty_lbl := Label.new()
+			empty_lbl.text = "Sin ítems adquiridos en esta misión."
+			empty_lbl.add_theme_font_size_override("font_size", 11)
+			empty_lbl.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65))
+			empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+			items_list.add_child(empty_lbl)
+		else:
+			for entry in all_items:
+				var it_data: ItemData = entry.get("data")
+				var it_count: int = entry.get("count", 1)
+				if not it_data:
+					continue
+				var it_card := _create_inventory_item_card(it_data, it_count)
+				items_list.add_child(it_card)
+
+	# 3. Resumen
+	if inventory_summary_label:
+		inventory_summary_label.text = "Armas: %d/6  |  Ítems Pasivos: %d" % [weapons_count, items_count]
+
+func _create_inventory_weapon_card(w_data: WeaponData, w_level: int = 1) -> PanelContainer:
+	var panel_item := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.08, 0.12, 0.9)
+	sb.border_color = Color(1.0, 0.8, 0.2, 0.7)
+	sb.set_border_width_all(1)
+	sb.border_width_left = 3
+	sb.set_corner_radius_all(4)
+	panel_item.add_theme_stylebox_override("panel", sb)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel_item.add_child(margin)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	margin.add_child(hbox)
+
+	var tex_rect := TextureRect.new()
+	tex_rect.custom_minimum_size = Vector2(24, 24)
+	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_tex: Texture2D = w_data.icon
+	if not icon_tex and ResourceLoader.exists("res://assets/icons/items/icon_sword.svg"):
+		icon_tex = load("res://assets/icons/items/icon_sword.svg") as Texture2D
+	tex_rect.texture = icon_tex
+	tex_rect.modulate = Color(1.0, 0.85, 0.3)
+	hbox.add_child(tex_rect)
+
+	var lbl := Label.new()
+	lbl.text = "%s [Nv. %d]" % [w_data.weapon_name, w_level] if w_level > 1 else w_data.weapon_name
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7))
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(lbl)
+
+	var dmg_lbl := Label.new()
+	dmg_lbl.text = "%.0f Dmg" % w_data.base_damage
+	dmg_lbl.add_theme_font_size_override("font_size", 10)
+	dmg_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 0.8))
+	hbox.add_child(dmg_lbl)
+
+	return panel_item
+
+func _create_inventory_item_card(it_data: ItemData, count: int) -> PanelContainer:
+	var rarity_col := _get_rarity_color(it_data.rarity)
+	var panel_item := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
+	sb.border_color = rarity_col * Color(1.0, 1.0, 1.0, 0.6)
+	sb.set_border_width_all(1)
+	sb.border_width_left = 3
+	sb.set_corner_radius_all(4)
+	panel_item.add_theme_stylebox_override("panel", sb)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel_item.add_child(margin)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	margin.add_child(hbox)
+
+	var tex_rect := TextureRect.new()
+	tex_rect.custom_minimum_size = Vector2(24, 24)
+	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_tex: Texture2D = it_data.icon
+	if not icon_tex and STAT_ICON_MAP.has(it_data.stat_name) and ResourceLoader.exists(STAT_ICON_MAP[it_data.stat_name]):
+		icon_tex = load(STAT_ICON_MAP[it_data.stat_name]) as Texture2D
+	if not icon_tex and ResourceLoader.exists("res://assets/icons/items/icon_heart.svg"):
+		icon_tex = load("res://assets/icons/items/icon_heart.svg") as Texture2D
+	tex_rect.texture = icon_tex
+	tex_rect.modulate = rarity_col
+	hbox.add_child(tex_rect)
+
+	var lbl := Label.new()
+	lbl.text = it_data.item_name
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color.WHITE)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(lbl)
+
+	var stack_lbl := Label.new()
+	stack_lbl.text = "x%d" % count
+	stack_lbl.add_theme_font_size_override("font_size", 11)
+	stack_lbl.add_theme_color_override("font_color", Color("#00FF9D"))
+	hbox.add_child(stack_lbl)
+
+	return panel_item
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -143,7 +349,7 @@ func _navigate_focus(side: Side) -> void:
 	if not focused or not is_instance_valid(focused):
 		if not buy_buttons.is_empty() and not buy_buttons[0].disabled:
 			buy_buttons[0].grab_focus()
-		else:
+		elif close_btn and is_instance_valid(close_btn):
 			close_btn.grab_focus()
 		return
 
@@ -165,11 +371,17 @@ func _buy_item_by_index(index: int) -> void:
 			btn.pressed.emit()
 
 func _update_credits_display() -> void:
-	credits_label.text = "Créditos: %d" % current_credits
-	reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
-	close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
+	if credits_label:
+		credits_label.text = "Créditos: %d" % current_credits
+	if reroll_btn:
+		reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+	if close_btn:
+		close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
 
 func _roll_shop_items() -> void:
+	if not items_container:
+		return
+
 	for child in items_container.get_children():
 		child.queue_free()
 
@@ -267,6 +479,8 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 			buy_btn.disabled = true
 			buy_btn.text = "¡Adquirido!"
 			item_purchased.emit(entry, cost)
+			# Actualizar inventario en tiempo real
+			call_deferred("_refresh_inventory_display")
 			# Si aún hay créditos y otros botones, enfocar el siguiente disponible
 			_focus_next_available_buy_button()
 	)
@@ -327,7 +541,8 @@ func _focus_next_available_buy_button() -> void:
 		if is_instance_valid(btn) and not btn.disabled:
 			btn.grab_focus()
 			return
-	close_btn.grab_focus()
+	if close_btn and is_instance_valid(close_btn):
+		close_btn.grab_focus()
 
 func _on_reroll_pressed() -> void:
 	if current_credits >= reroll_cost:

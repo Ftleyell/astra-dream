@@ -7,14 +7,19 @@ signal card_chosen(card: StatCardData)
 @export var player: Player
 
 @onready var modal_panel: Panel = $Panel
-@onready var cards_container: HBoxContainer = $Panel/VBoxContainer/CardsContainer
+@onready var cards_container: HBoxContainer = find_child("CardsContainer", true, false) as HBoxContainer
 @onready var level_label: Label = $Panel/VBoxContainer/Title
+@onready var stats_side_panel: PanelContainer = find_child("StatsSidePanel", true, false) as PanelContainer
+@onready var stats_header_label: Label = find_child("StatsHeader", true, false) as Label
+@onready var pilot_info_label: Label = find_child("PilotInfo", true, false) as Label
+@onready var stats_list_container: VBoxContainer = find_child("StatsList", true, false) as VBoxContainer
 
 var current_offered_cards: Array[StatCardData] = []
 var select_buttons: Array[Button] = []
 var card_panels: Array[PanelContainer] = []
 var card_tier_colors: Array[Color] = []
 var current_selected_idx: int = 0
+var stat_card_ui_entries: Dictionary = {}
 
 const STAT_ICON_MAP = {
 	&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -30,6 +35,23 @@ const STAT_ICON_MAP = {
 	&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
 }
 
+const RUN_STATS_CONFIG: Array[Dictionary] = [
+	{"name": "DAÑO", "key": &"base_damage", "fmt": "%.1f", "suffix": ""},
+	{"name": "VEL. ATAQUE", "key": &"attack_speed", "fmt": "%.2f", "suffix": "x"},
+	{"name": "PROB. CRÍTICA", "key": &"crit_chance", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "DAÑO CRÍTICO", "key": &"crit_damage", "fmt": "%.2f", "suffix": "x"},
+	{"name": "PROYECTILES", "key": &"projectile_count", "fmt": "%.0f", "suffix": ""},
+	{"name": "VEL. PROYECTIL", "key": &"projectile_speed", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "VEL. MOVIMIENTO", "key": &"move_speed", "fmt": "%.0f", "suffix": " px/s"},
+	{"name": "ENFRIAMIENTO", "key": &"cooldown_reduction", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "VIDA MÁXIMA", "key": &"max_health", "fmt": "%.0f", "suffix": " HP"},
+	{"name": "REGEN. VIDA", "key": &"health_regen", "fmt": "%.1f", "suffix": "/s"},
+	{"name": "ARMADURA", "key": &"armor", "fmt": "%.0f", "suffix": ""},
+	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
+	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
+]
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
@@ -41,7 +63,16 @@ func _ready() -> void:
 	modal_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
 	modal_style.set_corner_radius_all(12)
 	modal_style.set_content_margin_all(16.0)
-	modal_panel.add_theme_stylebox_override("panel", modal_style)
+	if modal_panel:
+		modal_panel.add_theme_stylebox_override("panel", modal_style)
+
+	if stats_side_panel:
+		var side_style := StyleBoxFlat.new()
+		side_style.bg_color = Color(0.03, 0.04, 0.07, 0.92)
+		side_style.set_border_width_all(1)
+		side_style.border_color = Color(0.2, 0.5, 0.8, 0.5)
+		side_style.set_corner_radius_all(8)
+		stats_side_panel.add_theme_stylebox_override("panel", side_style)
 
 	if stat_deck_manager:
 		stat_deck_manager.cards_offered.connect(_on_cards_offered)
@@ -50,9 +81,125 @@ func show_level_up(level: int) -> void:
 	level_label.text = "¡SUBIDA DE NIVEL %d! SELECCIONA UNA MEJORA" % level
 	level_label.add_theme_color_override("font_color", Color(0.3, 0.9, 1.0))
 	get_tree().paused = true
+	_refresh_player_stats_display(level)
 	show()
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 4)
+
+func _refresh_player_stats_display(level_override: int = -1) -> void:
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+	if not is_instance_valid(player) and get_parent():
+		player = get_parent().get_node_or_null("Player") as Player
+
+	if not is_instance_valid(player) or not stats_list_container:
+		return
+
+	var data: CharacterData = player.character_data
+	var stats: CharacterStats = player.stats
+	var theme_col: Color = data.color if data else Color("#00F0FF")
+	var display_lvl: int = level_override if level_override > 0 else (player.current_level if player else 1)
+
+	if pilot_info_label:
+		if data:
+			pilot_info_label.text = "%s | NIVEL %d" % [data.display_name.to_upper(), display_lvl]
+			pilot_info_label.add_theme_color_override("font_color", theme_col)
+		else:
+			pilot_info_label.text = "PILOTO | NIVEL %d" % display_lvl
+
+	if stats_header_label:
+		stats_header_label.add_theme_color_override("font_color", theme_col.lightened(0.2))
+
+	for child in stats_list_container.get_children():
+		child.queue_free()
+	stat_card_ui_entries.clear()
+
+	if not stats:
+		return
+
+	for cfg in RUN_STATS_CONFIG:
+		var key: StringName = cfg["key"]
+		var current_val: float = stats.get_stat(key)
+		var base_val: float = data.get(key) if (data and key in data) else current_val
+		var mult: float = cfg.get("mult", 1.0)
+		var fmt: String = cfg["fmt"]
+		var suffix: String = cfg["suffix"]
+
+		var displayed_val := (fmt % (current_val * mult)) + suffix
+		var is_buffed := (current_val > base_val + 0.001)
+
+		var item_panel := PanelContainer.new()
+		item_panel.custom_minimum_size = Vector2(0, 26)
+
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
+		sb.border_color = (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5))
+		sb.set_border_width_all(1)
+		sb.border_width_left = 3
+		sb.set_corner_radius_all(3)
+		item_panel.add_theme_stylebox_override("panel", sb)
+
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 8)
+		margin.add_theme_constant_override("margin_right", 8)
+		margin.add_theme_constant_override("margin_top", 3)
+		margin.add_theme_constant_override("margin_bottom", 3)
+		item_panel.add_child(margin)
+
+		var hbox := HBoxContainer.new()
+		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+		margin.add_child(hbox)
+
+		var lbl_name := Label.new()
+		lbl_name.text = cfg["name"]
+		lbl_name.add_theme_font_size_override("font_size", 11)
+		lbl_name.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.add_child(lbl_name)
+
+		var lbl_val := Label.new()
+		lbl_val.text = displayed_val
+		lbl_val.add_theme_font_size_override("font_size", 11)
+		if is_buffed:
+			lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
+		else:
+			lbl_val.add_theme_color_override("font_color", Color.WHITE)
+		hbox.add_child(lbl_val)
+
+		if is_buffed:
+			var lbl_base := Label.new()
+			var base_disp := (fmt % (base_val * mult)) + suffix
+			lbl_base.text = " (%s)" % base_disp
+			lbl_base.add_theme_font_size_override("font_size", 10)
+			lbl_base.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7, 0.7))
+			hbox.add_child(lbl_base)
+
+		stats_list_container.add_child(item_panel)
+		stat_card_ui_entries[key] = {
+			"panel": item_panel,
+			"is_buffed": is_buffed,
+			"base_style": sb,
+			"theme_col": theme_col
+		}
+
+func _highlight_target_stat(target_stat: StringName) -> void:
+	for stat_key in stat_card_ui_entries.keys():
+		var entry: Dictionary = stat_card_ui_entries[stat_key]
+		var p: PanelContainer = entry["panel"]
+		if not is_instance_valid(p):
+			continue
+		if stat_key == target_stat:
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
+			high_style.border_color = Color("#FFE600")
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
+			high_style.shadow_size = 4
+			p.add_theme_stylebox_override("panel", high_style)
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
 
 func restore_focus() -> void:
 	if current_selected_idx >= 0 and current_selected_idx < select_buttons.size():
@@ -128,7 +275,7 @@ func _update_card_selection(idx: int) -> void:
 	current_selected_idx = idx
 
 	for i in range(card_panels.size()):
-		var panel := card_panels[i]
+		var panel_node := card_panels[i]
 		var color := card_tier_colors[i]
 		var style := StyleBoxFlat.new()
 		style.set_corner_radius_all(8)
@@ -148,7 +295,10 @@ func _update_card_selection(idx: int) -> void:
 			style.border_color = color * Color(1.0, 1.0, 1.0, 0.5)
 			style.shadow_size = 0
 
-		panel.add_theme_stylebox_override("panel", style)
+		panel_node.add_theme_stylebox_override("panel", style)
+
+	if idx < current_offered_cards.size():
+		_highlight_target_stat(current_offered_cards[idx].target_stat)
 
 func _confirm_current_selection() -> void:
 	_select_card_by_index(current_selected_idx)
@@ -164,11 +314,12 @@ func _on_cards_offered(cards: Array[StatCardData], _cost: int) -> void:
 	card_tier_colors.clear()
 	current_selected_idx = 0
 
-	for child in cards_container.get_children():
-		child.queue_free()
+	if cards_container:
+		for child in cards_container.get_children():
+			child.queue_free()
 
-	for i in range(cards.size()):
-		_create_stat_card_ui(cards[i], i)
+		for i in range(cards.size()):
+			_create_stat_card_ui(cards[i], i)
 
 	call_deferred("_update_card_selection", 0)
 
@@ -183,7 +334,7 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	var tier_color: Color = tier_info["color"]
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(220, 310)
+	card_panel.custom_minimum_size = Vector2(210, 310)
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
@@ -282,7 +433,8 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	vbox.add_child(select_btn)
 	card_panel.add_child(vbox)
 
-	cards_container.add_child(card_panel)
+	if cards_container:
+		cards_container.add_child(card_panel)
 	select_buttons.append(select_btn)
 
 func _get_tier_info(tier: Enums.Tier) -> Dictionary:
@@ -317,6 +469,7 @@ func _select_card(card: StatCardData) -> void:
 	if stat_deck_manager and player:
 		stat_deck_manager.apply_card_to_stats(card, player.stats)
 		player.chosen_stat_cards.append(card)
+		_refresh_player_stats_display()
 	hide()
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():

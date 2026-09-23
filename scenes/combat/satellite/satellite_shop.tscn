@@ -13,10 +13,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -250.0
-offset_right = 400.0
-offset_bottom = 250.0
+offset_left = -690.0
+offset_top = -285.0
+offset_right = 690.0
+offset_bottom = 285.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -26,12 +26,12 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 18.0
 offset_right = -20.0
-offset_bottom = -20.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="TopBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
 layout_mode = 2
@@ -47,22 +47,96 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Créditos: 100"
 
-[node name="ItemsContainer" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
+[node name="MainHBox" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 20
+
+[node name="ShopOfferVBox" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="SubtitleLabel" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/ShopOfferVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.3, 0.8, 1, 0.9)
+text = "SUMINISTROS DISPONIBLES EN ÓRBITA"
+
+[node name="ItemsContainer" type="HBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/ShopOfferVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 alignment = 1
 
-[node name="BottomBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
+[node name="BottomBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/ShopOfferVBox"]
 layout_mode = 2
 alignment = 2
+theme_override_constants/separation = 12
 
-[node name="RerollButton" type="Button" parent="ShopPanel/VBoxContainer/BottomBar"]
+[node name="RerollButton" type="Button" parent="ShopPanel/VBoxContainer/MainHBox/ShopOfferVBox/BottomBar"]
 custom_minimum_size = Vector2(160, 40)
 layout_mode = 2
 text = "Re-roll (15 C)"
 
-[node name="CloseButton" type="Button" parent="ShopPanel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(160, 40)
+[node name="CloseButton" type="Button" parent="ShopPanel/VBoxContainer/MainHBox/ShopOfferVBox/BottomBar"]
+custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
 text = "Cerrar y Continuar"
+
+[node name="InventorySidePanel" type="PanelContainer" parent="ShopPanel/VBoxContainer/MainHBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InventoryTitle" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "INVENTARIO DE LA RUN"
+horizontal_alignment = 1
+
+[node name="InventorySummary" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Armas: 1/6 | Ítems: 0"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="InventoryContent" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="WeaponsHeader" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 0.9)
+text = "⚡ ARMAS EN SERVICIO"
+
+[node name="WeaponsList" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ItemsHeader" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 0.9)
+text = "📦 ÍTEMS PASIVOS ADQUIRIDOS"
+
+[node name="ItemsList" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_constants/separation = 4
