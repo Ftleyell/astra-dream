@@ -52,22 +52,7 @@ func set_player(p: Player) -> void:
 	player = p
 
 func _get_closest_satellite_pos() -> Vector2:
-	var satellites := get_tree().get_nodes_in_group("satellite_beacon")
-	if satellites.is_empty():
-		return active_satellite_pos
-
-	if not is_instance_valid(player):
-		return active_satellite_pos
-
-	var closest_pos := active_satellite_pos
-	var min_d := INF
-	for sat in satellites:
-		if is_instance_valid(sat) and sat is Node2D:
-			var d := player.global_position.distance_to(sat.global_position)
-			if d < min_d:
-				min_d = d
-				closest_pos = sat.global_position
-	return closest_pos
+	return active_satellite_pos
 
 func _get_main_game() -> MainGame:
 	var mg := get_tree().get_first_node_in_group("main_game") as MainGame
@@ -79,6 +64,23 @@ func _get_main_game() -> MainGame:
 			return n as MainGame
 		n = n.get_parent()
 	return null
+
+func _get_active_camera() -> Camera2D:
+	var cam := get_viewport().get_camera_2d()
+	if cam:
+		return cam
+	return get_tree().get_first_node_in_group("camera") as Camera2D
+
+func world_to_screen(world_pos: Vector2) -> Vector2:
+	var cam := _get_active_camera()
+	var vp_size := get_viewport().get_visible_rect().size
+	var screen_center := vp_size * 0.5
+	if cam:
+		var cam_center := cam.get_screen_center_position()
+		return screen_center + (world_pos - cam_center) * cam.zoom
+	elif is_instance_valid(player):
+		return screen_center + (world_pos - player.global_position)
+	return world_pos
 
 func _process(delta: float) -> void:
 	if not has_satellite:
@@ -108,10 +110,9 @@ func _process(delta: float) -> void:
 		distance_label.text = "%dm" % int(dist)
 		distance_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.95))
 
-	# Coordenadas de pantalla del jugador y del satélite
-	var canvas_xform: Transform2D = get_viewport().get_canvas_transform()
-	var player_screen: Vector2 = canvas_xform * player.global_position
-	var sat_screen: Vector2 = canvas_xform * target_pos
+	# Coordenadas exactas en pantalla de jugador y satélite basadas en la cámara 2D activa
+	var player_screen := world_to_screen(player.global_position)
+	var sat_screen := world_to_screen(target_pos)
 
 	var vp_rect := get_viewport().get_visible_rect()
 	var vp_size := vp_rect.size
@@ -125,42 +126,53 @@ func _process(delta: float) -> void:
 	var min_y := half_h + pad
 	var max_y := vp_size.y - half_h - pad
 
-	var origin := player_screen.clamp(Vector2(min_x, min_y), Vector2(max_x, max_y))
-	var dir := sat_screen - player_screen
-	if dir.length_squared() < 0.001:
-		dir = Vector2.UP
+	# Comprobación de si el satélite está dentro del área visible de la pantalla
+	var is_on_screen: bool = (sat_screen.x >= min_x and sat_screen.x <= max_x and sat_screen.y >= min_y and sat_screen.y <= max_y)
 
-	# Intersección matemática entre el rayo jugador->satélite y los 4 bordes de la pantalla
-	var t: float = 1e9
-	if dir.x > 0.0001:
-		var tx := (max_x - origin.x) / dir.x
-		if tx > 0.0: t = minf(t, tx)
-	elif dir.x < -0.0001:
-		var tx := (min_x - origin.x) / dir.x
-		if tx > 0.0: t = minf(t, tx)
+	if is_on_screen:
+		# Al aparecer el satélite en pantalla: soltarse del borde y quedar DEAD CENTER sobre el mismo
+		global_position = sat_screen - BOX_SIZE * 0.5
+		if arrow_indicator:
+			arrow_indicator.visible = false
+	else:
+		# Fuera de pantalla: desplazarse por el borde en el punto de contacto entre jugador y satélite
+		var origin := player_screen.clamp(Vector2(min_x, min_y), Vector2(max_x, max_y))
+		var dir := sat_screen - player_screen
+		if dir.length_squared() < 0.001:
+			dir = Vector2.UP
 
-	if dir.y > 0.0001:
-		var ty := (max_y - origin.y) / dir.y
-		if ty > 0.0: t = minf(t, ty)
-	elif dir.y < -0.0001:
-		var ty := (min_y - origin.y) / dir.y
-		if ty > 0.0: t = minf(t, ty)
+		# Intersección matemática entre el rayo jugador->satélite y los 4 bordes de la pantalla
+		var t: float = 1e9
+		if dir.x > 0.0001:
+			var tx := (max_x - origin.x) / dir.x
+			if tx > 0.0: t = minf(t, tx)
+		elif dir.x < -0.0001:
+			var tx := (min_x - origin.x) / dir.x
+			if tx > 0.0: t = minf(t, tx)
 
-	if t >= 1e8:
-		t = 0.0
+		if dir.y > 0.0001:
+			var ty := (max_y - origin.y) / dir.y
+			if ty > 0.0: t = minf(t, ty)
+		elif dir.y < -0.0001:
+			var ty := (min_y - origin.y) / dir.y
+			if ty > 0.0: t = minf(t, ty)
 
-	var border_pos := origin + dir * t
-	border_pos.x = clampf(border_pos.x, min_x, max_x)
-	border_pos.y = clampf(border_pos.y, min_y, max_y)
+		if t >= 1e8:
+			t = 0.0
 
-	# El cuadradito se posiciona centrado en el punto de contacto con el borde
-	global_position = border_pos - BOX_SIZE * 0.5
+		var border_pos := origin + dir * t
+		border_pos.x = clampf(border_pos.x, min_x, max_x)
+		border_pos.y = clampf(border_pos.y, min_y, max_y)
 
-	# Actualización del puntero direccional apuntando hacia el satélite
-	if arrow_indicator:
-		var angle := dir.angle()
-		arrow_indicator.rotation = angle
-		arrow_indicator.position = BOX_SIZE * 0.5 + Vector2(cos(angle), sin(angle)) * (half_w + 3.0)
+		# El cuadradito se posiciona centrado en el punto de contacto con el borde
+		global_position = border_pos - BOX_SIZE * 0.5
+
+		# Actualización del puntero direccional apuntando hacia el satélite
+		if arrow_indicator:
+			arrow_indicator.visible = true
+			var angle := dir.angle()
+			arrow_indicator.rotation = angle
+			arrow_indicator.position = BOX_SIZE * 0.5 + Vector2(cos(angle), sin(angle)) * (half_w + 3.0)
 
 	# Pulso suave en la frontera cuando el jugador está en camino
 	_pulse_timer += delta * (6.0 if dist <= 300.0 else 3.0)

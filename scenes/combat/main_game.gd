@@ -111,6 +111,9 @@ func _ready() -> void:
 			restore_run_state(active_data)
 			return
 
+	# Generar el primer satélite de la oleada para que el radar lo indique de inmediato
+	_spawn_next_satellite_for_wave()
+
 	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
 	_start_prologue_briefing()
 
@@ -238,6 +241,7 @@ func _process(delta: float) -> void:
 		_trigger_cockpit_interlude()
 		_check_wave_boss_spawn()
 		save_current_run_state()
+		_spawn_next_satellite_for_wave()
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -246,17 +250,24 @@ func _process(delta: float) -> void:
 	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 	hud.update_satellite_travel_dist(current_dist, req_dist)
 
-	# Chequeo para spawnear satélite en la dirección del movimiento
+	# Chequeo para mantener siempre activo el próximo satélite de la oleada
 	if current_satellite == null and wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
-		if current_dist >= req_dist:
-			_spawn_satellite_in_player_direction()
+		_spawn_next_satellite_for_wave()
 
-func _spawn_satellite_in_player_direction() -> void:
-	var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else (get_global_mouse_position() - player.global_position).normalized()
+func _spawn_next_satellite_for_wave() -> void:
+	if current_satellite != null or wave_satellites_spawned >= MAX_SATELLITES_PER_WAVE:
+		return
+	if not is_instance_valid(player):
+		return
+
+	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
+	var spawn_dist: float = maxf(SPAWN_AHEAD_DISTANCE, req_dist)
+
+	var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
 	if move_dir.length_squared() < 0.001:
-		move_dir = Vector2.RIGHT
+		move_dir = Vector2.UP
 
-	var spawn_pos: Vector2 = player.global_position + move_dir * SPAWN_AHEAD_DISTANCE
+	var spawn_pos: Vector2 = player.global_position + move_dir * spawn_dist
 	wave_satellites_spawned += 1
 	_spawn_next_satellite(spawn_pos)
 
@@ -354,6 +365,8 @@ func _on_satellite_exited(_index: int) -> void:
 
 	hud.clear_satellite()
 	save_current_run_state()
+	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
+		_spawn_next_satellite_for_wave()
 
 func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
 	is_boss_transmission_active = true

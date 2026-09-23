@@ -57,6 +57,8 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	print("\n[3/5] Testing Border Intersection Math & Movement Along Edges...")
 	player.global_position = Vector2(960, 540) # Centro habitual de la pantalla
+	if main_game.camera:
+		main_game.camera.global_position = player.global_position
 
 	# 3.1 Satélite a la derecha fuera de pantalla (por ejemplo x = 3000)
 	var sat_right := Vector2(3000, 540)
@@ -120,6 +122,31 @@ func _ready() -> void:
 	tracker._process(0.016)
 	assert(tracker.visible, "El cuadradito vuelve a mostrarse cuando se reanuda el combate")
 	print("  ✓ El indicador se oculta limpiamente durante modales y reaparece en combate activo.")
+
+	# ----------------------------------------------------
+	# CASO 6: Soltarse del borde al estar en pantalla y posicionamiento DEAD CENTER
+	# ----------------------------------------------------
+	print("\n[6/6] Testing Detach from Border & Dead Center Over Satellite when On-Screen...")
+	var cam := tracker._get_active_camera()
+	var cam_pos: Vector2 = cam.get_screen_center_position() if cam else player.global_position
+	# Posición del satélite dentro de la pantalla, cerca de la cámara/jugador
+	var sat_onscreen := cam_pos + Vector2(60, 40)
+	hud.set_active_satellite(sat_onscreen, 1)
+	tracker._process(0.016)
+
+	var sat_screen_pos := tracker.world_to_screen(sat_onscreen)
+	var expected_dead_center := sat_screen_pos - tracker.BOX_SIZE * 0.5
+	assert(tracker.global_position.distance_to(expected_dead_center) < 1.0,
+		"Al estar en pantalla, el indicador debe quedar DEAD CENTER sobre el satélite (pos: %s, esperado: %s)" % [tracker.global_position, expected_dead_center])
+	assert(not tracker.arrow_indicator.visible, "El puntero/flecha direccional debe estar oculto cuando está centrado en pantalla")
+	print("  ✓ Satélite en pantalla -> Indicador desprendido del borde y ubicado DEAD CENTER sobre la baliza orbital: %s (Flecha oculta: %s)" % [tracker.global_position, not tracker.arrow_indicator.visible])
+
+	# Ahora mover satélite fuera de pantalla para verificar que vuelve al borde y activa la flecha
+	var sat_offscreen := cam_pos + Vector2(2500, 0)
+	hud.set_active_satellite(sat_offscreen, 1)
+	tracker._process(0.016)
+	assert(tracker.arrow_indicator.visible, "El puntero/flecha direccional debe activarse al estar fuera de pantalla")
+	print("  ✓ Satélite fuera de pantalla -> Indicador anclado al borde con flecha direccional visible.")
 
 	print("\n==========================================")
 	print("[PASS] ALL SATELLITE EDGE INDICATOR TESTS PASSED (100%)!")
