@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://nova_spin_360_laser"]
+
+[ext_resource type="Script" path="res://scenes/combat/player/dash_effects/nova_spin_360_laser.gd" id="1_nspin"]
+
+[node name="NovaSpin360Laser" type="Node2D"]
+script = ExtResource("1_nspin")

@@ -32,7 +32,9 @@ var fire_trail_scene: PackedScene = preload("res://scenes/combat/player/dash_eff
 var decoy_mine_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/decoy_drone_mine.tscn")
 var vacuum_pulse_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/vacuum_phase_pulse.tscn")
 var chain_scene: PackedScene = preload("res://scenes/combat/weapons/chain_lightning_effect.tscn")
+var nova_spin_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn")
 var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
+
 
 # Bombs & Economy
 var bomb_count: int = 2
@@ -365,6 +367,15 @@ func _execute_character_dash() -> void:
 			_execute_nova_dash()
 
 func _execute_nova_dash() -> void:
+	# ── Omega Spin: se activa cuando el láser está a carga máxima ──
+	# Usamos get_node_or_null en lugar del @onready para que funcione
+	# tanto en instancias de escena como en Player.new() de los tests.
+	var wc := get_node_or_null("WeaponController") as WeaponController
+	if wc and wc.is_laser_fully_charged():
+		_execute_nova_omega_spin(wc)
+		return
+
+	# ── Dash normal: rastro de fuego ──
 	is_dashing = true
 	dash_timer = 0.25
 	var hazard := fire_trail_scene.instantiate()
@@ -376,6 +387,56 @@ func _execute_nova_dash() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("dash", 1.2, 0.0)
+
+## Omega Spin: dash + giro 360° + láser en todas direcciones.
+## Se activa solo cuando el láser de Nova tiene carga máxima.
+func _execute_nova_omega_spin(wc: WeaponController) -> void:
+	# 1. Dash estándar (un poco más largo para que el giro se vea completo)
+	is_dashing = true
+	dash_timer = 0.35
+
+	# 2. Consumir la carga del láser antes de disparar
+	wc.consume_laser_charge()
+
+	# 3. Girar solo el Sprite2D child (preserva hitbox y dirección de movimiento)
+	var sprite: Node2D = get_node_or_null("Sprite2D") as Node2D
+	if sprite:
+		var spin_tween := create_tween()
+		spin_tween.tween_property(sprite, "rotation", TAU, 0.35).set_trans(Tween.TRANS_SINE)
+		spin_tween.tween_callback(func(): sprite.rotation = 0.0)
+
+	# 4. Construir HitContext a partir de las stats actuales del jugador
+	var base_dmg := stats.get_stat(&"base_damage")
+	var crit_chance: float = stats.get_stat(&"crit_chance")
+	var is_crit := randf() <= crit_chance
+	var crit_mult: float = stats.get_stat(&"crit_damage")
+	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
+
+	var ctx := HitContext.new()
+	ctx.attacker = self
+	ctx.raw_damage = base_dmg
+	ctx.final_damage = final_dmg
+	ctx.is_crit = is_crit
+	ctx.proc_coefficient = 0.35
+	ctx.hit_position = global_position
+
+	# 5. Instanciar y lanzar NovaSpin360Laser
+	var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+	if spawn_parent and nova_spin_scene:
+		var spin: Node2D = nova_spin_scene.instantiate() as Node2D
+		if spin:
+			spawn_parent.add_child(spin)
+			if spin.has_method("setup"):
+				spin.call("setup", global_position, ctx)
+
+
+	# 6. SFX especial (pitch alto para comunicar la potencia)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("laser", 1.6, 2.0)
+		audio_mgr.play_sfx("dash", 1.4, 3.0)
+
+
 
 func _execute_valentina_dash() -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()

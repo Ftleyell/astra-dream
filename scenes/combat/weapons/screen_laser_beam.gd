@@ -15,6 +15,11 @@ extends Node2D
 var hit_context: HitContext
 var origin_pos: Vector2
 var beam_dir: Vector2
+## Diccionario compartido entre múltiples rayos del Omega Spin de Nova.
+## Clave: RID del enemigo → garantiza máx 1 hit por enemigo por activación.
+## Si está vacío (default), el comportamiento es el normal sin deduplicación.
+var hit_registry: Dictionary = {}
+
 
 @onready var outer_line: Line2D = $OuterLine
 @onready var core_line: Line2D = $CoreLine
@@ -119,9 +124,16 @@ func _apply_bounded_damage(start_point: Vector2, hit_point: Vector2, primary_sol
 			var dist_sq := _dist_to_segment_sq(node.global_position, start_point, hit_point)
 			if dist_sq <= hit_radius_sq:
 				if node.has_method("take_damage") and hit_context:
+					# Deduplicación Omega Spin: si hay registry activo, saltear enemigos ya golpeados
+					if not hit_registry.is_empty():
+						var enemy_rid: RID = node.get_rid()
+						if hit_registry.has(enemy_rid):
+							continue
+						hit_registry[enemy_rid] = true
 					var child_ctx := hit_context.fork_child_hit(hit_context.final_damage, 0.4, &"screen_laser")
 					child_ctx.hit_position = node.global_position
 					node.take_damage(child_ctx)
+
 
 	# 2. Dañar ÚNICAMENTE el obstáculo sólido o segmento exterior impactado
 	if is_instance_valid(primary_solid_target) and primary_solid_target.has_method("take_damage") and hit_context:

@@ -2,10 +2,11 @@ extends Node
 
 func _ready() -> void:
 	# Fallback timeout de seguridad
-	get_tree().create_timer(6.0).timeout.connect(func():
+	get_tree().create_timer(10.0).timeout.connect(func():
 		print("[TEST WATCHDOG] Timeout alcanzado, saliendo...")
 		get_tree().quit(0)
 	)
+
 
 	print("\n==========================================")
 	print("[TEST] Testing 6 Unique Character Dashes...")
@@ -191,8 +192,102 @@ func _ready() -> void:
 	print("\n==========================================")
 	print("[PASS] ALL 6 CHARACTER DASHES TESTED SUCCESSFULLY!")
 	print("==========================================\n")
+
+	# ----------------------------------------------------
+	# 7. NOVA: Omega Spin activado con láser a carga máxima
+	# ----------------------------------------------------
+	print("\n[7/8] Testing Nova: Omega Spin triggered by full laser charge...")
+	var nova_spin_player: Player = _spawn_test_player(roster.get(&"nova"), bullet_server)
+	nova_spin_player.global_position = Vector2(0, 0)
+
+	# Forzar carga máxima en el WeaponController
+	var wc_spin := nova_spin_player.get_node_or_null("WeaponController") as WeaponController
+	assert(wc_spin != null, "Nova Omega Spin: WeaponController debe existir")
+	wc_spin.is_fully_charged = true
+	wc_spin.is_charging = true
+	wc_spin.charge_timer = wc_spin.max_charge_time
+
+	# Verificar condición de detección
+	assert(wc_spin.is_laser_fully_charged(), "is_laser_fully_charged debe retornar true")
+
+	# Ejecutar el dash
+	nova_spin_player._execute_character_dash()
+
+	# Verificar que se activó el Omega Spin (y no el dash normal):
+	# El Omega Spin usa dash_timer=0.35 mientras el dash normal usa 0.25.
+	# Si el timer es 0.35, el spin se activó correctamente.
+	assert(nova_spin_player.is_dashing, "Nova debe entrar en estado dashing")
+	assert(is_equal_approx(nova_spin_player.dash_timer, 0.35), "Omega Spin debe tener dash_timer 0.35s (normal es 0.25s)")
+
+	# Verificar que la carga fue consumida
+	assert(not wc_spin.is_laser_fully_charged(), "La carga del láser debe haberse consumido tras el Omega Spin")
+	assert(not wc_spin.is_fully_charged, "is_fully_charged debe ser false post-spin")
+	assert(not wc_spin.is_charging, "is_charging debe ser false post-spin")
+
+	print("  ✓ Nova Omega Spin: activado correctamente (timer=0.35s), carga consumida")
+	nova_spin_player.queue_free()
+
+
+	# ----------------------------------------------------
+	# 8. NOVA: Deduplicación de hits — máx 1 hit por enemigo
+	# ----------------------------------------------------
+	print("\n[8/8] Testing Nova: Omega Spin hit deduplication (max 1 hit per enemy)...")
+
+	# Crear dos enemigos en posiciones opuestas (deben ser intersectados por rayos contrarios)
+	var dummy_a := CharacterBody2D.new()
+	dummy_a.add_to_group("enemies")
+	dummy_a.set_script(load("res://scenes/combat/enemies/enemy_base.gd"))
+	dummy_a.global_position = Vector2(200, 0)
+	var col_a := CollisionShape2D.new(); col_a.name = "CollisionShape2D"; dummy_a.add_child(col_a)
+	dummy_a.current_health = 500.0; dummy_a.max_health = 500.0
+	add_child(dummy_a)
+
+	var dummy_b := CharacterBody2D.new()
+	dummy_b.add_to_group("enemies")
+	dummy_b.set_script(load("res://scenes/combat/enemies/enemy_base.gd"))
+	dummy_b.global_position = Vector2(-200, 0)
+	var col_b := CollisionShape2D.new(); col_b.name = "CollisionShape2D"; dummy_b.add_child(col_b)
+	dummy_b.current_health = 500.0; dummy_b.max_health = 500.0
+	add_child(dummy_b)
+
+	# Construir HitContext y disparar NovaSpin360Laser manualmente
+	var ctx_dedup := HitContext.new()
+	ctx_dedup.attacker = null
+	ctx_dedup.raw_damage = 50.0
+	ctx_dedup.final_damage = 50.0
+	ctx_dedup.is_crit = false
+	ctx_dedup.proc_coefficient = 0.0
+
+	# Tipar como Node2D para evitar error de scope ("NovaSpin360Laser" no está en scope aquí)
+	var spin_node: Node2D = load("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn").instantiate()
+	add_child(spin_node)
+	if spin_node.has_method("setup"):
+		spin_node.call("setup", Vector2.ZERO, ctx_dedup)
+
+	# Esperar un frame para que los rayos procesen colisiones
+	await get_tree().process_frame
+
+	# Verificar que cada dummy recibió exactamente 1 hit
+	# Tipado explícito como float para que GDScript infiera correctamente desde la property dinámica
+	var dmg_a: float = 500.0 - float(dummy_a.current_health)
+	var dmg_b: float = 500.0 - float(dummy_b.current_health)
+
+	assert(dmg_a > 0.0, "Enemigo A debe haber recibido al menos 1 hit del Omega Spin")
+	assert(dmg_b > 0.0, "Enemigo B debe haber recibido al menos 1 hit del Omega Spin")
+	# Máx 1 hit: daño máximo de 1 rayo es 50 * 1.2 * crit_mult ≈ 90.0 (con crit); sin crit = 60.0
+	assert(dmg_a <= 91.0, "Enemigo A no debe recibir más de 1 hit (daño > 91 indicaría doble impacto)")
+	assert(dmg_b <= 91.0, "Enemigo B no debe recibir más de 1 hit (daño > 91 indicaría doble impacto)")
+
+	dummy_a.queue_free()
+	dummy_b.queue_free()
+	print("  ✓ Deduplicación: enemigo A recibió %.1f daño, enemigo B %.1f daño (máx 1 hit cada uno)" % [dmg_a, dmg_b])
+
+	print("\n==========================================")
+	print("[PASS] ALL 8 NOVA OMEGA SPIN TESTS PASSED!")
+	print("==========================================\n")
 	bullet_server.queue_free()
 	get_tree().quit(0)
+
 
 func _spawn_test_player(cdata: CharacterData, bserver: BulletServer) -> Player:
 	var p: Player = Player.new()

@@ -58,6 +58,26 @@ func clear_equipped_weapons() -> void:
 	equipped_weapons.clear()
 	weapons_updated.emit(equipped_weapons)
 
+## ─── Nova Omega Spin API ────────────────────────────────────────────────────
+
+## Retorna true si el láser tiene carga máxima activa (normal o en memoria).
+func is_laser_fully_charged() -> bool:
+	return is_fully_charged or memory_is_fully_charged
+
+## Consume la carga del láser: resetea todo el estado de carga y emite laser_charge_ended.
+## Llamar esto antes de disparar el Omega Spin para que no se duplique el tiro.
+func consume_laser_charge() -> void:
+	is_charging = false
+	charge_timer = 0.0
+	is_fully_charged = false
+	has_charge_memory = false
+	memory_charge_timer = 0.0
+	memory_is_fully_charged = false
+	memory_grace_timer = 0.0
+	laser_charge_ended.emit()
+
+## ────────────────────────────────────────────────────────────────────────────
+
 func add_weapon(data: WeaponData) -> bool:
 	if not data:
 		return false
