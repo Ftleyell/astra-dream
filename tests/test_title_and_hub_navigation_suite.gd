@@ -94,15 +94,28 @@ func _ready() -> void:
 	# Verificar texturas asignadas en Parallax y superficies
 	var mat_p0 = hub_world.parallax_deep.mesh.material as StandardMaterial3D
 	assert(mat_p0 != null and mat_p0.albedo_texture != null, "Parallax Capa 0 debe tener textura asignada")
+	assert(mat_p0.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "Parallax Capa 0 debe tener transparencia alfa activa para eliminar la caja negra")
+
+	# Verificar paredes modulares de Kenney Modular Space Kit
+	assert(hub_world.has_node("HangarRoom/LeftWall_Seg0"), "HangarRoom debe tener paredes modulares izquierdas")
+	assert(hub_world.has_node("HangarRoom/RightWall_Seg0"), "HangarRoom debe tener paredes modulares derechas")
+	assert(hub_world.has_node("HangarRoom/BackWall_L1"), "HangarRoom debe tener paredes modulares traseras")
+	assert(hub_world.has_node("HangarRoom/KenneyGate"), "HangarRoom debe tener compuerta modular trasera")
+	assert(not hub_world.has_node("HangarRoom/KenneyPinball"), "Las máquinas de arcade no deben estar en esquinas aleatorias")
+
+	# Verificar máquinas arcade de Kenney en las terminales (en su lugar correspondiente)
+	assert(hub_world.has_node("Terminals/MissionTerminal/KenneyArcadeMission"), "MissionTerminal debe tener mueble arcade de Kenney")
+	assert(hub_world.has_node("Terminals/HighScoresTerminal/KenneyArcade"), "HighScoresTerminal debe tener mueble arcade de Kenney")
+
 	var floor_mesh := hub_world.get_node("HangarRoom/Floor/MeshInstance3D") as MeshInstance3D
 	var mat_floor = floor_mesh.mesh.material as StandardMaterial3D
 	assert(mat_floor != null and mat_floor.albedo_texture != null and mat_floor.emission_texture != null, "Suelo del Hangar debe tener textura de albedo y emisión asignada")
-	print("  ✓ Hangar 3D verificado: Geometría de sala, 3 capas de parallax con texturas, máquinas 3D y avatares Full Body.")
+	print("  ✓ Hangar 3D verificado: Geometría de sala, paredes modulares Kenney, 3 capas de parallax transparentes, máquinas arcade y avatares Full Body.")
 
 	# ----------------------------------------------------
 	# CASO 4: Atajos de HUD en esquina y modales interactivos
 	# ----------------------------------------------------
-	print("\n[4/4] Testing Corner HUD Badges, SettingsModal & HighScoresModal...")
+	print("\n[4/4] Testing Corner HUD Badges, SettingsModal, HighScoresModal & Pilot Skill Tree...")
 	assert(hub_world.btn_settings != null, "Botón de Ajustes debe existir")
 	assert(hub_world.btn_quit != null, "Botón de Salir debe existir")
 	assert(hub_world.btn_settings.text.contains("[ESC]"), "Botón de Ajustes debe indicar hotkey [ESC]")
@@ -121,7 +134,18 @@ func _ready() -> void:
 	assert(hub_world.player_controller.is_movement_locked, "El movimiento 3D debe bloquearse mientras Highscores está abierto")
 	hub_world.highscores_modal.closed.emit()
 	assert(not hub_world.player_controller.is_movement_locked, "El movimiento 3D debe restaurarse al cerrar Highscores")
-	print("  ✓ Modales de Ajustes y Récords integrados con control de movimiento en el Hub 3D.")
+
+	# Probar apertura del Árbol de Habilidades al interactuar con una piloto
+	var inter_nova = hub_world.get_node_or_null("RosterCutouts/Interactable_Nova")
+	assert(inter_nova != null, "Interactuable de Nova debe existir")
+	hub_world._on_interactable_triggered(inter_nova, hub_world.player_controller)
+	assert(hub_world.skill_tree_modal != null and hub_world.skill_tree_modal.visible, "SkillTreeModal debe abrirse al hablar con la piloto")
+	assert(hub_world.player_controller.is_movement_locked, "El movimiento 3D debe bloquearse al abrir el Árbol de Habilidades")
+	assert(hub_world.skill_tree_modal.hex_nodes.size() == 13, "El Árbol de Habilidades debe tener los 13 nodos hexagonales generados y visibles")
+	# Probar cierre y desbloqueo inmediato del movimiento
+	hub_world.skill_tree_modal.close_modal()
+	assert(not hub_world.player_controller.is_movement_locked, "El movimiento 3D debe restaurarse INMEDIATAMENTE al cerrar el Árbol de Habilidades")
+	print("  ✓ Modales de Ajustes, Récords y Árbol de Talentos (13 nodos) con control de movimiento fluido en el Hub 3D.")
 
 	print("\n==========================================")
 	print("[PASS] ALL TITLE SCREEN & 3D HUB TESTS PASSED (100%)!")

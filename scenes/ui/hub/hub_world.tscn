@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://hubworld001"]
+[gd_scene load_steps=47 format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
 [ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
@@ -34,6 +34,10 @@
 [ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/vending-machine.glb" id="34_vending_model"]
 [ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/gate.glb" id="35_gate_model"]
 [ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/cables.glb" id="36_cables_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall.glb" id="37_wall_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-detail-a.glb" id="38_wall_detail_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-corner.glb" id="39_wall_corner_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-top.glb" id="40_wall_top_model"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -124,6 +128,7 @@ material = SubResource("StandardMaterial3D_railing")
 size = Vector3(26, 1.2, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_deep"]
+transparency = 1
 shading_mode = 0
 albedo_color = Color(1, 1, 1, 1)
 albedo_texture = ExtResource("15_plx0")
@@ -442,6 +447,7 @@ collision_mask = 0
 shape = SubResource("BoxShape3D_ceiling")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Ceiling"]
+visible = false
 mesh = SubResource("BoxMesh_ceiling")
 
 [node name="LeftWall" type="StaticBody3D" parent="HangarRoom"]
@@ -452,6 +458,7 @@ collision_mask = 0
 shape = SubResource("BoxShape3D_side_wall")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/LeftWall"]
+visible = false
 mesh = SubResource("BoxMesh_side_wall")
 
 [node name="RightWall" type="StaticBody3D" parent="HangarRoom"]
@@ -462,6 +469,7 @@ collision_mask = 0
 shape = SubResource("BoxShape3D_side_wall")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/RightWall"]
+visible = false
 mesh = SubResource("BoxMesh_side_wall")
 
 [node name="BackWall" type="StaticBody3D" parent="HangarRoom"]
@@ -472,6 +480,7 @@ collision_mask = 0
 shape = SubResource("BoxShape3D_back_wall")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/BackWall"]
+visible = false
 mesh = SubResource("BoxMesh_back_wall")
 
 [node name="FrontRailing" type="StaticBody3D" parent="HangarRoom"]
@@ -484,17 +493,68 @@ shape = SubResource("BoxShape3D_front_railing")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/FrontRailing"]
 mesh = SubResource("BoxMesh_front_railing")
 
+[node name="LeftWall_Seg0" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, -7.5)
+
+[node name="LeftWall_Seg1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, -2.5)
+
+[node name="LeftWall_Seg2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 2.5)
+
+[node name="LeftWall_Seg3" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 7.5)
+
+[node name="LeftWall_Seg4" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 12.5)
+
+[node name="RightWall_Seg0" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, -7.5)
+
+[node name="RightWall_Seg1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, -2.5)
+
+[node name="RightWall_Seg2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 2.5)
+
+[node name="RightWall_Seg3" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 7.5)
+
+[node name="RightWall_Seg4" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 12.5)
+
 [node name="KenneyGate" parent="HangarRoom" instance=ExtResource("35_gate_model")]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, 0, 16.8)
+transform = Transform3D(-1.35, 0, 0, 0, 1.35, 0, 0, 0, -1.35, 0, 0, 16.8)
 
-[node name="KenneyPinball" parent="HangarRoom" instance=ExtResource("33_pinball_model")]
-transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 7.5, 0, 11.5)
+[node name="BackWall_L1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -5.2, 0, 16.8)
 
-[node name="KenneyVending" parent="HangarRoom" instance=ExtResource("34_vending_model")]
-transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 5.0, 0, 15.0)
+[node name="BackWall_L2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -10.4, 0, 16.8)
 
-[node name="KenneyExtraArcade" parent="HangarRoom" instance=ExtResource("32_arc_model")]
-transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 9.8, 0, 11.5)
+[node name="BackWall_R1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, 5.2, 0, 16.8)
+
+[node name="BackWall_R2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, 10.4, 0, 16.8)
+
+[node name="Corner_BL" parent="HangarRoom" instance=ExtResource("39_wall_corner_model")]
+transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -12.4, 0, 16.8)
+
+[node name="Corner_BR" parent="HangarRoom" instance=ExtResource("39_wall_corner_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.4, 0, 16.8)
+
+[node name="RoofTrim_L1" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.3, 0, 1.3, 0, 0, -12.4, 5.6, -2.5)
+
+[node name="RoofTrim_L2" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.3, 0, 1.3, 0, 0, -12.4, 5.6, 7.5)
+
+[node name="RoofTrim_R1" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.3, 0, -1.3, 0, 0, 12.4, 5.6, -2.5)
+
+[node name="RoofTrim_R2" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.3, 0, -1.3, 0, 0, 12.4, 5.6, 7.5)
 
 [node name="SpaceParallax" type="Node3D" parent="."]
 
@@ -515,24 +575,31 @@ mesh = SubResource("QuadMesh_parallax_near")
 [node name="MissionTerminal" type="Node3D" parent="Terminals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -6.5)
 
+[node name="KenneyArcadeMission" parent="Terminals/MissionTerminal" instance=ExtResource("32_arc_model")]
+transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
+
 [node name="BasePedestal" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+visible = false
 mesh = SubResource("CylinderMesh_mission_base")
 
 [node name="ConsoleDesk" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+visible = false
 mesh = SubResource("BoxMesh_mission_desk")
 
 [node name="KeyboardPanel" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
 transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.08, 0.15)
+visible = false
 mesh = SubResource("BoxMesh_mission_keyboard")
 
 [node name="HoloRing" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.2)
+visible = false
 mesh = SubResource("CylinderMesh_mission_ring")
 
 [node name="HoloCore" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
-transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 0, 1.7, -0.2)
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 0, 2.3, 0.1)
 mesh = SubResource("BoxMesh_mission_holo")
 
 [node name="KenneyCables" parent="Terminals/MissionTerminal" instance=ExtResource("36_cables_model")]
@@ -554,22 +621,26 @@ transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
 
 [node name="ArcadeBody" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+visible = false
 mesh = SubResource("BoxMesh_arcade_body")
 
 [node name="ArcadeMarquee" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0.35)
+visible = false
 mesh = SubResource("BoxMesh_arcade_marquee")
 
 [node name="ScreenMesh" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
 transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.45, 0.52)
+visible = false
 mesh = SubResource("BoxMesh_arcade_screen")
 
 [node name="ArcadeControls" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0.65)
+visible = false
 mesh = SubResource("BoxMesh_arcade_controls")
 
 [node name="TrophyHolo" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.1)
 mesh = SubResource("PrismMesh_trophy_holo")
 
 [node name="Interactable_HighScores" type="Area3D" parent="Terminals/HighScoresTerminal"]

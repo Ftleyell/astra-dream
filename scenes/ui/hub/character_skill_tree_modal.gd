@@ -10,6 +10,7 @@ const SkillTreeHexNodeClass = preload("res://scenes/ui/hub/skill_tree_hex_node.g
 ## Los colores, líneas de circuito, paneles y brillos se adaptan al color del piloto.
 
 signal modal_closed()
+signal closed()
 signal skill_unlocked(char_id: StringName, node_id: StringName)
 
 const NODE_COST: int = 25
@@ -214,6 +215,10 @@ func open_for_character(char_id: StringName) -> void:
 	_center_canvas()
 	_select_node(&"core")
 	_animate_open()
+
+
+func open_tree_for_character(char_id: StringName) -> void:
+	open_for_character(char_id)
 
 
 func _determine_theme_color() -> void:
@@ -531,9 +536,13 @@ func _on_canvas_viewport_gui_input(event: InputEvent) -> void:
 
 
 func _center_canvas() -> void:
-	if canvas_viewport and constellation_canvas:
-		# Centrar el Core (0, 0) con ligero sesgo hacia la izquierda para dar espacio al panel de detalles
-		var center := Vector2(canvas_viewport.size.x * 0.42, canvas_viewport.size.y * 0.5)
+	if constellation_canvas:
+		var vp_size := Vector2(1280.0, 720.0)
+		if canvas_viewport and canvas_viewport.size.x > 100.0:
+			vp_size = canvas_viewport.size
+		elif get_viewport():
+			vp_size = get_viewport_rect().size
+		var center := Vector2(vp_size.x * 0.42, vp_size.y * 0.5)
 		constellation_canvas.position = center
 
 
@@ -553,20 +562,20 @@ func _animate_open() -> void:
 func close_modal() -> void:
 	if not visible:
 		return
+	modal_closed.emit()
+	closed.emit()
 	var tw: Tween = create_tween()
 	tw.set_trans(Tween.TRANS_BACK)
 	tw.set_ease(Tween.EASE_IN)
-	tw.tween_property(self, "scale", Vector2(0.92, 0.92), 0.14)
-	tw.parallel().tween_property(self, "modulate:a", 0.0, 0.14)
+	tw.tween_property(self, "scale", Vector2(0.92, 0.92), 0.12)
+	tw.parallel().tween_property(self, "modulate:a", 0.0, 0.12)
 	await tw.finished
 	visible = false
-	modal_closed.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
-			close_modal()
-			get_viewport().set_input_as_handled()
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+		close_modal()
+		get_viewport().set_input_as_handled()

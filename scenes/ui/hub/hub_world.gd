@@ -168,18 +168,27 @@ func _process(delta: float) -> void:
 	_idle_time += delta
 	if mission_holo_core and is_instance_valid(mission_holo_core):
 		mission_holo_core.rotation.y += delta * 1.5
-		mission_holo_core.position.y = 1.7 + sin(_idle_time * 2.5) * 0.08
+		mission_holo_core.position.y = 2.3 + sin(_idle_time * 2.5) * 0.08
 	if highscores_trophy_holo and is_instance_valid(highscores_trophy_holo):
 		highscores_trophy_holo.rotation.y += delta * 2.0
-		highscores_trophy_holo.position.y = 2.8 + sin(_idle_time * 2.0) * 0.06
+		highscores_trophy_holo.position.y = 2.3 + sin(_idle_time * 2.0) * 0.06
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_modal_active():
-		if event.is_action_pressed("ui_cancel"):
+		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+			if skill_tree_modal and skill_tree_modal.visible:
+				if skill_tree_modal.has_method("close_modal"):
+					skill_tree_modal.close_modal()
+				else:
+					skill_tree_modal.visible = false
+					_on_skill_tree_closed()
+				get_viewport().set_input_as_handled()
+				return
 			if mission_prompt_modal and mission_prompt_modal.visible:
 				_on_prompt_cancelled()
 				get_viewport().set_input_as_handled()
+				return
 		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -472,6 +481,8 @@ func _setup_skill_tree_integration() -> void:
 
 	if skill_tree_modal:
 		skill_tree_modal.visible = false
+		if skill_tree_modal.has_signal("modal_closed") and not skill_tree_modal.modal_closed.is_connected(_on_skill_tree_closed):
+			skill_tree_modal.modal_closed.connect(_on_skill_tree_closed)
 		if skill_tree_modal.has_signal("closed") and not skill_tree_modal.closed.is_connected(_on_skill_tree_closed):
 			skill_tree_modal.closed.connect(_on_skill_tree_closed)
 
@@ -491,7 +502,9 @@ func _open_skill_tree_for_pilot(cid: StringName) -> void:
 	if player_controller:
 		player_controller.is_movement_locked = true
 
-	if skill_tree_modal.has_method("open_tree_for_character"):
+	if skill_tree_modal.has_method("open_for_character"):
+		skill_tree_modal.open_for_character(cid)
+	elif skill_tree_modal.has_method("open_tree_for_character"):
 		skill_tree_modal.open_tree_for_character(cid)
 	else:
 		skill_tree_modal.visible = true
