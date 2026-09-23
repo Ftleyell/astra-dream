@@ -16,6 +16,7 @@ extends CanvasLayer
 @onready var inventory_row: HBoxContainer = $MarginContainer/VBoxContainer/InventoryRow
 @onready var weapon_slots_row: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/WeaponSlotsRow")
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
+@onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 
 var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
@@ -30,6 +31,11 @@ var required_travel_dist: float = 600.0
 var _inventory_chips: Dictionary[StringName, PanelContainer] = {}
 
 func _ready() -> void:
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+	if satellite_tracker and is_instance_valid(player):
+		satellite_tracker.set_player(player)
+
 	if player:
 		player.health_changed.connect(_on_health_changed)
 		player.bomb_used.connect(_on_bomb_used)
@@ -86,6 +92,8 @@ func update_satellite_travel_dist(current_d: float, req_d: float) -> void:
 
 func clear_satellite() -> void:
 	has_satellite = false
+	if satellite_tracker:
+		satellite_tracker.clear_target()
 
 func update_laser_cooldown(current: float, max_val: float) -> void:
 	if not laser_cd_label:
@@ -155,6 +163,10 @@ func set_active_satellite(pos: Vector2, index: int) -> void:
 	active_satellite_pos = pos
 	satellite_index = index
 	has_satellite = true
+	if satellite_tracker:
+		if is_instance_valid(player):
+			satellite_tracker.set_player(player)
+		satellite_tracker.set_target(pos, index)
 
 var current_credits: int = 120
 var current_biomass: int = 0

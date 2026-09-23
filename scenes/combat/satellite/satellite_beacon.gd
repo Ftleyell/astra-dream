@@ -15,6 +15,7 @@ signal exited_perimeter(index: int)
 @onready var radius_visual: Line2D = $RadiusVisual
 
 func _ready() -> void:
+	add_to_group("satellite_beacon")
 	_draw_radius_circle()
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)

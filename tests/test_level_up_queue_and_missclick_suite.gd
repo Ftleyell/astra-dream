@@ -1,6 +1,12 @@
 extends Node
 
 func _ready() -> void:
+	# Watchdog timer de seguridad para evitar que el proceso se quede colgado
+	get_tree().create_timer(10.0, true, false, true).timeout.connect(func():
+		push_error("Test timed out after 10s!")
+		get_tree().quit(1)
+	)
+
 	print("\n==========================================")
 	print("[TEST] Testing Level-Up Stacking Queue & Miss-Click Prevention...")
 	print("==========================================\n")

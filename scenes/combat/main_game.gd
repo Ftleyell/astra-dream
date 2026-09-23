@@ -44,6 +44,7 @@ var _auto_save_timer: float = 0.0
 const AUTO_SAVE_INTERVAL: float = 5.0
 
 func _ready() -> void:
+	add_to_group("main_game")
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)

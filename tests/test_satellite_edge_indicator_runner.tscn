@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://sattrackerrunner01"]
+
+[ext_resource type="Script" path="res://tests/test_satellite_edge_indicator_suite.gd" id="1_test_sat"]
+
+[node name="TestSatelliteEdgeIndicatorRunner" type="Node"]
+script = ExtResource("1_test_sat")
