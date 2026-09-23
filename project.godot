@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Astra Dream"
 config/description="Roguelite Danmaku Arena Shooter with Visual Novel Storytelling"
 config/version="0.1.0"
-run/main_scene="res://scenes/ui/main_menu/main_menu.tscn"
+run/main_scene="res://scenes/ui/title_screen/title_screen.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
 [audio]

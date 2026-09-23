@@ -1,9 +1,15 @@
 class_name HubWorld
 extends Node3D
 
-## 2.5D Psycho-Pop Hub World Scene Controller
-## Entorno 3D expandido: planeta verde de circuitos, control en 3ª persona,
-## estaciones de pilotos con interactuables [E], y Árbol de Habilidades cibernético.
+## HubWorld.gd
+## Controlador del Hangar Espacial 3D (Nuevo Menú Principal Jugable).
+## Contiene:
+## - Entorno 3D cerrado con suelo, paredes, techo y Gran Ventanal Panorámico.
+## - Sistema de Parallax 3D de 3 capas en el espacio exterior.
+## - Terminal Central de Misiones: Continuar Run activa [E] o Nueva Run.
+## - Terminal de Pantalla Trasera: High Scores [E].
+## - Bahías de Pilotos con interactuables [E] para Árbol de Habilidades.
+## - HUD con Badges de acceso rápido: [ESC] Ajustes y [Q] Salir.
 
 const COLOR_HOT_PINK := Color("#FF1493")   # Neon Pink / Hot Pink
 const COLOR_DEEP_BLACK := Color("#0A0A0E") # Deep Void Black
@@ -19,7 +25,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Especialista en asaltos frontales a hiper-velocidad. Su reactor sobrecalienta armas térmicas aumentando el daño base a quemarropa.",
 		"stats": "HP: 100 | Vel: 340 px/s | Daño: 40 | Crítico: 5% | Suerte: 0",
 		"color": Color(0.1, 0.9, 1.0, 1.0),
-		"pedestal_pos": Vector3(-6.5, 0.15, 2.0)
+		"pedestal_pos": Vector3(-8.5, 0.15, -4.0)
 	},
 	{
 		"id": &"valentina",
@@ -28,7 +34,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Calculista orbital de precisión quirúrgica. Sus lásers de telemetría perforan blindajes con un multiplicador de daño crítico masivo.",
 		"stats": "HP: 85 | Vel: 300 px/s | Daño: 55 | Crítico: 18% | Suerte: +5",
 		"color": Color(1.0, 0.35, 0.4, 1.0),
-		"pedestal_pos": Vector3(-4.0, 0.15, -5.5)
+		"pedestal_pos": Vector3(-8.5, 0.15, 2.0)
 	},
 	{
 		"id": &"kira",
@@ -37,7 +43,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Despliega nanobots y munición de racimo automática. Su cadencia pasiva de misiles y drones satélites es un 35% más veloz.",
 		"stats": "HP: 90 | Vel: 310 px/s | Daño: 35 | Crítico: 8% | Suerte: +12",
 		"color": Color(1.0, 0.8, 0.1, 1.0),
-		"pedestal_pos": Vector3(0.0, 0.15, -7.5)
+		"pedestal_pos": Vector3(-8.5, 0.15, 8.0)
 	},
 	{
 		"id": &"selene",
@@ -46,7 +52,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Canaliza anomalías de gravedad negativa. Ralentiza proyectiles enemigos entrantes y tiene el doble de rango de aspiración de EXP.",
 		"stats": "HP: 110 | Vel: 290 px/s | Daño: 38 | Crítico: 6% | Suerte: +20",
 		"color": Color(0.75, 0.4, 1.0, 1.0),
-		"pedestal_pos": Vector3(4.0, 0.15, -5.5)
+		"pedestal_pos": Vector3(8.5, 0.15, -4.0)
 	},
 	{
 		"id": &"roxy",
@@ -55,7 +61,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Blindaje de casco reforzado y escopeta sísmica de metralla. Comienza con escudo cinético que absorbe impactos directos.",
 		"stats": "HP: 150 | Vel: 260 px/s | Daño: 48 | Crítico: 4% | Suerte: -5",
 		"color": Color(0.2, 0.95, 0.5, 1.0),
-		"pedestal_pos": Vector3(6.5, 0.15, 2.0)
+		"pedestal_pos": Vector3(8.5, 0.15, 2.0)
 	},
 	{
 		"id": &"echo",
@@ -64,7 +70,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Inyecta virus de latencia cuántica que encadenan arcos eléctricos y procs infinitos entre grupos densos de enemigos.",
 		"stats": "HP: 80 | Vel: 360 px/s | Daño: 42 | Crítico: 12% | Suerte: +10",
 		"color": Color(0.5, 0.85, 1.0, 1.0),
-		"pedestal_pos": Vector3(0.0, 0.15, 6.5)
+		"pedestal_pos": Vector3(8.5, 0.15, 8.0)
 	}
 ]
 
@@ -93,6 +99,25 @@ var _pilot_tweens: Array[Tween] = []
 @onready var biomass_value_label: Label = $HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow/BiomassValue
 @onready var antimatter_value_label: Label = $HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow/AntimatterValue
 
+# Nuevos componentes del Hub Menú Principal
+@onready var top_right_hud: HBoxContainer = get_node_or_null("HubUI/TopRightHUD")
+@onready var btn_settings: Button = get_node_or_null("HubUI/TopRightHUD/SettingsButton")
+@onready var btn_quit: Button = get_node_or_null("HubUI/TopRightHUD/QuitButton")
+@onready var settings_modal: SettingsModal = get_node_or_null("HubUI/SettingsModal")
+@onready var highscores_modal: CanvasLayer = get_node_or_null("HubUI/HighscoresModal")
+@onready var mission_interactable: HubInteractable3D = get_node_or_null("Terminals/MissionTerminal/Interactable_Mission")
+@onready var highscores_interactable: HubInteractable3D = get_node_or_null("Terminals/HighScoresTerminal/Interactable_HighScores")
+@onready var mission_prompt_modal: PanelContainer = get_node_or_null("HubUI/MissionPromptModal")
+@onready var prompt_info_label: Label = get_node_or_null("HubUI/MissionPromptModal/VBox/PromptInfo")
+@onready var btn_prompt_continue: Button = get_node_or_null("HubUI/MissionPromptModal/VBox/PromptButtons/ContinueRunButton")
+@onready var btn_prompt_new_run: Button = get_node_or_null("HubUI/MissionPromptModal/VBox/PromptButtons/NewRunButton")
+@onready var btn_prompt_cancel: Button = get_node_or_null("HubUI/MissionPromptModal/VBox/PromptButtons/CancelPromptButton")
+
+# Parallax 3D
+@onready var parallax_near: MeshInstance3D = get_node_or_null("SpaceParallax/Layer2_Near")
+@onready var parallax_mid: MeshInstance3D = get_node_or_null("SpaceParallax/Layer1_Mid")
+@onready var parallax_deep: MeshInstance3D = get_node_or_null("SpaceParallax/Layer0_Deep")
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -100,9 +125,11 @@ func _ready() -> void:
 	_setup_camera()
 	_collect_and_verify_sprites()
 	_setup_interactables()
+	_setup_terminals()
 	_apply_psychopop_styles()
 	_build_pilot_selector_buttons()
 	_update_materials_display()
+
 	var saved_cid := SaveManager.get_selected_character()
 	var init_idx: int = 0
 	for i in range(PILOT_ROSTER.size()):
@@ -110,20 +137,55 @@ func _ready() -> void:
 			init_idx = i
 			break
 	_select_pilot(init_idx, false)
+
 	_setup_navigation()
 	_setup_skill_tree_integration()
+	_setup_hub_top_buttons()
 	_animate_entrance()
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_music"):
+		audio_mgr.play_music("menu")
+
+
+func _process(_delta: float) -> void:
+	# Efecto de Parallax 3D suave según la posición de la cámara
+	if camera and is_instance_valid(camera):
+		var cam_x: float = camera.global_position.x
+		if parallax_near:
+			parallax_near.position.x = cam_x * 0.35
+		if parallax_mid:
+			parallax_mid.position.x = cam_x * 0.12
+		if parallax_deep:
+			parallax_deep.position.x = cam_x * 0.03
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _is_modal_active():
+		if event.is_action_pressed("ui_cancel"):
+			if mission_prompt_modal and mission_prompt_modal.visible:
+				_on_prompt_cancelled()
+				get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_ESCAPE:
+				_open_settings()
+				get_viewport().set_input_as_handled()
+			KEY_Q:
+				_quit_game()
+				get_viewport().set_input_as_handled()
 
 
 func _setup_camera() -> void:
-	# Si existe controlador de jugador en tercera persona, la cámara es gestionada por él
 	if player_controller and player_controller.camera:
 		camera = player_controller.camera
 	elif not camera:
 		camera = get_node_or_null("Camera3D")
 		if camera:
 			camera.fov = 85.0
-			camera.position = Vector3(0.0, 4.0, 7.5)
+			camera.position = Vector3(0.0, 3.2, 5.0)
 			camera.look_at(Vector3.ZERO, Vector3.UP)
 
 
@@ -161,7 +223,6 @@ func _collect_and_verify_sprites() -> void:
 
 
 func _setup_interactables() -> void:
-	# Configurar o asegurar que cada estación de piloto tenga su HubInteractable3D
 	var roster_group := get_node_or_null("RosterCutouts")
 	if not roster_group:
 		return
@@ -178,54 +239,238 @@ func _setup_interactables() -> void:
 			inter.set("target_character_id", cid)
 			inter.set("interaction_title", "Árbol de Habilidades")
 			inter.position = char_data["pedestal_pos"]
-			inter.set("interaction_radius", 2.6)
 			roster_group.add_child(inter)
 
-		if inter.has_signal("interacted") and not inter.interacted.is_connected(_on_interactable_triggered):
+		if inter and not inter.interacted.is_connected(_on_interactable_triggered):
 			inter.interacted.connect(_on_interactable_triggered)
 
 
-func _on_interactable_triggered(interactable: Area3D, _player: Node3D) -> void:
-	if not interactable:
+func _setup_terminals() -> void:
+	# 1. Terminal Central de Misiones
+	if mission_interactable:
+		_update_mission_terminal_label()
+		if not mission_interactable.interacted.is_connected(_on_mission_terminal_interacted):
+			mission_interactable.interacted.connect(_on_mission_terminal_interacted)
+
+	# 2. Terminal de Récords
+	if highscores_interactable:
+		if not highscores_interactable.interacted.is_connected(_on_highscores_terminal_interacted):
+			highscores_interactable.interacted.connect(_on_highscores_terminal_interacted)
+
+	# 3. Modal de Prompt de Misión
+	if btn_prompt_continue and not btn_prompt_continue.pressed.is_connected(_on_continue_run_confirmed):
+		btn_prompt_continue.pressed.connect(_on_continue_run_confirmed)
+	if btn_prompt_new_run and not btn_prompt_new_run.pressed.is_connected(_on_new_run_confirmed):
+		btn_prompt_new_run.pressed.connect(_on_new_run_confirmed)
+	if btn_prompt_cancel and not btn_prompt_cancel.pressed.is_connected(_on_prompt_cancelled):
+		btn_prompt_cancel.pressed.connect(_on_prompt_cancelled)
+
+
+func _update_mission_terminal_label() -> void:
+	if not mission_interactable or not mission_interactable.label_3d:
+		return
+	if SaveManager.has_active_run():
+		var active_data := SaveManager.load_active_run()
+		var wave: int = int(active_data.get("current_wave", 1))
+		var pilot: String = str(active_data.get("pilot_name", "Piloto"))
+		mission_interactable.label_3d.text = "[E] CONTINUAR RUN\n(%s - OLEADA %d)" % [pilot.to_upper(), wave]
+	else:
+		mission_interactable.label_3d.text = "[E] DESPLEGAR MISIÓN"
+
+
+func _on_mission_terminal_interacted(_interactable: HubInteractable3D, _player: Node3D) -> void:
+	_play_sfx("ui_click")
+	if SaveManager.has_active_run():
+		_show_mission_prompt()
+	else:
+		_start_new_run()
+
+
+func _show_mission_prompt() -> void:
+	if not mission_prompt_modal:
+		_start_new_run()
+		return
+
+	var active_data := SaveManager.load_active_run()
+	var wave: int = int(active_data.get("current_wave", 1))
+	var pilot: String = str(active_data.get("pilot_name", "Piloto"))
+	if prompt_info_label:
+		prompt_info_label.text = "Transmisión activa detectada:\nPiloto: %s  |  Oleada alcanzada: %d\n¿Deseas continuar la misión o comenzar una nueva?" % [pilot.to_upper(), wave]
+
+	mission_prompt_modal.visible = true
+	if player_controller:
+		player_controller.is_movement_locked = true
+	if btn_prompt_continue:
+		btn_prompt_continue.grab_focus()
+
+
+func _on_continue_run_confirmed() -> void:
+	if _is_transitioning:
+		return
+	_is_transitioning = true
+	_play_sfx("ui_click")
+	SaveManager.is_resuming_run = true
+	get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+
+
+func _on_new_run_confirmed() -> void:
+	if _is_transitioning:
+		return
+	_is_transitioning = true
+	_play_sfx("ui_click")
+	_start_new_run()
+
+
+func _on_prompt_cancelled() -> void:
+	if mission_prompt_modal:
+		mission_prompt_modal.visible = false
+	if player_controller:
+		player_controller.is_movement_locked = false
+
+
+func _start_new_run() -> void:
+	SaveManager.is_resuming_run = false
+	get_tree().change_scene_to_file("res://scenes/ui/character_select/character_select.tscn")
+
+
+func _on_highscores_terminal_interacted(_interactable: HubInteractable3D, _player: Node3D) -> void:
+	_play_sfx("ui_click")
+	if highscores_modal:
+		if player_controller:
+			player_controller.is_movement_locked = true
+		if highscores_modal.has_method("show_modal"):
+			highscores_modal.show_modal()
+		else:
+			highscores_modal.visible = true
+
+
+func _setup_hub_top_buttons() -> void:
+	if btn_settings and not btn_settings.pressed.is_connected(_open_settings):
+		btn_settings.pressed.connect(_open_settings)
+	if btn_quit and not btn_quit.pressed.is_connected(_quit_game):
+		btn_quit.pressed.connect(_quit_game)
+
+	if settings_modal and not settings_modal.closed.is_connected(_on_modal_closed):
+		settings_modal.closed.connect(_on_modal_closed)
+	if highscores_modal and not highscores_modal.closed.is_connected(_on_modal_closed):
+		highscores_modal.closed.connect(_on_modal_closed)
+
+
+func _open_settings() -> void:
+	if _is_modal_active() and settings_modal and settings_modal.visible:
 		return
 	_play_sfx("ui_click")
-	var target_id: StringName = interactable.get("target_character_id") if "target_character_id" in interactable else &"nova"
-	_open_skill_tree_for(target_id)
+	if settings_modal:
+		if player_controller:
+			player_controller.is_movement_locked = true
+		if settings_modal.has_method("open_settings"):
+			settings_modal.open_settings()
+		else:
+			settings_modal.visible = true
+
+
+func _quit_game() -> void:
+	_play_sfx("ui_click")
+	get_tree().quit(0)
+
+
+func _on_modal_closed() -> void:
+	if player_controller:
+		player_controller.is_movement_locked = false
+
+
+func _is_modal_active() -> bool:
+	if settings_modal and settings_modal.visible:
+		return true
+	if highscores_modal and highscores_modal.visible:
+		return true
+	if skill_tree_modal and skill_tree_modal.visible:
+		return true
+	if mission_prompt_modal and mission_prompt_modal.visible:
+		return true
+	return false
+
+
+func _on_interactable_triggered(inter: HubInteractable3D, _body: Node3D) -> void:
+	for i in range(PILOT_ROSTER.size()):
+		if PILOT_ROSTER[i]["id"] == inter.target_character_id:
+			_select_pilot(i, true)
+			if character_card:
+				character_card.visible = true
+			_open_skill_tree_for_pilot(inter.target_character_id)
+			break
+
+
+func _apply_psychopop_styles() -> void:
+	if header_panel:
+		header_panel.add_theme_stylebox_override("panel", create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_CYAN, 6, 2, 2, 2))
+	if materials_panel:
+		materials_panel.add_theme_stylebox_override("panel", create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_EMERALD, 6, 2, 2, 2))
+	if character_card:
+		character_card.add_theme_stylebox_override("panel", create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_HOT_PINK, 8, 2, 2, 2))
+
+
+func _build_pilot_selector_buttons() -> void:
+	if not pilot_selector_container:
+		return
+
+	for child in pilot_selector_container.get_children():
+		child.queue_free()
+
+	for i in range(PILOT_ROSTER.size()):
+		var data: Dictionary = PILOT_ROSTER[i]
+		var btn := Button.new()
+		btn.text = String(data["name"]).substr(0, 3).to_upper()
+		btn.custom_minimum_size = Vector2(52, 34)
+		btn.add_theme_font_size_override("font_size", 11)
+
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = COLOR_DEEP_BLACK
+		sb.border_width_left = 3
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+		sb.border_color = Color(data["color"])
+		sb.set_corner_radius_all(0)
+		btn.add_theme_stylebox_override("normal", sb)
+
+		btn.pressed.connect(func():
+			_select_pilot(i, true)
+			if character_card:
+				character_card.visible = true
+		)
+		pilot_selector_container.add_child(btn)
 
 
 func _setup_skill_tree_integration() -> void:
 	if btn_open_skill_tree and not btn_open_skill_tree.pressed.is_connected(_on_open_skill_tree_pressed):
 		btn_open_skill_tree.pressed.connect(_on_open_skill_tree_pressed)
-		_setup_button_elastic_tween(btn_open_skill_tree)
 
 	if skill_tree_modal:
-		if not skill_tree_modal.modal_closed.is_connected(_on_skill_tree_closed):
-			skill_tree_modal.modal_closed.connect(_on_skill_tree_closed)
-		if not skill_tree_modal.skill_unlocked.is_connected(_on_skill_unlocked):
-			skill_tree_modal.skill_unlocked.connect(_on_skill_unlocked)
+		skill_tree_modal.visible = false
+		if skill_tree_modal.has_signal("closed") and not skill_tree_modal.closed.is_connected(_on_skill_tree_closed):
+			skill_tree_modal.closed.connect(_on_skill_tree_closed)
 
 
 func _on_open_skill_tree_pressed() -> void:
 	if current_pilot_index < 0 or current_pilot_index >= PILOT_ROSTER.size():
 		return
 	var cid: StringName = PILOT_ROSTER[current_pilot_index]["id"]
-	_open_skill_tree_for(cid)
+	_open_skill_tree_for_pilot(cid)
 
 
-func _open_skill_tree_for(cid: StringName) -> void:
+func _open_skill_tree_for_pilot(cid: StringName) -> void:
 	if not skill_tree_modal:
 		return
 
+	_play_sfx("ui_click")
 	if player_controller:
 		player_controller.is_movement_locked = true
 
-	# Sincronizar piloto seleccionado con el interactuado
-	for i in range(PILOT_ROSTER.size()):
-		if PILOT_ROSTER[i]["id"] == cid:
-			_select_pilot(i, true)
-			break
-
-	skill_tree_modal.open_for_character(cid)
+	if skill_tree_modal.has_method("open_tree_for_character"):
+		skill_tree_modal.open_tree_for_character(cid)
+	else:
+		skill_tree_modal.visible = true
 
 
 func _on_skill_tree_closed() -> void:
@@ -234,65 +479,19 @@ func _on_skill_tree_closed() -> void:
 	_update_materials_display()
 
 
-func _on_skill_unlocked(_char_id: StringName, _node_id: Variant) -> void:
-	_update_materials_display()
-
-
-func _apply_psychopop_styles() -> void:
-	if header_panel:
-		var sb_head := create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_HOT_PINK, 8, 2, 2, 2)
-		header_panel.add_theme_stylebox_override("panel", sb_head)
-
-	if materials_panel:
-		var sb_mat := create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_CYAN, 6, 2, 2, 2)
-		materials_panel.add_theme_stylebox_override("panel", sb_mat)
-
-	if character_card:
-		var sb_card := create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_HOT_PINK, 8, 2, 2, 2)
-		character_card.add_theme_stylebox_override("panel", sb_card)
-
-	if btn_open_skill_tree:
-		var sb_st := create_psychopop_stylebox(COLOR_DEEP_BLACK, COLOR_EMERALD, 6, 2, 2, 2)
-		btn_open_skill_tree.add_theme_stylebox_override("normal", sb_st)
-		btn_open_skill_tree.add_theme_color_override("font_color", COLOR_EMERALD)
-
-
-func _build_pilot_selector_buttons() -> void:
-	if not pilot_selector_container:
-		return
-
-	for c in pilot_selector_container.get_children():
-		c.queue_free()
-
-	for i in range(PILOT_ROSTER.size()):
-		var data: Dictionary = PILOT_ROSTER[i]
-		var btn := Button.new()
-		btn.text = String(data["name"]).to_upper()
-		btn.custom_minimum_size = Vector2(88, 38)
-		btn.add_theme_font_size_override("font_size", 12)
-
-		var sb := create_psychopop_stylebox(COLOR_DEEP_BLACK, data.get("color", COLOR_HOT_PINK), 4, 1, 1, 1)
-		btn.add_theme_stylebox_override("normal", sb)
-
-		var idx: int = i
-		btn.pressed.connect(func():
-			_play_sfx("ui_click")
-			_select_pilot(idx, true)
-		)
-		_setup_button_elastic_tween(btn)
-		pilot_selector_container.add_child(btn)
-
-
 func _select_pilot(index: int, animate_card: bool = true) -> void:
 	if index < 0 or index >= PILOT_ROSTER.size():
 		return
+
 	current_pilot_index = index
 	var data: Dictionary = PILOT_ROSTER[index]
+	var col: Color = data["color"]
+
 	SaveManager.set_selected_character(data["id"])
 
 	if card_name:
 		card_name.text = String(data["name"]).to_upper()
-		card_name.add_theme_color_override("font_color", data.get("color", COLOR_HOT_PINK))
+		card_name.add_theme_color_override("font_color", col)
 	if card_title:
 		card_title.text = String(data["title"]).to_upper()
 	if card_desc:
@@ -300,17 +499,14 @@ func _select_pilot(index: int, animate_card: bool = true) -> void:
 	if card_stats:
 		card_stats.text = String(data["stats"])
 
-	# Actualizar el personaje en el controlador 3D si aplica
 	if player_controller:
 		player_controller.set_character(data["id"])
 
-	# Eliminar tweens activos anteriores
 	for tw in _pilot_tweens:
 		if is_instance_valid(tw) and tw.is_running():
 			tw.kill()
 	_pilot_tweens.clear()
 
-	# Resaltar el Sprite3D seleccionado y atenuar los demás
 	for i in range(sprite_nodes.size()):
 		var sp := sprite_nodes[i]
 		if not is_instance_valid(sp):
@@ -375,31 +571,7 @@ func _on_volver_pressed() -> void:
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(btn_volver, "scale", Vector2(0.94, 0.94), 0.08)
 	await tw.finished
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
-
-
-func _setup_button_elastic_tween(btn: Button) -> void:
-	btn.pivot_offset = btn.size * 0.5
-	btn.mouse_entered.connect(func():
-		btn.pivot_offset = btn.size * 0.5
-		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(btn, "scale", Vector2(1.07, 1.07), 0.16)
-	)
-	btn.mouse_exited.connect(func():
-		btn.pivot_offset = btn.size * 0.5
-		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(btn, "scale", Vector2.ONE, 0.16)
-	)
-	btn.button_down.connect(func():
-		btn.pivot_offset = btn.size * 0.5
-		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(btn, "scale", Vector2(0.94, 0.94), 0.08)
-	)
-	btn.button_up.connect(func():
-		btn.pivot_offset = btn.size * 0.5
-		var tw := create_tween().set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-		tw.tween_property(btn, "scale", Vector2.ONE, 0.25)
-	)
+	get_tree().change_scene_to_file("res://scenes/ui/title_screen/title_screen.tscn")
 
 
 func _animate_entrance() -> void:
@@ -407,8 +579,8 @@ func _animate_entrance() -> void:
 		_tween_slide_pop(header_panel, Vector2(0, -60), 0.0)
 	if materials_panel:
 		_tween_slide_pop(materials_panel, Vector2(-80, 0), 0.1)
-	if character_card:
-		_tween_slide_pop(character_card, Vector2(80, 0), 0.15)
+	if top_right_hud:
+		_tween_slide_pop(top_right_hud, Vector2(60, 0), 0.1)
 	if nav_bar:
 		_tween_slide_pop(nav_bar, Vector2(0, 60), 0.2)
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://hubworld001"]
+[gd_scene load_steps=38 format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
 [ext_resource type="Texture2D" path="res://assets/portraits/portrait_nova.png" id="2_nova"]
@@ -10,66 +10,146 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="8_modal"]
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_player_controller_3d.gd" id="9_controller"]
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_interactable_3d.gd" id="10_interactable"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="11_settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/highscores/highscores_modal.tscn" id="12_highscores"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
-background_color = Color(0.02, 0.035, 0.03, 1)
+background_color = Color(0.015, 0.02, 0.04, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.08, 0.16, 0.12, 1)
+ambient_light_color = Color(0.12, 0.16, 0.22, 1)
 glow_enabled = true
-glow_bloom = 0.28
-glow_intensity = 0.85
+glow_bloom = 0.25
+glow_intensity = 0.9
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_floor"]
-height = 2.0
-radius = 35.0
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(26, 0.5, 26)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_planet_terrain"]
-albedo_color = Color(0.04, 0.09, 0.07, 1)
-metallic = 0.65
-roughness = 0.35
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_planet_terrain"]
-material = SubResource("StandardMaterial3D_planet_terrain")
-top_radius = 35.0
-bottom_radius = 35.0
-height = 2.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_circuit_green"]
-albedo_color = Color(0, 1, 0.615686, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.05, 0.07, 0.1, 1)
+metallic = 0.8
+roughness = 0.25
 emission_enabled = true
-emission = Color(0, 1, 0.615686, 1)
-emission_energy_multiplier = 2.5
+emission = Color(0, 0.4, 0.5, 1)
+emission_energy_multiplier = 0.3
 
-[sub_resource type="TorusMesh" id="TorusMesh_circuit_inner"]
-material = SubResource("StandardMaterial3D_circuit_green")
-inner_radius = 7.1
-outer_radius = 7.4
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(26, 0.5, 26)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_circuit_cyan"]
-albedo_color = Color(0, 0.941176, 1, 1)
+[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
+size = Vector3(26, 0.5, 26)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ceiling"]
+albedo_color = Color(0.03, 0.04, 0.06, 1)
+metallic = 0.9
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
+material = SubResource("StandardMaterial3D_ceiling")
+size = Vector3(26, 0.5, 26)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
+size = Vector3(0.5, 6, 26)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
+albedo_color = Color(0.04, 0.06, 0.09, 1)
+metallic = 0.7
+roughness = 0.4
 emission_enabled = true
-emission = Color(0, 0.941176, 1, 1)
-emission_energy_multiplier = 2.0
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 0.15
 
-[sub_resource type="TorusMesh" id="TorusMesh_circuit_outer"]
-material = SubResource("StandardMaterial3D_circuit_cyan")
-inner_radius = 13.2
-outer_radius = 13.5
+[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
+material = SubResource("StandardMaterial3D_wall")
+size = Vector3(0.5, 6, 26)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_back_wall"]
+size = Vector3(26, 6, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
+material = SubResource("StandardMaterial3D_wall")
+size = Vector3(26, 6, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_front_railing"]
+size = Vector3(26, 1.2, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_railing"]
+albedo_color = Color(0.08, 0.1, 0.15, 1)
+metallic = 0.9
+roughness = 0.2
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_front_railing"]
+material = SubResource("StandardMaterial3D_railing")
+size = Vector3(26, 1.2, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_deep"]
+shading_mode = 0
+albedo_color = Color(0.06, 0.03, 0.15, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_parallax_deep"]
+material = SubResource("StandardMaterial3D_parallax_deep")
+size = Vector2(140, 80)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_mid"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.2, 0.7, 1, 0.75)
+
+[sub_resource type="QuadMesh" id="QuadMesh_parallax_mid"]
+material = SubResource("StandardMaterial3D_parallax_mid")
+size = Vector2(80, 48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_near"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 1, 0.62, 0.4)
+
+[sub_resource type="QuadMesh" id="QuadMesh_parallax_near"]
+material = SubResource("StandardMaterial3D_parallax_near")
+size = Vector2(48, 28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_terminal"]
+albedo_color = Color(0.04, 0.06, 0.09, 1)
+metallic = 0.9
+roughness = 0.2
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_terminal"]
+material = SubResource("StandardMaterial3D_terminal")
+top_radius = 1.2
+bottom_radius = 1.4
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_highscores_screen"]
+albedo_color = Color(0.02, 0.05, 0.08, 1)
+metallic = 0.9
+emission_enabled = true
+emission = Color(1, 0.8, 0.2, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_highscores_screen"]
+material = SubResource("StandardMaterial3D_highscores_screen")
+size = Vector3(6, 3.2, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
-albedo_color = Color(0.08, 0.12, 0.1, 1)
+albedo_color = Color(0.06, 0.09, 0.12, 1)
 metallic = 0.85
 roughness = 0.25
 emission_enabled = true
-emission = Color(0, 1, 0.615686, 1)
-emission_energy_multiplier = 0.9
+emission = Color(1, 0.08, 0.58, 1)
+emission_energy_multiplier = 0.8
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
 material = SubResource("StandardMaterial3D_pedestal")
-top_radius = 1.1
-bottom_radius = 1.25
-height = 0.2
+top_radius = 1.0
+bottom_radius = 1.15
+height = 0.15
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -77,15 +157,15 @@ height = 1.4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
-border_width_left = 8
+border_width_left = 6
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(1, 0.0784314, 0.576471, 1)
+border_color = Color(0, 0.941176, 1, 1)
 content_margin_left = 16.0
-content_margin_top = 12.0
+content_margin_top = 10.0
 content_margin_right = 16.0
-content_margin_bottom = 12.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_materials"]
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
@@ -93,11 +173,43 @@ border_width_left = 6
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0, 0.941176, 1, 1)
-content_margin_left = 16.0
-content_margin_top = 14.0
-content_margin_right = 16.0
-content_margin_bottom = 14.0
+border_color = Color(0, 1, 0.615686, 1)
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_badge"]
+bg_color = Color(0.05, 0.07, 0.11, 0.9)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941176, 1, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_quit"]
+bg_color = Color(0.08, 0.04, 0.06, 0.9)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.2, 0.4, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
@@ -135,6 +247,22 @@ content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt_modal"]
+bg_color = Color(0.03, 0.04, 0.07, 0.96)
+border_width_left = 4
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.94, 1, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+
 [node name="HubWorld" type="Node3D"]
 script = ExtResource("1_hub")
 
@@ -143,58 +271,160 @@ environment = SubResource("Environment_1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
-light_color = Color(0.85, 0.95, 0.9, 1)
-light_energy = 0.75
+light_color = Color(0.85, 0.92, 1, 1)
+light_energy = 0.8
 
-[node name="CircuitPlanetTerrain" type="StaticBody3D" parent="."]
+[node name="OmniLight_Center" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+light_color = Color(0, 0.94, 1, 1)
+light_energy = 1.8
+omni_range = 14.0
+
+[node name="OmniLight_Terminal" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -6.5)
+light_color = Color(1, 0.08, 0.58, 1)
+light_energy = 2.0
+omni_range = 8.0
+
+[node name="HangarRoom" type="Node3D" parent="."]
+
+[node name="Floor" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 1)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CircuitPlanetTerrain"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
-shape = SubResource("CylinderShape3D_floor")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Floor"]
+shape = SubResource("BoxShape3D_floor")
 
-[node name="TerrainMesh" type="MeshInstance3D" parent="CircuitPlanetTerrain"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
-mesh = SubResource("CylinderMesh_planet_terrain")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Floor"]
+mesh = SubResource("BoxMesh_floor")
 
-[node name="InnerCircuitRing" type="MeshInstance3D" parent="CircuitPlanetTerrain"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
-mesh = SubResource("TorusMesh_circuit_inner")
+[node name="Ceiling" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 1)
+collision_mask = 0
 
-[node name="OuterCircuitRing" type="MeshInstance3D" parent="CircuitPlanetTerrain"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
-mesh = SubResource("TorusMesh_circuit_outer")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Ceiling"]
+shape = SubResource("BoxShape3D_ceiling")
 
-[node name="Pedestals" type="Node3D" parent="CircuitPlanetTerrain"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Ceiling"]
+mesh = SubResource("BoxMesh_ceiling")
 
-[node name="Pedestal_Nova" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0.08, 2)
+[node name="LeftWall" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.75, 3, 1)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/LeftWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/LeftWall"]
+mesh = SubResource("BoxMesh_side_wall")
+
+[node name="RightWall" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.75, 3, 1)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/RightWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/RightWall"]
+mesh = SubResource("BoxMesh_side_wall")
+
+[node name="BackWall" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 13.75)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/BackWall"]
+shape = SubResource("BoxShape3D_back_wall")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/BackWall"]
+mesh = SubResource("BoxMesh_back_wall")
+
+[node name="FrontRailing" type="StaticBody3D" parent="HangarRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -10)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/FrontRailing"]
+shape = SubResource("BoxShape3D_front_railing")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/FrontRailing"]
+mesh = SubResource("BoxMesh_front_railing")
+
+[node name="SpaceParallax" type="Node3D" parent="."]
+
+[node name="Layer0_Deep" type="MeshInstance3D" parent="SpaceParallax"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -85)
+mesh = SubResource("QuadMesh_parallax_deep")
+
+[node name="Layer1_Mid" type="MeshInstance3D" parent="SpaceParallax"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, -45)
+mesh = SubResource("QuadMesh_parallax_mid")
+
+[node name="Layer2_Near" type="MeshInstance3D" parent="SpaceParallax"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -22)
+mesh = SubResource("QuadMesh_parallax_near")
+
+[node name="Terminals" type="Node3D" parent="."]
+
+[node name="MissionTerminal" type="Node3D" parent="Terminals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("CylinderMesh_terminal")
+
+[node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal"]
+script = ExtResource("10_interactable")
+target_character_id = &"mission"
+interaction_title = "Terminal de Misiones"
+prompt_action_text = "[E]"
+interaction_radius = 2.8
+prompt_offset_y = 2.0
+
+[node name="HighScoresTerminal" type="Node3D" parent="Terminals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 13.0)
+
+[node name="ScreenMesh" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0.1)
+mesh = SubResource("BoxMesh_highscores_screen")
+
+[node name="Interactable_HighScores" type="Area3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.0)
+script = ExtResource("10_interactable")
+target_character_id = &"highscores"
+interaction_title = "Tabla de Récords"
+prompt_action_text = "[E]"
+interaction_radius = 3.0
+prompt_offset_y = 2.2
+
+[node name="Pedestals" type="Node3D" parent="."]
+
+[node name="Pedestal_Nova" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, -4)
 mesh = SubResource("CylinderMesh_pedestal")
 
-[node name="Pedestal_Valentina" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.08, -5.5)
+[node name="Pedestal_Valentina" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, 2)
 mesh = SubResource("CylinderMesh_pedestal")
 
-[node name="Pedestal_Kira" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -7.5)
+[node name="Pedestal_Kira" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, 8)
 mesh = SubResource("CylinderMesh_pedestal")
 
-[node name="Pedestal_Selene" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.08, -5.5)
+[node name="Pedestal_Selene" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, -4)
 mesh = SubResource("CylinderMesh_pedestal")
 
-[node name="Pedestal_Roxy" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.08, 2)
+[node name="Pedestal_Roxy" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, 2)
 mesh = SubResource("CylinderMesh_pedestal")
 
-[node name="Pedestal_Echo" type="MeshInstance3D" parent="CircuitPlanetTerrain/Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 6.5)
+[node name="Pedestal_Echo" type="MeshInstance3D" parent="Pedestals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, 8)
 mesh = SubResource("CylinderMesh_pedestal")
 
 [node name="RosterCutouts" type="Node3D" parent="."]
 
 [node name="Cutout_Nova" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0.15, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, -4)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -203,12 +433,12 @@ alpha_cut = 1
 texture = ExtResource("2_nova")
 
 [node name="Interactable_Nova" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0.15, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, -4)
 script = ExtResource("10_interactable")
 target_character_id = &"nova"
 
 [node name="Cutout_Valentina" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.15, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 2)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -217,12 +447,12 @@ alpha_cut = 1
 texture = ExtResource("3_valentina")
 
 [node name="Interactable_Valentina" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.15, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 2)
 script = ExtResource("10_interactable")
 target_character_id = &"valentina"
 
 [node name="Cutout_Kira" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -7.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 8)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -231,12 +461,12 @@ alpha_cut = 1
 texture = ExtResource("4_kira")
 
 [node name="Interactable_Kira" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -7.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 8)
 script = ExtResource("10_interactable")
 target_character_id = &"kira"
 
 [node name="Cutout_Selene" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.15, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, -4)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -245,12 +475,12 @@ alpha_cut = 1
 texture = ExtResource("5_selene")
 
 [node name="Interactable_Selene" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.15, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, -4)
 script = ExtResource("10_interactable")
 target_character_id = &"selene"
 
 [node name="Cutout_Roxy" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.15, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 2)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -259,12 +489,12 @@ alpha_cut = 1
 texture = ExtResource("6_roxy")
 
 [node name="Interactable_Roxy" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.15, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 2)
 script = ExtResource("10_interactable")
 target_character_id = &"roxy"
 
 [node name="Cutout_Echo" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 6.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
 offset = Vector2(0, 256)
 pixel_size = 0.005
 billboard = 2
@@ -273,7 +503,7 @@ alpha_cut = 1
 texture = ExtResource("7_echo")
 
 [node name="Interactable_Echo" type="Area3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 6.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
 script = ExtResource("10_interactable")
 target_character_id = &"echo"
 
@@ -304,19 +534,11 @@ fov = 85.0
 [node name="HubUI" type="CanvasLayer" parent="."]
 layer = 1
 
-[node name="DecorTopSlash" type="Polygon2D" parent="HubUI"]
-color = Color(1, 0.0784314, 0.576471, 0.8)
-polygon = PackedVector2Array(0, 0, 180, 0, 120, 16, 0, 16)
-
-[node name="DecorBottomSlash" type="Polygon2D" parent="HubUI"]
-color = Color(0, 0.941176, 1, 0.7)
-polygon = PackedVector2Array(1740, 1064, 1920, 1064, 1920, 1080, 1680, 1080)
-
 [node name="HeaderPanel" type="PanelContainer" parent="HubUI"]
 offset_left = 32.0
 offset_top = 28.0
-offset_right = 460.0
-offset_bottom = 104.0
+offset_right = 440.0
+offset_bottom = 96.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
 [node name="HeaderMargin" type="MarginContainer" parent="HubUI/HeaderPanel"]
@@ -329,25 +551,46 @@ theme_override_constants/separation = 2
 [node name="HeaderTitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(1, 0.0784314, 0.576471, 0.6)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 24
-text = "ASTRA DREAM // HUB 3D"
+theme_override_font_sizes/font_size = 20
+text = "ASTRA DREAM // HANGAR"
 
 [node name="HeaderSubtitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "PLANETA CIRCUITO // ROSTER DE PILOTOS"
+theme_override_font_sizes/font_size = 12
+text = "PUENTE DE MANDO & ESTACIONES DE COMBATE"
+
+[node name="TopRightHUD" type="HBoxContainer" parent="HubUI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -380.0
+offset_top = 28.0
+offset_right = -32.0
+offset_bottom = 76.0
+grow_horizontal = 0
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="SettingsButton" type="Button" parent="HubUI/TopRightHUD"]
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_hud_badge")
+text = "[ESC] AJUSTES"
+
+[node name="QuitButton" type="Button" parent="HubUI/TopRightHUD"]
+custom_minimum_size = Vector2(130, 44)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_hud_quit")
+text = "[Q] SALIR"
 
 [node name="MaterialsPanel" type="PanelContainer" parent="HubUI"]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 32.0
-offset_top = -210.0
-offset_right = 390.0
+offset_top = -180.0
+offset_right = 360.0
 offset_bottom = -32.0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_materials")
@@ -357,75 +600,58 @@ layout_mode = 2
 
 [node name="MatVBox" type="VBoxContainer" parent="HubUI/MaterialsPanel/MatMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="MatTitle" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "LOGÍSTICA & MATERIALES"
+theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
+theme_override_font_sizes/font_size = 13
+text = "SUMINISTROS PERSISTENTES"
 
 [node name="HSeparator" type="HSeparator" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
 layout_mode = 2
 
 [node name="BiomassRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="BiomassIcon" type="Polygon2D" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
-position = Vector2(8, 12)
-color = Color(0, 1, 0.615686, 1)
-polygon = PackedVector2Array(-8, 0, 0, -10, 8, 0, 0, 10)
-
-[node name="Spacer" type="Control" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
-custom_minimum_size = Vector2(18, 0)
-layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="BiomassLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 text = "BIOMASA:"
 
 [node name="BiomassValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
 text = "0 u."
 
 [node name="AntimatterRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="AntimatterIcon" type="Polygon2D" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
-position = Vector2(8, 12)
-color = Color(0, 0.941176, 1, 1)
-polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
-
-[node name="Spacer" type="Control" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
-custom_minimum_size = Vector2(18, 0)
-layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="AntimatterLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 text = "ANTIMATERIA:"
 
 [node name="AntimatterValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
 text = "0 u."
 
 [node name="CharacterCard" type="PanelContainer" parent="HubUI"]
+visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -500.0
-offset_top = 28.0
+offset_left = -480.0
+offset_top = 88.0
 offset_right = -32.0
-offset_bottom = 390.0
+offset_bottom = 430.0
 grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
@@ -442,38 +668,38 @@ layout_mode = 2
 [node name="NameLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox/CardHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 text = "NOVA"
 
 [node name="TitleLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.9)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "PILOTO DE VANGUARDIA"
 
 [node name="HSeparator" type="HSeparator" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
 layout_mode = 2
 
 [node name="DescLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
-theme_override_font_sizes/font_size = 13
-text = "Especialista en asaltos frontales a hiper-velocidad. Su reactor sobrecalienta armas térmicas aumentando el daño base a quemarropa."
+theme_override_font_sizes/font_size = 12
+text = "Especialista en asaltos frontales a hiper-velocidad."
 autowrap_mode = 2
 
 [node name="StatsLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "HP: 100 | Vel: 340 px/s | Daño: 40 | Crítico: 5% | Suerte: 0"
+text = "HP: 100 | Vel: 340 px/s | Daño: 40"
 
 [node name="PilotSelectorContainer" type="HBoxContainer" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="OpenSkillTreeButton" type="Button" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "⚡ ÁRBOL DE HABILIDADES [E]"
@@ -484,25 +710,85 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -480.0
-offset_top = -90.0
+offset_left = -440.0
+offset_top = -80.0
 offset_right = -32.0
-offset_bottom = -32.0
+offset_bottom = -28.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_constants/separation = 16
 
 [node name="VolverButton" type="Button" parent="HubUI/NavigationBar"]
-custom_minimum_size = Vector2(180, 52)
+custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_volver")
-text = "VOLVER"
+text = "TÍTULO"
 
 [node name="DesplegarButton" type="Button" parent="HubUI/NavigationBar"]
-custom_minimum_size = Vector2(240, 52)
+custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_desplegar")
-text = "DESPLEGAR"
+text = "DESPLEGAR MISIÓN"
+
+[node name="MissionPromptModal" type="PanelContainer" parent="HubUI"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -140.0
+offset_right = 260.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_prompt_modal")
+
+[node name="VBox" type="VBoxContainer" parent="HubUI/MissionPromptModal"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="PromptTitle" type="Label" parent="HubUI/MissionPromptModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "CENTRO DE DESPLIEGUE TÁCTICO"
+horizontal_alignment = 1
+
+[node name="PromptInfo" type="Label" parent="HubUI/MissionPromptModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Se detectó una transmisión de combate en curso."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PromptButtons" type="VBoxContainer" parent="HubUI/MissionPromptModal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ContinueRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "CONTINUAR RUN [ESPACIO]"
+
+[node name="NewRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "NUEVA RUN"
+
+[node name="CancelPromptButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "CANCELAR [ESC]"
 
 [node name="CharacterSkillTreeModal" parent="HubUI" instance=ExtResource("8_modal")]
+visible = false
+
+[node name="SettingsModal" parent="HubUI" instance=ExtResource("11_settings")]
+visible = false
+
+[node name="HighscoresModal" parent="HubUI" instance=ExtResource("12_highscores")]
 visible = false
