@@ -24,7 +24,23 @@ func _ready() -> void:
 
 	bullet_server.bomb_clear_all()
 	assert(bullet_server.active_common_bullets == 0, "bomb_clear_all must reset common bullets to 0")
+
+	# Test Fórmulas Trigonométricas de Picayune (Senos y Cosenos)
+	bullet_server.fire_rhodonea_flower(Vector2.ZERO, 16, 150.0, 5, 0.35, 0.0, 0)
+	assert(bullet_server.active_count == 16, "Rhodonea flower should spawn 16 bullets")
+
+	bullet_server.fire_serpentine_spread(Vector2.ZERO, Vector2(200, 0), 5, 30.0, 180.0, 15.0, 4.0, 2)
+	assert(bullet_server.active_count == 21, "Serpentine spread should spawn 5 bullets")
+
+	bullet_server.fire_braided_lissajous(Vector2.ZERO, Vector2(200, 0), 3, 200.0, 20.0, 5.0, 2)
+	assert(bullet_server.active_count == 27, "Braided lissajous should spawn 6 bullets (3 pairs)")
+
+	bullet_server.fire_breathing_fermat_spiral_tick(Vector2.ZERO, 1, 160.0, 0.0, 0.2, 0.3, 1)
+	assert(bullet_server.active_count == 28, "Breathing spiral tick should spawn 1 bullet")
+	bullet_server.bomb_clear_all()
+	assert(bullet_server.active_count == 0, "bomb_clear_all must clear all bullets")
 	print("  ✓ Common enemy bullet limiter correctly enforced (Quota: 20)")
+	print("  ✓ Picayune Trigonometric Patterns (Rhodonea, Serpentine, Lissajous, Breathing Fermat) validated")
 
 	# 2. Test EnemyShooter behavior
 	print("\n[2/5] Testing EnemyShooter single telegraphed shot...")

@@ -152,9 +152,11 @@ func _physics_process(delta: float) -> void:
 	velocity = velocity.lerp(move_dir * move_spd, delta * 3.0)
 	move_and_slide()
 
-	# Rotación de manecillas y dial
-	var hand_speed := 0.7 if current_phase == 1 else -1.4
-	clock_hand_angle += delta * hand_speed
+	# Rotación de manecillas con modulación armónica senoidal (acelera y frena como reloj vacilante)
+	var hand_speed := 0.75 if current_phase == 1 else -1.4
+	var harmonic_mod: float = sin(elapsed_combat_time * (3.0 if current_phase == 1 else 5.2)) * (0.45 if current_phase == 1 else 0.7)
+	var effective_hand_speed: float = hand_speed * (1.0 + harmonic_mod)
+	clock_hand_angle += delta * effective_hand_speed
 	for i in range(hand_nodes.size()):
 		var base_a := clock_hand_angle + (TAU / 4.0) * float(i)
 		hand_nodes[i].rotation = base_a
@@ -173,7 +175,7 @@ func _process_phase_1(delta: float) -> void:
 	clock_hands_timer += delta
 	echo_timer += delta
 
-	# Disparo de manecillas rotatorias cada 0.8s
+	# Disparo de manecillas rotatorias con ondulación senoidal cada 0.8s
 	if clock_hands_timer >= 0.8:
 		clock_hands_timer = 0.0
 		_fire_clock_hand_spokes(4, 160.0, 1)
@@ -187,7 +189,7 @@ func _process_phase_2(delta: float) -> void:
 	clock_hands_timer += delta
 	echo_timer += delta
 
-	# Manecillas aceleradas en cruz de 8 vías cada 0.6s
+	# Manecillas aceleradas en cruz de 8 vías con alta frecuencia senoidal cada 0.6s
 	if clock_hands_timer >= 0.6:
 		clock_hands_timer = 0.0
 		_fire_clock_hand_spokes(8, 185.0, 2)
@@ -203,6 +205,7 @@ func _fire_clock_hand_spokes(count: int, speed: float, bullet_type: int) -> void
 	for i in range(count):
 		var a := clock_hand_angle + (TAU / float(count)) * float(i)
 		var dir := Vector2(cos(a), sin(a))
+		var wave_sign: float = 1.0 if (i % 2 == 0) else -1.0
 		bullet_server.spawn_bullet(
 			global_position.x + dir.x * 55.0,
 			global_position.y + dir.y * 55.0,
@@ -210,16 +213,18 @@ func _fire_clock_hand_spokes(count: int, speed: float, bullet_type: int) -> void
 			dir.y * speed,
 			bullet_type,
 			4.5,
-			7.0
+			7.0,
+			14.0 * wave_sign,
+			3.8
 		)
 	_play_sfx("laser", 0.9)
 
 func _detonate_past_echoes() -> void:
 	if not is_instance_valid(bullet_server) or past_player_positions.is_empty():
 		return
-	# Detonar un pulso nova en la posición que el jugador ocupaba hace ~1.5s
+	# Detonar un pulso de rosa polar de 4 cuadrantes en la posición del eco
 	var target_echo := past_player_positions[0]
-	bullet_server.fire_radial_ring(target_echo, 10, 130.0, 0.0, 1)
+	bullet_server.fire_rhodonea_flower(target_echo, 12, 135.0, 4, 0.35, 0.0, 1)
 	_play_sfx("missile", 1.1)
 
 func _detonate_past_echoes_phase_2() -> void:
@@ -227,8 +232,8 @@ func _detonate_past_echoes_phase_2() -> void:
 		return
 	var pos1 := past_player_positions[0]
 	var pos2 := past_player_positions[past_player_positions.size() / 2]
-	bullet_server.fire_radial_ring(pos1, 12, 140.0, 0.0, 1)
-	bullet_server.fire_radial_ring(pos2, 12, 140.0, PI / 12.0, 2)
+	bullet_server.fire_rhodonea_flower(pos1, 16, 145.0, 4, 0.35, 0.0, 1)
+	bullet_server.fire_rhodonea_flower(pos2, 16, 145.0, 4, 0.35, PI / 8.0, 2)
 	_play_sfx("missile", 1.2)
 
 func _trigger_temporal_dilation_pulse() -> void:

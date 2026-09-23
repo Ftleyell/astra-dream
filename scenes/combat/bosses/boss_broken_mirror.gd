@@ -133,16 +133,17 @@ func _process_phase_1(delta: float) -> void:
 	gaze_sweep_timer += delta
 	prism_fan_timer += delta
 
-	# Mirada disociativa telegrafiada cada 3.0s
+	# Mirada disociativa telegrafiada cada 3.0s (esquirlas serpenteantes de alta vibración)
 	if gaze_sweep_timer >= 3.0:
 		gaze_sweep_timer = 0.0
 		_start_telegraph(0.42, Callable(self, "_fire_dissociative_gaze_sweep"))
 
-	# Abanico de esquirlas reflectantes cada 2.0s
-	if prism_fan_timer >= 2.0:
+	# Trenza de Lissajous / ADN reflectante cada 1.8s
+	if prism_fan_timer >= 1.8:
 		prism_fan_timer = 0.0
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 32.0, 210.0, 2)
+			# Dispara 3 pares entrelazados en contrafase (+cos y -cos)
+			bullet_server.fire_braided_lissajous(global_position, player.global_position, 3, 210.0, 22.0, 5.0, 2)
 			_play_sfx("laser", 1.1)
 
 func _process_phase_2(delta: float) -> void:
@@ -154,25 +155,25 @@ func _process_phase_2(delta: float) -> void:
 		gaze_sweep_timer = 0.0
 		_start_telegraph(0.35, Callable(self, "_fire_expanded_gaze_sweep"))
 
-	# Anillos prismáticos cruzados cada 1.6s
+	# Anillos en flor de diamante de 4 ejes en contrarrotación cada 1.6s
 	if prism_fan_timer >= 1.6:
 		prism_fan_timer = 0.0
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_radial_ring(global_position, 16, 160.0, rotation, 2)
-			bullet_server.fire_radial_ring(global_position, 16, 130.0, -rotation, 3)
+			bullet_server.fire_rhodonea_flower(global_position, 24, 160.0, 4, 0.38, rotation, 2)
+			bullet_server.fire_rhodonea_flower(global_position, 24, 130.0, 4, 0.38, -rotation, 3)
 			_play_sfx("missile", 1.2)
 
 func _fire_dissociative_gaze_sweep() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
 		return
-	# Salva de 7 esquirlas de alta penetración visual
-	bullet_server.fire_aimed_spread(global_position, player.global_position, 7, 45.0, 240.0, 2)
+	# Salva de 7 esquirlas con serpenteo senoidal de alta frecuencia
+	bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 45.0, 220.0, 16.0, 5.5, 2)
 	_play_sfx("laser", 1.2)
 
 func _fire_expanded_gaze_sweep() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
 		return
-	bullet_server.fire_aimed_spread(global_position, player.global_position, 9, 60.0, 260.0, 2)
+	bullet_server.fire_serpentine_spread(global_position, player.global_position, 9, 60.0, 240.0, 20.0, 6.0, 2)
 	_play_sfx("laser", 1.3)
 
 func _start_telegraph(duration: float, callback: Callable) -> void:

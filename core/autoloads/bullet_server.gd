@@ -407,3 +407,61 @@ func fire_aimed_spread(origin: Vector2, target: Vector2, count: int,
 	for i in range(count):
 		var angle: float = start_angle + float(i) * step
 		spawn_bullet(origin.x, origin.y, cos(angle) * speed, sin(angle) * speed, b_type)
+
+# PATRONES TRIGONOMÉTRICOS PROCEDURALES (ESTILO PICAYUNE DREAMS)
+
+## 1. Rosa Polar de Rhodonea: Velocidad de emisión modulada por cos(petals * θ)
+## Genera flores y estrellas geométricas que se expanden orgánicamente
+func fire_rhodonea_flower(origin: Vector2, count: int, base_speed: float, petals: int, 
+						  modulation_amp: float, base_rot: float = 0.0, b_type: int = 0) -> void:
+	var step: float = TAU / float(count)
+	for i in range(count):
+		var angle: float = base_rot + float(i) * step
+		var mod_factor: float = 1.0 + modulation_amp * cos(float(petals) * (angle - base_rot))
+		var spd: float = base_speed * mod_factor
+		spawn_bullet(origin.x, origin.y, cos(angle) * spd, sin(angle) * spd, b_type)
+
+## 2. Abanico Serpenteante con Aceleración Senoidal Lateral en Vuelo
+## Cada proyectil oscila periódicamente creando trayectorias en forma de serpiente
+func fire_serpentine_spread(origin: Vector2, target: Vector2, count: int, spread_deg: float, 
+							speed: float, p_wave_amp: float, p_wave_freq: float, b_type: int = 2) -> void:
+	var target_angle: float = (target - origin).angle()
+	if count <= 1:
+		spawn_bullet(origin.x, origin.y, cos(target_angle) * speed, sin(target_angle) * speed, 
+					 b_type, 4.5, 10.0, p_wave_amp, p_wave_freq)
+		return
+
+	var spread_rad: float = deg_to_rad(spread_deg)
+	var start_angle: float = target_angle - spread_rad * 0.5
+	var step: float = spread_rad / float(count - 1)
+	for i in range(count):
+		var angle: float = start_angle + float(i) * step
+		var phase_sign: float = 1.0 if (i % 2 == 0) else -1.0
+		spawn_bullet(origin.x, origin.y, cos(angle) * speed, sin(angle) * speed, 
+					 b_type, 4.5, 10.0, p_wave_amp * phase_sign, p_wave_freq)
+
+## 3. Trenzas de Interferencia Entrelazadas (Lissajous / ADN)
+## Dispara pares de proyectiles que se cruzan continuamente en contrafase (+cos y -cos)
+func fire_braided_lissajous(origin: Vector2, target: Vector2, pairs_count: int, 
+							speed: float, p_wave_amp: float, p_wave_freq: float, b_type: int = 2) -> void:
+	var dir: Vector2 = (target - origin).normalized() if (target - origin).length_squared() > 1.0 else Vector2.RIGHT
+	var base_ang: float = dir.angle()
+	for i in range(pairs_count):
+		var ang_offset: float = deg_to_rad(float(i - pairs_count / 2) * 8.0)
+		var fire_ang: float = base_ang + ang_offset
+		# Proyectil A (onda positiva)
+		spawn_bullet(origin.x, origin.y, cos(fire_ang) * speed, sin(fire_ang) * speed, 
+					 b_type, 4.0, 8.0, p_wave_amp, p_wave_freq)
+		# Proyectil B (onda en contrafase inversa)
+		spawn_bullet(origin.x, origin.y, cos(fire_ang) * speed, sin(fire_ang) * speed, 
+					 b_type, 4.0, 8.0, -p_wave_amp, p_wave_freq)
+
+## 4. Espiral de Fermat con Respiración Radial Senoidal
+## Modula la velocidad de eyección con una función seno periódica sobre el tick
+func fire_breathing_fermat_spiral_tick(origin: Vector2, tick: int, base_speed: float, 
+									   rot_offset: float, radial_freq: float, 
+									   radial_amp: float, b_type: int = 1) -> void:
+	var angle: float = float(tick) * 2.399963229728653 + rot_offset
+	var breath: float = 1.0 + radial_amp * sin(radial_freq * float(tick))
+	var spd: float = base_speed * breath
+	spawn_bullet(origin.x, origin.y, cos(angle) * spd, sin(angle) * spd, b_type)

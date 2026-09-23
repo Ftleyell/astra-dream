@@ -152,38 +152,38 @@ func _process_phase_1(delta: float) -> void:
 	gravity_pulse_timer += delta
 	aimed_orbs_timer += delta
 
-	# Pulso gravitatorio telegrafiado cada 3.2s
-	if gravity_pulse_timer >= 3.2:
+	# Pulso de Rosa de Rhodonea telegrafiado cada 3.0s (5 pétalos cosenoidales)
+	if gravity_pulse_timer >= 3.0:
 		gravity_pulse_timer = 0.0
-		_start_telegraph(0.45, Callable(self, "_fire_void_radial_ring"))
+		_start_telegraph(0.45, Callable(self, "_fire_rhodonea_star_ring"))
 
-	# Ráfaga de 3 orbes dirigidos cada 2.2s
+	# Ráfaga de 3 orbes serpenteantes con oscilación senoidal lateral cada 2.2s
 	if aimed_orbs_timer >= 2.2:
 		aimed_orbs_timer = 0.0
 		if is_instance_valid(player) and is_instance_valid(bullet_server):
-			bullet_server.fire_aimed_spread(global_position, player.global_position, 3, 25.0, 180.0, 3)
+			bullet_server.fire_serpentine_spread(global_position, player.global_position, 3, 24.0, 175.0, 18.0, 3.5, 3)
 
 func _process_phase_2(delta: float) -> void:
 	gravity_pulse_timer += delta
 	spiral_timer += delta
 	aimed_orbs_timer += delta
 
-	# Espiral de Horizonte de Eventos
-	if spiral_timer >= 0.05:
+	# Espiral de Fermat con modulación de respiración radial senoidal
+	if spiral_timer >= 0.048:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_fermat_spiral_tick(global_position, spiral_tick, 160.0, rotation, 3)
+			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 165.0, rotation, 0.16, 0.32, 3)
 
-	# Anillo doble telegrafiado cada 2.5s
+	# Doble rosa de Rhodonea telegrafiada cada 2.5s (7 pétalos entrelazados)
 	if gravity_pulse_timer >= 2.5:
 		gravity_pulse_timer = 0.0
-		_start_telegraph(0.38, Callable(self, "_fire_expanded_void_novas"))
+		_start_telegraph(0.38, Callable(self, "_fire_expanded_rhodonea_novas"))
 
 	if aimed_orbs_timer >= 2.0:
 		aimed_orbs_timer = 0.0
 		if is_instance_valid(player) and is_instance_valid(bullet_server):
-			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 36.0, 210.0, 1)
+			bullet_server.fire_serpentine_spread(global_position, player.global_position, 5, 36.0, 195.0, 22.0, 4.0, 1)
 
 func _start_telegraph(duration: float, callback: Callable) -> void:
 	is_telegraphing = true
@@ -204,17 +204,19 @@ func _start_telegraph(duration: float, callback: Callable) -> void:
 		create_tween().tween_property(self, "scale", Vector2.ONE, 0.15)
 	)
 
-func _fire_void_radial_ring() -> void:
+func _fire_rhodonea_star_ring() -> void:
 	if not is_instance_valid(bullet_server):
 		return
-	bullet_server.fire_radial_ring(global_position, 14, 135.0, rotation, 3)
+	# Fórmula de rosa polar: V(θ) = V_0 * (1 + 0.38 * cos(5 * θ))
+	bullet_server.fire_rhodonea_flower(global_position, 20, 145.0, 5, 0.38, rotation, 3)
 	_play_sfx("laser", 0.7)
 
-func _fire_expanded_void_novas() -> void:
+func _fire_expanded_rhodonea_novas() -> void:
 	if not is_instance_valid(bullet_server):
 		return
-	bullet_server.fire_radial_ring(global_position, 18, 155.0, rotation, 3)
-	bullet_server.fire_radial_ring(global_position, 18, 120.0, rotation + (PI / 18.0), 1)
+	# Doble rosa de 7 pétalos desfasados para ventanas geométricas limpias
+	bullet_server.fire_rhodonea_flower(global_position, 28, 160.0, 7, 0.35, rotation, 3)
+	bullet_server.fire_rhodonea_flower(global_position, 28, 125.0, 7, 0.35, rotation + (PI / 7.0), 1)
 	_play_sfx("missile", 0.9)
 
 func _transition_to_phase_2() -> void:
