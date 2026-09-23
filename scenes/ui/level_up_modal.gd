@@ -470,8 +470,12 @@ func _select_card(card: StatCardData) -> void:
 		stat_deck_manager.apply_card_to_stats(card, player.stats)
 		player.chosen_stat_cards.append(card)
 		_refresh_player_stats_display()
+	if player and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	hide()
 	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("notify_menu_closed"):
+		parent_game.notify_menu_closed(0.4)
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		get_tree().paused = true
 		if parent_game.has_method("restore_combat_modal_focus"):

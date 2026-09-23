@@ -115,13 +115,20 @@ func open_pause_menu() -> void:
 	resume_button.grab_focus()
 
 func resume_game() -> void:
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	hide()
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused:
+		focused.release_focus()
 	if settings_modal and settings_modal.visible:
 		settings_modal.close_settings()
 	if highscores_modal and highscores_modal.visible:
 		highscores_modal.close_highscores()
 
 	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("notify_menu_closed"):
+		parent_game.notify_menu_closed(0.4)
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		# Mantener el árbol pausado porque hay otra ventana modal activa (Leveleo, Satélite, etc.)
 		get_tree().paused = true

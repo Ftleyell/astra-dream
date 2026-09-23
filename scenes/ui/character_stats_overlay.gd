@@ -57,10 +57,17 @@ func _input(event: InputEvent) -> void:
 	if is_open:
 		if event is InputEventKey:
 			var key_event := event as InputEventKey
-			if key_event.pressed and not key_event.echo and key_event.keycode == KEY_ESCAPE:
-				close_stats()
-				get_viewport().set_input_as_handled()
-				return
+			if key_event.pressed and not key_event.echo:
+				if key_event.keycode == KEY_ESCAPE:
+					close_stats()
+					get_viewport().set_input_as_handled()
+					return
+				elif key_event.keycode == KEY_SPACE:
+					var focused := get_viewport().gui_get_focus_owner()
+					if focused == close_button:
+						close_stats()
+					get_viewport().set_input_as_handled()
+					return
 		if event.is_action_pressed("ui_cancel"):
 			close_stats()
 			get_viewport().set_input_as_handled()
@@ -92,13 +99,15 @@ func close_stats() -> void:
 	if not is_open:
 		return
 	is_open = false
-	var tw := create_tween()
-	tw.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tw.tween_property(main_container, "scale", Vector2(0.94, 0.94), 0.12)
-	tw.parallel().tween_property(main_container, "modulate:a", 0.0, 0.12)
-	await tw.finished
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	visible = false
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused:
+		focused.release_focus()
 	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("notify_menu_closed"):
+		parent_game.notify_menu_closed(0.4)
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		get_tree().paused = true
 		if parent_game.has_method("restore_combat_modal_focus"):
@@ -113,6 +122,7 @@ func _animate_open() -> void:
 	main_container.modulate.a = 0.0
 
 	var tw := create_tween()
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tw.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(main_container, "scale", Vector2.ONE, 0.22)
 	tw.tween_property(main_container, "modulate:a", 1.0, 0.18)

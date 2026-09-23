@@ -96,6 +96,9 @@ func close_settings() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
+	var player = get_tree().get_first_node_in_group("player")
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	hide()
 	closed.emit()
 

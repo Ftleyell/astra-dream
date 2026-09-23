@@ -156,7 +156,7 @@ func _on_dialogue_skip_requested() -> void:
 		player.run_credits += 100
 		hud.update_credits(player.run_credits)
 	if Dialogic.current_timeline != null:
-		Dialogic.end_timeline()
+		Dialogic.end_timeline(true)
 
 func _on_dialogic_timeline_ended() -> void:
 	if skip_badge_layer:
@@ -346,16 +346,53 @@ func is_satellite_shop_active() -> bool:
 func is_level_up_modal_active() -> bool:
 	return level_up_modal != null and level_up_modal.visible
 
-func is_any_combat_modal_active() -> bool:
+func is_character_stats_active() -> bool:
+	return character_stats_overlay != null and (character_stats_overlay.is_open or character_stats_overlay.visible)
+
+func is_dialogue_active() -> bool:
 	if is_briefing_active:
+		return true
+	var dialogic = get_node_or_null("/root/Dialogic")
+	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+		if dialogic.has_method("get_subsystem"):
+			var styles = dialogic.get_subsystem("Styles")
+			if styles and styles.has_method("has_active_layout_node") and styles.has_active_layout_node():
+				var l_node = styles.get_layout_node()
+				if is_instance_valid(l_node) and l_node.is_inside_tree():
+					if "visible" in l_node:
+						return bool(l_node.visible)
+					elif l_node.has_method("is_visible_in_tree"):
+						return l_node.is_visible_in_tree()
+					return true
+				return false
+		return false
+	return false
+
+func is_any_combat_modal_active() -> bool:
+	if is_dialogue_active():
 		return true
 	if is_satellite_shop_active():
 		return true
 	if is_level_up_modal_active():
 		return true
-	if character_stats_overlay and character_stats_overlay.is_open:
+	if is_pause_menu_active():
 		return true
+	if is_character_stats_active():
+		return true
+	var reset_overlay = get_node_or_null("HoldToResetOverlay") as HoldToResetOverlay
+	if reset_overlay and (reset_overlay.visible or reset_overlay.current_hold > 0.0):
+		return true
+	var vp := get_viewport()
+	if vp:
+		var focused := vp.gui_get_focus_owner()
+		if focused and focused.is_visible_in_tree():
+			return true
 	return false
+
+func notify_menu_closed(duration: float = 0.35) -> void:
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(duration)
+
 
 func restore_combat_modal_focus() -> void:
 	if is_level_up_modal_active() and level_up_modal.has_method("restore_focus"):

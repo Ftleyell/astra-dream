@@ -83,6 +83,6 @@ func _execute_skip() -> void:
 
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and dialogic.has_method("end_timeline"):
-		dialogic.end_timeline()
+		dialogic.end_timeline(true)
 
 	hide()

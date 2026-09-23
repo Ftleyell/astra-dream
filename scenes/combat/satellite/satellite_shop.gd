@@ -108,8 +108,13 @@ func restore_focus() -> void:
 	_setup_focus_and_grab()
 
 func close_shop() -> void:
+	_ensure_player()
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	hide()
 	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("notify_menu_closed"):
+		parent_game.notify_menu_closed(0.4)
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		get_tree().paused = true
 		if parent_game.has_method("restore_combat_modal_focus"):
@@ -336,6 +341,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 			# Activación / Click con Barra Espaciadora
 			KEY_SPACE:
+				_ensure_player()
+				if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+					player.suppress_bomb_input(0.4)
 				var focused := get_viewport().gui_get_focus_owner() as Button
 				if focused and is_instance_valid(focused) and not focused.disabled:
 					focused.pressed.emit()

@@ -37,6 +37,8 @@ var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb
 var bomb_count: int = 2
 var run_credits: int = 120
 var run_biomass: int = 0
+var _menu_close_suppress_timer: float = 0.0
+var _was_bomb_pressed_during_menu: bool = false
 
 # EXP & Leveling
 var current_level: int = 1
@@ -185,6 +187,16 @@ func _apply_visual_theme() -> void:
 					w_poly.visible = true
 
 func _physics_process(delta: float) -> void:
+	if _menu_close_suppress_timer > 0.0:
+		_menu_close_suppress_timer = maxf(0.0, _menu_close_suppress_timer - delta)
+
+	if is_any_menu_or_modal_active():
+		if Input.is_action_pressed("bomb"):
+			_was_bomb_pressed_during_menu = true
+	elif _was_bomb_pressed_during_menu:
+		if not Input.is_action_pressed("bomb"):
+			_was_bomb_pressed_during_menu = false
+
 	_handle_dash(delta)
 	_handle_movement(delta)
 	_handle_actions()
@@ -455,22 +467,75 @@ func consume_guaranteed_crit() -> bool:
 	return false
 
 
-func _handle_actions() -> void:
-	# Si hay un diálogo de radio o cinemática activo, la barra espaciadora se reserva para saltar el diálogo
-	var is_dialogue_playing := false
+func suppress_bomb_input(duration: float = 0.35) -> void:
+	_menu_close_suppress_timer = maxf(_menu_close_suppress_timer, duration)
+	_was_bomb_pressed_during_menu = true
+
+func is_any_menu_or_modal_active() -> bool:
+	if not is_inside_tree():
+		return false
+	var parent_node := get_parent()
+	if parent_node:
+		if parent_node.has_method("is_any_combat_modal_active") and parent_node.is_any_combat_modal_active():
+			return true
+		if parent_node.has_method("is_pause_menu_active") and parent_node.is_pause_menu_active():
+			return true
+		if parent_node.has_method("is_level_up_modal_active") and parent_node.is_level_up_modal_active():
+			return true
+		if parent_node.has_method("is_satellite_shop_active") and parent_node.is_satellite_shop_active():
+			return true
+		if parent_node.has_method("is_character_stats_active") and parent_node.is_character_stats_active():
+			return true
+		if parent_node.has_method("is_dialogue_active") and parent_node.is_dialogue_active():
+			return true
+
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
-		is_dialogue_playing = true
+		return true
 
-	if not is_dialogue_playing and Input.is_action_just_pressed("bomb") and bomb_count > 0:
-		bomb_count -= 1
-		bomb_used.emit(bomb_count)
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("bomb")
-		if bullet_server:
-			bullet_server.bomb_clear_all()
-		_spawn_bomb_vfx()
+	var vp := get_viewport()
+	if vp:
+		var focused := vp.gui_get_focus_owner()
+		if focused and focused.is_visible_in_tree():
+			return true
+
+	return false
+
+func _can_trigger_bomb() -> bool:
+	if bomb_count <= 0:
+		return false
+	if get_tree() and get_tree().paused:
+		return false
+	if _menu_close_suppress_timer > 0.0:
+		return false
+	if _was_bomb_pressed_during_menu:
+		return false
+	if is_any_menu_or_modal_active():
+		return false
+	return true
+
+func _execute_bomb() -> void:
+	if not _can_trigger_bomb():
+		return
+	bomb_count -= 1
+	bomb_used.emit(bomb_count)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("bomb")
+	if bullet_server:
+		bullet_server.bomb_clear_all()
+	_spawn_bomb_vfx()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("bomb") and not event.is_echo():
+		if _can_trigger_bomb():
+			_execute_bomb()
+			get_viewport().set_input_as_handled()
+
+func _handle_actions() -> void:
+	# Las bombas ahora se procesan de forma segura a través de _unhandled_input(event)
+	# para garantizar que la barra espaciadora en menús, tiendas y diálogos nunca consuma bombas.
+	pass
 
 func add_bombs(amount: int = 1) -> bool:
 	const MAX_BOMBS: int = 5

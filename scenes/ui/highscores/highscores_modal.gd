@@ -24,6 +24,9 @@ func open_highscores() -> void:
 		close_button.grab_focus()
 
 func close_highscores() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+		player.suppress_bomb_input(0.4)
 	hide()
 	closed.emit()
 

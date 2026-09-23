@@ -117,7 +117,7 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	# CASO 6: Salir de Pausa al Menú Principal (Hub 3D) despausa el árbol
 	# ----------------------------------------------------
-	print("\n[6/6] Testing Exit to 3D Hub Menu resets pause state...")
+	print("\n[6/7] Testing Exit to 3D Hub Menu resets pause state...")
 	pause.open_pause_menu()
 	assert(get_tree().paused, "El juego debe pausarse al abrir pausa")
 	# Simular salida sin llamar change_scene_to_file para mantener la prueba en memoria
@@ -133,6 +133,89 @@ func _ready() -> void:
 	assert(not get_tree().paused, "El árbol debe permanecer despausado en HubWorld")
 	print("  ✓ Menú Principal HUD 3D desbloqueado y con controles 100% operativos tras salir de Pausa.")
 	hub.queue_free()
+
+	# ----------------------------------------------------
+	# CASO 7: Uso de Barra Espaciadora en Modales NO Consume Bombas
+	# ----------------------------------------------------
+	print("\n[7/7] Testing Spacebar in any menu NEVER consumes or triggers bombs...")
+	if main_game.skip_badge_layer and main_game.skip_badge_layer.has_method("_execute_skip"):
+		main_game.skip_badge_layer._execute_skip()
+		await get_tree().process_frame
+		await get_tree().process_frame
+	Dialogic.end_timeline(true)
+	Dialogic.current_timeline = null
+	if Dialogic.has_subsystem("Styles") and Dialogic.Styles.has_active_layout_node():
+		var l_node = Dialogic.Styles.get_layout_node()
+		if is_instance_valid(l_node):
+			l_node.hide()
+	main_game.is_briefing_active = false
+	get_tree().paused = false
+	await get_tree().process_frame
+	main_game.player.bomb_count = 3
+	var initial_bombs: int = main_game.player.bomb_count
+
+	var space_event := InputEventKey.new()
+	space_event.pressed = true
+	space_event.keycode = KEY_SPACE
+
+	# 7.1. LevelUpModal: Confirmar carta con barra espaciadora
+	level_modal.show_level_up(2)
+	assert(level_modal.visible, "LevelUpModal debe estar abierto")
+	level_modal._input(space_event)
+	await get_tree().process_frame
+	assert(main_game.player.bomb_count == initial_bombs, "Elegir carta con Barra Espaciadora NO debe consumir bombas (bombas: %d, esperado: %d)" % [main_game.player.bomb_count, initial_bombs])
+	print("  ✓ LevelUpModal: Barra espaciadora selecciona carta sin gastar bombas.")
+
+	# 7.2. SatelliteShop: Interactuar con barra espaciadora
+	main_game.satellite_shop.open_shop(200)
+	assert(main_game.satellite_shop.visible, "SatelliteShop debe estar abierta")
+	main_game.satellite_shop._unhandled_input(space_event)
+	assert(main_game.player.bomb_count == initial_bombs, "Comprar con Barra Espaciadora NO debe consumir bombas")
+	main_game.satellite_shop.close_shop()
+	await get_tree().process_frame
+	assert(main_game.player.bomb_count == initial_bombs, "Cerrar SatelliteShop NO debe detonar bombas")
+	print("  ✓ SatelliteShop: Barra espaciadora compra y cierra sin gastar bombas.")
+
+	# 7.3. PauseMenu: Reanudar con barra espaciadora
+	pause.open_pause_menu()
+	assert(pause.visible, "PauseMenu debe estar abierto")
+	pause.resume_game()
+	await get_tree().process_frame
+	assert(main_game.player.bomb_count == initial_bombs, "Reanudar desde pausa NO debe consumir bombas")
+	print("  ✓ PauseMenu: Barra espaciadora reanuda el juego sin gastar bombas.")
+
+	# 7.4. CharacterStatsOverlay: Barra espaciadora en cuadro de mando
+	if main_game.character_stats_overlay:
+		main_game.character_stats_overlay.open_stats()
+		assert(main_game.character_stats_overlay.is_open, "CharacterStatsOverlay debe estar abierto")
+		main_game.character_stats_overlay._input(space_event)
+		assert(main_game.player.bomb_count == initial_bombs, "Barra espaciadora en Stats Overlay NO debe consumir bombas")
+		main_game.character_stats_overlay.close_stats()
+		await get_tree().process_frame
+		assert(not get_tree().paused, "Tras cerrar Stats Overlay, el juego debe despausarse")
+		assert(main_game.player.bomb_count == initial_bombs, "Cerrar Stats Overlay NO debe consumir bombas")
+		print("  ✓ CharacterStatsOverlay: Barra espaciadora no gasta bombas.")
+
+	# 7.5. Combate normal sin menús: Barra espaciadora y tecla Q sí activan bomba
+	Dialogic.end_timeline(true)
+	Dialogic.current_timeline = null
+	main_game.is_briefing_active = false
+	get_tree().paused = false
+	main_game.player._menu_close_suppress_timer = 0.0
+	main_game.player._was_bomb_pressed_during_menu = false
+	var combat_bomb_event := InputEventAction.new()
+	combat_bomb_event.action = &"bomb"
+	combat_bomb_event.pressed = true
+	main_game.player._unhandled_input(combat_bomb_event)
+	assert(main_game.player.bomb_count == initial_bombs - 1, "En combate libre sin menús, la bomba DEBE detonar con normalidad (bombas: %d)" % main_game.player.bomb_count)
+	print("  ✓ Combate libre: Bomba detona correctamente cuando no hay menús abiertos.")
+
+	var q_key_event := InputEventKey.new()
+	q_key_event.pressed = true
+	q_key_event.keycode = KEY_Q
+	main_game.player._unhandled_input(q_key_event)
+	assert(main_game.player.bomb_count == initial_bombs - 2, "La tecla Q también debe detonar bomba en combate libre (bombas: %d)" % main_game.player.bomb_count)
+	print("  ✓ Tecla Q: Bomba detona correctamente en combate.")
 
 	print("\n==========================================")
 	print("[PASS] ALL MODAL, SETTINGS & PAUSE TESTS PASSED (100%)!")
