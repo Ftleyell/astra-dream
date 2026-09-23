@@ -456,7 +456,13 @@ func consume_guaranteed_crit() -> bool:
 
 
 func _handle_actions() -> void:
-	if Input.is_action_just_pressed("bomb") and bomb_count > 0:
+	# Si hay un diálogo de radio o cinemática activo, la barra espaciadora se reserva para saltar el diálogo
+	var is_dialogue_playing := false
+	var dialogic = get_node_or_null("/root/Dialogic")
+	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+		is_dialogue_playing = true
+
+	if not is_dialogue_playing and Input.is_action_just_pressed("bomb") and bomb_count > 0:
 		bomb_count -= 1
 		bomb_used.emit(bomb_count)
 		var audio_mgr := get_node_or_null("/root/AudioManager")

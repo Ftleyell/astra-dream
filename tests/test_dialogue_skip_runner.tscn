@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://testdialogueskip001"]
+
+[ext_resource type="Script" path="res://tests/test_dialogue_skip_suite.gd" id="1_suite"]
+
+[node name="TestDialogueSkipRunner" type="Node"]
+script = ExtResource("1_suite")

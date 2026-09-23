@@ -13,7 +13,6 @@ extends Node2D
 @onready var pause_menu: PauseMenu = get_node_or_null("PauseMenu") as PauseMenu
 @onready var character_stats_overlay: CharacterStatsOverlay = get_node_or_null("CharacterStatsOverlay") as CharacterStatsOverlay
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
-@onready var skip_button: Button = get_node_or_null("SkipBadgeLayer/MarginContainer/SkipButton")
 
 const WAVE_DURATION: float = 60.0
 const MAX_SATELLITES_PER_WAVE: int = 3
@@ -77,12 +76,10 @@ func _ready() -> void:
 	# Conexión de Dialogic para briefing inicial y eventos de señal
 	Dialogic.signal_event.connect(_on_dialogic_signal)
 	Dialogic.timeline_ended.connect(_on_dialogic_timeline_ended)
+	Dialogic.timeline_started.connect(_on_dialogic_timeline_started)
 
-	if skip_button:
-		skip_button.pressed.connect(func():
-			if is_briefing_active:
-				Dialogic.end_timeline()
-		)
+	if skip_badge_layer and skip_badge_layer.has_signal("skip_requested"):
+		skip_badge_layer.skip_requested.connect(_on_dialogue_skip_requested)
 
 	# Iniciar música de combate
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -149,17 +146,30 @@ func _on_dialogic_signal(arg: Variant) -> void:
 			player.current_health = player.stats.get_stat(&"max_health")
 			player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
 
+func _on_dialogic_timeline_started() -> void:
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+func _on_dialogue_skip_requested() -> void:
+	if is_briefing_active and not prologue_bonus_chosen:
+		prologue_bonus_chosen = true
+		player.run_credits += 100
+		hud.update_credits(player.run_credits)
+	if Dialogic.current_timeline != null:
+		Dialogic.end_timeline()
+
 func _on_dialogic_timeline_ended() -> void:
+	if skip_badge_layer:
+		skip_badge_layer.hide()
+
 	if is_briefing_active:
 		is_briefing_active = false
 		get_tree().paused = false
-		if skip_badge_layer:
-			skip_badge_layer.hide()
 
 		# Si se saltó el diálogo sin haber seleccionado una opción, otorgar bono base
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
-			player.run_credits += 50
+			player.run_credits += 100
 			hud.update_credits(player.run_credits)
 
 func _trigger_cockpit_interlude() -> void:
