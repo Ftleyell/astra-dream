@@ -1,5 +1,5 @@
 join nova left
-join echo right
+join echo (Flipped) right
 echo: [wave amp=20.0 freq=4.0]Iniciando enlace orbital de telemetría...[/wave] Escáneres detectan anomalías gravitatorias en el sector.
 nova: Cabina presurizada y reactores listos. ¿Cuál es el estado de la baliza satelital?
 echo: Señal intermitente por interferencia del enjambre. [wait=0.4] Antes del contacto, tenemos excedente de energía para una calibración táctica inmediata.

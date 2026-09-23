@@ -11,7 +11,7 @@ y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_j0v32"]
 script = ExtResource("3_j0v32")
-x_value = 0.1
+x_value = 0.28125
 y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_kwhsf"]
@@ -26,7 +26,7 @@ y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_pw8le"]
 script = ExtResource("3_j0v32")
-x_value = 0.3
+x_value = 0.28125
 y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_u26y7"]
@@ -56,7 +56,7 @@ y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_2ixhv"]
 script = ExtResource("3_j0v32")
-x_value = 0.7
+x_value = 0.71875
 y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_ssa17"]
@@ -71,7 +71,7 @@ y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_owffp"]
 script = ExtResource("3_j0v32")
-x_value = 0.9
+x_value = 0.71875
 y_value = 1.0
 
 [sub_resource type="Resource" id="Resource_wacbv"]

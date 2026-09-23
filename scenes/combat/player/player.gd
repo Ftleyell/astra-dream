@@ -31,6 +31,7 @@ var fire_trail_scene: PackedScene = preload("res://scenes/combat/player/dash_eff
 var decoy_mine_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/decoy_drone_mine.tscn")
 var vacuum_pulse_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/vacuum_phase_pulse.tscn")
 var chain_scene: PackedScene = preload("res://scenes/combat/weapons/chain_lightning_effect.tscn")
+var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
 
 # Bombs & Economy
 var bomb_count: int = 2
@@ -463,6 +464,7 @@ func _handle_actions() -> void:
 			audio_mgr.play_sfx("bomb")
 		if bullet_server:
 			bullet_server.bomb_clear_all()
+		_spawn_bomb_vfx()
 
 func add_bombs(amount: int = 1) -> bool:
 	const MAX_BOMBS: int = 5
@@ -477,7 +479,21 @@ func add_bombs(amount: int = 1) -> bool:
 			audio_mgr.play_sfx("bomb")
 		if bullet_server:
 			bullet_server.bomb_clear_all()
+		_spawn_bomb_vfx()
 		return false
+
+func _spawn_bomb_vfx(at_position: Vector2 = global_position) -> void:
+	if not bomb_shockwave_scene:
+		return
+	var vfx := bomb_shockwave_scene.instantiate()
+	if vfx:
+		if vfx.has_method("setup"):
+			vfx.setup(at_position)
+		else:
+			vfx.global_position = at_position
+		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+		if spawn_parent:
+			spawn_parent.add_child(vfx)
 
 func heal(amount: float) -> void:
 	if current_health <= 0.0:
