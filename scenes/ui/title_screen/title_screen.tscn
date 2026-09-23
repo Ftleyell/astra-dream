@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dbx8m30w8l72"]
+[gd_scene load_steps=4 format=3 uid="uid://dbx8m30w8l72"]
 
 [ext_resource type="Script" path="res://scenes/ui/title_screen/title_screen.gd" id="1_title"]
+[ext_resource type="PackedScene" uid="uid://b0fkm1b3h8xqa" path="res://scenes/combat/environment/space_background.tscn" id="2_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.02, 0.03, 0.06, 1)
+bg_color = Color(0.01, 0.015, 0.03, 0.45)
 
 [node name="TitleScreen" type="Control"]
 process_mode = 3
@@ -15,13 +16,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="Background" type="Panel" parent="."]
+[node name="SpaceBackground" parent="." instance=ExtResource("2_bg")]
+
+[node name="DarkVignette" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
@@ -62,34 +66,25 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.95)
 theme_override_font_sizes/font_size = 22
-text = "TOCA CUALQUIER TECLA PARA CONTINUAR"
+text = "[ TOCA CUALQUIER TECLA PARA CONTINUAR ]"
 horizontal_alignment = 1
 
-[node name="FooterBar" type="HBoxContainer" parent="."]
+[node name="VersionLabel" type="Label" parent="."]
 layout_mode = 1
-anchors_preset = 12
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -48.0
-offset_right = -32.0
+offset_left = -220.0
+offset_top = -40.0
+offset_right = -20.0
 offset_bottom = -16.0
-grow_horizontal = 2
+grow_horizontal = 0
 grow_vertical = 0
-
-[node name="CopyrightLabel" type="Label" parent="FooterBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 0.8)
-theme_override_font_sizes/font_size = 13
-text = "© 2026 ASTRA DREAM STUDIO"
-
-[node name="VersionLabel" type="Label" parent="FooterBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 0.8)
-theme_override_font_sizes/font_size = 13
-text = "v0.9.5-PROTOTYPE"
+theme_override_colors/font_color = Color(0.4, 0.5, 0.65, 0.7)
+theme_override_font_sizes/font_size = 14
+text = "v0.3.0 - ALPHA STAGE"
 horizontal_alignment = 2
 
 [node name="FadeRect" type="ColorRect" parent="."]
@@ -100,4 +95,5 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.03, 0.06, 1)
+mouse_filter = 2
+color = Color(0, 0, 0, 0)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://hubworld001"]
+[gd_scene load_steps=43 format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
 [ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
@@ -29,6 +29,11 @@
 [ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_cabinet_emission.png" id="29_arc_emi"]
 [ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_albedo.png" id="30_scr_alb"]
 [ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_emission.png" id="31_scr_emi"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/arcade-machine.glb" id="32_arc_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/pinball.glb" id="33_pinball_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/vending-machine.glb" id="34_vending_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/gate.glb" id="35_gate_model"]
+[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/cables.glb" id="36_cables_model"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -135,7 +140,7 @@ albedo_texture = ExtResource("16_plx1")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_mid"]
 material = SubResource("StandardMaterial3D_parallax_mid")
-size = Vector2(52, 52)
+size = Vector2(85, 48)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_near"]
 transparency = 1
@@ -145,7 +150,7 @@ albedo_texture = ExtResource("17_plx2")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_near"]
 material = SubResource("StandardMaterial3D_parallax_near")
-size = Vector2(48, 25.3)
+size = Vector2(50, 28)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_base"]
 albedo_color = Color(0.04, 0.06, 0.09, 1)
@@ -479,6 +484,18 @@ shape = SubResource("BoxShape3D_front_railing")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/FrontRailing"]
 mesh = SubResource("BoxMesh_front_railing")
 
+[node name="KenneyGate" parent="HangarRoom" instance=ExtResource("35_gate_model")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, 0, 16.8)
+
+[node name="KenneyPinball" parent="HangarRoom" instance=ExtResource("33_pinball_model")]
+transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 7.5, 0, 11.5)
+
+[node name="KenneyVending" parent="HangarRoom" instance=ExtResource("34_vending_model")]
+transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 5.0, 0, 15.0)
+
+[node name="KenneyExtraArcade" parent="HangarRoom" instance=ExtResource("32_arc_model")]
+transform = Transform3D(2.4, 0, 0, 0, 2.4, 0, 0, 0, 2.4, 9.8, 0, 11.5)
+
 [node name="SpaceParallax" type="Node3D" parent="."]
 
 [node name="Layer0_Deep" type="MeshInstance3D" parent="SpaceParallax"]
@@ -518,6 +535,9 @@ mesh = SubResource("CylinderMesh_mission_ring")
 transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 0, 1.7, -0.2)
 mesh = SubResource("BoxMesh_mission_holo")
 
+[node name="KenneyCables" parent="Terminals/MissionTerminal" instance=ExtResource("36_cables_model")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0, 0.4)
+
 [node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal"]
 script = ExtResource("10_interactable")
 target_character_id = &"mission"
@@ -528,6 +548,9 @@ prompt_offset_y = 2.3
 
 [node name="HighScoresTerminal" type="Node3D" parent="Terminals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0, -6.5)
+
+[node name="KenneyArcade" parent="Terminals/HighScoresTerminal" instance=ExtResource("32_arc_model")]
+transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
 
 [node name="ArcadeBody" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)

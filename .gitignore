@@ -45,6 +45,7 @@ release/
 *.tar.gz
 *.rar
 artist_pack*/
+scratch/
 
 # Crash logs and debug traces
 *.log

@@ -1,48 +1,47 @@
-[gd_scene load_steps=3 format=3 uid="uid://b0fkm1b3h8xqa"]
+[gd_scene load_steps=6 format=3 uid="uid://b0fkm1b3h8xqa"]
 
-[ext_resource type="Script" path="res://scenes/combat/environment/starfield_layer.gd" id="1_star"]
+[ext_resource type="Script" path="res://scenes/combat/environment/space_background.gd" id="1_space_bg"]
+[ext_resource type="Texture2D" path="res://assets/environments/deep_fold_space/layer0_space_nebula.png" id="2_nebula"]
+[ext_resource type="Texture2D" path="res://assets/environments/deep_fold_space/layer1_space_stars_deep.png" id="3_stars_deep"]
+[ext_resource type="Texture2D" path="res://assets/environments/deep_fold_space/layer2_space_stars_mid.png" id="4_stars_mid"]
+[ext_resource type="Texture2D" path="res://assets/environments/deep_fold_space/layer3_space_dust_near.png" id="5_dust_near"]
 
 [node name="SpaceBackground" type="Node2D"]
 z_index = -100
+script = ExtResource("1_space_bg")
 
-[node name="ParallaxDistant" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.12, 0.12)
+[node name="ParallaxNebula" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.08, 0.08)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
-[node name="StarsDistant" type="Node2D" parent="ParallaxDistant"]
-script = ExtResource("1_star")
-star_count = 160
-seed_number = 101
-min_star_radius = 0.8
-max_star_radius = 1.3
-base_color = Color(0.65, 0.7, 0.9, 0.6)
-color_tint = Color(0.7, 0.25, 0.85, 0.3)
+[node name="NebulaSprite" type="Sprite2D" parent="ParallaxNebula"]
+position = Vector2(960, 540)
+texture = ExtResource("2_nebula")
 
-[node name="ParallaxMid" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.35, 0.35)
+[node name="ParallaxDeepStars" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.2, 0.2)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
-[node name="StarsMid" type="Node2D" parent="ParallaxMid"]
-script = ExtResource("1_star")
-star_count = 100
-seed_number = 505
-min_star_radius = 1.1
-max_star_radius = 1.9
-base_color = Color(0.75, 0.9, 1.0, 0.75)
-color_tint = Color(0.2, 0.75, 1.0, 0.4)
+[node name="DeepStarsSprite" type="Sprite2D" parent="ParallaxDeepStars"]
+position = Vector2(960, 540)
+texture = ExtResource("3_stars_deep")
 
-[node name="ParallaxNear" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.7, 0.7)
+[node name="ParallaxMidStars" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.45, 0.45)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
-[node name="StarsNear" type="Node2D" parent="ParallaxNear"]
-script = ExtResource("1_star")
-star_count = 55
-seed_number = 999
-min_star_radius = 1.5
-max_star_radius = 2.6
-base_color = Color(1.0, 1.0, 1.0, 0.95)
-color_tint = Color(1.0, 0.85, 0.4, 0.5)
+[node name="MidStarsSprite" type="Sprite2D" parent="ParallaxMidStars"]
+position = Vector2(960, 540)
+texture = ExtResource("4_stars_mid")
+
+[node name="ParallaxNearDust" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.75, 0.75)
+repeat_size = Vector2(1920, 1080)
+repeat_times = 3
+
+[node name="NearDustSprite" type="Sprite2D" parent="ParallaxNearDust"]
+position = Vector2(960, 540)
+texture = ExtResource("5_dust_near")
