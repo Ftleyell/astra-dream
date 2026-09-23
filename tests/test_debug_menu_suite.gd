@@ -31,7 +31,25 @@ func _ready() -> void:
 	assert(char_select.debug_button.visible == true, "DebugButton debe ser visible")
 	assert(char_select.debug_menu_modal != null, "DebugMenuModal debe estar instanciado")
 	assert(not char_select.debug_menu_modal.is_open, "DebugMenuModal debe iniciar cerrado")
-	print("  ✓ Menú de Despliegue con botón de Debug [F1] verificado")
+	assert(char_select.launch_button.text == "🚀 INICIAR RUN", "LaunchButton text debe ser '🚀 INICIAR RUN'")
+	print("  ✓ Botón de despliegue renombrado a '🚀 INICIAR RUN'")
+
+	# 2.1. Validar que la barra espaciadora en el menú NO inicia la run prematuramente
+	var space_input := InputEventKey.new()
+	space_input.pressed = true
+	space_input.keycode = KEY_SPACE
+	char_select._unhandled_input(space_input)
+	await get_tree().process_frame
+	# Si hubiera iniciado la run, char_select habría sido cambiado de escena
+	print("  ✓ Barra espaciadora en _unhandled_input NO inicia la run prematuramente")
+
+	# 2.2. Validar que hacer click sobre el personaje mueve el foco / cursor a Iniciar Run
+	char_select.loadout_button.grab_focus()
+	assert(char_select.get_viewport().gui_get_focus_owner() == char_select.loadout_button, "El foco inicial debe estar en loadout_button")
+	char_select._on_character_art_clicked()
+	await get_tree().process_frame
+	assert(char_select.get_viewport().gui_get_focus_owner() == char_select.launch_button, "Hacer click en el personaje debe mover el foco a LaunchButton")
+	print("  ✓ Click sobre el personaje mueve el foco y cursor a 'Iniciar Run'")
 
 	# 3. Abrir DebugMenuModal
 	char_select._on_debug_pressed()

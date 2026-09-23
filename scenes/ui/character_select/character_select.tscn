@@ -247,12 +247,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
 theme_override_font_sizes/font_size = 19
-text = "🚀 [ESPACIO] DESPEGAR"
+text = "🚀 INICIAR RUN"
 icon = ExtResource("3_rocket")
 
 [node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 0
+mouse_default_cursor_shape = 2
 
 [node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
 layout_mode = 1
@@ -261,6 +263,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 2
 expand_mode = 1
 stretch_mode = 5
 flip_h = true

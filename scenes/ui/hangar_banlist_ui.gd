@@ -72,19 +72,40 @@ func _get_current_character_bans() -> Array[StringName]:
 		return bans_dict[current_character_id]
 	return []
 
-func _refresh_banlist_ui() -> void:
-	for child in items_grid.get_children():
-		child.queue_free()
+var _item_cards: Dictionary = {}
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://scenes/ui/character_select/character_select.tscn")
+		get_viewport().set_input_as_handled()
+
+func _refresh_banlist_ui() -> void:
 	var active_bans: Array[StringName] = _get_current_character_bans()
 	ban_counter_label.text = "Baneos Activos: %d / %d" % [active_bans.size(), MAX_BANS]
 
-	for item: ItemData in item_pool_manager.master_catalog:
-		var is_banned: bool = active_bans.has(item.item_id)
-		var card := _create_item_ban_card(item, is_banned, active_bans)
-		items_grid.add_child(card)
+	if _item_cards.is_empty():
+		for item: ItemData in item_pool_manager.master_catalog:
+			var is_banned: bool = active_bans.has(item.item_id)
+			var card_info := _create_item_ban_card(item, is_banned)
+			_item_cards[item.item_id] = card_info
+			items_grid.add_child(card_info["card"])
+	else:
+		for item: ItemData in item_pool_manager.master_catalog:
+			var is_banned: bool = active_bans.has(item.item_id)
+			if _item_cards.has(item.item_id):
+				_update_item_ban_btn(_item_cards[item.item_id]["btn"], is_banned)
 
-func _create_item_ban_card(item: ItemData, is_banned: bool, active_bans: Array[StringName]) -> Control:
+func _update_item_ban_btn(toggle_btn: Button, is_banned: bool) -> void:
+	if is_banned:
+		toggle_btn.text = "BANEADO (Excluido de la Run)"
+		toggle_btn.icon = ICON_CROSS
+		toggle_btn.modulate = Color(1.0, 0.3, 0.3)
+	else:
+		toggle_btn.text = "ACTIVO (Disponible)"
+		toggle_btn.icon = ICON_CHECK
+		toggle_btn.modulate = Color(0.3, 1.0, 0.4)
+
+func _create_item_ban_card(item: ItemData, is_banned: bool) -> Dictionary:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(260, 120)
 
@@ -103,14 +124,7 @@ func _create_item_ban_card(item: ItemData, is_banned: bool, active_bans: Array[S
 
 	var toggle_btn := Button.new()
 	toggle_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if is_banned:
-		toggle_btn.text = "BANEADO (Excluido de la Run)"
-		toggle_btn.icon = ICON_CROSS
-		toggle_btn.modulate = Color(1.0, 0.3, 0.3)
-	else:
-		toggle_btn.text = "ACTIVO (Disponible)"
-		toggle_btn.icon = ICON_CHECK
-		toggle_btn.modulate = Color(0.3, 1.0, 0.4)
+	_update_item_ban_btn(toggle_btn, is_banned)
 	UIFocusHelper.apply_cyber_focus(toggle_btn)
 
 	toggle_btn.pressed.connect(func():
@@ -140,7 +154,7 @@ func _create_item_ban_card(item: ItemData, is_banned: bool, active_bans: Array[S
 	vbox.add_child(desc_lbl)
 	vbox.add_child(toggle_btn)
 	panel.add_child(vbox)
-	return panel
+	return { "card": panel, "btn": toggle_btn }
 
 func _on_launch_pressed() -> void:
 	var bans: Array[StringName] = _get_current_character_bans()

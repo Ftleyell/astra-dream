@@ -81,12 +81,23 @@ func _ready() -> void:
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 
+	if fullbody_texture:
+		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_STOP
+		fullbody_texture.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		fullbody_texture.gui_input.connect(_on_character_art_gui_input)
+
+	var right_panel: Control = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel") as Control
+	if right_panel:
+		right_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+		right_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		right_panel.gui_input.connect(_on_character_art_gui_input)
+
 func _unhandled_input(event: InputEvent) -> void:
+	if debug_menu_modal and debug_menu_modal.get("is_open"):
+		return
+
 	if event.is_action_pressed("ui_cancel"):
 		_on_back_pressed()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_select") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE):
-		_on_launch_pressed()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_C:
 		_on_loadout_pressed()
@@ -94,6 +105,32 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif DEBUG_MENU_AVAILABLE and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
+
+func _on_character_art_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_on_character_art_clicked()
+		get_viewport().set_input_as_handled()
+
+func _on_character_art_clicked() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx(&"ui_click")
+
+	# Animación elástica en el arte del personaje
+	if fullbody_texture:
+		fullbody_texture.pivot_offset = fullbody_texture.size * 0.5
+		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(fullbody_texture, "scale", Vector2(1.04, 1.04), 0.08)
+		tw.tween_property(fullbody_texture, "scale", Vector2(1.0, 1.0), 0.12)
+
+	# Mover foco del UI y cursor del ratón hacia el botón de Iniciar Run
+	if launch_button and launch_button.is_visible_in_tree():
+		launch_button.grab_focus()
+		var target_pos: Vector2 = launch_button.get_global_rect().get_center()
+		get_viewport().warp_mouse(target_pos)
+		var tw_btn := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw_btn.tween_property(launch_button, "scale", Vector2(1.06, 1.06), 0.08)
+		tw_btn.tween_property(launch_button, "scale", Vector2(1.0, 1.0), 0.12)
 
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
@@ -108,7 +145,12 @@ func _populate_roster() -> void:
 		btn.custom_minimum_size = Vector2(400, 84)
 		btn.text = "   %s\n   %s" % [char_data.display_name.to_upper(), char_data.title]
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.pressed.connect(func(): _select_character(cid))
+		btn.pressed.connect(func():
+			if current_character_id == cid:
+				_on_character_art_clicked()
+			else:
+				_select_character(cid)
+		)
 		btn.focus_entered.connect(func(): _select_character(cid))
 
 		var icon_tex := char_data.get_portrait_texture()
