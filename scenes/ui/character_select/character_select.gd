@@ -14,8 +14,18 @@ const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 @onready var weapon_icon: TextureRect = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponIcon
 @onready var weapon_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox/WeaponName
 
+# ==============================================================================
+# CONFIGURACIÓN DE DEBUG (Comentar o cambiar a false para desactivar en builds)
+# ==============================================================================
+const DEBUG_MENU_AVAILABLE: bool = true
+# ==============================================================================
+
+const DebugMenuModalScript := preload("res://scenes/ui/debug/debug_menu_modal.gd")
+
 @onready var launch_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LaunchButton
 @onready var loadout_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LoadoutButton
+@onready var debug_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/DebugButton") as Button
+@onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
 @onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
 @onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
 
@@ -60,6 +70,13 @@ func _ready() -> void:
 	UIFocusHelper.apply_cyber_focus(loadout_button)
 	UIFocusHelper.apply_cyber_focus(back_button)
 
+	if debug_button:
+		if DEBUG_MENU_AVAILABLE:
+			UIFocusHelper.apply_cyber_focus(debug_button)
+			debug_button.pressed.connect(_on_debug_pressed)
+		else:
+			debug_button.visible = false
+
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
@@ -73,6 +90,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_C:
 		_on_loadout_pressed()
+		get_viewport().set_input_as_handled()
+	elif DEBUG_MENU_AVAILABLE and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
+		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
 
 func _populate_roster() -> void:
@@ -99,9 +119,9 @@ func _populate_roster() -> void:
 		UIFocusHelper.apply_cyber_focus(btn)
 		char_list_container.add_child(btn)
 
-		# Navegación horizontal WASD: presionar D/derecha va a LaunchButton
-		if launch_button:
-			btn.focus_neighbor_right = launch_button.get_path()
+		# Navegación horizontal WASD: presionar D/derecha va a los botones de acción
+		if loadout_button:
+			btn.focus_neighbor_right = loadout_button.get_path()
 
 		if not first_btn:
 			first_btn = btn
@@ -115,13 +135,28 @@ func _populate_roster() -> void:
 		prev_btn.focus_neighbor_bottom = first_btn.get_path()
 		first_btn.focus_neighbor_top = prev_btn.get_path()
 
-	launch_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
-	launch_button.focus_neighbor_bottom = loadout_button.get_path()
-	loadout_button.focus_neighbor_top = launch_button.get_path()
+	# Cadena de navegación horizontal y vertical en ActionsRow
 	loadout_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
+	if debug_button and debug_button.visible:
+		loadout_button.focus_neighbor_right = debug_button.get_path()
+		debug_button.focus_neighbor_left = loadout_button.get_path()
+		debug_button.focus_neighbor_right = launch_button.get_path()
+		launch_button.focus_neighbor_left = debug_button.get_path()
+	else:
+		loadout_button.focus_neighbor_right = launch_button.get_path()
+		launch_button.focus_neighbor_left = loadout_button.get_path()
+
+	launch_button.focus_neighbor_top = back_button.get_path()
+	back_button.focus_neighbor_bottom = launch_button.get_path()
 
 	if first_btn:
 		first_btn.grab_focus()
+
+func _on_debug_pressed() -> void:
+	if not DEBUG_MENU_AVAILABLE or not debug_menu_modal:
+		return
+	var char_data: CharacterData = roster_dict.get(current_character_id, null)
+	debug_menu_modal.open_menu(char_data)
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id

@@ -127,6 +127,11 @@ func _ready() -> void:
 		w_ctrl.equipped_weapons.clear()
 		w_ctrl.add_weapon(character_data.starting_weapon)
 
+	# Aplicar trampas y modificadores de stats del Modo Debug si está activo
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("apply_to_player"):
+		debug_mgr.apply_to_player(self)
+
 
 func _apply_visual_theme() -> void:
 	if not character_data:
@@ -502,7 +507,9 @@ func is_any_menu_or_modal_active() -> bool:
 	return false
 
 func _can_trigger_bomb() -> bool:
-	if bomb_count <= 0:
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	var inf_consumables: bool = debug_mgr and debug_mgr.has_method("is_infinite_consumables_active") and debug_mgr.is_infinite_consumables_active()
+	if bomb_count <= 0 and not inf_consumables:
 		return false
 	if get_tree() and get_tree().paused:
 		return false
@@ -517,7 +524,10 @@ func _can_trigger_bomb() -> bool:
 func _execute_bomb() -> void:
 	if not _can_trigger_bomb():
 		return
-	bomb_count -= 1
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	var inf_consumables: bool = debug_mgr and debug_mgr.has_method("is_infinite_consumables_active") and debug_mgr.is_infinite_consumables_active()
+	if not inf_consumables:
+		bomb_count -= 1
 	bomb_used.emit(bomb_count)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
@@ -597,6 +607,9 @@ func add_exp(amount: float) -> void:
 
 func take_damage(amount: float) -> void:
 	if is_dashing:
+		return
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("is_infinite_hp_active") and debug_mgr.is_infinite_hp_active():
 		return
 	var armor_val: float = stats.get_stat(&"armor") if stats else 0.0
 	var mitigated_dmg: float = amount

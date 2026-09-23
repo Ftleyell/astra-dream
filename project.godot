@@ -28,6 +28,7 @@ buses/default_bus_layout="uid://cbus001"
 
 SettingsManager="*res://core/autoloads/settings_manager.gd"
 SaveManager="*res://core/autoloads/save_manager.gd"
+DebugManager="*res://core/autoloads/debug_manager.gd"
 EventBus="*res://core/autoloads/event_bus.gd"
 AudioManager="*res://core/autoloads/audio_manager.gd"
 Dialogic="*uid://ds2q0uclmolvu"

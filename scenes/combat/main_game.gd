@@ -67,6 +67,9 @@ func _ready() -> void:
 	last_anchor_pos = player.global_position
 
 	# Inicializar HUD
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
+		player.run_credits = 999999
 	hud.update_credits(player.run_credits)
 	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
@@ -357,7 +360,11 @@ func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> voi
 	_setup_dialogic_audio(layout)
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
-	player.run_credits -= cost
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
+		player.run_credits = 999999
+	else:
+		player.run_credits -= cost
 	if item_or_weapon is WeaponData:
 		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 		if w_ctrl:
