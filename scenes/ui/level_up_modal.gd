@@ -235,15 +235,25 @@ func _refresh_player_stats_display(level_override: int = -1) -> void:
 			"panel": item_panel,
 			"is_buffed": is_buffed,
 			"base_style": sb,
-			"theme_col": theme_col
+			"theme_col": theme_col,
+			"current_val": current_val,
+			"mult": mult,
+			"fmt": fmt,
+			"suffix": suffix,
+			"displayed_val": displayed_val,
+			"lbl_val": lbl_val
 		}
 
-func _highlight_target_stat(target_stat: StringName) -> void:
+func _highlight_target_stat(target_stat: StringName, card: StatCardData = null) -> void:
 	for stat_key in stat_card_ui_entries.keys():
 		var entry: Dictionary = stat_card_ui_entries[stat_key]
 		var p: PanelContainer = entry["panel"]
 		if not is_instance_valid(p):
 			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
 		if stat_key == target_stat:
 			var high_style := StyleBoxFlat.new()
 			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
@@ -254,8 +264,25 @@ func _highlight_target_stat(target_stat: StringName) -> void:
 			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
 			high_style.shadow_size = 4
 			p.add_theme_stylebox_override("panel", high_style)
+
+			# Previsualización numérica de antes y después
+			if card and is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v := cur_v * (1.0 + card.modifier_value) if card.is_percentage else (cur_v + card.modifier_value)
+				var proj_str := (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if card.modifier_value >= 0 else Color("#FF4466"))
 		else:
 			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
 
 func restore_focus() -> void:
 	if current_selected_idx >= 0 and current_selected_idx < select_buttons.size():
@@ -359,7 +386,7 @@ func _update_card_selection(idx: int) -> void:
 		panel_node.add_theme_stylebox_override("panel", style)
 
 	if idx < current_offered_cards.size():
-		_highlight_target_stat(current_offered_cards[idx].target_stat)
+		_highlight_target_stat(current_offered_cards[idx].target_stat, current_offered_cards[idx])
 
 func _confirm_current_selection() -> void:
 	_select_card_by_index(current_selected_idx)
@@ -462,14 +489,27 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 		icon_rect.modulate = tier_color
 	icon_panel.add_child(icon_rect)
 
-	# Descripción de mejora
+	# Descripción de mejora con valor exacto y nombre de estadística
+	var stat_name_display: String = str(card.target_stat)
+	for cfg in RUN_STATS_CONFIG:
+		if cfg["key"] == card.target_stat:
+			stat_name_display = cfg["name"]
+			break
+
+	var mod_sign := "+" if card.modifier_value > 0 else ""
+	var mod_text := ""
+	if card.is_percentage:
+		mod_text = "%s%.0f%%" % [mod_sign, card.modifier_value * 100.0]
+	else:
+		mod_text = "%s%.0f" % [mod_sign, card.modifier_value]
+
 	var desc_lbl := Label.new()
-	desc_lbl.text = "Modificador permanente de estadísticas"
+	desc_lbl.text = "%s %s" % [mod_text, stat_name_display]
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	desc_lbl.modulate = Color(0.75, 0.8, 0.9, 0.8)
-	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_font_size_override("font_size", 13)
+	desc_lbl.add_theme_color_override("font_color", Color("#00FF9D") if card.modifier_value >= 0 else Color("#FF4466"))
 
 	# Botón de selección interactivo compacto (evita miss-clicks involuntarios por spam de disparo)
 	var select_btn := Button.new()

@@ -13,10 +13,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -690.0
-offset_top = -285.0
-offset_right = 690.0
-offset_bottom = 285.0
+offset_left = -710.0
+offset_top = -300.0
+offset_right = 710.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -26,9 +26,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 18.0
+offset_top = 16.0
 offset_right = -20.0
-offset_bottom = -18.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
@@ -85,7 +85,7 @@ layout_mode = 2
 text = "Cerrar y Continuar"
 
 [node name="InventorySidePanel" type="PanelContainer" parent="ShopPanel/VBoxContainer/MainHBox"]
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel"]
@@ -102,7 +102,7 @@ theme_override_constants/separation = 8
 [node name="InventoryTitle" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "INVENTARIO DE LA RUN"
+text = "ESTADO & INVENTARIO DE LA RUN"
 horizontal_alignment = 1
 
 [node name="InventorySummary" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox"]
@@ -120,6 +120,16 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="StatsHeader" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.2, 0.7, 1, 0.95)
+text = "📊 ESTADÍSTICAS DEL PILOTO"
+
+[node name="StatsList" type="VBoxContainer" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
+layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="WeaponsHeader" type="Label" parent="ShopPanel/VBoxContainer/MainHBox/InventorySidePanel/Margin/VBox/Scroll/InventoryContent"]
 layout_mode = 2

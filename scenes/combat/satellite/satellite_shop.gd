@@ -11,6 +11,7 @@ var current_credits: int = 100
 var reroll_cost: int = 15
 var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
+var stat_ui_entries: Dictionary = {}
 
 @onready var panel: Panel = $ShopPanel
 @onready var items_container: HBoxContainer = find_child("ItemsContainer", true, false) as HBoxContainer
@@ -19,6 +20,8 @@ var buy_buttons: Array[Button] = []
 @onready var close_btn: Button = find_child("CloseButton", true, false) as Button
 @onready var inventory_side_panel: PanelContainer = find_child("InventorySidePanel", true, false) as PanelContainer
 @onready var inventory_summary_label: Label = find_child("InventorySummary", true, false) as Label
+@onready var stats_header_label: Label = find_child("StatsHeader", true, false) as Label
+@onready var stats_list: VBoxContainer = find_child("StatsList", true, false) as VBoxContainer
 @onready var weapons_list: VBoxContainer = find_child("WeaponsList", true, false) as VBoxContainer
 @onready var items_list: VBoxContainer = find_child("ItemsList", true, false) as VBoxContainer
 
@@ -35,6 +38,24 @@ const STAT_ICON_MAP = {
 	&"health_regen": "res://assets/icons/items/icon_apple.svg",
 	&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
 }
+
+const RUN_STATS_CONFIG: Array[Dictionary] = [
+	{"name": "DAÑO", "key": &"base_damage", "fmt": "%.1f", "suffix": ""},
+	{"name": "VEL. ATAQUE", "key": &"attack_speed", "fmt": "%.2f", "suffix": "x"},
+	{"name": "PROB. CRÍTICA", "key": &"crit_chance", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "DAÑO CRÍTICO", "key": &"crit_damage", "fmt": "%.2f", "suffix": "x"},
+	{"name": "PROYECTILES", "key": &"projectile_count", "fmt": "%.0f", "suffix": ""},
+	{"name": "VEL. PROYECTIL", "key": &"projectile_speed", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "VEL. MOVIMIENTO", "key": &"move_speed", "fmt": "%.0f", "suffix": " px/s"},
+	{"name": "ENFRIAMIENTO", "key": &"cooldown_reduction", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "VIDA MÁXIMA", "key": &"max_health", "fmt": "%.0f", "suffix": " HP"},
+	{"name": "REGEN. VIDA", "key": &"health_regen", "fmt": "%.1f", "suffix": "/s"},
+	{"name": "ARMADURA", "key": &"armor", "fmt": "%.0f", "suffix": ""},
+	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
+	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
+]
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -68,11 +89,13 @@ func _ready() -> void:
 	if available_items_pool.is_empty():
 		_generate_default_shop_items()
 
+
 func _ensure_player() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
 	if not is_instance_valid(player) and get_parent():
 		player = get_parent().get_node_or_null("Player") as Player
+
 
 func _generate_default_shop_items() -> void:
 	var items: Array[ItemData] = ItemPoolManager.create_canonical_stat_items()
@@ -92,18 +115,22 @@ func _generate_default_shop_items() -> void:
 			if w:
 				available_items_pool.append(w)
 
+
 func open_shop(credits: int) -> void:
 	current_credits = credits
 	_ensure_player()
 	_update_credits_display()
 	_roll_shop_items()
+	_refresh_stats_display()
 	_refresh_inventory_display()
 	get_tree().paused = true
 	show()
 	call_deferred("_setup_focus_and_grab")
 
+
 func restore_focus() -> void:
 	_setup_focus_and_grab()
+
 
 func close_shop() -> void:
 	_ensure_player()
@@ -120,6 +147,151 @@ func close_shop() -> void:
 	else:
 		get_tree().paused = false
 	shop_closed.emit()
+
+
+func _refresh_stats_display() -> void:
+	_ensure_player()
+	if not is_instance_valid(player) or not stats_list:
+		return
+
+	for child in stats_list.get_children():
+		child.queue_free()
+	stat_ui_entries.clear()
+
+	var data: CharacterData = player.character_data
+	var stats: CharacterStats = player.stats
+	if not stats:
+		return
+
+	var theme_col: Color = data.color if data else Color("#00F0FF")
+
+	for cfg in RUN_STATS_CONFIG:
+		var key: StringName = cfg["key"]
+		var current_val: float = stats.get_stat(key)
+		var base_val: float = data.get(key) if (data and key in data) else current_val
+		var mult: float = cfg.get("mult", 1.0)
+		var fmt: String = cfg["fmt"]
+		var suffix: String = cfg["suffix"]
+
+		var displayed_val := (fmt % (current_val * mult)) + suffix
+		var is_buffed := (current_val > base_val + 0.001)
+
+		var item_panel := PanelContainer.new()
+		item_panel.custom_minimum_size = Vector2(0, 22)
+
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
+		sb.border_color = (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5))
+		sb.set_border_width_all(1)
+		sb.border_width_left = 3
+		sb.set_corner_radius_all(3)
+		item_panel.add_theme_stylebox_override("panel", sb)
+
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 6)
+		margin.add_theme_constant_override("margin_right", 6)
+		margin.add_theme_constant_override("margin_top", 1)
+		margin.add_theme_constant_override("margin_bottom", 1)
+		item_panel.add_child(margin)
+
+		var hbox := HBoxContainer.new()
+		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+		margin.add_child(hbox)
+
+		var lbl_name := Label.new()
+		lbl_name.text = cfg["name"]
+		lbl_name.add_theme_font_size_override("font_size", 10)
+		lbl_name.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.add_child(lbl_name)
+
+		var lbl_val := Label.new()
+		lbl_val.text = displayed_val
+		lbl_val.add_theme_font_size_override("font_size", 10)
+		lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if is_buffed else Color.WHITE)
+		hbox.add_child(lbl_val)
+
+		if is_buffed:
+			var lbl_base := Label.new()
+			var base_disp := (fmt % (base_val * mult)) + suffix
+			lbl_base.text = " (%s)" % base_disp
+			lbl_base.add_theme_font_size_override("font_size", 9)
+			lbl_base.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7, 0.7))
+			hbox.add_child(lbl_base)
+
+		stats_list.add_child(item_panel)
+		stat_ui_entries[key] = {
+			"panel": item_panel,
+			"is_buffed": is_buffed,
+			"base_style": sb,
+			"theme_col": theme_col,
+			"current_val": current_val,
+			"mult": mult,
+			"fmt": fmt,
+			"suffix": suffix,
+			"displayed_val": displayed_val,
+			"lbl_val": lbl_val
+		}
+
+
+func _highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void:
+	for key in stat_ui_entries.keys():
+		var entry: Dictionary = stat_ui_entries[key]
+		var p: PanelContainer = entry["panel"]
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		if key == stat_key:
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
+			high_style.border_color = Color("#FFE600")
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
+			high_style.shadow_size = 4
+			p.add_theme_stylebox_override("panel", high_style)
+
+			if is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v := cur_v * (1.0 + delta_val) if is_pct else (cur_v + delta_val)
+				var proj_str := (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if delta_val >= 0 else Color("#FF4466"))
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
+
+func _clear_stat_highlights() -> void:
+	for key in stat_ui_entries.keys():
+		var entry: Dictionary = stat_ui_entries[key]
+		var p: PanelContainer = entry["panel"]
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		p.add_theme_stylebox_override("panel", entry["base_style"])
+		if is_instance_valid(lbl_val):
+			lbl_val.text = displayed_val
+			if is_buffed:
+				lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
+			else:
+				lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
 
 func _refresh_inventory_display() -> void:
 	_ensure_player()
@@ -181,6 +353,7 @@ func _refresh_inventory_display() -> void:
 	if inventory_summary_label:
 		inventory_summary_label.text = "Armas: %d/6  |  Ítems Pasivos: %d" % [weapons_count, items_count]
 
+
 func _create_inventory_weapon_card(w_data: WeaponData, w_level: int = 1) -> PanelContainer:
 	var panel_item := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
@@ -227,6 +400,7 @@ func _create_inventory_weapon_card(w_data: WeaponData, w_level: int = 1) -> Pane
 	hbox.add_child(dmg_lbl)
 
 	return panel_item
+
 
 func _create_inventory_item_card(it_data: ItemData, count: int) -> PanelContainer:
 	var rarity_col := _get_rarity_color(it_data.rarity)
@@ -277,6 +451,7 @@ func _create_inventory_item_card(it_data: ItemData, count: int) -> PanelContaine
 	hbox.add_child(stack_lbl)
 
 	return panel_item
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -350,6 +525,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 
+
 func _navigate_focus(side: Side) -> void:
 	var focused := get_viewport().gui_get_focus_owner() as Control
 	if not focused or not is_instance_valid(focused):
@@ -370,11 +546,13 @@ func _navigate_focus(side: Side) -> void:
 	if next and is_instance_valid(next):
 		next.grab_focus()
 
+
 func _buy_item_by_index(index: int) -> void:
 	if index >= 0 and index < buy_buttons.size():
 		var btn := buy_buttons[index]
 		if is_instance_valid(btn) and not btn.disabled:
 			btn.pressed.emit()
+
 
 func _update_credits_display() -> void:
 	if credits_label:
@@ -383,6 +561,7 @@ func _update_credits_display() -> void:
 		reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
 	if close_btn:
 		close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
+
 
 func _roll_shop_items() -> void:
 	if not items_container:
@@ -405,12 +584,14 @@ func _roll_shop_items() -> void:
 
 	_setup_focus_and_grab()
 
+
 func _create_item_card_ui(entry: Resource, index: int) -> void:
 	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
 	var rarity_color := _get_rarity_color(entry_rarity)
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(230, 310)
+	card.custom_minimum_size = Vector2(235, 330)
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
@@ -421,15 +602,16 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 	card.add_theme_stylebox_override("panel", card_style)
 
 	var vbox := VBoxContainer.new()
-	vbox.set("theme_override_constants/separation", 8)
+	vbox.set("theme_override_constants/separation", 6)
 
-	# Indicador de atajo de teclado
+	# 1. Indicador de atajo de teclado
 	var hotkey_lbl := Label.new()
 	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
 	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
 	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hotkey_lbl.add_theme_font_size_override("font_size", 12)
+	hotkey_lbl.add_theme_font_size_override("font_size", 11)
 
+	# 2. Título del ítem / arma
 	var display_title: String = ""
 	if entry is WeaponData:
 		display_title = "[ARMA] " + (entry as WeaponData).weapon_name
@@ -443,10 +625,11 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_lbl.add_theme_color_override("font_color", rarity_color)
+	name_lbl.add_theme_font_size_override("font_size", 14)
 
-	# Marco contenedor del icono de 64x64 px centrado
+	# 3. Marco contenedor del icono de 56x56 px centrado
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(64, 64)
+	icon_panel.custom_minimum_size = Vector2(56, 56)
 	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
@@ -457,7 +640,7 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(50, 50)
+	icon_rect.custom_minimum_size = Vector2(44, 44)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -467,12 +650,72 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 		icon_rect.modulate = rarity_color
 	icon_panel.add_child(icon_rect)
 
+	# 4. CHIPS DE ESTADÍSTICAS EXACTAS
+	var stat_badge_panel := PanelContainer.new()
+	var stat_badge_sb := StyleBoxFlat.new()
+	stat_badge_sb.set_corner_radius_all(3)
+	stat_badge_sb.set_border_width_all(1)
+
+	var stat_badge_lbl := Label.new()
+	stat_badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stat_badge_lbl.add_theme_font_size_override("font_size", 11)
+
+	var target_stat_for_hover := StringName("")
+	var stat_delta_for_hover: float = 0.0
+	var is_pct_for_hover: bool = false
+
+	if entry is ItemData:
+		var it: ItemData = entry as ItemData
+		if it.stat_name != &"":
+			target_stat_for_hover = it.stat_name
+			stat_delta_for_hover = it.stat_value
+			is_pct_for_hover = it.is_percentage
+
+			var stat_display_name: String = str(it.stat_name)
+			for cfg in RUN_STATS_CONFIG:
+				if cfg["key"] == it.stat_name:
+					stat_display_name = cfg["name"]
+					break
+
+			var sign_s := "+" if it.stat_value > 0 else ""
+			var val_s := ("%s%.0f%%" % [sign_s, it.stat_value * 100.0]) if it.is_percentage else ("%s%.0f" % [sign_s, it.stat_value])
+			var col_badge := Color("#00FF9D") if it.stat_value >= 0 else Color("#FF4466")
+
+			stat_badge_sb.bg_color = Color(col_badge.r, col_badge.g, col_badge.b, 0.12)
+			stat_badge_sb.border_color = col_badge
+			stat_badge_lbl.text = "▲ %s  %s" % [val_s, stat_display_name]
+			stat_badge_lbl.add_theme_color_override("font_color", col_badge)
+		else:
+			stat_badge_sb.bg_color = Color(0.1, 0.5, 0.8, 0.15)
+			stat_badge_sb.border_color = Color(0.2, 0.7, 1.0, 0.7)
+			stat_badge_lbl.text = "⚡ EFECTO REACTIVO / PROC"
+			stat_badge_lbl.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
+	elif entry is WeaponData:
+		var wp: WeaponData = entry as WeaponData
+		stat_badge_sb.bg_color = Color(1.0, 0.8, 0.2, 0.12)
+		stat_badge_sb.border_color = Color(1.0, 0.8, 0.2, 0.8)
+		stat_badge_lbl.text = "⚔ %.0f DMG  |  ⏱ %.2fs CD" % [wp.base_damage, wp.base_cooldown]
+		stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+
+	stat_badge_panel.add_theme_stylebox_override("panel", stat_badge_sb)
+	var b_margin := MarginContainer.new()
+	b_margin.add_theme_constant_override("margin_left", 6)
+	b_margin.add_theme_constant_override("margin_right", 6)
+	b_margin.add_theme_constant_override("margin_top", 3)
+	b_margin.add_theme_constant_override("margin_bottom", 3)
+	b_margin.add_child(stat_badge_lbl)
+	stat_badge_panel.add_child(b_margin)
+
+	# 5. Descripción del ítem
 	var desc_lbl := Label.new()
 	desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 
+	# 6. Botón de Compra
 	var cost: int = entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
@@ -485,21 +728,40 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 			buy_btn.disabled = true
 			buy_btn.text = "¡Adquirido!"
 			item_purchased.emit(entry, cost)
-			# Actualizar inventario en tiempo real
+			# Actualizar inventario y estadísticas en tiempo real
 			call_deferred("_refresh_inventory_display")
+			call_deferred("_refresh_stats_display")
+			_clear_stat_highlights()
 			# Si aún hay créditos y otros botones, enfocar el siguiente disponible
 			_focus_next_available_buy_button()
 	)
 
+	# Conexión de previsualización numérica en el panel de estadísticas al hover / focus
+	if target_stat_for_hover != &"":
+		card.mouse_entered.connect(func():
+			_highlight_preview_stat(target_stat_for_hover, stat_delta_for_hover, is_pct_for_hover)
+		)
+		card.mouse_exited.connect(func():
+			_clear_stat_highlights()
+		)
+		buy_btn.focus_entered.connect(func():
+			_highlight_preview_stat(target_stat_for_hover, stat_delta_for_hover, is_pct_for_hover)
+		)
+		buy_btn.focus_exited.connect(func():
+			_clear_stat_highlights()
+		)
+
 	vbox.add_child(hotkey_lbl)
 	vbox.add_child(name_lbl)
 	vbox.add_child(icon_panel)
+	vbox.add_child(stat_badge_panel)
 	vbox.add_child(desc_lbl)
 	vbox.add_child(buy_btn)
 	card.add_child(vbox)
 	items_container.add_child(card)
 
 	buy_buttons.append(buy_btn)
+
 
 func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:
@@ -513,6 +775,7 @@ func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 			return Color(0.9, 0.3, 1.0, 1.0)
 		_:
 			return Color.WHITE
+
 
 func _setup_focus_and_grab() -> void:
 	if buy_buttons.is_empty():
@@ -542,6 +805,7 @@ func _setup_focus_and_grab() -> void:
 
 	_focus_next_available_buy_button()
 
+
 func _focus_next_available_buy_button() -> void:
 	for btn in buy_buttons:
 		if is_instance_valid(btn) and not btn.disabled:
@@ -549,6 +813,7 @@ func _focus_next_available_buy_button() -> void:
 			return
 	if close_btn and is_instance_valid(close_btn):
 		close_btn.grab_focus()
+
 
 func _on_reroll_pressed() -> void:
 	if current_credits >= reroll_cost:
