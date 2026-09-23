@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://charselect001"]
+[gd_scene load_steps=4 format=3 uid="uid://charselect001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
 [ext_resource type="Texture2D" path="res://assets/icons/gear.svg" id="2_gear"]
@@ -20,7 +20,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.025, 0.05, 1)
+color = Color(0.015, 0.02, 0.035, 1)
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -29,59 +29,224 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 60
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 60
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 28
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 50
-
-[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(380, 0)
+[node name="RootVBox" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="HeaderLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftPanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
-theme_override_font_sizes/font_size = 24
-text = "SELECCIÓN DE PILOTO"
-
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/LeftPanel"]
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/RootVBox"]
 layout_mode = 2
 
-[node name="CharScroll" type="ScrollContainer" parent="MarginContainer/HBoxContainer/LeftPanel"]
+[node name="TitleBox" type="VBoxContainer" parent="MarginContainer/RootVBox/HeaderBar"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "ASTRA DREAM // SELECCIÓN DE PILOTO"
+
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.85, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "SELECCIONA TU HEROÍNA PARA EL ASALTO ORBITAL"
+
+[node name="Spacer" type="Control" parent="MarginContainer/RootVBox/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" type="Button" parent="MarginContainer/RootVBox/HeaderBar"]
+custom_minimum_size = Vector2(200, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "← [ESC] VOLVER"
+
+[node name="MainColumns" type="HBoxContainer" parent="MarginContainer/RootVBox"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 30
 
-[node name="CharList" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftPanel/CharScroll"]
+[node name="LeftPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns"]
+custom_minimum_size = Vector2(430, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RosterHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/LeftPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 0.9)
+theme_override_font_sizes/font_size = 16
+text = "ROSTER DE HEROÍNAS"
+
+[node name="CharScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/MainColumns/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="CharList" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="BackButton" type="Button" parent="MarginContainer/HBoxContainer/LeftPanel"]
-custom_minimum_size = Vector2(0, 46)
+[node name="CenterPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns"]
+custom_minimum_size = Vector2(580, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "← VOLVER AL MENÚ"
+theme_override_constants/separation = 14
 
-[node name="RightPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+[node name="DossierHeader" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NameLabel" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "NOVA"
+
+[node name="ClassTitleLabel" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 20
+text = "Piloto de Vanguardia"
+
+[node name="HSep1" type="HSeparator" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+
+[node name="DescBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DescHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/DescBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.75, 1, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "INFORME TÁCTICO & LORE"
+
+[node name="DescLabel" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/DescBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "Especialista en asaltos frontales a hiper-velocidad..."
+autowrap_mode = 2
+
+[node name="StatsBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StatsHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/StatsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.6, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "ATRIBUTOS DE COMBATE"
+
+[node name="StatsLabel" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/StatsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "HP: 100 | Vel: 340 px/s | Daño: 40 | Crítico: 5% | Suerte: 0"
+
+[node name="EquipmentBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EquipHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "EQUIPAMIENTO INICIAL ASIGNADO"
+
+[node name="EquipRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ShipCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
+custom_minimum_size = Vector2(270, 88)
+layout_mode = 2
+
+[node name="ShipBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ShipIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShipLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ShipTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Nave / Exocaza"
+
+[node name="ShipName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Interceptor Delta"
+
+[node name="WeaponCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
+custom_minimum_size = Vector2(270, 88)
+layout_mode = 2
+
+[node name="WeaponBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="WeaponIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="WeaponTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Arma Principal"
+
+[node name="WeaponName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.5, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Blaster Ígneo Vectorial"
+
+[node name="ActionsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LoadoutButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow"]
+custom_minimum_size = Vector2(230, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "⚙ [C] BANLIST"
+icon = ExtResource("2_gear")
+
+[node name="LaunchButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow"]
+custom_minimum_size = Vector2(280, 56)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 24
+theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 19
+text = "🚀 [ESPACIO] DESPEGAR"
+icon = ExtResource("3_rocket")
 
-[node name="TopRow" type="HBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel"]
+[node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2
-theme_override_constants/separation = 30
+size_flags_horizontal = 3
 
-[node name="PortraitFrame" type="Panel" parent="MarginContainer/HBoxContainer/RightPanel"]
-custom_minimum_size = Vector2(260, 260)
-layout_mode = 2
-size_flags_horizontal = 0
-
-[node name="PortraitTexture" type="TextureRect" parent="MarginContainer/HBoxContainer/RightPanel/PortraitFrame"]
+[node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,70 +255,4 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
-
-[node name="PortraitEmblem" type="Polygon2D" parent="MarginContainer/HBoxContainer/RightPanel/PortraitFrame"]
-visible = false
-position = Vector2(130, 130)
-color = Color(1, 0.4, 0.2, 1)
-polygon = PackedVector2Array(-40, 50, 0, -60, 40, 50, 0, 20)
-
-[node name="FrameBorder" type="Polygon2D" parent="MarginContainer/HBoxContainer/RightPanel/PortraitFrame"]
-color = Color(0.3, 0.6, 1, 0.4)
-invert_enabled = true
-invert_border = 4.0
-polygon = PackedVector2Array(0, 0, 260, 0, 260, 260, 0, 260)
-
-[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="NameLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/InfoVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "Nova"
-
-[node name="TitleLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/InfoVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.8, 1, 0.9)
-theme_override_font_sizes/font_size = 20
-text = "Piloto de Vanguardia"
-
-[node name="DescLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/InfoVBox"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
-theme_override_font_sizes/font_size = 17
-text = "Especialista en asaltos frontales a hiper-velocidad. Su reactor sobrecalienta armas térmicas aumentando el daño base a quemarropa."
-autowrap_mode = 2
-
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/HBoxContainer/RightPanel/InfoVBox"]
-layout_mode = 2
-
-[node name="StatsLabel" type="Label" parent="MarginContainer/HBoxContainer/RightPanel/InfoVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 0.6, 1)
-theme_override_font_sizes/font_size = 16
-text = "HP: 100 | Vel: 340 px/s | Daño: 40 | Crítico: 5% | Suerte: 0"
-
-[node name="ActionsRow" type="HBoxContainer" parent="MarginContainer/HBoxContainer/RightPanel"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="LoadoutButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/ActionsRow"]
-custom_minimum_size = Vector2(240, 56)
-layout_mode = 2
-theme_override_font_sizes/font_size = 17
-text = "CUSTOM LOADOUT / BANLIST"
-icon = ExtResource("2_gear")
-alignment = 1
-
-[node name="LaunchButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/ActionsRow"]
-custom_minimum_size = Vector2(280, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
-theme_override_font_sizes/font_size = 20
-text = "DESPEGAR (INICIAR RUN)"
-icon = ExtResource("3_rocket")
-alignment = 1
+flip_h = true

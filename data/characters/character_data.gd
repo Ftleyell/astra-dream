@@ -66,7 +66,11 @@ func get_theme_color() -> Color:
 func get_silhouette_points() -> PackedVector2Array:
 	return pts
 
-func get_portrait_texture() -> Texture2D:
+func get_portrait_texture(flipped: bool = false) -> Texture2D:
+	if flipped:
+		var path_flip := "res://assets/characters/portraits/portrait_%s_flipped.png" % str(character_id).to_lower()
+		if ResourceLoader.exists(path_flip):
+			return load(path_flip) as Texture2D
 	if portrait_icon:
 		return portrait_icon
 	var path := "res://assets/characters/portraits/portrait_%s.png" % str(character_id).to_lower()
@@ -85,7 +89,11 @@ func get_ship_texture() -> Texture2D:
 		return load(path) as Texture2D
 	return null
 
-func get_fullbody_texture() -> Texture2D:
+func get_fullbody_texture(flipped: bool = false) -> Texture2D:
+	if flipped:
+		var path_flip := "res://assets/characters/fullbody/fullbody_%s_flipped.png" % str(character_id).to_lower()
+		if ResourceLoader.exists(path_flip):
+			return load(path_flip) as Texture2D
 	if fullbody_sprite:
 		return fullbody_sprite
 	var path := "res://assets/characters/fullbody/fullbody_%s.png" % str(character_id).to_lower()

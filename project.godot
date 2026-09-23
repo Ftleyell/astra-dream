@@ -37,7 +37,11 @@ _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 directories/dch_directory={
 "echo": "res://narrative/characters/echo.dch",
-"nova": "res://narrative/characters/nova.dch"
+"kira": "res://narrative/characters/kira.dch",
+"nova": "res://narrative/characters/nova.dch",
+"roxy": "res://narrative/characters/roxy.dch",
+"selene": "res://narrative/characters/selene.dch",
+"valentina": "res://narrative/characters/valentina.dch"
 }
 directories/dtl_directory={
 "boss_titan_alert": "res://narrative/timelines/boss_titan_alert.dtl",

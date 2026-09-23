@@ -3,17 +3,21 @@ extends Control
 
 const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 
-@onready var char_list_container: VBoxContainer = $MarginContainer/HBoxContainer/LeftPanel/CharScroll/CharList
-@onready var portrait_emblem: Polygon2D = $MarginContainer/HBoxContainer/RightPanel/PortraitFrame/PortraitEmblem
-@onready var portrait_texture: TextureRect = $MarginContainer/HBoxContainer/RightPanel/PortraitFrame/PortraitTexture
-@onready var portrait_border: Panel = $MarginContainer/HBoxContainer/RightPanel/PortraitFrame
-@onready var name_label: Label = $MarginContainer/HBoxContainer/RightPanel/InfoVBox/NameLabel
-@onready var title_label: Label = $MarginContainer/HBoxContainer/RightPanel/InfoVBox/TitleLabel
-@onready var desc_label: Label = $MarginContainer/HBoxContainer/RightPanel/InfoVBox/DescLabel
-@onready var stats_label: Label = $MarginContainer/HBoxContainer/RightPanel/InfoVBox/StatsLabel
-@onready var launch_button: Button = $MarginContainer/HBoxContainer/RightPanel/ActionsRow/LaunchButton
-@onready var loadout_button: Button = $MarginContainer/HBoxContainer/RightPanel/ActionsRow/LoadoutButton
-@onready var back_button: Button = $MarginContainer/HBoxContainer/LeftPanel/BackButton
+@onready var char_list_container: VBoxContainer = $MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll/CharList
+@onready var name_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader/NameLabel
+@onready var title_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader/ClassTitleLabel
+@onready var desc_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DescBox/DescLabel
+@onready var stats_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/StatsBox/StatsLabel
+
+@onready var ship_icon: TextureRect = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipIcon
+@onready var ship_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox/ShipName
+@onready var weapon_icon: TextureRect = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponIcon
+@onready var weapon_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox/WeaponName
+
+@onready var launch_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LaunchButton
+@onready var loadout_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LoadoutButton
+@onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
+@onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
 
 var current_character_id: StringName = &"nova"
 var roster_dict: Dictionary[StringName, CharacterData] = {}
@@ -41,7 +45,9 @@ var characters_data: Dictionary:
 func _ready() -> void:
 	roster_ordered = CharacterData.load_roster_ordered()
 	roster_dict = CharacterData.load_roster()
+
 	_populate_roster()
+
 	var saved_char := SaveManager.get_selected_character()
 	if roster_dict.has(saved_char):
 		_select_character(saved_char)
@@ -54,13 +60,20 @@ func _ready() -> void:
 	UIFocusHelper.apply_cyber_focus(loadout_button)
 	UIFocusHelper.apply_cyber_focus(back_button)
 
-
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 
-	_populate_roster()
-	_select_character(&"nova")
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_on_back_pressed()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_select") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE):
+		_on_launch_pressed()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_C:
+		_on_loadout_pressed()
+		get_viewport().set_input_as_handled()
 
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
@@ -72,22 +85,21 @@ func _populate_roster() -> void:
 	for char_data in roster_ordered:
 		var cid: StringName = char_data.character_id
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(280, 54)
-		btn.text = "%s  —  %s" % [char_data.display_name, char_data.title]
+		btn.custom_minimum_size = Vector2(400, 84)
+		btn.text = "   %s\n   %s" % [char_data.display_name.to_upper(), char_data.title]
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.pressed.connect(func(): _select_character(cid))
 		btn.focus_entered.connect(func(): _select_character(cid))
 
-		var icon_tex := char_data.get_portrait_texture() if char_data.has_method("get_portrait_texture") else char_data.portrait_icon
+		var icon_tex := char_data.get_portrait_texture()
 		if icon_tex:
 			btn.icon = icon_tex
 			btn.expand_icon = true
 
 		UIFocusHelper.apply_cyber_focus(btn)
-
 		char_list_container.add_child(btn)
 
-		# Enlace lateral con WASD: presionar D/derecha va a LaunchButton
+		# Navegación horizontal WASD: presionar D/derecha va a LaunchButton
 		if launch_button:
 			btn.focus_neighbor_right = launch_button.get_path()
 
@@ -100,14 +112,13 @@ func _populate_roster() -> void:
 		prev_btn = btn
 
 	if prev_btn:
-		prev_btn.focus_neighbor_bottom = back_button.get_path()
-		back_button.focus_neighbor_top = prev_btn.get_path()
-		back_button.focus_neighbor_right = loadout_button.get_path()
+		prev_btn.focus_neighbor_bottom = first_btn.get_path()
+		first_btn.focus_neighbor_top = prev_btn.get_path()
 
 	launch_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
 	launch_button.focus_neighbor_bottom = loadout_button.get_path()
 	loadout_button.focus_neighbor_top = launch_button.get_path()
-	loadout_button.focus_neighbor_left = back_button.get_path()
+	loadout_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
 
 	if first_btn:
 		first_btn.grab_focus()
@@ -122,44 +133,44 @@ func _select_character(char_id: StringName) -> void:
 	if not data:
 		return
 
-	name_label.text = data.display_name
+	# Dossier textual
+	name_label.text = data.display_name.to_upper()
 	name_label.modulate = data.color
 	title_label.text = data.title
 	desc_label.text = data.description
 	stats_label.text = data.get_formatted_stats()
 
-	# Carga de cuerpo completo (prioridad) o retrato ilustrado o fallback a silueta poligonal
-	var full_tex: Texture2D = data.get_fullbody_texture() if data.has_method("get_fullbody_texture") else null
-	var portrait_tex: Texture2D = data.get_portrait_texture() if data.has_method("get_portrait_texture") else data.portrait_icon
+	# Equipamiento Asignado (Nave y Arma)
+	if ship_icon:
+		ship_icon.texture = data.get_ship_texture()
+	if ship_name:
+		ship_name.text = "%s Mark I" % data.display_name
 
-	var display_tex: Texture2D = full_tex if full_tex else portrait_tex
-	if not display_tex:
-		var portrait_path := "res://assets/characters/portraits/portrait_%s.png" % str(char_id).to_lower()
-		if ResourceLoader.exists(portrait_path):
-			display_tex = load(portrait_path) as Texture2D
+	if weapon_icon:
+		weapon_icon.texture = data.get_weapon_texture()
+	if weapon_name:
+		if data.starting_weapon and not data.starting_weapon.weapon_name.is_empty():
+			weapon_name.text = data.starting_weapon.weapon_name
+		else:
+			weapon_name.text = "Arma Especializada"
 
-	if display_tex:
-		if portrait_texture:
-			portrait_texture.texture = display_tex
-			portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			portrait_texture.visible = true
-		if portrait_emblem:
-			portrait_emblem.visible = false
-	else:
-		if portrait_texture:
-			portrait_texture.visible = false
-		if portrait_emblem:
-			portrait_emblem.polygon = data.pts
-			portrait_emblem.color = data.color
-			portrait_emblem.visible = true
+	# Escaparate Full Body
+	if fullbody_texture:
+		var fb_tex := data.get_fullbody_texture(true) # Invertida para mirar hacia el centro/izquierda
+		if not fb_tex:
+			fb_tex = data.get_fullbody_texture(false)
+		if not fb_tex:
+			fb_tex = data.get_portrait_texture()
+
+		fullbody_texture.texture = fb_tex
+		fullbody_texture.visible = (fb_tex != null)
 
 func _on_launch_pressed() -> void:
 	SaveManager.set_selected_character(current_character_id)
-	get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
 
 func _on_loadout_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/hangar_banlist_ui.tscn")
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
 
 func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/main_menu/main_menu.tscn")

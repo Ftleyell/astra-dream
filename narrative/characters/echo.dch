@@ -11,15 +11,24 @@
 &"nicknames": [],
 &"offset": Vector2(0, 0),
 &"portraits": {
-"Normal": {
-"export_overrides": {
-"image": "\"res://assets/portraits/portrait_echo.png\""
-},
-"mirror": false,
-"offset": Vector2(0, 0),
-"scale": 1.0,
-"scene": ""
-}
-},
+		"Normal": {
+			"export_overrides": {
+				"image": "\"res://assets/portraits/portrait_echo.png\""
+			},
+			"mirror": false,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
+		},
+		"Flipped": {
+			"export_overrides": {
+				"image": "\"res://assets/portraits/portrait_echo_flipped.png\""
+			},
+			"mirror": false,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
+		}
+	},
 &"scale": 1.0
 }
