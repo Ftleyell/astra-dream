@@ -43,6 +43,7 @@ release/
 *.dylib
 *.zip
 *.tar.gz
+*.rar
 artist_pack*/
 
 # Crash logs and debug traces

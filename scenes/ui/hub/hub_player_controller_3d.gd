@@ -60,8 +60,8 @@ func _setup_sprite() -> void:
 	visual_sprite.shaded = false
 	visual_sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 	visual_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-	visual_sprite.pixel_size = 0.005
-	visual_sprite.offset = Vector2(0, 256)
+	visual_sprite.pixel_size = 0.0013
+	visual_sprite.offset = Vector2(0, 800)
 	visual_sprite.position = Vector3(0, 0, 0)
 
 	_update_character_texture()
@@ -90,9 +90,18 @@ func set_character(char_id: StringName) -> void:
 func _update_character_texture() -> void:
 	if not visual_sprite:
 		return
-	var tex_path := "res://assets/portraits/portrait_%s.png" % String(active_character_id).to_lower()
-	if ResourceLoader.exists(tex_path):
-		visual_sprite.texture = load(tex_path)
+	var cid := String(active_character_id).to_lower()
+	var fullbody_path := "res://assets/characters/fullbody/fullbody_%s.png" % cid
+	if ResourceLoader.exists(fullbody_path):
+		visual_sprite.texture = load(fullbody_path)
+		visual_sprite.pixel_size = 0.0013
+		visual_sprite.offset = Vector2(0, 800)
+	else:
+		var portrait_path := "res://assets/portraits/portrait_%s.png" % cid
+		if ResourceLoader.exists(portrait_path):
+			visual_sprite.texture = load(portrait_path)
+			visual_sprite.pixel_size = 0.005
+			visual_sprite.offset = Vector2(0, 256)
 
 
 func _physics_process(delta: float) -> void:

@@ -225,13 +225,21 @@ func _collect_and_verify_sprites() -> void:
 		sprite.shaded = false
 		sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 		sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-		sprite.pixel_size = 0.005
-		sprite.offset = Vector2(0, 256)
 		sprite.position = char_data["pedestal_pos"]
 
-		var tex_path := "res://assets/portraits/portrait_%s.png" % char_id
-		if ResourceLoader.exists(tex_path):
-			sprite.texture = load(tex_path)
+		# Usar Full Body orientado hacia el pasillo central (heroínas de la derecha usan _flipped)
+		var is_right_side: bool = char_data["pedestal_pos"].x > 0.0
+		var fullbody_tex := ("res://assets/characters/fullbody/fullbody_%s_flipped.png" % char_id) if is_right_side else ("res://assets/characters/fullbody/fullbody_%s.png" % char_id)
+		if ResourceLoader.exists(fullbody_tex):
+			sprite.texture = load(fullbody_tex)
+			sprite.pixel_size = 0.0013
+			sprite.offset = Vector2(0, 800)
+		else:
+			var portrait_tex := "res://assets/portraits/portrait_%s.png" % char_id
+			if ResourceLoader.exists(portrait_tex):
+				sprite.texture = load(portrait_tex)
+				sprite.pixel_size = 0.005
+				sprite.offset = Vector2(0, 256)
 
 		sprite_nodes.append(sprite)
 

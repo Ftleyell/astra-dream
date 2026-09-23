@@ -83,7 +83,21 @@ func _ready() -> void:
 	hub_world.player_controller.global_position = Vector3(0, 0, 16.0)
 	hub_world.player_controller._update_camera(1.0)
 	assert(hub_world.player_controller.camera.global_position.z <= 13.0, "La cámara no debe atravesar la pared trasera ni salirse del hangar")
-	print("  ✓ Hangar 3D verificado: Geometría de sala expandida, 3 capas de parallax, máquinas 3D con assets placeholders y limitación de cámara sin recorte.")
+
+	# Verificar configuración Full Body en el PlayerController y en las heroínas
+	assert(is_equal_approx(hub_world.player_controller.visual_sprite.pixel_size, 0.0013), "Player visual_sprite debe tener pixel_size 0.0013 para Full Body")
+	assert(hub_world.player_controller.visual_sprite.offset.y == 800, "Player visual_sprite debe tener offset Y=800 para anclaje a suelo")
+	assert(hub_world.player_controller.visual_sprite.texture.resource_path.contains("fullbody"), "Player visual_sprite debe cargar textura fullbody")
+	var cutout_selene: Sprite3D = hub_world.get_node_or_null("RosterCutouts/Cutout_Selene")
+	assert(cutout_selene != null and cutout_selene.texture.resource_path.contains("flipped"), "Heroínas del lado derecho deben usar textura fullbody invertida (flipped)")
+
+	# Verificar texturas asignadas en Parallax y superficies
+	var mat_p0 = hub_world.parallax_deep.mesh.material as StandardMaterial3D
+	assert(mat_p0 != null and mat_p0.albedo_texture != null, "Parallax Capa 0 debe tener textura asignada")
+	var floor_mesh := hub_world.get_node("HangarRoom/Floor/MeshInstance3D") as MeshInstance3D
+	var mat_floor = floor_mesh.mesh.material as StandardMaterial3D
+	assert(mat_floor != null and mat_floor.albedo_texture != null and mat_floor.emission_texture != null, "Suelo del Hangar debe tener textura de albedo y emisión asignada")
+	print("  ✓ Hangar 3D verificado: Geometría de sala, 3 capas de parallax con texturas, máquinas 3D y avatares Full Body.")
 
 	# ----------------------------------------------------
 	# CASO 4: Atajos de HUD en esquina y modales interactivos

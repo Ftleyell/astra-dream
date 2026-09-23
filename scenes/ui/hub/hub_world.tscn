@@ -1,17 +1,34 @@
 [gd_scene load_steps=38 format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_nova.png" id="2_nova"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_valentina.png" id="3_valentina"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_kira.png" id="4_kira"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_selene.png" id="5_selene"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_roxy.png" id="6_roxy"]
-[ext_resource type="Texture2D" path="res://assets/portraits/portrait_echo.png" id="7_echo"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_valentina.png" id="3_valentina"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_kira.png" id="4_kira"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_selene_flipped.png" id="5_selene"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_roxy_flipped.png" id="6_roxy"]
+[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_echo_flipped.png" id="7_echo"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="8_modal"]
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_player_controller_3d.gd" id="9_controller"]
 [ext_resource type="Script" path="res://scenes/ui/hub/hub_interactable_3d.gd" id="10_interactable"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="11_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/highscores/highscores_modal.tscn" id="12_highscores"]
+[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer0_deep.png" id="15_plx0"]
+[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer1_mid.png" id="16_plx1"]
+[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer2_near.png" id="17_plx2"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_floor_albedo.png" id="18_floor_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_floor_emission.png" id="19_floor_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_wall_albedo.png" id="20_wall_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_wall_emission.png" id="21_wall_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_ceiling_albedo.png" id="22_ceil_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_ceiling_emission.png" id="23_ceil_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_railing_albedo.png" id="24_rail_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_railing_emission.png" id="25_rail_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/terminal_mission_albedo.png" id="26_term_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/terminal_mission_emission.png" id="27_term_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_cabinet_albedo.png" id="28_arc_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_cabinet_emission.png" id="29_arc_emi"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_albedo.png" id="30_scr_alb"]
+[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_emission.png" id="31_scr_emi"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -26,12 +43,15 @@ glow_intensity = 0.9
 size = Vector3(26, 0.5, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.05, 0.07, 0.1, 1)
+albedo_color = Color(0.85, 0.9, 0.95, 1)
+albedo_texture = ExtResource("18_floor_alb")
 metallic = 0.8
 roughness = 0.25
 emission_enabled = true
-emission = Color(0, 0.4, 0.5, 1)
-emission_energy_multiplier = 0.3
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 0.6
+emission_texture = ExtResource("19_floor_emi")
+uv1_scale = Vector3(6, 6, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
@@ -41,9 +61,15 @@ size = Vector3(26, 0.5, 30)
 size = Vector3(26, 0.5, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ceiling"]
-albedo_color = Color(0.03, 0.04, 0.06, 1)
+albedo_color = Color(0.8, 0.85, 0.9, 1)
+albedo_texture = ExtResource("22_ceil_alb")
 metallic = 0.9
 roughness = 0.3
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 0.4
+emission_texture = ExtResource("23_ceil_emi")
+uv1_scale = Vector3(6, 6, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
 material = SubResource("StandardMaterial3D_ceiling")
@@ -53,12 +79,15 @@ size = Vector3(26, 0.5, 30)
 size = Vector3(0.5, 6, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
-albedo_color = Color(0.04, 0.06, 0.09, 1)
+albedo_color = Color(0.85, 0.9, 0.95, 1)
+albedo_texture = ExtResource("20_wall_alb")
 metallic = 0.7
 roughness = 0.4
 emission_enabled = true
 emission = Color(0, 0.94, 1, 1)
-emission_energy_multiplier = 0.15
+emission_energy_multiplier = 0.5
+emission_texture = ExtResource("21_wall_emi")
+uv1_scale = Vector3(4, 2, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
 material = SubResource("StandardMaterial3D_wall")
@@ -75,12 +104,15 @@ size = Vector3(26, 6, 0.5)
 size = Vector3(26, 1.2, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_railing"]
-albedo_color = Color(0.08, 0.1, 0.15, 1)
+albedo_color = Color(0.9, 0.92, 0.96, 1)
+albedo_texture = ExtResource("24_rail_alb")
 metallic = 0.9
 roughness = 0.2
 emission_enabled = true
 emission = Color(0, 0.94, 1, 1)
 emission_energy_multiplier = 0.8
+emission_texture = ExtResource("25_rail_emi")
+uv1_scale = Vector3(6, 1, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_front_railing"]
 material = SubResource("StandardMaterial3D_railing")
@@ -88,7 +120,8 @@ size = Vector3(26, 1.2, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_deep"]
 shading_mode = 0
-albedo_color = Color(0.06, 0.03, 0.15, 1)
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("15_plx0")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_deep"]
 material = SubResource("StandardMaterial3D_parallax_deep")
@@ -97,7 +130,8 @@ size = Vector2(140, 80)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_mid"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(0.2, 0.7, 1, 0.75)
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("16_plx1")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_mid"]
 material = SubResource("StandardMaterial3D_parallax_mid")
@@ -106,7 +140,8 @@ size = Vector2(80, 48)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_near"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(0, 1, 0.62, 0.4)
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("17_plx2")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_near"]
 material = SubResource("StandardMaterial3D_parallax_near")
@@ -127,12 +162,14 @@ bottom_radius = 1.3
 height = 0.5
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_desk"]
-albedo_color = Color(0.06, 0.08, 0.12, 1)
+albedo_color = Color(0.9, 0.95, 1, 1)
+albedo_texture = ExtResource("26_term_alb")
 metallic = 0.85
 roughness = 0.3
 emission_enabled = true
 emission = Color(0, 0.94, 1, 1)
-emission_energy_multiplier = 0.4
+emission_energy_multiplier = 0.8
+emission_texture = ExtResource("27_term_emi")
 
 [sub_resource type="BoxMesh" id="BoxMesh_mission_desk"]
 material = SubResource("StandardMaterial3D_mission_desk")
@@ -173,12 +210,14 @@ material = SubResource("StandardMaterial3D_mission_holo")
 size = Vector3(0.4, 0.4, 0.4)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_body"]
-albedo_color = Color(0.05, 0.04, 0.08, 1)
+albedo_color = Color(0.95, 0.9, 0.95, 1)
+albedo_texture = ExtResource("28_arc_alb")
 metallic = 0.85
 roughness = 0.35
 emission_enabled = true
 emission = Color(1, 0.8, 0.2, 1)
-emission_energy_multiplier = 0.6
+emission_energy_multiplier = 0.9
+emission_texture = ExtResource("29_arc_emi")
 
 [sub_resource type="BoxMesh" id="BoxMesh_arcade_body"]
 material = SubResource("StandardMaterial3D_arcade_body")
@@ -195,11 +234,13 @@ material = SubResource("StandardMaterial3D_arcade_marquee")
 size = Vector3(1.65, 0.45, 0.35)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_screen"]
-albedo_color = Color(0.02, 0.04, 0.06, 1)
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("30_scr_alb")
 metallic = 0.9
 emission_enabled = true
 emission = Color(1, 0.8, 0.1, 1)
 emission_energy_multiplier = 1.8
+emission_texture = ExtResource("31_scr_emi")
 
 [sub_resource type="BoxMesh" id="BoxMesh_arcade_screen"]
 material = SubResource("StandardMaterial3D_arcade_screen")
@@ -546,8 +587,8 @@ mesh = SubResource("CylinderMesh_pedestal")
 
 [node name="Cutout_Nova" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, -4)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -560,8 +601,8 @@ target_character_id = &"nova"
 
 [node name="Cutout_Valentina" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 2)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -574,8 +615,8 @@ target_character_id = &"valentina"
 
 [node name="Cutout_Kira" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 8)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -588,8 +629,8 @@ target_character_id = &"kira"
 
 [node name="Cutout_Selene" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, -4)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -602,8 +643,8 @@ target_character_id = &"selene"
 
 [node name="Cutout_Roxy" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 2)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -616,8 +657,8 @@ target_character_id = &"roxy"
 
 [node name="Cutout_Echo" type="Sprite3D" parent="RosterCutouts"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
@@ -639,8 +680,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 shape = SubResource("CapsuleShape3D_player")
 
 [node name="Sprite3D" type="Sprite3D" parent="PlayerController"]
-offset = Vector2(0, 256)
-pixel_size = 0.005
+offset = Vector2(0, 800)
+pixel_size = 0.0013
 billboard = 2
 shaded = false
 alpha_cut = 1
