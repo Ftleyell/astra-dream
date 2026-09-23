@@ -54,7 +54,7 @@ func _setup_label_3d() -> void:
 		add_child(label_3d)
 
 	label_3d.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label_3d.no_depth_test = true
+	label_3d.no_depth_test = false
 	label_3d.shaded = false
 	label_3d.font_size = 28
 	label_3d.outline_size = 8

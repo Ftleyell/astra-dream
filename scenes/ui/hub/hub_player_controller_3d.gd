@@ -141,8 +141,17 @@ func _update_camera(delta: float) -> void:
 	if not camera:
 		return
 	var target_cam_pos := global_position + _cam_offset
+	# Limitar cámara dentro de la sala para evitar que atraviese la pared trasera
+	target_cam_pos.z = clampf(target_cam_pos.z, -6.5, 12.0)
+	target_cam_pos.x = clampf(target_cam_pos.x, -9.0, 9.0)
+	target_cam_pos.y = clampf(target_cam_pos.y, 2.2, 4.5)
+
 	# Suavizado orbital elástico en 3ª persona
-	camera.global_position = camera.global_position.lerp(target_cam_pos, 8.0 * delta)
+	var weight := clampf(8.0 * delta, 0.0, 1.0)
+	camera.global_position = camera.global_position.lerp(target_cam_pos, weight)
+	camera.global_position.z = clampf(camera.global_position.z, -6.5, 12.0)
+	camera.global_position.x = clampf(camera.global_position.x, -9.0, 9.0)
+	camera.global_position.y = clampf(camera.global_position.y, 2.2, 4.5)
 	var look_target := global_position + Vector3(0.0, 1.2, 0.0)
 	camera.look_at(look_target, Vector3.UP)
 

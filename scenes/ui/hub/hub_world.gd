@@ -118,6 +118,11 @@ var _pilot_tweens: Array[Tween] = []
 @onready var parallax_mid: MeshInstance3D = get_node_or_null("SpaceParallax/Layer1_Mid")
 @onready var parallax_deep: MeshInstance3D = get_node_or_null("SpaceParallax/Layer0_Deep")
 
+# Hologramas en terminales
+@onready var mission_holo_core: MeshInstance3D = get_node_or_null("Terminals/MissionTerminal/HoloCore")
+@onready var highscores_trophy_holo: MeshInstance3D = get_node_or_null("Terminals/HighScoresTerminal/TrophyHolo")
+var _idle_time: float = 0.0
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -148,7 +153,7 @@ func _ready() -> void:
 		audio_mgr.play_music("menu")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# Efecto de Parallax 3D suave según la posición de la cámara
 	if camera and is_instance_valid(camera):
 		var cam_x: float = camera.global_position.x
@@ -158,6 +163,15 @@ func _process(_delta: float) -> void:
 			parallax_mid.position.x = cam_x * 0.12
 		if parallax_deep:
 			parallax_deep.position.x = cam_x * 0.03
+
+	# Animación idle de hologramas en las máquinas
+	_idle_time += delta
+	if mission_holo_core and is_instance_valid(mission_holo_core):
+		mission_holo_core.rotation.y += delta * 1.5
+		mission_holo_core.position.y = 1.7 + sin(_idle_time * 2.5) * 0.08
+	if highscores_trophy_holo and is_instance_valid(highscores_trophy_holo):
+		highscores_trophy_holo.rotation.y += delta * 2.0
+		highscores_trophy_holo.position.y = 2.8 + sin(_idle_time * 2.0) * 0.06
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -338,7 +352,9 @@ func _on_highscores_terminal_interacted(_interactable: HubInteractable3D, _playe
 	if highscores_modal:
 		if player_controller:
 			player_controller.is_movement_locked = true
-		if highscores_modal.has_method("show_modal"):
+		if highscores_modal.has_method("open_highscores"):
+			highscores_modal.open_highscores()
+		elif highscores_modal.has_method("show_modal"):
 			highscores_modal.show_modal()
 		else:
 			highscores_modal.visible = true

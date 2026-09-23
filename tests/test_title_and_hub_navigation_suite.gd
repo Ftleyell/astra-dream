@@ -66,10 +66,24 @@ func _ready() -> void:
 	assert(hub_world.parallax_mid != null, "Debe tener capa media de Parallax")
 	assert(hub_world.parallax_near != null, "Debe tener capa cercana de Parallax")
 
-	# Verificar Terminales
+	# Verificar Terminales y Assets Placeholders de Máquinas
 	assert(hub_world.mission_interactable != null, "Debe tener interactuable de Misión")
 	assert(hub_world.highscores_interactable != null, "Debe tener interactuable de Récords")
-	print("  ✓ Hangar 3D verificado: Geometría completa de la sala, 3 capas de parallax espacial y terminales interactivas.")
+	assert(hub_world.has_node("Terminals/MissionTerminal/ConsoleDesk"), "MissionTerminal debe tener consola física")
+	assert(hub_world.has_node("Terminals/MissionTerminal/HoloCore"), "MissionTerminal debe tener núcleo holográfico")
+	assert(hub_world.has_node("Terminals/HighScoresTerminal/ArcadeBody"), "HighScoresTerminal debe tener mueble arcade")
+	assert(hub_world.has_node("Terminals/HighScoresTerminal/ScreenMesh"), "HighScoresTerminal debe tener pantalla arcade")
+	assert(hub_world.has_node("Terminals/HighScoresTerminal/TrophyHolo"), "HighScoresTerminal debe tener trofeo holográfico")
+
+	# Verificar test de profundidad (no_depth_test = false) para evitar que floten sobre paredes
+	assert(not hub_world.mission_interactable.label_3d.no_depth_test, "Prompt de misión debe respetar profundidad (no_depth_test = false)")
+	assert(not hub_world.highscores_interactable.label_3d.no_depth_test, "Prompt de récords debe respetar profundidad (no_depth_test = false)")
+
+	# Verificar limitación de cámara para no atravesar la pared trasera
+	hub_world.player_controller.global_position = Vector3(0, 0, 16.0)
+	hub_world.player_controller._update_camera(1.0)
+	assert(hub_world.player_controller.camera.global_position.z <= 13.0, "La cámara no debe atravesar la pared trasera ni salirse del hangar")
+	print("  ✓ Hangar 3D verificado: Geometría de sala expandida, 3 capas de parallax, máquinas 3D con assets placeholders y limitación de cámara sin recorte.")
 
 	# ----------------------------------------------------
 	# CASO 4: Atajos de HUD en esquina y modales interactivos

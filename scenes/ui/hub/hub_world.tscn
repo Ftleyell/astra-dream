@@ -23,7 +23,7 @@ glow_bloom = 0.25
 glow_intensity = 0.9
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(26, 0.5, 26)
+size = Vector3(26, 0.5, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
 albedo_color = Color(0.05, 0.07, 0.1, 1)
@@ -35,10 +35,10 @@ emission_energy_multiplier = 0.3
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
-size = Vector3(26, 0.5, 26)
+size = Vector3(26, 0.5, 30)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
-size = Vector3(26, 0.5, 26)
+size = Vector3(26, 0.5, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ceiling"]
 albedo_color = Color(0.03, 0.04, 0.06, 1)
@@ -47,10 +47,10 @@ roughness = 0.3
 
 [sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
 material = SubResource("StandardMaterial3D_ceiling")
-size = Vector3(26, 0.5, 26)
+size = Vector3(26, 0.5, 30)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
-size = Vector3(0.5, 6, 26)
+size = Vector3(0.5, 6, 30)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
 albedo_color = Color(0.04, 0.06, 0.09, 1)
@@ -62,7 +62,7 @@ emission_energy_multiplier = 0.15
 
 [sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(0.5, 6, 26)
+size = Vector3(0.5, 6, 30)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_back_wall"]
 size = Vector3(26, 6, 0.5)
@@ -112,30 +112,120 @@ albedo_color = Color(0, 1, 0.62, 0.4)
 material = SubResource("StandardMaterial3D_parallax_near")
 size = Vector2(48, 28)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_terminal"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_base"]
 albedo_color = Color(0.04, 0.06, 0.09, 1)
 metallic = 0.9
 roughness = 0.2
 emission_enabled = true
 emission = Color(0, 0.94, 1, 1)
-emission_energy_multiplier = 1.2
+emission_energy_multiplier = 0.8
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_terminal"]
-material = SubResource("StandardMaterial3D_terminal")
-top_radius = 1.2
-bottom_radius = 1.4
-height = 1.0
+[sub_resource type="CylinderMesh" id="CylinderMesh_mission_base"]
+material = SubResource("StandardMaterial3D_mission_base")
+top_radius = 1.1
+bottom_radius = 1.3
+height = 0.5
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_highscores_screen"]
-albedo_color = Color(0.02, 0.05, 0.08, 1)
-metallic = 0.9
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_desk"]
+albedo_color = Color(0.06, 0.08, 0.12, 1)
+metallic = 0.85
+roughness = 0.3
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_mission_desk"]
+material = SubResource("StandardMaterial3D_mission_desk")
+size = Vector3(1.8, 0.7, 1.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_keyboard"]
+albedo_color = Color(0.02, 0.1, 0.15, 1)
+metallic = 0.8
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_mission_keyboard"]
+material = SubResource("StandardMaterial3D_mission_keyboard")
+size = Vector3(1.4, 0.08, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_ring"]
+albedo_color = Color(0, 0.94, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.94, 1, 1)
+emission_energy_multiplier = 2.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mission_ring"]
+material = SubResource("StandardMaterial3D_mission_ring")
+top_radius = 0.45
+bottom_radius = 0.5
+height = 0.06
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_holo"]
+transparency = 1
+albedo_color = Color(1, 0.08, 0.58, 0.85)
+emission_enabled = true
+emission = Color(1, 0.08, 0.58, 1)
+emission_energy_multiplier = 2.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_mission_holo"]
+material = SubResource("StandardMaterial3D_mission_holo")
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_body"]
+albedo_color = Color(0.05, 0.04, 0.08, 1)
+metallic = 0.85
+roughness = 0.35
 emission_enabled = true
 emission = Color(1, 0.8, 0.2, 1)
-emission_energy_multiplier = 1.4
+emission_energy_multiplier = 0.6
 
-[sub_resource type="BoxMesh" id="BoxMesh_highscores_screen"]
-material = SubResource("StandardMaterial3D_highscores_screen")
-size = Vector3(6, 3.2, 0.2)
+[sub_resource type="BoxMesh" id="BoxMesh_arcade_body"]
+material = SubResource("StandardMaterial3D_arcade_body")
+size = Vector3(1.6, 2.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_marquee"]
+albedo_color = Color(1, 0.85, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.85, 0.2, 1)
+emission_energy_multiplier = 2.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_arcade_marquee"]
+material = SubResource("StandardMaterial3D_arcade_marquee")
+size = Vector3(1.65, 0.45, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_screen"]
+albedo_color = Color(0.02, 0.04, 0.06, 1)
+metallic = 0.9
+emission_enabled = true
+emission = Color(1, 0.8, 0.1, 1)
+emission_energy_multiplier = 1.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_arcade_screen"]
+material = SubResource("StandardMaterial3D_arcade_screen")
+size = Vector3(1.3, 0.9, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_controls"]
+albedo_color = Color(0.08, 0.08, 0.12, 1)
+metallic = 0.8
+emission_enabled = true
+emission = Color(1, 0.2, 0.5, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_arcade_controls"]
+material = SubResource("StandardMaterial3D_arcade_controls")
+size = Vector3(1.5, 0.12, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_holo"]
+transparency = 1
+albedo_color = Color(1, 0.9, 0.2, 0.85)
+emission_enabled = true
+emission = Color(1, 0.9, 0.2, 1)
+emission_energy_multiplier = 2.6
+
+[sub_resource type="PrismMesh" id="PrismMesh_trophy_holo"]
+material = SubResource("StandardMaterial3D_trophy_holo")
+size = Vector3(0.45, 0.55, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
 albedo_color = Color(0.06, 0.09, 0.12, 1)
@@ -289,7 +379,7 @@ omni_range = 8.0
 [node name="HangarRoom" type="Node3D" parent="."]
 
 [node name="Floor" type="StaticBody3D" parent="HangarRoom"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 3)
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Floor"]
@@ -299,7 +389,7 @@ shape = SubResource("BoxShape3D_floor")
 mesh = SubResource("BoxMesh_floor")
 
 [node name="Ceiling" type="StaticBody3D" parent="HangarRoom"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 3)
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Ceiling"]
@@ -309,7 +399,7 @@ shape = SubResource("BoxShape3D_ceiling")
 mesh = SubResource("BoxMesh_ceiling")
 
 [node name="LeftWall" type="StaticBody3D" parent="HangarRoom"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.75, 3, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.75, 3, 3)
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/LeftWall"]
@@ -319,7 +409,7 @@ shape = SubResource("BoxShape3D_side_wall")
 mesh = SubResource("BoxMesh_side_wall")
 
 [node name="RightWall" type="StaticBody3D" parent="HangarRoom"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.75, 3, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.75, 3, 3)
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/RightWall"]
@@ -329,7 +419,7 @@ shape = SubResource("BoxShape3D_side_wall")
 mesh = SubResource("BoxMesh_side_wall")
 
 [node name="BackWall" type="StaticBody3D" parent="HangarRoom"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 13.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 17.75)
 collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/BackWall"]
@@ -365,11 +455,27 @@ mesh = SubResource("QuadMesh_parallax_near")
 [node name="Terminals" type="Node3D" parent="."]
 
 [node name="MissionTerminal" type="Node3D" parent="Terminals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -6.5)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("CylinderMesh_terminal")
+[node name="BasePedestal" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("CylinderMesh_mission_base")
+
+[node name="ConsoleDesk" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("BoxMesh_mission_desk")
+
+[node name="KeyboardPanel" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.08, 0.15)
+mesh = SubResource("BoxMesh_mission_keyboard")
+
+[node name="HoloRing" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.2)
+mesh = SubResource("CylinderMesh_mission_ring")
+
+[node name="HoloCore" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 0, 1.7, -0.2)
+mesh = SubResource("BoxMesh_mission_holo")
 
 [node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal"]
 script = ExtResource("10_interactable")
@@ -377,23 +483,38 @@ target_character_id = &"mission"
 interaction_title = "Terminal de Misiones"
 prompt_action_text = "[E]"
 interaction_radius = 2.8
-prompt_offset_y = 2.0
+prompt_offset_y = 2.3
 
 [node name="HighScoresTerminal" type="Node3D" parent="Terminals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 13.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0, -6.5)
+
+[node name="ArcadeBody" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("BoxMesh_arcade_body")
+
+[node name="ArcadeMarquee" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0.35)
+mesh = SubResource("BoxMesh_arcade_marquee")
 
 [node name="ScreenMesh" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0.1)
-mesh = SubResource("BoxMesh_highscores_screen")
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.45, 0.52)
+mesh = SubResource("BoxMesh_arcade_screen")
+
+[node name="ArcadeControls" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0.65)
+mesh = SubResource("BoxMesh_arcade_controls")
+
+[node name="TrophyHolo" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0.3)
+mesh = SubResource("PrismMesh_trophy_holo")
 
 [node name="Interactable_HighScores" type="Area3D" parent="Terminals/HighScoresTerminal"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.0)
 script = ExtResource("10_interactable")
 target_character_id = &"highscores"
 interaction_title = "Tabla de Récords"
 prompt_action_text = "[E]"
-interaction_radius = 3.0
-prompt_offset_y = 2.2
+interaction_radius = 2.8
+prompt_offset_y = 2.3
 
 [node name="Pedestals" type="Node3D" parent="."]
 
