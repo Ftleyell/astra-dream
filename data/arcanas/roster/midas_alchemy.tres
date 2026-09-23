@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_clover.svg" id="1_n3dat"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_hqsfw"]
+
+[resource]
+script = ExtResource("2_hqsfw")
+id = "midas_alchemy"
+name = "Alquimia de Midas"
+description_boon = "+50 Puntos de Suerte cósmica y +50% Ganancia de EXP"
+description_curse = "-20% Potencia de daño base"
+quadrant = "greed"
+icon = ExtResource("1_n3dat")
+color_accent = Color(1, 0.9, 0.2, 1)
+stat_modifiers = {
+"base_damage_pct": -0.2,
+"exp_multiplier_pct": 0.5,
+"luck": 50.0
+}
+custom_tags = PackedStringArray()

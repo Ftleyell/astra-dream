@@ -24,6 +24,7 @@ func setup(p_origin: Vector2, p_target: Vector2, p_ctx: HitContext, p_player: No
 	var flight_duration := clampf(dist / speed, 0.35, 1.2)
 	fuse_time = flight_duration
 	velocity = dir * (dist / flight_duration)
+	add_to_group("player_projectiles")
 
 func _process(delta: float) -> void:
 	current_time += delta

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_glasses.svg" id="1_iplpw"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_vgjnf"]
+
+[resource]
+script = ExtResource("2_vgjnf")
+id = "quantum_ricochet"
+name = "Rebote Cuántico"
+description_boon = "+40% Velocidad de proyectil e hiper-penetración"
+description_curse = "-15% Daño base de proyectiles"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_iplpw")
+color_accent = Color(0, 0.9, 0.8, 1)
+stat_modifiers = {
+"base_damage_pct": -0.15,
+"projectile_speed_pct": 0.4
+}
+custom_tags = PackedStringArray()

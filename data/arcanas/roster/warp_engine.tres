@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="1_ucqip"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_xb3ne"]
+
+[resource]
+script = ExtResource("2_xb3ne")
+id = "warp_engine"
+name = "Motor de Curvatura"
+description_boon = "+60% Velocidad extrema de traslación estelar"
+description_curse = "-50% Radio magnético de captación"
+quadrant = "spacetime"
+icon = ExtResource("1_ucqip")
+color_accent = Color(0.8, 0.4, 1, 1)
+stat_modifiers = {
+"move_speed_pct": 0.6,
+"pickup_radius_pct": -0.5
+}
+custom_tags = PackedStringArray()

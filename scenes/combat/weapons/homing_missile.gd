@@ -29,6 +29,7 @@ func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext, p_targe
 		_acquire_nearest_target()
 
 func _ready() -> void:
+	add_to_group("player_projectiles")
 	if not target:
 		_acquire_nearest_target()
 

@@ -16,6 +16,9 @@ const COLOR_DEEP_BLACK := Color("#0A0A0E") # Deep Void Black
 const COLOR_PURE_WHITE := Color("#FFFFFF") # Pure Crisp White
 const COLOR_CYAN := Color("#00F0FF")       # Accent Neon Cyan
 const COLOR_EMERALD := Color("#00FF9D")    # BioMasa Green
+const COLOR_DARK_MATTER := Color("#BF00FF") # Materia Oscura Purple
+const TrophyDetailsModal = preload("res://scenes/ui/hub/trophy_details_modal.gd")
+const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 const PILOT_ROSTER: Array[Dictionary] = [
 	{
@@ -105,6 +108,8 @@ var _pilot_tweens: Array[Tween] = []
 @onready var btn_quit: Button = get_node_or_null("HubUI/TopRightHUD/QuitButton")
 @onready var settings_modal: SettingsModal = get_node_or_null("HubUI/SettingsModal")
 @onready var highscores_modal: CanvasLayer = get_node_or_null("HubUI/HighscoresModal")
+var trophy_modal: TrophyDetailsModal = null
+var trophy_holo_nodes: Array[MeshInstance3D] = []
 @onready var mission_interactable: HubInteractable3D = get_node_or_null("Terminals/MissionTerminal/Interactable_Mission")
 @onready var highscores_interactable: HubInteractable3D = get_node_or_null("Terminals/HighScoresTerminal/Interactable_HighScores")
 @onready var mission_prompt_modal: PanelContainer = get_node_or_null("HubUI/MissionPromptModal")
@@ -134,6 +139,8 @@ func _ready() -> void:
 	_apply_psychopop_styles()
 	_build_pilot_selector_buttons()
 	_update_materials_display()
+	_setup_trophy_room()
+	_update_dark_matter_display()
 
 	var saved_cid := SaveManager.get_selected_character()
 	var init_idx: int = 0
@@ -181,11 +188,19 @@ func _process(delta: float) -> void:
 	if highscores_trophy_holo and is_instance_valid(highscores_trophy_holo):
 		highscores_trophy_holo.rotation.y += delta * 2.0
 		highscores_trophy_holo.position.y = 2.3 + sin(_idle_time * 2.0) * 0.06
+	for holo in trophy_holo_nodes:
+		if is_instance_valid(holo):
+			holo.rotation.y += delta * 1.8
+			holo.position.y = 0.8 + sin(_idle_time * 2.2) * 0.05
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_modal_active():
 		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+			if trophy_modal and trophy_modal.visible:
+				trophy_modal.close_modal()
+				get_viewport().set_input_as_handled()
+				return
 			if skill_tree_modal and skill_tree_modal.visible:
 				if skill_tree_modal.has_method("close_modal"):
 					skill_tree_modal.close_modal()
@@ -419,10 +434,15 @@ func _quit_game() -> void:
 func _on_modal_closed() -> void:
 	if player_controller:
 		player_controller.is_movement_locked = false
+	_update_materials_display()
+	_update_dark_matter_display()
+	_refresh_trophy_visuals()
 
 
 func _is_modal_active() -> bool:
 	if settings_modal and settings_modal.visible:
+		return true
+	if trophy_modal and trophy_modal.visible:
 		return true
 	if highscores_modal and highscores_modal.visible:
 		return true
@@ -523,6 +543,8 @@ func _on_skill_tree_closed() -> void:
 	if player_controller:
 		player_controller.is_movement_locked = false
 	_update_materials_display()
+	_setup_trophy_room()
+	_update_dark_matter_display()
 
 
 func _select_pilot(index: int, animate_card: bool = true) -> void:
@@ -666,3 +688,154 @@ static func create_psychopop_stylebox(
 	sb.border_color = border_col
 	sb.set_content_margin_all(14.0)
 	return sb
+
+func _setup_trophy_room() -> void:
+	# 1. Instanciar modal de detalles de trofeos
+	var modal_scene := load("res://scenes/ui/hub/trophy_details_modal.tscn") as PackedScene
+	if modal_scene:
+		trophy_modal = modal_scene.instantiate() as TrophyDetailsModal
+		var ui_root := get_node_or_null("HubUI")
+		if ui_root:
+			ui_root.add_child(trophy_modal)
+		else:
+			add_child(trophy_modal)
+		if trophy_modal:
+			trophy_modal.modal_closed.connect(_on_modal_closed)
+			trophy_modal.trophy_upgraded.connect(_on_trophy_upgraded)
+
+	# 2. Configurar pedestales e interactuables 3D de la Sala de Trofeos
+	var trophy_group := get_node_or_null("TrophyRoom")
+	if not trophy_group:
+		trophy_group = Node3D.new()
+		trophy_group.name = "TrophyRoom"
+		add_child(trophy_group)
+
+	var trophies_spec := [
+		{"id": &"trophy_boss_aegis", "title": "Nodriza Aegis", "pos": Vector3(-4.5, 0.15, 13.5), "mesh_type": "prism"},
+		{"id": &"trophy_biosphere_core", "title": "Núcleo Bio-Planeta", "pos": Vector3(-2.2, 0.15, 13.5), "mesh_type": "sphere"},
+		{"id": &"trophy_cryo_core", "title": "Núcleo Criogénico", "pos": Vector3(0.0, 0.15, 13.5), "mesh_type": "cylinder"},
+		{"id": &"trophy_volcanic_core", "title": "Núcleo Volcánico", "pos": Vector3(2.2, 0.15, 13.5), "mesh_type": "box"},
+		{"id": &"trophy_monolith_master", "title": "Reliquia Monolito", "pos": Vector3(4.5, 0.15, 13.5), "mesh_type": "prism"}
+	]
+
+	var inter_script = load("res://scenes/ui/hub/hub_interactable_3d.gd")
+
+	for spec in trophies_spec:
+		var tid: StringName = spec["id"]
+		var p_name := "Pedestal_" + String(tid)
+		var p_node := trophy_group.get_node_or_null(p_name)
+		if not p_node:
+			p_node = Node3D.new()
+			p_node.name = p_name
+			p_node.position = spec["pos"]
+			trophy_group.add_child(p_node)
+
+			# Pedestal visual
+			var base_mesh := MeshInstance3D.new()
+			base_mesh.name = "BaseMesh"
+			var cyl := CylinderMesh.new()
+			cyl.top_radius = 0.55
+			cyl.bottom_radius = 0.65
+			cyl.height = 0.4
+			base_mesh.mesh = cyl
+			p_node.add_child(base_mesh)
+
+			# Holograma rotatorio
+			var holo_mesh := MeshInstance3D.new()
+			holo_mesh.name = "HoloMesh"
+			holo_mesh.position = Vector3(0, 0.8, 0)
+			match spec["mesh_type"]:
+				"prism":
+					holo_mesh.mesh = PrismMesh.new()
+				"sphere":
+					holo_mesh.mesh = SphereMesh.new()
+				"cylinder":
+					holo_mesh.mesh = CylinderMesh.new()
+				"box":
+					holo_mesh.mesh = BoxMesh.new()
+			if holo_mesh.mesh:
+				if "size" in holo_mesh.mesh:
+					holo_mesh.mesh.set("size", Vector3(0.45, 0.45, 0.45))
+				elif "radius" in holo_mesh.mesh:
+					holo_mesh.mesh.set("radius", 0.25)
+			p_node.add_child(holo_mesh)
+			trophy_holo_nodes.append(holo_mesh)
+
+			# Interactuable 3D
+			var inter = inter_script.new()
+			inter.name = "Interactable_" + String(tid)
+			inter.target_character_id = tid
+			inter.interaction_title = "Trofeo: " + spec["title"]
+			inter.interaction_radius = 2.2
+			inter.prompt_offset_y = 1.6
+			p_node.add_child(inter)
+			inter.interacted.connect(_on_trophy_pedestal_interacted)
+
+	_refresh_trophy_visuals()
+
+func _refresh_trophy_visuals() -> void:
+	var trophy_group := get_node_or_null("TrophyRoom")
+	if not trophy_group:
+		return
+
+	for child in trophy_group.get_children():
+		var inter := child.get_node_or_null("Interactable_" + child.name.trim_prefix("Pedestal_")) as HubInteractable3D
+		var holo := child.get_node_or_null("HoloMesh") as MeshInstance3D
+		if inter and holo:
+			var is_unlocked := SaveManager.is_trophy_unlocked(inter.target_character_id)
+			var mat := StandardMaterial3D.new()
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			if is_unlocked:
+				mat.albedo_color = Color(0.75, 0.1, 1.0, 0.85)
+				mat.emission_enabled = true
+				mat.emission = Color(0.75, 0.1, 1.0, 1.0)
+				mat.emission_energy_multiplier = 2.5
+			else:
+				mat.albedo_color = Color(0.3, 0.3, 0.35, 0.4)
+				mat.emission_enabled = false
+			holo.material_override = mat
+
+func _on_trophy_pedestal_interacted(interactable: HubInteractable3D, _player: Node3D) -> void:
+	_play_sfx("ui_click")
+	if player_controller:
+		player_controller.is_movement_locked = true
+	if trophy_modal:
+		trophy_modal.open_trophy(interactable.target_character_id)
+
+func _on_trophy_upgraded(_trophy_id: StringName, _new_level: int) -> void:
+	_update_dark_matter_display()
+	_refresh_trophy_visuals()
+
+func _update_dark_matter_display() -> void:
+	var mat_vbox := get_node_or_null("HubUI/MaterialsPanel/MatMargin/MatVBox") as VBoxContainer
+	if not mat_vbox:
+		return
+
+	var dm_row := mat_vbox.get_node_or_null("DarkMatterRow") as HBoxContainer
+	if not dm_row:
+		dm_row = HBoxContainer.new()
+		dm_row.name = "DarkMatterRow"
+		mat_vbox.add_child(dm_row)
+
+		var icon_lbl := Label.new()
+		icon_lbl.text = "⚛"
+		icon_lbl.add_theme_color_override("font_color", COLOR_DARK_MATTER)
+		icon_lbl.add_theme_font_size_override("font_size", 14)
+		dm_row.add_child(icon_lbl)
+
+		var name_lbl := Label.new()
+		name_lbl.text = " Materia Oscura:"
+		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_lbl.add_theme_color_override("font_color", Color(0.85, 0.8, 0.95))
+		name_lbl.add_theme_font_size_override("font_size", 12)
+		dm_row.add_child(name_lbl)
+
+		var val_lbl := Label.new()
+		val_lbl.name = "DarkMatterValue"
+		val_lbl.add_theme_color_override("font_color", COLOR_DARK_MATTER)
+		val_lbl.add_theme_font_size_override("font_size", 13)
+		dm_row.add_child(val_lbl)
+
+	var val_label := dm_row.get_node_or_null("DarkMatterValue") as Label
+	if val_label:
+		val_label.text = "%d u." % SaveManager.get_dark_matter()

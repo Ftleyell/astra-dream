@@ -34,8 +34,12 @@ var player_hitbox_radius: float = 5.0
 var player_graze_radius: float = 24.0
 var player_invulnerable: bool = false
 
+# Obstáculos destructibles (Cobertura balística dual)
+var _obstacles: Array[Dictionary] = []
+
 signal player_hit()
 signal player_grazed(pos: Vector2)
+signal bullet_intercepted(pos: Vector2, obstacle: Node2D)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -128,6 +132,29 @@ func _physics_process(delta: float) -> void:
 	var py: float = player_pos.y
 	var r_graze_sq: float = player_graze_radius * player_graze_radius
 
+	# Pre-filtrar y almacenar en caché las posiciones y radios de los obstáculos activos
+	# para evitar decenas de miles de llamadas C++ a global_position dentro del bucle de balas.
+	var valid_obs_nodes: Array[Node2D] = []
+	var obs_x: PackedFloat32Array = PackedFloat32Array()
+	var obs_y: PackedFloat32Array = PackedFloat32Array()
+	var obs_r_sq: PackedFloat32Array = PackedFloat32Array()
+
+	var obs_count := _obstacles.size()
+	if obs_count > 0:
+		for obs_idx in range(obs_count - 1, -1, -1):
+			var obs: Dictionary = _obstacles[obs_idx]
+			var obs_node: Node2D = obs.get("node") as Node2D
+			if not is_instance_valid(obs_node) or not obs_node.is_inside_tree():
+				_obstacles.remove_at(obs_idx)
+				continue
+			var opos: Vector2 = obs_node.global_position
+			var orad: float = obs.get("radius", 35.0)
+			valid_obs_nodes.append(obs_node)
+			obs_x.append(opos.x)
+			obs_y.append(opos.y)
+			obs_r_sq.append(orad * orad)
+	var active_obs_count: int = valid_obs_nodes.size()
+
 	for i in range(active_count - 1, -1, -1):
 		var t: float = time_alive[i] + delta
 		time_alive[i] = t
@@ -165,6 +192,30 @@ func _physics_process(delta: float) -> void:
 		if absf(dx) > cull_distance_x or absf(dy) > cull_distance_y:
 			_swap_and_pop(i)
 			continue
+
+		# Cobertura balística dual: absorción de proyectiles por obstáculos espaciales
+		var bullet_blocked: bool = false
+		if active_obs_count > 0:
+			for k in range(active_obs_count):
+				var odx: float = cur_x - obs_x[k]
+				var ody: float = cur_y - obs_y[k]
+				if odx * odx + ody * ody <= obs_r_sq[k]:
+					_swap_and_pop(i)
+					bullet_blocked = true
+					var obs_node: Node2D = valid_obs_nodes[k]
+					if is_instance_valid(obs_node):
+						bullet_intercepted.emit(Vector2(cur_x, cur_y), obs_node)
+						if obs_node.has_method("take_damage"):
+							var ctx := HitContext.new()
+							ctx.raw_damage = 5.0
+							ctx.final_damage = 5.0
+							ctx.hit_position = Vector2(cur_x, cur_y)
+							obs_node.take_damage(ctx)
+					break
+
+		if bullet_blocked:
+			continue
+
 		var dist_sq: float = dx * dx + dy * dy
 
 		if not player_invulnerable:
@@ -252,6 +303,28 @@ func clear_bullets_in_arc(center: Vector2, direction: Vector2, arc_degrees: floa
 
 func get_active_bullet_count() -> int:
 	return active_count
+
+# GESTIÓN DE OBSTÁCULOS Y COBERTURA BALÍSTICA
+func register_obstacle(node: Node2D, radius: float = 35.0) -> void:
+	if not is_instance_valid(node):
+		return
+	for obs in _obstacles:
+		if obs.get("node") == node:
+			obs["radius"] = radius
+			return
+	_obstacles.append({ "node": node, "radius": radius })
+
+func unregister_obstacle(node: Node2D) -> void:
+	for i in range(_obstacles.size() - 1, -1, -1):
+		if _obstacles[i].get("node") == node:
+			_obstacles.remove_at(i)
+			return
+
+func get_registered_obstacle_count() -> int:
+	return _obstacles.size()
+
+func clear_all_obstacles() -> void:
+	_obstacles.clear()
 
 # PROCEDURAL DANMAKU PATTERNS
 func fire_radial_ring(origin: Vector2, count: int, speed: float, 

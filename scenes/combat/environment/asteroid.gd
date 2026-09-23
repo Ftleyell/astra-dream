@@ -1,5 +1,5 @@
 class_name Asteroid
-extends DestructibleSpaceObject
+extends "res://scenes/combat/environment/destructible_space_object.gd"
 
 ## Asteroid.gd
 ## Asteroide destructible con mecánica clásica de división y recompensas de EXP.
@@ -39,17 +39,22 @@ func _ready() -> void:
 func _configure_tier_stats() -> void:
 	match size_tier:
 		SizeTier.LARGE:
+			tier = 3
 			base_radius = randf_range(44.0, 52.0)
 			base_health = 90.0
 			base_xp = 0 # La recompensa se obtiene al romper los fragmentos
 		SizeTier.MEDIUM:
+			tier = 2
 			base_radius = randf_range(24.0, 30.0)
 			base_health = 45.0
 			base_xp = 5
 		SizeTier.SMALL:
+			tier = 1
 			base_radius = randf_range(13.0, 17.0)
 			base_health = 20.0
 			base_xp = 15 # Misma recompensa de EXP que un dron enemigo
+
+	obstacle_radius = base_radius
 
 	if health_component:
 		health_component.max_health = base_health
@@ -104,6 +109,15 @@ func _die() -> void:
 		return
 	is_dying = true
 	destroyed.emit(self)
+	shattered.emit(global_position, tier)
+
+	_unregister_from_bullet_server()
+
+	# Emitir metralla cinemática reactiva con knockback
+	var shard_script = preload("res://scenes/combat/environment/shrapnel_shard.gd")
+	if shard_script:
+		shard_script.spawn_shattered_burst(self, global_position, tier, -1, shard_color)
+
 	_disable_collisions()
 
 	# 1. Spawnear fragmentos si corresponde al tamaño

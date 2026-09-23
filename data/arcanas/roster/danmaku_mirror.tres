@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="1_onxrh"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_kxtc4"]
+
+[resource]
+script = ExtResource("2_kxtc4")
+id = "danmaku_mirror"
+name = "Espejo Danmaku"
+description_boon = "+4 Proyectiles en abanico y +30% Cadencia de fuego"
+description_curse = "-50% Tamaño de proyectil y -20% Daño base"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_onxrh")
+color_accent = Color(0.15, 0.95, 1, 1)
+stat_modifiers = {
+"attack_speed_pct": 0.3,
+"base_damage_pct": -0.2,
+"projectile_count": 4.0,
+"weapon_size_pct": -0.5
+}
+custom_tags = PackedStringArray()
