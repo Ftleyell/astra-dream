@@ -34,6 +34,8 @@ var satellites_collected_total: int = 0
 var last_anchor_pos: Vector2 = Vector2.ZERO
 
 var is_briefing_active: bool = true
+var is_cockpit_active: bool = false
+var is_boss_transmission_active: bool = false
 var prologue_bonus_chosen: bool = false
 var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
@@ -149,36 +151,62 @@ func _on_dialogic_signal(arg: Variant) -> void:
 func _on_dialogic_timeline_started() -> void:
 	if skip_badge_layer:
 		skip_badge_layer.show()
+	if audio_duck_manager:
+		audio_duck_manager.duck_music(true)
 
 func _on_dialogue_skip_requested() -> void:
 	if is_briefing_active and not prologue_bonus_chosen:
 		prologue_bonus_chosen = true
 		player.run_credits += 100
 		hud.update_credits(player.run_credits)
+
+	is_cockpit_active = false
+	is_boss_transmission_active = false
+	notify_menu_closed(0.4)
+
 	if Dialogic.current_timeline != null:
 		Dialogic.end_timeline(true)
+
+	if not is_any_combat_modal_active():
+		get_tree().paused = false
 
 func _on_dialogic_timeline_ended() -> void:
 	if skip_badge_layer:
 		skip_badge_layer.hide()
+	if audio_duck_manager:
+		audio_duck_manager.duck_music(false)
 
 	if is_briefing_active:
 		is_briefing_active = false
-		get_tree().paused = false
-
-		# Si se saltó el diálogo sin haber seleccionado una opción, otorgar bono base
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
 			player.run_credits += 100
 			hud.update_credits(player.run_credits)
 
+	if is_cockpit_active:
+		is_cockpit_active = false
+		notify_menu_closed(0.4)
+
+	if is_boss_transmission_active:
+		is_boss_transmission_active = false
+		notify_menu_closed(0.4)
+
+	if not is_any_combat_modal_active():
+		get_tree().paused = false
+
 func _trigger_cockpit_interlude() -> void:
+	is_cockpit_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
 	var layout = Dialogic.start("res://narrative/timelines/wave_interlude_cockpit.dtl")
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_dialogic_audio(layout)
 
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_briefing_active:
+	if get_tree().paused or is_briefing_active or is_cockpit_active or is_boss_transmission_active:
 		return
 
 	# Cronómetro de tiempo total de la run
@@ -264,11 +292,11 @@ func _on_boss_defeated(_boss_id: String) -> void:
 	save_current_run_state()
 
 func _input(event: InputEvent) -> void:
-	# Atajo para saltar el briefing cinematográfico con ESC o diálogo skip
-	if is_briefing_active:
+	# Atajo para saltar el briefing o secuencias de diálogo cinematográfico con ESC o acción dialogue_skip
+	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
 		if event.is_action_pressed("dialogue_skip") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
 			get_viewport().set_input_as_handled()
-			Dialogic.end_timeline()
+			_on_dialogue_skip_requested()
 			return
 
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -319,7 +347,13 @@ func _on_satellite_exited(_index: int) -> void:
 	save_current_run_state()
 
 func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
+	is_boss_transmission_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
 	var layout = Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_dialogic_audio(layout)
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
@@ -350,7 +384,7 @@ func is_character_stats_active() -> bool:
 	return character_stats_overlay != null and (character_stats_overlay.is_open or character_stats_overlay.visible)
 
 func is_dialogue_active() -> bool:
-	if is_briefing_active:
+	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
 		return true
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:

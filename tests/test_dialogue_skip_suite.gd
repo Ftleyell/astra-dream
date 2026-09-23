@@ -57,34 +57,53 @@ func _ready() -> void:
 	assert(main_game.prologue_bonus_chosen == true, "Default prologue bonus should be granted on skip")
 	print("  ✓ Prologue briefing skipped completely via DialogueSkipOverlay: bonus awarded, timeline ended")
 
-	# 6. Test Cockpit Interlude Skip
-	print("\n[Testing Cockpit Interlude Skip]")
+	# 6. Test Cockpit Interlude Pause and Skip
+	print("\n[Testing Cockpit Interlude Pause & Skip]")
 	main_game._trigger_cockpit_interlude()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline != null, "Cockpit timeline must be active")
-	print("  ✓ Cockpit interlude active: %s" % Dialogic.current_timeline.resource_path)
+	assert(get_tree().paused == true, "Cockpit dialogue DEBE pausar el juego para proteger al jugador de disparos enemigos")
+	assert(main_game.is_cockpit_active == true, "is_cockpit_active debe ser true mientras la cabina esté en pantalla")
+	print("  ✓ Cockpit interlude activo y juego pausado: %s" % Dialogic.current_timeline.resource_path)
 
 	# Skip cockpit dialogue
 	skip_overlay._execute_skip()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline == null, "Cockpit timeline must be ended after skip")
-	print("  ✓ Cockpit interlude skipped completely via DialogueSkipOverlay")
+	assert(not get_tree().paused, "Tras saltar la conversación de cabina, el juego DEBE despausarse")
+	assert(main_game.is_cockpit_active == false, "is_cockpit_active debe ser false tras el skip")
+	print("  ✓ Cockpit interlude saltado exitosamente con despausa limpia")
 
-	# 7. Test Boss Titan Alert Dialogue Skip
-	print("\n[Testing Boss Titan Alert Skip]")
-	Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
+	# 6b. Test Cockpit Interlude Natural Completion Unpause
+	print("\n[Testing Cockpit Interlude Natural Finish]")
+	main_game._trigger_cockpit_interlude()
+	await get_tree().process_frame
+	assert(get_tree().paused == true, "Cockpit interlude debe pausar el juego nuevamente")
+	await Dialogic.end_timeline(true)
+	await get_tree().process_frame
+	assert(not get_tree().paused, "Al terminar naturalmente la conversación de cabina, el juego debe despausarse")
+	assert(main_game.is_cockpit_active == false, "is_cockpit_active debe resetearse a false")
+	print("  ✓ Cockpit interlude finalizado de forma natural despausa el combate")
+
+	# 7. Test Boss Titan Alert Dialogue Pause and Skip
+	print("\n[Testing Boss Titan Alert Pause & Skip]")
+	main_game.trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión!")
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline != null, "Boss alert timeline must be active")
-	print("  ✓ Boss alert active: %s" % Dialogic.current_timeline.resource_path)
+	assert(get_tree().paused == true, "Boss alert dialogue DEBE pausar el combate")
+	assert(main_game.is_boss_transmission_active == true, "is_boss_transmission_active debe ser true")
+	print("  ✓ Boss alert activo y combate congelado de forma segura")
 
 	skip_overlay._execute_skip()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline == null, "Boss alert timeline must be ended after skip")
-	print("  ✓ Boss alert skipped completely via DialogueSkipOverlay")
+	assert(not get_tree().paused, "Tras saltar la alerta de jefe, el combate se reanuda")
+	assert(main_game.is_boss_transmission_active == false, "is_boss_transmission_active debe ser false")
+	print("  ✓ Boss alert saltado exitosamente con despausa limpia")
 
 	# 8. Verify Bomb functions normally when no dialogue is active
 	# Simulate bomb press by setting bomb action or calling directly
