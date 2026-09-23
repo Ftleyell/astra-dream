@@ -24,8 +24,11 @@
       },
       "problemMatcher": [],
       "presentation": {
+        "echo": false,
         "reveal": "always",
-        "panel": "shared"
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false
       }
     },
 
@@ -75,11 +78,65 @@
       ],
       "problemMatcher": [],
       "presentation": {
-        "echo": true,
+        "echo": false,
         "reveal": "always",
-        "focus": true,
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false
+      }
+    },
+
+    {
+      "label": "Development (External CMD)",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "external_development",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
         "panel": "shared",
-        "showReuseMessage": true
+        "showReuseMessage": false
+      }
+    },
+
+    {
+      "label": "Development (no CMD)",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/.vscode/run_godot.ps1",
+        "-Mode",
+        "cmdless_development",
+        "-ProjectPath",
+        "${workspaceFolder}",
+        "-GodotPath",
+        "${config:godot.executablePath}"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false
       }
     },
 
@@ -102,16 +159,16 @@
       ],
       "problemMatcher": [],
       "presentation": {
-        "echo": true,
+        "echo": false,
         "reveal": "always",
-        "focus": true,
-        "panel": "shared",
-        "showReuseMessage": true
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false
       }
     },
 
     {
-      "label": "Development (no CMD)",
+      "label": "Production (External CMD)",
       "type": "shell",
       "command": "powershell.exe",
       "args": [
@@ -121,7 +178,7 @@
         "-File",
         "${workspaceFolder}/.vscode/run_godot.ps1",
         "-Mode",
-        "cmdless_development",
+        "external_production",
         "-ProjectPath",
         "${workspaceFolder}",
         "-GodotPath",
@@ -171,31 +228,35 @@
       "description": "Select Godot launch action:",
       "options": [
         {
-          "label": "1. Starts Godot with no project",
+          "label": "1. Starts Godot with no project (Project Manager)",
           "value": "projectless"
         },
-
         {
-          "label": "2. Starts Godot with the project to be edited",
+          "label": "2. Starts Godot with the project to be edited (integrated CMD)",
           "value": "development"
         },
-
         {
-          "label": "3. Starts Godot with the project to be edited but no visible CMD",
+          "label": "3. Starts Godot with the project to be edited (external CMD window)",
+          "value": "external_development"
+        },
+        {
+          "label": "4. Starts Godot with the project to be edited (no CMD)",
           "value": "cmdless_development"
         },
-
         {
-          "label": "4. Starts Godot with the project to be played",
+          "label": "5. Starts Godot with the project to be played (integrated CMD)",
           "value": "production"
         },
-
         {
-          "label": "5. Starts Godot with the project to be played but no visible CMD",
+          "label": "6. Starts Godot with the project to be played (external CMD window)",
+          "value": "external_production"
+        },
+        {
+          "label": "7. Starts Godot with the project to be played (no CMD)",
           "value": "cmdless_production"
         }
       ],
-      "default": "2. Starts Godot with the project to be edited"
+      "default": "2. Starts Godot with the project to be edited (integrated CMD)"
     }
   ]
 }
