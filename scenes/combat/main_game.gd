@@ -398,9 +398,9 @@ func _on_player_died() -> void:
 		"victory": false
 	})
 
-	# Volver al menú principal tras una breve pausa
+	# Volver al HUB 3D tras una breve pausa
 	get_tree().create_timer(1.2).timeout.connect(func():
-		get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+		get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 	)
 
 # ==============================================================================

@@ -173,4 +173,4 @@ func _on_loadout_pressed() -> void:
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
 
 func _on_back_pressed() -> void:
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/main_menu/main_menu.tscn")
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")

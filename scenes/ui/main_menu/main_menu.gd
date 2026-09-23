@@ -20,7 +20,10 @@ func _ready() -> void:
 	get_tree().paused = false
 	_wire_hub_button()
 
-	# Configuración del botón de Continuar Run activa
+	# Redirigir automáticamente al nuevo Menú Principal HUD 3D si se carga como escena actual
+	if get_tree().current_scene == self or get_parent() == get_tree().root:
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+		return
 	if continue_button:
 		if SaveManager.has_active_run():
 			var active_data := SaveManager.load_active_run()
@@ -80,15 +83,13 @@ func _on_continue_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	SaveManager.is_resuming_run = true
-	get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_play_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	SaveManager.is_resuming_run = false
-	get_tree().change_scene_to_file("res://scenes/ui/character_select/character_select.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_hub_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

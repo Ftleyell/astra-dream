@@ -11,7 +11,7 @@ const HighscoresModalScript := preload("res://scenes/ui/highscores/highscores_mo
 @onready var highscores_button: Button = $Panel/VBoxContainer/BottomBar/HighscoresButton
 @onready var save_quit_button: Button = $Panel/VBoxContainer/BottomBar/SaveQuitButton
 @onready var restart_button: Button = $Panel/VBoxContainer/BottomBar/RestartButton
-@onready var hub_button: Button = $Panel/VBoxContainer/BottomBar/HubButton
+@onready var hub_button: Button = get_node_or_null("Panel/VBoxContainer/BottomBar/HubButton")
 @onready var menu_button: Button = $Panel/VBoxContainer/BottomBar/MenuButton
 
 @onready var items_container: VBoxContainer = $Panel/VBoxContainer/ContentHBox/ItemsColumn/ItemsScroll/ItemsList
@@ -247,7 +247,7 @@ func _on_save_quit_pressed() -> void:
 
 	hide()
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_restart_pressed() -> void:
 	hide()
@@ -262,4 +262,4 @@ func _on_hub_pressed() -> void:
 func _on_menu_pressed() -> void:
 	hide()
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/ui/main_menu/main_menu.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")

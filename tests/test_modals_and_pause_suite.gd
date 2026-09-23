@@ -115,9 +115,9 @@ func _ready() -> void:
 	print("  ✓ El combate se reanuda únicamente al finalizar la selección de cartas.")
 
 	# ----------------------------------------------------
-	# CASO 6: Salir de Pausa al Menú Principal despausa el árbol
+	# CASO 6: Salir de Pausa al Menú Principal (Hub 3D) despausa el árbol
 	# ----------------------------------------------------
-	print("\n[6/6] Testing Exit to Main Menu resets pause state...")
+	print("\n[6/6] Testing Exit to 3D Hub Menu resets pause state...")
 	pause.open_pause_menu()
 	assert(get_tree().paused, "El juego debe pausarse al abrir pausa")
 	# Simular salida sin llamar change_scene_to_file para mantener la prueba en memoria
@@ -125,14 +125,14 @@ func _ready() -> void:
 	get_tree().paused = false
 	assert(not get_tree().paused, "El árbol debe estar despausado al salir al Menú Principal")
 
-	# Instanciar MainMenu para verificar que no esté congelado
-	var main_menu_scene: PackedScene = load("res://scenes/ui/main_menu/main_menu.tscn")
-	var main_menu = main_menu_scene.instantiate()
-	add_child(main_menu)
-	assert(main_menu.process_mode == Node.PROCESS_MODE_ALWAYS, "MainMenu debe tener PROCESS_MODE_ALWAYS")
-	assert(not get_tree().paused, "El árbol debe permanecer despausado en MainMenu")
-	print("  ✓ Menú Principal desbloqueado y con botones 100% operativos tras salir de Pausa.")
-	main_menu.queue_free()
+	# Instanciar HubWorld para verificar que esté activo y despausado
+	var hub_scene: PackedScene = load("res://scenes/ui/hub/hub_world.tscn")
+	var hub = hub_scene.instantiate()
+	add_child(hub)
+	assert(hub.process_mode == Node.PROCESS_MODE_ALWAYS, "HubWorld debe tener PROCESS_MODE_ALWAYS")
+	assert(not get_tree().paused, "El árbol debe permanecer despausado en HubWorld")
+	print("  ✓ Menú Principal HUD 3D desbloqueado y con controles 100% operativos tras salir de Pausa.")
+	hub.queue_free()
 
 	print("\n==========================================")
 	print("[PASS] ALL MODAL, SETTINGS & PAUSE TESTS PASSED (100%)!")
