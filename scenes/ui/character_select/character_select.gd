@@ -1,8 +1,6 @@
 class_name CharacterSelectUI
 extends Control
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
-
 @onready var char_list_container: VBoxContainer = $MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll/CharList
 @onready var name_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader/NameLabel
 @onready var title_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader/ClassTitleLabel

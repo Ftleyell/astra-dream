@@ -1,6 +1,5 @@
 class_name DarkMatterOrb
 extends Node2D
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 ## DarkMatterOrb.gd
 ## Orbe de Materia Oscura liberado por Bosses y Núcleos Planetarios.

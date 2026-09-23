@@ -17,8 +17,6 @@ const COLOR_PURE_WHITE := Color("#FFFFFF") # Pure Crisp White
 const COLOR_CYAN := Color("#00F0FF")       # Accent Neon Cyan
 const COLOR_EMERALD := Color("#00FF9D")    # BioMasa Green
 const COLOR_DARK_MATTER := Color("#BF00FF") # Materia Oscura Purple
-const TrophyDetailsModal = preload("res://scenes/ui/hub/trophy_details_modal.gd")
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 const PILOT_ROSTER: Array[Dictionary] = [
 	{

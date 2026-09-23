@@ -1,7 +1,5 @@
 class_name ArcanaSelectionModal
 extends CanvasLayer
-const ArcanaData = preload("res://data/arcanas/arcana_data.gd")
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 
 ## ArcanaSelectionModal.gd
@@ -11,8 +9,6 @@ const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 signal arcana_chosen(arcana: ArcanaData)
 signal modal_closed()
-
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 
 const COLOR_HOT_PINK := Color("#FF1493")
 const COLOR_DEEP_BLACK := Color("#0A0A0E")

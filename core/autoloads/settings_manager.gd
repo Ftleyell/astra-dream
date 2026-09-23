@@ -56,8 +56,8 @@ func apply_all_settings() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		DisplayServer.window_set_size(resolution_size)
 		# Centrar ventana si es posible
-		var screen_center := DisplayServer.screen_get_position() + DisplayServer.screen_get_size() / 2
-		DisplayServer.window_set_position(screen_center - resolution_size / 2)
+		var screen_center := DisplayServer.screen_get_position() + Vector2i(Vector2(DisplayServer.screen_get_size()) / 2.0)
+		DisplayServer.window_set_position(screen_center - Vector2i(Vector2(resolution_size) / 2.0))
 
 	settings_changed.emit()
 

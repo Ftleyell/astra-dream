@@ -1,6 +1,5 @@
 class_name PlanetCore
 extends Node2D
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 
 ## PlanetCore.gd

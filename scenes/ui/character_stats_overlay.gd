@@ -1,7 +1,5 @@
 class_name CharacterStatsOverlay
 extends CanvasLayer
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
-const ArcanaData = preload("res://data/arcanas/arcana_data.gd")
 
 
 ## CharacterStatsOverlay.gd

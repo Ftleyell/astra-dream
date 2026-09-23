@@ -1,6 +1,5 @@
 class_name TrophyDetailsModal
 extends CanvasLayer
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 
 ## TrophyDetailsModal.gd
@@ -10,8 +9,6 @@ const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 signal trophy_upgraded(trophy_id: StringName, new_level: int)
 signal modal_closed()
-
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 
 const COLOR_HOT_PINK := Color("#FF1493")
 const COLOR_DEEP_BLACK := Color("#0A0A0E")

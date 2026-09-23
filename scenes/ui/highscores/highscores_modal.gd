@@ -3,8 +3,6 @@ extends CanvasLayer
 
 signal closed()
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
-
 @onready var panel: Panel = $Panel
 @onready var list_container: VBoxContainer = $Panel/VBoxContainer/ScrollContainer/ListContainer
 @onready var close_button: Button = $Panel/VBoxContainer/BottomBar/CloseButton

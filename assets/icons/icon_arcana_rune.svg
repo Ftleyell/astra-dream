@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Outer Diamond Glyph -->
+  <polygon points="32,4 58,32 32,60 6,32" fill="#18041E" stroke="#FF1493" stroke-width="2.5"/>
+  <!-- Inner Rune Rhombus -->
+  <polygon points="32,14 48,32 32,50 16,32" fill="none" stroke="#00F0FF" stroke-width="1.8"/>
+  <!-- Central Mystic Eye / Core -->
+  <circle cx="32" cy="32" r="5" fill="#FF1493"/>
+  <circle cx="32" cy="32" r="2.5" fill="#00F0FF"/>
+  <!-- Mystic Energy Lines -->
+  <line x1="32" y1="4" x2="32" y2="14" stroke="#00F0FF" stroke-width="2"/>
+  <line x1="32" y1="50" x2="32" y2="60" stroke="#00F0FF" stroke-width="2"/>
+  <line x1="6" y1="32" x2="16" y2="32" stroke="#00F0FF" stroke-width="2"/>
+  <line x1="48" y1="32" x2="58" y2="32" stroke="#00F0FF" stroke-width="2"/>
+  <circle cx="32" cy="8" r="1.5" fill="#00F0FF"/>
+  <circle cx="32" cy="56" r="1.5" fill="#00F0FF"/>
+</svg>

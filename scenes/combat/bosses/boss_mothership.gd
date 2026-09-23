@@ -1,6 +1,5 @@
 class_name BossMothership
 extends CharacterBody2D
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 
 signal health_changed(current: float, max_val: float)

@@ -17,6 +17,7 @@ extends CanvasLayer
 @onready var weapon_slots_row: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/WeaponSlotsRow")
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
+@onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
 
 var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
@@ -35,6 +36,8 @@ func _ready() -> void:
 		player = get_tree().get_first_node_in_group("player") as Player
 	if satellite_tracker and is_instance_valid(player):
 		satellite_tracker.set_player(player)
+	if arcana_tracker and is_instance_valid(player):
+		arcana_tracker.set_player(player)
 
 	if player:
 		player.health_changed.connect(_on_health_changed)
@@ -61,7 +64,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	run_time += delta
-	var wave_m: int = int(wave_time_left) / 60
+	var wave_m: int = int(float(wave_time_left) / 60.0)
 	var wave_s: int = int(wave_time_left) % 60
 	timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
 

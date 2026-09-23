@@ -1,6 +1,5 @@
 class_name ArcaneMonolith
 extends "res://scenes/combat/environment/destructible_space_object.gd"
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 
 ## ArcaneMonolith.gd

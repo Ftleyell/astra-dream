@@ -305,14 +305,14 @@ func get_active_bullet_count() -> int:
 	return active_count
 
 # GESTIÓN DE OBSTÁCULOS Y COBERTURA BALÍSTICA
-func register_obstacle(node: Node2D, radius: float = 35.0) -> void:
+func register_obstacle(node: Node2D, p_radius: float = 35.0) -> void:
 	if not is_instance_valid(node):
 		return
 	for obs in _obstacles:
 		if obs.get("node") == node:
-			obs["radius"] = radius
+			obs["radius"] = p_radius
 			return
-	_obstacles.append({ "node": node, "radius": radius })
+	_obstacles.append({ "node": node, "radius": p_radius })
 
 func unregister_obstacle(node: Node2D) -> void:
 	for i in range(_obstacles.size() - 1, -1, -1):

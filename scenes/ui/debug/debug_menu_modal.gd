@@ -7,8 +7,6 @@ extends CanvasLayer
 
 signal closed()
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
-
 @onready var modal_panel: PanelContainer = $CenterContainer/MainPanel
 @onready var infinite_hp_check: CheckBox = $CenterContainer/MainPanel/Margin/VBox/CheatsBox/HpCheck
 @onready var infinite_credits_check: CheckBox = $CenterContainer/MainPanel/Margin/VBox/CheatsBox/CreditsCheck

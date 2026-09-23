@@ -1,7 +1,5 @@
 class_name Player
 extends CharacterBody2D
-const SaveManager = preload("res://core/autoloads/save_manager.gd")
-const ArcanaData = preload("res://data/arcanas/arcana_data.gd")
 
 
 @export var character_data: CharacterData
@@ -669,7 +667,7 @@ func _handle_health_regen(delta: float) -> void:
 func _on_bullet_hit() -> void:
 	take_damage(10.0)
 
-func _on_bullet_grazed(bullet_pos: Vector2) -> void:
+func _on_bullet_grazed(_bullet_pos: Vector2) -> void:
 	add_exp(2.0) # Cada roce con balas suma experiencia y escala con exp_multiplier
 
 func get_arcana_ids() -> Array[String]:
