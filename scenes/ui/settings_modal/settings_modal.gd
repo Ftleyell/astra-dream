@@ -3,8 +3,6 @@ extends CanvasLayer
 
 signal closed
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
-
 @onready var master_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MasterSlider
 @onready var music_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MusicSlider
 @onready var sfx_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/SfxSlider

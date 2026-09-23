@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://arcanaspawnrunner01"]
+
+[ext_resource type="Script" path="res://tests/test_arcana_spawning_and_hud_indicator.gd" id="1_test_arc"]
+
+[node name="TestArcanaSpawningAndHudIndicatorRunner" type="Node"]
+script = ExtResource("1_test_arc")

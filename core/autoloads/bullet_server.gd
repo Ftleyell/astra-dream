@@ -24,6 +24,12 @@ var flags: PackedInt32Array
 
 var active_count: int = 0
 
+const FLAG_GRAZED: int = 1
+const FLAG_COMMON_ENEMY: int = 2
+
+const MAX_COMMON_ENEMY_BULLETS: int = 20
+var active_common_bullets: int = 0
+
 # GPU Buffer & RID
 var render_buffer: PackedFloat32Array
 var multimesh_rid: RID
@@ -34,8 +40,12 @@ var player_hitbox_radius: float = 5.0
 var player_graze_radius: float = 24.0
 var player_invulnerable: bool = false
 
+# Obstáculos destructibles (Cobertura balística dual)
+var _obstacles: Array[Dictionary] = []
+
 signal player_hit()
 signal player_grazed(pos: Vector2)
+signal bullet_intercepted(pos: Vector2, obstacle: Node2D)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -128,6 +138,45 @@ func _physics_process(delta: float) -> void:
 	var py: float = player_pos.y
 	var r_graze_sq: float = player_graze_radius * player_graze_radius
 
+	# Pre-filtrar y almacenar en caché las posiciones y radios de los obstáculos activos
+	# para evitar decenas de miles de llamadas C++ a global_position dentro del bucle de balas.
+	var valid_obs_nodes: Array[Node2D] = []
+	var obs_x: PackedFloat32Array = PackedFloat32Array()
+	var obs_y: PackedFloat32Array = PackedFloat32Array()
+	var obs_r_sq: PackedFloat32Array = PackedFloat32Array()
+
+	var obs_count := _obstacles.size()
+	if obs_count > 0:
+		for obs_idx in range(obs_count - 1, -1, -1):
+			var obs: Dictionary = _obstacles[obs_idx]
+			var obs_node: Node2D = obs.get("node") as Node2D
+			if not is_instance_valid(obs_node) or not obs_node.is_inside_tree():
+				_obstacles.remove_at(obs_idx)
+				continue
+			var opos: Vector2 = obs_node.global_position
+			var orad: float = obs.get("radius", 35.0)
+			valid_obs_nodes.append(obs_node)
+			obs_x.append(opos.x)
+			obs_y.append(opos.y)
+			obs_r_sq.append(orad * orad)
+	var active_obs_count: int = valid_obs_nodes.size()
+	var min_obs_x: float = 0.0
+	var max_obs_x: float = 0.0
+	var min_obs_y: float = 0.0
+	var max_obs_y: float = 0.0
+	if active_obs_count > 0:
+		min_obs_x = obs_x[0] - 60.0
+		max_obs_x = obs_x[0] + 60.0
+		min_obs_y = obs_y[0] - 60.0
+		max_obs_y = obs_y[0] + 60.0
+		for oi in range(1, active_obs_count):
+			var ox: float = obs_x[oi]
+			var oy: float = obs_y[oi]
+			min_obs_x = minf(min_obs_x, ox - 60.0)
+			max_obs_x = maxf(max_obs_x, ox + 60.0)
+			min_obs_y = minf(min_obs_y, oy - 60.0)
+			max_obs_y = maxf(max_obs_y, oy + 60.0)
+
 	for i in range(active_count - 1, -1, -1):
 		var t: float = time_alive[i] + delta
 		time_alive[i] = t
@@ -165,6 +214,30 @@ func _physics_process(delta: float) -> void:
 		if absf(dx) > cull_distance_x or absf(dy) > cull_distance_y:
 			_swap_and_pop(i)
 			continue
+
+		# Cobertura balística dual: absorción de proyectiles por obstáculos espaciales
+		var bullet_blocked: bool = false
+		if active_obs_count > 0 and cur_x >= min_obs_x and cur_x <= max_obs_x and cur_y >= min_obs_y and cur_y <= max_obs_y:
+			for k in range(active_obs_count):
+				var odx: float = cur_x - obs_x[k]
+				var ody: float = cur_y - obs_y[k]
+				if odx * odx + ody * ody <= obs_r_sq[k]:
+					_swap_and_pop(i)
+					bullet_blocked = true
+					var obs_node: Node2D = valid_obs_nodes[k]
+					if is_instance_valid(obs_node):
+						bullet_intercepted.emit(Vector2(cur_x, cur_y), obs_node)
+						if obs_node.has_method("take_damage"):
+							var ctx := HitContext.new()
+							ctx.raw_damage = 5.0
+							ctx.final_damage = 5.0
+							ctx.hit_position = Vector2(cur_x, cur_y)
+							obs_node.take_damage(ctx)
+					break
+
+		if bullet_blocked:
+			continue
+
 		var dist_sq: float = dx * dx + dy * dy
 
 		if not player_invulnerable:
@@ -204,6 +277,8 @@ func _physics_process(delta: float) -> void:
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, active_count)
 
 func _swap_and_pop(idx: int) -> void:
+	if (flags[idx] & FLAG_COMMON_ENEMY) != 0:
+		active_common_bullets = maxi(0, active_common_bullets - 1)
 	active_count -= 1
 	if idx != active_count:
 		_copy_bullet(active_count, idx)
@@ -225,7 +300,38 @@ func _copy_bullet(src: int, dst: int) -> void:
 # SCREEN CLEAR BOMBS
 func bomb_clear_all() -> void:
 	active_count = 0
+	active_common_bullets = 0
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, 0)
+
+# MÉTODOS DE CONTROL PARA ENEMIGOS COMUNES (LÍMITE ESTRICTO ANTI-LAG A VELOCIDAD X4)
+func can_common_enemy_shoot() -> bool:
+	return active_common_bullets < MAX_COMMON_ENEMY_BULLETS
+
+func fire_common_aimed_bullet(origin: Vector2, target: Vector2, speed: float = 190.0, bullet_type_id: int = 1) -> bool:
+	if active_common_bullets >= MAX_COMMON_ENEMY_BULLETS or active_count >= MAX_BULLETS:
+		return false
+
+	var to_target: Vector2 = target - origin
+	var dir: Vector2 = to_target.normalized() if to_target.length_squared() > 1.0 else Vector2.RIGHT
+	var vel: Vector2 = dir * speed
+
+	var i: int = active_count
+	pos_x[i] = origin.x
+	pos_y[i] = origin.y
+	vel_x[i] = vel.x
+	vel_y[i] = vel.y
+	time_alive[i] = 0.0
+	max_life[i] = 8.0
+	radius[i] = 5.0
+	bullet_type[i] = float(bullet_type_id)
+	wave_amp[i] = 0.0
+	wave_freq[i] = 0.0
+	base_angle[i] = atan2(vel.y, vel.x)
+	flags[i] = FLAG_COMMON_ENEMY
+
+	active_count += 1
+	active_common_bullets += 1
+	return true
 
 func bomb_clear_shockwave(center: Vector2, shockwave_radius: float) -> void:
 	var r_sq: float = shockwave_radius * shockwave_radius
@@ -253,6 +359,28 @@ func clear_bullets_in_arc(center: Vector2, direction: Vector2, arc_degrees: floa
 func get_active_bullet_count() -> int:
 	return active_count
 
+# GESTIÓN DE OBSTÁCULOS Y COBERTURA BALÍSTICA
+func register_obstacle(node: Node2D, p_radius: float = 35.0) -> void:
+	if not is_instance_valid(node):
+		return
+	for obs in _obstacles:
+		if obs.get("node") == node:
+			obs["radius"] = p_radius
+			return
+	_obstacles.append({ "node": node, "radius": p_radius })
+
+func unregister_obstacle(node: Node2D) -> void:
+	for i in range(_obstacles.size() - 1, -1, -1):
+		if _obstacles[i].get("node") == node:
+			_obstacles.remove_at(i)
+			return
+
+func get_registered_obstacle_count() -> int:
+	return _obstacles.size()
+
+func clear_all_obstacles() -> void:
+	_obstacles.clear()
+
 # PROCEDURAL DANMAKU PATTERNS
 func fire_radial_ring(origin: Vector2, count: int, speed: float, 
 					  base_rot: float = 0.0, b_type: int = 0) -> void:
@@ -279,3 +407,61 @@ func fire_aimed_spread(origin: Vector2, target: Vector2, count: int,
 	for i in range(count):
 		var angle: float = start_angle + float(i) * step
 		spawn_bullet(origin.x, origin.y, cos(angle) * speed, sin(angle) * speed, b_type)
+
+# PATRONES TRIGONOMÉTRICOS PROCEDURALES (ESTILO PICAYUNE DREAMS)
+
+## 1. Rosa Polar de Rhodonea: Velocidad de emisión modulada por cos(petals * θ)
+## Genera flores y estrellas geométricas que se expanden orgánicamente
+func fire_rhodonea_flower(origin: Vector2, count: int, base_speed: float, petals: int, 
+						  modulation_amp: float, base_rot: float = 0.0, b_type: int = 0) -> void:
+	var step: float = TAU / float(count)
+	for i in range(count):
+		var angle: float = base_rot + float(i) * step
+		var mod_factor: float = 1.0 + modulation_amp * cos(float(petals) * (angle - base_rot))
+		var spd: float = base_speed * mod_factor
+		spawn_bullet(origin.x, origin.y, cos(angle) * spd, sin(angle) * spd, b_type)
+
+## 2. Abanico Serpenteante con Aceleración Senoidal Lateral en Vuelo
+## Cada proyectil oscila periódicamente creando trayectorias en forma de serpiente
+func fire_serpentine_spread(origin: Vector2, target: Vector2, count: int, spread_deg: float, 
+							speed: float, p_wave_amp: float, p_wave_freq: float, b_type: int = 2) -> void:
+	var target_angle: float = (target - origin).angle()
+	if count <= 1:
+		spawn_bullet(origin.x, origin.y, cos(target_angle) * speed, sin(target_angle) * speed, 
+					 b_type, 4.5, 10.0, p_wave_amp, p_wave_freq)
+		return
+
+	var spread_rad: float = deg_to_rad(spread_deg)
+	var start_angle: float = target_angle - spread_rad * 0.5
+	var step: float = spread_rad / float(count - 1)
+	for i in range(count):
+		var angle: float = start_angle + float(i) * step
+		var phase_sign: float = 1.0 if (i % 2 == 0) else -1.0
+		spawn_bullet(origin.x, origin.y, cos(angle) * speed, sin(angle) * speed, 
+					 b_type, 4.5, 10.0, p_wave_amp * phase_sign, p_wave_freq)
+
+## 3. Trenzas de Interferencia Entrelazadas (Lissajous / ADN)
+## Dispara pares de proyectiles que se cruzan continuamente en contrafase (+cos y -cos)
+func fire_braided_lissajous(origin: Vector2, target: Vector2, pairs_count: int, 
+							speed: float, p_wave_amp: float, p_wave_freq: float, b_type: int = 2) -> void:
+	var dir: Vector2 = (target - origin).normalized() if (target - origin).length_squared() > 1.0 else Vector2.RIGHT
+	var base_ang: float = dir.angle()
+	for i in range(pairs_count):
+		var ang_offset: float = deg_to_rad(float(i - pairs_count / 2) * 8.0)
+		var fire_ang: float = base_ang + ang_offset
+		# Proyectil A (onda positiva)
+		spawn_bullet(origin.x, origin.y, cos(fire_ang) * speed, sin(fire_ang) * speed, 
+					 b_type, 4.0, 8.0, p_wave_amp, p_wave_freq)
+		# Proyectil B (onda en contrafase inversa)
+		spawn_bullet(origin.x, origin.y, cos(fire_ang) * speed, sin(fire_ang) * speed, 
+					 b_type, 4.0, 8.0, -p_wave_amp, p_wave_freq)
+
+## 4. Espiral de Fermat con Respiración Radial Senoidal
+## Modula la velocidad de eyección con una función seno periódica sobre el tick
+func fire_breathing_fermat_spiral_tick(origin: Vector2, tick: int, base_speed: float, 
+									   rot_offset: float, radial_freq: float, 
+									   radial_amp: float, b_type: int = 1) -> void:
+	var angle: float = float(tick) * 2.399963229728653 + rot_offset
+	var breath: float = 1.0 + radial_amp * sin(radial_freq * float(tick))
+	var spd: float = base_speed * breath
+	spawn_bullet(origin.x, origin.y, cos(angle) * spd, sin(angle) * spd, b_type)

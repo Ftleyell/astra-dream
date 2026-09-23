@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="1_w26rh"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_5n461"]
+
+[resource]
+script = ExtResource("2_5n461")
+id = "last_breath"
+name = "Último Aliento"
+description_boon = "+45% Daño base y +20% Reducción de enfriamiento"
+description_curse = "-40% Vida máxima total"
+icon = ExtResource("1_w26rh")
+color_accent = Color(1, 0.1, 0.2, 1)
+stat_modifiers = {
+"base_damage_pct": 0.45,
+"cooldown_reduction": 0.2,
+"max_health_pct": -0.4
+}
+custom_tags = PackedStringArray()

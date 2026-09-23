@@ -1,0 +1,59 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/arcane_monolith.gd" id="1_monolith"]
+[ext_resource type="Script" path="res://core/components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://core/components/hurtbox_component.gd" id="3_hurtbox"]
+[ext_resource type="Script" path="res://core/components/hit_flash_component.gd" id="4_hitflash"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 42.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurtbox"]
+radius = 45.0
+
+[node name="ArcaneMonolith" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_monolith")
+
+[node name="AuraPolygon" type="Polygon2D" parent="."]
+color = Color(0, 0.9, 1, 0.15)
+polygon = PackedVector2Array(-36, -55, 36, -55, 48, 0, 36, 55, -36, 55, -48, 0)
+
+[node name="VisualBase" type="Polygon2D" parent="."]
+color = Color(0.12, 0.14, 0.22, 1)
+polygon = PackedVector2Array(-18, 48, 18, 48, 14, -20, 0, -32, -14, -20)
+
+[node name="FloatingCrystal" type="Polygon2D" parent="."]
+position = Vector2(0, -36)
+color = Color(0, 0.95, 1, 1)
+polygon = PackedVector2Array(0, -18, 12, 0, 0, 18, -12, 0)
+
+[node name="RunesLine" type="Line2D" parent="."]
+points = PackedVector2Array(0, 42, -6, 25, 6, 10, -6, -5, 0, -22)
+width = 2.5
+default_color = Color(0, 0.95, 1, 0.9)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+max_health = 150.0
+current_health = 150.0
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component")]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("3_hurtbox")
+health_component = NodePath("../HealthComponent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("CircleShape2D_hurtbox")
+
+[node name="HitFlashComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "target_visual")]
+script = ExtResource("4_hitflash")
+health_component = NodePath("../HealthComponent")
+target_visual = NodePath("../VisualBase")

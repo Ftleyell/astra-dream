@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="1_fwirk"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_de3qv"]
+
+[resource]
+script = ExtResource("2_de3qv")
+id = "heavy_ballistics"
+name = "Balística Pesada"
+description_boon = "+50% Daño devastador y +6 Armadura frontal"
+description_curse = "-25% Velocidad de maniobra y giro"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_fwirk")
+color_accent = Color(0.3, 0.8, 1, 1)
+stat_modifiers = {
+"armor": 6.0,
+"base_damage_pct": 0.5,
+"move_speed_pct": -0.25
+}
+custom_tags = PackedStringArray()

@@ -1,6 +1,7 @@
 class_name CharacterStatsOverlay
 extends CanvasLayer
 
+
 ## CharacterStatsOverlay.gd
 ## Cuadro de Mando Táctico y Estadísticas en tiempo real [C].
 ## Pausa el juego para inspeccionar los atributos completos de la heroína en combate,
@@ -207,24 +208,48 @@ func _populate_perks_list(data: CharacterData, col: Color) -> void:
 	for child in perks_list.get_children():
 		child.queue_free()
 
-	if not data:
-		return
-
-	var unlocked := SaveManager.get_character_unlocked_nodes(data.character_id)
 	var active_perks: Array[String] = []
 
-	for nid in unlocked:
-		var s := String(nid)
-		if s == "core":
-			active_perks.append("⚛ MATRIZ NEURAL: Núcleo Activo")
-		elif s.begins_with("speed_"):
-			active_perks.append("⚡ IMPULSO VECTORIAL (+20% Velocidad)")
-		elif s.begins_with("damage_"):
-			active_perks.append("⚔️ SOBREALIMENTACIÓN (+15% Daño)")
-		elif s.begins_with("hp_") or s.begins_with("hull_"):
-			active_perks.append("🛡️ NANO-BLINDAJE (+25 Max HP)")
-		elif s.begins_with("crit_") or s.begins_with("overclock_") or s.begins_with("focus_"):
-			active_perks.append("✦ SINCRONIZADOR ÓPTICO (+5% Crítico & Cadencia)")
+	if data:
+		var unlocked := SaveManager.get_character_unlocked_nodes(data.character_id)
+		for nid in unlocked:
+			var s := String(nid)
+			if s == "core":
+				active_perks.append("⚛ MATRIZ NEURAL: Núcleo Activo")
+			elif s.begins_with("speed_"):
+				active_perks.append("⚡ IMPULSO VECTORIAL (+20% Velocidad)")
+			elif s.begins_with("damage_"):
+				active_perks.append("⚔️ SOBREALIMENTACIÓN (+15% Daño)")
+			elif s.begins_with("hp_") or s.begins_with("hull_"):
+				active_perks.append("🛡️ NANO-BLINDAJE (+25 Max HP)")
+			elif s.begins_with("crit_") or s.begins_with("overclock_") or s.begins_with("focus_"):
+				active_perks.append("✦ SINCRONIZADOR ÓPTICO (+5% Crítico & Cadencia)")
+
+	
+	# Inyectar Arcanas activas (Fase 2)
+	if is_instance_valid(player) and "active_arcanas" in player:
+		for arc in player.active_arcanas:
+			if arc:
+				active_perks.append("◈ PACTO: %s (%s)" % [arc.name.to_upper(), arc.description_boon])
+
+	# Inyectar bonos permanentes de la Sala de Trofeos (Fase 3)
+	var trophy_bonuses := SaveManager.get_trophy_passive_bonuses()
+	if trophy_bonuses.get("base_damage_pct", 0.0) > 0.0:
+		active_perks.append("★ TROFEO AEGIS (+%.0f%% Daño)" % (trophy_bonuses["base_damage_pct"] * 100.0))
+	if trophy_bonuses.get("max_health", 0.0) > 0.0:
+		active_perks.append("★ TROFEO BIOESFERA (+%.0f Max HP)" % trophy_bonuses["max_health"])
+	if trophy_bonuses.get("projectile_speed_pct", 0.0) > 0.0 or trophy_bonuses.get("cooldown_reduction", 0.0) > 0.0:
+		active_perks.append("★ TROFEO CRIOGÉNICO (+%.0f%% Vel. Balas / +%.0f%% CDR)" % [
+			trophy_bonuses.get("projectile_speed_pct", 0.0) * 100.0,
+			trophy_bonuses.get("cooldown_reduction", 0.0) * 100.0
+		])
+	if trophy_bonuses.get("crit_chance", 0.0) > 0.0 or trophy_bonuses.get("crit_damage", 0.0) > 0.0:
+		active_perks.append("★ TROFEO VOLCÁNICO (+%.0f%% Crítico / +%.2fx Daño Crítico)" % [
+			trophy_bonuses.get("crit_chance", 0.0) * 100.0,
+			trophy_bonuses.get("crit_damage", 0.0)
+		])
+	if trophy_bonuses.get("pickup_radius_pct", 0.0) > 0.0:
+		active_perks.append("★ TROFEO MONOLITO (+%.0f%% Imán)" % (trophy_bonuses["pickup_radius_pct"] * 100.0))
 
 	if active_perks.is_empty():
 		var empty_lbl := Label.new()
@@ -254,6 +279,7 @@ func _populate_perks_list(data: CharacterData, col: Color) -> void:
 		p.add_child(m)
 
 		var l := Label.new()
+		l.name = "PerkLabel"
 		l.text = perk_text
 		l.add_theme_font_size_override("font_size", 11)
 		l.add_theme_color_override("font_color", Color.WHITE)

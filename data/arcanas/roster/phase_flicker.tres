@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="1_tr3wa"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_rn6ff"]
+
+[resource]
+script = ExtResource("2_rn6ff")
+id = "phase_flicker"
+name = "Parpadeo de Fase"
+description_boon = "+30% Velocidad y +20% Cadencia con micro-saltos cuánticos"
+description_curse = "-25% Capacidad máxima de salud"
+quadrant = "spacetime"
+icon = ExtResource("1_tr3wa")
+color_accent = Color(0.9, 0.2, 0.85, 1)
+stat_modifiers = {
+"attack_speed_pct": 0.2,
+"max_health_pct": -0.25,
+"move_speed_pct": 0.3
+}
+custom_tags = PackedStringArray()

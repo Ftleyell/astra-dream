@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="1_4twid"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_08fct"]
+
+[resource]
+script = ExtResource("2_08fct")
+id = "gravitational_vortex"
+name = "Vórtice Gravitatorio"
+description_boon = "+120% Radio gravitatorio de aspiración de orbes"
+description_curse = "-15% Velocidad de eyección de proyectiles"
+quadrant = "spacetime"
+icon = ExtResource("1_4twid")
+color_accent = Color(0.65, 0.35, 1, 1)
+stat_modifiers = {
+"pickup_radius_pct": 1.2,
+"projectile_speed_pct": -0.15
+}
+custom_tags = PackedStringArray()

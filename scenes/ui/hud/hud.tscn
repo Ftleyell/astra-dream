@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://d3m0c7q35k89"]
+[gd_scene load_steps=8 format=3 uid="uid://d3m0c7q35k89"]
 
 [ext_resource type="Script" path="res://scenes/ui/hud/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/icon_laser.png" id="2_laser_ico"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/icon_credit.png" id="4_credit_ico"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_health_bar.tscn" id="5_boss"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/satellite_edge_indicator.tscn" id="6_satedge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/arcana_edge_indicator.tscn" id="7_arcedge"]
 
 [node name="GameHUD" type="CanvasLayer"]
 layer = 10
@@ -15,6 +16,8 @@ script = ExtResource("1_hud")
 layer = 8
 
 [node name="SatelliteEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("6_satedge")]
+
+[node name="ArcanaEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("7_arcedge")]
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15

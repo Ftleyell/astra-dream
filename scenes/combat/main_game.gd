@@ -5,6 +5,9 @@ extends Node2D
 @onready var bullet_server: BulletServer = $BulletServer
 @onready var hud: GameHUD = $HUD
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
+var space_object_spawner: SpaceObjectSpawner = null
+var arcana_modal: ArcanaSelectionModal = null
+var _pending_arcana_picks: int = 0
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
@@ -23,8 +26,12 @@ const SPAWN_AHEAD_DISTANCE: float = 1100.0
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
 var current_satellite: SatelliteBeacon = null
-var boss_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
-var current_boss: BossMothership = null
+var boss_mothership_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
+var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_hermit_void.tscn")
+var boss_ash_clock_scene: PackedScene = preload("res://scenes/combat/bosses/boss_ash_clock.tscn")
+var boss_broken_mirror_scene: PackedScene = preload("res://scenes/combat/bosses/boss_broken_mirror.tscn")
+var boss_overflow_vortex_scene: PackedScene = preload("res://scenes/combat/bosses/boss_overflow_vortex.tscn")
+var current_boss: Node2D = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -54,12 +61,25 @@ func _ready() -> void:
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
 	player.player_died.connect(_on_player_died)
-	_last_player_hp = player.current_health
-
 	# Conexión con EventBus
 	var bus := get_node_or_null("/root/EventBus")
-	if bus and bus.has_signal("enemy_killed"):
-		bus.enemy_killed.connect(_on_enemy_killed)
+	if bus:
+		if bus.has_signal("enemy_killed"):
+			bus.enemy_killed.connect(_on_enemy_killed)
+		if bus.has_signal("arcana_orb_collected"):
+			bus.arcana_orb_collected.connect(_on_arcana_orb_collected)
+
+	# Instanciar modal de selección de Arcana si no existe en el árbol
+	arcana_modal = get_node_or_null("ArcanaSelectionModal") as ArcanaSelectionModal
+	if not arcana_modal:
+		var arc_scene := load("res://scenes/ui/arcana/arcana_selection_modal.tscn") as PackedScene
+		if arc_scene:
+			arcana_modal = arc_scene.instantiate() as ArcanaSelectionModal
+			add_child(arcana_modal)
+	if arcana_modal:
+		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
+
+	_last_player_hp = player.current_health
 
 	# Conexión de la tienda
 	satellite_shop.item_purchased.connect(_on_item_purchased)
@@ -72,18 +92,22 @@ func _ready() -> void:
 	var debug_mgr = get_node_or_null("/root/DebugManager")
 	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
 		player.run_credits = 999999
-	hud.update_credits(player.run_credits)
-	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
-	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+	if hud:
+		hud.update_credits(player.run_credits)
+		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
+		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
 	# Asegurar que MainGame y Dialogic procesen durante la pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	Dialogic.process_mode = Node.PROCESS_MODE_ALWAYS
-
-	# Conexión de Dialogic para briefing inicial y eventos de señal
-	Dialogic.signal_event.connect(_on_dialogic_signal)
-	Dialogic.timeline_ended.connect(_on_dialogic_timeline_ended)
-	Dialogic.timeline_started.connect(_on_dialogic_timeline_started)
+	var dialogic_node := _get_dialogic()
+	if dialogic_node:
+		dialogic_node.process_mode = Node.PROCESS_MODE_ALWAYS
+		if dialogic_node.has_signal("signal_event"):
+			dialogic_node.signal_event.connect(_on_dialogic_signal)
+		if dialogic_node.has_signal("timeline_ended"):
+			dialogic_node.timeline_ended.connect(_on_dialogic_timeline_ended)
+		if dialogic_node.has_signal("timeline_started"):
+			dialogic_node.timeline_started.connect(_on_dialogic_timeline_started)
 
 	if skip_badge_layer and skip_badge_layer.has_signal("skip_requested"):
 		skip_badge_layer.skip_requested.connect(_on_dialogue_skip_requested)
@@ -103,6 +127,11 @@ func _ready() -> void:
 	planet_spawner.name = "PlanetSpawner"
 	add_child(planet_spawner)
 
+	# Inyección dinámica de macro-objetos espaciales tácticos (Monolitos, Cápsulas, Geodas, Capullos)
+	space_object_spawner = SpaceObjectSpawner.new()
+	space_object_spawner.name = "SpaceObjectSpawner"
+	add_child(space_object_spawner)
+
 	# Chequeo de reanudación de partida activa (Mid-Run Resume)
 	if SaveManager.is_resuming_run:
 		SaveManager.is_resuming_run = false
@@ -117,16 +146,24 @@ func _ready() -> void:
 	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
 	_start_prologue_briefing()
 
+func _get_dialogic() -> Node:
+	return get_node_or_null("/root/Dialogic")
+
 func _start_prologue_briefing() -> void:
 	is_briefing_active = true
 	get_tree().paused = true
 	if skip_badge_layer:
 		skip_badge_layer.show()
 
-	var layout = Dialogic.start("res://narrative/timelines/prologue_briefing.dtl")
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	_setup_dialogic_audio(layout)
+	var dialogic_node := _get_dialogic()
+	if dialogic_node and dialogic_node.has_method("start"):
+		var layout = dialogic_node.start("res://narrative/timelines/prologue_briefing.dtl")
+		if layout:
+			layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		_setup_dialogic_audio(layout)
+	else:
+		is_briefing_active = false
+		get_tree().paused = false
 
 func _setup_dialogic_audio(layout: Node) -> void:
 	if not layout:
@@ -166,14 +203,17 @@ func _on_dialogue_skip_requested() -> void:
 	if is_briefing_active and not prologue_bonus_chosen:
 		prologue_bonus_chosen = true
 		player.run_credits += 100
-		hud.update_credits(player.run_credits)
+		if hud:
+			hud.update_credits(player.run_credits)
 
 	is_cockpit_active = false
 	is_boss_transmission_active = false
 	notify_menu_closed(0.4)
 
-	if Dialogic.current_timeline != null:
-		Dialogic.end_timeline(true)
+	var dialogic_node := _get_dialogic()
+	if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
+		if dialogic_node.has_method("end_timeline"):
+			dialogic_node.end_timeline(true)
 
 	if level_up_modal and level_up_modal.has_pending_levels():
 		level_up_modal.show_next_level_up()
@@ -191,7 +231,8 @@ func _on_dialogic_timeline_ended() -> void:
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
 			player.run_credits += 100
-			hud.update_credits(player.run_credits)
+			if hud:
+				hud.update_credits(player.run_credits)
 
 	if is_cockpit_active:
 		is_cockpit_active = false
@@ -211,10 +252,15 @@ func _trigger_cockpit_interlude() -> void:
 	get_tree().paused = true
 	if skip_badge_layer:
 		skip_badge_layer.show()
-	var layout = Dialogic.start("res://narrative/timelines/wave_interlude_cockpit.dtl")
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	_setup_dialogic_audio(layout)
+	var dialogic_node := _get_dialogic()
+	if dialogic_node and dialogic_node.has_method("start"):
+		var layout = dialogic_node.start("res://narrative/timelines/wave_interlude_cockpit.dtl")
+		if layout:
+			layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		_setup_dialogic_audio(layout)
+	else:
+		is_cockpit_active = false
+		get_tree().paused = false
 
 
 func _process(delta: float) -> void:
@@ -242,6 +288,8 @@ func _process(delta: float) -> void:
 		_check_wave_boss_spawn()
 		save_current_run_state()
 		_spawn_next_satellite_for_wave()
+		if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
+			space_object_spawner.force_spawn_monolith()
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -287,20 +335,39 @@ func _spawn_wave_boss() -> void:
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
 	var boss_pos := player.global_position + forward * 650.0
 
-	current_boss = boss_scene.instantiate() as BossMothership
+	var target_scene: PackedScene = boss_hermit_scene
+	match current_wave:
+		2:
+			target_scene = boss_hermit_scene
+		4:
+			target_scene = boss_ash_clock_scene
+		6:
+			target_scene = boss_broken_mirror_scene
+		8:
+			target_scene = boss_overflow_vortex_scene
+		_:
+			target_scene = boss_mothership_scene
+
+	current_boss = target_scene.instantiate() as Node2D
 	current_boss.global_position = boss_pos
 	add_child(current_boss)
 
 	# Conexiones con HUD
-	hud.show_boss(current_boss.boss_name, current_boss.max_health)
-	current_boss.health_changed.connect(hud.update_boss_health)
-	current_boss.phase_changed.connect(hud.set_boss_phase)
-	current_boss.boss_defeated.connect(_on_boss_defeated)
+	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
+	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
+	hud.show_boss(b_name, b_hp)
+	if current_boss.has_signal("health_changed"):
+		current_boss.connect("health_changed", hud.update_boss_health)
+	if current_boss.has_signal("phase_changed"):
+		current_boss.connect("phase_changed", hud.set_boss_phase)
+	if current_boss.has_signal("boss_defeated"):
+		current_boss.connect("boss_defeated", _on_boss_defeated)
 
 	# Transmisión narrativa opcional
 	var bus := get_node_or_null("/root/EventBus")
 	if bus and bus.has_signal("boss_spawn_requested"):
-		bus.boss_spawn_requested.emit("boss_titan_alert", current_boss.boss_id, false)
+		var b_id: String = current_boss.get("boss_id") if "boss_id" in current_boss else "boss_unknown"
+		bus.boss_spawn_requested.emit("boss_titan_alert", b_id, false)
 
 func _on_boss_defeated(_boss_id: String) -> void:
 	current_boss = null
@@ -363,7 +430,8 @@ func _on_satellite_exited(_index: int) -> void:
 		current_satellite.queue_free()
 		current_satellite = null
 
-	hud.clear_satellite()
+	if hud:
+		hud.clear_satellite()
 	save_current_run_state()
 	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
 		_spawn_next_satellite_for_wave()
@@ -373,10 +441,15 @@ func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> voi
 	get_tree().paused = true
 	if skip_badge_layer:
 		skip_badge_layer.show()
-	var layout = Dialogic.start("res://narrative/timelines/boss_titan_alert.dtl")
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	_setup_dialogic_audio(layout)
+	var dialogic_node := _get_dialogic()
+	if dialogic_node and dialogic_node.has_method("start"):
+		var layout = dialogic_node.start("res://narrative/timelines/boss_titan_alert.dtl")
+		if layout:
+			layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		_setup_dialogic_audio(layout)
+	else:
+		is_boss_transmission_active = false
+		get_tree().paused = false
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	var debug_mgr = get_node_or_null("/root/DebugManager")
@@ -409,6 +482,26 @@ func is_pause_menu_active() -> bool:
 
 func is_satellite_shop_active() -> bool:
 	return satellite_shop != null and satellite_shop.visible
+
+
+func is_arcana_modal_active() -> bool:
+	return arcana_modal != null and (arcana_modal.visible or arcana_modal.is_active)
+
+func _on_arcana_orb_collected(_orb: Node2D) -> void:
+	if arcana_modal:
+		if is_arcana_modal_active():
+			_pending_arcana_picks += 1
+		else:
+			arcana_modal.show_arcana_selection(player)
+
+func _on_arcana_modal_closed() -> void:
+	if _pending_arcana_picks > 0:
+		_pending_arcana_picks -= 1
+		call_deferred("_open_next_pending_arcana")
+
+func _open_next_pending_arcana() -> void:
+	if arcana_modal and is_instance_valid(player):
+		arcana_modal.show_arcana_selection(player)
 
 func is_level_up_modal_active() -> bool:
 	return level_up_modal != null and level_up_modal.visible
@@ -443,6 +536,8 @@ func is_any_combat_modal_active() -> bool:
 	if is_level_up_modal_active():
 		return true
 	if level_up_modal and level_up_modal.has_pending_levels():
+		return true
+	if is_arcana_modal_active():
 		return true
 	if is_pause_menu_active():
 		return true
@@ -569,6 +664,8 @@ func get_current_run_state() -> Dictionary:
 		"player_exp_to_next": player.exp_to_next,
 		"run_credits": player.run_credits,
 		"run_biomass": player.run_biomass,
+		"run_dark_matter": player.run_dark_matter if "run_dark_matter" in player else 0,
+		"active_arcanas": player.get_arcana_ids() if player.has_method("get_arcana_ids") else [],
 		"bomb_count": player.bomb_count,
 		"equipped_weapons": weapons_data,
 		"equipped_items": items_data,
@@ -607,7 +704,16 @@ func restore_run_state(run_data: Dictionary) -> void:
 	player.exp_to_next = float(run_data.get("player_exp_to_next", 40.0))
 	player.run_credits = int(run_data.get("run_credits", 0))
 	player.run_biomass = int(run_data.get("run_biomass", 0))
+	player.run_dark_matter = int(run_data.get("run_dark_matter", 0))
 	player.bomb_count = int(run_data.get("bomb_count", 2))
+
+	# Restaurar arcanas activas (Fase 2)
+	player.active_arcanas.clear()
+	var saved_arcanas: Array = run_data.get("active_arcanas", [])
+	for arc_id in saved_arcanas:
+		var arc: ArcanaData = ArcanaData.get_arcana(String(arc_id))
+		if arc:
+			player.apply_arcana(arc)
 
 	# 3. Restaurar cartas de nivel elegidas (Brotato)
 	player.chosen_stat_cards.clear()

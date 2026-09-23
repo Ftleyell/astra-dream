@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="1_lgbsi"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_17280"]
+
+[resource]
+script = ExtResource("2_17280")
+id = "agonic_fury"
+name = "Furia Agónica"
+description_boon = "+50% Cadencia de disparo ultra-rápida"
+description_curse = "-50% Regeneración de salud por segundo"
+icon = ExtResource("1_lgbsi")
+color_accent = Color(1, 0.2, 0.35, 1)
+stat_modifiers = {
+"attack_speed_pct": 0.5,
+"health_regen_pct": -0.5
+}
+custom_tags = PackedStringArray()

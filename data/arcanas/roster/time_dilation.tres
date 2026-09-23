@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="1_xmqjw"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_s002x"]
+
+[resource]
+script = ExtResource("2_s002x")
+id = "time_dilation"
+name = "Dilatación Temporal"
+description_boon = "+40% Aceleración de recargas y +15% Crítico"
+description_curse = "-20% Velocidad lineal de proyectiles"
+quadrant = "spacetime"
+icon = ExtResource("1_xmqjw")
+color_accent = Color(0.85, 0.3, 0.95, 1)
+stat_modifiers = {
+"cooldown_reduction": 0.4,
+"crit_chance": 0.15,
+"projectile_speed_pct": -0.2
+}
+custom_tags = PackedStringArray()

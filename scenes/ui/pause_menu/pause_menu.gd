@@ -1,7 +1,6 @@
 class_name PauseMenu
 extends CanvasLayer
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
 const HighscoresModalScript := preload("res://scenes/ui/highscores/highscores_modal.gd")
 
 @export var player: Player

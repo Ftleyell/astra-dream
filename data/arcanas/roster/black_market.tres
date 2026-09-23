@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="1_ahkpa"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_gn4lu"]
+
+[resource]
+script = ExtResource("2_gn4lu")
+id = "black_market"
+name = "Mercado Negro"
+description_boon = "+75% Daño crítico y +30% Daño de armas"
+description_curse = "-30 Suerte (peores probabilidades de botín)"
+quadrant = "greed"
+icon = ExtResource("1_ahkpa")
+color_accent = Color(0.95, 0.75, 0.05, 1)
+stat_modifiers = {
+"base_damage_pct": 0.3,
+"crit_damage": 0.75,
+"luck": -30.0
+}
+custom_tags = PackedStringArray()

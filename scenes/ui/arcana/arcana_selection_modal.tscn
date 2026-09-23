@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3 uid="uid://arcana_modal_001"]
+
+[ext_resource type="Script" path="res://scenes/ui/arcana/arcana_selection_modal.gd" id="1_modal"]
+
+[node name="ArcanaSelectionModal" type="CanvasLayer"]
+process_mode = 3
+layer = 60
+script = ExtResource("1_modal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.04, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1440, 640)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderContainer" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HeaderTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/HeaderContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "◈ INVOCACIÓN DE ARCANA ◈"
+horizontal_alignment = 1
+
+[node name="HeaderSubtitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/HeaderContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "PACTOS DE ALTO RIESGO / RECOMPENSA - SELECCIONA UNA ALTERACIÓN CUÁNTICA"
+horizontal_alignment = 1
+
+[node name="ContentHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="StatsSidePanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "ESTADÍSTICAS EN LA RUN"
+horizontal_alignment = 1
+
+[node name="PilotInfo" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "PILOTO | PACTOS"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatsList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="CardsVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CardsContainer" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/CardsVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="ControlsHint" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/CardsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "[ 1, 2, 3 ] Selección rápida  |  [ A / D ] Navegar  |  [ Espacio / Enter ] Pactar"
+horizontal_alignment = 1

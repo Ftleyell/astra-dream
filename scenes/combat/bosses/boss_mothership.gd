@@ -1,6 +1,7 @@
 class_name BossMothership
 extends CharacterBody2D
 
+
 signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
@@ -265,6 +266,19 @@ func _die() -> void:
 	ExpBlob.trigger_global_magnet(get_tree())
 
 	# 7. Notificar derrota a los sistemas
+	
+	# Desbloqueo de Trofeo de Nodriza y dropeo de Materia Oscura (Fase 3)
+	SaveManager.unlock_or_upgrade_trophy(&"trophy_boss_aegis", 1)
+	var dm_scene: PackedScene = load("res://scenes/combat/pickups/dark_matter_orb.tscn")
+	if dm_scene:
+		var dm_orb = dm_scene.instantiate()
+		if dm_orb:
+			if dm_orb.has_method("setup"):
+				dm_orb.setup(15, global_position)
+			var spawn_target: Node = get_parent() if get_parent() else get_tree().current_scene
+			if spawn_target:
+				spawn_target.call_deferred("add_child", dm_orb)
+
 	boss_defeated.emit(boss_id)
 	var bus := get_node_or_null("/root/EventBus")
 	if bus and bus.has_signal("boss_defeated"):

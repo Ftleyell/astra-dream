@@ -1,6 +1,7 @@
 class_name PlanetCore
 extends Node2D
 
+
 ## PlanetCore.gd
 ## Núcleo central del planeta (radio 50 px).
 ## Rodeado por las 3 capas protectoras, accionable interactivamente con la tecla [E]
@@ -136,6 +137,25 @@ func digitalize() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser_fire")
+
+	
+	# Otorgar Materia Oscura y desbloquear trofeo planetario (Fase 3)
+	var p_trophy_id := &"trophy_biosphere_core"
+	if core_type == &"cryo_core" or core_type == &"ice_core":
+		p_trophy_id = &"trophy_cryo_core"
+	elif core_type == &"volcanic_core" or core_type == &"magma_core":
+		p_trophy_id = &"trophy_volcanic_core"
+	SaveManager.unlock_or_upgrade_trophy(p_trophy_id, 1)
+
+	var p_dm_scene: PackedScene = load("res://scenes/combat/pickups/dark_matter_orb.tscn")
+	if p_dm_scene:
+		var dm_orb = p_dm_scene.instantiate()
+		if dm_orb:
+			if dm_orb.has_method("setup"):
+				dm_orb.setup(5, global_position)
+			var p_target: Node = get_parent() if get_parent() else get_tree().current_scene
+			if p_target:
+				p_target.call_deferred("add_child", dm_orb)
 
 	core_digitalized.emit(core_type, global_position)
 

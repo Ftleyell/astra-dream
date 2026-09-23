@@ -30,7 +30,7 @@ func _ready() -> void:
 
 	# 2. Probar Spawn del Jefe y pausa de enemigos comunes
 	print("\n[1/4] Spawning BossMothership...")
-	main_game.current_wave = 2
+	main_game.current_wave = 10
 	main_game._check_wave_boss_spawn()
 
 	var boss = main_game.current_boss

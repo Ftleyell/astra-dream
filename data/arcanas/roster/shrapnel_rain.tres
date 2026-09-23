@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ArcanaData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="1_0a8lo"]
+[ext_resource type="Script" path="res://data/arcanas/arcana_data.gd" id="2_nlfpp"]
+
+[resource]
+script = ExtResource("2_nlfpp")
+id = "shrapnel_rain"
+name = "Lluvia de Metralla"
+description_boon = "+3 Proyectiles adicionales en cada disparo"
+description_curse = "-30% Daño de cada bala individual"
+quadrant = "danmaku_chaos"
+icon = ExtResource("1_0a8lo")
+color_accent = Color(0, 0.95, 1, 1)
+stat_modifiers = {
+"base_damage_pct": -0.3,
+"projectile_count": 3.0
+}
+custom_tags = PackedStringArray()

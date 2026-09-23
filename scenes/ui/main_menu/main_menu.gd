@@ -1,8 +1,6 @@
 class_name MainMenu
 extends Control
 
-const UIFocusHelper := preload("res://core/utils/ui_focus_helper.gd")
-
 @onready var continue_button: Button = get_node_or_null("CenterContainer/VBoxContainer/ButtonsContainer/ContinueButton")
 @onready var play_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/PlayButton
 @onready var hub_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/HubButton
