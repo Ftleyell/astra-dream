@@ -32,6 +32,7 @@ const DebugMenuModalScript := preload("res://scenes/ui/debug/debug_menu_modal.gd
 var current_character_id: StringName = &"nova"
 var roster_dict: Dictionary[StringName, CharacterData] = {}
 var roster_ordered: Array[CharacterData] = []
+var _last_focused_control: Control = null
 
 # Backward-compatible accessor for any caller referencing characters_data
 var characters_data: Dictionary:
@@ -91,6 +92,9 @@ func _ready() -> void:
 		right_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 		right_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		right_panel.gui_input.connect(_on_character_art_gui_input)
+
+	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
+		debug_menu_modal.closed.connect(_on_debug_modal_closed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
@@ -197,8 +201,23 @@ func _populate_roster() -> void:
 func _on_debug_pressed() -> void:
 	if not DEBUG_MENU_AVAILABLE or not debug_menu_modal:
 		return
+	_last_focused_control = get_viewport().gui_get_focus_owner()
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
 	debug_menu_modal.open_menu(char_data)
+
+func _on_debug_modal_closed() -> void:
+	var target_focus: Control = null
+	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif debug_button and debug_button.is_visible_in_tree():
+		target_focus = debug_button
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+		var target_pos: Vector2 = target_focus.get_global_rect().get_center()
+		get_viewport().warp_mouse(target_pos)
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id

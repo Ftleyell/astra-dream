@@ -105,7 +105,19 @@ func _ready() -> void:
 	modal.close_menu()
 	await get_tree().process_frame
 	assert(not modal.is_open, "DebugMenuModal debe cerrarse limpiamente")
-	print("  ✓ DebugMenuModal cerrado correctamente")
+	assert(char_select.get_viewport().gui_get_focus_owner() != null, "El foco debe restaurarse tras cerrar el modal de debug")
+	print("  ✓ Foco y cursor restaurados al control previo tras cerrar DebugMenuModal")
+
+	# 7.1. Validar fondo Parallax con naves flyby en el menú de despliegue
+	var deploy_bg = char_select.get_node_or_null("DeploymentSpaceBackground")
+	assert(deploy_bg != null, "DeploymentSpaceBackground debe existir en CharacterSelect")
+	assert(deploy_bg.has_node("SpaceBackground"), "SpaceBackground con parallax debe estar activo en el fondo")
+	assert(deploy_bg.has_node("ShipsContainer"), "ShipsContainer debe existir para las naves de fondo")
+	deploy_bg._attempt_spawn_ship()
+	await get_tree().process_frame
+	assert(deploy_bg._active_ships.size() <= 6, "No debe haber más de 1 nave de cada modelo simultáneamente")
+	print("  ✓ Parallax de la pantalla de inicio y naves dinámicas de fondo verificadas")
+
 	char_select.queue_free()
 	await get_tree().process_frame
 

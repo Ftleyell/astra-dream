@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://cdeploybg001"]
+
+[ext_resource type="Script" path="res://scenes/ui/character_select/deployment_space_background.gd" id="1_deploybg"]
+[ext_resource type="PackedScene" uid="uid://b0fkm1b3h8xqa" path="res://scenes/combat/environment/space_background.tscn" id="2_spacebg"]
+
+[node name="DeploymentSpaceBackground" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_deploybg")
+
+[node name="SpaceBackground" parent="." instance=ExtResource("2_spacebg")]
+
+[node name="ShipsContainer" type="Node2D" parent="."]
+
+[node name="DarkVignette" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.015, 0.02, 0.035, 0.65)

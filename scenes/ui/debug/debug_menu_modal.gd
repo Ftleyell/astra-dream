@@ -73,9 +73,6 @@ func close_menu() -> void:
 		return
 	is_open = false
 	hide()
-	var focused := get_viewport().gui_get_focus_owner()
-	if focused:
-		focused.release_focus()
 	closed.emit()
 
 func _unhandled_input(event: InputEvent) -> void:

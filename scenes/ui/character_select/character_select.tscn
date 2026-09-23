@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://charselect001"]
+[gd_scene load_steps=6 format=3 uid="uid://charselect001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_spacebg"]
 [ext_resource type="Texture2D" path="res://assets/icons/gear.svg" id="2_gear"]
 [ext_resource type="Texture2D" path="res://assets/icons/rocket.svg" id="3_rocket"]
 [ext_resource type="PackedScene" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
@@ -14,14 +15,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_charsel")
 
-[node name="BackgroundDark" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.015, 0.02, 0.035, 1)
+[node name="DeploymentSpaceBackground" parent="." instance=ExtResource("2_spacebg")]
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
