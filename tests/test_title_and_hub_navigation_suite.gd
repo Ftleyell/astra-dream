@@ -35,13 +35,40 @@ func _ready() -> void:
 	assert(prompt_lbl != null, "PromptLabel debe existir")
 	assert(prompt_lbl.text.contains("TOCA CUALQUIER TECLA"), "Debe mostrar prompt para continuar")
 
-	# Simular pulsación de tecla
+	# Simular pulsación de tecla N para abrir Notas del Parche
+	var key_n := InputEventKey.new()
+	key_n.pressed = true
+	key_n.keycode = KEY_N
+	title_screen._unhandled_input(key_n)
+	assert(title_screen.get("_is_transitioning") == false, "Tecla N no debe disparar la transición a Hub")
+
+	var notes_modal: CanvasLayer = title_screen.get_node_or_null("PatchNotesModal") as CanvasLayer
+	assert(notes_modal != null, "PatchNotesModal debe existir en TitleScreen")
+	assert(notes_modal.visible == true, "PatchNotesModal debe estar visible al presionar N")
+
+	var notes_text: RichTextLabel = notes_modal.get_node_or_null("Backdrop/PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/NotesText") as RichTextLabel
+	assert(notes_text != null, "NotesText debe existir en PatchNotesModal")
+	assert(notes_text.text.contains("ASTRA DREAM"), "NotesText debe contener las notas del parche locales")
+
+	# Mientras las notas están abiertas, cualquier otra tecla no debe transicionar
+	var key_space_blocked := InputEventKey.new()
+	key_space_blocked.pressed = true
+	key_space_blocked.keycode = KEY_SPACE
+	title_screen._unhandled_input(key_space_blocked)
+	assert(title_screen.get("_is_transitioning") == false, "Input mientras las notas están abiertas NO debe transicionar")
+
+	# Cerrar modal
+	if notes_modal.has_method("close_modal"):
+		notes_modal.call("close_modal")
+	assert(notes_modal.visible == false, "PatchNotesModal debe quedar oculto tras close_modal")
+
+	# Simular pulsación de tecla para continuar
 	var key_ev := InputEventKey.new()
 	key_ev.pressed = true
 	key_ev.keycode = KEY_SPACE
 	title_screen._unhandled_input(key_ev)
-	assert(title_screen.get("_is_transitioning") == true, "Debe activar transición al recibir input")
-	print("  ✓ TitleScreen responde a cualquier entrada e inicia la transición con fade.")
+	assert(title_screen.get("_is_transitioning") == true, "Debe activar transición al recibir input fuera del modal")
+	print("  ✓ TitleScreen y PatchNotesModal (N / click / bloqueo de input) verificados correctamente.")
 	title_screen.queue_free()
 
 	# ----------------------------------------------------

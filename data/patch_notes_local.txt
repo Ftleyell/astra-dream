@@ -1,0 +1,28 @@
+[b][color=#00f0ff]ASTRA DREAM — NOTAS DEL PARCHE (v0.4.0)[/color][/b]
+[color=#70a1ff]Rama: master // Registro Oficial de Actualizaciones[/color]
+
+[b][color=#ffeaa7]━━━ 🎯 ARMAMENTO BALÍSTICO AUTÓNOMO (CAPA PASIVA) ━━━[/color][/b]
+• [b]Trayectoria Balística Directa:[/b] Los misiles de apoyo vuelan en línea recta estricta a alta velocidad, pudiendo impactar enemigos en su camino o errar si el objetivo maniobra con rapidez.
+• [b]Fijación Táctica Inteligente:[/b] Adquiere prioritariamente al enemigo más próximo dentro del perímetro de alcance de la nave.
+• [b]Escalado 1:1 con Imán:[/b] Alcance base fijado en el doble del radio de atracción magnética de la nave (2x pickup), escalando 1 a 1 de forma lineal con cualquier mejora o bono de imán obtenido.
+• [b]Conmutación a Modo Manual [E / RB]:[/b] Alterna en caliente entre apuntado automático y disparo dirigido hacia el cursor del ratón con feedback sonoro táctico.
+• [b]Display Flotante en Nave:[/b] Indicador holográfico [color=#38ef7d]AUTOAIM: ON[/color] / [color=#ff7675]AUTOAIM: OFF[/color] situado bajo el chasis del jugador.
+
+[b][color=#ffeaa7]━━━ ⚡ MANIOBRAS EVASIVAS AVANZADAS (DASHES ÚNICOS) ━━━[/color][/b]
+• [b]Nova:[/b] Doble carga de propulsión con rastro ígneo continuo que inflige daño residual.
+  └ [b][color=#ff9ff3]Nova Omega Spin:[/color][/b] Al dashear con el láser al 100% de carga, Nova realiza un giro completo 360° barriendo toda la pantalla con su rayo láser, rotando visualmente la nave con deduplicación de impactos (máximo 1 impacto por hostil).
+• [b]Valentina:[/b] Salto táctico de repliegue opuesto a la mira, dilatación temporal (Bullet-Time al 55%) y proyectil crítico 100% garantizado en su siguiente disparo.
+• [b]Kira:[/b] Despliega una mina señuelo reactiva en el punto de partida que atrae a los hostiles y detona en área al finalizar.
+• [b]Selene:[/b] Salto cuántico de fase de 240px hacia la mira con micro-vórtice gravitacional que arrastra y desestabiliza hostiles.
+• [b]Roxy:[/b] Embestida sísmica pesada con limpieza frontal de proyectiles enemigos e impacto cinético masivo.
+• [b]Echo:[/b] Parpadeo dimensional de 200px acoplado a descarga de relámpago en arco que encadena daño entre objetivos cercanos.
+
+[b][color=#ffeaa7]━━━ 🌌 HANGAR ESTELAR 3D & MIRADOR PANORÁMICO ━━━[/color][/b]
+• [b]Hangar Híbrido 2.5D:[/b] Entorno tridimensional interactivo con máquinas arcade, selección de heroínas de cuerpo completo y mirador al espacio exterior.
+• [b]Parallax Multicapa:[/b] Simulación de 3 capas gigantes de polvo estelar y nebulosas con velocidad diferencial y transparencia etérea.
+• [b]Árbol de Talentos Permanente:[/b] 13 nodos interconectados navegables con WASD o mando, desbloqueando mejoras permanentes de chasis, blindaje, daño y aceleración.
+
+[b][color=#ffeaa7]━━━ 📡 RADAR PERIMÉTRICO ORBITAL & HUD TÁCTICO ━━━[/color][/b]
+• [b]Seguimiento en Bordes de Pantalla:[/b] Marcador holográfico dinámico en los bordes que apunta y calcula distancias hacia satélites orbitales y monolitos lejanos.
+• [b]Desprendimiento y Enlace Central:[/b] Al entrar en el campo visual de la cámara, el indicador se desprende del borde y se acopla en el centro exacto del objetivo.
+• [b]HUD Táctico Completo:[/b] Medidores de blindaje, condensador de carga láser, temporizador de oleada y contadores de biomasa, créditos y materia oscura.

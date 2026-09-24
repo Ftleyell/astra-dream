@@ -4,13 +4,15 @@ extends Control
 ## TitleScreen.gd
 ## Pantalla inicial de bienvenida del juego.
 ## Muestra el logo 'ASTRA: DREAM' y el prompt 'Toca cualquier tecla para continuar'.
-## Al recibir cualquier input (tecla, click de ratón o botón de gamepad),
-## transiciona cinematográficamente hacia el Hub 3D.
+## Permite abrir la ventana de Notas del Parche con el botón o la tecla N.
+## Al recibir cualquier input principal, transiciona cinematográficamente hacia el Hub 3D.
 
 @onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var subtitle_label: Label = $CenterContainer/VBoxContainer/SubtitleLabel
 @onready var prompt_label: Label = $CenterContainer/VBoxContainer/PromptLabel
 @onready var fade_rect: ColorRect = $FadeRect
+@onready var patch_notes_btn: Button = get_node_or_null("PatchNotesButton") as Button
+@onready var patch_notes_modal: CanvasLayer = get_node_or_null("PatchNotesModal") as CanvasLayer
 
 var _is_transitioning: bool = false
 var _prompt_tween: Tween = null
@@ -28,6 +30,9 @@ func _ready() -> void:
 		tw_in.tween_callback(func(): fade_rect.visible = false)
 
 	_start_prompt_pulse()
+
+	if patch_notes_btn:
+		patch_notes_btn.pressed.connect(open_patch_notes)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_music"):
@@ -49,7 +54,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _is_transitioning:
 		return
 
+	# Si la ventana de notas del parche está abierta, ignorar transición
+	if patch_notes_modal and patch_notes_modal.visible:
+		return
+
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_N:
+			open_patch_notes()
+			get_viewport().set_input_as_handled()
+			return
 		_trigger_continue()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.is_pressed():
@@ -58,6 +71,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventJoypadButton and event.is_pressed():
 		_trigger_continue()
 		get_viewport().set_input_as_handled()
+
+
+func open_patch_notes() -> void:
+	if _is_transitioning:
+		return
+	if patch_notes_modal and patch_notes_modal.has_method("open_modal"):
+		patch_notes_modal.call("open_modal")
 
 
 func _trigger_continue() -> void:
