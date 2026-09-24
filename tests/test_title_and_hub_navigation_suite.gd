@@ -28,47 +28,37 @@ func _ready() -> void:
 	var title_screen: Control = title_scene.instantiate()
 	add_child(title_screen)
 
-	var title_lbl: Label = title_screen.get_node_or_null("CenterContainer/VBoxContainer/TitleLabel") as Label
-	var prompt_lbl: Label = title_screen.get_node_or_null("CenterContainer/VBoxContainer/PromptLabel") as Label
+	var title_lbl: Label = title_screen.get_node_or_null("MainHBox/LeftVBox/TitleLabel") as Label
+	var prompt_lbl: Label = title_screen.get_node_or_null("MainHBox/LeftVBox/PromptLabel") as Label
 	assert(title_lbl != null, "TitleLabel debe existir")
 	assert(title_lbl.text.contains("ASTRA : DREAM"), "Debe mostrar título ASTRA : DREAM")
 	assert(prompt_lbl != null, "PromptLabel debe existir")
 	assert(prompt_lbl.text.contains("TOCA CUALQUIER TECLA"), "Debe mostrar prompt para continuar")
 
-	# Simular pulsación de tecla N para abrir Notas del Parche
-	var key_n := InputEventKey.new()
-	key_n.pressed = true
-	key_n.keycode = KEY_N
-	title_screen._unhandled_input(key_n)
-	assert(title_screen.get("_is_transitioning") == false, "Tecla N no debe disparar la transición a Hub")
+	# Verificar panel de notas de parche integrado y siempre visible
+	var patch_panel: PanelContainer = title_screen.get_node_or_null("MainHBox/PatchNotesPanel") as PanelContainer
+	assert(patch_panel != null, "PatchNotesPanel debe existir integrado en TitleScreen")
+	assert(patch_panel.visible == true, "PatchNotesPanel debe estar visible y abierto permanentemente")
 
-	var notes_modal: CanvasLayer = title_screen.get_node_or_null("PatchNotesModal") as CanvasLayer
-	assert(notes_modal != null, "PatchNotesModal debe existir en TitleScreen")
-	assert(notes_modal.visible == true, "PatchNotesModal debe estar visible al presionar N")
-
-	var notes_text: RichTextLabel = notes_modal.get_node_or_null("Backdrop/PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/NotesText") as RichTextLabel
-	assert(notes_text != null, "NotesText debe existir en PatchNotesModal")
+	var notes_text: RichTextLabel = patch_panel.get_node_or_null("MarginContainer/VBoxContainer/ScrollContainer/NotesText") as RichTextLabel
+	assert(notes_text != null, "NotesText debe existir en PatchNotesPanel")
 	assert(notes_text.text.contains("ASTRA DREAM"), "NotesText debe contener las notas del parche locales")
 
-	# Mientras las notas están abiertas, cualquier otra tecla no debe transicionar
-	var key_space_blocked := InputEventKey.new()
-	key_space_blocked.pressed = true
-	key_space_blocked.keycode = KEY_SPACE
-	title_screen._unhandled_input(key_space_blocked)
-	assert(title_screen.get("_is_transitioning") == false, "Input mientras las notas están abiertas NO debe transicionar")
-
-	# Cerrar modal
-	if notes_modal.has_method("close_modal"):
-		notes_modal.call("close_modal")
-	assert(notes_modal.visible == false, "PatchNotesModal debe quedar oculto tras close_modal")
+	# Simular clic dentro del área de notas (no debe transicionar al juego)
+	var click_inside := InputEventMouseButton.new()
+	click_inside.pressed = true
+	click_inside.button_index = MOUSE_BUTTON_LEFT
+	click_inside.position = patch_panel.get_global_rect().get_center()
+	title_screen._unhandled_input(click_inside)
+	assert(title_screen.get("_is_transitioning") == false, "Clic dentro del panel de notas NO debe transicionar al juego")
 
 	# Simular pulsación de tecla para continuar
 	var key_ev := InputEventKey.new()
 	key_ev.pressed = true
 	key_ev.keycode = KEY_SPACE
 	title_screen._unhandled_input(key_ev)
-	assert(title_screen.get("_is_transitioning") == true, "Debe activar transición al recibir input fuera del modal")
-	print("  ✓ TitleScreen y PatchNotesModal (N / click / bloqueo de input) verificados correctamente.")
+	assert(title_screen.get("_is_transitioning") == true, "Debe activar transición al presionar tecla")
+	print("  ✓ TitleScreen y PatchNotesPanel (integrado, siempre visible y no intrusivo al clickear) verificados correctamente.")
 	title_screen.queue_free()
 
 	# ----------------------------------------------------

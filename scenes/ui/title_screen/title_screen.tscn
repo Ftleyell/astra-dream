@@ -1,32 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://dbx8m30w8l72"]
+[gd_scene load_steps=4 format=3 uid="uid://dbx8m30w8l72"]
 
 [ext_resource type="Script" path="res://scenes/ui/title_screen/title_screen.gd" id="1_title"]
 [ext_resource type="PackedScene" uid="uid://cdeploybg001" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_bg"]
-[ext_resource type="PackedScene" path="res://scenes/ui/title_screen/patch_notes_modal.tscn" id="3_patchnotes"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
-bg_color = Color(0.04, 0.08, 0.14, 0.8)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0, 0.94, 1, 0.6)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
-bg_color = Color(0, 0.94, 1, 0.2)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0, 0.94, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[ext_resource type="PackedScene" path="res://scenes/ui/title_screen/patch_notes_panel.tscn" id="3_patchpanel"]
 
 [node name="TitleScreen" type="Control"]
 process_mode = 3
@@ -40,20 +16,27 @@ script = ExtResource("1_title")
 
 [node name="DeploymentSpaceBackground" parent="." instance=ExtResource("2_bg")]
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="MainHBox" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 70.0
+offset_top = 60.0
+offset_right = -70.0
+offset_bottom = -60.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 60
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="LeftVBox" type="VBoxContainer" parent="MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="MainHBox/LeftVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_colors/font_shadow_color = Color(1, 0.08, 0.58, 0.6)
@@ -61,63 +44,36 @@ theme_override_constants/shadow_offset_x = 4
 theme_override_constants/shadow_offset_y = 4
 theme_override_font_sizes/font_size = 72
 text = "ASTRA : DREAM"
-horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="SubtitleLabel" type="Label" parent="MainHBox/LeftVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.8)
 theme_override_font_sizes/font_size = 18
 text = "— ARCADE BULLET HELL ROGUELITE —"
-horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
+[node name="Spacer" type="Control" parent="MainHBox/LeftVBox"]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 
-[node name="PromptLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="PromptLabel" type="Label" parent="MainHBox/LeftVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "[ TOCA CUALQUIER TECLA PARA CONTINUAR ]"
-horizontal_alignment = 1
 
-[node name="PatchNotesButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -58.0
-offset_right = 312.0
-offset_bottom = -22.0
-grow_vertical = 0
-focus_mode = 2
-theme_override_colors/font_color = Color(0, 0.94, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 15
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_btn_hover")
-text = "📋 NOTAS DE LA VERSIÓN [N]"
+[node name="Spacer2" type="Control" parent="MainHBox/LeftVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
 
-[node name="VersionLabel" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -260.0
-offset_top = -45.0
-offset_right = -25.0
-offset_bottom = -21.0
-grow_horizontal = 0
-grow_vertical = 0
+[node name="VersionLabel" type="Label" parent="MainHBox/LeftVBox"]
+layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.5, 0.65, 0.7)
 theme_override_font_sizes/font_size = 14
 text = "v0.4.0 - MASTER STAGE"
-horizontal_alignment = 2
+
+[node name="PatchNotesPanel" parent="MainHBox" instance=ExtResource("3_patchpanel")]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="FadeRect" type="ColorRect" parent="."]
 visible = false
@@ -129,5 +85,3 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
-
-[node name="PatchNotesModal" parent="." instance=ExtResource("3_patchnotes")]

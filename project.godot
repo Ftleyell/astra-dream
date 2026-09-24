@@ -177,7 +177,6 @@ toggle_aim_mode={
 ]
 }
 
-
 [rendering]
 
 renderer/rendering_method="mobile"
