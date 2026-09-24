@@ -29,6 +29,9 @@ Roguelite de acción híbrido desarrollado en **Godot 4.7+ (GDScript)** que comb
 * **Fondo Estelar Multicapa:** Simulación de 3 capas de parallax gigantes con velocidad diferencial y transparencia etérea.
 * **Árbol de Talentos Permanente:** 13 nodos navegables con teclado (`WASD`) o mando, desbloqueando mejoras permanentes de chasis, blindaje, daño y aceleración.
 
+#### 🖥️ Soporte Integral Panorámico y Ultrawide (21:9 & 32:9)
+* **Anclaje Perimétrico Dinámico de Diálogos:** Los retratos de personajes en cinemáticas y diálogos de novela visual (*Dialogic 2.0*) se adaptan dinámicamente a monitores ultrapanorámicos (21:9, 32:9 y 16:10), manteniéndose permanentemente acoplados a los bordes exteriores de la pantalla sin flotar hacia el centro ni generar huecos negros descompensados.
+
 #### 📡 Radar Perimétrico Orbital & HUD Táctico
 * **Seguimiento Perimétrico:** Marcador holográfico dinámico en los márgenes de la pantalla que rastrea la ubicación de satélites de suministros y monolitos lejanos.
 * **Desprendimiento Central:** Al entrar en el campo visual del jugador, el indicador se desprende del borde de la pantalla y se acopla directamente sobre el satélite u objetivo.

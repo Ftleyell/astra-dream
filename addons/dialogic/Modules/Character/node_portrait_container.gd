@@ -208,6 +208,8 @@ func update_container(to_settings: ContainerSettings, time:=0.0, easing:=Tween.E
 	movement_tween.set_parallel(true).set_ease(easing).set_trans(trans)
 
 	target_settings = to_settings
+	if not to_settings.reference_position_id.is_empty():
+		current_settings.reference_position_id = to_settings.reference_position_id
 	to_settings.set_parent_size(get_parent_control().size)
 
 	movement_tween.tween_property(self, "size_mode", to_settings.size_mode, time)
@@ -358,6 +360,9 @@ func update_transform_from_properties() -> void:
 	set_parent_size(get_parent_control().size)
 	size = container_size.as_pixels()
 	position = current_settings._get_top_left_position()
+	for child in get_children():
+		if child is Node2D:
+			child.position = current_settings._get_origin_position()
 	_ignore_transform_change = false
 	queue_redraw()
 
@@ -555,6 +560,8 @@ class ContainerSettings extends Resource:
 		if container.mode != DialogicNode_PortraitContainer.PositionModes._CHARACTER:
 			derived_from = container
 			reference_position_id = container.container_ids[0] if container.container_ids else ""
+		elif container.current_settings and not container.current_settings.reference_position_id.is_empty():
+			reference_position_id = container.current_settings.reference_position_id
 
 
 	## Creates a new ContainerSetting and set its values from the string. See [method update_from_string]
