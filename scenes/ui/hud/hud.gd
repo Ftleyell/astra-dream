@@ -75,7 +75,7 @@ func _ready() -> void:
 		target_reticle = target_reticle_scene.instantiate() as Node2D
 		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
 		if spawn_parent:
-			spawn_parent.add_child(target_reticle)
+			spawn_parent.add_child.call_deferred(target_reticle)
 
 func _process(delta: float) -> void:
 	if target_reticle and is_instance_valid(player):

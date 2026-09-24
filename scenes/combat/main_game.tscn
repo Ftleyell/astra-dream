@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/dialogue_skip_overlay.tscn" id="20_skip"]
 [ext_resource type="PackedScene" path="res://scenes/combat/player/aim_mode_indicator.tscn" id="21_aimind"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
 
 [node name="MainGame" type="Node2D"]
