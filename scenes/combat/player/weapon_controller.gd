@@ -5,6 +5,7 @@ signal laser_cooldown_updated(current: float, max_val: float)
 signal laser_charge_updated(current: float, max_val: float, is_full: bool, is_memorized: bool)
 signal laser_charge_ended()
 signal weapons_updated(weapons: Array)
+signal aim_mode_changed(is_manual: bool)
 
 @export var weapon_data: WeaponData
 @export var player: Player
@@ -13,7 +14,12 @@ const MAX_WEAPON_SLOTS: int = 6
 
 var equipped_weapons: Array[WeaponInstanceData] = []
 
+# Modo de apuntado de la capa pasiva (Auto-aimed en radio de recogida vs Manual al puntero)
+var is_manual_aim: bool = false
+var current_locked_target: Node2D = null
+
 # Carga de la capa activa unificada
+
 var is_charging: bool = false
 var charge_timer: float = 0.0
 var max_charge_time: float = 3.0
@@ -41,8 +47,12 @@ var active_drones: Array[Node2D] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if not player and get_parent() is Player:
+		player = get_parent() as Player
+
 	if weapon_data:
 		add_weapon(weapon_data)
+
 	elif equipped_weapons.is_empty():
 		# Cargar arma default si no hay ninguna
 		var default_w := WeaponData.new()
@@ -124,15 +134,101 @@ func _notification(what: int) -> void:
 			memory_grace_timer = MEMORY_GRACE_MAX
 
 func _process(delta: float) -> void:
+	_handle_toggle_input()
+	_update_locked_target()
 	_handle_aim()
 	_handle_active_fire(delta)
 	_handle_passive_fire(delta)
 
+func _handle_toggle_input() -> void:
+	if Input.is_action_just_pressed("toggle_aim_mode"):
+		if player and player.has_method("is_any_menu_or_modal_active") and player.is_any_menu_or_modal_active():
+			return
+		toggle_aim_mode()
+
+## Alterna entre modo Automático (objetivo en radio de recogida) y Manual (orientado al cursor)
+func toggle_aim_mode() -> void:
+	is_manual_aim = not is_manual_aim
+	aim_mode_changed.emit(is_manual_aim)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 1.6 if is_manual_aim else 1.2, 0.0)
+
+func _update_locked_target() -> void:
+	if is_manual_aim:
+		current_locked_target = null
+	else:
+		current_locked_target = _find_closest_enemy_in_pickup_radius()
+
+func _find_closest_enemy_in_pickup_radius() -> Node2D:
+	var pickup_rad: float = 120.0
+	if player and player.stats:
+		pickup_rad = player.stats.get_stat(&"pickup_radius")
+
+	var rad_sq := pickup_rad * pickup_rad
+	var tree := get_tree()
+	if not tree:
+		return null
+
+	var nearest: Node2D = null
+	var min_dist_sq := rad_sq
+
+	var candidates: Array[Node] = []
+	candidates.append_array(tree.get_nodes_in_group("enemies"))
+	candidates.append_array(tree.get_nodes_in_group("emitters"))
+
+	for node in candidates:
+		if node is Node2D and is_instance_valid(node) and not node.is_queued_for_deletion() and not node.get("is_dying"):
+			var d_sq := global_position.distance_squared_to((node as Node2D).global_position)
+			if d_sq <= min_dist_sq:
+				min_dist_sq = d_sq
+				nearest = node as Node2D
+
+
+	return nearest
+
+func _get_passive_aim_info() -> Dictionary:
+	if is_manual_aim:
+		var dir := (get_global_mouse_position() - global_position).normalized()
+		if dir.length_squared() < 0.001:
+			dir = Vector2.UP
+		return { "direction": dir, "target": null }
+
+	# Modo Automático: enemigo más cercano dentro del radio de recogida
+	var target := current_locked_target if is_instance_valid(current_locked_target) else _find_closest_enemy_in_pickup_radius()
+	if target and is_instance_valid(target):
+		var dir := (target.global_position - global_position).normalized()
+		if dir.length_squared() < 0.001:
+			dir = Vector2.UP
+		return { "direction": dir, "target": target }
+
+	# Fallback cuando no hay enemigos en radio de recogida:
+	# Dirección de movimiento de la nave o última orientación conocida
+	var fallback_dir := Vector2.UP
+	if player:
+		if player.velocity.length_squared() > 10.0:
+			fallback_dir = player.velocity.normalized()
+		elif "dash_direction" in player and player.dash_direction.length_squared() > 0.001:
+			fallback_dir = player.dash_direction.normalized()
+	elif rotation != 0.0:
+		fallback_dir = Vector2.from_angle(rotation)
+
+	return { "direction": fallback_dir, "target": null }
+
 func _handle_aim() -> void:
 	if player and player.is_omega_spinning:
 		return
-	var mouse_pos := get_global_mouse_position()
-	look_at(mouse_pos)
+	if is_manual_aim:
+		look_at(get_global_mouse_position())
+	else:
+		if current_locked_target and is_instance_valid(current_locked_target):
+			look_at(current_locked_target.global_position)
+		elif Input.is_action_pressed("fire_active"):
+			look_at(get_global_mouse_position())
+		else:
+			var info := _get_passive_aim_info()
+			look_at(global_position + info.direction * 100.0)
+
 
 
 func _handle_active_fire(delta: float) -> void:
@@ -426,18 +522,34 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 			spawn_parent.add_child(shock)
 
 		&"mortar": # Roxanne mortero
-			var nearest := _find_target_by_mode(Enums.TargetMode.NEAREST, wdata.passive_search_radius)
-			if nearest:
-				var shock: ShockwaveArea = shockwave_scene.instantiate() as ShockwaveArea
-				shock.setup(nearest.global_position, ctx, size_stat * 1.3)
-				spawn_parent.add_child(shock)
+			var aim_info := _get_passive_aim_info()
+			var target_pos := Vector2.ZERO
+			if is_manual_aim:
+				target_pos = get_global_mouse_position()
+			elif aim_info.target and is_instance_valid(aim_info.target):
+				target_pos = aim_info.target.global_position
+			else:
+				var forward_dist: float = player.stats.get_stat(&"pickup_radius") if player and player.stats else 200.0
+				target_pos = global_position + aim_info.direction * forward_dist
+
+			var shock: ShockwaveArea = shockwave_scene.instantiate() as ShockwaveArea
+			shock.setup(target_pos, ctx, size_stat * 1.3)
+			spawn_parent.add_child(shock)
 
 		&"chain_pulse": # Echo pulso tesla
-			var nearest := _find_target_by_mode(Enums.TargetMode.NEAREST, wdata.passive_search_radius)
-			if nearest:
-				var chain: ChainLightningEffect = chain_scene.instantiate() as ChainLightningEffect
-				chain.setup(global_position, nearest.global_position, ctx, 3)
-				spawn_parent.add_child(chain)
+			var aim_info := _get_passive_aim_info()
+			var target_pos := Vector2.ZERO
+			if is_manual_aim:
+				target_pos = get_global_mouse_position()
+			elif aim_info.target and is_instance_valid(aim_info.target):
+				target_pos = aim_info.target.global_position
+			else:
+				var forward_dist: float = player.stats.get_stat(&"pickup_radius") if player and player.stats else 200.0
+				target_pos = global_position + aim_info.direction * forward_dist
+
+			var chain: ChainLightningEffect = chain_scene.instantiate() as ChainLightningEffect
+			chain.setup(global_position, target_pos, ctx, 3)
+			spawn_parent.add_child(chain)
 
 		&"boomerang": # Cuchilla orbital
 			var p_dir := Vector2.from_angle(randf() * TAU)
@@ -452,26 +564,28 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 		_:
 			_fire_homing_missiles(ctx, count, wdata.passive_search_radius)
 
-func _fire_homing_missiles(ctx: HitContext, count: int, search_radius: float) -> void:
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.UP
-
-	var candidates := _get_candidates_in_range(search_radius)
+func _fire_homing_missiles(ctx: HitContext, count: int, _search_radius: float = 0.0) -> void:
+	var aim_info := _get_passive_aim_info()
+	var base_dir: Vector2 = aim_info.direction
+	var assigned_target: Node2D = aim_info.target
 	var spread_deg: float = 16.0
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 
 	for i in range(count):
 		var offset_rad := deg_to_rad((float(i) - float(count - 1) / 2.0) * spread_deg)
-		var m_dir := aim_dir.rotated(offset_rad)
-		var assigned_target: Node2D = candidates[i % candidates.size()] if not candidates.is_empty() else null
+		var m_dir := base_dir.rotated(offset_rad)
 		var missile: HomingMissile = missile_scene.instantiate() as HomingMissile
-		missile.setup(global_position, m_dir, ctx, assigned_target)
+		# En línea recta (estilo Picayune):
+		# Si hay 1 solo misil y hay target directo, se fija a él.
+		# Si hay múltiples misiles, cada uno sale en abanico con su m_dir.
+		var missile_target: Node2D = assigned_target if count == 1 else null
+		missile.setup(global_position, m_dir, ctx, missile_target)
 		spawn_parent.add_child(missile)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("missile")
+
 
 func _maintain_orbital_drones(ctx: HitContext, desired_count: int) -> void:
 	# Filtrar drones muertos

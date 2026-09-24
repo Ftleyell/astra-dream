@@ -37,10 +37,12 @@ var actions_to_rebind: Array[Dictionary] = [
 	{ "action": &"move_left", "label": "Mover Izquierda" },
 	{ "action": &"move_right", "label": "Mover Derecha" },
 	{ "action": &"fire_active", "label": "Disparo Activo (Láser)" },
+	{ "action": &"toggle_aim_mode", "label": "Alternar Apuntado Pasivo (Auto/Manual)" },
 	{ "action": &"dash", "label": "Dash (Invulnerabilidad)" },
 	{ "action": &"bomb", "label": "Bomba de Pantalla" },
 	{ "action": &"dialogue_skip", "label": "Saltar Diálogo" }
 ]
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS

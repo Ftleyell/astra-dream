@@ -74,8 +74,18 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "Láser: [LISTO]"
 
+[node name="VSepAim" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+
+[node name="AimModeLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "[E] AIM: AUTO"
+
 [node name="VSep2" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
+
 
 [node name="BombIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
 custom_minimum_size = Vector2(24, 24)

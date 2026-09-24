@@ -8,6 +8,7 @@ extends CanvasLayer
 @onready var dash_label: Label = get_node_or_null("MarginContainer/VBoxContainer/TopRow/DashLabel")
 @onready var bomb_label: Label = $MarginContainer/VBoxContainer/TopRow/BombLabel
 @onready var laser_cd_label: Label = $MarginContainer/VBoxContainer/TopRow/LaserCDLabel
+@onready var aim_mode_label: Label = get_node_or_null("MarginContainer/VBoxContainer/TopRow/AimModeLabel")
 @onready var credits_label: Label = $MarginContainer/VBoxContainer/TopRow/CreditsLabel
 @onready var timer_label: Label = $MarginContainer/VBoxContainer/TopRow/TimerLabel
 @onready var satellite_radar_label: Label = $MarginContainer/VBoxContainer/BottomRow/SatelliteRadarLabel
@@ -18,6 +19,11 @@ extends CanvasLayer
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 @onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
+
+var target_reticle: Node2D = null
+var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
+
+
 
 var run_time: float = 0.0
 var active_satellite_pos: Vector2 = Vector2.ZERO
@@ -60,13 +66,31 @@ func _ready() -> void:
 		if weapon_ctrl:
 			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
 			weapon_ctrl.weapons_updated.connect(update_weapon_slots)
+			if weapon_ctrl.has_signal("aim_mode_changed"):
+				weapon_ctrl.aim_mode_changed.connect(_on_aim_mode_changed)
 			update_weapon_slots(weapon_ctrl.equipped_weapons)
+			_on_aim_mode_changed(weapon_ctrl.is_manual_aim)
+
+	if not target_reticle and target_reticle_scene:
+		target_reticle = target_reticle_scene.instantiate() as Node2D
+		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+		if spawn_parent:
+			spawn_parent.add_child(target_reticle)
 
 func _process(delta: float) -> void:
+	if target_reticle and is_instance_valid(player):
+		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl and target_reticle.has_method("set_target"):
+			target_reticle.call("set_target", w_ctrl.current_locked_target)
+		elif target_reticle.has_method("set_target"):
+			target_reticle.call("set_target", null)
+
+
 	run_time += delta
 	var wave_m: int = int(float(wave_time_left) / 60.0)
 	var wave_s: int = int(wave_time_left) % 60
 	timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
+
 
 	if has_satellite and player:
 		var dist: float = player.global_position.distance_to(active_satellite_pos)
@@ -308,3 +332,14 @@ func _on_dash_updated(current_charges: int, max_charges: int, recharge_ratio: fl
 	else:
 		dash_label.text = "Dash: [%d%%]" % int(recharge_ratio * 100.0)
 		dash_label.modulate = Color(0.7, 0.7, 0.7, 1.0)
+
+func _on_aim_mode_changed(is_manual: bool) -> void:
+	if not aim_mode_label:
+		return
+	if is_manual:
+		aim_mode_label.text = "[E] AIM: MANUAL"
+		aim_mode_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.15, 1.0))
+	else:
+		aim_mode_label.text = "[E] AIM: AUTO"
+		aim_mode_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 1.0))
+
