@@ -160,12 +160,24 @@ func _update_locked_target() -> void:
 	else:
 		current_locked_target = _find_closest_enemy_in_pickup_radius()
 
-func _find_closest_enemy_in_pickup_radius() -> Node2D:
-	var pickup_rad: float = 120.0
-	if player and player.stats:
-		pickup_rad = player.stats.get_stat(&"pickup_radius")
+## Rango de búsqueda para auto-apuntado:
+## Base = 2 * pickup_radius base del personaje, escalando 1 a 1 con cualquier aumento posterior de pickup_radius.
+func get_autoaim_range() -> float:
+	var base_pickup: float = 100.0
+	if player and player.character_data and player.character_data.pickup_radius > 0.0:
+		base_pickup = player.character_data.pickup_radius
 
-	var rad_sq := pickup_rad * pickup_rad
+	var current_pickup: float = base_pickup
+	if player and player.stats:
+		current_pickup = player.stats.get_stat(&"pickup_radius")
+
+	# Modificador flat de entrada = base_pickup -> inicialmente es 2 * base_pickup,
+	# y escala 1 a 1 con el incremento de pickup_radius (current_pickup - base_pickup).
+	return current_pickup + base_pickup
+
+func _find_closest_enemy_in_pickup_radius() -> Node2D:
+	var search_rad: float = get_autoaim_range()
+	var rad_sq := search_rad * search_rad
 	var tree := get_tree()
 	if not tree:
 		return null
@@ -184,8 +196,8 @@ func _find_closest_enemy_in_pickup_radius() -> Node2D:
 				min_dist_sq = d_sq
 				nearest = node as Node2D
 
-
 	return nearest
+
 
 func _get_passive_aim_info() -> Dictionary:
 	if is_manual_aim:
@@ -529,7 +541,7 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 			elif aim_info.target and is_instance_valid(aim_info.target):
 				target_pos = aim_info.target.global_position
 			else:
-				var forward_dist: float = player.stats.get_stat(&"pickup_radius") if player and player.stats else 200.0
+				var forward_dist: float = get_autoaim_range()
 				target_pos = global_position + aim_info.direction * forward_dist
 
 			var shock: ShockwaveArea = shockwave_scene.instantiate() as ShockwaveArea
@@ -544,8 +556,9 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 			elif aim_info.target and is_instance_valid(aim_info.target):
 				target_pos = aim_info.target.global_position
 			else:
-				var forward_dist: float = player.stats.get_stat(&"pickup_radius") if player and player.stats else 200.0
+				var forward_dist: float = get_autoaim_range()
 				target_pos = global_position + aim_info.direction * forward_dist
+
 
 			var chain: ChainLightningEffect = chain_scene.instantiate() as ChainLightningEffect
 			chain.setup(global_position, target_pos, ctx, 3)

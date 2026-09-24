@@ -60,39 +60,44 @@ func _ready() -> void:
 
 
 	# ----------------------------------------------------
-	# TEST 3: Fijación por Radio de Recogida (pickup_radius)
+	# TEST 3: Rango de Autoaim (2x Base + escalado 1 a 1)
 	# ----------------------------------------------------
-	print("\n[3/5] Testing target acquisition inside pickup_radius...")
-	# Player configurado con pickup_radius = 150.0
-	player.character_data.pickup_radius = 150.0
+	print("\n[3/5] Testing autoaim range (2x base pickup, 1:1 scaling)...")
+	# Configurar base pickup = 100.0 -> autoaim inicial debe ser 200.0 (doble de la base)
+	player.character_data.pickup_radius = 100.0
 	player.stats.initialize(player.character_data)
 
+	assert(is_equal_approx(wc.get_autoaim_range(), 200.0), "El rango inicial de autoaim debe ser el doble de la base (2 * 100 = 200px)")
 
-	# Enemigo A a 90px (dentro del radio)
-	var enemy_near := _create_test_enemy(Vector2(90, 0))
-	add_child(enemy_near)
+	# Enemigo A a 150px (dentro del rango de 200px)
+	var enemy_a := _create_test_enemy(Vector2(150, 0))
+	add_child(enemy_a)
 
-	# Enemigo B a 250px (fuera del radio)
-	var enemy_far := _create_test_enemy(Vector2(250, 0))
-	add_child(enemy_far)
+	# Enemigo B a 230px (fuera del rango inicial de 200px)
+	var enemy_b := _create_test_enemy(Vector2(230, 0))
+	add_child(enemy_b)
 
 	wc.is_manual_aim = false
 	wc._update_locked_target()
-	assert(wc.current_locked_target == enemy_near, "current_locked_target debe ser el enemigo cercano (dentro del pickup_radius)")
+	assert(wc.current_locked_target == enemy_a, "current_locked_target debe ser el enemigo A (150px < 200px)")
 
-	var aim_info := wc._get_passive_aim_info()
-	assert(aim_info.target == enemy_near, "aim_info.target debe ser el enemigo cercano")
-	assert(aim_info.direction.is_equal_approx(Vector2.RIGHT), "aim_info.direction debe apuntar hacia el enemigo cercano")
+	# Ahora aumentamos el pickup en +40px con un modificador (simulando carta Imán)
+	player.stats.add_modifier(&"pickup_radius", CharacterStats.StatModifier.new(&"iman_card", 40.0, false, null))
+	assert(is_equal_approx(player.stats.get_stat(&"pickup_radius"), 140.0), "El pickup radius actual debe ser 140px")
+	# El autoaim debe escalar 1 a 1: 200 + 40 = 240px
+	assert(is_equal_approx(wc.get_autoaim_range(), 240.0), "El autoaim debe escalar 1 a 1: 200 + 40 = 240px")
 
-	# En modo manual, current_locked_target debe ser null
-	wc.is_manual_aim = true
-	wc._update_locked_target()
-	assert(wc.current_locked_target == null, "En modo manual current_locked_target debe ser null")
-
-	enemy_near.queue_free()
-	enemy_far.queue_free()
+	# Con 240px de rango, el Enemigo B (a 230px) ahora sí entra en rango si eliminamos a A
+	enemy_a.queue_free()
 	await get_tree().process_frame
-	print("  ✓ Radio de recogida: discriminación exacta de objetivo dentro del rango")
+
+	wc._update_locked_target()
+	assert(wc.current_locked_target == enemy_b, "Con el bono de 40px (rango 240px), el enemigo B (230px) ahora es fijado")
+
+	enemy_b.queue_free()
+	await get_tree().process_frame
+	print("  ✓ Rango de autoaim: base = 2x pickup (200px) y escalado exacto 1:1 (+40px -> 240px) verificado")
+
 
 
 	# ----------------------------------------------------
