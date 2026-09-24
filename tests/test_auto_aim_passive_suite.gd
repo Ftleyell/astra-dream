@@ -56,7 +56,22 @@ func _ready() -> void:
 	wc.toggle_aim_mode()
 	assert(wc.is_manual_aim == false, "toggle_aim_mode debe volver a is_manual_aim = false")
 	assert(signal_data["received"] and signal_data["val"] == false, "Debe emitirse aim_mode_changed(false)")
-	print("  ✓ WeaponController: alternancia Auto/Manual y señal aim_mode_changed verificados")
+
+	# Verificar indicador visual debajo del personaje (AimModeIndicator)
+	var indicator := player.get_node_or_null("AimModeIndicator")
+	assert(indicator != null, "AimModeIndicator debe existir como hijo de Player")
+	assert(indicator.position.y >= 20.0, "AimModeIndicator debe estar posicionado debajo del personaje (y >= 20)")
+	var ind_label := indicator.get_node_or_null("PanelContainer/Label") as Label
+	assert(ind_label != null, "AimModeIndicator debe tener un Label interno")
+	assert(ind_label.text == "AUTOAIM: ON", "En modo Auto, el indicador debajo del personaje debe decir 'AUTOAIM: ON'")
+
+	wc.toggle_aim_mode()
+	assert(ind_label.text == "AUTOAIM: OFF", "En modo Manual, el indicador debajo del personaje debe decir 'AUTOAIM: OFF'")
+	wc.toggle_aim_mode()
+	assert(ind_label.text == "AUTOAIM: ON", "Al regresar a Auto, el indicador debajo del personaje debe decir 'AUTOAIM: ON'")
+
+	print("  ✓ WeaponController & AimModeIndicator: alternancia Auto/Manual e indicador 'AUTOAIM: ON/OFF' debajo del personaje verificados")
+
 
 
 	# ----------------------------------------------------

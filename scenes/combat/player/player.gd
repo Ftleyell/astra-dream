@@ -161,6 +161,16 @@ func _ready() -> void:
 	if debug_mgr and debug_mgr.has_method("apply_to_player"):
 		debug_mgr.apply_to_player(self)
 
+	# Indicador de Autoaim debajo de la nave (y = 26px)
+	if not get_node_or_null("AimModeIndicator"):
+		var aim_ind_scene := preload("res://scenes/combat/player/aim_mode_indicator.tscn")
+		if aim_ind_scene:
+			var ind: Node2D = aim_ind_scene.instantiate() as Node2D
+			ind.name = "AimModeIndicator"
+			ind.position = Vector2(0, 26)
+			add_child(ind)
+
+
 
 func _apply_visual_theme() -> void:
 	if not character_data:
