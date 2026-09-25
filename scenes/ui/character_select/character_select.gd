@@ -11,10 +11,11 @@ extends Control
 @onready var ship_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox/ShipName
 @onready var weapon_icon: TextureRect = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponIcon
 @onready var weapon_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox/WeaponName
-@onready var pet_card: PanelContainer = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard") as PanelContainer
-@onready var pet_icon: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetIcon") as TextureRect
-@onready var pet_name: Label = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetLabelVBox/PetName") as Label
-@onready var pet_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetButton") as Button
+@onready var pet_card: PanelContainer = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard") as PanelContainer
+@onready var pet_icon: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetIcon") as TextureRect
+@onready var pet_name: Label = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetLabelVBox/PetName") as Label
+@onready var pet_desc: Label = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetLabelVBox/PetDesc") as Label
+@onready var pet_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetButton") as Button
 @onready var pet_selection_modal = get_node_or_null("PetSelectionModal")
 
 # ==============================================================================
@@ -232,8 +233,11 @@ func _populate_roster() -> void:
 
 	if pet_button:
 		pet_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
-		pet_button.focus_neighbor_bottom = loadout_button.get_path()
-		loadout_button.focus_neighbor_top = pet_button.get_path()
+		pet_button.focus_neighbor_top = launch_button.get_path()
+		loadout_button.focus_neighbor_bottom = pet_button.get_path()
+		if debug_button and debug_button.visible:
+			debug_button.focus_neighbor_bottom = pet_button.get_path()
+		launch_button.focus_neighbor_bottom = pet_button.get_path()
 
 	if first_btn:
 		first_btn.grab_focus()
@@ -333,8 +337,10 @@ func _refresh_pet_display() -> void:
 		if pet_icon:
 			pet_icon.texture = pet_res.icon
 		if pet_name:
-			pet_name.text = pet_res.display_name
+			pet_name.text = "%s — %s" % [pet_res.display_name.to_upper(), pet_res.title.to_upper()]
 			pet_name.modulate = pet_res.theme_color
+		if pet_desc:
+			pet_desc.text = pet_res.power_description
 
 func _on_pet_card_pressed() -> void:
 	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):

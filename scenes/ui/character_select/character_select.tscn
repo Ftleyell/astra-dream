@@ -158,19 +158,18 @@ text = "EQUIPAMIENTO INICIAL ASIGNADO"
 
 [node name="EquipRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 16
 
 [node name="ShipCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
-custom_minimum_size = Vector2(175, 88)
+custom_minimum_size = Vector2(270, 88)
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="ShipBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
 [node name="ShipIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox"]
-custom_minimum_size = Vector2(68, 68)
+custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -181,26 +180,25 @@ alignment = 1
 
 [node name="ShipTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Nave"
+theme_override_font_sizes/font_size = 14
+text = "Nave / Exocaza"
 
 [node name="ShipName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.9)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "Interceptor Delta"
 
 [node name="WeaponCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
-custom_minimum_size = Vector2(175, 88)
+custom_minimum_size = Vector2(270, 88)
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="WeaponBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
 [node name="WeaponIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox"]
-custom_minimum_size = Vector2(68, 68)
+custom_minimum_size = Vector2(76, 76)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -211,53 +209,14 @@ alignment = 1
 
 [node name="WeaponTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Arma"
+theme_override_font_sizes/font_size = 14
+text = "Arma Principal"
 
 [node name="WeaponName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.5, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Blaster Ígneo"
-
-[node name="PetCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
-custom_minimum_size = Vector2(175, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 0
-mouse_default_cursor_shape = 2
-
-[node name="PetBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="PetIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox"]
-custom_minimum_size = Vector2(68, 68)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PetLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox"]
-layout_mode = 2
-alignment = 1
-
-[node name="PetTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetLabelVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.4, 0.95)
 theme_override_font_sizes/font_size = 12
-text = "Mascota [Elegir]"
-
-[node name="PetName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetLabelVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 0.95)
-theme_override_font_sizes/font_size = 11
-text = "Mochi"
-
-[node name="PetButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard"]
-layout_mode = 2
-flat = true
-mouse_filter = 0
-mouse_default_cursor_shape = 2
+text = "Blaster Ígneo Vectorial"
 
 [node name="SpeedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
 layout_mode = 2
@@ -314,6 +273,54 @@ theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
 theme_override_font_sizes/font_size = 19
 text = "🚀 INICIAR RUN"
 icon = ExtResource("3_rocket")
+
+[node name="PetCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+custom_minimum_size = Vector2(0, 106)
+layout_mode = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+
+[node name="PetBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PetIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PetLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 3
+
+[node name="PetHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "🐾 DRON DE ASISTENCIA FELINO // COMPAÑERO ASIGNADO [CAMBIAR]"
+
+[node name="PetName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "MOCHI — IMÁN DE EXP CUÁNTICO"
+
+[node name="PetDesc" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard/PetBox/PetLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.96, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Rastrea y absorbe gemas de EXP automáticamente. Velocidad y radio escalan con la nave."
+autowrap_mode = 2
+
+[node name="PetButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard"]
+layout_mode = 2
+flat = true
+mouse_filter = 0
+mouse_default_cursor_shape = 2
 
 [node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2

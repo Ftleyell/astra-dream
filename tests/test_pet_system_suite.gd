@@ -144,20 +144,32 @@ func test_hub_pet_roamer_3d() -> void:
 
 # ── 5. MODAL DE SELECCIÓN DE MASCOTAS ─────────────────────────────────────────
 func test_pet_selection_modal_ui() -> void:
-	print("[5/7] Verificando PetSelectionModal...")
+	print("[5/7] Verificando PetSelectionModal (ocultar pet secreto hasta desbloquearse)...")
 	var modal_scene := preload("res://scenes/ui/character_select/pet_selection_modal.tscn")
 	var modal = modal_scene.instantiate()
 	add_child(modal)
 
+	# 1. Con Cosmo bloqueado: no debe verse (4 mascotas en lista)
+	SaveManager.lock_pet(&"cosmo")
 	modal.open_modal()
 	test_assert(modal.is_open, "El modal debe estar abierto tras open_modal()")
 	test_assert(modal.visible, "El modal debe ser visible")
 
 	var cards_container = modal.get_node_or_null("DimOverlay/CenterContainer/MainPanel/Margin/VBox/Scroll/PetsList")
 	test_assert(cards_container != null, "Debe existir el contenedor PetsList")
-	test_assert(cards_container.get_child_count() == 5, "El modal debe listar exactamente 5 tarjetas de mascotas (actual: %d)" % cards_container.get_child_count())
+	test_assert(cards_container.get_child_count() == 4, "Con Cosmo bloqueado, el modal solo debe listar 4 mascotas (Cosmo oculto)")
 
 	modal.close_modal()
+
+	# 2. Con Cosmo desbloqueado: debe verse (5 mascotas en lista)
+	SaveManager.unlock_pet(&"cosmo")
+	modal.open_modal()
+	test_assert(cards_container.get_child_count() == 5, "Con Cosmo desbloqueado, el modal debe listar las 5 mascotas")
+	modal.close_modal()
+
+	# Restaurar bloqueo de Cosmo
+	SaveManager.lock_pet(&"cosmo")
+
 	test_assert(not modal.is_open, "El modal debe marcarse cerrado tras close_modal()")
 	test_assert(not modal.visible, "El modal debe ocultarse")
 
@@ -165,24 +177,26 @@ func test_pet_selection_modal_ui() -> void:
 
 # ── 6. PET CARD EN CHARACTER SELECT ───────────────────────────────────────────
 func test_character_select_pet_card() -> void:
-	print("[6/7] Verificando PetCard en Pantalla de Despliegue...")
+	print("[6/7] Verificando PetCard en Pantalla de Despliegue (botón grande abajo)...")
 	var charsel_scene := preload("res://scenes/ui/character_select/character_select.tscn")
 	var charsel = charsel_scene.instantiate()
 	add_child(charsel)
 
-	test_assert(charsel.pet_card != null, "Debe existir PetCard en EquipRow")
-	test_assert(charsel.pet_icon != null, "Debe existir PetIcon en PetCard")
+	test_assert(charsel.pet_card != null, "Debe existir PetCard en CenterPanel debajo de los botones de acción")
+	test_assert(charsel.pet_icon != null, "Debe existir PetIcon grande en PetCard")
 	test_assert(charsel.pet_name != null, "Debe existir PetName en PetCard")
-	test_assert(charsel.pet_button != null, "Debe existir PetButton en PetCard")
+	test_assert(charsel.pet_desc != null, "Debe existir PetDesc en PetCard")
+	test_assert(charsel.pet_button != null, "Debe existir PetButton interactivo en PetCard")
 	test_assert(charsel.pet_selection_modal != null, "Debe existir la instancia de PetSelectionModal en character_select")
 
 	SaveManager.set_selected_pet(&"mochi")
 	charsel._refresh_pet_display()
-	test_assert(charsel.pet_name.text == "Mochi", "PetName debe mostrar 'Mochi' cuando Mochi está seleccionado")
+	test_assert(charsel.pet_name.text.find("MOCHI") != -1, "PetName debe incluir 'MOCHI' cuando Mochi está seleccionado")
+	test_assert(not charsel.pet_desc.text.is_empty(), "PetDesc debe mostrar la descripción del poder de Mochi")
 
 	SaveManager.set_selected_pet(&"kuro")
 	charsel._refresh_pet_display()
-	test_assert(charsel.pet_name.text == "Kuro", "PetName debe mostrar 'Kuro' cuando Kuro está seleccionado")
+	test_assert(charsel.pet_name.text.find("KURO") != -1, "PetName debe incluir 'KURO' cuando Kuro está seleccionado")
 
 	charsel.queue_free()
 

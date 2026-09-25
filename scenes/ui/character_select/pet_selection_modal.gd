@@ -41,6 +41,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _populate_pets() -> void:
 	for child in pets_container.get_children():
+		pets_container.remove_child(child)
 		child.queue_free()
 	_pet_buttons.clear()
 
@@ -50,6 +51,11 @@ func _populate_pets() -> void:
 	for p_data in all_pets:
 		var pid := p_data.pet_id
 		var is_unlocked := SaveManager.is_pet_unlocked(pid)
+
+		# Mascota secreta (Cosmo): no debe verse hasta desbloquearse
+		if pid == &"cosmo" and not is_unlocked:
+			continue
+
 		var is_selected := (pid == selected_pid)
 
 		var card := PanelContainer.new()
