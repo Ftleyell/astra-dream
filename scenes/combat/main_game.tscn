@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://c6xk4yp51l4q1"]
+[gd_scene load_steps=23 format=3 uid="uid://c6xk4yp51l4q1"]
 
 [ext_resource type="Script" path="res://scenes/combat/main_game.gd" id="1_maingame"]
 [ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="2_bullet_server"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/character_stats_overlay.tscn" id="19_stats_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dialogue_skip_overlay.tscn" id="20_skip"]
 [ext_resource type="PackedScene" path="res://scenes/combat/player/aim_mode_indicator.tscn" id="21_aimind"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over/game_over_modal.tscn" id="22_gameover"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_core"]
 radius = 5.0
@@ -100,3 +101,4 @@ player = NodePath("../Player")
 player = NodePath("../Player")
 
 [node name="SkipBadgeLayer" parent="." instance=ExtResource("20_skip")]
+[node name="GameOverModal" parent="." instance=ExtResource("22_gameover")]

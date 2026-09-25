@@ -6,6 +6,7 @@ extends Node2D
 
 var is_planted: bool = false
 var player_inside: bool = false
+var _is_tearing_down: bool = false
 
 signal planted(index: int, pos: Vector2)
 signal exited_perimeter(index: int)
@@ -20,6 +21,14 @@ func _ready() -> void:
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
 
+func _exit_tree() -> void:
+	_is_tearing_down = true
+	if is_instance_valid(area):
+		if area.body_entered.is_connected(_on_body_entered):
+			area.body_entered.disconnect(_on_body_entered)
+		if area.body_exited.is_connected(_on_body_exited):
+			area.body_exited.disconnect(_on_body_exited)
+
 func _draw_radius_circle() -> void:
 	radius_visual.clear_points()
 	var points: int = 36
@@ -28,12 +37,25 @@ func _draw_radius_circle() -> void:
 		radius_visual.add_point(Vector2(cos(angle), sin(angle)) * activation_radius)
 
 func _on_body_entered(body: Node2D) -> void:
+	if _is_tearing_down or not is_inside_tree() or is_queued_for_deletion():
+		return
+	if body != null and (not body.is_inside_tree() or body.is_queued_for_deletion()):
+		return
 	if body is Player:
 		player_inside = true
 		if not is_planted:
 			plant_satellite()
 
 func _on_body_exited(body: Node2D) -> void:
+	if _is_tearing_down or not is_inside_tree() or is_queued_for_deletion():
+		return
+	if body != null and (not body.is_inside_tree() or body.is_queued_for_deletion()):
+		return
+	var tree := get_tree()
+	if tree != null:
+		var scene_root := tree.current_scene
+		if scene_root != null and (not scene_root.is_inside_tree() or scene_root.is_queued_for_deletion()):
+			return
 	if body is Player:
 		player_inside = false
 		if is_planted:

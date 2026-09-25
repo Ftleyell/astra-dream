@@ -113,6 +113,10 @@ func open_pause_menu() -> void:
 	_setup_button_navigation()
 	resume_button.grab_focus()
 
+func restore_focus() -> void:
+	if visible and resume_button and is_instance_valid(resume_button):
+		resume_button.grab_focus()
+
 func resume_game() -> void:
 	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(0.4)
@@ -246,26 +250,46 @@ func _on_highscores_pressed() -> void:
 func _on_save_quit_pressed() -> void:
 	# Guardar estado actual de la partida
 	var main_game := get_parent() as MainGame
-	if not main_game:
+	if not main_game and get_tree():
 		main_game = get_tree().current_scene as MainGame
-	if main_game and main_game.has_method("save_current_run_state"):
-		main_game.save_current_run_state()
+	if main_game:
+		main_game.set("is_exiting_run", true)
+		if main_game.has_method("save_current_run_state"):
+			main_game.save_current_run_state()
 
 	hide()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_restart_pressed() -> void:
+	var main_game := get_parent() as MainGame
+	if not main_game and get_tree():
+		main_game = get_tree().current_scene as MainGame
+	if main_game:
+		main_game.set("is_exiting_run", true)
+
 	hide()
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
 func _on_hub_pressed() -> void:
+	var main_game := get_parent() as MainGame
+	if not main_game and get_tree():
+		main_game = get_tree().current_scene as MainGame
+	if main_game:
+		main_game.set("is_exiting_run", true)
+
 	hide()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_menu_pressed() -> void:
+	var main_game := get_parent() as MainGame
+	if not main_game and get_tree():
+		main_game = get_tree().current_scene as MainGame
+	if main_game:
+		main_game.set("is_exiting_run", true)
+
 	hide()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")

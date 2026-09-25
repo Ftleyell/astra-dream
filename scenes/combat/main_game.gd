@@ -8,6 +8,8 @@ extends Node2D
 var space_object_spawner: SpaceObjectSpawner = null
 var arcana_modal: ArcanaSelectionModal = null
 var _pending_arcana_picks: int = 0
+var _pending_satellite_credits: int = -1
+var _pending_satellite_index: int = -1
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
@@ -16,6 +18,9 @@ var _pending_arcana_picks: int = 0
 @onready var pause_menu: PauseMenu = get_node_or_null("PauseMenu") as PauseMenu
 @onready var character_stats_overlay: CharacterStatsOverlay = get_node_or_null("CharacterStatsOverlay") as CharacterStatsOverlay
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
+@onready var game_over_modal: GameOverModal = get_node_or_null("GameOverModal") as GameOverModal
+var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
+var bosses_defeated_count: int = 0
 
 const WAVE_DURATION: float = 60.0
 const MAX_SATELLITES_PER_WAVE: int = 3
@@ -47,10 +52,17 @@ var prologue_bonus_chosen: bool = false
 var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
 var _auto_save_timer: float = 0.0
+var is_exiting_run: bool = false
 
 const AUTO_SAVE_INTERVAL: float = 5.0
+const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
+
+func _exit_tree() -> void:
+	is_exiting_run = true
+	Engine.time_scale = 1.0
 
 func _ready() -> void:
+	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
@@ -298,14 +310,37 @@ func _process(delta: float) -> void:
 	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 	hud.update_satellite_travel_dist(current_dist, req_dist)
 
+	# Chequeo de desespawn cuando el jugador se aleja 10k del satélite
+	_check_satellite_despawn()
+
 	# Chequeo para mantener siempre activo el próximo satélite de la oleada
 	if current_satellite == null and wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
 		_spawn_next_satellite_for_wave()
 
-func _spawn_next_satellite_for_wave() -> void:
-	if current_satellite != null or wave_satellites_spawned >= MAX_SATELLITES_PER_WAVE:
+func _check_satellite_despawn() -> void:
+	if current_satellite == null or not is_instance_valid(current_satellite):
 		return
 	if not is_instance_valid(player):
+		return
+	var dist: float = player.global_position.distance_to(current_satellite.global_position)
+	if dist >= SATELLITE_DESPAWN_DISTANCE:
+		_despawn_current_satellite()
+
+func _despawn_current_satellite() -> void:
+	if current_satellite and is_instance_valid(current_satellite):
+		current_satellite.queue_free()
+		current_satellite = null
+	if hud and is_instance_valid(hud):
+		hud.clear_satellite()
+	# Permitir que el satélite vuelva a generarse adelante en la nueva trayectoria del jugador
+	wave_satellites_spawned = maxi(0, wave_satellites_spawned - 1)
+
+func _spawn_next_satellite_for_wave() -> void:
+	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
+		return
+	if current_satellite != null or wave_satellites_spawned >= MAX_SATELLITES_PER_WAVE:
+		return
+	if not is_instance_valid(player) or not player.is_inside_tree() or player.is_queued_for_deletion():
 		return
 
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
@@ -370,6 +405,7 @@ func _spawn_wave_boss() -> void:
 		bus.boss_spawn_requested.emit("boss_titan_alert", b_id, false)
 
 func _on_boss_defeated(_boss_id: String) -> void:
+	bosses_defeated_count += 1
 	current_boss = null
 	hud.hide_boss()
 
@@ -399,41 +435,50 @@ func _input(event: InputEvent) -> void:
 			_trigger_cockpit_interlude()
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
-	if current_satellite:
+	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
+		return
+	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 
 	current_satellite = satellite_scene.instantiate() as SatelliteBeacon
 	current_satellite.global_position = target_pos
 	current_satellite.satellite_index = current_satellite_idx
-	add_child(current_satellite)
+	add_child.call_deferred(current_satellite)
 
 	current_satellite.planted.connect(_on_satellite_planted)
 	current_satellite.exited_perimeter.connect(_on_satellite_exited)
 
-	hud.set_active_satellite(target_pos, current_satellite_idx)
+	if hud and is_instance_valid(hud):
+		hud.set_active_satellite(target_pos, current_satellite_idx)
 
 func _on_satellite_planted(index: int, _pos: Vector2) -> void:
-	# Abre la tienda del satélite con los créditos actuales del jugador
-	satellite_shop.open_shop(player.run_credits)
-
-	# Al activar el 2do satélite, se dispara la transmisión cinemática del primer jefe
-	if index == 2:
-		trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
+	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
+		return
+	if is_arcana_modal_active() or is_level_up_modal_active() or (level_up_modal and level_up_modal.has_pending_levels()) or is_dialogue_active():
+		_pending_satellite_credits = player.run_credits
+		_pending_satellite_index = index
+	else:
+		satellite_shop.open_shop(player.run_credits)
+		if index == 2:
+			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
 
 func _on_satellite_exited(_index: int) -> void:
+	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
+		return
 	# El jugador salió del perímetro del satélite: se contabiliza y se actualiza el ancla de distancia
 	current_satellite_idx += 1
 	satellites_collected_total += 1
-	last_anchor_pos = player.global_position
+	if is_instance_valid(player):
+		last_anchor_pos = player.global_position
 
-	if current_satellite:
+	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 		current_satellite = null
 
-	if hud:
+	if hud and is_instance_valid(hud):
 		hud.clear_satellite()
 	save_current_run_state()
-	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
+	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE and not is_exiting_run and is_inside_tree() and not is_queued_for_deletion():
 		_spawn_next_satellite_for_wave()
 
 func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
@@ -467,15 +512,22 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
-	if is_satellite_shop_active() or is_dialogue_active():
+	if is_satellite_shop_active() or is_dialogue_active() or is_arcana_modal_active():
 		level_up_modal.queue_level_up(level)
 	else:
 		level_up_modal.show_level_up(level)
 	save_current_run_state()
 
 func _on_satellite_shop_closed() -> void:
-	if level_up_modal and level_up_modal.has_pending_levels():
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		arcana_modal.show_next_arcana()
+	elif _pending_arcana_picks > 0:
+		_pending_arcana_picks -= 1
+		_open_next_pending_arcana()
+	elif level_up_modal and level_up_modal.has_pending_levels():
 		level_up_modal.show_next_level_up()
+	elif not is_any_combat_modal_active():
+		get_tree().paused = false
 
 func is_pause_menu_active() -> bool:
 	return pause_menu != null and pause_menu.visible
@@ -489,15 +541,54 @@ func is_arcana_modal_active() -> bool:
 
 func _on_arcana_orb_collected(_orb: Node2D) -> void:
 	if arcana_modal:
-		if is_arcana_modal_active():
-			_pending_arcana_picks += 1
+		if is_any_combat_modal_active() and not is_arcana_modal_active():
+			if arcana_modal.has_method("queue_arcana"):
+				arcana_modal.queue_arcana()
+			else:
+				_pending_arcana_picks += 1
+		elif is_arcana_modal_active():
+			if arcana_modal.has_method("queue_arcana"):
+				arcana_modal.queue_arcana()
+			else:
+				_pending_arcana_picks += 1
 		else:
 			arcana_modal.show_arcana_selection(player)
 
 func _on_arcana_modal_closed() -> void:
-	if _pending_arcana_picks > 0:
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		arcana_modal.show_next_arcana()
+	elif _pending_arcana_picks > 0:
 		_pending_arcana_picks -= 1
-		call_deferred("_open_next_pending_arcana")
+		_open_next_pending_arcana()
+	elif level_up_modal and level_up_modal.has_pending_levels():
+		level_up_modal.show_next_level_up()
+	elif _pending_satellite_credits >= 0:
+		var creds = _pending_satellite_credits
+		var idx = _pending_satellite_index
+		_pending_satellite_credits = -1
+		_pending_satellite_index = -1
+		satellite_shop.open_shop(creds)
+		if idx == 2:
+			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
+	elif not is_any_combat_modal_active():
+		get_tree().paused = false
+
+func _on_level_up_modal_closed() -> void:
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		arcana_modal.show_next_arcana()
+	elif _pending_arcana_picks > 0:
+		_pending_arcana_picks -= 1
+		_open_next_pending_arcana()
+	elif _pending_satellite_credits >= 0:
+		var creds = _pending_satellite_credits
+		var idx = _pending_satellite_index
+		_pending_satellite_credits = -1
+		_pending_satellite_index = -1
+		satellite_shop.open_shop(creds)
+		if idx == 2:
+			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
+	elif not is_any_combat_modal_active():
+		get_tree().paused = false
 
 func _open_next_pending_arcana() -> void:
 	if arcana_modal and is_instance_valid(player):
@@ -508,6 +599,9 @@ func is_level_up_modal_active() -> bool:
 
 func is_character_stats_active() -> bool:
 	return character_stats_overlay != null and (character_stats_overlay.is_open or character_stats_overlay.visible)
+
+func is_game_over_active() -> bool:
+	return game_over_modal != null and (game_over_modal.visible or game_over_modal.is_active)
 
 func is_dialogue_active() -> bool:
 	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
@@ -539,7 +633,15 @@ func is_any_combat_modal_active() -> bool:
 		return true
 	if is_arcana_modal_active():
 		return true
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		return true
+	if _pending_arcana_picks > 0:
+		return true
+	if _pending_satellite_credits >= 0:
+		return true
 	if is_pause_menu_active():
+		return true
+	if is_game_over_active():
 		return true
 	if is_character_stats_active():
 		return true
@@ -559,7 +661,11 @@ func notify_menu_closed(duration: float = 0.35) -> void:
 
 
 func restore_combat_modal_focus() -> void:
-	if is_level_up_modal_active() and level_up_modal.has_method("restore_focus"):
+	if is_pause_menu_active() and pause_menu.has_method("restore_focus"):
+		pause_menu.restore_focus()
+	elif is_arcana_modal_active() and arcana_modal.has_method("restore_focus"):
+		arcana_modal.restore_focus()
+	elif is_level_up_modal_active() and level_up_modal.has_method("restore_focus"):
 		level_up_modal.restore_focus()
 	elif is_satellite_shop_active() and satellite_shop.has_method("restore_focus"):
 		satellite_shop.restore_focus()
@@ -580,18 +686,29 @@ func _on_enemy_killed(_enemy_type: String) -> void:
 func _on_player_died() -> void:
 	if level_up_modal and level_up_modal.has_method("clear_pending_levels"):
 		level_up_modal.clear_pending_levels()
+	if arcana_modal and arcana_modal.has_method("clear_pending_arcanas"):
+		arcana_modal.clear_pending_arcanas()
+	_pending_arcana_picks = 0
+	_pending_satellite_credits = -1
+	_pending_satellite_index = -1
+
+	# Pausar la generación de nuevos enemigos
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
 
 	# 1. Eliminar partida en curso (Permadeath)
 	SaveManager.clear_active_run()
 
-	# 2. Registrar resultado en la tabla de Highscores
+	# 2. Registrar resultado en la tabla de Highscores y calcular Puntuación
 	var minutes := int(run_time_elapsed) / 60
 	var seconds := int(run_time_elapsed) % 60
 	var time_str := "%02d:%02d" % [minutes, seconds]
 	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
 	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
 
-	SaveManager.record_run_score({
+	var final_score := int((enemies_killed_count * 50) + (current_wave * 1000) + (bosses_defeated_count * 5000) + (player.run_credits * 10) + int(run_time_elapsed * 20))
+
+	var rank := SaveManager.record_run_score({
 		"pilot_id": pilot_id,
 		"pilot_name": pilot_name,
 		"wave_reached": current_wave,
@@ -599,13 +716,75 @@ func _on_player_died() -> void:
 		"time_survived_formatted": time_str,
 		"enemies_killed": enemies_killed_count,
 		"credits_earned": player.run_credits,
-		"victory": false
+		"victory": false,
+		"score": final_score
 	})
+	var is_new_record: bool = (rank == 1)
 
-	# Volver al HUB 3D tras una breve pausa
-	get_tree().create_timer(1.2).timeout.connect(func():
-		get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	# 3. Recopilar armamento equipado
+	var weapons_summary: Array = []
+	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl:
+		for inst in w_ctrl.equipped_weapons:
+			if inst and inst.weapon_data:
+				weapons_summary.append({
+					"name": inst.weapon_data.name if "name" in inst.weapon_data else str(inst.weapon_data.weapon_id),
+					"level": inst.level,
+					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
+				})
+
+	# 4. Empaquetar telemetría para la pantalla de Game Over
+	var game_over_data := {
+		"score": final_score,
+		"is_new_highscore": is_new_record,
+		"rank": rank,
+		"pilot_name": pilot_name,
+		"pilot_id": pilot_id,
+		"waves_survived": current_wave,
+		"time_survived_seconds": run_time_elapsed,
+		"time_formatted": time_str,
+		"bosses_defeated": bosses_defeated_count,
+		"enemies_killed": enemies_killed_count,
+		"biomass_collected": player.run_biomass,
+		"dark_matter_collected": player.run_dark_matter,
+		"credits_collected": player.run_credits,
+		"arcanas": player.active_arcanas.duplicate(),
+		"items": player.inventory.get_all_items() if player.inventory else [],
+		"weapons": weapons_summary
+	}
+
+	# 5. Pausa dramática (~1.0s) mientras explota la nave con VFX y SFX antes de desplegar el modal
+	get_tree().create_timer(1.0, true, false, true).timeout.connect(func():
+		_show_game_over_screen(game_over_data)
 	)
+
+func _show_game_over_screen(data: Dictionary) -> void:
+	if not game_over_modal:
+		game_over_modal = game_over_scene.instantiate() as GameOverModal
+		add_child(game_over_modal)
+
+	if not game_over_modal.restart_requested.is_connected(_on_game_over_restart):
+		game_over_modal.restart_requested.connect(_on_game_over_restart)
+	if not game_over_modal.hub_requested.is_connected(_on_game_over_hub):
+		game_over_modal.hub_requested.connect(_on_game_over_hub)
+
+	get_tree().paused = true
+	game_over_modal.show_game_over(data)
+
+func _on_game_over_restart() -> void:
+	is_exiting_run = true
+	SaveManager.clear_active_run()
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().reload_current_scene()
+
+func _on_game_over_hub() -> void:
+	is_exiting_run = true
+	SaveManager.clear_active_run()
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+
 
 # ==============================================================================
 # SERIALIZACIÓN Y RESTAURACIÓN DEL ESTADO DE LA RUN
@@ -657,6 +836,7 @@ func get_current_run_state() -> Dictionary:
 		"current_satellite_idx": current_satellite_idx,
 		"run_time_elapsed": run_time_elapsed,
 		"enemies_killed_count": enemies_killed_count,
+		"bosses_defeated_count": bosses_defeated_count,
 		"prologue_bonus_chosen": prologue_bonus_chosen,
 		"player_health": player.current_health,
 		"player_level": player.current_level,
@@ -688,6 +868,7 @@ func restore_run_state(run_data: Dictionary) -> void:
 	current_satellite_idx = int(run_data.get("current_satellite_idx", 1))
 	run_time_elapsed = float(run_data.get("run_time_elapsed", 0.0))
 	enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
+	bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
 	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
 
 	is_briefing_active = false

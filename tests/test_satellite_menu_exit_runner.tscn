@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx8v6y3m1p0q9"]
+
+[ext_resource type="Script" path="res://tests/test_satellite_menu_exit_suite.gd" id="1_exit_suite"]
+
+[node name="TestSatelliteMenuExitRunner" type="Node"]
+script = ExtResource("1_exit_suite")

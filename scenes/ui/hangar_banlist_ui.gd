@@ -159,3 +159,5 @@ func _on_launch_pressed() -> void:
 	launch_run_requested.emit(current_character_id, bans)
 	# Cargar escena principal de combate
 	get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+
+

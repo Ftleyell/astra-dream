@@ -79,6 +79,8 @@ var current_pilot_index: int = 0
 var sprite_nodes: Array[Sprite3D] = []
 var _is_transitioning: bool = false
 var _pilot_tweens: Array[Tween] = []
+var pilot_vfx_data: Array[Dictionary] = []
+var interactable_nodes: Array[HubInteractable3D] = []
 
 @onready var player_controller: CharacterBody3D = $PlayerController
 @onready var camera: Camera3D = get_node_or_null("Camera3D")
@@ -131,6 +133,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
 	_setup_camera()
+	_build_pilot_pedestals_and_vfx()
 	_collect_and_verify_sprites()
 	_setup_interactables()
 	_setup_terminals()
@@ -191,6 +194,21 @@ func _process(delta: float) -> void:
 			holo.rotation.y += delta * 1.8
 			holo.position.y = 0.8 + sin(_idle_time * 2.2) * 0.05
 
+	# Animación continua del VFX del pedestal de la heroína seleccionada
+	if current_pilot_index >= 0 and current_pilot_index < pilot_vfx_data.size():
+		var active_vfx: Dictionary = pilot_vfx_data[current_pilot_index]
+		var rot_ring: MeshInstance3D = active_vfx.get("rotator_ring")
+		if rot_ring and is_instance_valid(rot_ring) and rot_ring.visible:
+			rot_ring.rotation.y += delta * 2.2
+		var beam: MeshInstance3D = active_vfx.get("holo_beam")
+		if beam and is_instance_valid(beam) and beam.visible:
+			var pulse: float = 1.0 + sin(_idle_time * 3.5) * 0.04
+			beam.scale.x = pulse
+			beam.scale.z = pulse
+		var badge: Label3D = active_vfx.get("floating_badge")
+		if badge and is_instance_valid(badge) and badge.visible:
+			badge.position.y = 2.8 + sin(_idle_time * 2.8) * 0.06
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_modal_active():
@@ -232,6 +250,168 @@ func _setup_camera() -> void:
 			camera.fov = 85.0
 			camera.position = Vector3(0.0, 3.2, 5.0)
 			camera.look_at(Vector3.ZERO, Vector3.UP)
+
+
+func _build_pilot_pedestals_and_vfx() -> void:
+	var pedestals_group := get_node_or_null("PilotPedestals")
+	if not pedestals_group:
+		pedestals_group = Node3D.new()
+		pedestals_group.name = "PilotPedestals"
+		add_child(pedestals_group)
+
+	pilot_vfx_data.clear()
+
+	for i in range(PILOT_ROSTER.size()):
+		var char_data: Dictionary = PILOT_ROSTER[i]
+		var cid: String = String(char_data["id"])
+		var col: Color = char_data["color"]
+		var pos: Vector3 = char_data["pedestal_pos"]
+
+		var ped_root_name := "Pedestal_" + cid.capitalize()
+		var ped_root: Node3D = pedestals_group.get_node_or_null(ped_root_name)
+		if not ped_root:
+			ped_root = Node3D.new()
+			ped_root.name = ped_root_name
+			pedestals_group.add_child(ped_root)
+
+		ped_root.position = Vector3(pos.x, 0.0, pos.z)
+
+		# 1. Base Cilíndrica Metálica Sci-Fi
+		var base_mesh_node: MeshInstance3D = ped_root.get_node_or_null("BaseMesh")
+		if not base_mesh_node:
+			base_mesh_node = MeshInstance3D.new()
+			base_mesh_node.name = "BaseMesh"
+			var cyl := CylinderMesh.new()
+			cyl.top_radius = 1.35
+			cyl.bottom_radius = 1.5
+			cyl.height = 0.16
+			cyl.radial_segments = 36
+			base_mesh_node.mesh = cyl
+			base_mesh_node.position = Vector3(0, 0.08, 0)
+
+			var base_mat := StandardMaterial3D.new()
+			base_mat.albedo_color = Color(0.10, 0.12, 0.16, 1.0)
+			base_mat.metallic = 0.85
+			base_mat.roughness = 0.35
+			base_mesh_node.material_override = base_mat
+			ped_root.add_child(base_mesh_node)
+
+		# 2. Anillo de Borde Neón (TorusMesh)
+		var rim_node: MeshInstance3D = ped_root.get_node_or_null("RimNeon")
+		var rim_mat: StandardMaterial3D
+		if not rim_node:
+			rim_node = MeshInstance3D.new()
+			rim_node.name = "RimNeon"
+			var torus := TorusMesh.new()
+			torus.inner_radius = 1.30
+			torus.outer_radius = 1.42
+			torus.rings = 32
+			torus.ring_segments = 16
+			rim_node.mesh = torus
+			rim_node.position = Vector3(0, 0.16, 0)
+
+			rim_mat = StandardMaterial3D.new()
+			rim_mat.albedo_color = col
+			rim_mat.emission_enabled = true
+			rim_mat.emission = col
+			rim_mat.emission_energy_multiplier = 0.4
+			rim_node.material_override = rim_mat
+			ped_root.add_child(rim_node)
+		else:
+			rim_mat = rim_node.material_override as StandardMaterial3D
+
+		# 3. Anillo Holográfico Interior Giratorio (Rotator Ring)
+		var rot_node: MeshInstance3D = ped_root.get_node_or_null("RotatorRing")
+		if not rot_node:
+			rot_node = MeshInstance3D.new()
+			rot_node.name = "RotatorRing"
+			var inner_torus := TorusMesh.new()
+			inner_torus.inner_radius = 0.90
+			inner_torus.outer_radius = 1.05
+			inner_torus.rings = 24
+			inner_torus.ring_segments = 12
+			rot_node.mesh = inner_torus
+			rot_node.position = Vector3(0, 0.17, 0)
+
+			var rot_mat := StandardMaterial3D.new()
+			rot_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			rot_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+			rot_mat.albedo_color = Color(col.r, col.g, col.b, 0.7)
+			rot_mat.emission_enabled = true
+			rot_mat.emission = col
+			rot_mat.emission_energy_multiplier = 2.0
+			rot_node.material_override = rot_mat
+			rot_node.visible = false
+			ped_root.add_child(rot_node)
+
+		# 4. Haz Vertical Holográfico (Holo Beam)
+		var beam_node: MeshInstance3D = ped_root.get_node_or_null("HoloBeam")
+		var beam_mat: StandardMaterial3D
+		if not beam_node:
+			beam_node = MeshInstance3D.new()
+			beam_node.name = "HoloBeam"
+			var beam_cyl := CylinderMesh.new()
+			beam_cyl.top_radius = 1.15
+			beam_cyl.bottom_radius = 1.32
+			beam_cyl.height = 2.7
+			beam_cyl.radial_segments = 32
+			beam_cyl.cap_top = false
+			beam_cyl.cap_bottom = false
+			beam_node.mesh = beam_cyl
+			beam_node.position = Vector3(0, 1.45, 0)
+
+			beam_mat = StandardMaterial3D.new()
+			beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			beam_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+			beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+			beam_mat.albedo_color = Color(col.r, col.g, col.b, 0.16)
+			beam_mat.emission_enabled = true
+			beam_mat.emission = col
+			beam_mat.emission_energy_multiplier = 1.5
+			beam_node.material_override = beam_mat
+			beam_node.visible = false
+			ped_root.add_child(beam_node)
+		else:
+			beam_mat = beam_node.material_override as StandardMaterial3D
+
+		# 5. Foco Dinámico OmniLight3D
+		var light_node: OmniLight3D = ped_root.get_node_or_null("PedestalLight")
+		if not light_node:
+			light_node = OmniLight3D.new()
+			light_node.name = "PedestalLight"
+			light_node.position = Vector3(0, 0.6, 0)
+			light_node.light_color = col
+			light_node.omni_range = 4.2
+			light_node.light_energy = 0.0
+			light_node.visible = false
+			ped_root.add_child(light_node)
+
+		# 6. Badge Holográfico Flotante
+		var badge_node: Label3D = ped_root.get_node_or_null("ActiveBadge")
+		if not badge_node:
+			badge_node = Label3D.new()
+			badge_node.name = "ActiveBadge"
+			badge_node.position = Vector3(0, 2.85, 0)
+			badge_node.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+			badge_node.no_depth_test = false
+			badge_node.text = "✦ EN DESPLIEGUE ✦"
+			badge_node.font_size = 22
+			badge_node.outline_size = 8
+			badge_node.outline_modulate = Color("#0A0A0E")
+			badge_node.modulate = col
+			badge_node.visible = false
+			ped_root.add_child(badge_node)
+
+		pilot_vfx_data.append({
+			"ped_root": ped_root,
+			"rim_mat": rim_mat,
+			"rotator_ring": rot_node,
+			"holo_beam": beam_node,
+			"holo_beam_mat": beam_mat,
+			"omni_light": light_node,
+			"floating_badge": badge_node,
+			"color": col
+		})
 
 
 func _collect_and_verify_sprites() -> void:
@@ -280,6 +460,8 @@ func _setup_interactables() -> void:
 	if not roster_group:
 		return
 
+	interactable_nodes.clear()
+
 	for i in range(PILOT_ROSTER.size()):
 		var char_data: Dictionary = PILOT_ROSTER[i]
 		var cid: StringName = char_data["id"]
@@ -294,8 +476,26 @@ func _setup_interactables() -> void:
 			inter.position = char_data["pedestal_pos"]
 			roster_group.add_child(inter)
 
+		if inter is HubInteractable3D:
+			interactable_nodes.append(inter as HubInteractable3D)
+
 		if inter and not inter.interacted.is_connected(_on_interactable_triggered):
 			inter.interacted.connect(_on_interactable_triggered)
+
+
+func _update_interactable_prompts() -> void:
+	for i in range(interactable_nodes.size()):
+		var inter: HubInteractable3D = interactable_nodes[i]
+		if not is_instance_valid(inter) or not is_instance_valid(inter.label_3d):
+			continue
+		var char_data: Dictionary = PILOT_ROSTER[i]
+		var cname: String = String(char_data["name"]).capitalize()
+		if i == current_pilot_index:
+			inter.label_3d.text = "[E] Árbol de Habilidades: %s [ACTIVA]" % cname
+			inter.label_3d.modulate = char_data["color"]
+		else:
+			inter.label_3d.text = "[E] Seleccionar a %s" % cname
+			inter.label_3d.modulate = Color(0.85, 0.88, 0.95, 0.9)
 
 
 func _setup_terminals() -> void:
@@ -585,6 +785,71 @@ func _select_pilot(index: int, animate_card: bool = true) -> void:
 		else:
 			tw.tween_property(sp, "scale", Vector3.ONE, 0.25)
 			sp.modulate = Color(0.75, 0.75, 0.85, 0.85)
+
+	# Actualizar VFX de pedestales 3D (activar en seleccionado, desactivar en los demás)
+	for i in range(pilot_vfx_data.size()):
+		var vfx: Dictionary = pilot_vfx_data[i]
+		var beam: MeshInstance3D = vfx.get("holo_beam")
+		var rim_mat: StandardMaterial3D = vfx.get("rim_mat")
+		var rot_ring: MeshInstance3D = vfx.get("rotator_ring")
+		var light: OmniLight3D = vfx.get("omni_light")
+		var badge: Label3D = vfx.get("floating_badge")
+
+		if i == index:
+			# ACTIVAR VFX EN LA HEROÍNA SELECCIONADA
+			if beam and is_instance_valid(beam):
+				beam.visible = true
+				beam.scale = Vector3(1.0, 0.0, 1.0)
+				var tw_beam := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				tw_beam.tween_property(beam, "scale:y", 1.0, 0.35)
+				_pilot_tweens.append(tw_beam)
+
+			if rim_mat:
+				var tw_rim := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				tw_rim.tween_property(rim_mat, "emission_energy_multiplier", 3.2, 0.35)
+				_pilot_tweens.append(tw_rim)
+
+			if light and is_instance_valid(light):
+				light.visible = true
+				var tw_light := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				tw_light.tween_property(light, "light_energy", 2.6, 0.35)
+				_pilot_tweens.append(tw_light)
+
+			if rot_ring and is_instance_valid(rot_ring):
+				rot_ring.visible = true
+
+			if badge and is_instance_valid(badge):
+				badge.visible = true
+				badge.scale = Vector3(0.2, 0.2, 0.2)
+				var tw_badge := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				tw_badge.tween_property(badge, "scale", Vector3.ONE, 0.3)
+				_pilot_tweens.append(tw_badge)
+		else:
+			# VOLVER A LA NORMALIDAD EN LAS DEMÁS
+			if beam and is_instance_valid(beam) and beam.visible:
+				var tw_beam_off := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+				tw_beam_off.tween_property(beam, "scale:y", 0.0, 0.2)
+				tw_beam_off.tween_callback(func(): if is_instance_valid(beam): beam.visible = false)
+				_pilot_tweens.append(tw_beam_off)
+
+			if rim_mat:
+				var tw_rim_off := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+				tw_rim_off.tween_property(rim_mat, "emission_energy_multiplier", 0.4, 0.25)
+				_pilot_tweens.append(tw_rim_off)
+
+			if light and is_instance_valid(light) and light.visible:
+				var tw_light_off := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+				tw_light_off.tween_property(light, "light_energy", 0.0, 0.25)
+				tw_light_off.tween_callback(func(): if is_instance_valid(light): light.visible = false)
+				_pilot_tweens.append(tw_light_off)
+
+			if rot_ring and is_instance_valid(rot_ring):
+				rot_ring.visible = false
+
+			if badge and is_instance_valid(badge):
+				badge.visible = false
+
+	_update_interactable_prompts()
 
 	if animate_card and character_card:
 		character_card.pivot_offset = character_card.size * 0.5

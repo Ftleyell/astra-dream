@@ -217,6 +217,35 @@ theme_override_colors/font_color = Color(1, 0.85, 0.5, 0.9)
 theme_override_font_sizes/font_size = 12
 text = "Blaster Ígneo Vectorial"
 
+[node name="SpeedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="SpeedLabel" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "VELOCIDAD GLOBAL:"
+
+[node name="Speed1xBtn" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow"]
+custom_minimum_size = Vector2(115, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "1x NORMAL"
+
+[node name="Speed2xBtn" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow"]
+custom_minimum_size = Vector2(115, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "2x RÁPIDO"
+
+[node name="Speed4xBtn" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow"]
+custom_minimum_size = Vector2(115, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "4x TURBO"
+
 [node name="ActionsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
 layout_mode = 2
 theme_override_constants/separation = 14

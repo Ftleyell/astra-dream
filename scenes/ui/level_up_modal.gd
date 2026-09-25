@@ -86,8 +86,10 @@ func show_level_up(level: int) -> void:
 	var parent_game = get_parent()
 	var shop_active: bool = (parent_game and parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active())
 	var diag_active: bool = (parent_game and parent_game.has_method("is_dialogue_active") and parent_game.is_dialogue_active())
+	var arcana_active: bool = (parent_game and parent_game.has_method("is_arcana_modal_active") and parent_game.is_arcana_modal_active())
+	var pause_active: bool = (parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active())
 
-	if is_presenting_level or visible or shop_active or diag_active:
+	if is_presenting_level or visible or shop_active or diag_active or arcana_active or pause_active:
 		if not pending_levels_queue.has(level) and level != current_level_shown:
 			pending_levels_queue.append(level)
 		_update_header_title()
@@ -619,5 +621,7 @@ func _select_card(card: StatCardData) -> void:
 		get_tree().paused = true
 		if parent_game.has_method("restore_combat_modal_focus"):
 			parent_game.restore_combat_modal_focus()
+		if parent_game.has_method("_on_level_up_modal_closed"):
+			parent_game._on_level_up_modal_closed()
 	else:
 		get_tree().paused = false

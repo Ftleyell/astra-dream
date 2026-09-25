@@ -54,6 +54,8 @@ var card_buttons: Array[Button] = []
 var stat_card_ui_entries: Dictionary = {}
 var current_selected_idx: int = 0
 var is_active: bool = false
+var pending_arcanas_queue: int = 0
+var _mouse_lockout_active: bool = false
 
 
 func _ready() -> void:
@@ -66,15 +68,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_active or not visible:
 		return
 
+	# Si el Menú de Pausa está abierto por encima, ignorar cualquier entrada para no competir con el foco ni desviar controles
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active():
+		return
+	var root_pm = get_tree().root.find_child("PauseMenu", true, false)
+	if root_pm and root_pm.visible:
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_ESCAPE:
-				if not offered_arcanas.is_empty():
-					_on_card_chosen(offered_arcanas[0])
-				else:
-					close_modal()
-				get_viewport().set_input_as_handled()
-				return
 			KEY_1, KEY_KP_1:
 				_select_card_by_index(0)
 				get_viewport().set_input_as_handled()
@@ -136,6 +139,53 @@ func _choose_focused_card() -> void:
 
 
 func show_arcana_selection(p_player: Player = null) -> void:
+	var parent_game = get_parent()
+	var shop_active: bool = (parent_game and parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active())
+	var diag_active: bool = (parent_game and parent_game.has_method("is_dialogue_active") and parent_game.is_dialogue_active())
+	var level_active: bool = (parent_game and parent_game.has_method("is_level_up_modal_active") and parent_game.is_level_up_modal_active())
+	var pause_active: bool = (parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active())
+
+	if is_active or visible or shop_active or diag_active or level_active or pause_active:
+		queue_arcana()
+		return
+
+	_present_arcana(p_player)
+
+
+func queue_arcana() -> void:
+	pending_arcanas_queue += 1
+	_update_header_title()
+
+
+func has_pending_arcanas() -> bool:
+	return pending_arcanas_queue > 0 or is_active
+
+
+func clear_pending_arcanas() -> void:
+	pending_arcanas_queue = 0
+	is_active = false
+
+
+func show_next_arcana() -> void:
+	if is_active and visible:
+		return
+	if pending_arcanas_queue > 0:
+		pending_arcanas_queue -= 1
+		_present_arcana(player)
+	elif is_instance_valid(player):
+		_present_arcana(player)
+
+
+func _update_header_title() -> void:
+	if not header_title:
+		return
+	if pending_arcanas_queue > 0:
+		header_title.text = "◈ INVOCACIÓN DE ARCANA ◈ (+%d PENDIENTES)" % pending_arcanas_queue
+	else:
+		header_title.text = "◈ INVOCACIÓN DE ARCANA ◈"
+
+
+func _present_arcana(p_player: Player = null) -> void:
 	if p_player:
 		player = p_player
 	elif not is_instance_valid(player):
@@ -145,6 +195,7 @@ func show_arcana_selection(p_player: Player = null) -> void:
 	get_tree().paused = true
 	is_active = true
 	visible = true
+	_mouse_lockout_active = true
 
 	var excluded_ids: Array = []
 	if is_instance_valid(player) and player.has_method("get_arcana_ids"):
@@ -164,6 +215,7 @@ func show_arcana_selection(p_player: Player = null) -> void:
 		overload_arc.stat_modifiers = {}
 		offered_arcanas.append(overload_arc)
 
+	_update_header_title()
 	_refresh_player_stats_display()
 	_build_cards_ui()
 
@@ -175,11 +227,15 @@ func show_arcana_selection(p_player: Player = null) -> void:
 	# Foco inicial en la primera carta
 	call_deferred("_update_card_selection", 0)
 
+	# Período de gracia contra clicks involuntarios por spam de disparo
+	get_tree().create_timer(0.3, true, false, true).timeout.connect(func():
+		_mouse_lockout_active = false
+	)
+
 
 func close_modal() -> void:
 	is_active = false
 	visible = false
-	get_tree().paused = false
 
 	# Notificar cierre a MainGame y Player para suprimir disparador de bomba accidental
 	var main_node = get_parent()
@@ -187,6 +243,13 @@ func close_modal() -> void:
 		main_node.notify_menu_closed(0.35)
 	elif is_instance_valid(player) and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(0.35)
+
+	if main_node and main_node.has_method("is_any_combat_modal_active") and main_node.is_any_combat_modal_active():
+		get_tree().paused = true
+		if main_node.has_method("restore_combat_modal_focus"):
+			main_node.restore_combat_modal_focus()
+	else:
+		get_tree().paused = false
 
 	modal_closed.emit()
 
@@ -448,7 +511,11 @@ func _create_cyber_card(arc: ArcanaData, index: int) -> Control:
 	btn.add_theme_color_override("font_hover_color", COLOR_DEEP_BLACK)
 
 	UIFocusHelper.apply_cyber_focus(btn)
-	btn.pressed.connect(_on_card_chosen.bind(arc))
+	btn.pressed.connect(func():
+		if _mouse_lockout_active:
+			return
+		_on_card_chosen(arc)
+	)
 	btn.focus_entered.connect(func():
 		_update_card_selection(index)
 	)
@@ -672,6 +739,12 @@ func _on_card_chosen(arc: ArcanaData) -> void:
 		audio_mgr.play_sfx("ui_click", 1.2)
 
 	arcana_chosen.emit(arc)
+
+	if pending_arcanas_queue > 0:
+		pending_arcanas_queue -= 1
+		_present_arcana(player)
+		return
+
 	close_modal()
 
 

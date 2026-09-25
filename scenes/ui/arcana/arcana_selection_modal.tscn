@@ -4,7 +4,7 @@
 
 [node name="ArcanaSelectionModal" type="CanvasLayer"]
 process_mode = 3
-layer = 60
+layer = 35
 script = ExtResource("1_modal")
 
 [node name="Backdrop" type="ColorRect" parent="."]

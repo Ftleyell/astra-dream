@@ -1,43 +1,40 @@
-[gd_scene load_steps=47 format=3 uid="uid://hubworld001"]
+[gd_scene format=3 uid="uid://hubworld001"]
 
-[ext_resource type="Script" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_valentina.png" id="3_valentina"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_kira.png" id="4_kira"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_selene_flipped.png" id="5_selene"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_roxy_flipped.png" id="6_roxy"]
-[ext_resource type="Texture2D" path="res://assets/characters/fullbody/fullbody_echo_flipped.png" id="7_echo"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="8_modal"]
-[ext_resource type="Script" path="res://scenes/ui/hub/hub_player_controller_3d.gd" id="9_controller"]
-[ext_resource type="Script" path="res://scenes/ui/hub/hub_interactable_3d.gd" id="10_interactable"]
-[ext_resource type="PackedScene" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="11_settings"]
-[ext_resource type="PackedScene" path="res://scenes/ui/highscores/highscores_modal.tscn" id="12_highscores"]
-[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer0_deep.png" id="15_plx0"]
-[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer1_mid.png" id="16_plx1"]
-[ext_resource type="Texture2D" path="res://assets/environments/space_parallax/space_parallax_layer2_near.png" id="17_plx2"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_floor_albedo.png" id="18_floor_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_floor_emission.png" id="19_floor_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_wall_albedo.png" id="20_wall_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_wall_emission.png" id="21_wall_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_ceiling_albedo.png" id="22_ceil_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_ceiling_emission.png" id="23_ceil_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_railing_albedo.png" id="24_rail_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_surfaces/hangar_railing_emission.png" id="25_rail_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/terminal_mission_albedo.png" id="26_term_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/terminal_mission_emission.png" id="27_term_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_cabinet_albedo.png" id="28_arc_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_cabinet_emission.png" id="29_arc_emi"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_albedo.png" id="30_scr_alb"]
-[ext_resource type="Texture2D" path="res://assets/environments/hub_machines/arcade_screen_emission.png" id="31_scr_emi"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/arcade-machine.glb" id="32_arc_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/pinball.glb" id="33_pinball_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_mini_arcade/vending-machine.glb" id="34_vending_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/gate.glb" id="35_gate_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/cables.glb" id="36_cables_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall.glb" id="37_wall_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-detail-a.glb" id="38_wall_detail_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-corner.glb" id="39_wall_corner_model"]
-[ext_resource type="PackedScene" path="res://assets/models/kenney_modular_space/template-wall-top.glb" id="40_wall_top_model"]
+[ext_resource type="Script" uid="uid://cudisollrj4w4" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
+[ext_resource type="ArrayMesh" uid="uid://3alnwgfb4lbw" path="res://scratch/downloads/space_kit/Models/OBJ format/hangar_smallA.obj" id="2_dj0jb"]
+[ext_resource type="Texture2D" uid="uid://dqso2by16x2fr" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
+[ext_resource type="Texture2D" uid="uid://ddop52mdbtewy" path="res://assets/characters/fullbody/fullbody_valentina.png" id="3_valentina"]
+[ext_resource type="Texture2D" uid="uid://w2jx2vitbxy5" path="res://assets/characters/fullbody/fullbody_kira.png" id="4_kira"]
+[ext_resource type="Texture2D" uid="uid://olojvfwmrolm" path="res://assets/characters/fullbody/fullbody_selene_flipped.png" id="5_selene"]
+[ext_resource type="Texture2D" uid="uid://cnrs8vy5qdjuu" path="res://assets/characters/fullbody/fullbody_roxy_flipped.png" id="6_roxy"]
+[ext_resource type="Texture2D" uid="uid://dgm03a4bh1vp2" path="res://assets/characters/fullbody/fullbody_echo_flipped.png" id="7_echo"]
+[ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="8_modal"]
+[ext_resource type="Script" uid="uid://m2ru1skefwxh" path="res://scenes/ui/hub/hub_player_controller_3d.gd" id="9_controller"]
+[ext_resource type="Script" uid="uid://r3q2lu4jkbsv" path="res://scenes/ui/hub/hub_interactable_3d.gd" id="10_interactable"]
+[ext_resource type="PackedScene" uid="uid://c8setmod001" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="11_settings"]
+[ext_resource type="PackedScene" uid="uid://orjy3a3vua0g" path="res://scenes/ui/highscores/highscores_modal.tscn" id="12_highscores"]
+[ext_resource type="Texture2D" uid="uid://dij7fkcdv8l82" path="res://assets/environments/space_parallax/space_parallax_layer0_deep.png" id="15_plx0"]
+[ext_resource type="Texture2D" uid="uid://wdsbi2nlyxll" path="res://assets/environments/space_parallax/space_parallax_layer1_mid.png" id="16_plx1"]
+[ext_resource type="Texture2D" uid="uid://c4r8rtvb8prbn" path="res://assets/environments/space_parallax/space_parallax_layer2_near.png" id="17_plx2"]
+[ext_resource type="Texture2D" uid="uid://bm127fqg4ebcg" path="res://assets/environments/hub_surfaces/hangar_wall_albedo.png" id="20_wall_alb"]
+[ext_resource type="Texture2D" uid="uid://c1xmfqaaojuww" path="res://assets/environments/hub_surfaces/hangar_wall_emission.png" id="21_wall_emi"]
+[ext_resource type="Texture2D" uid="uid://bxtgs6dl5654k" path="res://assets/environments/hub_surfaces/hangar_ceiling_albedo.png" id="22_ceil_alb"]
+[ext_resource type="Texture2D" uid="uid://c6kj3y2p8dlif" path="res://assets/environments/hub_surfaces/hangar_ceiling_emission.png" id="23_ceil_emi"]
+[ext_resource type="Texture2D" uid="uid://nhggp5mfqav" path="res://assets/environments/hub_surfaces/hangar_railing_albedo.png" id="24_rail_alb"]
+[ext_resource type="Texture2D" uid="uid://r3kjw1e6tkms" path="res://assets/environments/hub_surfaces/hangar_railing_emission.png" id="25_rail_emi"]
+[ext_resource type="ArrayMesh" uid="uid://bjt3gob0rrso8" path="res://scratch/downloads/space_kit/Models/OBJ format/platform_low.obj" id="26_kck51"]
+[ext_resource type="Texture2D" uid="uid://ba3qf3sklch5p" path="res://assets/environments/hub_machines/terminal_mission_albedo.png" id="26_term_alb"]
+[ext_resource type="Texture2D" uid="uid://dusumv6mng3c7" path="res://assets/environments/hub_machines/terminal_mission_emission.png" id="27_term_emi"]
+[ext_resource type="Texture2D" uid="uid://cgt7cuj8mt4xj" path="res://assets/environments/hub_machines/arcade_cabinet_albedo.png" id="28_arc_alb"]
+[ext_resource type="Texture2D" uid="uid://cosri8340atel" path="res://assets/environments/hub_machines/arcade_cabinet_emission.png" id="29_arc_emi"]
+[ext_resource type="Texture2D" uid="uid://by41fejplkblp" path="res://assets/environments/hub_machines/arcade_screen_albedo.png" id="30_scr_alb"]
+[ext_resource type="Texture2D" uid="uid://xjvv5o4dibk1" path="res://assets/environments/hub_machines/arcade_screen_emission.png" id="31_scr_emi"]
+[ext_resource type="PackedScene" uid="uid://b1k0hjnmtqplv" path="res://assets/models/kenney_mini_arcade/arcade-machine.glb" id="32_arc_model"]
+[ext_resource type="PackedScene" uid="uid://p7fhuya60dul" path="res://assets/models/kenney_modular_space/gate.glb" id="35_gate_model"]
+[ext_resource type="PackedScene" uid="uid://bw2fhhfxs7751" path="res://assets/models/kenney_modular_space/cables.glb" id="36_cables_model"]
+[ext_resource type="PackedScene" uid="uid://dr0vu6kjg6rxu" path="res://assets/models/kenney_modular_space/template-wall.glb" id="37_wall_model"]
+[ext_resource type="PackedScene" uid="uid://br6q3srrtr7xs" path="res://assets/models/kenney_modular_space/template-wall-detail-a.glb" id="38_wall_detail_model"]
+[ext_resource type="PackedScene" uid="uid://cbiywrqe40ot7" path="res://assets/models/kenney_modular_space/template-wall-corner.glb" id="39_wall_corner_model"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -45,25 +42,10 @@ background_color = Color(0.04, 0.025, 0.065, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.12, 0.16, 0.22, 1)
 glow_enabled = true
-glow_bloom = 0.25
 glow_intensity = 0.9
+glow_bloom = 0.25
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(26, 0.5, 30)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.9, 0.94, 0.98, 1)
-albedo_texture = ExtResource("18_floor_alb")
-metallic = 0.65
-roughness = 0.35
-emission_enabled = true
-emission = Color(0, 0.94, 1, 1)
-emission_energy_multiplier = 0.9
-emission_texture = ExtResource("19_floor_emi")
-uv1_scale = Vector3(6, 6, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_floor"]
-material = SubResource("StandardMaterial3D_floor")
 size = Vector3(26, 0.5, 30)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
@@ -130,7 +112,6 @@ size = Vector3(26, 1.2, 0.5)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_deep"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(1, 1, 1, 1)
 albedo_texture = ExtResource("15_plx0")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_deep"]
@@ -140,7 +121,6 @@ size = Vector2(380, 210)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_mid"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(1, 1, 1, 1)
 albedo_texture = ExtResource("16_plx1")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_mid"]
@@ -150,7 +130,6 @@ size = Vector2(260, 145)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_parallax_near"]
 transparency = 1
 shading_mode = 0
-albedo_color = Color(1, 1, 1, 1)
 albedo_texture = ExtResource("17_plx2")
 
 [sub_resource type="QuadMesh" id="QuadMesh_parallax_near"]
@@ -205,7 +184,6 @@ emission_energy_multiplier = 2.2
 [sub_resource type="CylinderMesh" id="CylinderMesh_mission_ring"]
 material = SubResource("StandardMaterial3D_mission_ring")
 top_radius = 0.45
-bottom_radius = 0.5
 height = 0.06
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mission_holo"]
@@ -244,7 +222,6 @@ material = SubResource("StandardMaterial3D_arcade_marquee")
 size = Vector3(1.65, 0.45, 0.35)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_arcade_screen"]
-albedo_color = Color(1, 1, 1, 1)
 albedo_texture = ExtResource("30_scr_alb")
 metallic = 0.9
 emission_enabled = true
@@ -278,49 +255,27 @@ emission_energy_multiplier = 2.6
 material = SubResource("StandardMaterial3D_trophy_holo")
 size = Vector3(0.45, 0.55, 0.2)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pedestal"]
-albedo_color = Color(0.06, 0.09, 0.12, 1)
-metallic = 0.85
-roughness = 0.25
-emission_enabled = true
-emission = Color(1, 0.08, 0.58, 1)
-emission_energy_multiplier = 0.8
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
-material = SubResource("StandardMaterial3D_pedestal")
-top_radius = 1.0
-bottom_radius = 1.15
-height = 0.15
-
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
 height = 1.4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
 border_width_left = 6
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0, 0.941176, 1, 1)
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_materials"]
-bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
-border_width_left = 6
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 1, 0.615686, 1)
-content_margin_left = 14.0
-content_margin_top = 10.0
-content_margin_right = 14.0
-content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_badge"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
 bg_color = Color(0.05, 0.07, 0.11, 0.9)
 border_width_left = 3
 border_width_top = 1
@@ -331,12 +286,12 @@ corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_quit"]
 content_margin_left = 14.0
 content_margin_top = 8.0
 content_margin_right = 14.0
 content_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_quit"]
 bg_color = Color(0.08, 0.04, 0.06, 0.9)
 border_width_left = 3
 border_width_top = 1
@@ -347,48 +302,60 @@ corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_materials"]
 content_margin_left = 14.0
-content_margin_top = 8.0
+content_margin_top = 10.0
 content_margin_right = 14.0
-content_margin_bottom = 8.0
+content_margin_bottom = 10.0
+bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
+border_width_left = 6
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 1, 0.615686, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
 border_width_left = 8
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(1, 0.0784314, 0.576471, 1)
-content_margin_left = 18.0
-content_margin_top = 16.0
-content_margin_right = 18.0
-content_margin_bottom = 16.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_desplegar"]
-bg_color = Color(1, 0.0784314, 0.576471, 1)
-border_width_left = 4
-border_width_top = 2
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(1, 1, 1, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_volver"]
 content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_volver"]
 bg_color = Color(0.0392157, 0.0392157, 0.054902, 1)
 border_width_left = 4
 border_width_top = 2
 border_width_right = 4
 border_width_bottom = 2
 border_color = Color(1, 0.0784314, 0.576471, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_desplegar"]
 content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
+bg_color = Color(1, 0.0784314, 0.576471, 1)
+border_width_left = 4
+border_width_top = 2
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt_modal"]
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
 bg_color = Color(0.03, 0.04, 0.07, 0.96)
 border_width_left = 4
 border_width_top = 2
@@ -399,424 +366,418 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-content_margin_left = 24.0
-content_margin_top = 20.0
-content_margin_right = 24.0
-content_margin_bottom = 20.0
 
-[node name="HubWorld" type="Node3D"]
+[node name="HubWorld" type="Node3D" unique_id=801519808]
 script = ExtResource("1_hub")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1374806334]
 environment = SubResource("Environment_1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1904003814]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
 light_color = Color(0.85, 0.92, 1, 1)
 light_energy = 0.8
 
-[node name="OmniLight_Center" type="OmniLight3D" parent="."]
+[node name="OmniLight_Center" type="OmniLight3D" parent="." unique_id=2059604912]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 light_color = Color(0, 0.94, 1, 1)
 light_energy = 1.8
 omni_range = 14.0
 
-[node name="OmniLight_Terminal" type="OmniLight3D" parent="."]
+[node name="OmniLight_Terminal" type="OmniLight3D" parent="." unique_id=519081868]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -6.5)
 light_color = Color(1, 0.08, 0.58, 1)
 light_energy = 2.0
 omni_range = 8.0
 
-[node name="HangarRoom" type="Node3D" parent="."]
+[node name="HangarRoom" type="Node3D" parent="." unique_id=1159949226]
 
-[node name="Floor" type="StaticBody3D" parent="HangarRoom"]
+[node name="Floor" type="StaticBody3D" parent="HangarRoom" unique_id=1490047401]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 3)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Floor" unique_id=222834500]
 shape = SubResource("BoxShape3D_floor")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Floor"]
-mesh = SubResource("BoxMesh_floor")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Floor" unique_id=592765218]
+transform = Transform3D(16, 0, 0, 0, 16, 0, 0, 0, 16, -0.042366028, -15.724737, -0.104427814)
+mesh = ExtResource("2_dj0jb")
 
-[node name="Ceiling" type="StaticBody3D" parent="HangarRoom"]
+[node name="Ceiling" type="StaticBody3D" parent="HangarRoom" unique_id=214765589]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 3)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Ceiling"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/Ceiling" unique_id=824701099]
 shape = SubResource("BoxShape3D_ceiling")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Ceiling"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/Ceiling" unique_id=1210364165]
 visible = false
 mesh = SubResource("BoxMesh_ceiling")
 
-[node name="LeftWall" type="StaticBody3D" parent="HangarRoom"]
+[node name="LeftWall" type="StaticBody3D" parent="HangarRoom" unique_id=1548736852]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.75, 3, 3)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/LeftWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/LeftWall" unique_id=1104685174]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/LeftWall"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/LeftWall" unique_id=995325417]
 visible = false
 mesh = SubResource("BoxMesh_side_wall")
 
-[node name="RightWall" type="StaticBody3D" parent="HangarRoom"]
+[node name="RightWall" type="StaticBody3D" parent="HangarRoom" unique_id=391801079]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.75, 3, 3)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/RightWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/RightWall" unique_id=488089408]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/RightWall"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/RightWall" unique_id=832529383]
 visible = false
 mesh = SubResource("BoxMesh_side_wall")
 
-[node name="BackWall" type="StaticBody3D" parent="HangarRoom"]
+[node name="BackWall" type="StaticBody3D" parent="HangarRoom" unique_id=578260546]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 17.75)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/BackWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/BackWall" unique_id=1318109235]
 shape = SubResource("BoxShape3D_back_wall")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/BackWall"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/BackWall" unique_id=310567666]
 visible = false
 mesh = SubResource("BoxMesh_back_wall")
 
-[node name="FrontRailing" type="StaticBody3D" parent="HangarRoom"]
+[node name="FrontRailing" type="StaticBody3D" parent="HangarRoom" unique_id=421833577]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -10)
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/FrontRailing"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/FrontRailing" unique_id=605259742]
 shape = SubResource("BoxShape3D_front_railing")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/FrontRailing"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/FrontRailing" unique_id=1054639634]
 mesh = SubResource("BoxMesh_front_railing")
 
-[node name="LeftWall_Seg0" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, -7.5)
+[node name="LeftWall_Seg0" parent="HangarRoom" unique_id=342953505 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.915302, 0.21556854, -5.9723473)
 
-[node name="LeftWall_Seg1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, -2.5)
+[node name="LeftWall_Seg1" parent="HangarRoom" unique_id=1846848981 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.915302, 0.21556854, -0.97234726)
 
-[node name="LeftWall_Seg2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 2.5)
+[node name="LeftWall_Seg2" parent="HangarRoom" unique_id=1935682375 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.915302, 0.21556854, 4.0276527)
 
-[node name="LeftWall_Seg3" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 7.5)
+[node name="LeftWall_Seg3" parent="HangarRoom" unique_id=860727848 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.915302, 0.21556854, 9.027653)
 
-[node name="LeftWall_Seg4" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.4, 0, 12.5)
+[node name="LeftWall_Seg4" parent="HangarRoom" unique_id=1178326567 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, -12.915302, 0.21556854, 14.027653)
 
-[node name="RightWall_Seg0" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, -7.5)
+[node name="RightWall_Seg0" parent="HangarRoom" unique_id=670045319 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, -5.9588265)
 
-[node name="RightWall_Seg1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, -2.5)
+[node name="RightWall_Seg1" parent="HangarRoom" unique_id=1647740649 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, -0.95882654)
 
-[node name="RightWall_Seg2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 2.5)
+[node name="RightWall_Seg2" parent="HangarRoom" unique_id=1425547436 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 4.0411735)
 
-[node name="RightWall_Seg3" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 7.5)
+[node name="RightWall_Seg3" parent="HangarRoom" unique_id=1493032318 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 9.041174)
 
-[node name="RightWall_Seg4" parent="HangarRoom" instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 12.5)
+[node name="RightWall_Seg4" parent="HangarRoom" unique_id=1831028239 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 14.041174)
 
-[node name="KenneyGate" parent="HangarRoom" instance=ExtResource("35_gate_model")]
+[node name="KenneyGate" parent="HangarRoom" unique_id=1437758569 instance=ExtResource("35_gate_model")]
 transform = Transform3D(-1.35, 0, 0, 0, 1.35, 0, 0, 0, -1.35, 0, 0, 16.8)
 
-[node name="BackWall_L1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+[node name="KenneyGate" parent="HangarRoom/KenneyGate" unique_id=1220471544 instance=ExtResource("35_gate_model")]
+transform = Transform3D(-4.5499997, 0, -6.870309e-07, 0, 4.5499997, 0, 6.870309e-07, 0, -4.5499997, 0.3643056, -0.8934321, 20.05728)
+
+[node name="BackWall_L1" parent="HangarRoom" unique_id=549614771 instance=ExtResource("38_wall_detail_model")]
 transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -5.2, 0, 16.8)
 
-[node name="BackWall_L2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+[node name="BackWall_L2" parent="HangarRoom" unique_id=1008840668 instance=ExtResource("37_wall_model")]
 transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -10.4, 0, 16.8)
 
-[node name="BackWall_R1" parent="HangarRoom" instance=ExtResource("38_wall_detail_model")]
+[node name="BackWall_R1" parent="HangarRoom" unique_id=1852834836 instance=ExtResource("38_wall_detail_model")]
 transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, 5.2, 0, 16.8)
 
-[node name="BackWall_R2" parent="HangarRoom" instance=ExtResource("37_wall_model")]
+[node name="BackWall_R2" parent="HangarRoom" unique_id=804436550 instance=ExtResource("37_wall_model")]
 transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, 10.4, 0, 16.8)
 
-[node name="Corner_BL" parent="HangarRoom" instance=ExtResource("39_wall_corner_model")]
+[node name="BackWall_R2" parent="HangarRoom/BackWall_R2" unique_id=574112908 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-3.3, 0, -4.982861e-07, 0, 3.4259999, 0, 4.982861e-07, 0, -3.3, 8.40222, -12.813469, 19.973701)
+
+[node name="Corner_BL" parent="HangarRoom" unique_id=1139921378 instance=ExtResource("39_wall_corner_model")]
 transform = Transform3D(-1.3, 0, 0, 0, 1.35, 0, 0, 0, -1.3, -12.4, 0, 16.8)
 
-[node name="Corner_BR" parent="HangarRoom" instance=ExtResource("39_wall_corner_model")]
+[node name="Corner_BR" parent="HangarRoom" unique_id=1635214658 instance=ExtResource("39_wall_corner_model")]
 transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.4, 0, 16.8)
 
-[node name="RoofTrim_L1" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.3, 0, 1.3, 0, 0, -12.4, 5.6, -2.5)
+[node name="SpaceParallax" type="Node3D" parent="." unique_id=1280196303]
 
-[node name="RoofTrim_L2" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.3, 0, 1.3, 0, 0, -12.4, 5.6, 7.5)
-
-[node name="RoofTrim_R1" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.3, 0, -1.3, 0, 0, 12.4, 5.6, -2.5)
-
-[node name="RoofTrim_R2" parent="HangarRoom" instance=ExtResource("40_wall_top_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.3, 0, -1.3, 0, 0, 12.4, 5.6, 7.5)
-
-[node name="SpaceParallax" type="Node3D" parent="."]
-
-[node name="Layer0_Deep" type="MeshInstance3D" parent="SpaceParallax"]
+[node name="Layer0_Deep" type="MeshInstance3D" parent="SpaceParallax" unique_id=878240302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -95)
 mesh = SubResource("QuadMesh_parallax_deep")
 
-[node name="Layer1_Mid" type="MeshInstance3D" parent="SpaceParallax"]
+[node name="Layer1_Mid" type="MeshInstance3D" parent="SpaceParallax" unique_id=604716286]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, -55)
 mesh = SubResource("QuadMesh_parallax_mid")
 
-[node name="Layer2_Near" type="MeshInstance3D" parent="SpaceParallax"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -28)
+[node name="Layer2_Near" type="MeshInstance3D" parent="SpaceParallax" unique_id=1483942091]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.004576683, 4.098048, -27.91577)
 mesh = SubResource("QuadMesh_parallax_near")
 
-[node name="Terminals" type="Node3D" parent="."]
+[node name="RightWall_Seg0" parent="SpaceParallax/Layer2_Near" unique_id=704934751 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -10.37141, 12.089423, 13.92251)
 
-[node name="MissionTerminal" type="Node3D" parent="Terminals"]
+[node name="RightWall_Seg1" parent="SpaceParallax/Layer2_Near" unique_id=515655594 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -5.3714104, 12.089423, 13.922516)
+
+[node name="RightWall_Seg2" parent="SpaceParallax/Layer2_Near" unique_id=1051461351 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -0.37141037, 12.089423, 13.922522)
+
+[node name="RightWall_Seg3" parent="SpaceParallax/Layer2_Near" unique_id=2089686561 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, 4.6285887, 12.089423, 13.922527)
+
+[node name="RightWall_Seg4" parent="SpaceParallax/Layer2_Near" unique_id=2046194715 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, 9.628589, 12.089423, 13.922533)
+
+[node name="Terminals" type="Node3D" parent="." unique_id=329595010]
+
+[node name="MissionTerminal" type="Node3D" parent="Terminals" unique_id=404275149]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -6.5)
 
-[node name="KenneyArcadeMission" parent="Terminals/MissionTerminal" instance=ExtResource("32_arc_model")]
+[node name="KenneyArcadeMission" parent="Terminals/MissionTerminal" unique_id=1230670322 instance=ExtResource("32_arc_model")]
 transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
 
-[node name="BasePedestal" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+[node name="BasePedestal" type="MeshInstance3D" parent="Terminals/MissionTerminal" unique_id=363650174]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 visible = false
 mesh = SubResource("CylinderMesh_mission_base")
 
-[node name="ConsoleDesk" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+[node name="ConsoleDesk" type="MeshInstance3D" parent="Terminals/MissionTerminal" unique_id=38700603]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 visible = false
 mesh = SubResource("BoxMesh_mission_desk")
 
-[node name="KeyboardPanel" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+[node name="KeyboardPanel" type="MeshInstance3D" parent="Terminals/MissionTerminal" unique_id=1197000826]
 transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.08, 0.15)
 visible = false
 mesh = SubResource("BoxMesh_mission_keyboard")
 
-[node name="HoloRing" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+[node name="HoloRing" type="MeshInstance3D" parent="Terminals/MissionTerminal" unique_id=617113920]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.2)
 visible = false
 mesh = SubResource("CylinderMesh_mission_ring")
 
-[node name="HoloCore" type="MeshInstance3D" parent="Terminals/MissionTerminal"]
+[node name="HoloCore" type="MeshInstance3D" parent="Terminals/MissionTerminal" unique_id=99935221]
 transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, 0, 2.3, 0.1)
 mesh = SubResource("BoxMesh_mission_holo")
 
-[node name="KenneyCables" parent="Terminals/MissionTerminal" instance=ExtResource("36_cables_model")]
+[node name="KenneyCables" parent="Terminals/MissionTerminal" unique_id=515398540 instance=ExtResource("36_cables_model")]
 transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0, 0.4)
 
-[node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal"]
+[node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal" unique_id=1838241905]
 script = ExtResource("10_interactable")
 target_character_id = &"mission"
 interaction_title = "Terminal de Misiones"
-prompt_action_text = "[E]"
 interaction_radius = 2.8
 prompt_offset_y = 2.3
 
-[node name="HighScoresTerminal" type="Node3D" parent="Terminals"]
+[node name="HighScoresTerminal" type="Node3D" parent="Terminals" unique_id=2116115580]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0, -6.5)
 
-[node name="KenneyArcade" parent="Terminals/HighScoresTerminal" instance=ExtResource("32_arc_model")]
-transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
+[node name="KenneyArcade" parent="Terminals/HighScoresTerminal" unique_id=1076395576 instance=ExtResource("32_arc_model")]
+transform = Transform3D(2.8, 0, 0, 0, 2.7999992, 0.0021937164, 0, -0.0021937164, 2.7999992, 0, 0, 0)
 
-[node name="ArcadeBody" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+[node name="ArcadeBody" type="MeshInstance3D" parent="Terminals/HighScoresTerminal" unique_id=1106523457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
 visible = false
 mesh = SubResource("BoxMesh_arcade_body")
 
-[node name="ArcadeMarquee" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+[node name="ArcadeMarquee" type="MeshInstance3D" parent="Terminals/HighScoresTerminal" unique_id=352350581]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0.35)
 visible = false
 mesh = SubResource("BoxMesh_arcade_marquee")
 
-[node name="ScreenMesh" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+[node name="ScreenMesh" type="MeshInstance3D" parent="Terminals/HighScoresTerminal" unique_id=420529259]
 transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.45, 0.52)
 visible = false
 mesh = SubResource("BoxMesh_arcade_screen")
 
-[node name="ArcadeControls" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+[node name="ArcadeControls" type="MeshInstance3D" parent="Terminals/HighScoresTerminal" unique_id=525139409]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0.65)
 visible = false
 mesh = SubResource("BoxMesh_arcade_controls")
 
-[node name="TrophyHolo" type="MeshInstance3D" parent="Terminals/HighScoresTerminal"]
+[node name="TrophyHolo" type="MeshInstance3D" parent="Terminals/HighScoresTerminal" unique_id=1754059118]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.1)
 mesh = SubResource("PrismMesh_trophy_holo")
 
-[node name="Interactable_HighScores" type="Area3D" parent="Terminals/HighScoresTerminal"]
+[node name="Interactable_HighScores" type="Area3D" parent="Terminals/HighScoresTerminal" unique_id=280946336]
 script = ExtResource("10_interactable")
 target_character_id = &"highscores"
 interaction_title = "Tabla de Récords"
-prompt_action_text = "[E]"
 interaction_radius = 2.8
 prompt_offset_y = 2.3
 
-[node name="Pedestals" type="Node3D" parent="."]
+[node name="Pedestals" type="Node3D" parent="." unique_id=1980865644]
 
-[node name="Pedestal_Nova" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, -4)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Nova" type="MeshInstance3D" parent="Pedestals" unique_id=1898093224]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, -0.33696574, -4)
+mesh = ExtResource("26_kck51")
 
-[node name="Pedestal_Valentina" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, 2)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Valentina" type="MeshInstance3D" parent="Pedestals" unique_id=1325492136]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, -0.3004803, 2)
+mesh = ExtResource("26_kck51")
 
-[node name="Pedestal_Kira" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.08, 8)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Kira" type="MeshInstance3D" parent="Pedestals" unique_id=1925369482]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, -0.3004803, 8)
+mesh = ExtResource("26_kck51")
 
-[node name="Pedestal_Selene" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, -4)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Selene" type="MeshInstance3D" parent="Pedestals" unique_id=702239530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -0.3004803, -4)
+mesh = ExtResource("26_kck51")
 
-[node name="Pedestal_Roxy" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, 2)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Roxy" type="MeshInstance3D" parent="Pedestals" unique_id=1863887226]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -0.3004803, 2)
+mesh = ExtResource("26_kck51")
 
-[node name="Pedestal_Echo" type="MeshInstance3D" parent="Pedestals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.08, 8)
-mesh = SubResource("CylinderMesh_pedestal")
+[node name="Pedestal_Echo" type="MeshInstance3D" parent="Pedestals" unique_id=1337801559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -0.3306169, 8)
+mesh = ExtResource("26_kck51")
 
-[node name="RosterCutouts" type="Node3D" parent="."]
+[node name="RosterCutouts" type="Node3D" parent="." unique_id=1874363401]
 
-[node name="Cutout_Nova" type="Sprite3D" parent="RosterCutouts"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, -4)
+[node name="Cutout_Nova" type="Sprite3D" parent="RosterCutouts" unique_id=1218629768]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, -0.23048028, -4)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("2_nova")
 
-[node name="Interactable_Nova" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Nova" type="Area3D" parent="RosterCutouts" unique_id=2115360278]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, -4)
 script = ExtResource("10_interactable")
-target_character_id = &"nova"
 
-[node name="Cutout_Valentina" type="Sprite3D" parent="RosterCutouts"]
+[node name="Cutout_Valentina" type="Sprite3D" parent="RosterCutouts" unique_id=1905924417]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 2)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("3_valentina")
 
-[node name="Interactable_Valentina" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Valentina" type="Area3D" parent="RosterCutouts" unique_id=567769713]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 2)
 script = ExtResource("10_interactable")
 target_character_id = &"valentina"
 
-[node name="Cutout_Kira" type="Sprite3D" parent="RosterCutouts"]
+[node name="Cutout_Kira" type="Sprite3D" parent="RosterCutouts" unique_id=897193937]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 8)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("4_kira")
 
-[node name="Interactable_Kira" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Kira" type="Area3D" parent="RosterCutouts" unique_id=2063032515]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.15, 8)
 script = ExtResource("10_interactable")
 target_character_id = &"kira"
 
-[node name="Cutout_Selene" type="Sprite3D" parent="RosterCutouts"]
+[node name="Cutout_Selene" type="Sprite3D" parent="RosterCutouts" unique_id=1808270005]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, -4)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("5_selene")
 
-[node name="Interactable_Selene" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Selene" type="Area3D" parent="RosterCutouts" unique_id=461971958]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, -4)
 script = ExtResource("10_interactable")
 target_character_id = &"selene"
 
-[node name="Cutout_Roxy" type="Sprite3D" parent="RosterCutouts"]
+[node name="Cutout_Roxy" type="Sprite3D" parent="RosterCutouts" unique_id=472841224]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 2)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("6_roxy")
 
-[node name="Interactable_Roxy" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Roxy" type="Area3D" parent="RosterCutouts" unique_id=22870981]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 2)
 script = ExtResource("10_interactable")
 target_character_id = &"roxy"
 
-[node name="Cutout_Echo" type="Sprite3D" parent="RosterCutouts"]
+[node name="Cutout_Echo" type="Sprite3D" parent="RosterCutouts" unique_id=416173217]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("7_echo")
 
-[node name="Interactable_Echo" type="Area3D" parent="RosterCutouts"]
+[node name="Interactable_Echo" type="Area3D" parent="RosterCutouts" unique_id=1089018393]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
 script = ExtResource("10_interactable")
 target_character_id = &"echo"
 
-[node name="PlayerController" type="CharacterBody3D" parent="."]
+[node name="PlayerController" type="CharacterBody3D" parent="." unique_id=1488853602]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 collision_layer = 2
-collision_mask = 1
 script = ExtResource("9_controller")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerController"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerController" unique_id=1627597246]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 shape = SubResource("CapsuleShape3D_player")
 
-[node name="Sprite3D" type="Sprite3D" parent="PlayerController"]
+[node name="Sprite3D" type="Sprite3D" parent="PlayerController" unique_id=2069480307]
 offset = Vector2(0, 800)
 pixel_size = 0.0013
 billboard = 2
-shaded = false
 alpha_cut = 1
 texture = ExtResource("2_nova")
 
-[node name="Camera3D" type="Camera3D" parent="PlayerController"]
+[node name="Camera3D" type="Camera3D" parent="PlayerController" unique_id=1115661464]
 transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 3.2, 5)
 top_level = true
 current = true
 fov = 85.0
 
-[node name="HubUI" type="CanvasLayer" parent="."]
-layer = 1
+[node name="HubUI" type="CanvasLayer" parent="." unique_id=1545134454]
 
-[node name="HeaderPanel" type="PanelContainer" parent="HubUI"]
+[node name="HeaderPanel" type="PanelContainer" parent="HubUI" unique_id=801891302]
 offset_left = 32.0
 offset_top = 28.0
 offset_right = 440.0
 offset_bottom = 96.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
-[node name="HeaderMargin" type="MarginContainer" parent="HubUI/HeaderPanel"]
+[node name="HeaderMargin" type="MarginContainer" parent="HubUI/HeaderPanel" unique_id=126149222]
 layout_mode = 2
 
-[node name="HeaderVBox" type="VBoxContainer" parent="HubUI/HeaderPanel/HeaderMargin"]
+[node name="HeaderVBox" type="VBoxContainer" parent="HubUI/HeaderPanel/HeaderMargin" unique_id=1731036090]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="HeaderTitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox"]
+[node name="HeaderTitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox" unique_id=707052999]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 20
 text = "ASTRA DREAM // HANGAR"
 
-[node name="HeaderSubtitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox"]
+[node name="HeaderSubtitle" type="Label" parent="HubUI/HeaderPanel/HeaderMargin/HeaderVBox" unique_id=151809467]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "PUENTE DE MANDO & ESTACIONES DE COMBATE"
 
-[node name="TopRightHUD" type="HBoxContainer" parent="HubUI"]
+[node name="TopRightHUD" type="HBoxContainer" parent="HubUI" unique_id=769146948]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -828,19 +789,19 @@ grow_horizontal = 0
 theme_override_constants/separation = 12
 alignment = 2
 
-[node name="SettingsButton" type="Button" parent="HubUI/TopRightHUD"]
+[node name="SettingsButton" type="Button" parent="HubUI/TopRightHUD" unique_id=1654674372]
 custom_minimum_size = Vector2(170, 44)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_hud_badge")
 text = "[ESC] AJUSTES"
 
-[node name="QuitButton" type="Button" parent="HubUI/TopRightHUD"]
+[node name="QuitButton" type="Button" parent="HubUI/TopRightHUD" unique_id=1307805703]
 custom_minimum_size = Vector2(130, 44)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_hud_quit")
 text = "[Q] SALIR"
 
-[node name="MaterialsPanel" type="PanelContainer" parent="HubUI"]
+[node name="MaterialsPanel" type="PanelContainer" parent="HubUI" unique_id=1497876870]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -851,55 +812,55 @@ offset_bottom = -32.0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_materials")
 
-[node name="MatMargin" type="MarginContainer" parent="HubUI/MaterialsPanel"]
+[node name="MatMargin" type="MarginContainer" parent="HubUI/MaterialsPanel" unique_id=385001253]
 layout_mode = 2
 
-[node name="MatVBox" type="VBoxContainer" parent="HubUI/MaterialsPanel/MatMargin"]
+[node name="MatVBox" type="VBoxContainer" parent="HubUI/MaterialsPanel/MatMargin" unique_id=764125266]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="MatTitle" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
+[node name="MatTitle" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox" unique_id=2070419221]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
 theme_override_font_sizes/font_size = 13
 text = "SUMINISTROS PERSISTENTES"
 
-[node name="HSeparator" type="HSeparator" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
+[node name="HSeparator" type="HSeparator" parent="HubUI/MaterialsPanel/MatMargin/MatVBox" unique_id=1299925315]
 layout_mode = 2
 
-[node name="BiomassRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
+[node name="BiomassRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox" unique_id=421089980]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="BiomassLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
+[node name="BiomassLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow" unique_id=545579319]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "BIOMASA:"
 
-[node name="BiomassValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow"]
+[node name="BiomassValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/BiomassRow" unique_id=1579429882]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
 theme_override_font_sizes/font_size = 15
 text = "0 u."
 
-[node name="AntimatterRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox"]
+[node name="AntimatterRow" type="HBoxContainer" parent="HubUI/MaterialsPanel/MatMargin/MatVBox" unique_id=1609910833]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="AntimatterLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
+[node name="AntimatterLabel" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow" unique_id=127799887]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "ANTIMATERIA:"
 
-[node name="AntimatterValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow"]
+[node name="AntimatterValue" type="Label" parent="HubUI/MaterialsPanel/MatMargin/MatVBox/AntimatterRow" unique_id=598298153]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
 theme_override_font_sizes/font_size = 15
 text = "0 u."
 
-[node name="CharacterCard" type="PanelContainer" parent="HubUI"]
+[node name="CharacterCard" type="PanelContainer" parent="HubUI" unique_id=99873542]
 visible = false
 anchors_preset = 1
 anchor_left = 1.0
@@ -911,32 +872,32 @@ offset_bottom = 430.0
 grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="CardMargin" type="MarginContainer" parent="HubUI/CharacterCard"]
+[node name="CardMargin" type="MarginContainer" parent="HubUI/CharacterCard" unique_id=1112838071]
 layout_mode = 2
 
-[node name="CardVBox" type="VBoxContainer" parent="HubUI/CharacterCard/CardMargin"]
+[node name="CardVBox" type="VBoxContainer" parent="HubUI/CharacterCard/CardMargin" unique_id=813992231]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CardHeader" type="HBoxContainer" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="CardHeader" type="HBoxContainer" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=70141970]
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox/CardHeader"]
+[node name="NameLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox/CardHeader" unique_id=1605400213]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
 theme_override_font_sizes/font_size = 26
 text = "NOVA"
 
-[node name="TitleLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="TitleLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=459355413]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.9)
 theme_override_font_sizes/font_size = 13
 text = "PILOTO DE VANGUARDIA"
 
-[node name="HSeparator" type="HSeparator" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="HSeparator" type="HSeparator" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=631772673]
 layout_mode = 2
 
-[node name="DescLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="DescLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=1708821447]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -944,23 +905,23 @@ theme_override_font_sizes/font_size = 12
 text = "Especialista en asaltos frontales a hiper-velocidad."
 autowrap_mode = 2
 
-[node name="StatsLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="StatsLabel" type="Label" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=402338764]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "HP: 100 | Vel: 340 px/s | Daño: 40"
 
-[node name="PilotSelectorContainer" type="HBoxContainer" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="PilotSelectorContainer" type="HBoxContainer" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=729774090]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="OpenSkillTreeButton" type="Button" parent="HubUI/CharacterCard/CardMargin/CardVBox"]
+[node name="OpenSkillTreeButton" type="Button" parent="HubUI/CharacterCard/CardMargin/CardVBox" unique_id=2095892746]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "⚡ ÁRBOL DE HABILIDADES [E]"
 
-[node name="NavigationBar" type="HBoxContainer" parent="HubUI"]
+[node name="NavigationBar" type="HBoxContainer" parent="HubUI" unique_id=2024822065]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -974,19 +935,19 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_constants/separation = 16
 
-[node name="VolverButton" type="Button" parent="HubUI/NavigationBar"]
+[node name="VolverButton" type="Button" parent="HubUI/NavigationBar" unique_id=1796099460]
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_volver")
 text = "TÍTULO"
 
-[node name="DesplegarButton" type="Button" parent="HubUI/NavigationBar"]
+[node name="DesplegarButton" type="Button" parent="HubUI/NavigationBar" unique_id=946202460]
 custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_desplegar")
 text = "DESPLEGAR MISIÓN"
 
-[node name="MissionPromptModal" type="PanelContainer" parent="HubUI"]
+[node name="MissionPromptModal" type="PanelContainer" parent="HubUI" unique_id=954594740]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
@@ -1001,19 +962,19 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_prompt_modal")
 
-[node name="VBox" type="VBoxContainer" parent="HubUI/MissionPromptModal"]
+[node name="VBox" type="VBoxContainer" parent="HubUI/MissionPromptModal" unique_id=878000750]
 layout_mode = 2
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="PromptTitle" type="Label" parent="HubUI/MissionPromptModal/VBox"]
+[node name="PromptTitle" type="Label" parent="HubUI/MissionPromptModal/VBox" unique_id=90921599]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "CENTRO DE DESPLIEGUE TÁCTICO"
 horizontal_alignment = 1
 
-[node name="PromptInfo" type="Label" parent="HubUI/MissionPromptModal/VBox"]
+[node name="PromptInfo" type="Label" parent="HubUI/MissionPromptModal/VBox" unique_id=1477983350]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.9)
 theme_override_font_sizes/font_size = 13
@@ -1021,30 +982,74 @@ text = "Se detectó una transmisión de combate en curso."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="PromptButtons" type="VBoxContainer" parent="HubUI/MissionPromptModal/VBox"]
+[node name="PromptButtons" type="VBoxContainer" parent="HubUI/MissionPromptModal/VBox" unique_id=572170821]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ContinueRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+[node name="ContinueRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons" unique_id=708518896]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "CONTINUAR RUN [ESPACIO]"
 
-[node name="NewRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+[node name="NewRunButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons" unique_id=1584193117]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "NUEVA RUN"
 
-[node name="CancelPromptButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons"]
+[node name="CancelPromptButton" type="Button" parent="HubUI/MissionPromptModal/VBox/PromptButtons" unique_id=1523386717]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 text = "CANCELAR [ESC]"
 
-[node name="CharacterSkillTreeModal" parent="HubUI" instance=ExtResource("8_modal")]
+[node name="CharacterSkillTreeModal" parent="HubUI" unique_id=819715134 instance=ExtResource("8_modal")]
 visible = false
 
-[node name="SettingsModal" parent="HubUI" instance=ExtResource("11_settings")]
+[node name="SettingsModal" parent="HubUI" unique_id=494995522 instance=ExtResource("11_settings")]
+
+[node name="HighscoresModal" parent="HubUI" unique_id=2145677244 instance=ExtResource("12_highscores")]
 visible = false
 
-[node name="HighscoresModal" parent="HubUI" instance=ExtResource("12_highscores")]
-visible = false
+[node name="RightWall_Seg0" parent="." unique_id=1668689299 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892466, 5.5911727, -5.8340287)
+
+[node name="RightWall_Seg1" parent="." unique_id=1045147496 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892466, 5.5911727, -0.8340287)
+
+[node name="RightWall_Seg2" parent="." unique_id=1797807574 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892466, 5.5911727, 4.1659713)
+
+[node name="RightWall_Seg3" parent="." unique_id=1298187252 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892466, 5.5911727, 9.165972)
+
+[node name="RightWall_Seg4" parent="." unique_id=165992474 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892466, 5.5911727, 14.165972)
+
+[node name="RightWall_Seg5" parent="." unique_id=811935058 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, -5.9588265)
+
+[node name="RightWall_Seg6" parent="." unique_id=2105206717 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, -0.95882654)
+
+[node name="RightWall_Seg7" parent="." unique_id=1085752806 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 4.0411735)
+
+[node name="RightWall_Seg8" parent="." unique_id=1537248543 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 9.041174)
+
+[node name="RightWall_Seg9" parent="." unique_id=2096687162 instance=ExtResource("37_wall_model")]
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.892437, 0.1, 14.041174)
+
+[node name="RightWall_Seg10" parent="." unique_id=1739579018 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3534255e-06, -1.3531659e-09, -1.3, -0.001251611, 1.3499994, 0, 1.2999992, 0.0012997497, -1.353426e-06, -12.9502125, 5.6410227, 14.218317)
+
+[node name="RightWall_Seg11" parent="." unique_id=267540877 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3534255e-06, -1.3531659e-09, -1.3, -0.001251611, 1.3499994, 0, 1.2999992, 0.0012997497, -1.353426e-06, -12.950207, 5.645837, 9.21832)
+
+[node name="RightWall_Seg12" parent="." unique_id=1529607452 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3534255e-06, -1.3531659e-09, -1.3, -0.001251611, 1.3499994, 0, 1.2999992, 0.0012997497, -1.353426e-06, -12.950201, 5.6506505, 4.2183223)
+
+[node name="RightWall_Seg13" parent="." unique_id=1417364127 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.3534255e-06, -1.3531659e-09, -1.3, -0.001251611, 1.3499994, 0, 1.2999992, 0.0012997497, -1.353426e-06, -12.950197, 5.655464, -0.7816763)
+
+[node name="RightWall_Seg14" parent="." unique_id=1385241493 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.3534255e-06, -1.3531659e-09, -1.3, -0.001251611, 1.3499994, 0, 1.2999992, 0.0012997497, -1.353426e-06, -12.9501915, 5.6602783, -5.781672)

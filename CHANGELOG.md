@@ -5,6 +5,52 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [0.4.1] - 2026-09-25 — Pantalla de Game Over, Secuencia de Muerte y Controles de Despliegue
+
+### Añadido
+* **Secuencia de Destrucción de la Nave & VFX/SFX:**
+  * Al llegar a 0 HP, la nave explota con un efecto visual procedimental multi-capa (`PlayerExplosionVFX`): destello nuclear central, ondas expansivas concéntricas de plasma, fragmentos de casco con dispersión angular y chispas radiales.
+  * Sonido masivo de detonación espacial (`explosion` SFX) y sacudida de pantalla con trauma de cámara.
+  * Bloqueo inmediato de controles, anulación de velocidad y desactivación de colisiones de la nave.
+* **Pantalla de Game Over & Telemetría Post-Incursión (`GameOverModal`):**
+  * Despliegue tras pausa dramática de 1.0s con interfaz Psychopop Sci-Fi centrada.
+  * **Puntuación Final:** Cálculo algorítmico basado en bajas, oleadas, jefes, créditos y tiempo de supervivencia.
+  * **Indicador de Récord:** Distintivo luminoso dinámico `★ ¡NUEVO RÉCORD HISTÓRICO - TOP #1! ★` o indicador de posición en el Top 10.
+  * **Métricas de Combate:** Oleadas sobrevividas, tiempo de incursión (MM:SS), jefes derrotados y bajas enemigas.
+  * **Recursos Recolectados:** Biomasa extraída, antimateria/materia oscura y créditos acumulados.
+  * **Carga Táctica (Loadout):** Desglose visual de Pactos Astra sellados, ítems de inventario con multiplicadores de acumulación (`x2`, `x3`) y armas desplegadas con nivel.
+  * **Acciones de Fin de Partida:** Botones con soporte para atajos `[R] Reiniciar Misión` (recarga instantánea) y `[H] Volver al HUB` (retorno al Hangar 3D).
+* **Despawn Inteligente de Satélites Lejanos:**
+  * Desespawn automático cuando el piloto se aleja más de 10.000 px de una baliza orbital activa, liberando el slot para que una nueva baliza spawnee en la dirección de vuelo.
+* **Modificadores de Velocidad en Despliegue (1x / 2x / 4x):**
+  * Selector tipo radio-button integrado directamente en el Menú de Despliegue de Piloto, con hotkeys `1`, `2` y `3` y persistencia automática en el perfil de guardado.
+
+---
+
+## [0.4.0] - 2026-09-24 — Pre-Alpha Playtest: Jefes de Dominio, Arcanas y Hangar 3D
+
+### Añadido
+* **4 Nuevos Jefes de Dominio:**
+  * Eremita del Vacío (Ola 2), Reloj de Cenizas (Ola 4), Espejo Quebrado y Vórtice del Desborde con patrones trigonométricos danmaku complejos.
+* **Ecosistema de 24 Arcanas Místicas:**
+  * Monolitos arcanos flotantes en el espacio que despliegan selección mística de cartas con alteración profunda de mecánicas.
+* **Armamento Balístico Autónomo (Capa Pasiva Rediseñada):**
+  * Misiles de trayectoria balística directa con fijación táctica inteligente y escalado 1:1 con Imán.
+  * Alternador de modo en caliente [E / RB] entre apuntado automático y manual.
+* **Maniobras Evasivas Avanzadas (Dashes Únicos):**
+  * Habilidades evasivas diferenciadas para las 6 heroínas (Nova Omega Spin, Valentina Bullet-Time, Kira Decoy Mine, Selene Quantum Vortex, Roxy Seismic Ram, Echo Dimensional Flash).
+* **Hangar Estelar 3D & Mirador Panorámico:**
+  * Hub tridimensional interactivo con máquinas arcade, sala de trofeos y árbol de talentos permanente.
+* **Radar Perimétrico Orbital & HUD Táctico:**
+  * Indicador dinámico en los bordes de la pantalla que guía hacia satélites y monolitos lejanos y se acopla al entrar en rango.
+
+### Corregido
+* **Blindaje Total de Menús y Pausa:**
+  * Resuelta la despausa prematura al cerrar arcanas en medio de subidas de nivel o menú de pausa.
+  * Encolado seguro de ventanas modales de combate (`ArcanaSelectionModal`, `LevelUpModal`).
+
+---
+
 ## [0.3.0] - 2026-09-20 — Milestone 1: Sistema de Interfaces, Navegación y QoL
 
 ### Añadido

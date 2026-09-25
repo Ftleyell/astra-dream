@@ -27,6 +27,11 @@ const DebugMenuModalScript := preload("res://scenes/ui/debug/debug_menu_modal.gd
 @onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
 @onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
 
+@onready var speed_1x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed1xBtn")
+@onready var speed_2x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed2xBtn")
+@onready var speed_4x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed4xBtn")
+var current_game_speed: float = 1.0
+
 var current_character_id: StringName = &"nova"
 var roster_dict: Dictionary[StringName, CharacterData] = {}
 var roster_ordered: Array[CharacterData] = []
@@ -79,6 +84,7 @@ func _ready() -> void:
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
+	_setup_speed_buttons()
 
 	if fullbody_texture:
 		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -107,6 +113,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif DEBUG_MENU_AVAILABLE and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_1:
+			_set_game_speed(1.0)
+		elif event.keycode == KEY_2:
+			_set_game_speed(2.0)
+		elif event.keycode == KEY_3:
+			_set_game_speed(4.0)
 
 func _on_character_art_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -269,3 +282,61 @@ func _on_loadout_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+
+func _setup_speed_buttons() -> void:
+	if not speed_1x_btn or not speed_2x_btn or not speed_4x_btn:
+		return
+	current_game_speed = SaveManager.get_game_speed()
+	UIFocusHelper.apply_cyber_focus(speed_1x_btn)
+	UIFocusHelper.apply_cyber_focus(speed_2x_btn)
+	UIFocusHelper.apply_cyber_focus(speed_4x_btn)
+
+	speed_1x_btn.pressed.connect(func(): _set_game_speed(1.0))
+	speed_2x_btn.pressed.connect(func(): _set_game_speed(2.0))
+	speed_4x_btn.pressed.connect(func(): _set_game_speed(4.0))
+
+	_refresh_speed_buttons_ui()
+
+func _set_game_speed(speed: float) -> void:
+	current_game_speed = speed
+	SaveManager.set_game_speed(speed)
+	_refresh_speed_buttons_ui()
+
+func _refresh_speed_buttons_ui() -> void:
+	_style_speed_button(speed_1x_btn, is_equal_approx(current_game_speed, 1.0), "1x NORMAL")
+	_style_speed_button(speed_2x_btn, is_equal_approx(current_game_speed, 2.0), "2x RÁPIDO")
+	_style_speed_button(speed_4x_btn, is_equal_approx(current_game_speed, 4.0), "4x TURBO")
+
+func _style_speed_button(btn: Button, is_active: bool, base_text: String) -> void:
+	if not btn:
+		return
+	var sb := StyleBoxFlat.new()
+	if is_active:
+		btn.text = "● %s" % base_text
+		sb.bg_color = Color(0.06, 0.22, 0.28, 1.0)
+		sb.border_width_left = 3
+		sb.border_width_top = 3
+		sb.border_width_right = 3
+		sb.border_width_bottom = 3
+		sb.border_color = Color(0, 0.94, 1, 1)
+		sb.shadow_color = Color(0, 0.94, 1, 0.35)
+		sb.shadow_size = 4
+		btn.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	else:
+		btn.text = "○ %s" % base_text
+		sb.bg_color = Color(0.04, 0.04, 0.06, 0.8)
+		sb.border_width_left = 1
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+		sb.border_color = Color(0.25, 0.28, 0.35, 1.0)
+		btn.add_theme_color_override("font_color", Color(0.65, 0.7, 0.78, 1))
+
+	sb.corner_radius_top_left = 4
+	sb.corner_radius_top_right = 4
+	sb.corner_radius_bottom_right = 4
+	sb.corner_radius_bottom_left = 4
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("hover", sb)
+	btn.add_theme_stylebox_override("pressed", sb)
+

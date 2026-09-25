@@ -14,8 +14,16 @@ static func save_profile(
 	p_skills: Variant = null,
 	p_selected_char: StringName = &"",
 	p_dark_matter: int = -1,
-	p_trophies: Variant = null
+	p_trophies: Variant = null,
+	p_game_speed: float = -1.0
 ) -> Error:
+	var current_speed: float = p_game_speed
+	if current_speed <= 0.0:
+		var prof := load_profile()
+		current_speed = float(prof.get("game_speed", 1.0))
+	if current_speed <= 0.0:
+		current_speed = 1.0
+
 	var current_biomass: int = p_biomass
 	if current_biomass < 0:
 		current_biomass = get_biomass()
@@ -88,7 +96,8 @@ static func save_profile(
 		"dark_matter": current_dark_matter,
 		"trophies_unlocked": trophies_serializable,
 		"character_skills": skills_serializable,
-		"selected_character": String(current_char)
+		"selected_character": String(current_char),
+		"game_speed": current_speed
 	}
 
 	var json_str := JSON.stringify(payload, "\t")
@@ -142,7 +151,8 @@ static func _get_default_profile() -> Dictionary:
 			"trophy_monolith_master": 0
 		},
 		"character_skills": {} as Dictionary,
-		"selected_character": &"nova"
+		"selected_character": &"nova",
+		"game_speed": 1.0
 	}
 
 
@@ -168,7 +178,8 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"dark_matter": int(raw.get("dark_matter", 0)),
 		"trophies_unlocked": trophies_clean,
 		"character_skills": {} as Dictionary,
-		"selected_character": StringName(str(raw.get("selected_character", "nova")))
+		"selected_character": StringName(str(raw.get("selected_character", "nova"))),
+		"game_speed": float(raw.get("game_speed", 1.0))
 	}
 
 	if raw.has("unlocked_items"):
@@ -477,6 +488,29 @@ static func set_selected_character(char_id: StringName) -> void:
 	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id, dark_matter, trophies)
 
 
+static func get_game_speed() -> float:
+	var profile := load_profile()
+	var spd: float = float(profile.get("game_speed", 1.0))
+	return spd if spd > 0.0 else 1.0
+
+static func set_game_speed(speed: float) -> void:
+	if speed <= 0.0:
+		speed = 1.0
+	Engine.time_scale = speed
+	var profile := load_profile()
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies, speed)
+
+
+
 # ==============================================================================
 # MID-RUN SAVE & RESUME
 # ==============================================================================
@@ -534,6 +568,7 @@ static func record_run_score(result: Dictionary) -> int:
 		"enemies_killed": int(result.get("enemies_killed", 0)),
 		"credits_earned": int(result.get("credits_earned", 0)),
 		"victory": bool(result.get("victory", false)),
+		"score": int(result.get("score", 0)),
 		"date": Time.get_datetime_string_from_system(false, true)
 	}
 

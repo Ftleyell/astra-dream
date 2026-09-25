@@ -39,9 +39,10 @@ var vacuum_pulse_scene: PackedScene = preload("res://scenes/combat/player/dash_e
 var chain_scene: PackedScene = preload("res://scenes/combat/weapons/chain_lightning_effect.tscn")
 var nova_spin_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn")
 var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
+var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
 
+var is_dead: bool = false
 
-# Bombs & Economy
 var bomb_count: int = 2
 var run_credits: int = 120
 var run_biomass: int = 0
@@ -231,6 +232,10 @@ func _apply_visual_theme() -> void:
 					w_poly.visible = true
 
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		velocity = Vector2.ZERO
+		return
+
 	if _menu_close_suppress_timer > 0.0:
 		_menu_close_suppress_timer = maxf(0.0, _menu_close_suppress_timer - delta)
 
@@ -345,7 +350,7 @@ func _handle_dash(delta: float) -> void:
 		focus_timer -= unscaled_delta
 		if focus_timer <= 0.0:
 			is_focus_active = false
-			Engine.time_scale = 1.0
+			Engine.time_scale = SaveManager.get_game_speed() if SaveManager else 1.0
 			dash_updated.emit(dash_charges, max_dash_charges, 1.0 if dash_charges >= max_dash_charges else (dash_recharge_timer / dash_recharge_max), false)
 
 	# 4. Estado activo de Dash e invulnerabilidad
@@ -484,7 +489,8 @@ func _execute_valentina_dash() -> void:
 	is_focus_active = true
 	focus_timer = 1.5
 	has_guaranteed_crit = true
-	Engine.time_scale = 0.55
+	var base_spd: float = SaveManager.get_game_speed() if SaveManager else 1.0
+	Engine.time_scale = base_spd * 0.55
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
@@ -656,6 +662,8 @@ func _execute_bomb() -> void:
 	_spawn_bomb_vfx()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_dead:
+		return
 	if event.is_action_pressed("bomb") and not event.is_echo():
 		if _can_trigger_bomb():
 			_execute_bomb()
@@ -729,7 +737,7 @@ func add_exp(amount: float) -> void:
 	exp_changed.emit(current_exp, exp_to_next, current_level)
 
 func take_damage(amount: float) -> void:
-	if is_dashing:
+	if is_dead or is_dashing:
 		return
 	var debug_mgr = get_node_or_null("/root/DebugManager")
 	if debug_mgr and debug_mgr.has_method("is_infinite_hp_active") and debug_mgr.is_infinite_hp_active():
@@ -746,8 +754,69 @@ func take_damage(amount: float) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
-	if current_health <= 0.0:
-		player_died.emit()
+	if current_health <= 0.0 and not is_dead:
+		_trigger_death_sequence()
+
+func _trigger_death_sequence() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	current_health = 0.0
+	velocity = Vector2.ZERO
+
+	# Ocultar todos los elementos visuales de la nave
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if ship_spr:
+		ship_spr.hide()
+	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.hide()
+	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
+	if placeholder:
+		placeholder.hide()
+	if hitbox_core:
+		hitbox_core.hide()
+	if weapon_controller:
+		weapon_controller.hide()
+	var aim_ind := get_node_or_null("AimModeIndicator")
+	if aim_ind:
+		aim_ind.hide()
+	var ohb := get_node_or_null("OverheadHealthBar")
+	if ohb:
+		ohb.hide()
+	var lcb := get_node_or_null("LaserChargeBar")
+	if lcb:
+		lcb.hide()
+
+	# Desactivar colisiones
+	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if col:
+		col.set_deferred("disabled", true)
+
+	# Instanciar efecto VFX de explosión de la nave
+	_spawn_player_explosion_vfx()
+
+	# SFX de explosión masiva
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("explosion", 0.9, 2.5)
+
+	player_died.emit()
+
+func _spawn_player_explosion_vfx() -> void:
+	if not explosion_vfx_scene:
+		return
+	var vfx := explosion_vfx_scene.instantiate()
+	if vfx:
+		var p_color: Color = character_data.color if character_data else Color(0.2, 0.85, 1.0)
+		if vfx.has_method("setup"):
+			vfx.setup(global_position, p_color)
+		else:
+			vfx.global_position = global_position
+		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+		if spawn_parent:
+			spawn_parent.add_child(vfx)
+
 
 func _handle_health_regen(delta: float) -> void:
 	if not stats:

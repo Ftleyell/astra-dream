@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://playerexpl001"]
+
+[ext_resource type="Script" path="res://scenes/combat/player/player_explosion_vfx.gd" id="1_exp"]
+
+[node name="PlayerExplosionVFX" type="Node2D"]
+script = ExtResource("1_exp")

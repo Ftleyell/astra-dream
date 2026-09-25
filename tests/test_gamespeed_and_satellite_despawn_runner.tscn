@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx8v6y3m1p0r1"]
+
+[ext_resource type="Script" path="res://tests/test_gamespeed_and_satellite_despawn_suite.gd" id="1_test_suite"]
+
+[node name="TestGameSpeedAndSatelliteDespawnRunner" type="Node"]
+script = ExtResource("1_test_suite")
