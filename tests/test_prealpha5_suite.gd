@@ -11,6 +11,7 @@ func _ready() -> void:
 	test_rainbow_enemy()
 	test_nyx_character_and_combat()
 	test_career_modal_ui()
+	test_nyx_hub_pedestal_and_skill_tree()
 
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE PRE-ALPHA 5 PASARON EXITOSAMENTE!")
@@ -80,6 +81,15 @@ func test_satellite_alert_and_ping() -> void:
 	beacon.trigger_beacon_ping()
 	test_assert(beacon._ping_line != null, "SatelliteBeacon crea y proyecta el anillo holográfico")
 	beacon.queue_free()
+
+	# Banner HUD del satélite
+	var hud_scene: PackedScene = preload("res://scenes/ui/hud/hud.tscn")
+	var hud = hud_scene.instantiate()
+	add_child(hud)
+	hud.show_satellite_banner(1)
+	test_assert(hud._satellite_banner_node != null, "El banner de satélite debe instanciarse en el HUD")
+	test_assert(hud._satellite_banner_node.custom_minimum_size == Vector2(460, 60), "El banner debe tener tamaño de 460x60 px")
+	hud.queue_free()
 
 # ── 3. CAREER STATS & NYX PROGRESSION ───────────────────────────────────────
 func test_career_stats_and_nyx_unlock() -> void:
@@ -207,3 +217,52 @@ func test_career_modal_ui() -> void:
 	test_assert(modal.scroll_container.visible == true, "scroll_container de records debe ser visible en tab 1")
 
 	modal.queue_free()
+
+# ── 7. NYX HUB PEDESTAL & THEMATIC SKILL TREE ────────────────────────────────
+func test_nyx_hub_pedestal_and_skill_tree() -> void:
+	print("[7/7] Verificando Pedestal de Nyx en Hub 3D y Árbol de Talentos Exclusivo...")
+	# 1. Verificar presencia de Nyx en PILOT_ROSTER de HubWorld
+	var hub_script = load("res://scenes/ui/hub/hub_world.gd")
+	test_assert(hub_script != null, "Script de hub_world.gd debe cargar correctamente")
+
+	var found_nyx_in_roster := false
+	var nyx_ped_pos: Vector3 = Vector3.ZERO
+	for pilot in hub_script.PILOT_ROSTER:
+		if pilot["id"] == &"nyx":
+			found_nyx_in_roster = true
+			nyx_ped_pos = pilot["pedestal_pos"]
+			break
+
+	test_assert(found_nyx_in_roster == true, "Nyx debe estar registrada en PILOT_ROSTER del Hub 3D")
+	test_assert(nyx_ped_pos.x == 0.0 and nyx_ped_pos.z > 8.0, "El pedestal de Nyx debe estar en el centro de la sala y detrás de Kira y Echo (pos: %s)" % str(nyx_ped_pos))
+
+	# 2. Verificar Árbol de Habilidades Exclusivo de Nyx
+	var skill_modal_scene: PackedScene = preload("res://scenes/ui/hub/character_skill_tree_modal.tscn")
+	test_assert(skill_modal_scene != null, "character_skill_tree_modal.tscn debe existir")
+
+	var skill_modal = skill_modal_scene.instantiate() as CharacterSkillTreeModal
+	add_child(skill_modal)
+	skill_modal.open_for_character(&"nyx")
+
+	var defs = skill_modal.get_node_definitions()
+	test_assert(defs.size() == 13, "El árbol de talentos de Nyx debe tener 13 nodos (Núcleo + 12 talentos)")
+
+	var found_shadow_step := false
+	var found_blade := false
+	var found_mantle := false
+	var found_fury := false
+
+	for d in defs:
+		if d["branch"] == "PASO UMBRÍO": found_shadow_step = true
+		elif d["branch"] == "FILO DIMENSIONAL": found_blade = true
+		elif d["branch"] == "MANTO CREPUSCULAR": found_mantle = true
+		elif d["branch"] == "FURIA DE MEDIALUNA": found_fury = true
+
+	test_assert(found_shadow_step, "Debe incluir la rama temática PASO UMBRÍO")
+	test_assert(found_blade, "Debe incluir la rama temática FILO DIMENSIONAL")
+	test_assert(found_mantle, "Debe incluir la rama temática MANTO CREPUSCULAR")
+	test_assert(found_fury, "Debe incluir la rama temática FURIA DE MEDIALUNA")
+
+	test_assert(skill_modal.current_theme_color == Color(0.9, 0.25, 1.0, 1.0), "El color temático de Nyx debe ser Magenta Neón")
+
+	skill_modal.queue_free()

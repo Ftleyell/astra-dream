@@ -95,31 +95,74 @@ func _ready() -> void:
 	# Aplicar bonos permanentes del Árbol de Habilidades cibernético (4 ramas)
 	if character_data and character_data.character_id:
 		var unlocked_nodes := SaveManager.get_character_unlocked_nodes(character_data.character_id)
-		var speed_count: int = 0
-		var damage_count: int = 0
-		var hp_count: int = 0
-		var crit_count: int = 0
+		if character_data.character_id == &"nyx":
+			var nyx_speed: int = 0
+			var nyx_dmg: int = 0
+			var nyx_hp: int = 0
+			var nyx_crit: int = 0
+			var has_speed_3: bool = false
+			var has_dmg_3: bool = false
+			var has_hp_3: bool = false
+			var has_crit_3: bool = false
 
-		for nid in unlocked_nodes:
-			var s := String(nid)
-			if s.begins_with("speed_") or s in ["0", "1", "2", "3", "4"]:
-				speed_count += 1
-			elif s.begins_with("damage_"):
-				damage_count += 1
-			elif s.begins_with("hp_") or s.begins_with("hull_"):
-				hp_count += 1
-			elif s.begins_with("crit_") or s.begins_with("overclock_") or s.begins_with("focus_"):
-				crit_count += 1
+			for nid in unlocked_nodes:
+				var s := String(nid)
+				if s.begins_with("nyx_speed_") or s.begins_with("speed_"):
+					nyx_speed += 1
+					if s == "nyx_speed_3": has_speed_3 = true
+				elif s.begins_with("nyx_dmg_") or s.begins_with("damage_"):
+					nyx_dmg += 1
+					if s == "nyx_dmg_3": has_dmg_3 = true
+				elif s.begins_with("nyx_hp_") or s.begins_with("hp_"):
+					nyx_hp += 1
+					if s == "nyx_hp_3": has_hp_3 = true
+				elif s.begins_with("nyx_crit_") or s.begins_with("crit_"):
+					nyx_crit += 1
+					if s == "nyx_crit_3": has_crit_3 = true
 
-		if speed_count > 0:
-			stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", float(speed_count) * 0.20, true, self))
-		if damage_count > 0:
-			stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"skill_tree_damage", float(damage_count) * 0.15, true, self))
-		if hp_count > 0:
-			stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"skill_tree_hp", float(hp_count) * 25.0, false, self))
-		if crit_count > 0:
-			stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"skill_tree_crit", float(crit_count) * 0.05, false, self))
-			stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"skill_tree_atk_speed", float(crit_count) * 0.05, true, self))
+			if nyx_speed > 0:
+				stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", float(nyx_speed) * 0.18, true, self))
+			if has_speed_3:
+				dash_recharge_max *= 0.85
+			if nyx_dmg > 0:
+				stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"skill_tree_damage", float(nyx_dmg) * 0.18, true, self))
+			if has_dmg_3:
+				stats.add_modifier(&"weapon_size", CharacterStats.StatModifier.new(&"nyx_weapon_size", 0.15, true, self))
+			if nyx_hp > 0:
+				stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"skill_tree_hp", float(nyx_hp) * 30.0, false, self))
+			if has_hp_3:
+				stats.add_modifier(&"health_regen", CharacterStats.StatModifier.new(&"nyx_regen", 1.0, false, self))
+			if nyx_crit > 0:
+				stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"skill_tree_crit", float(nyx_crit) * 0.06, false, self))
+				stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"skill_tree_atk_speed", float(nyx_crit) * 0.06, true, self))
+			if has_crit_3:
+				stats.add_modifier(&"crit_damage", CharacterStats.StatModifier.new(&"nyx_crit_dmg", 0.20, false, self))
+		else:
+			var speed_count: int = 0
+			var damage_count: int = 0
+			var hp_count: int = 0
+			var crit_count: int = 0
+
+			for nid in unlocked_nodes:
+				var s := String(nid)
+				if s.begins_with("speed_") or s in ["0", "1", "2", "3", "4"]:
+					speed_count += 1
+				elif s.begins_with("damage_"):
+					damage_count += 1
+				elif s.begins_with("hp_") or s.begins_with("hull_"):
+					hp_count += 1
+				elif s.begins_with("crit_") or s.begins_with("overclock_") or s.begins_with("focus_"):
+					crit_count += 1
+
+			if speed_count > 0:
+				stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"skill_tree_speed", float(speed_count) * 0.20, true, self))
+			if damage_count > 0:
+				stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"skill_tree_damage", float(damage_count) * 0.15, true, self))
+			if hp_count > 0:
+				stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"skill_tree_hp", float(hp_count) * 25.0, false, self))
+			if crit_count > 0:
+				stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"skill_tree_crit", float(crit_count) * 0.05, false, self))
+				stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"skill_tree_atk_speed", float(crit_count) * 0.05, true, self))
 
 		# Aplicar bonos permanentes globales de la Sala de Trofeos (Fase 3)
 	var trophy_bonuses := SaveManager.get_trophy_passive_bonuses()

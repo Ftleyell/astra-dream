@@ -72,6 +72,15 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"stats": "HP: 80 | Vel: 360 px/s | Daño: 42 | Crítico: 12% | Suerte: +10",
 		"color": Color(0.5, 0.85, 1.0, 1.0),
 		"pedestal_pos": Vector3(8.5, 0.15, 8.0)
+	},
+	{
+		"id": &"nyx",
+		"name": "Nyx",
+		"title": "Espadachina Dimensional",
+		"desc": "Empuña la Hoja Crepuscular ejecutando ráfagas cortantes en medialuna, torbellinos defensivos y estelas de corte dimensional.",
+		"stats": "HP: 110 | Vel: 350 px/s | Daño: 48 (Melee) | Crítico: 15% | Cortes: Escala con Proyectiles",
+		"color": Color(0.9, 0.25, 1.0, 1.0),
+		"pedestal_pos": Vector3(0.0, 0.15, 12.5)
 	}
 ]
 
@@ -275,6 +284,8 @@ func _build_pilot_pedestals_and_vfx() -> void:
 			pedestals_group.add_child(ped_root)
 
 		ped_root.position = Vector3(pos.x, 0.0, pos.z)
+		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
+		ped_root.visible = is_unlocked
 
 		# 1. Base Cilíndrica Metálica Sci-Fi
 		var base_mesh_node: MeshInstance3D = ped_root.get_node_or_null("BaseMesh")
@@ -452,6 +463,8 @@ func _collect_and_verify_sprites() -> void:
 				sprite.pixel_size = 0.005
 				sprite.offset = Vector2(0, 256)
 
+		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
+		sprite.visible = is_unlocked
 		sprite_nodes.append(sprite)
 
 
@@ -465,6 +478,7 @@ func _setup_interactables() -> void:
 	for i in range(PILOT_ROSTER.size()):
 		var char_data: Dictionary = PILOT_ROSTER[i]
 		var cid: StringName = char_data["id"]
+		var is_unlocked := SaveManager.is_character_unlocked(cid)
 		var interact_name := "Interactable_" + String(cid).capitalize()
 		var inter: Area3D = roster_group.get_node_or_null(interact_name)
 		if not inter:
@@ -475,6 +489,10 @@ func _setup_interactables() -> void:
 			inter.set("interaction_title", "Árbol de Habilidades")
 			inter.position = char_data["pedestal_pos"]
 			roster_group.add_child(inter)
+
+		inter.visible = is_unlocked
+		inter.monitoring = is_unlocked
+		inter.monitorable = is_unlocked
 
 		if inter is HubInteractable3D:
 			interactable_nodes.append(inter as HubInteractable3D)
@@ -652,6 +670,8 @@ func _is_modal_active() -> bool:
 
 
 func _on_interactable_triggered(inter: HubInteractable3D, _body: Node3D) -> void:
+	if not SaveManager.is_character_unlocked(inter.target_character_id):
+		return
 	for i in range(PILOT_ROSTER.size()):
 		if PILOT_ROSTER[i]["id"] == inter.target_character_id:
 			_select_pilot(i, true)
@@ -679,6 +699,8 @@ func _build_pilot_selector_buttons() -> void:
 
 	for i in range(PILOT_ROSTER.size()):
 		var data: Dictionary = PILOT_ROSTER[i]
+		if not SaveManager.is_character_unlocked(data["id"]):
+			continue
 		var btn := Button.new()
 		btn.text = String(data["name"]).substr(0, 3).to_upper()
 		btn.custom_minimum_size = Vector2(52, 34)
@@ -747,6 +769,8 @@ func _on_skill_tree_closed() -> void:
 
 func _select_pilot(index: int, animate_card: bool = true) -> void:
 	if index < 0 or index >= PILOT_ROSTER.size():
+		return
+	if not SaveManager.is_character_unlocked(PILOT_ROSTER[index]["id"]):
 		return
 
 	current_pilot_index = index

@@ -153,6 +153,149 @@ const NODE_DEFINITIONS: Array[Dictionary] = [
 	}
 ]
 
+const NYX_NODE_DEFINITIONS: Array[Dictionary] = [
+	# Núcleo Central
+	{
+		"id": &"core",
+		"branch": "NÚCLEO",
+		"title": "NÚCLEO CREPUSCULAR",
+		"desc": "Matriz dimensional de Nyx. Canaliza energía del vacío hacia la Hoja Crepuscular y el motor de fase.",
+		"glyph": "⚛",
+		"pos": Vector2(0, 0),
+		"cost": 0,
+		"req": &""
+	},
+	# Rama Norte (Paso Umbrío / Movilidad)
+	{
+		"id": &"nyx_speed_1",
+		"branch": "PASO UMBRÍO",
+		"title": "PASO ENTRE FRENTES I",
+		"desc": "+18% Velocidad de movimiento permanente en combate.",
+		"glyph": "⚡",
+		"pos": Vector2(0, -115),
+		"cost": 25,
+		"req": &"core"
+	},
+	{
+		"id": &"nyx_speed_2",
+		"branch": "PASO UMBRÍO",
+		"title": "TRASLACIÓN FLUIDA II",
+		"desc": "+18% Velocidad de movimiento permanente (+36% acumulado).",
+		"glyph": "⚡",
+		"pos": Vector2(0, -225),
+		"cost": 25,
+		"req": &"nyx_speed_1"
+	},
+	{
+		"id": &"nyx_speed_3",
+		"branch": "PASO UMBRÍO",
+		"title": "SALTO DIMENSIONAL PERPETUO",
+		"desc": "+18% Velocidad (+54% acum.) y recarga de Dash un 15% más rápida.",
+		"glyph": "⚡",
+		"pos": Vector2(0, -335),
+		"cost": 25,
+		"req": &"nyx_speed_2"
+	},
+	# Rama Este (Corte Dimensional / Daño Melee)
+	{
+		"id": &"nyx_dmg_1",
+		"branch": "FILO DIMENSIONAL",
+		"title": "FILO DEL CREPÚSCULO I",
+		"desc": "+18% Daño cuerpo a cuerpo general permanente.",
+		"glyph": "⚔",
+		"pos": Vector2(150, 0),
+		"cost": 25,
+		"req": &"core"
+	},
+	{
+		"id": &"nyx_dmg_2",
+		"branch": "FILO DIMENSIONAL",
+		"title": "RESQUEBRAJADURA ESPACIAL II",
+		"desc": "+18% Daño cuerpo a cuerpo permanente (+36% acumulado).",
+		"glyph": "⚔",
+		"pos": Vector2(280, 0),
+		"cost": 25,
+		"req": &"nyx_dmg_1"
+	},
+	{
+		"id": &"nyx_dmg_3",
+		"branch": "FILO DIMENSIONAL",
+		"title": "SINGULARIDAD CORTANTE",
+		"desc": "+18% Daño cuerpo a cuerpo (+54% acum.) y +15% tamaño del arco de corte.",
+		"glyph": "⚔",
+		"pos": Vector2(410, 0),
+		"cost": 25,
+		"req": &"nyx_dmg_2"
+	},
+	# Rama Sur (Manto Crepuscular / Supervivencia)
+	{
+		"id": &"nyx_hp_1",
+		"branch": "MANTO CREPUSCULAR",
+		"title": "ESCUDO DE EVENTOS I",
+		"desc": "+30 Puntos de Salud Máxima permanente en combate.",
+		"glyph": "🛡",
+		"pos": Vector2(0, 115),
+		"cost": 25,
+		"req": &"core"
+	},
+	{
+		"id": &"nyx_hp_2",
+		"branch": "MANTO CREPUSCULAR",
+		"title": "TEJIDO DIMENSIONAL II",
+		"desc": "+30 Puntos de Salud Máxima permanente (+60 HP acumulado).",
+		"glyph": "🛡",
+		"pos": Vector2(0, 225),
+		"cost": 25,
+		"req": &"nyx_hp_1"
+	},
+	{
+		"id": &"nyx_hp_3",
+		"branch": "MANTO CREPUSCULAR",
+		"title": "ANCLAJE ESPACIO-TEMPORAL",
+		"desc": "+30 HP Máxima (+90 HP acum.) y +1.0 Regeneración de HP/segundo.",
+		"glyph": "🛡",
+		"pos": Vector2(0, 335),
+		"cost": 25,
+		"req": &"nyx_hp_2"
+	},
+	# Rama Oeste (Furia de Medialuna / Cadencia & Crítico)
+	{
+		"id": &"nyx_crit_1",
+		"branch": "FURIA DE MEDIALUNA",
+		"title": "COMPÁS DE MEDIA LUNA I",
+		"desc": "+6% Probabilidad Crítica y +6% Cadencia de ataque melee permanente.",
+		"glyph": "✦",
+		"pos": Vector2(-150, 0),
+		"cost": 25,
+		"req": &"core"
+	},
+	{
+		"id": &"nyx_crit_2",
+		"branch": "FURIA DE MEDIALUNA",
+		"title": "RÁFAGA DE VACÍO II",
+		"desc": "+6% Probabilidad Crítica y +6% Cadencia (+12% acumulado).",
+		"glyph": "✦",
+		"pos": Vector2(-280, 0),
+		"cost": 25,
+		"req": &"nyx_crit_1"
+	},
+	{
+		"id": &"nyx_crit_3",
+		"branch": "FURIA DE MEDIALUNA",
+		"title": "VERDUGO DEL ECLIPSE",
+		"desc": "+8% Prob. Crítica y +8% Cadencia (+20% acum.) y +20% Daño Crítico.",
+		"glyph": "✦",
+		"pos": Vector2(-410, 0),
+		"cost": 25,
+		"req": &"nyx_crit_2"
+	}
+]
+
+func get_node_definitions() -> Array[Dictionary]:
+	if current_character_id == &"nyx":
+		return NYX_NODE_DEFINITIONS
+	return NODE_DEFINITIONS
+
 var current_character_id: StringName = &"nova"
 var character_data_ref: CharacterData = null
 var current_theme_color: Color = Color("#00F0FF")
@@ -236,6 +379,7 @@ func _determine_theme_color() -> void:
 			&"selene": current_theme_color = Color("#BF40BF") # Violet
 			&"roxy": current_theme_color = Color("#00FF9D") # Emerald
 			&"echo": current_theme_color = Color("#66CCFF") # Electric Sky
+			&"nyx": current_theme_color = Color(0.9, 0.25, 1.0, 1.0) # Neon Magenta
 			_: current_theme_color = Color("#00F0FF")
 
 
@@ -283,22 +427,26 @@ func _build_or_update_hex_nodes() -> void:
 	if not constellation_canvas:
 		return
 
-	# Si es la primera vez, crear los nodos hexagonales
-	if hex_nodes.is_empty():
-		for def in NODE_DEFINITIONS:
-			var hex := SkillTreeHexNodeClass.new()
-			hex.name = "Hex_" + String(def["id"]).capitalize()
-			hex.node_id = def["id"]
-			hex.branch_name = def["branch"]
-			hex.title = def["title"]
-			hex.stat_bonus_text = def["desc"]
-			hex.glyph_icon = def["glyph"]
-			hex.cost = def["cost"]
-			hex.req_node_id = def["req"]
-			hex.position = def["pos"] - (hex.size * 0.5)
-			hex.selected.connect(_on_hex_node_selected)
-			constellation_canvas.add_child(hex)
-			hex_nodes[hex.node_id] = hex
+	# Recrear los nodos hexagonales adaptados al set de definiciones del piloto activo
+	for child in constellation_canvas.get_children():
+		child.queue_free()
+	hex_nodes.clear()
+
+	var defs := get_node_definitions()
+	for def in defs:
+		var hex := SkillTreeHexNodeClass.new()
+		hex.name = "Hex_" + String(def["id"]).capitalize()
+		hex.node_id = def["id"]
+		hex.branch_name = def["branch"]
+		hex.title = def["title"]
+		hex.stat_bonus_text = def["desc"]
+		hex.glyph_icon = def["glyph"]
+		hex.cost = def["cost"]
+		hex.req_node_id = def["req"]
+		hex.position = def["pos"] - (hex.size * 0.5)
+		hex.selected.connect(_on_hex_node_selected)
+		constellation_canvas.add_child(hex)
+		hex_nodes[hex.node_id] = hex
 
 	_refresh_nodes_state()
 
@@ -306,7 +454,7 @@ func _build_or_update_hex_nodes() -> void:
 func _refresh_nodes_state() -> void:
 	var unlocked_ids := SaveManager.get_character_unlocked_nodes(current_character_id)
 
-	for def in NODE_DEFINITIONS:
+	for def in get_node_definitions():
 		var nid: StringName = def["id"]
 		var hex = hex_nodes.get(nid, null)
 		if not hex:
@@ -344,7 +492,7 @@ func _select_node(nid: StringName) -> void:
 
 func _update_detail_panel() -> void:
 	var def: Dictionary = {}
-	for d in NODE_DEFINITIONS:
+	for d in get_node_definitions():
 		if d["id"] == selected_node_id:
 			def = d
 			break
@@ -410,7 +558,7 @@ func _update_detail_panel() -> void:
 
 func _on_activate_pressed() -> void:
 	var def: Dictionary = {}
-	for d in NODE_DEFINITIONS:
+	for d in get_node_definitions():
 		if d["id"] == selected_node_id:
 			def = d
 			break
@@ -478,13 +626,13 @@ func _draw_circuit_lines() -> void:
 
 	var unlocked_ids := SaveManager.get_character_unlocked_nodes(current_character_id)
 
-	for def in NODE_DEFINITIONS:
+	for def in get_node_definitions():
 		var req_id: StringName = def["req"]
 		if req_id == &"":
 			continue
 
 		var parent_def: Dictionary = {}
-		for d in NODE_DEFINITIONS:
+		for d in get_node_definitions():
 			if d["id"] == req_id:
 				parent_def = d
 				break
@@ -579,7 +727,7 @@ func close_modal() -> void:
 
 func _navigate_direction(move_dir: Vector2) -> void:
 	var cur_pos := Vector2.ZERO
-	for d in NODE_DEFINITIONS:
+	for d in get_node_definitions():
 		if d["id"] == selected_node_id:
 			cur_pos = d["pos"]
 			break
@@ -587,7 +735,7 @@ func _navigate_direction(move_dir: Vector2) -> void:
 	var best_nid: StringName = &""
 	var best_score: float = 999999.0
 
-	for d in NODE_DEFINITIONS:
+	for d in get_node_definitions():
 		var nid: StringName = d["id"]
 		if nid == selected_node_id:
 			continue
