@@ -71,6 +71,9 @@ func get_portrait_texture(flipped: bool = false) -> Texture2D:
 		var path_flip := "res://assets/characters/portraits/portrait_%s_flipped.png" % str(character_id).to_lower()
 		if ResourceLoader.exists(path_flip):
 			return load(path_flip) as Texture2D
+		var path_flip_legacy := "res://assets/portraits/portrait_%s_flipped.png" % str(character_id).to_lower()
+		if ResourceLoader.exists(path_flip_legacy):
+			return load(path_flip_legacy) as Texture2D
 	if portrait_icon:
 		return portrait_icon
 	var path := "res://assets/characters/portraits/portrait_%s.png" % str(character_id).to_lower()

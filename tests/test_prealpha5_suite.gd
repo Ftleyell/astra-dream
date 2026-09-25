@@ -155,6 +155,9 @@ func test_nyx_character_and_combat() -> void:
 	test_assert(nyx_data.display_name == "Nyx", "Nombre de display debe ser Nyx")
 	test_assert(nyx_data.starting_weapon != null, "Nyx debe tener su arma inicial asignada")
 	test_assert(nyx_data.starting_weapon.weapon_id == &"crescent_blade", "El arma inicial debe ser crescent_blade")
+	var nyx_portrait = nyx_data.get_portrait_texture()
+	test_assert(nyx_portrait != null, "Nyx debe tener una textura de retrato válida")
+	test_assert("portrait_nyx" in nyx_portrait.resource_path, "El retrato de Nyx debe corresponder a portrait_nyx (actual: %s)" % nyx_portrait.resource_path)
 
 	# Probar CrescentSlash (escala de golpes en ráfaga con projectile_count)
 	var slash_scene: PackedScene = preload("res://scenes/combat/weapons/crescent_slash.tscn")

@@ -18,10 +18,13 @@ static func save_profile(
 	p_game_speed: float = -1.0,
 	p_career_stats: Variant = null
 ) -> Error:
+	var existing_prof: Dictionary = {}
+	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
+		existing_prof = load_profile()
+
 	var current_speed: float = p_game_speed
 	if current_speed <= 0.0:
-		var prof := load_profile()
-		current_speed = float(prof.get("game_speed", 1.0))
+		current_speed = float(existing_prof.get("game_speed", 1.0))
 	if current_speed <= 0.0:
 		current_speed = 1.0
 
@@ -45,19 +48,13 @@ static func save_profile(
 
 	var current_skills: Dictionary
 	if p_skills == null:
-		var prof := load_profile()
-		current_skills = prof.get("character_skills", {})
+		current_skills = existing_prof.get("character_skills", {})
 	else:
 		current_skills = p_skills
 
 	var current_char: StringName = p_selected_char
 	if current_char == &"":
-		var prof := load_profile()
-		current_char = StringName(str(prof.get("selected_character", "nova")))
-
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if not file:
-		return FileAccess.get_open_error()
+		current_char = StringName(str(existing_prof.get("selected_character", "nova")))
 
 	var bans_serializable: Dictionary = {}
 	for char_id: StringName in character_bans.keys():
@@ -89,8 +86,7 @@ static func save_profile(
 
 	var current_career: Dictionary
 	if p_career_stats == null:
-		var prof := load_profile()
-		current_career = prof.get("career_stats", _get_default_career_stats())
+		current_career = existing_prof.get("career_stats", _get_default_career_stats())
 	else:
 		current_career = p_career_stats
 
@@ -109,6 +105,10 @@ static func save_profile(
 		"career_stats": current_career
 	}
 
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if not file:
+		return FileAccess.get_open_error()
+
 	var json_str := JSON.stringify(payload, "\t")
 	file.store_string(json_str)
 	file.close()
@@ -125,6 +125,9 @@ static func load_profile() -> Dictionary:
 
 	var json_str := file.get_as_text()
 	file.close()
+
+	if json_str.strip_edges().is_empty():
+		return _get_default_profile()
 
 	var parser := JSON.new()
 	var err := parser.parse(json_str)

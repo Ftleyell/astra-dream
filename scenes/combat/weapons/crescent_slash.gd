@@ -23,7 +23,10 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_count: int = 
 	flurry_count = maxi(1, p_count)
 	reach = base_reach * p_size_mult
 	rotation = slash_direction.angle()
-	_execute_single_slash()
+	if is_inside_tree():
+		_execute_single_slash()
+	else:
+		ready.connect(_execute_single_slash, CONNECT_ONE_SHOT)
 
 func _process(delta: float) -> void:
 	if current_flurry < flurry_count:
@@ -41,14 +44,17 @@ func _execute_single_slash() -> void:
 	current_flurry += 1
 
 	# Audio de corte de espada rápido
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.6 + float(current_flurry) * 0.1, 1.0)
+	if is_inside_tree():
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("dash", 1.6 + float(current_flurry) * 0.1, 1.0)
 
 	_draw_crescent_visual()
 	_check_slash_hits()
 
 func _draw_crescent_visual() -> void:
+	if not slash_line:
+		slash_line = get_node_or_null("SlashLine") as Line2D
 	if not slash_line:
 		return
 	slash_line.clear_points()

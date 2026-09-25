@@ -208,80 +208,77 @@ func show_satellite_banner(index: int) -> void:
 	var title_lbl: Label = _satellite_banner_node.find_child("BannerTitle", true, false) as Label
 	var sub_lbl: Label = _satellite_banner_node.find_child("BannerSubtitle", true, false) as Label
 	if title_lbl:
-		title_lbl.text = "¡SATÉLITE ORBITAL DETECTADO!"
+		title_lbl.text = "🛰️ ENLACE DE SATÉLITE DETECTADO"
 	if sub_lbl:
-		sub_lbl.text = "Baliza de enlace #%d en línea • Rumbo fijado en radar" % index
+		sub_lbl.text = "Baliza orbital #%d en línea • Trayectoria en radar" % index
 
 	if _satellite_banner_tween and _satellite_banner_tween.is_valid():
 		_satellite_banner_tween.kill()
 
 	_satellite_banner_node.visible = true
 	_satellite_banner_node.modulate.a = 0.0
-	_satellite_banner_node.scale = Vector2(0.8, 0.8)
+	_satellite_banner_node.position.y = 15.0
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.45)
+		audio_mgr.play_sfx("ui_click", 0.0, 1.55)
 
 	_satellite_banner_tween = create_tween()
-	_satellite_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_satellite_banner_tween.tween_property(_satellite_banner_node, "scale", Vector2(1.0, 1.0), 0.35)
-	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 1.0, 0.25)
-	_satellite_banner_tween.chain().tween_interval(2.2)
-	_satellite_banner_tween.chain().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 0.0, 0.45)
+	_satellite_banner_tween.set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "position:y", 46.0, 0.25)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 1.0, 0.2)
+	_satellite_banner_tween.chain().tween_interval(2.4)
+	_satellite_banner_tween.chain().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "position:y", 20.0, 0.3)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 0.0, 0.3)
 	_satellite_banner_tween.chain().tween_callback(func():
 		if _satellite_banner_node:
 			_satellite_banner_node.visible = false
 	)
 
 func _create_satellite_banner_ui() -> void:
-	var container := CenterContainer.new()
-	container.name = "SatelliteBannerCenter"
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	container.anchors_preset = Control.PRESET_FULL_RECT
-	container.anchor_right = 1.0
-	container.anchor_bottom = 1.0
-	container.offset_top = -140.0
-
 	var banner_box := PanelContainer.new()
 	banner_box.name = "SatelliteBannerPanel"
 	banner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	banner_box.custom_minimum_size = Vector2(460, 80)
-	banner_box.pivot_offset = Vector2(230, 40)
+	banner_box.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	banner_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	banner_box.grow_vertical = Control.GROW_DIRECTION_END
+	banner_box.custom_minimum_size = Vector2(360, 44)
+	banner_box.pivot_offset = Vector2(180, 22)
+	banner_box.position.y = 46.0
 
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.02, 0.06, 0.14, 0.92)
-	style.border_color = Color(0.0, 0.95, 1.0, 1.0)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(14.0)
-	style.shadow_color = Color(0.0, 0.85, 1.0, 0.45)
-	style.shadow_size = 12
+	style.bg_color = Color(0.02, 0.06, 0.12, 0.82)
+	style.border_color = Color(0.0, 0.85, 1.0, 0.65)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(6.0)
+	style.shadow_color = Color(0.0, 0.7, 0.9, 0.25)
+	style.shadow_size = 6
 	banner_box.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 2)
 
 	var title := Label.new()
 	title.name = "BannerTitle"
-	title.text = "¡SATÉLITE ORBITAL DETECTADO!"
+	title.text = "🛰️ ENLACE DE SATÉLITE DETECTADO"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_font_size_override("font_size", 13)
 	title.add_theme_color_override("font_color", Color("#00E5FF"))
 	vbox.add_child(title)
 
 	var sub := Label.new()
 	sub.name = "BannerSubtitle"
-	sub.text = "Baliza de enlace activa"
+	sub.text = "Baliza orbital en línea"
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_font_size_override("font_size", 14)
-	sub.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0, 0.9))
+	sub.add_theme_font_size_override("font_size", 11)
+	sub.add_theme_color_override("font_color", Color(0.8, 0.92, 1.0, 0.85))
 	vbox.add_child(sub)
 
 	banner_box.add_child(vbox)
-	container.add_child(banner_box)
-	add_child(container)
+	add_child(banner_box)
 	_satellite_banner_node = banner_box
 	_satellite_banner_node.visible = false
 

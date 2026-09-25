@@ -474,8 +474,8 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 
 		&"crescent_cyclone":
 			var cyclone = crescent_cyclone_scene.instantiate()
-			cyclone.setup(global_position, ctx, size_stat * 1.2)
 			spawn_parent.add_child(cyclone)
+			cyclone.setup(global_position, ctx, size_stat * 1.2)
 
 		_:
 			# Fallback a láser
@@ -585,8 +585,8 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 			if is_manual_aim:
 				slash_dir = (get_global_mouse_position() - global_position).normalized()
 			var slash = crescent_slash_scene.instantiate()
-			slash.setup(global_position, slash_dir, ctx, count, size_stat)
 			spawn_parent.add_child(slash)
+			slash.setup(global_position, slash_dir, ctx, count, size_stat)
 
 		_:
 			_fire_homing_missiles(ctx, count, wdata.passive_search_radius)

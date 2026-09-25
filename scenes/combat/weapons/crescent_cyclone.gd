@@ -16,10 +16,16 @@ func setup(p_origin: Vector2, p_ctx: HitContext, p_size_mult: float = 1.0) -> vo
 	hit_context = p_ctx
 	max_radius *= p_size_mult
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.2, 3.0)
+	if is_inside_tree():
+		_start_cyclone()
+	else:
+		ready.connect(_start_cyclone, CONNECT_ONE_SHOT)
 
+func _start_cyclone() -> void:
+	if is_inside_tree():
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("dash", 1.2, 3.0)
 	_clear_bullets()
 
 func _process(delta: float) -> void:
@@ -35,11 +41,16 @@ func _process(delta: float) -> void:
 	_check_hits()
 
 func _clear_bullets() -> void:
-	var bs = get_tree().get_first_node_in_group("bullet_server")
+	var tree := get_tree()
+	if not tree:
+		return
+	var bs = tree.get_first_node_in_group("bullet_server")
 	if bs and bs.has_method("clear_bullets_in_radius"):
 		bs.clear_bullets_in_radius(global_position, maxf(60.0, current_radius + 25.0))
 
 func _update_visual(t: float) -> void:
+	if not blade_ring:
+		blade_ring = get_node_or_null("BladeRing") as Line2D
 	if not blade_ring:
 		return
 	var pts := PackedVector2Array()
