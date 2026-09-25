@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://audtestrun01"]
+
+[ext_resource type="Script" path="res://tests/test_audio_anti_fatigue_suite.gd" id="1_test"]
+
+[node name="TestAudioAntiFatigueRunner" type="Node"]
+script = ExtResource("1_test")
