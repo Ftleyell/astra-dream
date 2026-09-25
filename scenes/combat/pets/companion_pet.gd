@@ -82,8 +82,9 @@ func _apply_passive_buffs() -> void:
 
 func _exit_tree() -> void:
 	if is_instance_valid(player) and player.stats:
-		player.stats.remove_modifier(&"attack_speed", &"pet_pip_atk_spd")
-		player.stats.remove_modifier(&"crit_chance", &"pet_pip_crit")
+		if player.stats.has_method("remove_modifier"):
+			player.stats.remove_modifier(&"attack_speed", &"pet_pip_atk_spd")
+			player.stats.remove_modifier(&"crit_chance", &"pet_pip_crit")
 
 func _process(delta: float) -> void:
 	_float_time += delta

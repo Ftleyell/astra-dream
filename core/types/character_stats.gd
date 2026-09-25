@@ -71,6 +71,20 @@ func set_or_replace_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	_is_dirty[stat_name] = true
 	stat_changed.emit(stat_name, get_stat(stat_name))
 
+func remove_modifier(stat_name: StringName, mod_id: StringName) -> void:
+	if not _modifiers.has(stat_name):
+		return
+	var list: Array = _modifiers[stat_name]
+	var removed := false
+	for i in range(list.size() - 1, -1, -1):
+		var existing: StatModifier = list[i]
+		if existing.id == mod_id:
+			list.remove_at(i)
+			removed = true
+	if removed:
+		_is_dirty[stat_name] = true
+		stat_changed.emit(stat_name, get_stat(stat_name))
+
 func get_stat(stat_name: StringName) -> float:
 	if not _base_stats.has(stat_name):
 		return 0.0

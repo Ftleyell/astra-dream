@@ -475,7 +475,7 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 		&"crescent_cyclone":
 			var cyclone = crescent_cyclone_scene.instantiate()
 			spawn_parent.add_child(cyclone)
-			cyclone.setup(global_position, ctx, size_stat * 1.2)
+			cyclone.setup(global_position, ctx, size_stat * 1.2, player)
 
 		_:
 			# Fallback a láser
