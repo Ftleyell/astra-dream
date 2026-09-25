@@ -60,8 +60,13 @@ func _acquire_player() -> void:
 func _apply_pet_visuals() -> void:
 	if not pet_data:
 		return
-	if sprite and pet_data.icon:
-		sprite.texture = pet_data.icon
+	if sprite:
+		var tex: Texture2D = pet_data.icon if pet_data.icon else null
+		if not tex:
+			var icon_path := "res://assets/pets/pet_%s.png" % str(pet_data.pet_id)
+			if ResourceLoader.exists(icon_path):
+				tex = load(icon_path) as Texture2D
+		sprite.texture = tex
 		sprite.scale = Vector2(0.55, 0.55)
 	if aura_particles:
 		aura_particles.color = pet_data.theme_color

@@ -33,10 +33,17 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	# Sprite3D del gatito
 	sprite = Sprite3D.new()
 	sprite.name = "PetSprite"
-	sprite.texture = pet_data.icon
-	sprite.pixel_size = 0.0075
+	var tex: Texture2D = pet_data.icon if (pet_data and pet_data.icon) else null
+	if not tex and pet_data:
+		var icon_path := "res://assets/pets/pet_%s.png" % str(pet_data.pet_id)
+		if ResourceLoader.exists(icon_path):
+			tex = load(icon_path) as Texture2D
+	sprite.texture = tex
+	sprite.pixel_size = 0.012
+	sprite.offset = Vector2(0, 32)
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.render_priority = 2
 	sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(sprite)
 
@@ -44,16 +51,16 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	shadow = MeshInstance3D.new()
 	shadow.name = "PetShadow"
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.45, 0.45)
+	quad.size = Vector2(0.55, 0.55)
 	quad.orientation = PlaneMesh.FACE_Y
 	shadow.mesh = quad
 
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0, 0, 0, 0.38)
+	mat.albedo_color = Color(0, 0, 0, 0.45)
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	shadow.material_override = mat
-	shadow.position.y = -0.24
+	shadow.position.y = 0.02
 	add_child(shadow)
 
 func _process(delta: float) -> void:

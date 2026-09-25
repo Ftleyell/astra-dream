@@ -286,13 +286,17 @@ func _cleanup_ship(id: StringName, node: Node2D, trail: Line2D) -> void:
 	if is_instance_valid(node):
 		node.queue_free()
 
+var _ship_texture_cache: Dictionary = {}
+
 func _get_ship_texture(cfg: Dictionary) -> Texture2D:
-	if cfg.has("tex") and cfg["tex"] is Texture2D:
-		return cfg["tex"]
 	var p: String = cfg.get("tex_path", "")
-	if not p.is_empty() and ResourceLoader.exists(p):
+	if p.is_empty():
+		return null
+	if _ship_texture_cache.has(p):
+		return _ship_texture_cache[p]
+	if ResourceLoader.exists(p):
 		var res = load(p)
 		if res is Texture2D:
-			cfg["tex"] = res
+			_ship_texture_cache[p] = res
 			return res
 	return null
