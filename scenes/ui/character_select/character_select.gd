@@ -63,7 +63,7 @@ func _ready() -> void:
 	_populate_roster()
 
 	var saved_char := SaveManager.get_selected_character()
-	if roster_dict.has(saved_char):
+	if roster_dict.has(saved_char) and SaveManager.is_character_unlocked(saved_char):
 		_select_character(saved_char)
 	elif not roster_ordered.is_empty():
 		_select_character(roster_ordered[0].character_id)
@@ -157,6 +157,9 @@ func _populate_roster() -> void:
 	for char_data in roster_ordered:
 		var cid: StringName = char_data.character_id
 		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
+		# Personaje secreto (Nyx): no mostrar en la lista hasta desbloquearse
+		if not is_unlocked and cid == &"nyx":
+			continue
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(400, 84)
 		if is_unlocked:

@@ -12,6 +12,7 @@ func _ready() -> void:
 	test_nyx_character_and_combat()
 	test_career_modal_ui()
 	test_nyx_hub_pedestal_and_skill_tree()
+	test_nyx_secret_character_integration()
 
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE PRE-ALPHA 5 PASARON EXITOSAMENTE!")
@@ -234,7 +235,7 @@ func test_nyx_hub_pedestal_and_skill_tree() -> void:
 			break
 
 	test_assert(found_nyx_in_roster == true, "Nyx debe estar registrada en PILOT_ROSTER del Hub 3D")
-	test_assert(nyx_ped_pos.x == 0.0 and nyx_ped_pos.z > 8.0, "El pedestal de Nyx debe estar en el centro de la sala y detrás de Kira y Echo (pos: %s)" % str(nyx_ped_pos))
+	test_assert(nyx_ped_pos == Vector3(0.0, 0.15, 10.5), "El pedestal de Nyx debe estar en (0.0, 0.15, 10.5) (pos: %s)" % str(nyx_ped_pos))
 
 	# 2. Verificar Árbol de Habilidades Exclusivo de Nyx
 	var skill_modal_scene: PackedScene = preload("res://scenes/ui/hub/character_skill_tree_modal.tscn")
@@ -266,3 +267,82 @@ func test_nyx_hub_pedestal_and_skill_tree() -> void:
 	test_assert(skill_modal.current_theme_color == Color(0.9, 0.25, 1.0, 1.0), "El color temático de Nyx debe ser Magenta Neón")
 
 	skill_modal.queue_free()
+
+# ── 8. NYX SECRET CHARACTER INTEGRATION & DEBUGGER ──────────────────────────
+func test_nyx_secret_character_integration() -> void:
+	print("[8/8] Verificando Integración de Nyx como Personaje Secreto y Debugger...")
+	# 1. Resetear carrera
+	SaveManager.reset_career_stats()
+	test_assert(SaveManager.is_character_unlocked(&"nyx") == false, "Nyx debe estar bloqueada por default tras resetear carrera")
+	test_assert(SaveManager.get_career_stats()["total_bosses_killed"] == 0, "Jefes derrotados deben ser 0 tras reset")
+
+	# 2. Pestaña de Carrera no debe mostrar a Nyx bloqueada (evita spoilers)
+	var highscores_scene: PackedScene = preload("res://scenes/ui/highscores/highscores_modal.tscn")
+	var hs_modal = highscores_scene.instantiate()
+	add_child(hs_modal)
+	hs_modal.open_career()
+	var nyx_card_locked = hs_modal.career_container.find_child("NyxCard", true, false)
+	test_assert(nyx_card_locked == null, "La tarjeta de Nyx no debe aparecer en Carrera si está bloqueada")
+	hs_modal.queue_free()
+
+	# 3. Selección de personajes no debe mostrar botón de Nyx si está bloqueada
+	var char_select_scene: PackedScene = preload("res://scenes/ui/character_select/character_select.tscn")
+	var char_select = char_select_scene.instantiate()
+	add_child(char_select)
+	var found_nyx_btn := false
+	for child in char_select.char_list_container.get_children():
+		if child is Button and ("NYX" in child.text or "Nyx" in child.text):
+			found_nyx_btn = true
+	test_assert(found_nyx_btn == false, "Nyx no debe ser visible en el menú de selección de personajes mientras esté bloqueada")
+	char_select.queue_free()
+
+	# 4. Fondo espacial decorativo: Nyx no debe aparecer en available si está bloqueada
+	var bg_scene: PackedScene = preload("res://scenes/ui/character_select/deployment_space_background.tscn")
+	var bg = bg_scene.instantiate()
+	add_child(bg)
+	var available_locked: Array[Dictionary] = []
+	for ship_cfg in bg.SHIPS:
+		if ship_cfg["id"] == &"nyx" and not SaveManager.is_character_unlocked(&"nyx"):
+			continue
+		available_locked.append(ship_cfg)
+	var nyx_in_available := false
+	for s in available_locked:
+		if s["id"] == &"nyx": nyx_in_available = true
+	test_assert(nyx_in_available == false, "La nave de Nyx no debe cruzar el fondo decorativo si está bloqueada")
+	bg.queue_free()
+
+	# 5. Debug menu botones de carrera
+	var debug_scene: PackedScene = preload("res://scenes/ui/debug/debug_menu_modal.tscn")
+	var debug_modal = debug_scene.instantiate()
+	add_child(debug_modal)
+	test_assert(debug_modal.reset_career_btn != null, "DebugMenuModal debe tener botón ResetCareerButton")
+	test_assert(debug_modal.set_bosses_9_btn != null, "DebugMenuModal debe tener botón SetBosses9Button")
+
+	# Probar setear jefes a 9
+	debug_modal._on_set_bosses_9_pressed()
+	test_assert(SaveManager.get_career_stats()["total_bosses_killed"] == 9, "Setear jefes a 9 debe registrar 9 jefes")
+	test_assert(SaveManager.is_character_unlocked(&"nyx") == false, "A los 9 jefes Nyx aún debe estar bloqueada")
+
+	# Derrotar el jefe 10
+	var unlocked_now: bool = SaveManager.record_boss_kill()
+	test_assert(unlocked_now == true, "Al matar el décimo jefe record_boss_kill debe retornar true (nuevo desbloqueo)")
+	test_assert(SaveManager.is_character_unlocked(&"nyx") == true, "Nyx debe quedar desbloqueada tras derrotar 10 jefes")
+
+	# 6. Al desbloquearse, debe aparecer en Carrera, Selección de Personaje y Fondo
+	var hs_unlocked = highscores_scene.instantiate()
+	add_child(hs_unlocked)
+	hs_unlocked.open_career()
+	var nyx_card_unlocked = hs_unlocked.career_container.find_child("NyxCard", true, false)
+	test_assert(nyx_card_unlocked != null, "La tarjeta de Nyx debe mostrarse en Carrera una vez desbloqueada")
+	hs_unlocked.queue_free()
+
+	var char_select_unlocked = char_select_scene.instantiate()
+	add_child(char_select_unlocked)
+	var found_nyx_btn_unlocked := false
+	for child in char_select_unlocked.char_list_container.get_children():
+		if child is Button and ("NYX" in child.text or "Nyx" in child.text):
+			found_nyx_btn_unlocked = true
+	test_assert(found_nyx_btn_unlocked == true, "Nyx debe ser visible y seleccionable en selección de personajes al desbloquearse")
+	char_select_unlocked.queue_free()
+
+	debug_modal.queue_free()

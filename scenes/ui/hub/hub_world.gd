@@ -80,7 +80,7 @@ const PILOT_ROSTER: Array[Dictionary] = [
 		"desc": "Empuña la Hoja Crepuscular ejecutando ráfagas cortantes en medialuna, torbellinos defensivos y estelas de corte dimensional.",
 		"stats": "HP: 110 | Vel: 350 px/s | Daño: 48 (Melee) | Crítico: 15% | Cortes: Escala con Proyectiles",
 		"color": Color(0.9, 0.25, 1.0, 1.0),
-		"pedestal_pos": Vector3(0.0, 0.15, 12.5)
+		"pedestal_pos": Vector3(0.0, 0.15, 10.5)
 	}
 ]
 
@@ -155,7 +155,7 @@ func _ready() -> void:
 	var saved_cid := SaveManager.get_selected_character()
 	var init_idx: int = 0
 	for i in range(PILOT_ROSTER.size()):
-		if PILOT_ROSTER[i]["id"] == saved_cid:
+		if PILOT_ROSTER[i]["id"] == saved_cid and SaveManager.is_character_unlocked(saved_cid):
 			init_idx = i
 			break
 	_select_pilot(init_idx, false)

@@ -646,6 +646,60 @@ static func record_career_run_end(stats_data: Dictionary) -> void:
 	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
 
 
+static func reset_career_stats() -> void:
+	var prof := load_profile()
+	var career := _get_default_career_stats()
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = []
+	for c in prof.get("unlocked_characters", []):
+		var s := StringName(str(c))
+		if s != &"nyx":
+			chars.append(s)
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	if sel_char == &"nyx":
+		sel_char = &"nova"
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
+
+
+static func set_career_bosses_killed(count: int) -> void:
+	var prof := load_profile()
+	var career: Dictionary = get_career_stats()
+	career["total_bosses_killed"] = count
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = []
+	for c in prof.get("unlocked_characters", []):
+		var s := StringName(str(c))
+		if count < 10 and s == &"nyx":
+			continue
+		chars.append(s)
+
+	if count >= 10 and not chars.has(&"nyx"):
+		chars.append(&"nyx")
+
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	if count < 10 and sel_char == &"nyx":
+		sel_char = &"nova"
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
+
+
 
 # ==============================================================================
 # MID-RUN SAVE & RESUME

@@ -114,6 +114,25 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
+[node name="CareerDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ResetCareerButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerDebugRow"]
+custom_minimum_size = Vector2(470, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "↺ RESETEAR CARRERA (BLOQUEAR NYX Y 0 JEFES)"
+
+[node name="SetBosses9Button" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerDebugRow"]
+custom_minimum_size = Vector2(470, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.45, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚡ JEFES A 9 (PRÓXIMO JEFE DESBLOQUEA A NYX)"
+
 [node name="HSeparator3" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 

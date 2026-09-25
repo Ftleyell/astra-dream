@@ -12,6 +12,10 @@ signal closed()
 @onready var infinite_credits_check: CheckBox = $CenterContainer/MainPanel/Margin/VBox/CheatsBox/CreditsCheck
 @onready var infinite_consumables_check: CheckBox = $CenterContainer/MainPanel/Margin/VBox/CheatsBox/ConsumablesCheck
 
+@onready var subtitle_label: Label = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/TitleBox/SubtitleLabel")
+@onready var reset_career_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/ResetCareerButton")
+@onready var set_bosses_9_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/SetBosses9Button")
+
 @onready var stats_container: VBoxContainer = $CenterContainer/MainPanel/Margin/VBox/StatsScroll/StatsList
 @onready var reset_button: Button = $CenterContainer/MainPanel/Margin/VBox/ActionsRow/ResetButton
 @onready var close_button: Button = $CenterContainer/MainPanel/Margin/VBox/ActionsRow/CloseButton
@@ -36,6 +40,14 @@ func _ready() -> void:
 	if infinite_consumables_check:
 		infinite_consumables_check.toggled.connect(_on_infinite_consumables_toggled)
 		UIFocusHelper.apply_cyber_focus(infinite_consumables_check)
+
+	if reset_career_btn:
+		reset_career_btn.pressed.connect(_on_reset_career_pressed)
+		UIFocusHelper.apply_cyber_focus(reset_career_btn)
+
+	if set_bosses_9_btn:
+		set_bosses_9_btn.pressed.connect(_on_set_bosses_9_pressed)
+		UIFocusHelper.apply_cyber_focus(set_bosses_9_btn)
 
 	if reset_button:
 		reset_button.pressed.connect(reset_to_defaults)
@@ -233,14 +245,52 @@ func _setup_focus_chain() -> void:
 			slider.focus_neighbor_bottom = next_ctrl.slider.get_path()
 			input.focus_neighbor_bottom = next_ctrl.input.get_path()
 		else:
-			slider.focus_neighbor_bottom = reset_button.get_path()
-			input.focus_neighbor_bottom = close_button.get_path()
+			if reset_career_btn:
+				slider.focus_neighbor_bottom = reset_career_btn.get_path()
+			else:
+				slider.focus_neighbor_bottom = reset_button.get_path()
+			if set_bosses_9_btn:
+				input.focus_neighbor_bottom = set_bosses_9_btn.get_path()
+			else:
+				input.focus_neighbor_bottom = close_button.get_path()
+
+	if reset_career_btn and set_bosses_9_btn:
+		reset_career_btn.focus_neighbor_top = last_ctrl.slider.get_path()
+		reset_career_btn.focus_neighbor_right = set_bosses_9_btn.get_path()
+		reset_career_btn.focus_neighbor_bottom = reset_button.get_path()
+		set_bosses_9_btn.focus_neighbor_top = last_ctrl.input.get_path()
+		set_bosses_9_btn.focus_neighbor_left = reset_career_btn.get_path()
+		set_bosses_9_btn.focus_neighbor_bottom = close_button.get_path()
 
 	if reset_button and close_button:
-		reset_button.focus_neighbor_top = last_ctrl.slider.get_path()
+		if reset_career_btn:
+			reset_button.focus_neighbor_top = reset_career_btn.get_path()
+		else:
+			reset_button.focus_neighbor_top = last_ctrl.slider.get_path()
 		reset_button.focus_neighbor_right = close_button.get_path()
-		close_button.focus_neighbor_top = last_ctrl.input.get_path()
+		if set_bosses_9_btn:
+			close_button.focus_neighbor_top = set_bosses_9_btn.get_path()
+		else:
+			close_button.focus_neighbor_top = last_ctrl.input.get_path()
 		close_button.focus_neighbor_left = reset_button.get_path()
+
+func _on_reset_career_pressed() -> void:
+	SaveManager.reset_career_stats()
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ DATOS DE CARRERA REINICIADOS. NYX BLOQUEADA (0 JEFES MATADOS)."
+		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.55, 1.0))
+
+func _on_set_bosses_9_pressed() -> void:
+	SaveManager.set_career_bosses_killed(9)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ JEFES MATADOS FIJADOS A 9. ¡EL PRÓXIMO JEFE DERROTADO DESBLOQUEARÁ A NYX!"
+		subtitle_label.add_theme_color_override("font_color", Color(0.9, 0.45, 1.0, 1.0))
 
 func reset_to_defaults() -> void:
 	DebugManager.stat_overrides.clear()

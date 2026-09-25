@@ -43,6 +43,12 @@ const SHIPS: Array[Dictionary] = [
 		"name": "Echo",
 		"tex": preload("res://assets/characters/ships/ship_echo.png"),
 		"glow": Color(0.15, 0.95, 0.95, 0.9)
+	},
+	{
+		"id": &"nyx",
+		"name": "Nyx",
+		"tex": preload("res://assets/characters/ships/ship_nyx.png"),
+		"glow": Color(0.9, 0.25, 1.0, 0.9)
 	}
 ]
 
@@ -94,6 +100,8 @@ func _process(delta: float) -> void:
 func _attempt_spawn_ship() -> void:
 	var available: Array[Dictionary] = []
 	for ship_cfg in SHIPS:
+		if ship_cfg["id"] == &"nyx" and not SaveManager.is_character_unlocked(&"nyx"):
+			continue
 		if not _active_ships.has(ship_cfg["id"]):
 			available.append(ship_cfg)
 
