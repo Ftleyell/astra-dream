@@ -48,16 +48,36 @@ namespace AstraLauncher
 
             string gameExePath = Path.Combine(gameDir, ExeName);
             string gamePckPath = Path.Combine(gameDir, PckName);
+            string versionFile = Path.Combine(gameDir, VersionFileName);
 
-            // 1. Verificar si los archivos del juego estan presentes en AppData. Si no, extraer el payload integrado.
+            string embeddedSha = GetEmbeddedVersionSha();
+            string localSha = "";
+            if (File.Exists(versionFile))
+            {
+                try { localSha = File.ReadAllText(versionFile).Trim(); } catch { }
+            }
+
+            bool versionMismatch = !string.IsNullOrEmpty(embeddedSha) &&
+                                   !string.IsNullOrEmpty(localSha) &&
+                                   !embeddedSha.Equals(localSha, StringComparison.OrdinalIgnoreCase);
+
+            // 1. Verificar si los archivos del juego estan presentes en AppData o si hay una version mas nueva en el launcher.
             bool needsExtraction = !File.Exists(gameExePath) || !File.Exists(gamePckPath) ||
                                   (new FileInfo(gameExePath)).Length < 1000000 ||
-                                  (new FileInfo(gamePckPath)).Length < 1000000;
+                                  (new FileInfo(gamePckPath)).Length < 1000000 ||
+                                  versionMismatch;
 
             if (needsExtraction)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("  [*] Desempaquetando archivos del juego en AppData por primera vez...");
+                if (versionMismatch)
+                {
+                    Console.WriteLine("  [*] Nueva version de juego detectada en el launcher (" + (embeddedSha.Length > 7 ? embeddedSha.Substring(0, 7) : embeddedSha) + "). Actualizando archivos...");
+                }
+                else
+                {
+                    Console.WriteLine("  [*] Desempaquetando archivos del juego en AppData por primera vez...");
+                }
                 Console.ResetColor();
 
                 bool extracted = ExtractEmbeddedPayload(gameDir);
@@ -77,7 +97,7 @@ namespace AstraLauncher
             else
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("  [+] Archivos de juego en AppData listos.");
+                Console.WriteLine("  [+] Archivos de juego en AppData listos (" + (localSha.Length > 7 ? localSha.Substring(0, 7) : "OK") + ").");
                 Console.ResetColor();
             }
 
@@ -100,10 +120,50 @@ namespace AstraLauncher
             Console.ResetColor();
         }
 
+        static string GetEmbeddedVersionSha()
+        {
+            try
+            {
+                Assembly asm = Assembly.GetExecutingAssembly();
+                using (Stream stream = asm.GetManifestResourceStream("payload.zip"))
+                {
+                    if (stream == null) return null;
+                    using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+                    {
+                        ZipArchiveEntry entry = archive.GetEntry(VersionFileName);
+                        if (entry != null)
+                        {
+                            using (Stream entryStream = entry.Open())
+                            using (StreamReader reader = new StreamReader(entryStream))
+                            {
+                                return reader.ReadToEnd().Trim();
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
+
         static bool ExtractEmbeddedPayload(string targetDir)
         {
             try
             {
+                // Limpiar posibles archivos residuales de descargas previas de codigo fuente
+                try
+                {
+                    string oldGodotFile = Path.Combine(targetDir, "project.godot");
+                    if (File.Exists(oldGodotFile)) File.Delete(oldGodotFile);
+                    string[] subDirsToClean = new string[] { "core", "scenes", "addons", "data", "tests", "narrative", "tools" };
+                    foreach (string sub in subDirsToClean)
+                    {
+                        string p = Path.Combine(targetDir, sub);
+                        if (Directory.Exists(p)) Directory.Delete(p, true);
+                    }
+                }
+                catch { }
+
                 Assembly asm = Assembly.GetExecutingAssembly();
                 using (Stream stream = asm.GetManifestResourceStream("payload.zip"))
                 {
@@ -282,26 +342,16 @@ namespace AstraLauncher
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("  [*] NUEVO PARCHE DETECTADO EN GITHUB!");
+                    Console.WriteLine("  [*] NUEVA ACTUALIZACION DISPONIBLE EN GITHUB!");
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine("      Ultimo commit: " + (remoteSha.Length > 7 ? remoteSha.Substring(0, 7) : remoteSha) + (string.IsNullOrEmpty(commitMsg) ? "" : " - " + commitMsg));
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("      Descargando actualizacion automatica...");
+                    Console.WriteLine("      Para descargar la version mas reciente del launcher, ejecuta en PowerShell:");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("      irm https://github.com/" + RepoOwner + "/" + RepoName + "/raw/" + Branch + "/AstraLauncher.exe -OutFile \"$env:USERPROFILE\\Desktop\\AstraLauncher.exe\"");
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine("      Iniciando con la version instalada localmente...\n");
                     Console.ResetColor();
-
-                    bool updated = DownloadAndApplyPatch(gameDir, remoteSha);
-                    if (updated)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("  [+] Parche aplicado con exito!");
-                        Console.ResetColor();
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.WriteLine("  [!] No se pudo aplicar el parche en caliente. Continuando con la version local...");
-                        Console.ResetColor();
-                    }
                 }
             }
             else
@@ -316,64 +366,6 @@ namespace AstraLauncher
                     Console.WriteLine("  [!] Servidor no accesible o modo offline. Usando version local instalada.");
                 }
                 Console.ResetColor();
-            }
-        }
-
-        static bool DownloadAndApplyPatch(string gameDir, string remoteSha)
-        {
-            string zipUrl = "https://github.com/" + RepoOwner + "/" + RepoName + "/archive/refs/heads/" + Branch + ".zip";
-            string tempZip = Path.Combine(gameDir, "_patch_temp.zip");
-            string tempExtract = Path.Combine(gameDir, "_patch_extracted");
-
-            try
-            {
-                using (WebClient wc = new WebClient())
-                {
-                    wc.Headers.Add("User-Agent", "AstraDreamLauncher");
-                    wc.DownloadFile(zipUrl, tempZip);
-                }
-
-                if (Directory.Exists(tempExtract))
-                {
-                    Directory.Delete(tempExtract, true);
-                }
-                ZipFile.ExtractToDirectory(tempZip, tempExtract);
-
-                string extractedRoot = Path.Combine(tempExtract, RepoName + "-" + Branch);
-                if (Directory.Exists(extractedRoot))
-                {
-                    CopyDirectory(extractedRoot, gameDir);
-                }
-
-                File.WriteAllText(Path.Combine(gameDir, VersionFileName), remoteSha);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("  [!] Error al descargar parche: " + ex.Message);
-                Console.ResetColor();
-                return false;
-            }
-            finally
-            {
-                try { if (File.Exists(tempZip)) File.Delete(tempZip); } catch { }
-                try { if (Directory.Exists(tempExtract)) Directory.Delete(tempExtract, true); } catch { }
-            }
-        }
-
-        static void CopyDirectory(string sourceDir, string destDir)
-        {
-            Directory.CreateDirectory(destDir);
-            foreach (string file in Directory.GetFiles(sourceDir))
-            {
-                string target = Path.Combine(destDir, Path.GetFileName(file));
-                try { File.Copy(file, target, true); } catch { }
-            }
-            foreach (string subDir in Directory.GetDirectories(sourceDir))
-            {
-                string target = Path.Combine(destDir, Path.GetFileName(subDir));
-                CopyDirectory(subDir, target);
             }
         }
 
@@ -408,14 +400,14 @@ namespace AstraLauncher
             psi.FileName = gameExePath;
             psi.WorkingDirectory = safeGameDir;
 
-            // Importante: recortar backslashes finales para evitar el bug de escape de comillas de Windows: \"
-            if (File.Exists(projectGodotPath))
-            {
-                psi.Arguments = "--path \"" + safeGameDir + "\"";
-            }
-            else if (File.Exists(gamePckPath))
+            // Importante: En AppData el juego debe correr siempre mediante su paquete compilado (.pck)
+            if (File.Exists(gamePckPath))
             {
                 psi.Arguments = "--main-pack \"" + gamePckPath.TrimEnd('\\', '/') + "\"";
+            }
+            else if (File.Exists(projectGodotPath))
+            {
+                psi.Arguments = "--path \"" + safeGameDir + "\"";
             }
 
             psi.UseShellExecute = false;

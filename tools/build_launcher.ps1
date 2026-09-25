@@ -17,6 +17,37 @@ Write-Host "==========================================================" -Foregro
 Write-Host "         COMPILADOR DE ASTRALAUNCHER (STANDALONE)         " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
+# 0. Asegurar directorios de compilacion
+if (-not (Test-Path $BuildsDir)) { New-Item -ItemType Directory -Path $BuildsDir -Force | Out-Null }
+if (-not (Test-Path $PreAlphaDir)) { New-Item -ItemType Directory -Path $PreAlphaDir -Force | Out-Null }
+
+# Asegurar AstraDream.exe runtime
+if (-not (Test-Path "$PreAlphaDir\AstraDream.exe")) {
+    $CandidateExe = "$env:LOCALAPPDATA\AstraDream\AstraDream.exe"
+    if (-not (Test-Path $CandidateExe)) {
+        $WinGetGui = (Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "Godot_v*_win64.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        if ($WinGetGui -and (Test-Path $WinGetGui)) {
+            $CandidateExe = $WinGetGui
+        }
+    }
+    if ($CandidateExe -and (Test-Path $CandidateExe)) {
+        Copy-Item -Path $CandidateExe -Destination "$PreAlphaDir\AstraDream.exe" -Force
+        Write-Host "[+] Runtime AstraDream.exe preparado para empaquetar." -ForegroundColor Gray
+    } else {
+        throw "No se pudo localizar un ejecutable runtime para AstraDream.exe."
+    }
+}
+
+# Asegurar LEEME_PLAYTEST.txt
+if (-not (Test-Path "$PreAlphaDir\LEEME_PLAYTEST.txt")) {
+    $SourceReadme = "$env:LOCALAPPDATA\AstraDream\LEEME_PLAYTEST.txt"
+    if (Test-Path $SourceReadme) {
+        Copy-Item -Path $SourceReadme -Destination "$PreAlphaDir\LEEME_PLAYTEST.txt" -Force
+    } else {
+        Set-Content -Path "$PreAlphaDir\LEEME_PLAYTEST.txt" -Value "Astra Dream - Pre-Alpha Playtest Build"
+    }
+}
+
 # 1. Exportar PCK actualizado si no se omite
 if (-not $SkipExport) {
     Write-Host "`n[1/4] Exportando nuevo AstraDream.pck con Godot..." -ForegroundColor Yellow
@@ -30,7 +61,7 @@ if (-not $SkipExport) {
         }
     }
     Write-Host "    Usando Godot: $GodotExe" -ForegroundColor Gray
-    & $GodotExe --headless --export-pack "Windows Desktop" "$PreAlphaDir\AstraDream.pck"
+    & $GodotExe --headless --path "$ProjectRoot" --export-pack "Windows Desktop" "$PreAlphaDir\AstraDream.pck"
     Write-Host "[+] AstraDream.pck exportado con exito." -ForegroundColor Green
 } else {
     Write-Host "`n[1/4] Omitiendo exportacion de PCK (usando existente)..." -ForegroundColor Gray
@@ -83,14 +114,26 @@ $IconArg = if (Test-Path $IcoPath) { "/win32icon:$IcoPath" } else { "" }
 if (Test-Path $TargetExe) {
     Copy-Item $TargetExe -Destination "$PreAlphaDir\AstraLauncher.exe" -Force
     Copy-Item $TargetExe -Destination "$ProjectRoot\AstraLauncher.exe" -Force
+
+    $DesktopDir = [Environment]::GetFolderPath('Desktop')
+    $DesktopLauncher = "$DesktopDir\AstraLauncher.exe"
+    Copy-Item $TargetExe -Destination $DesktopLauncher -Force
+
+    # Sincronizar AppData directamente para disponibilidad inmediata
+    $AppDataDir = "$env:LOCALAPPDATA\AstraDream"
+    if (Test-Path $AppDataDir) {
+        Copy-Item "$PreAlphaDir\AstraDream.pck" -Destination "$AppDataDir\AstraDream.pck" -Force
+        Copy-Item "$PreAlphaDir\version.sha" -Destination "$AppDataDir\version.sha" -Force
+    }
+
     $ExeSizeMB = [math]::Round(((Get-Item $TargetExe).Length / 1MB), 2)
     Write-Host "`n==========================================================" -ForegroundColor Green
-    Write-Host "[SUCCESS] AstraLauncher.exe generado exitosamente!" -ForegroundColor Green
+    Write-Host "[SUCCESS] AstraLauncher.exe generado y desplegado exitosamente!" -ForegroundColor Green
     Write-Host "Tamano final del ejecutable autocontenido: $ExeSizeMB MB" -ForegroundColor Cyan
-    Write-Host "Ubicaciones:" -ForegroundColor Gray
-    Write-Host " - $TargetExe" -ForegroundColor Gray
-    Write-Host " - $PreAlphaDir\AstraLauncher.exe" -ForegroundColor Gray
-    Write-Host " - $ProjectRoot\AstraLauncher.exe" -ForegroundColor Gray
+    Write-Host "Ubicaciones actualizadas:" -ForegroundColor Gray
+    Write-Host " - Repositorio: $ProjectRoot\AstraLauncher.exe" -ForegroundColor Gray
+    Write-Host " - Escritorio:   $DesktopLauncher" -ForegroundColor Gray
+    Write-Host " - Build cache:  $PreAlphaDir\AstraLauncher.exe" -ForegroundColor Gray
     Write-Host "==========================================================" -ForegroundColor Green
 } else {
     Write-Host "`n[ERROR] Fallo la generacion de AstraLauncher.exe" -ForegroundColor Red

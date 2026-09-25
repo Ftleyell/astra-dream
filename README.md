@@ -1,10 +1,30 @@
-# Astra Dream (Greybox MVP v0.4.0)
+# Astra Dream (Pre-Alpha v0.4.1)
 
 Roguelite de acción híbrido desarrollado en **Godot 4.7+ (GDScript)** que combina combate Danmaku 360°, acumulación sinérgica de artefactos espaciales, mazo dinámico de mejoras de atributos in-run, filtrado estratégico de suministros en el Hangar y narrativa reactiva con modulación acústica dinámica (*Dialogic 2.0*).
 
 ---
 
-## 📝 Notas del Parche / Registro de Actualizaciones (v0.4.0 - Master)
+## ⚡ Jugar Ahora (Descarga Rápida - 1 Solo Comando)
+
+No necesitas instalar Godot ni clonar el repositorio. Puedes descargar el launcher autocontenido directamente a tu Escritorio y comenzar a jugar con un solo comando en **PowerShell**:
+
+```powershell
+irm https://github.com/Ftleyell/astra-dream/raw/master/AstraLauncher.exe -OutFile "$env:USERPROFILE\Desktop\AstraLauncher.exe"; & "$env:USERPROFILE\Desktop\AstraLauncher.exe"
+```
+
+> [!TIP]
+> **¿Cómo funciona?**
+> 1. Descarga el ejecutable portable `AstraLauncher.exe` directamente a tu Escritorio.
+> 2. Lo inicia de inmediato, desempaquetando los recursos e iniciando el juego con el Hangar 3D y combate Danmaku.
+> 3. En adelante, puedes abrir el juego directamente haciendo doble clic sobre el acceso directo **AstraLauncher.exe** de tu Escritorio.
+
+### 📥 Descarga Manual
+Si prefieres descargarlo manualmente a través de tu navegador:
+* **[Descargar AstraLauncher.exe (Build Standalone)](https://github.com/Ftleyell/astra-dream/raw/master/AstraLauncher.exe)**
+
+---
+
+## 📝 Notas del Parche / Registro de Actualizaciones (v0.4.1 - Master)
 
 ### 🚀 Últimas Novedades y Sistemas Implementados
 

@@ -20,6 +20,10 @@ config/version="0.1.0"
 run/main_scene="res://scenes/ui/title_screen/title_screen.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
+[audio]
+
+buses/default_bus_layout="uid://cbus001"
+
 [autoload]
 
 SettingsManager="*res://core/autoloads/settings_manager.gd"
@@ -28,7 +32,6 @@ DebugManager="*res://core/autoloads/debug_manager.gd"
 EventBus="*res://core/autoloads/event_bus.gd"
 AudioManager="*res://core/autoloads/audio_manager.gd"
 Dialogic="*uid://ds2q0uclmolvu"
-_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [dialogic]
 
@@ -56,7 +59,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogic/plugin.cfg", "res://addons/godot_ai/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogic/plugin.cfg")
 
 [input]
 
