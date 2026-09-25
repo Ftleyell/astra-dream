@@ -538,6 +538,9 @@ func _setup_terminals() -> void:
 		btn_prompt_cancel.pressed.connect(_on_prompt_cancelled)
 
 
+const PetDataScript := preload("res://data/pets/pet_data.gd")
+const HubPetRoamerScript := preload("res://scenes/ui/hub/hub_pet_roamer.gd")
+
 func _setup_hub_pets() -> void:
 	var pets_group := get_node_or_null("HubPets")
 	if not pets_group:
@@ -548,14 +551,14 @@ func _setup_hub_pets() -> void:
 		for c in pets_group.get_children():
 			c.queue_free()
 
-	var roster := PetData.load_roster_ordered()
+	var roster := PetDataScript.load_roster_ordered()
 	for p_data in roster:
 		var pid := p_data.pet_id
 		# Mascota secreta Cosmo solo aparece si fue desbloqueada
 		if not SaveManager.is_pet_unlocked(pid):
 			continue
 
-		var roamer := HubPetRoamer.new()
+		var roamer = HubPetRoamerScript.new()
 		pets_group.add_child(roamer)
 		var spawn_pos := Vector3(
 			randf_range(-3.0, 3.0),
@@ -563,6 +566,7 @@ func _setup_hub_pets() -> void:
 			randf_range(0.0, 6.0)
 		)
 		roamer.setup(p_data, spawn_pos)
+
 
 
 func _update_mission_terminal_label() -> void:

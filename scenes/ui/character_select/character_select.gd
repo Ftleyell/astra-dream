@@ -332,7 +332,8 @@ func _select_character(char_id: StringName) -> void:
 
 func _refresh_pet_display() -> void:
 	var sel_pid := SaveManager.get_selected_pet()
-	var pet_res := PetData.get_pet(sel_pid)
+	const PetDataScript := preload("res://data/pets/pet_data.gd")
+	var pet_res = PetDataScript.get_pet(sel_pid)
 	if pet_res:
 		if pet_icon:
 			pet_icon.texture = pet_res.icon

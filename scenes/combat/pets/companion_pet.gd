@@ -38,7 +38,8 @@ func _ready() -> void:
 	z_index = 25
 	if not pet_data:
 		var pid := SaveManager.get_selected_pet()
-		pet_data = PetData.get_pet(pid)
+		const PetDataScript := preload("res://data/pets/pet_data.gd")
+		pet_data = PetDataScript.get_pet(pid)
 
 	_apply_pet_visuals()
 	_acquire_player()

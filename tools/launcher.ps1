@@ -156,10 +156,23 @@ if ($FoundExe) {
     Start-Process -FilePath $FoundExe -WorkingDirectory (Split-Path -Parent $FoundExe)
     Start-Sleep -Seconds 2
 } else {
+    $GodotExe = "godot"
     $GodotCmd = Get-Command godot -ErrorAction SilentlyContinue
+    if (-not $GodotCmd) {
+        $WinGetCandidate = (Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "*godot*console*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        if (-not $WinGetCandidate) {
+            $WinGetCandidate = (Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "*godot*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        }
+        if ($WinGetCandidate -and (Test-Path $WinGetCandidate)) {
+            $GodotExe = $WinGetCandidate
+            $GodotCmd = $true
+        }
+    }
     if ($GodotCmd) {
-        Write-Host "  [+] Godot detectado en sistema. Lanzando proyecto..." -ForegroundColor Green
-        Start-Process -FilePath "godot" -ArgumentList "--path `"$GameDir`"" -WorkingDirectory $GameDir
+        Write-Host "  [*] Sincronizando e importando assets con el motor Godot..." -ForegroundColor Yellow
+        & $GodotExe --headless --path $GameDir --editor --quit
+        Write-Host "  [+] Godot listo. Lanzando Astra Dream..." -ForegroundColor Green
+        Start-Process -FilePath $GodotExe -ArgumentList "--path `"$GameDir`"" -WorkingDirectory $GameDir
         Start-Sleep -Seconds 2
     } else {
         Write-Host "  [!] No se encontro AstraDream.exe en esta carpeta." -ForegroundColor Red

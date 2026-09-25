@@ -45,7 +45,8 @@ func _populate_pets() -> void:
 		child.queue_free()
 	_pet_buttons.clear()
 
-	var all_pets := PetData.load_roster_ordered()
+	const PetDataScript := preload("res://data/pets/pet_data.gd")
+	var all_pets := PetDataScript.load_roster_ordered()
 	var selected_pid := SaveManager.get_selected_pet()
 
 	for p_data in all_pets:

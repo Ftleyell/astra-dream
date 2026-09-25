@@ -11,43 +11,43 @@ const SHIPS: Array[Dictionary] = [
 	{
 		"id": &"nova",
 		"name": "Nova",
-		"tex": preload("res://assets/characters/ships/ship_nova.png"),
+		"tex_path": "res://assets/characters/ships/ship_nova.png",
 		"glow": Color(1.0, 0.5, 0.15, 0.9)
 	},
 	{
 		"id": &"valentina",
 		"name": "Valentina",
-		"tex": preload("res://assets/characters/ships/ship_valentina.png"),
+		"tex_path": "res://assets/characters/ships/ship_valentina.png",
 		"glow": Color(0.2, 0.85, 1.0, 0.9)
 	},
 	{
 		"id": &"kira",
 		"name": "Kira",
-		"tex": preload("res://assets/characters/ships/ship_kira.png"),
+		"tex_path": "res://assets/characters/ships/ship_kira.png",
 		"glow": Color(0.3, 1.0, 0.55, 0.9)
 	},
 	{
 		"id": &"selene",
 		"name": "Selene",
-		"tex": preload("res://assets/characters/ships/ship_selene.png"),
+		"tex_path": "res://assets/characters/ships/ship_selene.png",
 		"glow": Color(0.85, 0.35, 1.0, 0.9)
 	},
 	{
 		"id": &"roxy",
 		"name": "Roxanne",
-		"tex": preload("res://assets/characters/ships/ship_roxy.png"),
+		"tex_path": "res://assets/characters/ships/ship_roxy.png",
 		"glow": Color(1.0, 0.85, 0.25, 0.9)
 	},
 	{
 		"id": &"echo",
 		"name": "Echo",
-		"tex": preload("res://assets/characters/ships/ship_echo.png"),
+		"tex_path": "res://assets/characters/ships/ship_echo.png",
 		"glow": Color(0.15, 0.95, 0.95, 0.9)
 	},
 	{
 		"id": &"nyx",
 		"name": "Nyx",
-		"tex": preload("res://assets/characters/ships/ship_nyx.png"),
+		"tex_path": "res://assets/characters/ships/ship_nyx.png",
 		"glow": Color(0.9, 0.25, 1.0, 0.9)
 	}
 ]
@@ -185,8 +185,14 @@ func _spawn_ship(cfg: Dictionary) -> void:
 	ships_container.add_child(trail)
 
 	# Sprite
+	var tex := _get_ship_texture(cfg)
+	if not tex:
+		trail.queue_free()
+		ship_node.queue_free()
+		return
+
 	var sprite := Sprite2D.new()
-	sprite.texture = cfg["tex"]
+	sprite.texture = tex
 	var ship_scale: float = randf_range(0.36, 0.54)
 	sprite.scale = Vector2(ship_scale, ship_scale)
 	sprite.modulate = Color(0.9, 0.95, 1.0, randf_range(0.75, 0.92))
@@ -279,3 +285,14 @@ func _cleanup_ship(id: StringName, node: Node2D, trail: Line2D) -> void:
 		trail.queue_free()
 	if is_instance_valid(node):
 		node.queue_free()
+
+func _get_ship_texture(cfg: Dictionary) -> Texture2D:
+	if cfg.has("tex") and cfg["tex"] is Texture2D:
+		return cfg["tex"]
+	var p: String = cfg.get("tex_path", "")
+	if not p.is_empty() and ResourceLoader.exists(p):
+		var res = load(p)
+		if res is Texture2D:
+			cfg["tex"] = res
+			return res
+	return null

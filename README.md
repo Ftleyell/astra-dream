@@ -80,6 +80,10 @@ git lfs pull
 & "C:\Ruta\Hacia\Godot_console.exe" --path .
 ```
 
+> [!TIP]
+> **Ejecución en 1 Clic para Desarrolladores:**
+> También puedes hacer doble clic directamente sobre `dev_run.bat` (o ejecutar `.\dev_run.bat` en la terminal). El script detecta Godot automáticamente, recompila la caché interna de nuevos assets/scripts y lanza el juego de una sola vez.
+
 ---
 
 ## 🎮 Controles

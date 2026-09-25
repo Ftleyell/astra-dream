@@ -988,7 +988,8 @@ func _spawn_companion_pet() -> void:
 	if not pet_scene or not is_instance_valid(player):
 		return
 	var pet_id := SaveManager.get_selected_pet()
-	var p_data := PetData.get_pet(pet_id)
+	const PetDataScript := preload("res://data/pets/pet_data.gd")
+	var p_data = PetDataScript.get_pet(pet_id)
 	active_pet = pet_scene.instantiate() as CompanionPet
 	active_pet.setup(p_data, player)
 	add_child(active_pet)
