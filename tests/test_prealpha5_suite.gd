@@ -130,8 +130,14 @@ func test_rainbow_enemy() -> void:
 	add_child(rainbow_enemy)
 	test_assert(rainbow_enemy.enemy_id == &"enemy_rainbow", "ID del enemigo debe ser enemy_rainbow")
 	test_assert(rainbow_enemy.max_health >= 300.0, "Enemigo arcoíris debe tener alta vida (actual: %.1f)" % rainbow_enemy.max_health)
-	test_assert(rainbow_enemy.move_speed >= 380.0, "Enemigo arcoíris debe ser muy veloz para escapar (actual: %.1f)" % rainbow_enemy.move_speed)
+	test_assert(rainbow_enemy.move_speed >= 220.0 and rainbow_enemy.move_speed <= 260.0, "Enemigo arcoíris debe tener velocidad balanceada interceptable (actual: %.1f)" % rainbow_enemy.move_speed)
 	test_assert(rainbow_enemy.credits_reward >= 200, "Debe otorgar gran botín de créditos (actual: %d C)" % rainbow_enemy.credits_reward)
+
+	var engine_p = rainbow_enemy.get_node_or_null("EngineParticles")
+	test_assert(engine_p != null, "RainbowEnemy debe tener partículas de propulsión EngineParticles")
+
+	rainbow_enemy.setup_transverse_flight(Vector2.ZERO, 0.0)
+	test_assert(rainbow_enemy._current_flight_dir.length() > 0.9, "setup_transverse_flight configura vector de vuelo válido")
 
 	# Simular muerte y nivel instantáneo para el jugador
 	var test_player = CharacterBody2D.new()

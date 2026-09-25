@@ -79,9 +79,13 @@ func _try_spawn_rainbow_enemy() -> void:
 		return
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
+	# Spawn visible en la periferia de pantalla (480-520px)
+	var spawn_dist := randf_range(480.0, 520.0)
 	var angle := randf() * TAU
-	var spawn_pos := center + Vector2(cos(angle), sin(angle)) * spawn_radius_min
-	_spawn_enemy_at(rainbow_scene, spawn_pos)
+	var spawn_pos := center + Vector2(cos(angle), sin(angle)) * spawn_dist
+	var enemy: Node2D = _spawn_enemy_at(rainbow_scene, spawn_pos)
+	if enemy and enemy.has_method("setup_transverse_flight"):
+		enemy.setup_transverse_flight(center, angle)
 
 func set_wave(wave_num: int) -> void:
 	current_wave = wave_num
@@ -185,15 +189,16 @@ func _trigger_swarm_rush() -> void:
 
 	swarm_rush_triggered.emit(rush_count)
 
-func _spawn_enemy_at(scene: PackedScene, pos: Vector2) -> void:
+func _spawn_enemy_at(scene: PackedScene, pos: Vector2) -> Node2D:
 	if not scene:
-		return
+		return null
 	var enemy := scene.instantiate() as Node2D
 	if not enemy:
-		return
+		return null
 	enemy.global_position = pos
 	var parent_node := get_parent() if is_inside_tree() else null
 	if not parent_node and is_inside_tree():
 		parent_node = get_tree().current_scene
 	if parent_node:
 		parent_node.add_child(enemy)
+	return enemy
