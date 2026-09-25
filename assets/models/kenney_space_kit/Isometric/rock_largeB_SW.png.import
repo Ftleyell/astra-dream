@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dclrf5e5dvgv7"
-path="res://.godot/imported/rock_largeB_SW.png-e61e4b5ac840a16af29724cdb4971e12.ctex"
+path="res://.godot/imported/rock_largeB_SW.png-5f6bae1c5aad350030d9f0bec3d00e73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/rock_largeB_SW.png"
-dest_files=["res://.godot/imported/rock_largeB_SW.png-e61e4b5ac840a16af29724cdb4971e12.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/rock_largeB_SW.png"
+dest_files=["res://.godot/imported/rock_largeB_SW.png-5f6bae1c5aad350030d9f0bec3d00e73.ctex"]
 
 [params]
 

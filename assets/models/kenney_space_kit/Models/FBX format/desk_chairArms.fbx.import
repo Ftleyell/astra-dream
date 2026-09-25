@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://doo8h5lavuwmd"
-path="res://.godot/imported/desk_chairArms.fbx-eab24d68bb47f895465b62ff0f26a3d7.scn"
+path="res://.godot/imported/desk_chairArms.fbx-e556e4439332946d62fe5b1b4c32c5a3.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/desk_chairArms.fbx"
-dest_files=["res://.godot/imported/desk_chairArms.fbx-eab24d68bb47f895465b62ff0f26a3d7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/desk_chairArms.fbx"
+dest_files=["res://.godot/imported/desk_chairArms.fbx-e556e4439332946d62fe5b1b4c32c5a3.scn"]
 
 [params]
 

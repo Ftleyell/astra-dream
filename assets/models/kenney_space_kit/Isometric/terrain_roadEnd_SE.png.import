@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c44uwsn2ktu48"
-path="res://.godot/imported/terrain_roadEnd_SE.png-442741ed51478592b3abcde69266411a.ctex"
+path="res://.godot/imported/terrain_roadEnd_SE.png-d36802260cd8618a061b39c31556fda6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_roadEnd_SE.png"
-dest_files=["res://.godot/imported/terrain_roadEnd_SE.png-442741ed51478592b3abcde69266411a.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_roadEnd_SE.png"
+dest_files=["res://.godot/imported/terrain_roadEnd_SE.png-d36802260cd8618a061b39c31556fda6.ctex"]
 
 [params]
 

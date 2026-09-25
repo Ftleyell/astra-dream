@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://l6kev3ko4rcy"
-path="res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"
+path="res://.godot/imported/monorail_trackStraight.obj-d48a2a0bbadba799cc0283df2e569c51.mesh"
 
 [deps]
 
-files=["res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"]
+files=["res://.godot/imported/monorail_trackStraight.obj-d48a2a0bbadba799cc0283df2e569c51.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trackStraight.obj"
-dest_files=["res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh", "res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/monorail_trackStraight.obj"
+dest_files=["res://.godot/imported/monorail_trackStraight.obj-d48a2a0bbadba799cc0283df2e569c51.mesh", "res://.godot/imported/monorail_trackStraight.obj-d48a2a0bbadba799cc0283df2e569c51.mesh"]
 
 [params]
 

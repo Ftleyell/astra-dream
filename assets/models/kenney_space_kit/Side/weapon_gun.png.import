@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cuhjhfdo41q4w"
-path="res://.godot/imported/weapon_gun.png-543facc32288aaf3bc2a7a7ea7e2ed84.ctex"
+path="res://.godot/imported/weapon_gun.png-8b5247251c2ed9fabaaffcdd15174a46.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/weapon_gun.png"
-dest_files=["res://.godot/imported/weapon_gun.png-543facc32288aaf3bc2a7a7ea7e2ed84.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/weapon_gun.png"
+dest_files=["res://.godot/imported/weapon_gun.png-8b5247251c2ed9fabaaffcdd15174a46.ctex"]
 
 [params]
 

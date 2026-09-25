@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cf57lvqkj7pkw"
-path="res://.godot/imported/stairs_corner.fbx-960dbf7e08cafc4a792b2813f2966296.scn"
+path="res://.godot/imported/stairs_corner.fbx-808b7c1b5e32ad4b99a6ec011def5011.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/stairs_corner.fbx"
-dest_files=["res://.godot/imported/stairs_corner.fbx-960dbf7e08cafc4a792b2813f2966296.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/stairs_corner.fbx"
+dest_files=["res://.godot/imported/stairs_corner.fbx-808b7c1b5e32ad4b99a6ec011def5011.scn"]
 
 [params]
 

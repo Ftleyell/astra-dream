@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cfs0vrv6w6mkd"
-path="res://.godot/imported/craft_cargoB.obj-36c1239073bcfd0962b0ec059bcb81ba.mesh"
+path="res://.godot/imported/craft_cargoB.obj-db69672ab667eac10784552de5d23c52.mesh"
 
 [deps]
 
-files=["res://.godot/imported/craft_cargoB.obj-36c1239073bcfd0962b0ec059bcb81ba.mesh"]
+files=["res://.godot/imported/craft_cargoB.obj-db69672ab667eac10784552de5d23c52.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/craft_cargoB.obj"
-dest_files=["res://.godot/imported/craft_cargoB.obj-36c1239073bcfd0962b0ec059bcb81ba.mesh", "res://.godot/imported/craft_cargoB.obj-36c1239073bcfd0962b0ec059bcb81ba.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/craft_cargoB.obj"
+dest_files=["res://.godot/imported/craft_cargoB.obj-db69672ab667eac10784552de5d23c52.mesh", "res://.godot/imported/craft_cargoB.obj-db69672ab667eac10784552de5d23c52.mesh"]
 
 [params]
 

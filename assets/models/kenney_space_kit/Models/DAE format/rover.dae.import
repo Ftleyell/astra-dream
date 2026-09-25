@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d0c5d52bjjinp"
-path="res://.godot/imported/rover.dae-200ff26623adda1a98e43baeac8b23a1.scn"
+path="res://.godot/imported/rover.dae-fcde1f8aa9797a2f62d5a38661811dac.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rover.dae"
-dest_files=["res://.godot/imported/rover.dae-200ff26623adda1a98e43baeac8b23a1.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rover.dae"
+dest_files=["res://.godot/imported/rover.dae-fcde1f8aa9797a2f62d5a38661811dac.scn"]
 
 [params]
 

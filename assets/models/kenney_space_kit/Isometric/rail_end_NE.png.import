@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://htdw8iq1s66b"
-path="res://.godot/imported/rail_end_NE.png-5b55430707c62dbae7aa84b8f3dc4ae4.ctex"
+path="res://.godot/imported/rail_end_NE.png-f0deaef7fcd32c20b347db53a477bc0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/rail_end_NE.png"
-dest_files=["res://.godot/imported/rail_end_NE.png-5b55430707c62dbae7aa84b8f3dc4ae4.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/rail_end_NE.png"
+dest_files=["res://.godot/imported/rail_end_NE.png-f0deaef7fcd32c20b347db53a477bc0e.ctex"]
 
 [params]
 

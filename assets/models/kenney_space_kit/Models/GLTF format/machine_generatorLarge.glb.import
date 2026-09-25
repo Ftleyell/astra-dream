@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c8sq7dsqehi22"
-path="res://.godot/imported/machine_generatorLarge.glb-0cea0d22dcaff68caff7f56b124a4195.scn"
+path="res://.godot/imported/machine_generatorLarge.glb-d1a149f0fae6cd2d236c87f2b0e47201.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/machine_generatorLarge.glb"
-dest_files=["res://.godot/imported/machine_generatorLarge.glb-0cea0d22dcaff68caff7f56b124a4195.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/machine_generatorLarge.glb"
+dest_files=["res://.godot/imported/machine_generatorLarge.glb-d1a149f0fae6cd2d236c87f2b0e47201.scn"]
 
 [params]
 

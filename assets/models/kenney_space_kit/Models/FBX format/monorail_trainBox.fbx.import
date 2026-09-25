@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bs7a41v76dmat"
-path="res://.godot/imported/monorail_trainBox.fbx-2e80747c9dd575a4a0854987291c7968.scn"
+path="res://.godot/imported/monorail_trainBox.fbx-92c09fce20e651255a2620eef6641573.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/monorail_trainBox.fbx"
-dest_files=["res://.godot/imported/monorail_trainBox.fbx-2e80747c9dd575a4a0854987291c7968.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/monorail_trainBox.fbx"
+dest_files=["res://.godot/imported/monorail_trainBox.fbx-92c09fce20e651255a2620eef6641573.scn"]
 
 [params]
 

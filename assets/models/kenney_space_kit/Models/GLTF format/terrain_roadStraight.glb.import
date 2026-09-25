@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://coxbva0xvr5xd"
-path="res://.godot/imported/terrain_roadStraight.glb-a998bdab8ebfba12c05fbb091227a327.scn"
+path="res://.godot/imported/terrain_roadStraight.glb-db8dab888aa63bf1cc7646535c3c9c2b.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/terrain_roadStraight.glb"
-dest_files=["res://.godot/imported/terrain_roadStraight.glb-a998bdab8ebfba12c05fbb091227a327.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/terrain_roadStraight.glb"
+dest_files=["res://.godot/imported/terrain_roadStraight.glb-db8dab888aa63bf1cc7646535c3c9c2b.scn"]
 
 [params]
 

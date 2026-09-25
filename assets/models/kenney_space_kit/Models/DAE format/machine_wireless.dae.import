@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cr1vtlsqkujhn"
-path="res://.godot/imported/machine_wireless.dae-60743f09899c40a4eb5c15ce0bf42321.scn"
+path="res://.godot/imported/machine_wireless.dae-a5586535130f621a07b3222c2cbb6684.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/machine_wireless.dae"
-dest_files=["res://.godot/imported/machine_wireless.dae-60743f09899c40a4eb5c15ce0bf42321.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/machine_wireless.dae"
+dest_files=["res://.godot/imported/machine_wireless.dae-a5586535130f621a07b3222c2cbb6684.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ccvriuw52hfib"
-path="res://.godot/imported/terrain_roadStraight.dae-f2aabe61c1c0ca89ce4868752cd249eb.scn"
+path="res://.godot/imported/terrain_roadStraight.dae-2f5c17845b9a8bbcff0a6c537e4fbd47.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_roadStraight.dae"
-dest_files=["res://.godot/imported/terrain_roadStraight.dae-f2aabe61c1c0ca89ce4868752cd249eb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_roadStraight.dae"
+dest_files=["res://.godot/imported/terrain_roadStraight.dae-2f5c17845b9a8bbcff0a6c537e4fbd47.scn"]
 
 [params]
 

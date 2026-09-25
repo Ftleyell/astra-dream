@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://iu5r3bfbogkj"
-path="res://.godot/imported/rover_SE.png-a4c6b64e3bbc5fcfeb18adab69008ce6.ctex"
+path="res://.godot/imported/rover_SE.png-550c9b7838e56369ca7fd2e87696f0c1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/rover_SE.png"
-dest_files=["res://.godot/imported/rover_SE.png-a4c6b64e3bbc5fcfeb18adab69008ce6.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/rover_SE.png"
+dest_files=["res://.godot/imported/rover_SE.png-550c9b7838e56369ca7fd2e87696f0c1.ctex"]
 
 [params]
 

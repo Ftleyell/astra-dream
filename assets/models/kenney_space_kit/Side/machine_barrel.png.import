@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cj7416fs6t885"
-path="res://.godot/imported/machine_barrel.png-b42534f39e3bf14e1882011c0af63784.ctex"
+path="res://.godot/imported/machine_barrel.png-69946abf9e431be020ad3d16765bd6a7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/machine_barrel.png"
-dest_files=["res://.godot/imported/machine_barrel.png-b42534f39e3bf14e1882011c0af63784.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/machine_barrel.png"
+dest_files=["res://.godot/imported/machine_barrel.png-69946abf9e431be020ad3d16765bd6a7.ctex"]
 
 [params]
 

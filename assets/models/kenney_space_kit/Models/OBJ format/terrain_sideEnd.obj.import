@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dpifo03e400uu"
-path="res://.godot/imported/terrain_sideEnd.obj-8bba1c08e5786d998408f2352885b13d.mesh"
+path="res://.godot/imported/terrain_sideEnd.obj-471d065b33462371ccfaa2735f234086.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_sideEnd.obj-8bba1c08e5786d998408f2352885b13d.mesh"]
+files=["res://.godot/imported/terrain_sideEnd.obj-471d065b33462371ccfaa2735f234086.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_sideEnd.obj"
-dest_files=["res://.godot/imported/terrain_sideEnd.obj-8bba1c08e5786d998408f2352885b13d.mesh", "res://.godot/imported/terrain_sideEnd.obj-8bba1c08e5786d998408f2352885b13d.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_sideEnd.obj"
+dest_files=["res://.godot/imported/terrain_sideEnd.obj-471d065b33462371ccfaa2735f234086.mesh", "res://.godot/imported/terrain_sideEnd.obj-471d065b33462371ccfaa2735f234086.mesh"]
 
 [params]
 

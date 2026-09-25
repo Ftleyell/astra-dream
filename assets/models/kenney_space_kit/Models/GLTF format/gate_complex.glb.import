@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://chwp2qq64ihx1"
-path="res://.godot/imported/gate_complex.glb-d162455b0535d69f8b5333da86b00aff.scn"
+path="res://.godot/imported/gate_complex.glb-2b448c1243c4626fd04075b9cfe5eaf9.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/gate_complex.glb"
-dest_files=["res://.godot/imported/gate_complex.glb-d162455b0535d69f8b5333da86b00aff.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/gate_complex.glb"
+dest_files=["res://.godot/imported/gate_complex.glb-2b448c1243c4626fd04075b9cfe5eaf9.scn"]
 
 [params]
 

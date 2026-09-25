@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ckplvrdsmb3f6"
-path="res://.godot/imported/monorail_trackCornerSmall.obj-0653250c79c3073185a1a25ca7119dba.mesh"
+path="res://.godot/imported/monorail_trackCornerSmall.obj-f11eba5689bcfe60d09f7d4754f4b373.mesh"
 
 [deps]
 
-files=["res://.godot/imported/monorail_trackCornerSmall.obj-0653250c79c3073185a1a25ca7119dba.mesh"]
+files=["res://.godot/imported/monorail_trackCornerSmall.obj-f11eba5689bcfe60d09f7d4754f4b373.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trackCornerSmall.obj"
-dest_files=["res://.godot/imported/monorail_trackCornerSmall.obj-0653250c79c3073185a1a25ca7119dba.mesh", "res://.godot/imported/monorail_trackCornerSmall.obj-0653250c79c3073185a1a25ca7119dba.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/monorail_trackCornerSmall.obj"
+dest_files=["res://.godot/imported/monorail_trackCornerSmall.obj-f11eba5689bcfe60d09f7d4754f4b373.mesh", "res://.godot/imported/monorail_trackCornerSmall.obj-f11eba5689bcfe60d09f7d4754f4b373.mesh"]
 
 [params]
 

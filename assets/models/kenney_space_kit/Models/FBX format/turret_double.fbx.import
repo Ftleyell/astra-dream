@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bm4guuli5bvgm"
-path="res://.godot/imported/turret_double.fbx-c6be76d2081a213130f156b5cccfb92b.scn"
+path="res://.godot/imported/turret_double.fbx-919a52d53502fcfe8d97a259eef8ba9d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/turret_double.fbx"
-dest_files=["res://.godot/imported/turret_double.fbx-c6be76d2081a213130f156b5cccfb92b.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/turret_double.fbx"
+dest_files=["res://.godot/imported/turret_double.fbx-919a52d53502fcfe8d97a259eef8ba9d.scn"]
 
 [params]
 

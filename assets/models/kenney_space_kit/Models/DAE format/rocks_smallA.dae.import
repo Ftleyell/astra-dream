@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bv7d4kgdtnteb"
-path="res://.godot/imported/rocks_smallA.dae-3eb0661a759fcfbca7b1ce73d4ce1aea.scn"
+path="res://.godot/imported/rocks_smallA.dae-56c0ba9e162a444f20d6b0f81129d781.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rocks_smallA.dae"
-dest_files=["res://.godot/imported/rocks_smallA.dae-3eb0661a759fcfbca7b1ce73d4ce1aea.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rocks_smallA.dae"
+dest_files=["res://.godot/imported/rocks_smallA.dae-56c0ba9e162a444f20d6b0f81129d781.scn"]
 
 [params]
 

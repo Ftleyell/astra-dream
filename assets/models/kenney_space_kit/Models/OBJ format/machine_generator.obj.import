@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cbeml7scbb2ry"
-path="res://.godot/imported/machine_generator.obj-dece9365217f6191614b8ac75720cb5a.mesh"
+path="res://.godot/imported/machine_generator.obj-a14a7139faeb2a0291a75b767959a162.mesh"
 
 [deps]
 
-files=["res://.godot/imported/machine_generator.obj-dece9365217f6191614b8ac75720cb5a.mesh"]
+files=["res://.godot/imported/machine_generator.obj-a14a7139faeb2a0291a75b767959a162.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/machine_generator.obj"
-dest_files=["res://.godot/imported/machine_generator.obj-dece9365217f6191614b8ac75720cb5a.mesh", "res://.godot/imported/machine_generator.obj-dece9365217f6191614b8ac75720cb5a.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/machine_generator.obj"
+dest_files=["res://.godot/imported/machine_generator.obj-a14a7139faeb2a0291a75b767959a162.mesh", "res://.godot/imported/machine_generator.obj-a14a7139faeb2a0291a75b767959a162.mesh"]
 
 [params]
 

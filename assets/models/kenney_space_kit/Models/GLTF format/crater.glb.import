@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b25k8px5fxxj3"
-path="res://.godot/imported/crater.glb-502dcdd241e621da61befcf2ae3c7564.scn"
+path="res://.godot/imported/crater.glb-829a487b3ea065b3ebba7febae47eff3.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/crater.glb"
-dest_files=["res://.godot/imported/crater.glb-502dcdd241e621da61befcf2ae3c7564.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/crater.glb"
+dest_files=["res://.godot/imported/crater.glb-829a487b3ea065b3ebba7febae47eff3.scn"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://gtkylbtvqh07"
-path="res://.godot/imported/terrain_roadCross_SW.png-4b1e395a88839485f7cf0824dda58b08.ctex"
+path="res://.godot/imported/terrain_roadCross_SW.png-78c67fee2ed47e98d522aa4ec50afdff.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_roadCross_SW.png"
-dest_files=["res://.godot/imported/terrain_roadCross_SW.png-4b1e395a88839485f7cf0824dda58b08.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_roadCross_SW.png"
+dest_files=["res://.godot/imported/terrain_roadCross_SW.png-78c67fee2ed47e98d522aa4ec50afdff.ctex"]
 
 [params]
 

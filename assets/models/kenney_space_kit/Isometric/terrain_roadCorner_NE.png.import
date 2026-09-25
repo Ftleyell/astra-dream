@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjmywxrt5lvhr"
-path="res://.godot/imported/terrain_roadCorner_NE.png-2a3e56dbe3adcf38352247caf6dcf2a2.ctex"
+path="res://.godot/imported/terrain_roadCorner_NE.png-961560252842322fb09491f3aa52d723.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_roadCorner_NE.png"
-dest_files=["res://.godot/imported/terrain_roadCorner_NE.png-2a3e56dbe3adcf38352247caf6dcf2a2.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_roadCorner_NE.png"
+dest_files=["res://.godot/imported/terrain_roadCorner_NE.png-961560252842322fb09491f3aa52d723.ctex"]
 
 [params]
 

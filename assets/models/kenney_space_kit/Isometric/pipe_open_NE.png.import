@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://crm1hwvisl1pg"
-path="res://.godot/imported/pipe_open_NE.png-27363f4d2f5cc9968252b887317c6211.ctex"
+path="res://.godot/imported/pipe_open_NE.png-dc2f41876653235afd35f52c0cb7ab82.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/pipe_open_NE.png"
-dest_files=["res://.godot/imported/pipe_open_NE.png-27363f4d2f5cc9968252b887317c6211.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/pipe_open_NE.png"
+dest_files=["res://.godot/imported/pipe_open_NE.png-dc2f41876653235afd35f52c0cb7ab82.ctex"]
 
 [params]
 

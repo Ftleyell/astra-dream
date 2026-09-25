@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://okolw4ufgcoo"
-path="res://.godot/imported/supports_low_NW.png-a939b6c7df5862acf000c5f100fb5181.ctex"
+path="res://.godot/imported/supports_low_NW.png-0200d531b05548fa7237a3e41b53a6ad.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/supports_low_NW.png"
-dest_files=["res://.godot/imported/supports_low_NW.png-a939b6c7df5862acf000c5f100fb5181.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/supports_low_NW.png"
+dest_files=["res://.godot/imported/supports_low_NW.png-0200d531b05548fa7237a3e41b53a6ad.ctex"]
 
 [params]
 

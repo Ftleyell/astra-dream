@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqvciy50nog1k"
-path="res://.godot/imported/pipe_cross_SW.png-e2ac0eb77289ca15441715077f5e1f8f.ctex"
+path="res://.godot/imported/pipe_cross_SW.png-6c63b7b624d3f4eb4858fb20bc2ff6f8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/pipe_cross_SW.png"
-dest_files=["res://.godot/imported/pipe_cross_SW.png-e2ac0eb77289ca15441715077f5e1f8f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/pipe_cross_SW.png"
+dest_files=["res://.godot/imported/pipe_cross_SW.png-6c63b7b624d3f4eb4858fb20bc2ff6f8.ctex"]
 
 [params]
 

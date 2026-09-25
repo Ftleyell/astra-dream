@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://5gn6aqxt7xlm"
-path="res://.godot/imported/chimney.fbx-fb85e90b836bd3c2cd4b85deb5fb6180.scn"
+path="res://.godot/imported/chimney.fbx-561cbf5d48e91fe39fdaa7c8e4deaf13.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/chimney.fbx"
-dest_files=["res://.godot/imported/chimney.fbx-fb85e90b836bd3c2cd4b85deb5fb6180.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/chimney.fbx"
+dest_files=["res://.godot/imported/chimney.fbx-561cbf5d48e91fe39fdaa7c8e4deaf13.scn"]
 
 [params]
 

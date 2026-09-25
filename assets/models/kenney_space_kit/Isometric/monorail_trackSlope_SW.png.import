@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://3r7dl7r3cwtu"
-path="res://.godot/imported/monorail_trackSlope_SW.png-b44bf4910e253627cfb71ffec0352123.ctex"
+path="res://.godot/imported/monorail_trackSlope_SW.png-86b42a24d3e10c3f256660639f0eaebc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/monorail_trackSlope_SW.png"
-dest_files=["res://.godot/imported/monorail_trackSlope_SW.png-b44bf4910e253627cfb71ffec0352123.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/monorail_trackSlope_SW.png"
+dest_files=["res://.godot/imported/monorail_trackSlope_SW.png-86b42a24d3e10c3f256660639f0eaebc.ctex"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cy03h7bski8jb"
-path="res://.godot/imported/desk_chairStool.fbx-2503fd88409d5b39c35263b5ad837397.scn"
+path="res://.godot/imported/desk_chairStool.fbx-c207c14cfd6d1dded866cf7fd1b53553.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/desk_chairStool.fbx"
-dest_files=["res://.godot/imported/desk_chairStool.fbx-2503fd88409d5b39c35263b5ad837397.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/desk_chairStool.fbx"
+dest_files=["res://.godot/imported/desk_chairStool.fbx-c207c14cfd6d1dded866cf7fd1b53553.scn"]
 
 [params]
 

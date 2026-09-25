@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cales3u6g1qng"
-path="res://.godot/imported/weapon_rifle.fbx-3c4417b15da6b90dd309e43d766526ec.scn"
+path="res://.godot/imported/weapon_rifle.fbx-d1b8fa1d36c0d1c7edf35f51defd1295.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/weapon_rifle.fbx"
-dest_files=["res://.godot/imported/weapon_rifle.fbx-3c4417b15da6b90dd309e43d766526ec.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/weapon_rifle.fbx"
+dest_files=["res://.godot/imported/weapon_rifle.fbx-d1b8fa1d36c0d1c7edf35f51defd1295.scn"]
 
 [params]
 

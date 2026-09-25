@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://xxwckisytwqe"
-path="res://.godot/imported/corridor_cross_NE.png-eccada76b82519d6ea9100fc7b8856c5.ctex"
+path="res://.godot/imported/corridor_cross_NE.png-2f75fe8c907acc888e756b4751a966bf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/corridor_cross_NE.png"
-dest_files=["res://.godot/imported/corridor_cross_NE.png-eccada76b82519d6ea9100fc7b8856c5.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/corridor_cross_NE.png"
+dest_files=["res://.godot/imported/corridor_cross_NE.png-2f75fe8c907acc888e756b4751a966bf.ctex"]
 
 [params]
 

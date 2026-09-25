@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dq5o6vqqtrltr"
-path="res://.godot/imported/corridor_wall.dae-e4518b28f0fae47c52189bcb285d8186.scn"
+path="res://.godot/imported/corridor_wall.dae-c15a79b87413b0658fffd8eca56a236a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/corridor_wall.dae"
-dest_files=["res://.godot/imported/corridor_wall.dae-e4518b28f0fae47c52189bcb285d8186.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/corridor_wall.dae"
+dest_files=["res://.godot/imported/corridor_wall.dae-c15a79b87413b0658fffd8eca56a236a.scn"]
 
 [params]
 

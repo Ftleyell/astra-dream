@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bldupgbadlxrj"
-path="res://.godot/imported/stairs.dae-0731a73411dd6942402ff9bd27dcc6bf.scn"
+path="res://.godot/imported/stairs.dae-3b47d76caa494bcd821fbe2bfdebe7ff.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/stairs.dae"
-dest_files=["res://.godot/imported/stairs.dae-0731a73411dd6942402ff9bd27dcc6bf.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/stairs.dae"
+dest_files=["res://.godot/imported/stairs.dae-3b47d76caa494bcd821fbe2bfdebe7ff.scn"]
 
 [params]
 

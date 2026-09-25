@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://jl2ljnycaaqc"
-path="res://.godot/imported/pipe_end_SE.png-c7be24e5784ec62cb574ce5581f59d98.ctex"
+path="res://.godot/imported/pipe_end_SE.png-0828440b52cf8ab43cfdc53a7856d708.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/pipe_end_SE.png"
-dest_files=["res://.godot/imported/pipe_end_SE.png-c7be24e5784ec62cb574ce5581f59d98.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/pipe_end_SE.png"
+dest_files=["res://.godot/imported/pipe_end_SE.png-0828440b52cf8ab43cfdc53a7856d708.ctex"]
 
 [params]
 

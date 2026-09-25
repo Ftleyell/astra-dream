@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ccqes0r8j6fhl"
-path="res://.godot/imported/barrel.glb-33e38a4ee37bc118797c034fbae429d7.scn"
+path="res://.godot/imported/barrel.glb-f214d4f7735422acf0240bc42932f67a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/barrel.glb"
-dest_files=["res://.godot/imported/barrel.glb-33e38a4ee37bc118797c034fbae429d7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/barrel.glb"
+dest_files=["res://.godot/imported/barrel.glb-f214d4f7735422acf0240bc42932f67a.scn"]
 
 [params]
 

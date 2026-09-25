@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bo5ydovuhh34b"
-path="res://.godot/imported/rocket_topB.fbx-6246b351385aecaf3f20e52a038af41a.scn"
+path="res://.godot/imported/rocket_topB.fbx-54da89ab86fc25dcbd44efe2568e0dd6.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rocket_topB.fbx"
-dest_files=["res://.godot/imported/rocket_topB.fbx-6246b351385aecaf3f20e52a038af41a.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rocket_topB.fbx"
+dest_files=["res://.godot/imported/rocket_topB.fbx-54da89ab86fc25dcbd44efe2568e0dd6.scn"]
 
 [params]
 

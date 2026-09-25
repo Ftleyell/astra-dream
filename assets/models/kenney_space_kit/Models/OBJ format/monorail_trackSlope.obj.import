@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cxhvhlqjhsuyv"
-path="res://.godot/imported/monorail_trackSlope.obj-323105723d5fe39252eb2a9d79fbb1e6.mesh"
+path="res://.godot/imported/monorail_trackSlope.obj-a84919c293a86d91a97e55452bc2d49d.mesh"
 
 [deps]
 
-files=["res://.godot/imported/monorail_trackSlope.obj-323105723d5fe39252eb2a9d79fbb1e6.mesh"]
+files=["res://.godot/imported/monorail_trackSlope.obj-a84919c293a86d91a97e55452bc2d49d.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trackSlope.obj"
-dest_files=["res://.godot/imported/monorail_trackSlope.obj-323105723d5fe39252eb2a9d79fbb1e6.mesh", "res://.godot/imported/monorail_trackSlope.obj-323105723d5fe39252eb2a9d79fbb1e6.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/monorail_trackSlope.obj"
+dest_files=["res://.godot/imported/monorail_trackSlope.obj-a84919c293a86d91a97e55452bc2d49d.mesh", "res://.godot/imported/monorail_trackSlope.obj-a84919c293a86d91a97e55452bc2d49d.mesh"]
 
 [params]
 

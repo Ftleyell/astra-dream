@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dscn0voinaf28"
-path="res://.godot/imported/rail_end.fbx-bb23ba66dd07d8a33b4dcd9332d17821.scn"
+path="res://.godot/imported/rail_end.fbx-2c952a71a080c8b3510ee82fecb24de9.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rail_end.fbx"
-dest_files=["res://.godot/imported/rail_end.fbx-bb23ba66dd07d8a33b4dcd9332d17821.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rail_end.fbx"
+dest_files=["res://.godot/imported/rail_end.fbx-2c952a71a080c8b3510ee82fecb24de9.scn"]
 
 [params]
 

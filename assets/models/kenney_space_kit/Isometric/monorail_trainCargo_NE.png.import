@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjrfbixo1tsrb"
-path="res://.godot/imported/monorail_trainCargo_NE.png-660ddd06811a989d5d3f4954ad1c9cea.ctex"
+path="res://.godot/imported/monorail_trainCargo_NE.png-486602f645547a3c26deb9de59835b8a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/monorail_trainCargo_NE.png"
-dest_files=["res://.godot/imported/monorail_trainCargo_NE.png-660ddd06811a989d5d3f4954ad1c9cea.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/monorail_trainCargo_NE.png"
+dest_files=["res://.godot/imported/monorail_trainCargo_NE.png-486602f645547a3c26deb9de59835b8a.ctex"]
 
 [params]
 

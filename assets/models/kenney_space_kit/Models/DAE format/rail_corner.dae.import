@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b2oi5ytdrya8h"
-path="res://.godot/imported/rail_corner.dae-040789e5335226b791d36159763d3439.scn"
+path="res://.godot/imported/rail_corner.dae-b4cbb55c61bd8a68e7fa295c92c32ebd.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rail_corner.dae"
-dest_files=["res://.godot/imported/rail_corner.dae-040789e5335226b791d36159763d3439.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rail_corner.dae"
+dest_files=["res://.godot/imported/rail_corner.dae-b4cbb55c61bd8a68e7fa295c92c32ebd.scn"]
 
 [params]
 

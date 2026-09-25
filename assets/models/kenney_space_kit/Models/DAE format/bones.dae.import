@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://0u4v0bbmmdlo"
-path="res://.godot/imported/bones.dae-2da58457b152931186eb507d8ede7615.scn"
+path="res://.godot/imported/bones.dae-a84d026f5b7462fdd3daea55d2ce23ec.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/bones.dae"
-dest_files=["res://.godot/imported/bones.dae-2da58457b152931186eb507d8ede7615.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/bones.dae"
+dest_files=["res://.godot/imported/bones.dae-a84d026f5b7462fdd3daea55d2ce23ec.scn"]
 
 [params]
 

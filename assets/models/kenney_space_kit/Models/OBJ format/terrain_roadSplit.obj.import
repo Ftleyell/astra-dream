@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://kbjf4o27e2b7"
-path="res://.godot/imported/terrain_roadSplit.obj-48f766c12fb050b8eaa8f65cbf140836.mesh"
+path="res://.godot/imported/terrain_roadSplit.obj-3480d7bf1c3e0c63af07532db56e37df.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_roadSplit.obj-48f766c12fb050b8eaa8f65cbf140836.mesh"]
+files=["res://.godot/imported/terrain_roadSplit.obj-3480d7bf1c3e0c63af07532db56e37df.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_roadSplit.obj"
-dest_files=["res://.godot/imported/terrain_roadSplit.obj-48f766c12fb050b8eaa8f65cbf140836.mesh", "res://.godot/imported/terrain_roadSplit.obj-48f766c12fb050b8eaa8f65cbf140836.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_roadSplit.obj"
+dest_files=["res://.godot/imported/terrain_roadSplit.obj-3480d7bf1c3e0c63af07532db56e37df.mesh", "res://.godot/imported/terrain_roadSplit.obj-3480d7bf1c3e0c63af07532db56e37df.mesh"]
 
 [params]
 

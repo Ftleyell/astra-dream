@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://chopruhijddp1"
-path="res://.godot/imported/pipe_cross.dae-d25391e7b070e7fa855e9d52e2b0e45f.scn"
+path="res://.godot/imported/pipe_cross.dae-1afefa4d36f25d6cce5b2a748afd1053.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_cross.dae"
-dest_files=["res://.godot/imported/pipe_cross.dae-d25391e7b070e7fa855e9d52e2b0e45f.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_cross.dae"
+dest_files=["res://.godot/imported/pipe_cross.dae-1afefa4d36f25d6cce5b2a748afd1053.scn"]
 
 [params]
 

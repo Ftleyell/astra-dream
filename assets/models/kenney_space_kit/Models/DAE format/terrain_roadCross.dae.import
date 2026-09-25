@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://vg484mayodfx"
-path="res://.godot/imported/terrain_roadCross.dae-32fa99cc93dd9ad8ae48f6ef0e0b8347.scn"
+path="res://.godot/imported/terrain_roadCross.dae-72adbc78e15fd92969b573e7e583b79e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_roadCross.dae"
-dest_files=["res://.godot/imported/terrain_roadCross.dae-32fa99cc93dd9ad8ae48f6ef0e0b8347.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_roadCross.dae"
+dest_files=["res://.godot/imported/terrain_roadCross.dae-72adbc78e15fd92969b573e7e583b79e.scn"]
 
 [params]
 

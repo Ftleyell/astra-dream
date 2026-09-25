@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://8n0xsx1cfp43"
-path="res://.godot/imported/machine_wireless.png-60c961786c3533d8cadc78ecde112f93.ctex"
+path="res://.godot/imported/machine_wireless.png-be9bfa401f0351b896f34a864925d247.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/machine_wireless.png"
-dest_files=["res://.godot/imported/machine_wireless.png-60c961786c3533d8cadc78ecde112f93.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/machine_wireless.png"
+dest_files=["res://.godot/imported/machine_wireless.png-be9bfa401f0351b896f34a864925d247.ctex"]
 
 [params]
 

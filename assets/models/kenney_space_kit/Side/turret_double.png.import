@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2u5tkls868da"
-path="res://.godot/imported/turret_double.png-2bb384b44974b5f56d728c3890b90bff.ctex"
+path="res://.godot/imported/turret_double.png-835cdf5031898a8ea3b78045ae0e10b2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/turret_double.png"
-dest_files=["res://.godot/imported/turret_double.png-2bb384b44974b5f56d728c3890b90bff.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/turret_double.png"
+dest_files=["res://.godot/imported/turret_double.png-835cdf5031898a8ea3b78045ae0e10b2.ctex"]
 
 [params]
 

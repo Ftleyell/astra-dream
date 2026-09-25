@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://fvcpfbxj7hya"
-path="res://.godot/imported/monorail_trainPassenger.glb-638247b68085e4de06167f066254090c.scn"
+path="res://.godot/imported/monorail_trainPassenger.glb-3e98ae69a00b67d00081ff4b265b48cd.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/monorail_trainPassenger.glb"
-dest_files=["res://.godot/imported/monorail_trainPassenger.glb-638247b68085e4de06167f066254090c.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/monorail_trainPassenger.glb"
+dest_files=["res://.godot/imported/monorail_trainPassenger.glb-3e98ae69a00b67d00081ff4b265b48cd.scn"]
 
 [params]
 

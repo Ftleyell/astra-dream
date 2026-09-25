@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bh87522x6ykai"
-path="res://.godot/imported/machine_wirelessCable.glb-f0ea6143d5f556dfda52a8e68a619860.scn"
+path="res://.godot/imported/machine_wirelessCable.glb-64744d888832ff16073e06681cf3d9f2.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/machine_wirelessCable.glb"
-dest_files=["res://.godot/imported/machine_wirelessCable.glb-f0ea6143d5f556dfda52a8e68a619860.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/machine_wirelessCable.glb"
+dest_files=["res://.godot/imported/machine_wirelessCable.glb-64744d888832ff16073e06681cf3d9f2.scn"]
 
 [params]
 

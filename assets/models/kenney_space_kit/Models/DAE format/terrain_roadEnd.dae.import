@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b4ubti7uou2h"
-path="res://.godot/imported/terrain_roadEnd.dae-4a112571099f045ec07d2223b8dd2391.scn"
+path="res://.godot/imported/terrain_roadEnd.dae-c4ac99d80e2146d90eab76b3c6e2cd91.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_roadEnd.dae"
-dest_files=["res://.godot/imported/terrain_roadEnd.dae-4a112571099f045ec07d2223b8dd2391.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_roadEnd.dae"
+dest_files=["res://.godot/imported/terrain_roadEnd.dae-c4ac99d80e2146d90eab76b3c6e2cd91.scn"]
 
 [params]
 

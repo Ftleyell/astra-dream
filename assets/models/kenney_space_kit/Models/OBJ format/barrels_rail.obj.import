@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bpkxa5b44fo0t"
-path="res://.godot/imported/barrels_rail.obj-6cd1855ab32881b4d76b820fab5b86da.mesh"
+path="res://.godot/imported/barrels_rail.obj-2475d35443082729390eff86cb2456f3.mesh"
 
 [deps]
 
-files=["res://.godot/imported/barrels_rail.obj-6cd1855ab32881b4d76b820fab5b86da.mesh"]
+files=["res://.godot/imported/barrels_rail.obj-2475d35443082729390eff86cb2456f3.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/barrels_rail.obj"
-dest_files=["res://.godot/imported/barrels_rail.obj-6cd1855ab32881b4d76b820fab5b86da.mesh", "res://.godot/imported/barrels_rail.obj-6cd1855ab32881b4d76b820fab5b86da.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/barrels_rail.obj"
+dest_files=["res://.godot/imported/barrels_rail.obj-2475d35443082729390eff86cb2456f3.mesh", "res://.godot/imported/barrels_rail.obj-2475d35443082729390eff86cb2456f3.mesh"]
 
 [params]
 

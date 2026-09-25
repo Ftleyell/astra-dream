@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c2y8pogy8hgjw"
-path="res://.godot/imported/barrel.fbx-355a7669e1d58ef088383e78be9042da.scn"
+path="res://.godot/imported/barrel.fbx-ca1602484d8caf7ae64547ba41a1b61e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/barrel.fbx"
-dest_files=["res://.godot/imported/barrel.fbx-355a7669e1d58ef088383e78be9042da.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/barrel.fbx"
+dest_files=["res://.godot/imported/barrel.fbx-ca1602484d8caf7ae64547ba41a1b61e.scn"]
 
 [params]
 

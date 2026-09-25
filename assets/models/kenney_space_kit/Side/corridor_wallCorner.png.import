@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ds84qn8aywymr"
-path="res://.godot/imported/corridor_wallCorner.png-55ae591e1870695a27961820934cbe7b.ctex"
+path="res://.godot/imported/corridor_wallCorner.png-f4f56d6b412817cb89fbbfcc5f237523.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/corridor_wallCorner.png"
-dest_files=["res://.godot/imported/corridor_wallCorner.png-55ae591e1870695a27961820934cbe7b.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/corridor_wallCorner.png"
+dest_files=["res://.godot/imported/corridor_wallCorner.png-f4f56d6b412817cb89fbbfcc5f237523.ctex"]
 
 [params]
 

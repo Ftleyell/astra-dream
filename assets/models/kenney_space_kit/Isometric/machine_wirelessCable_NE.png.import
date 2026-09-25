@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlp657831owmv"
-path="res://.godot/imported/machine_wirelessCable_NE.png-01f8c93b01ef1f7d4fcb3c47a043f5cb.ctex"
+path="res://.godot/imported/machine_wirelessCable_NE.png-a79a45af0bae64da0c89604acfe86728.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/machine_wirelessCable_NE.png"
-dest_files=["res://.godot/imported/machine_wirelessCable_NE.png-01f8c93b01ef1f7d4fcb3c47a043f5cb.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/machine_wirelessCable_NE.png"
+dest_files=["res://.godot/imported/machine_wirelessCable_NE.png-a79a45af0bae64da0c89604acfe86728.ctex"]
 
 [params]
 

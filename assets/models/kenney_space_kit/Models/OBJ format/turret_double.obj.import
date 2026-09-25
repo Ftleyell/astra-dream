@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cpdus6iiaappx"
-path="res://.godot/imported/turret_double.obj-49f1bab24ad1b8d9eef3ab25fca0cc4f.mesh"
+path="res://.godot/imported/turret_double.obj-385abbbcd39ccbb4b66f143a9785f581.mesh"
 
 [deps]
 
-files=["res://.godot/imported/turret_double.obj-49f1bab24ad1b8d9eef3ab25fca0cc4f.mesh"]
+files=["res://.godot/imported/turret_double.obj-385abbbcd39ccbb4b66f143a9785f581.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/turret_double.obj"
-dest_files=["res://.godot/imported/turret_double.obj-49f1bab24ad1b8d9eef3ab25fca0cc4f.mesh", "res://.godot/imported/turret_double.obj-49f1bab24ad1b8d9eef3ab25fca0cc4f.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/turret_double.obj"
+dest_files=["res://.godot/imported/turret_double.obj-385abbbcd39ccbb4b66f143a9785f581.mesh", "res://.godot/imported/turret_double.obj-385abbbcd39ccbb4b66f143a9785f581.mesh"]
 
 [params]
 

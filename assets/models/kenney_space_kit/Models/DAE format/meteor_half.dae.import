@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cgjq42wio5sty"
-path="res://.godot/imported/meteor_half.dae-28e8e3fa4c90eea99464fc131afa9cca.scn"
+path="res://.godot/imported/meteor_half.dae-3ff6e2c661b39acd9aabb378b4990029.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/meteor_half.dae"
-dest_files=["res://.godot/imported/meteor_half.dae-28e8e3fa4c90eea99464fc131afa9cca.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/meteor_half.dae"
+dest_files=["res://.godot/imported/meteor_half.dae-3ff6e2c661b39acd9aabb378b4990029.scn"]
 
 [params]
 

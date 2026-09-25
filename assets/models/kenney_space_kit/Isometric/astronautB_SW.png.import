@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d11q0beoucygq"
-path="res://.godot/imported/astronautB_SW.png-d4fe3043d1c832eb1ee5cef42e382a02.ctex"
+path="res://.godot/imported/astronautB_SW.png-db8b33287dc7237068a28b633ad6db31.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/astronautB_SW.png"
-dest_files=["res://.godot/imported/astronautB_SW.png-d4fe3043d1c832eb1ee5cef42e382a02.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/astronautB_SW.png"
+dest_files=["res://.godot/imported/astronautB_SW.png-db8b33287dc7237068a28b633ad6db31.ctex"]
 
 [params]
 

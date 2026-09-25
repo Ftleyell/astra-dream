@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c0qwnrg53kh3r"
-path="res://.godot/imported/satelliteDish.dae-6d449b16fb4e4fe62b1c6ca426bd683d.scn"
+path="res://.godot/imported/satelliteDish.dae-c4ca18a6c9509d425320ed05d17224a7.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/satelliteDish.dae"
-dest_files=["res://.godot/imported/satelliteDish.dae-6d449b16fb4e4fe62b1c6ca426bd683d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/satelliteDish.dae"
+dest_files=["res://.godot/imported/satelliteDish.dae-c4ca18a6c9509d425320ed05d17224a7.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dcvf5v5wgtymu"
-path="res://.godot/imported/terrain_roadCorner.fbx-5db2396f5f5e0552e422cb53cbe7d290.scn"
+path="res://.godot/imported/terrain_roadCorner.fbx-db5cdb410029d64504c9ce2a8b6ac594.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_roadCorner.fbx"
-dest_files=["res://.godot/imported/terrain_roadCorner.fbx-5db2396f5f5e0552e422cb53cbe7d290.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_roadCorner.fbx"
+dest_files=["res://.godot/imported/terrain_roadCorner.fbx-db5cdb410029d64504c9ce2a8b6ac594.scn"]
 
 [params]
 

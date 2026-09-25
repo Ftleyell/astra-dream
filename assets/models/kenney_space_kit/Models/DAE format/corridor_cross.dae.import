@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ct47xj8ssnmbu"
-path="res://.godot/imported/corridor_cross.dae-4acc167a5f6ec3e882ce5e7825a8274f.scn"
+path="res://.godot/imported/corridor_cross.dae-20351f7ccf8d17655a2b283fc0c5c761.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/corridor_cross.dae"
-dest_files=["res://.godot/imported/corridor_cross.dae-4acc167a5f6ec3e882ce5e7825a8274f.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/corridor_cross.dae"
+dest_files=["res://.godot/imported/corridor_cross.dae-20351f7ccf8d17655a2b283fc0c5c761.scn"]
 
 [params]
 

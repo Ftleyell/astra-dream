@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bdfgkgdv2vvbl"
-path="res://.godot/imported/alien.obj-b96ec6d500f179f65e8e3453dc07ca8b.mesh"
+path="res://.godot/imported/alien.obj-11a8f3ea5a43989da11a529c22fae2ec.mesh"
 
 [deps]
 
-files=["res://.godot/imported/alien.obj-b96ec6d500f179f65e8e3453dc07ca8b.mesh"]
+files=["res://.godot/imported/alien.obj-11a8f3ea5a43989da11a529c22fae2ec.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/alien.obj"
-dest_files=["res://.godot/imported/alien.obj-b96ec6d500f179f65e8e3453dc07ca8b.mesh", "res://.godot/imported/alien.obj-b96ec6d500f179f65e8e3453dc07ca8b.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/alien.obj"
+dest_files=["res://.godot/imported/alien.obj-11a8f3ea5a43989da11a529c22fae2ec.mesh", "res://.godot/imported/alien.obj-11a8f3ea5a43989da11a529c22fae2ec.mesh"]
 
 [params]
 

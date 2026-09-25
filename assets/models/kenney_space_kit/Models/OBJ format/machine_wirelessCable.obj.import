@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dgb4buguhmtio"
-path="res://.godot/imported/machine_wirelessCable.obj-015823c050be4e6a200d2d440bad2b88.mesh"
+path="res://.godot/imported/machine_wirelessCable.obj-97acf47d04e231a66da90970b968ed88.mesh"
 
 [deps]
 
-files=["res://.godot/imported/machine_wirelessCable.obj-015823c050be4e6a200d2d440bad2b88.mesh"]
+files=["res://.godot/imported/machine_wirelessCable.obj-97acf47d04e231a66da90970b968ed88.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/machine_wirelessCable.obj"
-dest_files=["res://.godot/imported/machine_wirelessCable.obj-015823c050be4e6a200d2d440bad2b88.mesh", "res://.godot/imported/machine_wirelessCable.obj-015823c050be4e6a200d2d440bad2b88.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/machine_wirelessCable.obj"
+dest_files=["res://.godot/imported/machine_wirelessCable.obj-97acf47d04e231a66da90970b968ed88.mesh", "res://.godot/imported/machine_wirelessCable.obj-97acf47d04e231a66da90970b968ed88.mesh"]
 
 [params]
 

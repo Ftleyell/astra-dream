@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bsajvevpwq81o"
-path="res://.godot/imported/stairs_corner_NW.png-ae6b41b22f2e18425acd2bb37b088d5f.ctex"
+path="res://.godot/imported/stairs_corner_NW.png-01e24cc73ddc8db9f99e7a4637264b0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/stairs_corner_NW.png"
-dest_files=["res://.godot/imported/stairs_corner_NW.png-ae6b41b22f2e18425acd2bb37b088d5f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/stairs_corner_NW.png"
+dest_files=["res://.godot/imported/stairs_corner_NW.png-01e24cc73ddc8db9f99e7a4637264b0e.ctex"]
 
 [params]
 

@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bkxcnjldcuwv8"
-path="res://.godot/imported/craft_miner.obj-b32cef492a757dc293b2343962f2416f.mesh"
+path="res://.godot/imported/craft_miner.obj-31a0079f83cf06c2058b57ef03a2c15b.mesh"
 
 [deps]
 
-files=["res://.godot/imported/craft_miner.obj-b32cef492a757dc293b2343962f2416f.mesh"]
+files=["res://.godot/imported/craft_miner.obj-31a0079f83cf06c2058b57ef03a2c15b.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/craft_miner.obj"
-dest_files=["res://.godot/imported/craft_miner.obj-b32cef492a757dc293b2343962f2416f.mesh", "res://.godot/imported/craft_miner.obj-b32cef492a757dc293b2343962f2416f.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/craft_miner.obj"
+dest_files=["res://.godot/imported/craft_miner.obj-31a0079f83cf06c2058b57ef03a2c15b.mesh", "res://.godot/imported/craft_miner.obj-31a0079f83cf06c2058b57ef03a2c15b.mesh"]
 
 [params]
 

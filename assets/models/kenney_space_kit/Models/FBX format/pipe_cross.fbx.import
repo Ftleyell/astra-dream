@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bu1t3x6hs84j1"
-path="res://.godot/imported/pipe_cross.fbx-41b5bb01e676090b4d2765d085b7d6ff.scn"
+path="res://.godot/imported/pipe_cross.fbx-c94c70b377d8224290bd9e954ca975fb.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_cross.fbx"
-dest_files=["res://.godot/imported/pipe_cross.fbx-41b5bb01e676090b4d2765d085b7d6ff.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_cross.fbx"
+dest_files=["res://.godot/imported/pipe_cross.fbx-c94c70b377d8224290bd9e954ca975fb.scn"]
 
 [params]
 

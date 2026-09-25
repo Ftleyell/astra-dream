@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://73xs25ckxuop"
-path="res://.godot/imported/craft_miner_SE.png-92ff84b946316062cab0db0fbda87d7d.ctex"
+path="res://.godot/imported/craft_miner_SE.png-f96ab5f6247839ab2b8047494703641b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/craft_miner_SE.png"
-dest_files=["res://.godot/imported/craft_miner_SE.png-92ff84b946316062cab0db0fbda87d7d.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/craft_miner_SE.png"
+dest_files=["res://.godot/imported/craft_miner_SE.png-f96ab5f6247839ab2b8047494703641b.ctex"]
 
 [params]
 

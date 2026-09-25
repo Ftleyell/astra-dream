@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bxfukd4iexg1i"
-path="res://.godot/imported/craft_speederD.glb-12119bc8d846d68d4353004042a39c09.scn"
+path="res://.godot/imported/craft_speederD.glb-0795fde501c0cbf64407dc202e36ba52.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/craft_speederD.glb"
-dest_files=["res://.godot/imported/craft_speederD.glb-12119bc8d846d68d4353004042a39c09.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/craft_speederD.glb"
+dest_files=["res://.godot/imported/craft_speederD.glb-0795fde501c0cbf64407dc202e36ba52.scn"]
 
 [params]
 

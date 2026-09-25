@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://djpd6547ywpd8"
-path="res://.godot/imported/rocket_sidesB.obj-d42223c0fc48841937c67a547a01d550.mesh"
+path="res://.godot/imported/rocket_sidesB.obj-98d5d2984849d487cfeeb33094bff2ee.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rocket_sidesB.obj-d42223c0fc48841937c67a547a01d550.mesh"]
+files=["res://.godot/imported/rocket_sidesB.obj-98d5d2984849d487cfeeb33094bff2ee.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rocket_sidesB.obj"
-dest_files=["res://.godot/imported/rocket_sidesB.obj-d42223c0fc48841937c67a547a01d550.mesh", "res://.godot/imported/rocket_sidesB.obj-d42223c0fc48841937c67a547a01d550.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rocket_sidesB.obj"
+dest_files=["res://.godot/imported/rocket_sidesB.obj-98d5d2984849d487cfeeb33094bff2ee.mesh", "res://.godot/imported/rocket_sidesB.obj-98d5d2984849d487cfeeb33094bff2ee.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d3kpp7s42c1sw"
-path="res://.godot/imported/craft_racer.fbx-53ebbf1ce0d68c9ed1737c667569a0b1.scn"
+path="res://.godot/imported/craft_racer.fbx-9607d1d7338d02270a376860dc4f9d76.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/craft_racer.fbx"
-dest_files=["res://.godot/imported/craft_racer.fbx-53ebbf1ce0d68c9ed1737c667569a0b1.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/craft_racer.fbx"
+dest_files=["res://.godot/imported/craft_racer.fbx-9607d1d7338d02270a376860dc4f9d76.scn"]
 
 [params]
 

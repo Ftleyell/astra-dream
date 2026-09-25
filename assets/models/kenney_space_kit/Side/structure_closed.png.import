@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bqg6imuuvxeu4"
-path="res://.godot/imported/structure_closed.png-badf80f76fa6b6be6cf8138dd1ab78c5.ctex"
+path="res://.godot/imported/structure_closed.png-a0dcd9db0d7afce532a72835cce3ad74.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/structure_closed.png"
-dest_files=["res://.godot/imported/structure_closed.png-badf80f76fa6b6be6cf8138dd1ab78c5.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/structure_closed.png"
+dest_files=["res://.godot/imported/structure_closed.png-a0dcd9db0d7afce532a72835cce3ad74.ctex"]
 
 [params]
 

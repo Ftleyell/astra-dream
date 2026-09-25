@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cj8g68eq0jbws"
-path="res://.godot/imported/satelliteDish_large.obj-57cef75277f632bcff461d070b1550e6.mesh"
+path="res://.godot/imported/satelliteDish_large.obj-2eae97c198bd6f5a30a794ed657c7aa6.mesh"
 
 [deps]
 
-files=["res://.godot/imported/satelliteDish_large.obj-57cef75277f632bcff461d070b1550e6.mesh"]
+files=["res://.godot/imported/satelliteDish_large.obj-2eae97c198bd6f5a30a794ed657c7aa6.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/satelliteDish_large.obj"
-dest_files=["res://.godot/imported/satelliteDish_large.obj-57cef75277f632bcff461d070b1550e6.mesh", "res://.godot/imported/satelliteDish_large.obj-57cef75277f632bcff461d070b1550e6.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/satelliteDish_large.obj"
+dest_files=["res://.godot/imported/satelliteDish_large.obj-2eae97c198bd6f5a30a794ed657c7aa6.mesh", "res://.godot/imported/satelliteDish_large.obj-2eae97c198bd6f5a30a794ed657c7aa6.mesh"]
 
 [params]
 

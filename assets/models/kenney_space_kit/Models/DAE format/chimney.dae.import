@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c4mnp7kukx5o5"
-path="res://.godot/imported/chimney.dae-0921cb8c692f4617ab7c8637e5dcc5cf.scn"
+path="res://.godot/imported/chimney.dae-f25066ad342c008e3573d13f248d8f61.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/chimney.dae"
-dest_files=["res://.godot/imported/chimney.dae-0921cb8c692f4617ab7c8637e5dcc5cf.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/chimney.dae"
+dest_files=["res://.godot/imported/chimney.dae-f25066ad342c008e3573d13f248d8f61.scn"]
 
 [params]
 

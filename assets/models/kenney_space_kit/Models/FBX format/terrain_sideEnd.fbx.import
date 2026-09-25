@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ctvua0rndibu"
-path="res://.godot/imported/terrain_sideEnd.fbx-c48926750d819abf4d61c194f2c58776.scn"
+path="res://.godot/imported/terrain_sideEnd.fbx-0bf92d0b6e7f029d887cffbad850c3ae.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_sideEnd.fbx"
-dest_files=["res://.godot/imported/terrain_sideEnd.fbx-c48926750d819abf4d61c194f2c58776.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_sideEnd.fbx"
+dest_files=["res://.godot/imported/terrain_sideEnd.fbx-0bf92d0b6e7f029d887cffbad850c3ae.scn"]
 
 [params]
 

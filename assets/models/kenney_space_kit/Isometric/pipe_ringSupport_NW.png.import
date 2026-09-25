@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bl1byj3gkwdrb"
-path="res://.godot/imported/pipe_ringSupport_NW.png-3d663ce2914e703ca3e44fea133ece12.ctex"
+path="res://.godot/imported/pipe_ringSupport_NW.png-54e344b94524b2dbe8060afae1433711.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/pipe_ringSupport_NW.png"
-dest_files=["res://.godot/imported/pipe_ringSupport_NW.png-3d663ce2914e703ca3e44fea133ece12.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/pipe_ringSupport_NW.png"
+dest_files=["res://.godot/imported/pipe_ringSupport_NW.png-54e344b94524b2dbe8060afae1433711.ctex"]
 
 [params]
 

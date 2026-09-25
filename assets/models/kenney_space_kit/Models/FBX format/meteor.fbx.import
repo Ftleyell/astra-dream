@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b66a8t7wn3x7u"
-path="res://.godot/imported/meteor.fbx-3a7182c8094b7a206d65dcf56bac7292.scn"
+path="res://.godot/imported/meteor.fbx-a945e95ff0d46d35291a755429172327.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/meteor.fbx"
-dest_files=["res://.godot/imported/meteor.fbx-3a7182c8094b7a206d65dcf56bac7292.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/meteor.fbx"
+dest_files=["res://.godot/imported/meteor.fbx-a945e95ff0d46d35291a755429172327.scn"]
 
 [params]
 

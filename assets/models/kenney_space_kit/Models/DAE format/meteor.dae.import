@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://deq6olm08be0x"
-path="res://.godot/imported/meteor.dae-ffb75cd7d0fe71d7504d6f1f2a564ad7.scn"
+path="res://.godot/imported/meteor.dae-5d2d25d3ee38718e8e31451a270350d2.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/meteor.dae"
-dest_files=["res://.godot/imported/meteor.dae-ffb75cd7d0fe71d7504d6f1f2a564ad7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/meteor.dae"
+dest_files=["res://.godot/imported/meteor.dae-5d2d25d3ee38718e8e31451a270350d2.scn"]
 
 [params]
 

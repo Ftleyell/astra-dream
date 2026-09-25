@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://3alnwgfb4lbw"
-path="res://.godot/imported/hangar_smallA.obj-dc41634ecd91f8b068dcf96f6e44ce2d.mesh"
+path="res://.godot/imported/hangar_smallA.obj-ed1c7148e2964ae173798218c1c231e4.mesh"
 
 [deps]
 
-files=["res://.godot/imported/hangar_smallA.obj-dc41634ecd91f8b068dcf96f6e44ce2d.mesh"]
+files=["res://.godot/imported/hangar_smallA.obj-ed1c7148e2964ae173798218c1c231e4.mesh"]
 
 source_file="res://assets/models/kenney_space_kit/Models/OBJ format/hangar_smallA.obj"
-dest_files=["res://.godot/imported/hangar_smallA.obj-dc41634ecd91f8b068dcf96f6e44ce2d.mesh", "res://.godot/imported/hangar_smallA.obj-dc41634ecd91f8b068dcf96f6e44ce2d.mesh"]
+dest_files=["res://.godot/imported/hangar_smallA.obj-ed1c7148e2964ae173798218c1c231e4.mesh", "res://.godot/imported/hangar_smallA.obj-ed1c7148e2964ae173798218c1c231e4.mesh"]
 
 [params]
 

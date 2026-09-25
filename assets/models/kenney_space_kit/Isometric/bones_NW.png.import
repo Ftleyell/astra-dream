@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cchx2xv4q3acb"
-path="res://.godot/imported/bones_NW.png-336d1b9655c61ebc1da8a089a75d22c4.ctex"
+path="res://.godot/imported/bones_NW.png-65014ae0cb1aa120e3dab7e7e9c18341.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/bones_NW.png"
-dest_files=["res://.godot/imported/bones_NW.png-336d1b9655c61ebc1da8a089a75d22c4.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/bones_NW.png"
+dest_files=["res://.godot/imported/bones_NW.png-65014ae0cb1aa120e3dab7e7e9c18341.ctex"]
 
 [params]
 

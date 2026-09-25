@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ggy0ue0kn234"
-path="res://.godot/imported/machine_wireless.fbx-6cbb91a9ad67cba9e7b0c6fe9c1050dd.scn"
+path="res://.godot/imported/machine_wireless.fbx-446dcbf636ddf723549f418049c68457.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/machine_wireless.fbx"
-dest_files=["res://.godot/imported/machine_wireless.fbx-6cbb91a9ad67cba9e7b0c6fe9c1050dd.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/machine_wireless.fbx"
+dest_files=["res://.godot/imported/machine_wireless.fbx-446dcbf636ddf723549f418049c68457.scn"]
 
 [params]
 

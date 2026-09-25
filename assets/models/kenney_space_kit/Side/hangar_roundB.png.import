@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmabvonn8b7rx"
-path="res://.godot/imported/hangar_roundB.png-b8186581bc3c585d8322c13ff3964f57.ctex"
+path="res://.godot/imported/hangar_roundB.png-7b78d772568934b453b6f17f9567fb09.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/hangar_roundB.png"
-dest_files=["res://.godot/imported/hangar_roundB.png-b8186581bc3c585d8322c13ff3964f57.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/hangar_roundB.png"
+dest_files=["res://.godot/imported/hangar_roundB.png-7b78d772568934b453b6f17f9567fb09.ctex"]
 
 [params]
 

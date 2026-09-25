@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ytn34np03u15"
-path="res://.godot/imported/craterLarge_NE.png-02255c63a3512788bfbebe8e2680c91f.ctex"
+path="res://.godot/imported/craterLarge_NE.png-75e2346a126006d203db0428c0546fa4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/craterLarge_NE.png"
-dest_files=["res://.godot/imported/craterLarge_NE.png-02255c63a3512788bfbebe8e2680c91f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/craterLarge_NE.png"
+dest_files=["res://.godot/imported/craterLarge_NE.png-75e2346a126006d203db0428c0546fa4.ctex"]
 
 [params]
 

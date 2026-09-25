@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://0g4gfrbfmqto"
-path="res://.godot/imported/pipe_entrance.fbx-877705914b0bcc7b3d555ace2ff8fcbc.scn"
+path="res://.godot/imported/pipe_entrance.fbx-0d445f8c76783f7dd418cb601cc80a95.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_entrance.fbx"
-dest_files=["res://.godot/imported/pipe_entrance.fbx-877705914b0bcc7b3d555ace2ff8fcbc.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_entrance.fbx"
+dest_files=["res://.godot/imported/pipe_entrance.fbx-0d445f8c76783f7dd418cb601cc80a95.scn"]
 
 [params]
 

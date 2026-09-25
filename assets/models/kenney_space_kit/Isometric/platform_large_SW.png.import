@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://qhf4s3lfitto"
-path="res://.godot/imported/platform_large_SW.png-7c0090e37cd626a82636ff89db96740f.ctex"
+path="res://.godot/imported/platform_large_SW.png-8bce036a3043feb28e11591e0f1c229e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/platform_large_SW.png"
-dest_files=["res://.godot/imported/platform_large_SW.png-7c0090e37cd626a82636ff89db96740f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/platform_large_SW.png"
+dest_files=["res://.godot/imported/platform_large_SW.png-8bce036a3043feb28e11591e0f1c229e.ctex"]
 
 [params]
 

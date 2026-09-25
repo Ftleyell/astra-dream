@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dmvc23fpfhepq"
-path="res://.godot/imported/corridor_roof.dae-1593c32b5d225e73076e997b7ddf5aa3.scn"
+path="res://.godot/imported/corridor_roof.dae-1ae10fa736b746fab383a4c4b74d0b9e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/corridor_roof.dae"
-dest_files=["res://.godot/imported/corridor_roof.dae-1593c32b5d225e73076e997b7ddf5aa3.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/corridor_roof.dae"
+dest_files=["res://.godot/imported/corridor_roof.dae-1ae10fa736b746fab383a4c4b74d0b9e.scn"]
 
 [params]
 

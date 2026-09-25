@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cat5u1im2j5bp"
-path="res://.godot/imported/pipe_cornerRound.obj-f7b55671cc145c71a5d8496434a37772.mesh"
+path="res://.godot/imported/pipe_cornerRound.obj-5d6d5413e614d8389a5cbe35d527b107.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_cornerRound.obj-f7b55671cc145c71a5d8496434a37772.mesh"]
+files=["res://.godot/imported/pipe_cornerRound.obj-5d6d5413e614d8389a5cbe35d527b107.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_cornerRound.obj"
-dest_files=["res://.godot/imported/pipe_cornerRound.obj-f7b55671cc145c71a5d8496434a37772.mesh", "res://.godot/imported/pipe_cornerRound.obj-f7b55671cc145c71a5d8496434a37772.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_cornerRound.obj"
+dest_files=["res://.godot/imported/pipe_cornerRound.obj-5d6d5413e614d8389a5cbe35d527b107.mesh", "res://.godot/imported/pipe_cornerRound.obj-5d6d5413e614d8389a5cbe35d527b107.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dg8itjs7wbjtg"
-path="res://.godot/imported/rail_middle.dae-0f0170b1a3a06248e18b450aacfed4ec.scn"
+path="res://.godot/imported/rail_middle.dae-2e6bb206192d68a8a3c613fe68faec29.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rail_middle.dae"
-dest_files=["res://.godot/imported/rail_middle.dae-0f0170b1a3a06248e18b450aacfed4ec.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rail_middle.dae"
+dest_files=["res://.godot/imported/rail_middle.dae-2e6bb206192d68a8a3c613fe68faec29.scn"]
 
 [params]
 

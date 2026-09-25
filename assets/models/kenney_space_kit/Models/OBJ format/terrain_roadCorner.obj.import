@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://xhaxej0kvp6g"
-path="res://.godot/imported/terrain_roadCorner.obj-bb16bdf3851847c25242c9280b707a32.mesh"
+path="res://.godot/imported/terrain_roadCorner.obj-886943f4854721ce4fcd0d974344310f.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_roadCorner.obj-bb16bdf3851847c25242c9280b707a32.mesh"]
+files=["res://.godot/imported/terrain_roadCorner.obj-886943f4854721ce4fcd0d974344310f.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_roadCorner.obj"
-dest_files=["res://.godot/imported/terrain_roadCorner.obj-bb16bdf3851847c25242c9280b707a32.mesh", "res://.godot/imported/terrain_roadCorner.obj-bb16bdf3851847c25242c9280b707a32.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_roadCorner.obj"
+dest_files=["res://.godot/imported/terrain_roadCorner.obj-886943f4854721ce4fcd0d974344310f.mesh", "res://.godot/imported/terrain_roadCorner.obj-886943f4854721ce4fcd0d974344310f.mesh"]
 
 [params]
 

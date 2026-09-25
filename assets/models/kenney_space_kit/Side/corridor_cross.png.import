@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvl5qx6lu133g"
-path="res://.godot/imported/corridor_cross.png-fa7536e1d515794086f214cceacc1c2d.ctex"
+path="res://.godot/imported/corridor_cross.png-cab07b9792e6e510be811e8327647876.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/corridor_cross.png"
-dest_files=["res://.godot/imported/corridor_cross.png-fa7536e1d515794086f214cceacc1c2d.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/corridor_cross.png"
+dest_files=["res://.godot/imported/corridor_cross.png-cab07b9792e6e510be811e8327647876.ctex"]
 
 [params]
 

@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://eroy2akd0lc4"
-path="res://.godot/imported/monorail_trainBox.obj-4911bec43a20d0a54dc58d3419570ed1.mesh"
+path="res://.godot/imported/monorail_trainBox.obj-00d9472ceb4875393899cb5b7f4bbffa.mesh"
 
 [deps]
 
-files=["res://.godot/imported/monorail_trainBox.obj-4911bec43a20d0a54dc58d3419570ed1.mesh"]
+files=["res://.godot/imported/monorail_trainBox.obj-00d9472ceb4875393899cb5b7f4bbffa.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trainBox.obj"
-dest_files=["res://.godot/imported/monorail_trainBox.obj-4911bec43a20d0a54dc58d3419570ed1.mesh", "res://.godot/imported/monorail_trainBox.obj-4911bec43a20d0a54dc58d3419570ed1.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/monorail_trainBox.obj"
+dest_files=["res://.godot/imported/monorail_trainBox.obj-00d9472ceb4875393899cb5b7f4bbffa.mesh", "res://.godot/imported/monorail_trainBox.obj-00d9472ceb4875393899cb5b7f4bbffa.mesh"]
 
 [params]
 

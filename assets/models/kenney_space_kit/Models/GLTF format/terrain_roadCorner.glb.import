@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bthg0xghdtsho"
-path="res://.godot/imported/terrain_roadCorner.glb-a66a1dd941a03a3216b5552d09a7a9c5.scn"
+path="res://.godot/imported/terrain_roadCorner.glb-77de7128a2567b72385607f29b5bf05d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/terrain_roadCorner.glb"
-dest_files=["res://.godot/imported/terrain_roadCorner.glb-a66a1dd941a03a3216b5552d09a7a9c5.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/terrain_roadCorner.glb"
+dest_files=["res://.godot/imported/terrain_roadCorner.glb-77de7128a2567b72385607f29b5bf05d.scn"]
 
 [params]
 

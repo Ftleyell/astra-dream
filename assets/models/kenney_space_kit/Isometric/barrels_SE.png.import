@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dnx67vrga4u3v"
-path="res://.godot/imported/barrels_SE.png-4d9d60efcad86aec26d8d4c0db360810.ctex"
+path="res://.godot/imported/barrels_SE.png-404a3b906e1bc27ccfe95811343dcee9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/barrels_SE.png"
-dest_files=["res://.godot/imported/barrels_SE.png-4d9d60efcad86aec26d8d4c0db360810.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/barrels_SE.png"
+dest_files=["res://.godot/imported/barrels_SE.png-404a3b906e1bc27ccfe95811343dcee9.ctex"]
 
 [params]
 

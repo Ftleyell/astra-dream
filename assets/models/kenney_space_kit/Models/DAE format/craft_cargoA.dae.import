@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://0a2jpdgdvc7h"
-path="res://.godot/imported/craft_cargoA.dae-61ee9ff29e1d2d32b0bc24aa9150ec0b.scn"
+path="res://.godot/imported/craft_cargoA.dae-2749b9025e30451f371ca1e597310b45.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/craft_cargoA.dae"
-dest_files=["res://.godot/imported/craft_cargoA.dae-61ee9ff29e1d2d32b0bc24aa9150ec0b.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/craft_cargoA.dae"
+dest_files=["res://.godot/imported/craft_cargoA.dae-2749b9025e30451f371ca1e597310b45.scn"]
 
 [params]
 

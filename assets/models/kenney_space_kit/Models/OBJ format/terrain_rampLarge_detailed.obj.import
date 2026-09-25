@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://6rs2f0qeell"
-path="res://.godot/imported/terrain_rampLarge_detailed.obj-a76dc1f8c4d6299b4dcabe4c8925cb19.mesh"
+path="res://.godot/imported/terrain_rampLarge_detailed.obj-45193717be44cc1da80340aa780038c6.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_rampLarge_detailed.obj-a76dc1f8c4d6299b4dcabe4c8925cb19.mesh"]
+files=["res://.godot/imported/terrain_rampLarge_detailed.obj-45193717be44cc1da80340aa780038c6.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_rampLarge_detailed.obj"
-dest_files=["res://.godot/imported/terrain_rampLarge_detailed.obj-a76dc1f8c4d6299b4dcabe4c8925cb19.mesh", "res://.godot/imported/terrain_rampLarge_detailed.obj-a76dc1f8c4d6299b4dcabe4c8925cb19.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_rampLarge_detailed.obj"
+dest_files=["res://.godot/imported/terrain_rampLarge_detailed.obj-45193717be44cc1da80340aa780038c6.mesh", "res://.godot/imported/terrain_rampLarge_detailed.obj-45193717be44cc1da80340aa780038c6.mesh"]
 
 [params]
 

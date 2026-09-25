@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bn1jwjr80bnvy"
-path="res://.godot/imported/craft_miner.glb-cb211eeb34b3482759b207986b3babcd.scn"
+path="res://.godot/imported/craft_miner.glb-16ed91a82202f1c98a5a61b5fbcca7cf.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/craft_miner.glb"
-dest_files=["res://.godot/imported/craft_miner.glb-cb211eeb34b3482759b207986b3babcd.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/craft_miner.glb"
+dest_files=["res://.godot/imported/craft_miner.glb-16ed91a82202f1c98a5a61b5fbcca7cf.scn"]
 
 [params]
 

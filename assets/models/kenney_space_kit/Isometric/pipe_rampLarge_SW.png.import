@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cpdhetg3312s7"
-path="res://.godot/imported/pipe_rampLarge_SW.png-1dc2fb0622c90f32dfc1f66faeb00946.ctex"
+path="res://.godot/imported/pipe_rampLarge_SW.png-c295d6d7a73b5fff1d7de552fb8f4bf8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/pipe_rampLarge_SW.png"
-dest_files=["res://.godot/imported/pipe_rampLarge_SW.png-1dc2fb0622c90f32dfc1f66faeb00946.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/pipe_rampLarge_SW.png"
+dest_files=["res://.godot/imported/pipe_rampLarge_SW.png-c295d6d7a73b5fff1d7de552fb8f4bf8.ctex"]
 
 [params]
 

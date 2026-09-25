@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bftu3n8ckotjh"
-path="res://.godot/imported/stairs.obj-974761b2bd34f910726e482758c52206.mesh"
+path="res://.godot/imported/stairs.obj-feefb0a5c51f8cf0ebb2ca353df4c558.mesh"
 
 [deps]
 
-files=["res://.godot/imported/stairs.obj-974761b2bd34f910726e482758c52206.mesh"]
+files=["res://.godot/imported/stairs.obj-feefb0a5c51f8cf0ebb2ca353df4c558.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/stairs.obj"
-dest_files=["res://.godot/imported/stairs.obj-974761b2bd34f910726e482758c52206.mesh", "res://.godot/imported/stairs.obj-974761b2bd34f910726e482758c52206.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/stairs.obj"
+dest_files=["res://.godot/imported/stairs.obj-feefb0a5c51f8cf0ebb2ca353df4c558.mesh", "res://.godot/imported/stairs.obj-feefb0a5c51f8cf0ebb2ca353df4c558.mesh"]
 
 [params]
 

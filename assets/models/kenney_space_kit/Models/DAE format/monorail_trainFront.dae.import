@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dgq2uakpvmap3"
-path="res://.godot/imported/monorail_trainFront.dae-84a0d64737805a0f889de85aa1f0f6da.scn"
+path="res://.godot/imported/monorail_trainFront.dae-4c6292846052e6fcac5300ca34f5f58e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/monorail_trainFront.dae"
-dest_files=["res://.godot/imported/monorail_trainFront.dae-84a0d64737805a0f889de85aa1f0f6da.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/monorail_trainFront.dae"
+dest_files=["res://.godot/imported/monorail_trainFront.dae-4c6292846052e6fcac5300ca34f5f58e.scn"]
 
 [params]
 

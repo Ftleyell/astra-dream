@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c1x7sgtplnsl5"
-path="res://.godot/imported/astronautA.obj-dd76fb9070788339d4052e834536081d.mesh"
+path="res://.godot/imported/astronautA.obj-ca869dc907c52dc704774dbf3edc0d25.mesh"
 
 [deps]
 
-files=["res://.godot/imported/astronautA.obj-dd76fb9070788339d4052e834536081d.mesh"]
+files=["res://.godot/imported/astronautA.obj-ca869dc907c52dc704774dbf3edc0d25.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/astronautA.obj"
-dest_files=["res://.godot/imported/astronautA.obj-dd76fb9070788339d4052e834536081d.mesh", "res://.godot/imported/astronautA.obj-dd76fb9070788339d4052e834536081d.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/astronautA.obj"
+dest_files=["res://.godot/imported/astronautA.obj-ca869dc907c52dc704774dbf3edc0d25.mesh", "res://.godot/imported/astronautA.obj-ca869dc907c52dc704774dbf3edc0d25.mesh"]
 
 [params]
 

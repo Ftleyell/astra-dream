@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c5q0mwea6j77f"
-path="res://.godot/imported/rocket_finsB.glb-bb2dc3d320d33784706457c9c8b7f640.scn"
+path="res://.godot/imported/rocket_finsB.glb-eeb5a86c2c7dfa57bf55b88ddad341da.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/rocket_finsB.glb"
-dest_files=["res://.godot/imported/rocket_finsB.glb-bb2dc3d320d33784706457c9c8b7f640.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/rocket_finsB.glb"
+dest_files=["res://.godot/imported/rocket_finsB.glb-eeb5a86c2c7dfa57bf55b88ddad341da.scn"]
 
 [params]
 

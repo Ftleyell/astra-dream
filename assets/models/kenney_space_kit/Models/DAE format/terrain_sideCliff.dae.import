@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://xes0c1wmb25v"
-path="res://.godot/imported/terrain_sideCliff.dae-4fff5726d017b139a67c4ba43220b8fa.scn"
+path="res://.godot/imported/terrain_sideCliff.dae-1eb9f9dbe8dd1b457202a5ec1f45c079.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_sideCliff.dae"
-dest_files=["res://.godot/imported/terrain_sideCliff.dae-4fff5726d017b139a67c4ba43220b8fa.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_sideCliff.dae"
+dest_files=["res://.godot/imported/terrain_sideCliff.dae-1eb9f9dbe8dd1b457202a5ec1f45c079.scn"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://i3jvrfw7iuu0"
-path="res://.godot/imported/structure_diagonal_SW.png-74951970972bf861084411384401659a.ctex"
+path="res://.godot/imported/structure_diagonal_SW.png-104f124649133fc23051e821d3bb027e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/structure_diagonal_SW.png"
-dest_files=["res://.godot/imported/structure_diagonal_SW.png-74951970972bf861084411384401659a.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/structure_diagonal_SW.png"
+dest_files=["res://.godot/imported/structure_diagonal_SW.png-104f124649133fc23051e821d3bb027e.ctex"]
 
 [params]
 

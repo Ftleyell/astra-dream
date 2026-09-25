@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://iso4pix7y2d2"
-path="res://.godot/imported/stairs_corner.dae-c243319e084fb4fc7b113b649de783af.scn"
+path="res://.godot/imported/stairs_corner.dae-15027e3310bb8cfe78b6cb0c5c176d83.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/stairs_corner.dae"
-dest_files=["res://.godot/imported/stairs_corner.dae-c243319e084fb4fc7b113b649de783af.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/stairs_corner.dae"
+dest_files=["res://.godot/imported/stairs_corner.dae-15027e3310bb8cfe78b6cb0c5c176d83.scn"]
 
 [params]
 

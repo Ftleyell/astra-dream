@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://1swly62v8au5"
-path="res://.godot/imported/craft_cargoA.fbx-06e2c4ff7a73523345c8b5de7338ab52.scn"
+path="res://.godot/imported/craft_cargoA.fbx-9849cada6acc10e6b7aaba9c558adb75.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/craft_cargoA.fbx"
-dest_files=["res://.godot/imported/craft_cargoA.fbx-06e2c4ff7a73523345c8b5de7338ab52.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/craft_cargoA.fbx"
+dest_files=["res://.godot/imported/craft_cargoA.fbx-9849cada6acc10e6b7aaba9c558adb75.scn"]
 
 [params]
 

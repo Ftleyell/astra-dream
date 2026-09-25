@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://d3l3wngjutc2q"
-path="res://.godot/imported/craft_speederB.obj-3da3ece2a0f83cfcfee3335dd938ff6a.mesh"
+path="res://.godot/imported/craft_speederB.obj-366f808d015f26203f3b5e751bfb740c.mesh"
 
 [deps]
 
-files=["res://.godot/imported/craft_speederB.obj-3da3ece2a0f83cfcfee3335dd938ff6a.mesh"]
+files=["res://.godot/imported/craft_speederB.obj-366f808d015f26203f3b5e751bfb740c.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/craft_speederB.obj"
-dest_files=["res://.godot/imported/craft_speederB.obj-3da3ece2a0f83cfcfee3335dd938ff6a.mesh", "res://.godot/imported/craft_speederB.obj-3da3ece2a0f83cfcfee3335dd938ff6a.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/craft_speederB.obj"
+dest_files=["res://.godot/imported/craft_speederB.obj-366f808d015f26203f3b5e751bfb740c.mesh", "res://.godot/imported/craft_speederB.obj-366f808d015f26203f3b5e751bfb740c.mesh"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://5vn7cq4xhrjv"
-path="res://.godot/imported/meteor_detailed_NW.png-029e4440dbe1ba8dd8dbf2592d2ecd59.ctex"
+path="res://.godot/imported/meteor_detailed_NW.png-f6552b13e296539b8d5a5798cd2fc809.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/meteor_detailed_NW.png"
-dest_files=["res://.godot/imported/meteor_detailed_NW.png-029e4440dbe1ba8dd8dbf2592d2ecd59.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/meteor_detailed_NW.png"
+dest_files=["res://.godot/imported/meteor_detailed_NW.png-f6552b13e296539b8d5a5798cd2fc809.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4r60hs25x4ke"
-path="res://.godot/imported/barrels_rail_SE.png-c88b7b7a88485c236cc7b9418bc250ad.ctex"
+path="res://.godot/imported/barrels_rail_SE.png-fe2312bac22b0495405f1152d1bfea36.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/barrels_rail_SE.png"
-dest_files=["res://.godot/imported/barrels_rail_SE.png-c88b7b7a88485c236cc7b9418bc250ad.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/barrels_rail_SE.png"
+dest_files=["res://.godot/imported/barrels_rail_SE.png-fe2312bac22b0495405f1152d1bfea36.ctex"]
 
 [params]
 

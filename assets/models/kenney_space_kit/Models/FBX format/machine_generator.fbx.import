@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://doqt61hgc607s"
-path="res://.godot/imported/machine_generator.fbx-f0f96170b05e338f5bd0f21633cf969d.scn"
+path="res://.godot/imported/machine_generator.fbx-201b48d3f67f1765a35cb417d807c5ba.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/machine_generator.fbx"
-dest_files=["res://.godot/imported/machine_generator.fbx-f0f96170b05e338f5bd0f21633cf969d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/machine_generator.fbx"
+dest_files=["res://.godot/imported/machine_generator.fbx-201b48d3f67f1765a35cb417d807c5ba.scn"]
 
 [params]
 

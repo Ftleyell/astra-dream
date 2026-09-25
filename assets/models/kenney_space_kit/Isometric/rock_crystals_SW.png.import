@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cx072gpygn7xr"
-path="res://.godot/imported/rock_crystals_SW.png-10ccc9f58d9b80b1c66cb9b961aa37c6.ctex"
+path="res://.godot/imported/rock_crystals_SW.png-cc42297d1b6a7a06152e6ba60f42eeab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/rock_crystals_SW.png"
-dest_files=["res://.godot/imported/rock_crystals_SW.png-10ccc9f58d9b80b1c66cb9b961aa37c6.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/rock_crystals_SW.png"
+dest_files=["res://.godot/imported/rock_crystals_SW.png-cc42297d1b6a7a06152e6ba60f42eeab.ctex"]
 
 [params]
 

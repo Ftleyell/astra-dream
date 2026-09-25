@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://8t3gefiog2or"
-path="res://.godot/imported/corridor_end.png-df4667e2d7f85e8bf8c4d13406fc64c4.ctex"
+path="res://.godot/imported/corridor_end.png-e76a928fa3f200c88561389807de5579.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/corridor_end.png"
-dest_files=["res://.godot/imported/corridor_end.png-df4667e2d7f85e8bf8c4d13406fc64c4.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/corridor_end.png"
+dest_files=["res://.godot/imported/corridor_end.png-e76a928fa3f200c88561389807de5579.ctex"]
 
 [params]
 

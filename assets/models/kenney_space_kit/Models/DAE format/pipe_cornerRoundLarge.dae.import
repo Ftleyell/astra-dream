@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b6jjsu6ehtovo"
-path="res://.godot/imported/pipe_cornerRoundLarge.dae-36071a7ed5a2652c2dfa23d5f7bc59ef.scn"
+path="res://.godot/imported/pipe_cornerRoundLarge.dae-21e5dd47b3d388a5d719c35c7680a0f1.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_cornerRoundLarge.dae"
-dest_files=["res://.godot/imported/pipe_cornerRoundLarge.dae-36071a7ed5a2652c2dfa23d5f7bc59ef.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_cornerRoundLarge.dae"
+dest_files=["res://.godot/imported/pipe_cornerRoundLarge.dae-21e5dd47b3d388a5d719c35c7680a0f1.scn"]
 
 [params]
 

@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c5ffvqej5qbe0"
-path="res://.godot/imported/craft_racer.obj-64df6abaff333e2024ce5e19a13f53b1.mesh"
+path="res://.godot/imported/craft_racer.obj-6d12265a3c9fc83d5d0d229aba43d5d7.mesh"
 
 [deps]
 
-files=["res://.godot/imported/craft_racer.obj-64df6abaff333e2024ce5e19a13f53b1.mesh"]
+files=["res://.godot/imported/craft_racer.obj-6d12265a3c9fc83d5d0d229aba43d5d7.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/craft_racer.obj"
-dest_files=["res://.godot/imported/craft_racer.obj-64df6abaff333e2024ce5e19a13f53b1.mesh", "res://.godot/imported/craft_racer.obj-64df6abaff333e2024ce5e19a13f53b1.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/craft_racer.obj"
+dest_files=["res://.godot/imported/craft_racer.obj-6d12265a3c9fc83d5d0d229aba43d5d7.mesh", "res://.godot/imported/craft_racer.obj-6d12265a3c9fc83d5d0d229aba43d5d7.mesh"]
 
 [params]
 

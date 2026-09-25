@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://b336uomt2lrao"
-path="res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"
+path="res://.godot/imported/platform_smallDiagonal.obj-d4f90be68d528d9c44314c76b5083f4b.mesh"
 
 [deps]
 
-files=["res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"]
+files=["res://.godot/imported/platform_smallDiagonal.obj-d4f90be68d528d9c44314c76b5083f4b.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/platform_smallDiagonal.obj"
-dest_files=["res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh", "res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/platform_smallDiagonal.obj"
+dest_files=["res://.godot/imported/platform_smallDiagonal.obj-d4f90be68d528d9c44314c76b5083f4b.mesh", "res://.godot/imported/platform_smallDiagonal.obj-d4f90be68d528d9c44314c76b5083f4b.mesh"]
 
 [params]
 

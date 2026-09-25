@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl1rkfl2sd4m8"
-path="res://.godot/imported/machine_generator_SW.png-5b672c7e29b9546692250723af48900b.ctex"
+path="res://.godot/imported/machine_generator_SW.png-402fc42a5d81d604b72b6ed8f8d4e9c5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/machine_generator_SW.png"
-dest_files=["res://.godot/imported/machine_generator_SW.png-5b672c7e29b9546692250723af48900b.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/machine_generator_SW.png"
+dest_files=["res://.godot/imported/machine_generator_SW.png-402fc42a5d81d604b72b6ed8f8d4e9c5.ctex"]
 
 [params]
 

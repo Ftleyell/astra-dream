@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cbrbkhmtj8pk5"
-path="res://.godot/imported/corridor_cross.fbx-9ffb582fe0b48e32df87849f62111b5b.scn"
+path="res://.godot/imported/corridor_cross.fbx-f3deee64fb50b06f16e852ffd7fc1913.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/corridor_cross.fbx"
-dest_files=["res://.godot/imported/corridor_cross.fbx-9ffb582fe0b48e32df87849f62111b5b.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/corridor_cross.fbx"
+dest_files=["res://.godot/imported/corridor_cross.fbx-f3deee64fb50b06f16e852ffd7fc1913.scn"]
 
 [params]
 

@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dh8hyri6wugc1"
-path="res://.godot/imported/pipe_ringHighEnd.obj-9863641c6c406a4a9201084112d3a99a.mesh"
+path="res://.godot/imported/pipe_ringHighEnd.obj-a40f0a621954b27ea4eca0f8ff14efbb.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_ringHighEnd.obj-9863641c6c406a4a9201084112d3a99a.mesh"]
+files=["res://.godot/imported/pipe_ringHighEnd.obj-a40f0a621954b27ea4eca0f8ff14efbb.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_ringHighEnd.obj"
-dest_files=["res://.godot/imported/pipe_ringHighEnd.obj-9863641c6c406a4a9201084112d3a99a.mesh", "res://.godot/imported/pipe_ringHighEnd.obj-9863641c6c406a4a9201084112d3a99a.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_ringHighEnd.obj"
+dest_files=["res://.godot/imported/pipe_ringHighEnd.obj-a40f0a621954b27ea4eca0f8ff14efbb.mesh", "res://.godot/imported/pipe_ringHighEnd.obj-a40f0a621954b27ea4eca0f8ff14efbb.mesh"]
 
 [params]
 

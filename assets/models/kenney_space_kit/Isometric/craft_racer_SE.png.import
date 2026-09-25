@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b11hfjyxbfacn"
-path="res://.godot/imported/craft_racer_SE.png-4ae205d0512667ac2099609ee4c0fa63.ctex"
+path="res://.godot/imported/craft_racer_SE.png-223e29e92186ef702bbee0279bd20b5b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/craft_racer_SE.png"
-dest_files=["res://.godot/imported/craft_racer_SE.png-4ae205d0512667ac2099609ee4c0fa63.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/craft_racer_SE.png"
+dest_files=["res://.godot/imported/craft_racer_SE.png-223e29e92186ef702bbee0279bd20b5b.ctex"]
 
 [params]
 

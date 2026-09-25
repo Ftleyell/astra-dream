@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bj4dmxg1250kv"
-path="res://.godot/imported/crater_SW.png-9d5ff04d07024e818a396b1e58485ccc.ctex"
+path="res://.godot/imported/crater_SW.png-700bb64b3691bb95fdec55f9dc020529.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/crater_SW.png"
-dest_files=["res://.godot/imported/crater_SW.png-9d5ff04d07024e818a396b1e58485ccc.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/crater_SW.png"
+dest_files=["res://.godot/imported/crater_SW.png-700bb64b3691bb95fdec55f9dc020529.ctex"]
 
 [params]
 

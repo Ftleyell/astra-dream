@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dwh1rwlxamau1"
-path="res://.godot/imported/platform_cornerRound.obj-5130662d4e3b213f8b920b5ed02b393f.mesh"
+path="res://.godot/imported/platform_cornerRound.obj-5f01ec9bc9bb2f72ea57992c0c9c0f7e.mesh"
 
 [deps]
 
-files=["res://.godot/imported/platform_cornerRound.obj-5130662d4e3b213f8b920b5ed02b393f.mesh"]
+files=["res://.godot/imported/platform_cornerRound.obj-5f01ec9bc9bb2f72ea57992c0c9c0f7e.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/platform_cornerRound.obj"
-dest_files=["res://.godot/imported/platform_cornerRound.obj-5130662d4e3b213f8b920b5ed02b393f.mesh", "res://.godot/imported/platform_cornerRound.obj-5130662d4e3b213f8b920b5ed02b393f.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/platform_cornerRound.obj"
+dest_files=["res://.godot/imported/platform_cornerRound.obj-5f01ec9bc9bb2f72ea57992c0c9c0f7e.mesh", "res://.godot/imported/platform_cornerRound.obj-5f01ec9bc9bb2f72ea57992c0c9c0f7e.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ddlfsuh4e0nup"
-path="res://.godot/imported/structure_diagonal.fbx-b722c7c100528e0211109945f7b2697d.scn"
+path="res://.godot/imported/structure_diagonal.fbx-c3cae86abc1ead752711fb5b197de359.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/structure_diagonal.fbx"
-dest_files=["res://.godot/imported/structure_diagonal.fbx-b722c7c100528e0211109945f7b2697d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/structure_diagonal.fbx"
+dest_files=["res://.godot/imported/structure_diagonal.fbx-c3cae86abc1ead752711fb5b197de359.scn"]
 
 [params]
 

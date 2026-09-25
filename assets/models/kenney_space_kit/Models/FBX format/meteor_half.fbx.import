@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://fapybcar4ofv"
-path="res://.godot/imported/meteor_half.fbx-9bb4856ef7c9958f1a9c20003cdfb5fb.scn"
+path="res://.godot/imported/meteor_half.fbx-93913dc99232cc9859c6c09899afec4e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/meteor_half.fbx"
-dest_files=["res://.godot/imported/meteor_half.fbx-9bb4856ef7c9958f1a9c20003cdfb5fb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/meteor_half.fbx"
+dest_files=["res://.godot/imported/meteor_half.fbx-93913dc99232cc9859c6c09899afec4e.scn"]
 
 [params]
 

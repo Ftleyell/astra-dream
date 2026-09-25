@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://osh8dvwsrv68"
-path="res://.godot/imported/pipe_corner.dae-210228ce55bc62284a56244cb8d6d4f7.scn"
+path="res://.godot/imported/pipe_corner.dae-8fd41634037ef6b14b91de612504dec7.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_corner.dae"
-dest_files=["res://.godot/imported/pipe_corner.dae-210228ce55bc62284a56244cb8d6d4f7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_corner.dae"
+dest_files=["res://.godot/imported/pipe_corner.dae-8fd41634037ef6b14b91de612504dec7.scn"]
 
 [params]
 

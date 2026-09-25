@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://34eldq2y6ymh"
-path="res://.godot/imported/terrain_roadStraight_SW.png-4ff639d119bf90180ae1252de2bb1141.ctex"
+path="res://.godot/imported/terrain_roadStraight_SW.png-88b034b500fb86c2a22226848037ae20.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_roadStraight_SW.png"
-dest_files=["res://.godot/imported/terrain_roadStraight_SW.png-4ff639d119bf90180ae1252de2bb1141.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_roadStraight_SW.png"
+dest_files=["res://.godot/imported/terrain_roadStraight_SW.png-88b034b500fb86c2a22226848037ae20.ctex"]
 
 [params]
 

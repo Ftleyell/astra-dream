@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://hb2527fmrps3"
-path="res://.godot/imported/rail_corner.fbx-cbeba485f1a28b9f3291066fc8ad613a.scn"
+path="res://.godot/imported/rail_corner.fbx-dfd5ecda6344760faddd08f5b87cad24.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rail_corner.fbx"
-dest_files=["res://.godot/imported/rail_corner.fbx-cbeba485f1a28b9f3291066fc8ad613a.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rail_corner.fbx"
+dest_files=["res://.godot/imported/rail_corner.fbx-dfd5ecda6344760faddd08f5b87cad24.scn"]
 
 [params]
 

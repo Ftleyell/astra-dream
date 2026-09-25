@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://beas0qaqubong"
-path="res://.godot/imported/platform_corner_SW.png-1fdf2376c3d4f2f63650f8e5d6074682.ctex"
+path="res://.godot/imported/platform_corner_SW.png-5e4bbb2b0aaf9ec043b0770e5023bd80.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/platform_corner_SW.png"
-dest_files=["res://.godot/imported/platform_corner_SW.png-1fdf2376c3d4f2f63650f8e5d6074682.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/platform_corner_SW.png"
+dest_files=["res://.godot/imported/platform_corner_SW.png-5e4bbb2b0aaf9ec043b0770e5023bd80.ctex"]
 
 [params]
 

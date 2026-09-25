@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d4ltw8av13gua"
-path="res://.godot/imported/structure_diagonal.dae-913a57041f4f45be70cd555af7210894.scn"
+path="res://.godot/imported/structure_diagonal.dae-10f11aa19b93255e933a3d3d19dd72a3.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/structure_diagonal.dae"
-dest_files=["res://.godot/imported/structure_diagonal.dae-913a57041f4f45be70cd555af7210894.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/structure_diagonal.dae"
+dest_files=["res://.godot/imported/structure_diagonal.dae-10f11aa19b93255e933a3d3d19dd72a3.scn"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2vaf8ashnu8x"
-path="res://.godot/imported/terrain_roadSplit_NW.png-47ca594818d2759757729baab0778bf4.ctex"
+path="res://.godot/imported/terrain_roadSplit_NW.png-1d95a961f393fa0e8430dfd121c1efb8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_roadSplit_NW.png"
-dest_files=["res://.godot/imported/terrain_roadSplit_NW.png-47ca594818d2759757729baab0778bf4.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_roadSplit_NW.png"
+dest_files=["res://.godot/imported/terrain_roadSplit_NW.png-1d95a961f393fa0e8430dfd121c1efb8.ctex"]
 
 [params]
 

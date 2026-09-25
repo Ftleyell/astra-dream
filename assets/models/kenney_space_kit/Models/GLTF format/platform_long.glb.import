@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cj1c4c65o54ib"
-path="res://.godot/imported/platform_long.glb-05ec9218870e6a649e148dd13d4bc054.scn"
+path="res://.godot/imported/platform_long.glb-ed8013bb73f4685d215431e27c054ebf.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/platform_long.glb"
-dest_files=["res://.godot/imported/platform_long.glb-05ec9218870e6a649e148dd13d4bc054.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/platform_long.glb"
+dest_files=["res://.godot/imported/platform_long.glb-ed8013bb73f4685d215431e27c054ebf.scn"]
 
 [params]
 

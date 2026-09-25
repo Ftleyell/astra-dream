@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c4ecyvj6ylv6n"
-path="res://.godot/imported/pipe_supportLow.glb-8f1a11a3c099b18737a14c63a0594065.scn"
+path="res://.godot/imported/pipe_supportLow.glb-96ead4a24c4f00b67893ac6a091a5e9e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/pipe_supportLow.glb"
-dest_files=["res://.godot/imported/pipe_supportLow.glb-8f1a11a3c099b18737a14c63a0594065.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/pipe_supportLow.glb"
+dest_files=["res://.godot/imported/pipe_supportLow.glb-96ead4a24c4f00b67893ac6a091a5e9e.scn"]
 
 [params]
 

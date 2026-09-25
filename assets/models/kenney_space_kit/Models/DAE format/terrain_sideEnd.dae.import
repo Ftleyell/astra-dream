@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bsv0abno76jvu"
-path="res://.godot/imported/terrain_sideEnd.dae-dc969322bfcc7a63165c1d5df32a3472.scn"
+path="res://.godot/imported/terrain_sideEnd.dae-093e091e7aad6a8d9c7d864129529e87.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_sideEnd.dae"
-dest_files=["res://.godot/imported/terrain_sideEnd.dae-dc969322bfcc7a63165c1d5df32a3472.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_sideEnd.dae"
+dest_files=["res://.godot/imported/terrain_sideEnd.dae-093e091e7aad6a8d9c7d864129529e87.scn"]
 
 [params]
 

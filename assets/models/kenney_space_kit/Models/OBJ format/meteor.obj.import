@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dyjogrsrnk7jn"
-path="res://.godot/imported/meteor.obj-0ea6db21a6d3ce1e8aeb03ab58b9c027.mesh"
+path="res://.godot/imported/meteor.obj-979082bf6c09b72e1b1532f4f417091b.mesh"
 
 [deps]
 
-files=["res://.godot/imported/meteor.obj-0ea6db21a6d3ce1e8aeb03ab58b9c027.mesh"]
+files=["res://.godot/imported/meteor.obj-979082bf6c09b72e1b1532f4f417091b.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/meteor.obj"
-dest_files=["res://.godot/imported/meteor.obj-0ea6db21a6d3ce1e8aeb03ab58b9c027.mesh", "res://.godot/imported/meteor.obj-0ea6db21a6d3ce1e8aeb03ab58b9c027.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/meteor.obj"
+dest_files=["res://.godot/imported/meteor.obj-979082bf6c09b72e1b1532f4f417091b.mesh", "res://.godot/imported/meteor.obj-979082bf6c09b72e1b1532f4f417091b.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c77k77s5c3mae"
-path="res://.godot/imported/desk_computerScreen.dae-de6cc68fccb9b1e0d6d55b5abf4310ac.scn"
+path="res://.godot/imported/desk_computerScreen.dae-332c51cf68f418c747c713b48293981f.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/desk_computerScreen.dae"
-dest_files=["res://.godot/imported/desk_computerScreen.dae-de6cc68fccb9b1e0d6d55b5abf4310ac.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/desk_computerScreen.dae"
+dest_files=["res://.godot/imported/desk_computerScreen.dae-332c51cf68f418c747c713b48293981f.scn"]
 
 [params]
 

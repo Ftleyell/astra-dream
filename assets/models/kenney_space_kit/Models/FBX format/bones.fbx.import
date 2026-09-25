@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d2twmn3lqgg68"
-path="res://.godot/imported/bones.fbx-9504c0885968397d4487d97084342c25.scn"
+path="res://.godot/imported/bones.fbx-4bced93776287979fa2888ba6ba30afd.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/bones.fbx"
-dest_files=["res://.godot/imported/bones.fbx-9504c0885968397d4487d97084342c25.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/bones.fbx"
+dest_files=["res://.godot/imported/bones.fbx-4bced93776287979fa2888ba6ba30afd.scn"]
 
 [params]
 

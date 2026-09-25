@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bcxed2adavje7"
-path="res://.godot/imported/chimney.glb-ae8d78bb691e418d3d50b41a7d9600ff.scn"
+path="res://.godot/imported/chimney.glb-8b7b5f3421ebdbfbb7e9b6334877a48d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/chimney.glb"
-dest_files=["res://.godot/imported/chimney.glb-ae8d78bb691e418d3d50b41a7d9600ff.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/chimney.glb"
+dest_files=["res://.godot/imported/chimney.glb-8b7b5f3421ebdbfbb7e9b6334877a48d.scn"]
 
 [params]
 

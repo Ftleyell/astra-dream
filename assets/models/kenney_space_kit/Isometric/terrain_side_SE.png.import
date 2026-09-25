@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bb63d1o1n5i1c"
-path="res://.godot/imported/terrain_side_SE.png-ea50c68830fa2ed15e36987283895003.ctex"
+path="res://.godot/imported/terrain_side_SE.png-c596ba69be8a902553958824bfb8fec3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_side_SE.png"
-dest_files=["res://.godot/imported/terrain_side_SE.png-ea50c68830fa2ed15e36987283895003.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_side_SE.png"
+dest_files=["res://.godot/imported/terrain_side_SE.png-c596ba69be8a902553958824bfb8fec3.ctex"]
 
 [params]
 

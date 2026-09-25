@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://y7la21h2gxx3"
-path="res://.godot/imported/weapon_gun.dae-7b04652ea95ea13e30e8332fb08ceb6b.scn"
+path="res://.godot/imported/weapon_gun.dae-9d628d131379a103fbb10ba1be6b2b53.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/weapon_gun.dae"
-dest_files=["res://.godot/imported/weapon_gun.dae-7b04652ea95ea13e30e8332fb08ceb6b.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/weapon_gun.dae"
+dest_files=["res://.godot/imported/weapon_gun.dae-9d628d131379a103fbb10ba1be6b2b53.scn"]
 
 [params]
 

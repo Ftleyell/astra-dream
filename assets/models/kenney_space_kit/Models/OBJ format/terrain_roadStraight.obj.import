@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://px51ghos3tiy"
-path="res://.godot/imported/terrain_roadStraight.obj-92baff833931cc38add9cf718a057768.mesh"
+path="res://.godot/imported/terrain_roadStraight.obj-e245109c31972f2b321d9234c899cbf8.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_roadStraight.obj-92baff833931cc38add9cf718a057768.mesh"]
+files=["res://.godot/imported/terrain_roadStraight.obj-e245109c31972f2b321d9234c899cbf8.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_roadStraight.obj"
-dest_files=["res://.godot/imported/terrain_roadStraight.obj-92baff833931cc38add9cf718a057768.mesh", "res://.godot/imported/terrain_roadStraight.obj-92baff833931cc38add9cf718a057768.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_roadStraight.obj"
+dest_files=["res://.godot/imported/terrain_roadStraight.obj-e245109c31972f2b321d9234c899cbf8.mesh", "res://.godot/imported/terrain_roadStraight.obj-e245109c31972f2b321d9234c899cbf8.mesh"]
 
 [params]
 

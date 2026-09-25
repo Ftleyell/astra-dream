@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dbfhxygy6wpnt"
-path="res://.godot/imported/turret_single.dae-eecda5fa5d878fe485796e658df5b091.scn"
+path="res://.godot/imported/turret_single.dae-f86731e9fe3c57764a7000bf6721e718.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/turret_single.dae"
-dest_files=["res://.godot/imported/turret_single.dae-eecda5fa5d878fe485796e658df5b091.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/turret_single.dae"
+dest_files=["res://.godot/imported/turret_single.dae-f86731e9fe3c57764a7000bf6721e718.scn"]
 
 [params]
 

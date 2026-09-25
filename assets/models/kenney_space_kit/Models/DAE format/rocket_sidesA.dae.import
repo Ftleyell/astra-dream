@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dttawxi14pcg6"
-path="res://.godot/imported/rocket_sidesA.dae-123d2cecff1ed3fd566b524f1d4a8d9e.scn"
+path="res://.godot/imported/rocket_sidesA.dae-c833650ac295d87d10dffc65f0590eca.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rocket_sidesA.dae"
-dest_files=["res://.godot/imported/rocket_sidesA.dae-123d2cecff1ed3fd566b524f1d4a8d9e.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rocket_sidesA.dae"
+dest_files=["res://.godot/imported/rocket_sidesA.dae-c833650ac295d87d10dffc65f0590eca.scn"]
 
 [params]
 

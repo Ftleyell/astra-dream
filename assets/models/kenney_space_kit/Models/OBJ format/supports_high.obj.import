@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cturw8rycuc8h"
-path="res://.godot/imported/supports_high.obj-31a7050b6d64bbd1775cb627a98d6fa0.mesh"
+path="res://.godot/imported/supports_high.obj-09a418df288fe5964611dee1a7014041.mesh"
 
 [deps]
 
-files=["res://.godot/imported/supports_high.obj-31a7050b6d64bbd1775cb627a98d6fa0.mesh"]
+files=["res://.godot/imported/supports_high.obj-09a418df288fe5964611dee1a7014041.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/supports_high.obj"
-dest_files=["res://.godot/imported/supports_high.obj-31a7050b6d64bbd1775cb627a98d6fa0.mesh", "res://.godot/imported/supports_high.obj-31a7050b6d64bbd1775cb627a98d6fa0.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/supports_high.obj"
+dest_files=["res://.godot/imported/supports_high.obj-09a418df288fe5964611dee1a7014041.mesh", "res://.godot/imported/supports_high.obj-09a418df288fe5964611dee1a7014041.mesh"]
 
 [params]
 

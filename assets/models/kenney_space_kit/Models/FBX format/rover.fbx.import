@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cullensflev3u"
-path="res://.godot/imported/rover.fbx-86fbc21e1c416b6e6d9f14e2d82cdccb.scn"
+path="res://.godot/imported/rover.fbx-89801f145c58fa42bc47392a3ad63b9d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rover.fbx"
-dest_files=["res://.godot/imported/rover.fbx-86fbc21e1c416b6e6d9f14e2d82cdccb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rover.fbx"
+dest_files=["res://.godot/imported/rover.fbx-89801f145c58fa42bc47392a3ad63b9d.scn"]
 
 [params]
 

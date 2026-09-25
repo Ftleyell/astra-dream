@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dvbgljs3fsaf5"
-path="res://.godot/imported/platform_large.fbx-7f7ec0306f35165b7172fb274a101484.scn"
+path="res://.godot/imported/platform_large.fbx-183a731b86e9b65b7115170600e4e78f.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/platform_large.fbx"
-dest_files=["res://.godot/imported/platform_large.fbx-7f7ec0306f35165b7172fb274a101484.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/platform_large.fbx"
+dest_files=["res://.godot/imported/platform_large.fbx-183a731b86e9b65b7115170600e4e78f.scn"]
 
 [params]
 

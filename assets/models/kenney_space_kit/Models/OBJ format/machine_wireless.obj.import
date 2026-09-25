@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cftycx5n8h53l"
-path="res://.godot/imported/machine_wireless.obj-06dff7778509021dcb761480c3d76032.mesh"
+path="res://.godot/imported/machine_wireless.obj-70a7c7a7465266b56da73324c30f922b.mesh"
 
 [deps]
 
-files=["res://.godot/imported/machine_wireless.obj-06dff7778509021dcb761480c3d76032.mesh"]
+files=["res://.godot/imported/machine_wireless.obj-70a7c7a7465266b56da73324c30f922b.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/machine_wireless.obj"
-dest_files=["res://.godot/imported/machine_wireless.obj-06dff7778509021dcb761480c3d76032.mesh", "res://.godot/imported/machine_wireless.obj-06dff7778509021dcb761480c3d76032.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/machine_wireless.obj"
+dest_files=["res://.godot/imported/machine_wireless.obj-70a7c7a7465266b56da73324c30f922b.mesh", "res://.godot/imported/machine_wireless.obj-70a7c7a7465266b56da73324c30f922b.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d1c1ulk06kumh"
-path="res://.godot/imported/pipe_rampLarge.dae-d9631db3dbfa18ff2e227c752a5f530d.scn"
+path="res://.godot/imported/pipe_rampLarge.dae-8400c14132706175d97897c431557a1c.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_rampLarge.dae"
-dest_files=["res://.godot/imported/pipe_rampLarge.dae-d9631db3dbfa18ff2e227c752a5f530d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_rampLarge.dae"
+dest_files=["res://.godot/imported/pipe_rampLarge.dae-8400c14132706175d97897c431557a1c.scn"]
 
 [params]
 

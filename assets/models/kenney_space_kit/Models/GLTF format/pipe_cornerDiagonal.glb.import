@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dmg47gq5jer6x"
-path="res://.godot/imported/pipe_cornerDiagonal.glb-db6d1e87186d98656283ee26f218f278.scn"
+path="res://.godot/imported/pipe_cornerDiagonal.glb-51ae8a8a243b7d1603bee2a5589623e5.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/pipe_cornerDiagonal.glb"
-dest_files=["res://.godot/imported/pipe_cornerDiagonal.glb-db6d1e87186d98656283ee26f218f278.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/pipe_cornerDiagonal.glb"
+dest_files=["res://.godot/imported/pipe_cornerDiagonal.glb-51ae8a8a243b7d1603bee2a5589623e5.scn"]
 
 [params]
 

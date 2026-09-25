@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dgqidwk67ow1x"
-path="res://.godot/imported/meteor_half.glb-026810257d241f83f5fe71d3d8daeb42.scn"
+path="res://.godot/imported/meteor_half.glb-86c6e2d891e1669add7ebc757fc7caf5.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/meteor_half.glb"
-dest_files=["res://.godot/imported/meteor_half.glb-026810257d241f83f5fe71d3d8daeb42.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/meteor_half.glb"
+dest_files=["res://.godot/imported/meteor_half.glb-86c6e2d891e1669add7ebc757fc7caf5.scn"]
 
 [params]
 

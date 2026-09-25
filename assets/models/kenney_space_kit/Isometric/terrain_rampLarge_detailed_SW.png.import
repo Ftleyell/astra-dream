@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cg2naj11yoy2b"
-path="res://.godot/imported/terrain_rampLarge_detailed_SW.png-0f98c0af41d02bea785c1671e5a74b70.ctex"
+path="res://.godot/imported/terrain_rampLarge_detailed_SW.png-6b11d64ceef026375b4c738bbca59818.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/terrain_rampLarge_detailed_SW.png"
-dest_files=["res://.godot/imported/terrain_rampLarge_detailed_SW.png-0f98c0af41d02bea785c1671e5a74b70.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/terrain_rampLarge_detailed_SW.png"
+dest_files=["res://.godot/imported/terrain_rampLarge_detailed_SW.png-6b11d64ceef026375b4c738bbca59818.ctex"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cbdxx1rils1mw"
-path="res://.godot/imported/desk_computerScreen.glb-36711582884e97f668d8331210e9692d.scn"
+path="res://.godot/imported/desk_computerScreen.glb-64e6174350a383309233e85d765cd892.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/desk_computerScreen.glb"
-dest_files=["res://.godot/imported/desk_computerScreen.glb-36711582884e97f668d8331210e9692d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/desk_computerScreen.glb"
+dest_files=["res://.godot/imported/desk_computerScreen.glb-64e6174350a383309233e85d765cd892.scn"]
 
 [params]
 

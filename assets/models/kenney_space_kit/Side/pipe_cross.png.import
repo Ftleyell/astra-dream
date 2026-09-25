@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dogpyowg6j38w"
-path="res://.godot/imported/pipe_cross.png-9847b074f527633e8feb751cdbee0d96.ctex"
+path="res://.godot/imported/pipe_cross.png-1bc370048618a6b8f9ecfec81efaa17c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/pipe_cross.png"
-dest_files=["res://.godot/imported/pipe_cross.png-9847b074f527633e8feb751cdbee0d96.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/pipe_cross.png"
+dest_files=["res://.godot/imported/pipe_cross.png-1bc370048618a6b8f9ecfec81efaa17c.ctex"]
 
 [params]
 

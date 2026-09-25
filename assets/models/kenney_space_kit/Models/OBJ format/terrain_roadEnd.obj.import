@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dxh5w1xmw237t"
-path="res://.godot/imported/terrain_roadEnd.obj-019c2ee23a41460a8ddd4b4aad156d8b.mesh"
+path="res://.godot/imported/terrain_roadEnd.obj-100c16369ac78b5c5487f394a7927d43.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_roadEnd.obj-019c2ee23a41460a8ddd4b4aad156d8b.mesh"]
+files=["res://.godot/imported/terrain_roadEnd.obj-100c16369ac78b5c5487f394a7927d43.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_roadEnd.obj"
-dest_files=["res://.godot/imported/terrain_roadEnd.obj-019c2ee23a41460a8ddd4b4aad156d8b.mesh", "res://.godot/imported/terrain_roadEnd.obj-019c2ee23a41460a8ddd4b4aad156d8b.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_roadEnd.obj"
+dest_files=["res://.godot/imported/terrain_roadEnd.obj-100c16369ac78b5c5487f394a7927d43.mesh", "res://.godot/imported/terrain_roadEnd.obj-100c16369ac78b5c5487f394a7927d43.mesh"]
 
 [params]
 

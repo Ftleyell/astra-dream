@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bf16pik1xy3wj"
-path="res://.godot/imported/corridor_cross.obj-a170c62dad8e77d45885a36915e913c7.mesh"
+path="res://.godot/imported/corridor_cross.obj-565be48d640b5f6388d3322bc10e9543.mesh"
 
 [deps]
 
-files=["res://.godot/imported/corridor_cross.obj-a170c62dad8e77d45885a36915e913c7.mesh"]
+files=["res://.godot/imported/corridor_cross.obj-565be48d640b5f6388d3322bc10e9543.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/corridor_cross.obj"
-dest_files=["res://.godot/imported/corridor_cross.obj-a170c62dad8e77d45885a36915e913c7.mesh", "res://.godot/imported/corridor_cross.obj-a170c62dad8e77d45885a36915e913c7.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/corridor_cross.obj"
+dest_files=["res://.godot/imported/corridor_cross.obj-565be48d640b5f6388d3322bc10e9543.mesh", "res://.godot/imported/corridor_cross.obj-565be48d640b5f6388d3322bc10e9543.mesh"]
 
 [params]
 

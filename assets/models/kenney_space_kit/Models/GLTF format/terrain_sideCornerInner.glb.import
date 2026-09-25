@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cbh5ugwulsnsi"
-path="res://.godot/imported/terrain_sideCornerInner.glb-a4ab7f20eb3e472d5c451db25fb24f91.scn"
+path="res://.godot/imported/terrain_sideCornerInner.glb-94f18df391e49500aba531c0d0430b47.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/terrain_sideCornerInner.glb"
-dest_files=["res://.godot/imported/terrain_sideCornerInner.glb-a4ab7f20eb3e472d5c451db25fb24f91.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/terrain_sideCornerInner.glb"
+dest_files=["res://.godot/imported/terrain_sideCornerInner.glb-94f18df391e49500aba531c0d0430b47.scn"]
 
 [params]
 

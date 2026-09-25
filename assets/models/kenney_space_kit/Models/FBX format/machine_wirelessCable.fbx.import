@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://moe6tufkuesb"
-path="res://.godot/imported/machine_wirelessCable.fbx-15ea8af3535c20102c0ad0be87aaea25.scn"
+path="res://.godot/imported/machine_wirelessCable.fbx-69513d3c2c74ad783304e49395dd8acd.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/machine_wirelessCable.fbx"
-dest_files=["res://.godot/imported/machine_wirelessCable.fbx-15ea8af3535c20102c0ad0be87aaea25.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/machine_wirelessCable.fbx"
+dest_files=["res://.godot/imported/machine_wirelessCable.fbx-69513d3c2c74ad783304e49395dd8acd.scn"]
 
 [params]
 

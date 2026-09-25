@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://v4ftwc0i7irc"
-path="res://.godot/imported/stairs_short_SE.png-96ac8958501aa1648c326f977803175a.ctex"
+path="res://.godot/imported/stairs_short_SE.png-8a0278ab2149a2c0113d674b24c5a54c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/stairs_short_SE.png"
-dest_files=["res://.godot/imported/stairs_short_SE.png-96ac8958501aa1648c326f977803175a.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/stairs_short_SE.png"
+dest_files=["res://.godot/imported/stairs_short_SE.png-8a0278ab2149a2c0113d674b24c5a54c.ctex"]
 
 [params]
 

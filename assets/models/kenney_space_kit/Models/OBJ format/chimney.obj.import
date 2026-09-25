@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c3ishy6ga1k5c"
-path="res://.godot/imported/chimney.obj-475d98fbb0e5d972035c2991082ed745.mesh"
+path="res://.godot/imported/chimney.obj-288f379b390aa05aa7ef66603748549c.mesh"
 
 [deps]
 
-files=["res://.godot/imported/chimney.obj-475d98fbb0e5d972035c2991082ed745.mesh"]
+files=["res://.godot/imported/chimney.obj-288f379b390aa05aa7ef66603748549c.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/chimney.obj"
-dest_files=["res://.godot/imported/chimney.obj-475d98fbb0e5d972035c2991082ed745.mesh", "res://.godot/imported/chimney.obj-475d98fbb0e5d972035c2991082ed745.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/chimney.obj"
+dest_files=["res://.godot/imported/chimney.obj-288f379b390aa05aa7ef66603748549c.mesh", "res://.godot/imported/chimney.obj-288f379b390aa05aa7ef66603748549c.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c011n7hvw1iuy"
-path="res://.godot/imported/rail_middle.glb-bc29c620ecce22c20dd0e7d3e2f747dc.scn"
+path="res://.godot/imported/rail_middle.glb-75c4b896f6c62444db3a939076575504.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/rail_middle.glb"
-dest_files=["res://.godot/imported/rail_middle.glb-bc29c620ecce22c20dd0e7d3e2f747dc.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/rail_middle.glb"
+dest_files=["res://.godot/imported/rail_middle.glb-75c4b896f6c62444db3a939076575504.scn"]
 
 [params]
 

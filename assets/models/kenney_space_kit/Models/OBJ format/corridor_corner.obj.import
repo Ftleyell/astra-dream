@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://5du38dsri75p"
-path="res://.godot/imported/corridor_corner.obj-c47ee9427d6080f896e11f70e4232f59.mesh"
+path="res://.godot/imported/corridor_corner.obj-f36b4e2ec3a4eb1d1ba1ee35fb73446b.mesh"
 
 [deps]
 
-files=["res://.godot/imported/corridor_corner.obj-c47ee9427d6080f896e11f70e4232f59.mesh"]
+files=["res://.godot/imported/corridor_corner.obj-f36b4e2ec3a4eb1d1ba1ee35fb73446b.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/corridor_corner.obj"
-dest_files=["res://.godot/imported/corridor_corner.obj-c47ee9427d6080f896e11f70e4232f59.mesh", "res://.godot/imported/corridor_corner.obj-c47ee9427d6080f896e11f70e4232f59.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/corridor_corner.obj"
+dest_files=["res://.godot/imported/corridor_corner.obj-f36b4e2ec3a4eb1d1ba1ee35fb73446b.mesh", "res://.godot/imported/corridor_corner.obj-f36b4e2ec3a4eb1d1ba1ee35fb73446b.mesh"]
 
 [params]
 

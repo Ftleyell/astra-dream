@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://drrhychh6mh48"
-path="res://.godot/imported/rocket_sidesB.fbx-02ced83efd5c86dd122679e63658f27c.scn"
+path="res://.godot/imported/rocket_sidesB.fbx-099f846f47b17f24f6121cf2c028124a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rocket_sidesB.fbx"
-dest_files=["res://.godot/imported/rocket_sidesB.fbx-02ced83efd5c86dd122679e63658f27c.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rocket_sidesB.fbx"
+dest_files=["res://.godot/imported/rocket_sidesB.fbx-099f846f47b17f24f6121cf2c028124a.scn"]
 
 [params]
 

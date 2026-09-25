@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c204npeuyhsk3"
-path="res://.godot/imported/hangar_smallB.fbx-22b8115670a9dcce7faa34b2bef21e47.scn"
+path="res://.godot/imported/hangar_smallB.fbx-d6528248698cabdfc3340be43b013040.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/hangar_smallB.fbx"
-dest_files=["res://.godot/imported/hangar_smallB.fbx-22b8115670a9dcce7faa34b2bef21e47.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/hangar_smallB.fbx"
+dest_files=["res://.godot/imported/hangar_smallB.fbx-d6528248698cabdfc3340be43b013040.scn"]
 
 [params]
 

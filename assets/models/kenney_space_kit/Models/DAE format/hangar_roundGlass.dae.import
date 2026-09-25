@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b54rcdk5kihx2"
-path="res://.godot/imported/hangar_roundGlass.dae-8823f24b8ba15f544bd7c1bb57c07ec2.scn"
+path="res://.godot/imported/hangar_roundGlass.dae-a5da35060e6d861c54b9c77023ce6981.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/hangar_roundGlass.dae"
-dest_files=["res://.godot/imported/hangar_roundGlass.dae-8823f24b8ba15f544bd7c1bb57c07ec2.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/hangar_roundGlass.dae"
+dest_files=["res://.godot/imported/hangar_roundGlass.dae-a5da35060e6d861c54b9c77023ce6981.scn"]
 
 [params]
 

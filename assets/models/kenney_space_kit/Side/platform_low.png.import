@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://r184b2u7hvrw"
-path="res://.godot/imported/platform_low.png-9cfe7aba629940eed544c939acb80647.ctex"
+path="res://.godot/imported/platform_low.png-219a87eee61a8f6097535465aed1ade8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/platform_low.png"
-dest_files=["res://.godot/imported/platform_low.png-9cfe7aba629940eed544c939acb80647.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/platform_low.png"
+dest_files=["res://.godot/imported/platform_low.png-219a87eee61a8f6097535465aed1ade8.ctex"]
 
 [params]
 

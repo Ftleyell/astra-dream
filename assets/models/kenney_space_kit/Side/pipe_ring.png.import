@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3d32mrcourhp"
-path="res://.godot/imported/pipe_ring.png-b09a3652d98abfde50ec8d1e070171fa.ctex"
+path="res://.godot/imported/pipe_ring.png-f84a0e359ddced2b55f6c9b7d5eec7ab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/pipe_ring.png"
-dest_files=["res://.godot/imported/pipe_ring.png-b09a3652d98abfde50ec8d1e070171fa.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/pipe_ring.png"
+dest_files=["res://.godot/imported/pipe_ring.png-f84a0e359ddced2b55f6c9b7d5eec7ab.ctex"]
 
 [params]
 

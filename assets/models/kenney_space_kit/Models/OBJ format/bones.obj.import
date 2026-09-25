@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://b0lphu4hk8oa4"
-path="res://.godot/imported/bones.obj-ed8c3fd8bb32ca243ebb97367266056e.mesh"
+path="res://.godot/imported/bones.obj-14cba7a9977432ca1627087adf683181.mesh"
 
 [deps]
 
-files=["res://.godot/imported/bones.obj-ed8c3fd8bb32ca243ebb97367266056e.mesh"]
+files=["res://.godot/imported/bones.obj-14cba7a9977432ca1627087adf683181.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/bones.obj"
-dest_files=["res://.godot/imported/bones.obj-ed8c3fd8bb32ca243ebb97367266056e.mesh", "res://.godot/imported/bones.obj-ed8c3fd8bb32ca243ebb97367266056e.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/bones.obj"
+dest_files=["res://.godot/imported/bones.obj-14cba7a9977432ca1627087adf683181.mesh", "res://.godot/imported/bones.obj-14cba7a9977432ca1627087adf683181.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dmru1ixwvoa3q"
-path="res://.godot/imported/pipe_rampLarge.fbx-d840fe064d0b800a5ef36e95a62d5790.scn"
+path="res://.godot/imported/pipe_rampLarge.fbx-2d833881bf3a2786c194fe966a856864.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_rampLarge.fbx"
-dest_files=["res://.godot/imported/pipe_rampLarge.fbx-d840fe064d0b800a5ef36e95a62d5790.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_rampLarge.fbx"
+dest_files=["res://.godot/imported/pipe_rampLarge.fbx-2d833881bf3a2786c194fe966a856864.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ygnraylxfbus"
-path="res://.godot/imported/rail.dae-4f128cdeffda14041580031cbb93be86.scn"
+path="res://.godot/imported/rail.dae-df8de8cc921f1bb269296f52bc2ee601.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/rail.dae"
-dest_files=["res://.godot/imported/rail.dae-4f128cdeffda14041580031cbb93be86.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/rail.dae"
+dest_files=["res://.godot/imported/rail.dae-df8de8cc921f1bb269296f52bc2ee601.scn"]
 
 [params]
 

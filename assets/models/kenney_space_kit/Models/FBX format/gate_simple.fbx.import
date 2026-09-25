@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ddmvu47p4kigj"
-path="res://.godot/imported/gate_simple.fbx-df09bc8504858aad625bd77d1b9adc18.scn"
+path="res://.godot/imported/gate_simple.fbx-52c746c832bd4c1a9c61f5ad57e7acd4.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/gate_simple.fbx"
-dest_files=["res://.godot/imported/gate_simple.fbx-df09bc8504858aad625bd77d1b9adc18.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/gate_simple.fbx"
+dest_files=["res://.godot/imported/gate_simple.fbx-52c746c832bd4c1a9c61f5ad57e7acd4.scn"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ps2ksnqfcdnc"
-path="res://.godot/imported/rocket_baseA.png-6f5061ebaa860a3d31534deb4396abde.ctex"
+path="res://.godot/imported/rocket_baseA.png-8b3f49f796974f16d3db21c45b6a4f12.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/rocket_baseA.png"
-dest_files=["res://.godot/imported/rocket_baseA.png-6f5061ebaa860a3d31534deb4396abde.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/rocket_baseA.png"
+dest_files=["res://.godot/imported/rocket_baseA.png-8b3f49f796974f16d3db21c45b6a4f12.ctex"]
 
 [params]
 

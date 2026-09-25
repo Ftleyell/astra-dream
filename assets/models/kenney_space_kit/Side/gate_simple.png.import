@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://duud2wxt6m8i3"
-path="res://.godot/imported/gate_simple.png-4bf29f4308cd9c2bdfc466db1cb1889f.ctex"
+path="res://.godot/imported/gate_simple.png-8c0f3ed03a145e6f1fbb99951fdd9d94.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/gate_simple.png"
-dest_files=["res://.godot/imported/gate_simple.png-4bf29f4308cd9c2bdfc466db1cb1889f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/gate_simple.png"
+dest_files=["res://.godot/imported/gate_simple.png-8c0f3ed03a145e6f1fbb99951fdd9d94.ctex"]
 
 [params]
 

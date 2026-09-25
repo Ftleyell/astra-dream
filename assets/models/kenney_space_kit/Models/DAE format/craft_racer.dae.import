@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bvj0fuhuqfibg"
-path="res://.godot/imported/craft_racer.dae-5ac632a45e3dcf922299acbf8ce76fb0.scn"
+path="res://.godot/imported/craft_racer.dae-640373cf6fef30feed455b202003e58a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/craft_racer.dae"
-dest_files=["res://.godot/imported/craft_racer.dae-5ac632a45e3dcf922299acbf8ce76fb0.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/craft_racer.dae"
+dest_files=["res://.godot/imported/craft_racer.dae-640373cf6fef30feed455b202003e58a.scn"]
 
 [params]
 

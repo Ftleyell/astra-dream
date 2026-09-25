@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://btibui8xs1kmk"
-path="res://.godot/imported/rock_largeA.obj-b888628fc4337c824a9bef94c0407abd.mesh"
+path="res://.godot/imported/rock_largeA.obj-59594455036a542c44535bb18f34964d.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rock_largeA.obj-b888628fc4337c824a9bef94c0407abd.mesh"]
+files=["res://.godot/imported/rock_largeA.obj-59594455036a542c44535bb18f34964d.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rock_largeA.obj"
-dest_files=["res://.godot/imported/rock_largeA.obj-b888628fc4337c824a9bef94c0407abd.mesh", "res://.godot/imported/rock_largeA.obj-b888628fc4337c824a9bef94c0407abd.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rock_largeA.obj"
+dest_files=["res://.godot/imported/rock_largeA.obj-59594455036a542c44535bb18f34964d.mesh", "res://.godot/imported/rock_largeA.obj-59594455036a542c44535bb18f34964d.mesh"]
 
 [params]
 

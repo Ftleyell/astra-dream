@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c642t3gcheh81"
-path="res://.godot/imported/chimney_SE.png-c9cddbd16966eb9db6d86c5ad17bf407.ctex"
+path="res://.godot/imported/chimney_SE.png-0e78bfb554e144c4fc4604058804b2f0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/chimney_SE.png"
-dest_files=["res://.godot/imported/chimney_SE.png-c9cddbd16966eb9db6d86c5ad17bf407.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/chimney_SE.png"
+dest_files=["res://.godot/imported/chimney_SE.png-0e78bfb554e144c4fc4604058804b2f0.ctex"]
 
 [params]
 

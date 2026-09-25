@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dvnnv2l3lpts0"
-path="res://.godot/imported/pipe_cross.obj-6dc71b38f99fc85a9ee62927e523b520.mesh"
+path="res://.godot/imported/pipe_cross.obj-c9c2d05530c569380e62723c73e0e229.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_cross.obj-6dc71b38f99fc85a9ee62927e523b520.mesh"]
+files=["res://.godot/imported/pipe_cross.obj-c9c2d05530c569380e62723c73e0e229.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_cross.obj"
-dest_files=["res://.godot/imported/pipe_cross.obj-6dc71b38f99fc85a9ee62927e523b520.mesh", "res://.godot/imported/pipe_cross.obj-6dc71b38f99fc85a9ee62927e523b520.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_cross.obj"
+dest_files=["res://.godot/imported/pipe_cross.obj-c9c2d05530c569380e62723c73e0e229.mesh", "res://.godot/imported/pipe_cross.obj-c9c2d05530c569380e62723c73e0e229.mesh"]
 
 [params]
 

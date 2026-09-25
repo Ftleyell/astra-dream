@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bwxn4tnl4rx5y"
-path="res://.godot/imported/rocket_topA.obj-b77c36ade3d2d44fb47af300e2e3e43f.mesh"
+path="res://.godot/imported/rocket_topA.obj-58158c51024cbdf41887e24cfb8b9527.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rocket_topA.obj-b77c36ade3d2d44fb47af300e2e3e43f.mesh"]
+files=["res://.godot/imported/rocket_topA.obj-58158c51024cbdf41887e24cfb8b9527.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rocket_topA.obj"
-dest_files=["res://.godot/imported/rocket_topA.obj-b77c36ade3d2d44fb47af300e2e3e43f.mesh", "res://.godot/imported/rocket_topA.obj-b77c36ade3d2d44fb47af300e2e3e43f.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rocket_topA.obj"
+dest_files=["res://.godot/imported/rocket_topA.obj-58158c51024cbdf41887e24cfb8b9527.mesh", "res://.godot/imported/rocket_topA.obj-58158c51024cbdf41887e24cfb8b9527.mesh"]
 
 [params]
 

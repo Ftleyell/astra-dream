@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://5wqfktqmhk0f"
-path="res://.godot/imported/rocket_fuelA.obj-1f4bd28147797146dc43d8042a1d9150.mesh"
+path="res://.godot/imported/rocket_fuelA.obj-5fa05c3db217538963701dff89341ec9.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rocket_fuelA.obj-1f4bd28147797146dc43d8042a1d9150.mesh"]
+files=["res://.godot/imported/rocket_fuelA.obj-5fa05c3db217538963701dff89341ec9.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rocket_fuelA.obj"
-dest_files=["res://.godot/imported/rocket_fuelA.obj-1f4bd28147797146dc43d8042a1d9150.mesh", "res://.godot/imported/rocket_fuelA.obj-1f4bd28147797146dc43d8042a1d9150.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rocket_fuelA.obj"
+dest_files=["res://.godot/imported/rocket_fuelA.obj-5fa05c3db217538963701dff89341ec9.mesh", "res://.godot/imported/rocket_fuelA.obj-5fa05c3db217538963701dff89341ec9.mesh"]
 
 [params]
 

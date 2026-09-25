@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bv75mbqefggxo"
-path="res://.godot/imported/pipe_ringHighEnd.fbx-11128fdb9fe15de5f55c8088f117d364.scn"
+path="res://.godot/imported/pipe_ringHighEnd.fbx-d07d9d6274c08d787567ff3c98f29cc6.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_ringHighEnd.fbx"
-dest_files=["res://.godot/imported/pipe_ringHighEnd.fbx-11128fdb9fe15de5f55c8088f117d364.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_ringHighEnd.fbx"
+dest_files=["res://.godot/imported/pipe_ringHighEnd.fbx-d07d9d6274c08d787567ff3c98f29cc6.scn"]
 
 [params]
 

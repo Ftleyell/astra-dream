@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7o5dq1efb01f"
-path="res://.godot/imported/corridor_wall_NW.png-3bf235e9d2463bc1adfaa9b791d97de1.ctex"
+path="res://.godot/imported/corridor_wall_NW.png-d92fdb59365327f69b242a05b79ab762.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/corridor_wall_NW.png"
-dest_files=["res://.godot/imported/corridor_wall_NW.png-3bf235e9d2463bc1adfaa9b791d97de1.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/corridor_wall_NW.png"
+dest_files=["res://.godot/imported/corridor_wall_NW.png-d92fdb59365327f69b242a05b79ab762.ctex"]
 
 [params]
 

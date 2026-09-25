@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://vdtgg34of0hy"
-path="res://.godot/imported/astronautA.glb-8910a99d63420c0a3f4657174687bc66.scn"
+path="res://.godot/imported/astronautA.glb-6c16d5ce71768295e49356cb2c1bf272.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/astronautA.glb"
-dest_files=["res://.godot/imported/astronautA.glb-8910a99d63420c0a3f4657174687bc66.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/astronautA.glb"
+dest_files=["res://.godot/imported/astronautA.glb-6c16d5ce71768295e49356cb2c1bf272.scn"]
 
 [params]
 

@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://552xvgh3noru"
-path="res://.godot/imported/corridor_cornerRoundWindow.obj-59bcdd6f7845fd14a7c2823ab0045ded.mesh"
+path="res://.godot/imported/corridor_cornerRoundWindow.obj-bbdff83206290c0b925e9a06f2623e55.mesh"
 
 [deps]
 
-files=["res://.godot/imported/corridor_cornerRoundWindow.obj-59bcdd6f7845fd14a7c2823ab0045ded.mesh"]
+files=["res://.godot/imported/corridor_cornerRoundWindow.obj-bbdff83206290c0b925e9a06f2623e55.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/corridor_cornerRoundWindow.obj"
-dest_files=["res://.godot/imported/corridor_cornerRoundWindow.obj-59bcdd6f7845fd14a7c2823ab0045ded.mesh", "res://.godot/imported/corridor_cornerRoundWindow.obj-59bcdd6f7845fd14a7c2823ab0045ded.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/corridor_cornerRoundWindow.obj"
+dest_files=["res://.godot/imported/corridor_cornerRoundWindow.obj-bbdff83206290c0b925e9a06f2623e55.mesh", "res://.godot/imported/corridor_cornerRoundWindow.obj-bbdff83206290c0b925e9a06f2623e55.mesh"]
 
 [params]
 

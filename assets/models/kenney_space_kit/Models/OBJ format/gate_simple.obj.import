@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://62vp3qep8xg0"
-path="res://.godot/imported/gate_simple.obj-925e9a25cf2d3d6bdac5b679fc221dd1.mesh"
+path="res://.godot/imported/gate_simple.obj-37185cfdb58aa2e4bc5f87ec9bf7c961.mesh"
 
 [deps]
 
-files=["res://.godot/imported/gate_simple.obj-925e9a25cf2d3d6bdac5b679fc221dd1.mesh"]
+files=["res://.godot/imported/gate_simple.obj-37185cfdb58aa2e4bc5f87ec9bf7c961.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/gate_simple.obj"
-dest_files=["res://.godot/imported/gate_simple.obj-925e9a25cf2d3d6bdac5b679fc221dd1.mesh", "res://.godot/imported/gate_simple.obj-925e9a25cf2d3d6bdac5b679fc221dd1.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/gate_simple.obj"
+dest_files=["res://.godot/imported/gate_simple.obj-37185cfdb58aa2e4bc5f87ec9bf7c961.mesh", "res://.godot/imported/gate_simple.obj-37185cfdb58aa2e4bc5f87ec9bf7c961.mesh"]
 
 [params]
 

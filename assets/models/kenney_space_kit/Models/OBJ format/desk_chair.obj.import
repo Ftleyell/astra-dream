@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c2qjmijoclnkp"
-path="res://.godot/imported/desk_chair.obj-1c086e796f6c8a12bb7ba7c0d2ea6c3a.mesh"
+path="res://.godot/imported/desk_chair.obj-de4a88aa3a05998e7df2ae73336a1bac.mesh"
 
 [deps]
 
-files=["res://.godot/imported/desk_chair.obj-1c086e796f6c8a12bb7ba7c0d2ea6c3a.mesh"]
+files=["res://.godot/imported/desk_chair.obj-de4a88aa3a05998e7df2ae73336a1bac.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/desk_chair.obj"
-dest_files=["res://.godot/imported/desk_chair.obj-1c086e796f6c8a12bb7ba7c0d2ea6c3a.mesh", "res://.godot/imported/desk_chair.obj-1c086e796f6c8a12bb7ba7c0d2ea6c3a.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/desk_chair.obj"
+dest_files=["res://.godot/imported/desk_chair.obj-de4a88aa3a05998e7df2ae73336a1bac.mesh", "res://.godot/imported/desk_chair.obj-de4a88aa3a05998e7df2ae73336a1bac.mesh"]
 
 [params]
 

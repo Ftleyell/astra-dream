@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://sonlo4gyh7xc"
-path="res://.godot/imported/terrain_roadCorner.dae-54bb763ab167f70d6bb9c3c4292117b7.scn"
+path="res://.godot/imported/terrain_roadCorner.dae-98c754a1977465bdfda9ccb96d1b8222.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain_roadCorner.dae"
-dest_files=["res://.godot/imported/terrain_roadCorner.dae-54bb763ab167f70d6bb9c3c4292117b7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain_roadCorner.dae"
+dest_files=["res://.godot/imported/terrain_roadCorner.dae-98c754a1977465bdfda9ccb96d1b8222.scn"]
 
 [params]
 

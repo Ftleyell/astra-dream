@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://crlkq86rri0vi"
-path="res://.godot/imported/craterLarge.obj-6378f606099177b79587c52afedde73b.mesh"
+path="res://.godot/imported/craterLarge.obj-35417f4c387a125a3d17ef692bd07814.mesh"
 
 [deps]
 
-files=["res://.godot/imported/craterLarge.obj-6378f606099177b79587c52afedde73b.mesh"]
+files=["res://.godot/imported/craterLarge.obj-35417f4c387a125a3d17ef692bd07814.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/craterLarge.obj"
-dest_files=["res://.godot/imported/craterLarge.obj-6378f606099177b79587c52afedde73b.mesh", "res://.godot/imported/craterLarge.obj-6378f606099177b79587c52afedde73b.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/craterLarge.obj"
+dest_files=["res://.godot/imported/craterLarge.obj-35417f4c387a125a3d17ef692bd07814.mesh", "res://.godot/imported/craterLarge.obj-35417f4c387a125a3d17ef692bd07814.mesh"]
 
 [params]
 

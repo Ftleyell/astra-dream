@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bcf8vmiwsg3mq"
-path="res://.godot/imported/pipe_straight.dae-c0b0d34fd7c3372db228d6d1b43d7c5c.scn"
+path="res://.godot/imported/pipe_straight.dae-e8c4f2bb23080ade0dfc47f4fb38cc05.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_straight.dae"
-dest_files=["res://.godot/imported/pipe_straight.dae-c0b0d34fd7c3372db228d6d1b43d7c5c.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_straight.dae"
+dest_files=["res://.godot/imported/pipe_straight.dae-e8c4f2bb23080ade0dfc47f4fb38cc05.scn"]
 
 [params]
 

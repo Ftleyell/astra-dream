@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bdb4hy4e3hhn1"
-path="res://.godot/imported/pipe_cornerDiagonal.png-6b30ad728f1ef80a96aa8a203f402a23.ctex"
+path="res://.godot/imported/pipe_cornerDiagonal.png-5c1633bdbfb81819c92c7188082d4e62.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/pipe_cornerDiagonal.png"
-dest_files=["res://.godot/imported/pipe_cornerDiagonal.png-6b30ad728f1ef80a96aa8a203f402a23.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/pipe_cornerDiagonal.png"
+dest_files=["res://.godot/imported/pipe_cornerDiagonal.png-5c1633bdbfb81819c92c7188082d4e62.ctex"]
 
 [params]
 

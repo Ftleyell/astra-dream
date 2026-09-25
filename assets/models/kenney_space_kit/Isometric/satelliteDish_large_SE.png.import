@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c14ql14qkl485"
-path="res://.godot/imported/satelliteDish_large_SE.png-dc604851da453d4ad9925bb31b6e9644.ctex"
+path="res://.godot/imported/satelliteDish_large_SE.png-86bfb0e63f77532802b3d6e030e900c3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/satelliteDish_large_SE.png"
-dest_files=["res://.godot/imported/satelliteDish_large_SE.png-dc604851da453d4ad9925bb31b6e9644.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/satelliteDish_large_SE.png"
+dest_files=["res://.godot/imported/satelliteDish_large_SE.png-86bfb0e63f77532802b3d6e030e900c3.ctex"]
 
 [params]
 

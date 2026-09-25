@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://2wmbt5dx8ns1"
-path="res://.godot/imported/terrain_ramp.glb-a7dd70a405df7495ca99281cb9214f13.scn"
+path="res://.godot/imported/terrain_ramp.glb-6494deeb5ee4a3913a131e355381784c.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/terrain_ramp.glb"
-dest_files=["res://.godot/imported/terrain_ramp.glb-a7dd70a405df7495ca99281cb9214f13.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/terrain_ramp.glb"
+dest_files=["res://.godot/imported/terrain_ramp.glb-6494deeb5ee4a3913a131e355381784c.scn"]
 
 [params]
 

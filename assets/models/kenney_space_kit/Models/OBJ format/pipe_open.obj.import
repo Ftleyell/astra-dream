@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://kd2hrnbwewjw"
-path="res://.godot/imported/pipe_open.obj-15a0025c6a1606dc9094905de9d87598.mesh"
+path="res://.godot/imported/pipe_open.obj-6c4d22f09619018df19c0ece8085fce5.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_open.obj-15a0025c6a1606dc9094905de9d87598.mesh"]
+files=["res://.godot/imported/pipe_open.obj-6c4d22f09619018df19c0ece8085fce5.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_open.obj"
-dest_files=["res://.godot/imported/pipe_open.obj-15a0025c6a1606dc9094905de9d87598.mesh", "res://.godot/imported/pipe_open.obj-15a0025c6a1606dc9094905de9d87598.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_open.obj"
+dest_files=["res://.godot/imported/pipe_open.obj-6c4d22f09619018df19c0ece8085fce5.mesh", "res://.godot/imported/pipe_open.obj-6c4d22f09619018df19c0ece8085fce5.mesh"]
 
 [params]
 

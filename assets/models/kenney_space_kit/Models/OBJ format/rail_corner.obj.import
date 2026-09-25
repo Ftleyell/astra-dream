@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ul5tp18of6mi"
-path="res://.godot/imported/rail_corner.obj-96ff9672ce2fd0ceabd9fa2fa68071b7.mesh"
+path="res://.godot/imported/rail_corner.obj-ad994f2324bd47238ef2d679b4e3a3ab.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rail_corner.obj-96ff9672ce2fd0ceabd9fa2fa68071b7.mesh"]
+files=["res://.godot/imported/rail_corner.obj-ad994f2324bd47238ef2d679b4e3a3ab.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rail_corner.obj"
-dest_files=["res://.godot/imported/rail_corner.obj-96ff9672ce2fd0ceabd9fa2fa68071b7.mesh", "res://.godot/imported/rail_corner.obj-96ff9672ce2fd0ceabd9fa2fa68071b7.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rail_corner.obj"
+dest_files=["res://.godot/imported/rail_corner.obj-ad994f2324bd47238ef2d679b4e3a3ab.mesh", "res://.godot/imported/rail_corner.obj-ad994f2324bd47238ef2d679b4e3a3ab.mesh"]
 
 [params]
 

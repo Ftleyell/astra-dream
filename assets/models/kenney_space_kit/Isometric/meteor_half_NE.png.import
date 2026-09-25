@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://kcme4nau8sgj"
-path="res://.godot/imported/meteor_half_NE.png-70710865f27405426d201e08c6d15d47.ctex"
+path="res://.godot/imported/meteor_half_NE.png-beb29cc36f35736a6c2168b7b44af88e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/meteor_half_NE.png"
-dest_files=["res://.godot/imported/meteor_half_NE.png-70710865f27405426d201e08c6d15d47.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/meteor_half_NE.png"
+dest_files=["res://.godot/imported/meteor_half_NE.png-beb29cc36f35736a6c2168b7b44af88e.ctex"]
 
 [params]
 

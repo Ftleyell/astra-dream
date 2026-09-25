@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://desoy1j6exrlc"
-path="res://.godot/imported/crater.png-4cbad9f16795e22ec26bbe14833fcf07.ctex"
+path="res://.godot/imported/crater.png-d1507e39a52f7624e483b0418ce4060f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/crater.png"
-dest_files=["res://.godot/imported/crater.png-4cbad9f16795e22ec26bbe14833fcf07.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/crater.png"
+dest_files=["res://.godot/imported/crater.png-d1507e39a52f7624e483b0418ce4060f.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b0q6rsr5u36ec"
-path="res://.godot/imported/meteor_half.png-55ca6f9fbe2609b5183746d5954b353d.ctex"
+path="res://.godot/imported/meteor_half.png-979f389bf99b859913bf6601d4f3428e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/meteor_half.png"
-dest_files=["res://.godot/imported/meteor_half.png-55ca6f9fbe2609b5183746d5954b353d.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/meteor_half.png"
+dest_files=["res://.godot/imported/meteor_half.png-979f389bf99b859913bf6601d4f3428e.ctex"]
 
 [params]
 

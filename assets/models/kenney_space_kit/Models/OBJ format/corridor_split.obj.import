@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c2c53sj7tnlau"
-path="res://.godot/imported/corridor_split.obj-d461539be2be93fcea178b85252421a7.mesh"
+path="res://.godot/imported/corridor_split.obj-1f4d21fc2ce331e22f833966b4c233f5.mesh"
 
 [deps]
 
-files=["res://.godot/imported/corridor_split.obj-d461539be2be93fcea178b85252421a7.mesh"]
+files=["res://.godot/imported/corridor_split.obj-1f4d21fc2ce331e22f833966b4c233f5.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/corridor_split.obj"
-dest_files=["res://.godot/imported/corridor_split.obj-d461539be2be93fcea178b85252421a7.mesh", "res://.godot/imported/corridor_split.obj-d461539be2be93fcea178b85252421a7.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/corridor_split.obj"
+dest_files=["res://.godot/imported/corridor_split.obj-1f4d21fc2ce331e22f833966b4c233f5.mesh", "res://.godot/imported/corridor_split.obj-1f4d21fc2ce331e22f833966b4c233f5.mesh"]
 
 [params]
 

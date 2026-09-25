@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cqsftt7l2svoy"
-path="res://.godot/imported/rocket_sidesB_NE.png-c15d9cb88fa755433b20953924f3706c.ctex"
+path="res://.godot/imported/rocket_sidesB_NE.png-4fefa4aee49ae50d9b9493d703ffcdf5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/rocket_sidesB_NE.png"
-dest_files=["res://.godot/imported/rocket_sidesB_NE.png-c15d9cb88fa755433b20953924f3706c.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/rocket_sidesB_NE.png"
+dest_files=["res://.godot/imported/rocket_sidesB_NE.png-4fefa4aee49ae50d9b9493d703ffcdf5.ctex"]
 
 [params]
 

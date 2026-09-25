@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dqgj1a3tmdh7y"
-path="res://.godot/imported/machine_barrelLarge.obj-3d570a27317da1feb7e69fda66ec93f0.mesh"
+path="res://.godot/imported/machine_barrelLarge.obj-8a65cceca0251ebe8ed69874a7c02838.mesh"
 
 [deps]
 
-files=["res://.godot/imported/machine_barrelLarge.obj-3d570a27317da1feb7e69fda66ec93f0.mesh"]
+files=["res://.godot/imported/machine_barrelLarge.obj-8a65cceca0251ebe8ed69874a7c02838.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/machine_barrelLarge.obj"
-dest_files=["res://.godot/imported/machine_barrelLarge.obj-3d570a27317da1feb7e69fda66ec93f0.mesh", "res://.godot/imported/machine_barrelLarge.obj-3d570a27317da1feb7e69fda66ec93f0.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/machine_barrelLarge.obj"
+dest_files=["res://.godot/imported/machine_barrelLarge.obj-8a65cceca0251ebe8ed69874a7c02838.mesh", "res://.godot/imported/machine_barrelLarge.obj-8a65cceca0251ebe8ed69874a7c02838.mesh"]
 
 [params]
 

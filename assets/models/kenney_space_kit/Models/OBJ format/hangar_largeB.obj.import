@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://di14rsknngppf"
-path="res://.godot/imported/hangar_largeB.obj-2d9be342252329ed2f1ebefa79fbd6d2.mesh"
+path="res://.godot/imported/hangar_largeB.obj-e442c66f0e1bc4129e34eb11d209d178.mesh"
 
 [deps]
 
-files=["res://.godot/imported/hangar_largeB.obj-2d9be342252329ed2f1ebefa79fbd6d2.mesh"]
+files=["res://.godot/imported/hangar_largeB.obj-e442c66f0e1bc4129e34eb11d209d178.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/hangar_largeB.obj"
-dest_files=["res://.godot/imported/hangar_largeB.obj-2d9be342252329ed2f1ebefa79fbd6d2.mesh", "res://.godot/imported/hangar_largeB.obj-2d9be342252329ed2f1ebefa79fbd6d2.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/hangar_largeB.obj"
+dest_files=["res://.godot/imported/hangar_largeB.obj-e442c66f0e1bc4129e34eb11d209d178.mesh", "res://.godot/imported/hangar_largeB.obj-e442c66f0e1bc4129e34eb11d209d178.mesh"]
 
 [params]
 

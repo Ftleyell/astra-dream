@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://djk7002r5v7rt"
-path="res://.godot/imported/rocks_smallA.fbx-4e2ce7d2bb4c3012fd7af8575044096d.scn"
+path="res://.godot/imported/rocks_smallA.fbx-2c56393b75ab3d681d05501a724818dc.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/rocks_smallA.fbx"
-dest_files=["res://.godot/imported/rocks_smallA.fbx-4e2ce7d2bb4c3012fd7af8575044096d.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/rocks_smallA.fbx"
+dest_files=["res://.godot/imported/rocks_smallA.fbx-2c56393b75ab3d681d05501a724818dc.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://da3k0vfw6afmk"
-path="res://.godot/imported/corridor_wallCorner.fbx-0d67a78a66308aa39631c8dd8b3b6881.scn"
+path="res://.godot/imported/corridor_wallCorner.fbx-c9701af8e68f214675419f3e19f94d2a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/corridor_wallCorner.fbx"
-dest_files=["res://.godot/imported/corridor_wallCorner.fbx-0d67a78a66308aa39631c8dd8b3b6881.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/corridor_wallCorner.fbx"
+dest_files=["res://.godot/imported/corridor_wallCorner.fbx-c9701af8e68f214675419f3e19f94d2a.scn"]
 
 [params]
 

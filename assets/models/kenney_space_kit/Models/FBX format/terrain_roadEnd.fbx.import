@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dnshidjb8t3n5"
-path="res://.godot/imported/terrain_roadEnd.fbx-47ab672f6e0bfbbaa6494f8d49185c64.scn"
+path="res://.godot/imported/terrain_roadEnd.fbx-06ebb53ae7d2d3cbc1d75ddda3c92a39.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_roadEnd.fbx"
-dest_files=["res://.godot/imported/terrain_roadEnd.fbx-47ab672f6e0bfbbaa6494f8d49185c64.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_roadEnd.fbx"
+dest_files=["res://.godot/imported/terrain_roadEnd.fbx-06ebb53ae7d2d3cbc1d75ddda3c92a39.scn"]
 
 [params]
 

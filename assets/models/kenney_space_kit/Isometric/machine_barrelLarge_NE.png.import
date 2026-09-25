@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0sjwgmn0rm5o"
-path="res://.godot/imported/machine_barrelLarge_NE.png-c292f290f6f7322064d3db6f21dcd20c.ctex"
+path="res://.godot/imported/machine_barrelLarge_NE.png-f2e928d43c3b44d600a88fd10ad28dfb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/machine_barrelLarge_NE.png"
-dest_files=["res://.godot/imported/machine_barrelLarge_NE.png-c292f290f6f7322064d3db6f21dcd20c.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/machine_barrelLarge_NE.png"
+dest_files=["res://.godot/imported/machine_barrelLarge_NE.png-f2e928d43c3b44d600a88fd10ad28dfb.ctex"]
 
 [params]
 

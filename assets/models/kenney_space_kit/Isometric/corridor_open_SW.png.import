@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c8jcnx1jkvtcq"
-path="res://.godot/imported/corridor_open_SW.png-efbe92b3522401b7c716d304be156a33.ctex"
+path="res://.godot/imported/corridor_open_SW.png-729feb54871fbcd9c8a6cba8a104cadf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/corridor_open_SW.png"
-dest_files=["res://.godot/imported/corridor_open_SW.png-efbe92b3522401b7c716d304be156a33.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/corridor_open_SW.png"
+dest_files=["res://.godot/imported/corridor_open_SW.png-729feb54871fbcd9c8a6cba8a104cadf.ctex"]
 
 [params]
 

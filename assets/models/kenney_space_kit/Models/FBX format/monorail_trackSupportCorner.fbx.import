@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://l0rmqrc8a5x0"
-path="res://.godot/imported/monorail_trackSupportCorner.fbx-d7ac6a83ea95cd7916746115c9d30979.scn"
+path="res://.godot/imported/monorail_trackSupportCorner.fbx-6916c216f5c23bfd6ebbe4c8a797b8dc.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/monorail_trackSupportCorner.fbx"
-dest_files=["res://.godot/imported/monorail_trackSupportCorner.fbx-d7ac6a83ea95cd7916746115c9d30979.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/monorail_trackSupportCorner.fbx"
+dest_files=["res://.godot/imported/monorail_trackSupportCorner.fbx-6916c216f5c23bfd6ebbe4c8a797b8dc.scn"]
 
 [params]
 

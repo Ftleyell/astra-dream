@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dpmb5nt3pptgd"
-path="res://.godot/imported/hangar_roundGlass.fbx-2d1c2cf674682776c7827a9f18fa9cc0.scn"
+path="res://.godot/imported/hangar_roundGlass.fbx-e6b369044a7c7d8adc1dfd4a66842c62.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/hangar_roundGlass.fbx"
-dest_files=["res://.godot/imported/hangar_roundGlass.fbx-2d1c2cf674682776c7827a9f18fa9cc0.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/hangar_roundGlass.fbx"
+dest_files=["res://.godot/imported/hangar_roundGlass.fbx-e6b369044a7c7d8adc1dfd4a66842c62.scn"]
 
 [params]
 

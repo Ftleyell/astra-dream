@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://dcmgt6rtsduav"
-path="res://.godot/imported/stairs_corner.obj-bd449414539a88025bded548a8082334.mesh"
+path="res://.godot/imported/stairs_corner.obj-9c5cee32dbd9f932c5911e570b9fc4ce.mesh"
 
 [deps]
 
-files=["res://.godot/imported/stairs_corner.obj-bd449414539a88025bded548a8082334.mesh"]
+files=["res://.godot/imported/stairs_corner.obj-9c5cee32dbd9f932c5911e570b9fc4ce.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/stairs_corner.obj"
-dest_files=["res://.godot/imported/stairs_corner.obj-bd449414539a88025bded548a8082334.mesh", "res://.godot/imported/stairs_corner.obj-bd449414539a88025bded548a8082334.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/stairs_corner.obj"
+dest_files=["res://.godot/imported/stairs_corner.obj-9c5cee32dbd9f932c5911e570b9fc4ce.mesh", "res://.godot/imported/stairs_corner.obj-9c5cee32dbd9f932c5911e570b9fc4ce.mesh"]
 
 [params]
 

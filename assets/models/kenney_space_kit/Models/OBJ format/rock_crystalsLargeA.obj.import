@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bjxhr0s2odect"
-path="res://.godot/imported/rock_crystalsLargeA.obj-64caee1a09c1d42b04e77173ede1a196.mesh"
+path="res://.godot/imported/rock_crystalsLargeA.obj-a88876baf777c55dba704b336d915842.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rock_crystalsLargeA.obj-64caee1a09c1d42b04e77173ede1a196.mesh"]
+files=["res://.godot/imported/rock_crystalsLargeA.obj-a88876baf777c55dba704b336d915842.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rock_crystalsLargeA.obj"
-dest_files=["res://.godot/imported/rock_crystalsLargeA.obj-64caee1a09c1d42b04e77173ede1a196.mesh", "res://.godot/imported/rock_crystalsLargeA.obj-64caee1a09c1d42b04e77173ede1a196.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rock_crystalsLargeA.obj"
+dest_files=["res://.godot/imported/rock_crystalsLargeA.obj-a88876baf777c55dba704b336d915842.mesh", "res://.godot/imported/rock_crystalsLargeA.obj-a88876baf777c55dba704b336d915842.mesh"]
 
 [params]
 

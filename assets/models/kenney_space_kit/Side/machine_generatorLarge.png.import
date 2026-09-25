@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cuc2nyxep5qvn"
-path="res://.godot/imported/machine_generatorLarge.png-cfb0901cd0b3f60ac74e6c2708ffee90.ctex"
+path="res://.godot/imported/machine_generatorLarge.png-a52a34ee390cf21bc5692ecaa63f7d7f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/machine_generatorLarge.png"
-dest_files=["res://.godot/imported/machine_generatorLarge.png-cfb0901cd0b3f60ac74e6c2708ffee90.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/machine_generatorLarge.png"
+dest_files=["res://.godot/imported/machine_generatorLarge.png-a52a34ee390cf21bc5692ecaa63f7d7f.ctex"]
 
 [params]
 

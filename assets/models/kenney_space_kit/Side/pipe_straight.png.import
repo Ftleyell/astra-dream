@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c2inn47bj0rgy"
-path="res://.godot/imported/pipe_straight.png-7b40e2f7ae6ef7c7c01618f431200fe6.ctex"
+path="res://.godot/imported/pipe_straight.png-805e6b07e5b173de695c225a1fa6bbb0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/pipe_straight.png"
-dest_files=["res://.godot/imported/pipe_straight.png-7b40e2f7ae6ef7c7c01618f431200fe6.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/pipe_straight.png"
+dest_files=["res://.godot/imported/pipe_straight.png-805e6b07e5b173de695c225a1fa6bbb0.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7am68cnw4r0j"
-path="res://.godot/imported/gate_complex_SE.png-6bcf12fbccee065402806b560aa126a1.ctex"
+path="res://.godot/imported/gate_complex_SE.png-30d566216987f1903ceb6707af0c4417.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/gate_complex_SE.png"
-dest_files=["res://.godot/imported/gate_complex_SE.png-6bcf12fbccee065402806b560aa126a1.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/gate_complex_SE.png"
+dest_files=["res://.godot/imported/gate_complex_SE.png-30d566216987f1903ceb6707af0c4417.ctex"]
 
 [params]
 

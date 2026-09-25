@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c4uqmm8dafpmm"
-path="res://.godot/imported/pipe_straight.fbx-4fb6b8177265c1a5cad0c99c564beca3.scn"
+path="res://.godot/imported/pipe_straight.fbx-cf1beb4b0e5d7ed350c8ccba9e7ee171.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_straight.fbx"
-dest_files=["res://.godot/imported/pipe_straight.fbx-4fb6b8177265c1a5cad0c99c564beca3.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_straight.fbx"
+dest_files=["res://.godot/imported/pipe_straight.fbx-cf1beb4b0e5d7ed350c8ccba9e7ee171.scn"]
 
 [params]
 

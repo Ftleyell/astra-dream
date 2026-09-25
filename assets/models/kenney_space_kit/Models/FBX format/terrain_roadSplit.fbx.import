@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c5jhkkwhjjpae"
-path="res://.godot/imported/terrain_roadSplit.fbx-4d411e2fab026fb8708dbd34db442205.scn"
+path="res://.godot/imported/terrain_roadSplit.fbx-ebae67c1ed74c80fc69c6a04f822f59a.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_roadSplit.fbx"
-dest_files=["res://.godot/imported/terrain_roadSplit.fbx-4d411e2fab026fb8708dbd34db442205.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_roadSplit.fbx"
+dest_files=["res://.godot/imported/terrain_roadSplit.fbx-ebae67c1ed74c80fc69c6a04f822f59a.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c8qmldcbx8pf8"
-path="res://.godot/imported/pipe_cornerDiagonal.fbx-cbbc0ab1adc215102997a205b33ca9ea.scn"
+path="res://.godot/imported/pipe_cornerDiagonal.fbx-97c6321eb7367532e9baf7cc25ae3b85.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/pipe_cornerDiagonal.fbx"
-dest_files=["res://.godot/imported/pipe_cornerDiagonal.fbx-cbbc0ab1adc215102997a205b33ca9ea.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/pipe_cornerDiagonal.fbx"
+dest_files=["res://.godot/imported/pipe_cornerDiagonal.fbx-97c6321eb7367532e9baf7cc25ae3b85.scn"]
 
 [params]
 

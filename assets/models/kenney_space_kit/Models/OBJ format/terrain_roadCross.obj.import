@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cres5xe8ttkry"
-path="res://.godot/imported/terrain_roadCross.obj-159f51fef1ed596153ef50429661af8c.mesh"
+path="res://.godot/imported/terrain_roadCross.obj-1a161f76fb8322dd44bbacbb730d80ae.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain_roadCross.obj-159f51fef1ed596153ef50429661af8c.mesh"]
+files=["res://.godot/imported/terrain_roadCross.obj-1a161f76fb8322dd44bbacbb730d80ae.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain_roadCross.obj"
-dest_files=["res://.godot/imported/terrain_roadCross.obj-159f51fef1ed596153ef50429661af8c.mesh", "res://.godot/imported/terrain_roadCross.obj-159f51fef1ed596153ef50429661af8c.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain_roadCross.obj"
+dest_files=["res://.godot/imported/terrain_roadCross.obj-1a161f76fb8322dd44bbacbb730d80ae.mesh", "res://.godot/imported/terrain_roadCross.obj-1a161f76fb8322dd44bbacbb730d80ae.mesh"]
 
 [params]
 

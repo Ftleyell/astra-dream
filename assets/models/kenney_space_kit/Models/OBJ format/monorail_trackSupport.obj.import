@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ck0gcmunltuy0"
-path="res://.godot/imported/monorail_trackSupport.obj-826e439db4a2e08d4bbf7d41b4f8cadd.mesh"
+path="res://.godot/imported/monorail_trackSupport.obj-42d5488b2ce59b07a37cfd11f3f1abd6.mesh"
 
 [deps]
 
-files=["res://.godot/imported/monorail_trackSupport.obj-826e439db4a2e08d4bbf7d41b4f8cadd.mesh"]
+files=["res://.godot/imported/monorail_trackSupport.obj-42d5488b2ce59b07a37cfd11f3f1abd6.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trackSupport.obj"
-dest_files=["res://.godot/imported/monorail_trackSupport.obj-826e439db4a2e08d4bbf7d41b4f8cadd.mesh", "res://.godot/imported/monorail_trackSupport.obj-826e439db4a2e08d4bbf7d41b4f8cadd.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/monorail_trackSupport.obj"
+dest_files=["res://.godot/imported/monorail_trackSupport.obj-42d5488b2ce59b07a37cfd11f3f1abd6.mesh", "res://.godot/imported/monorail_trackSupport.obj-42d5488b2ce59b07a37cfd11f3f1abd6.mesh"]
 
 [params]
 

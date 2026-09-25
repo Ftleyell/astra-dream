@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://btchmik2bklj"
-path="res://.godot/imported/desk_computer.obj-2d75c03a9f23b3d448a231cbde1e44cd.mesh"
+path="res://.godot/imported/desk_computer.obj-94f4f0a7a2849e18723241fd6c468f0a.mesh"
 
 [deps]
 
-files=["res://.godot/imported/desk_computer.obj-2d75c03a9f23b3d448a231cbde1e44cd.mesh"]
+files=["res://.godot/imported/desk_computer.obj-94f4f0a7a2849e18723241fd6c468f0a.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/desk_computer.obj"
-dest_files=["res://.godot/imported/desk_computer.obj-2d75c03a9f23b3d448a231cbde1e44cd.mesh", "res://.godot/imported/desk_computer.obj-2d75c03a9f23b3d448a231cbde1e44cd.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/desk_computer.obj"
+dest_files=["res://.godot/imported/desk_computer.obj-94f4f0a7a2849e18723241fd6c468f0a.mesh", "res://.godot/imported/desk_computer.obj-94f4f0a7a2849e18723241fd6c468f0a.mesh"]
 
 [params]
 

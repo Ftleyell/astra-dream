@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://eo66mchpxo2w"
-path="res://.godot/imported/terrain_roadEnd.glb-05e185da6b793d9feed3597f66d1e2b7.scn"
+path="res://.godot/imported/terrain_roadEnd.glb-5449c605a2ad0ae63c53b623deb3b8ef.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/terrain_roadEnd.glb"
-dest_files=["res://.godot/imported/terrain_roadEnd.glb-05e185da6b793d9feed3597f66d1e2b7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/terrain_roadEnd.glb"
+dest_files=["res://.godot/imported/terrain_roadEnd.glb-5449c605a2ad0ae63c53b623deb3b8ef.scn"]
 
 [params]
 

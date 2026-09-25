@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://nmn686ybybmv"
-path="res://.godot/imported/terrain_rampLarge.fbx-368dbb2570e197936c49c403f96adc08.scn"
+path="res://.godot/imported/terrain_rampLarge.fbx-683f5e61b263bd79d5d57395a230e293.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_rampLarge.fbx"
-dest_files=["res://.godot/imported/terrain_rampLarge.fbx-368dbb2570e197936c49c403f96adc08.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_rampLarge.fbx"
+dest_files=["res://.godot/imported/terrain_rampLarge.fbx-683f5e61b263bd79d5d57395a230e293.scn"]
 
 [params]
 

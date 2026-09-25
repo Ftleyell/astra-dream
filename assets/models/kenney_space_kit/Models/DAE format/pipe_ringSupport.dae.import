@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dq8v57vfvc6cc"
-path="res://.godot/imported/pipe_ringSupport.dae-87b6aedc6ab722ae5e59d803b5162b83.scn"
+path="res://.godot/imported/pipe_ringSupport.dae-94a3392d3e385f89c8fb0500652a8050.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/pipe_ringSupport.dae"
-dest_files=["res://.godot/imported/pipe_ringSupport.dae-87b6aedc6ab722ae5e59d803b5162b83.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/pipe_ringSupport.dae"
+dest_files=["res://.godot/imported/pipe_ringSupport.dae-94a3392d3e385f89c8fb0500652a8050.scn"]
 
 [params]
 

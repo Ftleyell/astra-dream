@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cs7h7v87g6g0e"
-path="res://.godot/imported/desk_computerScreen.obj-2b6f2539a4535218a3af48ef5bae031d.mesh"
+path="res://.godot/imported/desk_computerScreen.obj-bd3a815514633cdb6221afbf2e866609.mesh"
 
 [deps]
 
-files=["res://.godot/imported/desk_computerScreen.obj-2b6f2539a4535218a3af48ef5bae031d.mesh"]
+files=["res://.godot/imported/desk_computerScreen.obj-bd3a815514633cdb6221afbf2e866609.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/desk_computerScreen.obj"
-dest_files=["res://.godot/imported/desk_computerScreen.obj-2b6f2539a4535218a3af48ef5bae031d.mesh", "res://.godot/imported/desk_computerScreen.obj-2b6f2539a4535218a3af48ef5bae031d.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/desk_computerScreen.obj"
+dest_files=["res://.godot/imported/desk_computerScreen.obj-bd3a815514633cdb6221afbf2e866609.mesh", "res://.godot/imported/desk_computerScreen.obj-bd3a815514633cdb6221afbf2e866609.mesh"]
 
 [params]
 

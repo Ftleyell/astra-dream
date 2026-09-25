@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bqtfltok3cc4l"
-path="res://.godot/imported/corridor_detailed.glb-05d242dbc679083f2982f979f8bbe0c4.scn"
+path="res://.godot/imported/corridor_detailed.glb-cb683cdbc0493011876a62da737dfc16.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/corridor_detailed.glb"
-dest_files=["res://.godot/imported/corridor_detailed.glb-05d242dbc679083f2982f979f8bbe0c4.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/corridor_detailed.glb"
+dest_files=["res://.godot/imported/corridor_detailed.glb-cb683cdbc0493011876a62da737dfc16.scn"]
 
 [params]
 

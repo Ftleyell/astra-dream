@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ktkiauky3fum"
-path="res://.godot/imported/rail_middle.obj-7884ecaaec383940d9650d5855b05a1d.mesh"
+path="res://.godot/imported/rail_middle.obj-13198c39b80c994278cceb3fb81db51e.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rail_middle.obj-7884ecaaec383940d9650d5855b05a1d.mesh"]
+files=["res://.godot/imported/rail_middle.obj-13198c39b80c994278cceb3fb81db51e.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rail_middle.obj"
-dest_files=["res://.godot/imported/rail_middle.obj-7884ecaaec383940d9650d5855b05a1d.mesh", "res://.godot/imported/rail_middle.obj-7884ecaaec383940d9650d5855b05a1d.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rail_middle.obj"
+dest_files=["res://.godot/imported/rail_middle.obj-13198c39b80c994278cceb3fb81db51e.mesh", "res://.godot/imported/rail_middle.obj-13198c39b80c994278cceb3fb81db51e.mesh"]
 
 [params]
 

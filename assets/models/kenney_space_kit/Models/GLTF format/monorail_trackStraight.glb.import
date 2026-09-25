@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dq5h83jcodpo1"
-path="res://.godot/imported/monorail_trackStraight.glb-6178f263e69d3631866254505b11e2df.scn"
+path="res://.godot/imported/monorail_trackStraight.glb-1e06b444faeb176f44c421c95cc145d8.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/monorail_trackStraight.glb"
-dest_files=["res://.godot/imported/monorail_trackStraight.glb-6178f263e69d3631866254505b11e2df.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/monorail_trackStraight.glb"
+dest_files=["res://.godot/imported/monorail_trackStraight.glb-1e06b444faeb176f44c421c95cc145d8.scn"]
 
 [params]
 

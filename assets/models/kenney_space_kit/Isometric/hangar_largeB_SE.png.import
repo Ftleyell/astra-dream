@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ir4y1cgamsjo"
-path="res://.godot/imported/hangar_largeB_SE.png-9604f1279a2c4590493c26edfec0d295.ctex"
+path="res://.godot/imported/hangar_largeB_SE.png-445198599fafa8cc24c49eb8348c7afe.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/hangar_largeB_SE.png"
-dest_files=["res://.godot/imported/hangar_largeB_SE.png-9604f1279a2c4590493c26edfec0d295.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/hangar_largeB_SE.png"
+dest_files=["res://.godot/imported/hangar_largeB_SE.png-445198599fafa8cc24c49eb8348c7afe.ctex"]
 
 [params]
 

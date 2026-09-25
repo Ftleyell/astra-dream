@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ce75mg0aeqegf"
-path="res://.godot/imported/pipe_rampLarge.obj-931bbce7eb04c6a0416c7901b28ffea8.mesh"
+path="res://.godot/imported/pipe_rampLarge.obj-8931432e5e303d1f16941ddf910c47fb.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_rampLarge.obj-931bbce7eb04c6a0416c7901b28ffea8.mesh"]
+files=["res://.godot/imported/pipe_rampLarge.obj-8931432e5e303d1f16941ddf910c47fb.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_rampLarge.obj"
-dest_files=["res://.godot/imported/pipe_rampLarge.obj-931bbce7eb04c6a0416c7901b28ffea8.mesh", "res://.godot/imported/pipe_rampLarge.obj-931bbce7eb04c6a0416c7901b28ffea8.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_rampLarge.obj"
+dest_files=["res://.godot/imported/pipe_rampLarge.obj-8931432e5e303d1f16941ddf910c47fb.mesh", "res://.godot/imported/pipe_rampLarge.obj-8931432e5e303d1f16941ddf910c47fb.mesh"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ofee23lis8ga"
-path="res://.godot/imported/desk_computer.fbx-0fb9c77a858865314960c5c009e61fc7.scn"
+path="res://.godot/imported/desk_computer.fbx-2bf89e900202be3b7d2742eff31dc7e1.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/desk_computer.fbx"
-dest_files=["res://.godot/imported/desk_computer.fbx-0fb9c77a858865314960c5c009e61fc7.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/desk_computer.fbx"
+dest_files=["res://.godot/imported/desk_computer.fbx-2bf89e900202be3b7d2742eff31dc7e1.scn"]
 
 [params]
 

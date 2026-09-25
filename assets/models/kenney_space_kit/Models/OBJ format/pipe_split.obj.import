@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://cn0ejntyu8w1y"
-path="res://.godot/imported/pipe_split.obj-b0d7bad3045d85c7f3e45991d74c056e.mesh"
+path="res://.godot/imported/pipe_split.obj-487d6c10d68913e5d1ab16f84d2dbe6e.mesh"
 
 [deps]
 
-files=["res://.godot/imported/pipe_split.obj-b0d7bad3045d85c7f3e45991d74c056e.mesh"]
+files=["res://.godot/imported/pipe_split.obj-487d6c10d68913e5d1ab16f84d2dbe6e.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/pipe_split.obj"
-dest_files=["res://.godot/imported/pipe_split.obj-b0d7bad3045d85c7f3e45991d74c056e.mesh", "res://.godot/imported/pipe_split.obj-b0d7bad3045d85c7f3e45991d74c056e.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/pipe_split.obj"
+dest_files=["res://.godot/imported/pipe_split.obj-487d6c10d68913e5d1ab16f84d2dbe6e.mesh", "res://.godot/imported/pipe_split.obj-487d6c10d68913e5d1ab16f84d2dbe6e.mesh"]
 
 [params]
 

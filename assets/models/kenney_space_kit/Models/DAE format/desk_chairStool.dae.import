@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ynclsrqgusbc"
-path="res://.godot/imported/desk_chairStool.dae-86b0628362b01c6a9d68757e40d8e3fb.scn"
+path="res://.godot/imported/desk_chairStool.dae-cceb23fdfc858313a14cda093f7da0b6.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/desk_chairStool.dae"
-dest_files=["res://.godot/imported/desk_chairStool.dae-86b0628362b01c6a9d68757e40d8e3fb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/desk_chairStool.dae"
+dest_files=["res://.godot/imported/desk_chairStool.dae-cceb23fdfc858313a14cda093f7da0b6.scn"]
 
 [params]
 

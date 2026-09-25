@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ccw86ubfrquen"
-path="res://.godot/imported/rock_crystals.obj-c83c37867c41295bc428540462d70bb3.mesh"
+path="res://.godot/imported/rock_crystals.obj-b2b421c9cbd7389fdc1b77f9dcf87c59.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rock_crystals.obj-c83c37867c41295bc428540462d70bb3.mesh"]
+files=["res://.godot/imported/rock_crystals.obj-b2b421c9cbd7389fdc1b77f9dcf87c59.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rock_crystals.obj"
-dest_files=["res://.godot/imported/rock_crystals.obj-c83c37867c41295bc428540462d70bb3.mesh", "res://.godot/imported/rock_crystals.obj-c83c37867c41295bc428540462d70bb3.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rock_crystals.obj"
+dest_files=["res://.godot/imported/rock_crystals.obj-b2b421c9cbd7389fdc1b77f9dcf87c59.mesh", "res://.godot/imported/rock_crystals.obj-b2b421c9cbd7389fdc1b77f9dcf87c59.mesh"]
 
 [params]
 

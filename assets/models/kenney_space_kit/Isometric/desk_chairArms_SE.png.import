@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dihaboeayst4k"
-path="res://.godot/imported/desk_chairArms_SE.png-dfe57b95a86e79653ba2d4898a14ff6f.ctex"
+path="res://.godot/imported/desk_chairArms_SE.png-9626b840eabb8a29d11005832da3251c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/desk_chairArms_SE.png"
-dest_files=["res://.godot/imported/desk_chairArms_SE.png-dfe57b95a86e79653ba2d4898a14ff6f.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/desk_chairArms_SE.png"
+dest_files=["res://.godot/imported/desk_chairArms_SE.png-9626b840eabb8a29d11005832da3251c.ctex"]
 
 [params]
 

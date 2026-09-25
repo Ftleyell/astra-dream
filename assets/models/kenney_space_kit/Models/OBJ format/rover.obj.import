@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://i7fkkn44h2k8"
-path="res://.godot/imported/rover.obj-654113aff35277515198a58b437a8ec5.mesh"
+path="res://.godot/imported/rover.obj-cddc4908698a2b5fc3339d2a9caacedd.mesh"
 
 [deps]
 
-files=["res://.godot/imported/rover.obj-654113aff35277515198a58b437a8ec5.mesh"]
+files=["res://.godot/imported/rover.obj-cddc4908698a2b5fc3339d2a9caacedd.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/rover.obj"
-dest_files=["res://.godot/imported/rover.obj-654113aff35277515198a58b437a8ec5.mesh", "res://.godot/imported/rover.obj-654113aff35277515198a58b437a8ec5.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/rover.obj"
+dest_files=["res://.godot/imported/rover.obj-cddc4908698a2b5fc3339d2a9caacedd.mesh", "res://.godot/imported/rover.obj-cddc4908698a2b5fc3339d2a9caacedd.mesh"]
 
 [params]
 

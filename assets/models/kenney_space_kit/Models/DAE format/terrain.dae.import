@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bt4st215hi217"
-path="res://.godot/imported/terrain.dae-c25963141bd4a008003a1646650de8bb.scn"
+path="res://.godot/imported/terrain.dae-6428756849599884e17b84156c401b6e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/terrain.dae"
-dest_files=["res://.godot/imported/terrain.dae-c25963141bd4a008003a1646650de8bb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/terrain.dae"
+dest_files=["res://.godot/imported/terrain.dae-6428756849599884e17b84156c401b6e.scn"]
 
 [params]
 

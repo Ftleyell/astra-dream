@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dmq5lifnagls"
-path="res://.godot/imported/platform_corner.glb-7a04f5f3061530399109a712aa22cfbf.scn"
+path="res://.godot/imported/platform_corner.glb-1645da94a47a986cb8b1f76dab5991c7.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/platform_corner.glb"
-dest_files=["res://.godot/imported/platform_corner.glb-7a04f5f3061530399109a712aa22cfbf.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/platform_corner.glb"
+dest_files=["res://.godot/imported/platform_corner.glb-1645da94a47a986cb8b1f76dab5991c7.scn"]
 
 [params]
 

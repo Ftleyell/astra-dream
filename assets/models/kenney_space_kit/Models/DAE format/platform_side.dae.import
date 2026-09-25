@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cnaieyr317vbm"
-path="res://.godot/imported/platform_side.dae-c6fdb4752e99a67df9cf5a30f110e1d4.scn"
+path="res://.godot/imported/platform_side.dae-bf0b4192eb3d26d46814ce07aa061f11.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/platform_side.dae"
-dest_files=["res://.godot/imported/platform_side.dae-c6fdb4752e99a67df9cf5a30f110e1d4.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/platform_side.dae"
+dest_files=["res://.godot/imported/platform_side.dae-bf0b4192eb3d26d46814ce07aa061f11.scn"]
 
 [params]
 

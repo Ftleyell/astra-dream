@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjvklxdtd5pru"
-path="res://.godot/imported/desk_chair.png-7cc2f7247471b100f96ccabfd6087982.ctex"
+path="res://.godot/imported/desk_chair.png-139cdf386467367123cd944b802b646b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/desk_chair.png"
-dest_files=["res://.godot/imported/desk_chair.png-7cc2f7247471b100f96ccabfd6087982.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/desk_chair.png"
+dest_files=["res://.godot/imported/desk_chair.png-139cdf386467367123cd944b802b646b.ctex"]
 
 [params]
 

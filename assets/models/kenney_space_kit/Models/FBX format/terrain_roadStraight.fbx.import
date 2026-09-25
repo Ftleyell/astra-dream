@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://66oas5mwq2f8"
-path="res://.godot/imported/terrain_roadStraight.fbx-ac2422377df792c9dd8646013486fa87.scn"
+path="res://.godot/imported/terrain_roadStraight.fbx-771772eecbfc4dee0e6f1fdde2884833.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/terrain_roadStraight.fbx"
-dest_files=["res://.godot/imported/terrain_roadStraight.fbx-ac2422377df792c9dd8646013486fa87.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/terrain_roadStraight.fbx"
+dest_files=["res://.godot/imported/terrain_roadStraight.fbx-771772eecbfc4dee0e6f1fdde2884833.scn"]
 
 [params]
 

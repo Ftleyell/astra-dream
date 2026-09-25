@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dro6xvbqwnybg"
-path="res://.godot/imported/machine_barrel.fbx-c53b0339c88ed151992d4c4f0c4f82d3.scn"
+path="res://.godot/imported/machine_barrel.fbx-7cc775653c045cce5ec81de3f659937e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/machine_barrel.fbx"
-dest_files=["res://.godot/imported/machine_barrel.fbx-c53b0339c88ed151992d4c4f0c4f82d3.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/machine_barrel.fbx"
+dest_files=["res://.godot/imported/machine_barrel.fbx-7cc775653c045cce5ec81de3f659937e.scn"]
 
 [params]
 

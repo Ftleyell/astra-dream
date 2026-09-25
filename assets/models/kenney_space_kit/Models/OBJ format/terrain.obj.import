@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://c34ibvjbqpv43"
-path="res://.godot/imported/terrain.obj-1480aa12779a8bcd8bc90a6692f2b520.mesh"
+path="res://.godot/imported/terrain.obj-6188fd9b31520a89962e7f496bfd7270.mesh"
 
 [deps]
 
-files=["res://.godot/imported/terrain.obj-1480aa12779a8bcd8bc90a6692f2b520.mesh"]
+files=["res://.godot/imported/terrain.obj-6188fd9b31520a89962e7f496bfd7270.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/terrain.obj"
-dest_files=["res://.godot/imported/terrain.obj-1480aa12779a8bcd8bc90a6692f2b520.mesh", "res://.godot/imported/terrain.obj-1480aa12779a8bcd8bc90a6692f2b520.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/terrain.obj"
+dest_files=["res://.godot/imported/terrain.obj-6188fd9b31520a89962e7f496bfd7270.mesh", "res://.godot/imported/terrain.obj-6188fd9b31520a89962e7f496bfd7270.mesh"]
 
 [params]
 

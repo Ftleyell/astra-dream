@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cc1y3pyyniemw"
-path="res://.godot/imported/alien.glb-121740331974300adf51e0e2d092d08e.scn"
+path="res://.godot/imported/alien.glb-d5fdf5ce0948e3fb989d7b1670288e7e.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/GLTF format/alien.glb"
-dest_files=["res://.godot/imported/alien.glb-121740331974300adf51e0e2d092d08e.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/GLTF format/alien.glb"
+dest_files=["res://.godot/imported/alien.glb-d5fdf5ce0948e3fb989d7b1670288e7e.scn"]
 
 [params]
 

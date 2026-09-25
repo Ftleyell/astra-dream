@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfhtx4ki4v508"
-path="res://.godot/imported/rock.png-f07cf69fff19f947b4ef74fbfd0484d6.ctex"
+path="res://.godot/imported/rock.png-3301713adbe9f0e0bb0f3f70fa85e2fa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/rock.png"
-dest_files=["res://.godot/imported/rock.png-f07cf69fff19f947b4ef74fbfd0484d6.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/rock.png"
+dest_files=["res://.godot/imported/rock.png-3301713adbe9f0e0bb0f3f70fa85e2fa.ctex"]
 
 [params]
 

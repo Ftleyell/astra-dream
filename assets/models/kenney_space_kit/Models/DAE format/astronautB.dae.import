@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ch45i1fx2kdkc"
-path="res://.godot/imported/astronautB.dae-404076585a8c3926d84a2801e5a12acb.scn"
+path="res://.godot/imported/astronautB.dae-a870d682063235e4c4b6de1b4fdd0c59.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/astronautB.dae"
-dest_files=["res://.godot/imported/astronautB.dae-404076585a8c3926d84a2801e5a12acb.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/astronautB.dae"
+dest_files=["res://.godot/imported/astronautB.dae-a870d682063235e4c4b6de1b4fdd0c59.scn"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bkgwtkylhfo7p"
-path="res://.godot/imported/alien.fbx-5f09683e118c0ca4ee404d4e5dbbc7fe.scn"
+path="res://.godot/imported/alien.fbx-9379c47b61610c04811b5b234e6d7c2d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/alien.fbx"
-dest_files=["res://.godot/imported/alien.fbx-5f09683e118c0ca4ee404d4e5dbbc7fe.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/alien.fbx"
+dest_files=["res://.godot/imported/alien.fbx-9379c47b61610c04811b5b234e6d7c2d.scn"]
 
 [params]
 

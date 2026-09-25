@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://djxemoulyfbsi"
-path="res://.godot/imported/craft_speederA.fbx-72fcd4a57984d29f97819a8acbf121c9.scn"
+path="res://.godot/imported/craft_speederA.fbx-6fca1b60b54cd655916facfb49a57e7d.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/craft_speederA.fbx"
-dest_files=["res://.godot/imported/craft_speederA.fbx-72fcd4a57984d29f97819a8acbf121c9.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/craft_speederA.fbx"
+dest_files=["res://.godot/imported/craft_speederA.fbx-6fca1b60b54cd655916facfb49a57e7d.scn"]
 
 [params]
 

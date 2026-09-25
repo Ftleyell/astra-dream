@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://buim7b44xwy06"
-path="res://.godot/imported/machine_barrel.dae-bdc8fe246fd58680cef0ceeee3e32287.scn"
+path="res://.godot/imported/machine_barrel.dae-bc61b02cb343034b6a35ef8a133da288.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/machine_barrel.dae"
-dest_files=["res://.godot/imported/machine_barrel.dae-bdc8fe246fd58680cef0ceeee3e32287.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/machine_barrel.dae"
+dest_files=["res://.godot/imported/machine_barrel.dae-bc61b02cb343034b6a35ef8a133da288.scn"]
 
 [params]
 

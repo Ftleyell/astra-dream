@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://db6bflffvtshq"
-path="res://.godot/imported/rail_corner.png-486ec744a71c4ed9e5ef98961485b943.ctex"
+path="res://.godot/imported/rail_corner.png-b32e47bec561bcb218319cc569775579.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Side/rail_corner.png"
-dest_files=["res://.godot/imported/rail_corner.png-486ec744a71c4ed9e5ef98961485b943.ctex"]
+source_file="res://assets/models/kenney_space_kit/Side/rail_corner.png"
+dest_files=["res://.godot/imported/rail_corner.png-b32e47bec561bcb218319cc569775579.ctex"]
 
 [params]
 

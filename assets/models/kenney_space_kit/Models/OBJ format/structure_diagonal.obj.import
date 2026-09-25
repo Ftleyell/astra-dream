@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ddxvuclh8rqou"
-path="res://.godot/imported/structure_diagonal.obj-e06474a0949a122a29402a6d47fce546.mesh"
+path="res://.godot/imported/structure_diagonal.obj-2545fed7dae894cfe85e64d713563ad3.mesh"
 
 [deps]
 
-files=["res://.godot/imported/structure_diagonal.obj-e06474a0949a122a29402a6d47fce546.mesh"]
+files=["res://.godot/imported/structure_diagonal.obj-2545fed7dae894cfe85e64d713563ad3.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/structure_diagonal.obj"
-dest_files=["res://.godot/imported/structure_diagonal.obj-e06474a0949a122a29402a6d47fce546.mesh", "res://.godot/imported/structure_diagonal.obj-e06474a0949a122a29402a6d47fce546.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/structure_diagonal.obj"
+dest_files=["res://.godot/imported/structure_diagonal.obj-2545fed7dae894cfe85e64d713563ad3.mesh", "res://.godot/imported/structure_diagonal.obj-2545fed7dae894cfe85e64d713563ad3.mesh"]
 
 [params]
 

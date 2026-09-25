@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://blkwqv1oslxhm"
-path="res://.godot/imported/corridor_detailed.fbx-f86f8742426b27461834da0b80fc8e45.scn"
+path="res://.godot/imported/corridor_detailed.fbx-c17251512480fb9acad1562d524b1b71.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/corridor_detailed.fbx"
-dest_files=["res://.godot/imported/corridor_detailed.fbx-f86f8742426b27461834da0b80fc8e45.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/corridor_detailed.fbx"
+dest_files=["res://.godot/imported/corridor_detailed.fbx-c17251512480fb9acad1562d524b1b71.scn"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b5q23tjccl5jm"
-path="res://.godot/imported/alien_NW.png-dcc4172a35c4880b238ed7067133b077.ctex"
+path="res://.godot/imported/alien_NW.png-705c2cc34e3e5091a76ce5ab28239162.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Isometric/alien_NW.png"
-dest_files=["res://.godot/imported/alien_NW.png-dcc4172a35c4880b238ed7067133b077.ctex"]
+source_file="res://assets/models/kenney_space_kit/Isometric/alien_NW.png"
+dest_files=["res://.godot/imported/alien_NW.png-705c2cc34e3e5091a76ce5ab28239162.ctex"]
 
 [params]
 

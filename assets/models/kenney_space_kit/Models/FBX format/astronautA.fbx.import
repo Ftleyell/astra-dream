@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c8qj7eqwek420"
-path="res://.godot/imported/astronautA.fbx-71903f1b71a23881df7935bd6656d95b.scn"
+path="res://.godot/imported/astronautA.fbx-add082ec9e255cf27059097e60a81518.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/FBX format/astronautA.fbx"
-dest_files=["res://.godot/imported/astronautA.fbx-71903f1b71a23881df7935bd6656d95b.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/FBX format/astronautA.fbx"
+dest_files=["res://.godot/imported/astronautA.fbx-add082ec9e255cf27059097e60a81518.scn"]
 
 [params]
 

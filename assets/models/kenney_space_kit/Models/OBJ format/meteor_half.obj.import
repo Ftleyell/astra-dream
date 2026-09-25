@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://3ntn1kgcaqrt"
-path="res://.godot/imported/meteor_half.obj-23629a3e4d4d05bb8a2670a5e5c444e1.mesh"
+path="res://.godot/imported/meteor_half.obj-88475a0925803b4cce07bd82352d9485.mesh"
 
 [deps]
 
-files=["res://.godot/imported/meteor_half.obj-23629a3e4d4d05bb8a2670a5e5c444e1.mesh"]
+files=["res://.godot/imported/meteor_half.obj-88475a0925803b4cce07bd82352d9485.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/meteor_half.obj"
-dest_files=["res://.godot/imported/meteor_half.obj-23629a3e4d4d05bb8a2670a5e5c444e1.mesh", "res://.godot/imported/meteor_half.obj-23629a3e4d4d05bb8a2670a5e5c444e1.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/meteor_half.obj"
+dest_files=["res://.godot/imported/meteor_half.obj-88475a0925803b4cce07bd82352d9485.mesh", "res://.godot/imported/meteor_half.obj-88475a0925803b4cce07bd82352d9485.mesh"]
 
 [params]
 

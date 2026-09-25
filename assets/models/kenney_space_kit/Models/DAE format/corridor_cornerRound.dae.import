@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dsouos63oxni7"
-path="res://.godot/imported/corridor_cornerRound.dae-53ec4eb3665063e536622432faa62b41.scn"
+path="res://.godot/imported/corridor_cornerRound.dae-b71438fafa50b841638b287d64db3a43.scn"
 
 [deps]
 
-source_file="res://scratch/downloads/space_kit/Models/DAE format/corridor_cornerRound.dae"
-dest_files=["res://.godot/imported/corridor_cornerRound.dae-53ec4eb3665063e536622432faa62b41.scn"]
+source_file="res://assets/models/kenney_space_kit/Models/DAE format/corridor_cornerRound.dae"
+dest_files=["res://.godot/imported/corridor_cornerRound.dae-b71438fafa50b841638b287d64db3a43.scn"]
 
 [params]
 

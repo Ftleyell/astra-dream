@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://2ixdbugwgfkq"
-path="res://.godot/imported/weapon_rifle.obj-d40624871aa74b0c79c067344f4debf4.mesh"
+path="res://.godot/imported/weapon_rifle.obj-587be50cf8ac428c0562d041e7a75fe9.mesh"
 
 [deps]
 
-files=["res://.godot/imported/weapon_rifle.obj-d40624871aa74b0c79c067344f4debf4.mesh"]
+files=["res://.godot/imported/weapon_rifle.obj-587be50cf8ac428c0562d041e7a75fe9.mesh"]
 
-source_file="res://scratch/downloads/space_kit/Models/OBJ format/weapon_rifle.obj"
-dest_files=["res://.godot/imported/weapon_rifle.obj-d40624871aa74b0c79c067344f4debf4.mesh", "res://.godot/imported/weapon_rifle.obj-d40624871aa74b0c79c067344f4debf4.mesh"]
+source_file="res://assets/models/kenney_space_kit/Models/OBJ format/weapon_rifle.obj"
+dest_files=["res://.godot/imported/weapon_rifle.obj-587be50cf8ac428c0562d041e7a75fe9.mesh", "res://.godot/imported/weapon_rifle.obj-587be50cf8ac428c0562d041e7a75fe9.mesh"]
 
 [params]
 
