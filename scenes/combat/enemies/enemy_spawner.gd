@@ -10,6 +10,7 @@ extends Node2D
 @export var kamikaze_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_kamikaze.tscn")
 @export var tank_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_tank.tscn")
 @export var shooter_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_shooter.tscn")
+@export var rainbow_scene: PackedScene = preload("res://scenes/combat/enemies/rainbow_enemy.tscn")
 
 @export var max_enemies: int = 80
 @export var base_spawn_interval: float = 1.2
@@ -22,6 +23,7 @@ var spawn_timer: float = 0.0
 var elapsed_time: float = 0.0
 var is_spawning_paused: bool = false
 var current_wave: int = 1
+var rainbow_spawn_timer: float = 45.0
 
 # Evento periódico de oleada masiva repentina (Swarm Rush)
 var swarm_event_timer: float = 40.0
@@ -65,6 +67,21 @@ func _process(delta: float) -> void:
 	if swarm_event_timer <= 0.0:
 		swarm_event_timer = SWARM_EVENT_INTERVAL
 		_trigger_swarm_rush()
+
+	# Disparador de Nave Arcoíris (Loot Goblin)
+	rainbow_spawn_timer -= delta
+	if rainbow_spawn_timer <= 0.0:
+		rainbow_spawn_timer = randf_range(50.0, 75.0)
+		_try_spawn_rainbow_enemy()
+
+func _try_spawn_rainbow_enemy() -> void:
+	if is_spawning_paused or not rainbow_scene:
+		return
+	_acquire_player()
+	var center := player.global_position if is_instance_valid(player) else global_position
+	var angle := randf() * TAU
+	var spawn_pos := center + Vector2(cos(angle), sin(angle)) * spawn_radius_min
+	_spawn_enemy_at(rainbow_scene, spawn_pos)
 
 func set_wave(wave_num: int) -> void:
 	current_wave = wave_num

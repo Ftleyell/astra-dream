@@ -409,6 +409,10 @@ func _on_boss_defeated(_boss_id: String) -> void:
 	current_boss = null
 	hud.hide_boss()
 
+	var just_unlocked_nyx: bool = SaveManager.record_boss_kill()
+	if just_unlocked_nyx and hud and hud.has_method("show_character_unlock_banner"):
+		hud.show_character_unlock_banner(&"nyx", "¡NUEVO PILOTO DESBLOQUEADO: NYX!", "Has derrotado a 10 Jefes Titanes en tu Carrera espacial.")
+
 	# Reanudar la generación de drones comunes
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
@@ -720,6 +724,15 @@ func _on_player_died() -> void:
 		"score": final_score
 	})
 	var is_new_record: bool = (rank == 1)
+
+	SaveManager.record_career_run_end({
+		"time_survived": run_time_elapsed,
+		"credits_earned": player.run_credits,
+		"biomass_earned": player.run_biomass,
+		"enemies_killed": enemies_killed_count,
+		"satellites_collected": satellites_collected_total,
+		"victory": false
+	})
 
 	# 3. Recopilar armamento equipado
 	var weapons_summary: Array = []

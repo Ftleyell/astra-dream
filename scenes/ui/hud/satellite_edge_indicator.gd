@@ -16,6 +16,15 @@ const BOX_SIZE: Vector2 = Vector2(50, 50)
 const PADDING: float = 8.0
 
 var _pulse_timer: float = 0.0
+var ping_timer: float = 0.0
+const PING_INTERVAL: float = 10.0
+var _ping_ring_radius: float = 0.0
+var _ping_ring_alpha: float = 0.0
+var _ping_tween: Tween = null
+
+func _draw() -> void:
+	if _ping_ring_alpha > 0.01:
+		draw_arc(BOX_SIZE * 0.5, _ping_ring_radius, 0.0, TAU, 36, Color(0.0, 0.95, 1.0, _ping_ring_alpha), 2.5)
 
 func _ready() -> void:
 	custom_minimum_size = BOX_SIZE
@@ -42,10 +51,39 @@ func set_target(pos: Vector2, index: int) -> void:
 	active_satellite_pos = pos
 	satellite_index = index
 	has_satellite = true
+	ping_timer = 0.0
 	show()
+	trigger_ping()
+
+func trigger_ping() -> void:
+	if not has_satellite:
+		return
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.6)
+
+	if panel_container:
+		panel_container.pivot_offset = BOX_SIZE * 0.5
+		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(panel_container, "scale", Vector2(1.3, 1.3), 0.1)
+		tw.tween_property(panel_container, "scale", Vector2(1.0, 1.0), 0.25)
+
+	if _ping_tween and _ping_tween.is_valid():
+		_ping_tween.kill()
+	_ping_ring_radius = 22.0
+	_ping_ring_alpha = 1.0
+	_ping_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_ping_tween.tween_property(self, "_ping_ring_radius", 75.0, 0.85)
+	_ping_tween.tween_property(self, "_ping_ring_alpha", 0.0, 0.85)
+	_ping_tween.chain().tween_callback(queue_redraw)
 
 func clear_target() -> void:
 	has_satellite = false
+	ping_timer = 0.0
+	if _ping_tween and _ping_tween.is_valid():
+		_ping_tween.kill()
+	_ping_ring_alpha = 0.0
+	queue_redraw()
 	hide()
 
 func set_player(p: Player) -> void:
@@ -98,6 +136,14 @@ func _process(delta: float) -> void:
 	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		hide()
 		return
+
+	if _ping_ring_alpha > 0.01:
+		queue_redraw()
+
+	ping_timer += delta
+	if ping_timer >= PING_INTERVAL:
+		ping_timer = 0.0
+		trigger_ping()
 
 	var target_pos := _get_closest_satellite_pos()
 	var dist := player.global_position.distance_to(target_pos)

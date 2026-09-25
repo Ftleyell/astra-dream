@@ -142,8 +142,8 @@ static func load_roster() -> Dictionary[StringName, CharacterData]:
 				file_name = dir.get_next()
 			dir.list_dir_end()
 	
-	# Canonical fallback to ensure all 6 pilots are loaded
-	var canonical_ids: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
+	# Canonical fallback to ensure all pilots are loaded
+	var canonical_ids: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
 	for cid in canonical_ids:
 		if not roster.has(cid):
 			var fallback_path := "%s%s.tres" % [roster_dir, str(cid)]

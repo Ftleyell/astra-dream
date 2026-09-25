@@ -42,8 +42,11 @@ var shockwave_scene: PackedScene = preload("res://scenes/combat/weapons/shockwav
 var drone_scene: PackedScene = preload("res://scenes/combat/weapons/orbital_drone.tscn")
 var cluster_scene: PackedScene = preload("res://scenes/combat/weapons/cluster_grenade.tscn")
 var solar_scene: PackedScene = preload("res://scenes/combat/weapons/solar_beam.tscn")
+var crescent_slash_scene: PackedScene = preload("res://scenes/combat/weapons/crescent_slash.tscn")
+var crescent_cyclone_scene: PackedScene = preload("res://scenes/combat/weapons/crescent_cyclone.tscn")
 
 var active_drones: Array[Node2D] = []
+var last_known_target_dir: Vector2 = Vector2.UP
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -161,19 +164,15 @@ func _update_locked_target() -> void:
 		current_locked_target = _find_closest_enemy_in_pickup_radius()
 
 ## Rango de búsqueda para auto-apuntado:
-## Base = 2 * pickup_radius base del personaje, escalando 1 a 1 con cualquier aumento posterior de pickup_radius.
+## Base de pantalla completa (850px), escalando con el radio de atracción/imán.
 func get_autoaim_range() -> float:
-	var base_pickup: float = 100.0
-	if player and player.character_data and player.character_data.pickup_radius > 0.0:
-		base_pickup = player.character_data.pickup_radius
-
-	var current_pickup: float = base_pickup
+	var base_range: float = 850.0
+	var pickup_bonus: float = 0.0
 	if player and player.stats:
-		current_pickup = player.stats.get_stat(&"pickup_radius")
-
-	# Modificador flat de entrada = base_pickup -> inicialmente es 2 * base_pickup,
-	# y escala 1 a 1 con el incremento de pickup_radius (current_pickup - base_pickup).
-	return current_pickup + base_pickup
+		var current_pickup: float = player.stats.get_stat(&"pickup_radius")
+		var base_pickup: float = player.character_data.pickup_radius if (player.character_data and player.character_data.pickup_radius > 0.0) else 100.0
+		pickup_bonus = maxf(0.0, current_pickup - base_pickup)
+	return base_range + pickup_bonus * 1.5
 
 func _find_closest_enemy_in_pickup_radius() -> Node2D:
 	var search_rad: float = get_autoaim_range()
@@ -206,22 +205,23 @@ func _get_passive_aim_info() -> Dictionary:
 			dir = Vector2.UP
 		return { "direction": dir, "target": null }
 
-	# Modo Automático: enemigo más cercano dentro del radio de recogida
+	# Modo Automático: enemigo más cercano dentro del radio de pantalla
 	var target := current_locked_target if is_instance_valid(current_locked_target) else _find_closest_enemy_in_pickup_radius()
 	if target and is_instance_valid(target):
 		var dir := (target.global_position - global_position).normalized()
 		if dir.length_squared() < 0.001:
 			dir = Vector2.UP
+		last_known_target_dir = dir
 		return { "direction": dir, "target": target }
 
-	# Fallback cuando no hay enemigos en radio de recogida:
-	# Dirección de movimiento de la nave o última orientación conocida
+	# Fallback cuando no hay enemigos en pantalla:
+	# Mantener la última dirección válida de hostiles en vez de disparar hacia la velocidad de huida
+	if last_known_target_dir.length_squared() > 0.001:
+		return { "direction": last_known_target_dir, "target": null }
+
 	var fallback_dir := Vector2.UP
-	if player:
-		if player.velocity.length_squared() > 10.0:
-			fallback_dir = player.velocity.normalized()
-		elif "dash_direction" in player and player.dash_direction.length_squared() > 0.001:
-			fallback_dir = player.dash_direction.normalized()
+	if player and "last_facing_direction" in player and player.last_facing_direction.length_squared() > 0.001:
+		fallback_dir = player.last_facing_direction.normalized()
 	elif rotation != 0.0:
 		fallback_dir = Vector2.from_angle(rotation)
 
@@ -472,6 +472,11 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 				proj.setup(global_position, b_dir, ctx, player, proj_speed, size_stat * 1.3)
 				spawn_parent.add_child(proj)
 
+		&"crescent_cyclone":
+			var cyclone = crescent_cyclone_scene.instantiate()
+			cyclone.setup(global_position, ctx, size_stat * 1.2)
+			spawn_parent.add_child(cyclone)
+
 		_:
 			# Fallback a láser
 			var laser: ScreenLaserBeam = laser_scene.instantiate() as ScreenLaserBeam
@@ -573,6 +578,15 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 			proj.lifetime = 1.2
 			proj.setup(global_position, p_dir, ctx, player, 1.0, size_stat)
 			spawn_parent.add_child(proj)
+
+		&"crescent_slash":
+			var aim_info := _get_passive_aim_info()
+			var slash_dir: Vector2 = aim_info.direction
+			if is_manual_aim:
+				slash_dir = (get_global_mouse_position() - global_position).normalized()
+			var slash = crescent_slash_scene.instantiate()
+			slash.setup(global_position, slash_dir, ctx, count, size_stat)
+			spawn_parent.add_child(slash)
 
 		_:
 			_fire_homing_missiles(ctx, count, wdata.passive_search_radius)

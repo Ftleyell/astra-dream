@@ -194,6 +194,192 @@ func set_active_satellite(pos: Vector2, index: int) -> void:
 		if is_instance_valid(player):
 			satellite_tracker.set_player(player)
 		satellite_tracker.set_target(pos, index)
+	show_satellite_banner(index)
+
+var _satellite_banner_node: Control = null
+var _satellite_banner_tween: Tween = null
+
+func show_satellite_banner(index: int) -> void:
+	if not _satellite_banner_node:
+		_create_satellite_banner_ui()
+	if not _satellite_banner_node:
+		return
+
+	var title_lbl: Label = _satellite_banner_node.find_child("BannerTitle", true, false) as Label
+	var sub_lbl: Label = _satellite_banner_node.find_child("BannerSubtitle", true, false) as Label
+	if title_lbl:
+		title_lbl.text = "¡SATÉLITE ORBITAL DETECTADO!"
+	if sub_lbl:
+		sub_lbl.text = "Baliza de enlace #%d en línea • Rumbo fijado en radar" % index
+
+	if _satellite_banner_tween and _satellite_banner_tween.is_valid():
+		_satellite_banner_tween.kill()
+
+	_satellite_banner_node.visible = true
+	_satellite_banner_node.modulate.a = 0.0
+	_satellite_banner_node.scale = Vector2(0.8, 0.8)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.45)
+
+	_satellite_banner_tween = create_tween()
+	_satellite_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "scale", Vector2(1.0, 1.0), 0.35)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 1.0, 0.25)
+	_satellite_banner_tween.chain().tween_interval(2.2)
+	_satellite_banner_tween.chain().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_satellite_banner_tween.tween_property(_satellite_banner_node, "modulate:a", 0.0, 0.45)
+	_satellite_banner_tween.chain().tween_callback(func():
+		if _satellite_banner_node:
+			_satellite_banner_node.visible = false
+	)
+
+func _create_satellite_banner_ui() -> void:
+	var container := CenterContainer.new()
+	container.name = "SatelliteBannerCenter"
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.anchors_preset = Control.PRESET_FULL_RECT
+	container.anchor_right = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = -140.0
+
+	var banner_box := PanelContainer.new()
+	banner_box.name = "SatelliteBannerPanel"
+	banner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_box.custom_minimum_size = Vector2(460, 80)
+	banner_box.pivot_offset = Vector2(230, 40)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.02, 0.06, 0.14, 0.92)
+	style.border_color = Color(0.0, 0.95, 1.0, 1.0)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(14.0)
+	style.shadow_color = Color(0.0, 0.85, 1.0, 0.45)
+	style.shadow_size = 12
+	banner_box.add_theme_stylebox_override("panel", style)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var title := Label.new()
+	title.name = "BannerTitle"
+	title.text = "¡SATÉLITE ORBITAL DETECTADO!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_color_override("font_color", Color("#00E5FF"))
+	vbox.add_child(title)
+
+	var sub := Label.new()
+	sub.name = "BannerSubtitle"
+	sub.text = "Baliza de enlace activa"
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_font_size_override("font_size", 14)
+	sub.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0, 0.9))
+	vbox.add_child(sub)
+
+	banner_box.add_child(vbox)
+	container.add_child(banner_box)
+	add_child(container)
+	_satellite_banner_node = banner_box
+	_satellite_banner_node.visible = false
+
+var _unlock_banner_node: Control = null
+var _unlock_banner_tween: Tween = null
+
+func show_character_unlock_banner(char_id: StringName, title_text: String, desc_text: String) -> void:
+	if not _unlock_banner_node:
+		_create_unlock_banner_ui()
+	if not _unlock_banner_node:
+		return
+
+	var title_lbl: Label = _unlock_banner_node.find_child("UnlockTitle", true, false) as Label
+	var desc_lbl: Label = _unlock_banner_node.find_child("UnlockDesc", true, false) as Label
+	if title_lbl:
+		title_lbl.text = title_text
+	if desc_lbl:
+		desc_lbl.text = desc_text
+
+	if _unlock_banner_tween and _unlock_banner_tween.is_valid():
+		_unlock_banner_tween.kill()
+
+	_unlock_banner_node.visible = true
+	_unlock_banner_node.modulate.a = 0.0
+	_unlock_banner_node.scale = Vector2(0.7, 0.7)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
+	_unlock_banner_tween = create_tween()
+	_unlock_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_unlock_banner_tween.tween_property(_unlock_banner_node, "scale", Vector2(1.0, 1.0), 0.45)
+	_unlock_banner_tween.tween_property(_unlock_banner_node, "modulate:a", 1.0, 0.3)
+	_unlock_banner_tween.chain().tween_interval(4.0)
+	_unlock_banner_tween.chain().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_unlock_banner_tween.tween_property(_unlock_banner_node, "modulate:a", 0.0, 0.6)
+	_unlock_banner_tween.chain().tween_callback(func():
+		if _unlock_banner_node:
+			_unlock_banner_node.visible = false
+	)
+
+func _create_unlock_banner_ui() -> void:
+	var container := CenterContainer.new()
+	container.name = "CharacterUnlockCenter"
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.anchors_preset = Control.PRESET_FULL_RECT
+	container.anchor_right = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = -60.0
+
+	var banner_box := PanelContainer.new()
+	banner_box.name = "CharacterUnlockPanel"
+	banner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_box.custom_minimum_size = Vector2(560, 110)
+	banner_box.pivot_offset = Vector2(280, 55)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.02, 0.12, 0.95)
+	style.border_color = Color(0.9, 0.25, 1.0, 1.0)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(16.0)
+	style.shadow_color = Color(0.9, 0.2, 1.0, 0.5)
+	style.shadow_size = 18
+	banner_box.add_theme_stylebox_override("panel", style)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var badge := Label.new()
+	badge.text = "★ ARCHIVO DE CARRERA ACTUALIZADO ★"
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.add_theme_font_size_override("font_size", 13)
+	badge.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 0.95))
+	vbox.add_child(badge)
+
+	var title := Label.new()
+	title.name = "UnlockTitle"
+	title.text = "¡NUEVO PILOTO DESBLOQUEADO: NYX!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color(0.95, 0.35, 1.0))
+	vbox.add_child(title)
+
+	var desc := Label.new()
+	desc.name = "UnlockDesc"
+	desc.text = "Has derrotado a 10 Jefes Titanes en tu Carrera espacial."
+	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc.add_theme_font_size_override("font_size", 14)
+	desc.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0, 0.9))
+	vbox.add_child(desc)
+
+	banner_box.add_child(vbox)
+	container.add_child(banner_box)
+	add_child(container)
+	_unlock_banner_node = banner_box
+	_unlock_banner_node.visible = false
 
 var current_credits: int = 120
 var current_biomass: int = 0

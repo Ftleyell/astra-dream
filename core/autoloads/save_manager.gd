@@ -15,7 +15,8 @@ static func save_profile(
 	p_selected_char: StringName = &"",
 	p_dark_matter: int = -1,
 	p_trophies: Variant = null,
-	p_game_speed: float = -1.0
+	p_game_speed: float = -1.0,
+	p_career_stats: Variant = null
 ) -> Error:
 	var current_speed: float = p_game_speed
 	if current_speed <= 0.0:
@@ -86,6 +87,13 @@ static func save_profile(
 	for tid in current_trophies.keys():
 		trophies_serializable[str(tid)] = int(current_trophies[tid])
 
+	var current_career: Dictionary
+	if p_career_stats == null:
+		var prof := load_profile()
+		current_career = prof.get("career_stats", _get_default_career_stats())
+	else:
+		current_career = p_career_stats
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -97,7 +105,8 @@ static func save_profile(
 		"trophies_unlocked": trophies_serializable,
 		"character_skills": skills_serializable,
 		"selected_character": String(current_char),
-		"game_speed": current_speed
+		"game_speed": current_speed,
+		"career_stats": current_career
 	}
 
 	var json_str := JSON.stringify(payload, "\t")
@@ -127,6 +136,19 @@ static func load_profile() -> Dictionary:
 	return _clean_and_validate_data(data)
 
 
+static func _get_default_career_stats() -> Dictionary:
+	return {
+		"total_time_survived": 0.0,
+		"total_credits_collected": 0,
+		"total_biomass_collected": 0,
+		"total_enemies_killed": 0,
+		"total_bosses_killed": 0,
+		"total_satellites_activated": 0,
+		"total_runs_played": 0,
+		"total_runs_cleared": 0
+	}
+
+
 static func _get_default_profile() -> Dictionary:
 	return {
 		"unlocked_items": [
@@ -152,7 +174,8 @@ static func _get_default_profile() -> Dictionary:
 		},
 		"character_skills": {} as Dictionary,
 		"selected_character": &"nova",
-		"game_speed": 1.0
+		"game_speed": 1.0,
+		"career_stats": _get_default_career_stats()
 	}
 
 
@@ -169,6 +192,18 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		for t_id in raw["trophies_unlocked"].keys():
 			trophies_clean[str(t_id)] = int(raw["trophies_unlocked"][t_id])
 
+	var career_clean := _get_default_career_stats()
+	if raw.has("career_stats") and raw["career_stats"] is Dictionary:
+		var raw_c: Dictionary = raw["career_stats"]
+		career_clean["total_time_survived"] = float(raw_c.get("total_time_survived", 0.0))
+		career_clean["total_credits_collected"] = int(raw_c.get("total_credits_collected", 0))
+		career_clean["total_biomass_collected"] = int(raw_c.get("total_biomass_collected", 0))
+		career_clean["total_enemies_killed"] = int(raw_c.get("total_enemies_killed", 0))
+		career_clean["total_bosses_killed"] = int(raw_c.get("total_bosses_killed", 0))
+		career_clean["total_satellites_activated"] = int(raw_c.get("total_satellites_activated", 0))
+		career_clean["total_runs_played"] = int(raw_c.get("total_runs_played", 0))
+		career_clean["total_runs_cleared"] = int(raw_c.get("total_runs_cleared", 0))
+
 	var cleaned := {
 		"unlocked_items": [] as Array[StringName],
 		"unlocked_characters": [] as Array[StringName],
@@ -179,7 +214,8 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"trophies_unlocked": trophies_clean,
 		"character_skills": {} as Dictionary,
 		"selected_character": StringName(str(raw.get("selected_character", "nova"))),
-		"game_speed": float(raw.get("game_speed", 1.0))
+		"game_speed": float(raw.get("game_speed", 1.0)),
+		"career_stats": career_clean
 	}
 
 	if raw.has("unlocked_items"):
@@ -508,6 +544,103 @@ static func set_game_speed(speed: float) -> void:
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies, speed)
+
+
+# ==============================================================================
+# ESTADÍSTICAS DE CARRERA Y DESBLOQUEO DE PERSONAJES
+# ==============================================================================
+
+static func get_career_stats() -> Dictionary:
+	var prof := load_profile()
+	var def := _get_default_career_stats()
+	var current: Dictionary = prof.get("career_stats", {})
+	for k in def.keys():
+		if not current.has(k):
+			current[k] = def[k]
+	return current
+
+static func is_character_unlocked(char_id: StringName) -> bool:
+	var prof := load_profile()
+	var chars: Array = prof.get("unlocked_characters", [])
+	return chars.has(char_id) or chars.has(String(char_id))
+
+static func unlock_character(char_id: StringName) -> bool:
+	var prof := load_profile()
+	var chars: Array[StringName] = []
+	for c in prof.get("unlocked_characters", []):
+		chars.append(StringName(str(c)))
+	if not chars.has(char_id):
+		chars.append(char_id)
+		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+		var bans: Dictionary = prof.get("character_banlists", {})
+		var bio: int = int(prof.get("biomass", 0))
+		var anti: int = int(prof.get("antimatter", 0))
+		var skills: Dictionary = prof.get("character_skills", {})
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var dm: int = int(prof.get("dark_matter", 0))
+		var trophies: Dictionary = prof.get("trophies_unlocked", {})
+		var spd: float = float(prof.get("game_speed", 1.0))
+		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
+		return true
+	return false
+
+static func record_boss_kill() -> bool:
+	var prof := load_profile()
+	var career: Dictionary = get_career_stats()
+	career["total_bosses_killed"] = int(career.get("total_bosses_killed", 0)) + 1
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = []
+	for c in prof.get("unlocked_characters", []):
+		chars.append(StringName(str(c)))
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+
+	var newly_unlocked_nyx: bool = false
+	if int(career["total_bosses_killed"]) >= 10:
+		if not chars.has(&"nyx"):
+			chars.append(&"nyx")
+			newly_unlocked_nyx = true
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
+	return newly_unlocked_nyx
+
+static func record_career_run_end(stats_data: Dictionary) -> void:
+	var prof := load_profile()
+	var career: Dictionary = get_career_stats()
+	career["total_time_survived"] = float(career.get("total_time_survived", 0.0)) + float(stats_data.get("time_survived", 0.0))
+	career["total_credits_collected"] = int(career.get("total_credits_collected", 0)) + int(stats_data.get("credits_earned", 0))
+	career["total_biomass_collected"] = int(career.get("total_biomass_collected", 0)) + int(stats_data.get("biomass_earned", 0))
+	career["total_enemies_killed"] = int(career.get("total_enemies_killed", 0)) + int(stats_data.get("enemies_killed", 0))
+	career["total_satellites_activated"] = int(career.get("total_satellites_activated", 0)) + int(stats_data.get("satellites_collected", 0))
+	career["total_runs_played"] = int(career.get("total_runs_played", 0)) + 1
+	if bool(stats_data.get("victory", false)):
+		career["total_runs_cleared"] = int(career.get("total_runs_cleared", 0)) + 1
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = []
+	for c in prof.get("unlocked_characters", []):
+		chars.append(StringName(str(c)))
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+
+	if int(career.get("total_bosses_killed", 0)) >= 10 and not chars.has(&"nyx"):
+		chars.append(&"nyx")
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
 
 
 

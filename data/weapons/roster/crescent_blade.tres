@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_nyx_01"]
+
+[ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="2_ico"]
+
+[resource]
+script = ExtResource("1_wpn")
+weapon_id = &"crescent_blade"
+weapon_name = "Hoja Crepuscular"
+description = "Espada dimensional que descarga tajos en medialuna (escala golpes con Proyectiles) y un torbellino 360° que destruye proyectiles hostiles."
+icon = ExtResource("2_ico")
+rarity = 1
+tags = [&"blade", &"melee", &"dimensional"]
+cost = 60
+base_damage = 48.0
+base_cooldown = 1.4
+proc_coefficient = 0.95
+damage_growth_per_level = 0.28
+cooldown_reduction_per_level = 0.08
+passive_interval_reduction_per_level = 0.08
+active_burst_count = 1
+active_spread_deg = 0.0
+active_behavior_type = &"crescent_cyclone"
+passive_interval = 0.9
+passive_search_radius = 450.0
+passive_target_mode = 0
+passive_behavior_type = &"crescent_slash"
+scales_with_projectile_count = true
+active_scales_with_projectiles = false
+passive_scales_with_projectiles = true

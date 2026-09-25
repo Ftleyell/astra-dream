@@ -40,6 +40,7 @@ var chain_scene: PackedScene = preload("res://scenes/combat/weapons/chain_lightn
 var nova_spin_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn")
 var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
 var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
+var cut_line_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/dimensional_cut_line.tscn")
 
 var is_dead: bool = false
 
@@ -318,6 +319,11 @@ func _setup_character_dash() -> void:
 			dash_charges = 1
 			dash_recharge_max = 1.2
 			dash_internal_cd = 0.2
+		"nyx":
+			max_dash_charges = 2
+			dash_charges = 2
+			dash_recharge_max = 1.3
+			dash_internal_cd = 0.15
 		_:
 			max_dash_charges = 1
 			dash_charges = 1
@@ -391,6 +397,8 @@ func _execute_character_dash() -> void:
 			_execute_roxy_dash()
 		"echo":
 			_execute_echo_dash()
+		"nyx":
+			_execute_nyx_dash()
 		_:
 			_execute_nova_dash()
 
@@ -589,6 +597,40 @@ func _execute_echo_dash() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("dash", 1.8, 1.0)
+
+func _execute_nyx_dash() -> void:
+	is_dashing = true
+	dash_timer = 0.18
+	var start_pos := global_position
+	var teleport_dist := 260.0
+	var target_pos := start_pos + dash_direction * teleport_dist
+	global_position = target_pos
+
+	var base_dmg := stats.get_stat(&"base_damage") if stats else 48.0
+	var crit_chance: float = stats.get_stat(&"crit_chance") if stats else 0.15
+	var is_crit := (randf() <= crit_chance) or consume_guaranteed_crit()
+	var crit_mult: float = stats.get_stat(&"crit_damage") if stats else 1.8
+	var final_dmg := base_dmg * 1.5 * (crit_mult if is_crit else 1.0)
+
+	var ctx := HitContext.new()
+	ctx.attacker = self
+	ctx.raw_damage = base_dmg * 1.5
+	ctx.final_damage = final_dmg
+	ctx.is_crit = is_crit
+	ctx.proc_coefficient = 1.0
+	ctx.hit_position = (start_pos + target_pos) * 0.5
+
+	if cut_line_scene:
+		var cut: Node2D = cut_line_scene.instantiate() as Node2D
+		if cut and cut.has_method("setup"):
+			var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
+			if spawn_parent:
+				spawn_parent.add_child(cut)
+			cut.setup(start_pos, target_pos, self, ctx)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("dash", 1.8, 1.5)
 
 func consume_guaranteed_crit() -> bool:
 	if has_guaranteed_crit:

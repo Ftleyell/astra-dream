@@ -156,9 +156,14 @@ func _populate_roster() -> void:
 
 	for char_data in roster_ordered:
 		var cid: StringName = char_data.character_id
+		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(400, 84)
-		btn.text = "   %s\n   %s" % [char_data.display_name.to_upper(), char_data.title]
+		if is_unlocked:
+			btn.text = "   %s\n   %s" % [char_data.display_name.to_upper(), char_data.title]
+		else:
+			btn.text = "   🔒 %s\n   %s (BLOQUEADA)" % [char_data.display_name.to_upper(), char_data.title]
+			btn.modulate = Color(0.65, 0.65, 0.75, 0.75)
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.pressed.connect(func():
 			if current_character_id == cid:
@@ -273,7 +278,31 @@ func _select_character(char_id: StringName) -> void:
 		fullbody_texture.flip_h = true
 		fullbody_texture.visible = (fb_tex != null)
 
+	var is_unlocked := SaveManager.is_character_unlocked(char_id)
+	if not is_unlocked:
+		if launch_button:
+			launch_button.disabled = true
+			launch_button.text = "PILOTO BLOQUEADO"
+		if loadout_button:
+			loadout_button.disabled = true
+		if char_id == &"nyx":
+			var career := SaveManager.get_career_stats()
+			var bosses := int(career.get("total_bosses_killed", 0))
+			desc_label.text = "🔒 DESBLOQUEO DE CARRERA ESPACIAL:\nDerrota a 10 Jefes Titanes en combate para sincronizar a Nyx.\nProgreso de carrera: [ %d / 10 ] Jefes Eliminados.\n\n%s" % [bosses, data.description]
+		if fullbody_texture:
+			fullbody_texture.modulate = Color(0.2, 0.2, 0.3, 0.85)
+	else:
+		if launch_button:
+			launch_button.disabled = false
+			launch_button.text = "INICIAR RUN"
+		if loadout_button:
+			loadout_button.disabled = false
+		if fullbody_texture:
+			fullbody_texture.modulate = Color.WHITE
+
 func _on_launch_pressed() -> void:
+	if not SaveManager.is_character_unlocked(current_character_id):
+		return
 	SaveManager.set_selected_character(current_character_id)
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
 

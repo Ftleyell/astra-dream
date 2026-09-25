@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=3 uid="uid://rainbowenemy001"]
+
+[ext_resource type="Script" path="res://scenes/combat/enemies/rainbow_enemy.gd" id="1_rainbow"]
+[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
+[ext_resource type="Texture2D" path="res://assets/characters/ships/ship_echo.png" id="3_ship"]
+[ext_resource type="Shader" path="res://core/shaders/rainbow_iridescent.gdshader" id="4_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rainbow"]
+shader = ExtResource("4_shader")
+shader_parameter/cycle_speed = 1.6
+shader_parameter/frequency = 2.2
+shader_parameter/saturation = 0.95
+shader_parameter/brightness = 1.35
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 22.0
+
+[node name="RainbowEnemy" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_rainbow")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_rainbow")
+scale = Vector2(0.42, 0.42)
+texture = ExtResource("3_ship")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="DamageAccumulator" parent="." instance=ExtResource("2_dmg")]

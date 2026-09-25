@@ -7,6 +7,9 @@ extends Node2D
 var is_planted: bool = false
 var player_inside: bool = false
 var _is_tearing_down: bool = false
+var ping_timer: float = 0.0
+const PING_INTERVAL: float = 10.0
+var _ping_line: Line2D = null
 
 signal planted(index: int, pos: Vector2)
 signal exited_perimeter(index: int)
@@ -18,8 +21,38 @@ signal exited_perimeter(index: int)
 func _ready() -> void:
 	add_to_group("satellite_beacon")
 	_draw_radius_circle()
+	_setup_ping_line()
+	trigger_beacon_ping()
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
+
+func _setup_ping_line() -> void:
+	_ping_line = Line2D.new()
+	_ping_line.width = 3.0
+	_ping_line.default_color = Color(0.0, 0.95, 1.0, 0.0)
+	add_child(_ping_line)
+
+func trigger_beacon_ping() -> void:
+	if is_planted or _is_tearing_down or not _ping_line:
+		return
+	_ping_line.clear_points()
+	var points: int = 36
+	for i in range(points + 1):
+		var angle := float(i) * TAU / float(points)
+		_ping_line.add_point(Vector2(cos(angle), sin(angle)) * 20.0)
+	_ping_line.default_color = Color(0.0, 0.95, 1.0, 0.9)
+	_ping_line.scale = Vector2.ONE
+	var tw := create_tween()
+	tw.tween_property(_ping_line, "scale", Vector2(activation_radius / 20.0, activation_radius / 20.0), 1.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_ping_line, "default_color:a", 0.0, 1.2)
+
+func _process(delta: float) -> void:
+	if is_planted or _is_tearing_down:
+		return
+	ping_timer += delta
+	if ping_timer >= PING_INTERVAL:
+		ping_timer = 0.0
+		trigger_beacon_ping()
 
 func _exit_tree() -> void:
 	_is_tearing_down = true
