@@ -991,6 +991,6 @@ func _spawn_companion_pet() -> void:
 	const PetDataScript := preload("res://data/pets/pet_data.gd")
 	var p_data = PetDataScript.get_pet(pet_id)
 	active_pet = pet_scene.instantiate() as CompanionPet
-	active_pet.setup(p_data, player)
 	add_child(active_pet)
+	active_pet.setup(p_data, player)
 

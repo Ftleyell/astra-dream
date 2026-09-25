@@ -33,11 +33,7 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	# Sprite3D del gatito
 	sprite = Sprite3D.new()
 	sprite.name = "PetSprite"
-	var tex: Texture2D = pet_data.icon if (pet_data and pet_data.icon) else null
-	if not tex and pet_data:
-		var icon_path := "res://assets/pets/pet_%s.png" % str(pet_data.pet_id)
-		if ResourceLoader.exists(icon_path):
-			tex = load(icon_path) as Texture2D
+	var tex: Texture2D = pet_data.get_icon_texture() if pet_data else null
 	sprite.texture = tex
 	sprite.pixel_size = 0.012
 	sprite.offset = Vector2(0, 32)

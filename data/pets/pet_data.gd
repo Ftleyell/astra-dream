@@ -79,3 +79,54 @@ static func get_pet(id: StringName) -> PetData:
 	elif not roster.is_empty():
 		return roster.values()[0]
 	return null
+
+static var _cached_textures: Dictionary = {}
+
+func get_icon_texture() -> Texture2D:
+	if _cached_textures.has(pet_id) and _cached_textures[pet_id] != null:
+		return _cached_textures[pet_id]
+
+	# 1. Si icon ya está cargado válidamente
+	if icon:
+		_cached_textures[pet_id] = icon
+		return icon
+
+	var icon_path := "res://assets/pets/pet_%s.png" % str(pet_id).to_lower()
+
+	# 2. Carga estándar ResourceLoader (caso normal con .ctex importado)
+	if ResourceLoader.exists(icon_path):
+		var res = load(icon_path)
+		if res is Texture2D:
+			icon = res
+			_cached_textures[pet_id] = res
+			return res
+
+	# 3. Carga directa de buffer binario PNG (inmune a falta de cache .godot o fallas de importación en pull limpio)
+	if FileAccess.file_exists(icon_path):
+		var bytes := FileAccess.get_file_as_bytes(icon_path)
+		if not bytes.is_empty():
+			var img := Image.new()
+			if img.load_png_from_buffer(bytes) == OK:
+				var tex := ImageTexture.create_from_image(img)
+				icon = tex
+				_cached_textures[pet_id] = tex
+				return tex
+
+	# 4. Carga directa desde filesystem del sistema operativo
+	var global_path := ProjectSettings.globalize_path(icon_path)
+	if FileAccess.file_exists(global_path):
+		var img := Image.load_from_file(global_path)
+		if img:
+			var tex := ImageTexture.create_from_image(img)
+			icon = tex
+			_cached_textures[pet_id] = tex
+			return tex
+
+	# 5. Generación procedural de emergencia (evita cualquier textura nula / cuadro vacío)
+	var fallback_img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	fallback_img.fill(theme_color)
+	var fallback_tex := ImageTexture.create_from_image(fallback_img)
+	icon = fallback_tex
+	_cached_textures[pet_id] = fallback_tex
+	return fallback_tex
+

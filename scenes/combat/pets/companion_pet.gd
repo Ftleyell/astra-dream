@@ -60,14 +60,13 @@ func _acquire_player() -> void:
 func _apply_pet_visuals() -> void:
 	if not pet_data:
 		return
+	if not sprite:
+		sprite = get_node_or_null("Sprite2D") as Sprite2D
 	if sprite:
-		var tex: Texture2D = pet_data.icon if pet_data.icon else null
-		if not tex:
-			var icon_path := "res://assets/pets/pet_%s.png" % str(pet_data.pet_id)
-			if ResourceLoader.exists(icon_path):
-				tex = load(icon_path) as Texture2D
-		sprite.texture = tex
+		sprite.texture = pet_data.get_icon_texture()
 		sprite.scale = Vector2(0.55, 0.55)
+	if not aura_particles:
+		aura_particles = get_node_or_null("AuraParticles") as CPUParticles2D
 	if aura_particles:
 		aura_particles.color = pet_data.theme_color
 		aura_particles.emitting = true
@@ -77,8 +76,8 @@ func _apply_passive_buffs() -> void:
 		return
 	# Pip: Bono pasivo constante de +15% cadencia y +8% crítico
 	if pet_data.pet_id == &"pip":
-		player.stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"pet_pip_atk_spd", 0.15, true, self))
-		player.stats.add_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"pet_pip_crit", 0.08, false, self))
+		player.stats.set_or_replace_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"pet_pip_atk_spd", 0.15, true, self))
+		player.stats.set_or_replace_modifier(&"crit_chance", CharacterStats.StatModifier.new(&"pet_pip_crit", 0.08, false, self))
 
 func _exit_tree() -> void:
 	if is_instance_valid(player) and player.stats:

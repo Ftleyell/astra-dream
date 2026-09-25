@@ -336,7 +336,7 @@ func _refresh_pet_display() -> void:
 	var pet_res = PetDataScript.get_pet(sel_pid)
 	if pet_res:
 		if pet_icon:
-			pet_icon.texture = pet_res.icon
+			pet_icon.texture = pet_res.get_icon_texture()
 		if pet_name:
 			pet_name.text = "%s — %s" % [pet_res.display_name.to_upper(), pet_res.title.to_upper()]
 			pet_name.modulate = pet_res.theme_color

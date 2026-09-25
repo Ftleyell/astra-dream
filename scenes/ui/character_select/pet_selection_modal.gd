@@ -78,7 +78,7 @@ func _populate_pets() -> void:
 		# Icono
 		var icon_rect := TextureRect.new()
 		icon_rect.custom_minimum_size = Vector2(72, 72)
-		icon_rect.texture = p_data.icon
+		icon_rect.texture = p_data.get_icon_texture()
 		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		if not is_unlocked:

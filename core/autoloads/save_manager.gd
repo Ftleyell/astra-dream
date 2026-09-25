@@ -242,11 +242,19 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_pets": [] as Array[StringName]
 	}
 
-	if raw.has("unlocked_pets"):
+	if cleaned["selected_pet"] == &"":
+		cleaned["selected_pet"] = &"mochi"
+
+	if raw.has("unlocked_pets") and (raw["unlocked_pets"] is Array) and not raw["unlocked_pets"].is_empty():
 		for p in raw["unlocked_pets"]:
 			cleaned["unlocked_pets"].append(StringName(p))
 	else:
 		cleaned["unlocked_pets"] = [&"mochi", &"kuro", &"luna", &"pip"]
+
+	# Garantizar que las 4 mascotas base nunca queden bloqueadas o ausentes por saves viejos
+	for default_pid in [&"mochi", &"kuro", &"luna", &"pip"]:
+		if not cleaned["unlocked_pets"].has(default_pid):
+			cleaned["unlocked_pets"].append(default_pid)
 
 	if raw.has("unlocked_items"):
 		for item in raw["unlocked_items"]:
