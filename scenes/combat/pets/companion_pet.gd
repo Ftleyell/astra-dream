@@ -220,8 +220,7 @@ func _process_attacking(delta: float) -> void:
 
 	if global_position.distance_to(enemy.global_position) < 35.0:
 		# Ejecutar Zarpazo
-		if enemy.has_method("take_damage"):
-			enemy.take_damage(18.0)
+		_apply_damage(enemy, 18.0)
 		_spawn_claw_scratch_vfx(enemy.global_position)
 		_play_happy_flip()
 		_attack_cooldown_timer = 1.2
@@ -315,11 +314,22 @@ func _fire_cosmo_laser() -> void:
 		laser_beam.clear_points()
 		laser_beam.add_point(Vector2.ZERO)
 		laser_beam.add_point(to_local(target.global_position))
-		if target.has_method("take_damage"):
-			target.take_damage(12.0)
+		_apply_damage(target, 12.0)
 		var tw := laser_beam.create_tween()
 		tw.tween_property(laser_beam, "modulate:a", 0.0, 0.25)
 		tw.tween_callback(func():
 			laser_beam.visible = false
 			laser_beam.modulate.a = 1.0
 		)
+
+func _apply_damage(target: Node, amount: float) -> void:
+	if not is_instance_valid(target) or not target.has_method("take_damage"):
+		return
+	var ctx := HitContext.new()
+	ctx.attacker = player if is_instance_valid(player) else self
+	ctx.victim = target
+	ctx.raw_damage = amount
+	ctx.final_damage = amount
+	ctx.is_crit = false
+	target.take_damage(ctx)
+

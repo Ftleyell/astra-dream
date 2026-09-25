@@ -38,10 +38,19 @@ func _process(delta: float) -> void:
 		if player:
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 45.0, 220.0, 2)
 
-func take_damage(ctx: HitContext) -> void:
+func take_damage(arg) -> void:
 	if not is_active:
 		return
-	current_health -= ctx.final_damage
+
+	var dmg: float = 0.0
+	if arg is HitContext:
+		dmg = arg.final_damage
+	elif arg is float or arg is int:
+		dmg = float(arg)
+	else:
+		return
+
+	current_health -= dmg
 	# Hit-flash visual
 	modulate = Color(2.5, 2.5, 2.5, 1.0)
 	var tween := create_tween()

@@ -276,11 +276,22 @@ func rebuild_geometry() -> void:
 
 
 ## Contrato canónico de combate
-func take_damage(ctx: HitContext) -> void:
-	if is_dying or not ctx:
+func take_damage(arg) -> void:
+	if is_dying or not arg:
 		return
+
+	var dmg: float = 0.0
+	var is_crit: bool = false
+	if arg is HitContext:
+		dmg = arg.final_damage
+		is_crit = arg.is_crit
+	elif arg is float or arg is int:
+		dmg = float(arg)
+	else:
+		return
+
 	if health_component:
-		health_component.take_damage(ctx.final_damage, ctx.is_crit)
+		health_component.take_damage(dmg, is_crit)
 	else:
 		_die()
 

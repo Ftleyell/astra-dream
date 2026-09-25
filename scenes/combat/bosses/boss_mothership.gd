@@ -174,12 +174,26 @@ func _process_phase_2(delta: float) -> void:
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 7, 48.0, 240.0, 2)
 			_play_boss_sfx("missile", 1.2)
 
-func take_damage(ctx: HitContext) -> void:
+func take_damage(arg) -> void:
 	if is_dying:
 		return
 
-	current_health -= ctx.final_damage
+	var dmg: float = 0.0
+	var is_crit: bool = false
+	if arg is HitContext:
+		dmg = arg.final_damage
+		is_crit = arg.is_crit
+	elif arg is float or arg is int:
+		dmg = float(arg)
+	else:
+		return
+
+	current_health -= dmg
 	health_changed.emit(maxf(0.0, current_health), max_health)
+
+	var dmg_acc := get_node_or_null("DamageAccumulator") as DamageAccumulator
+	if dmg_acc:
+		dmg_acc.register_hit(dmg, is_crit)
 
 	# Feedback visual de impacto (Hit-Flash)
 	_apply_hit_flash()
