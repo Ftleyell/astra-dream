@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PetData" load_steps=3 format=3 uid="uid://pet_mochi_01"]
+
+[ext_resource type="Script" path="res://data/pets/pet_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/pets/pet_mochi.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+pet_id = &"mochi"
+display_name = "Mochi"
+title = "Cazador de Polvo Estelar"
+description = "Gatito naranja con casco espacial que busca y aspira gemas de EXP lejanas para llevártelas."
+power_description = "Habilidad: Rastreador de EXP gravitatorio. Su velocidad de vuelo y rango de absorción escalan con tu Imán (Pickup Radius)."
+icon = ExtResource("2_icon")
+theme_color = Color(1, 0.6, 0.2, 1)
+is_secret = false
+unlock_time_req = 0.0
+sort_order = 1

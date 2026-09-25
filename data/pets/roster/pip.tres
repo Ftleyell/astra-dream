@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PetData" load_steps=3 format=3 uid="uid://pet_pip_01"]
+
+[ext_resource type="Script" path="res://data/pets/pet_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/pets/pet_pip.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+pet_id = &"pip"
+display_name = "Pip"
+title = "El Bandido Calicó"
+description = "Gatito tricolor travieso que potencia el arsenal de la nave y birla créditos a los enemigos."
+power_description = "Habilidad: Fortuna Calicó. Concede pasivamente +15% cadencia de ataque, +8% crítico y roba +3 créditos por golpe."
+icon = ExtResource("2_icon")
+theme_color = Color(0.2, 0.9, 0.5, 1)
+is_secret = false
+unlock_time_req = 0.0
+sort_order = 4

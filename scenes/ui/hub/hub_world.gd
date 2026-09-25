@@ -151,6 +151,7 @@ func _ready() -> void:
 	_update_materials_display()
 	_setup_trophy_room()
 	_update_dark_matter_display()
+	_setup_hub_pets()
 
 	var saved_cid := SaveManager.get_selected_character()
 	var init_idx: int = 0
@@ -535,6 +536,33 @@ func _setup_terminals() -> void:
 		btn_prompt_new_run.pressed.connect(_on_new_run_confirmed)
 	if btn_prompt_cancel and not btn_prompt_cancel.pressed.is_connected(_on_prompt_cancelled):
 		btn_prompt_cancel.pressed.connect(_on_prompt_cancelled)
+
+
+func _setup_hub_pets() -> void:
+	var pets_group := get_node_or_null("HubPets")
+	if not pets_group:
+		pets_group = Node3D.new()
+		pets_group.name = "HubPets"
+		add_child(pets_group)
+	else:
+		for c in pets_group.get_children():
+			c.queue_free()
+
+	var roster := PetData.load_roster_ordered()
+	for p_data in roster:
+		var pid := p_data.pet_id
+		# Mascota secreta Cosmo solo aparece si fue desbloqueada
+		if not SaveManager.is_pet_unlocked(pid):
+			continue
+
+		var roamer := HubPetRoamer.new()
+		pets_group.add_child(roamer)
+		var spawn_pos := Vector3(
+			randf_range(-3.0, 3.0),
+			0.32,
+			randf_range(0.0, 6.0)
+		)
+		roamer.setup(p_data, spawn_pos)
 
 
 func _update_mission_terminal_label() -> void:

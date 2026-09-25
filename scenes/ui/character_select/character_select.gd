@@ -11,6 +11,11 @@ extends Control
 @onready var ship_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox/ShipName
 @onready var weapon_icon: TextureRect = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponIcon
 @onready var weapon_name: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox/WeaponName
+@onready var pet_card: PanelContainer = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard") as PanelContainer
+@onready var pet_icon: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetIcon") as TextureRect
+@onready var pet_name: Label = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetBox/PetLabelVBox/PetName") as Label
+@onready var pet_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/PetCard/PetButton") as Button
+@onready var pet_selection_modal = get_node_or_null("PetSelectionModal")
 
 # ==============================================================================
 # CONFIGURACIÓN DE DEBUG (Comentar o cambiar a false para desactivar en builds)
@@ -97,11 +102,22 @@ func _ready() -> void:
 		right_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		right_panel.gui_input.connect(_on_character_art_gui_input)
 
+	if pet_button:
+		UIFocusHelper.apply_cyber_focus(pet_button)
+		pet_button.pressed.connect(_on_pet_card_pressed)
+
+	if pet_selection_modal and pet_selection_modal.has_signal("pet_selected"):
+		pet_selection_modal.pet_selected.connect(_on_pet_selected)
+
+	_refresh_pet_display()
+
 	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
 		debug_menu_modal.closed.connect(_on_debug_modal_closed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
+		return
+	if pet_selection_modal and pet_selection_modal.get("is_open"):
 		return
 
 	if event.is_action_pressed("ui_cancel"):
@@ -214,6 +230,11 @@ func _populate_roster() -> void:
 	launch_button.focus_neighbor_top = back_button.get_path()
 	back_button.focus_neighbor_bottom = launch_button.get_path()
 
+	if pet_button:
+		pet_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
+		pet_button.focus_neighbor_bottom = loadout_button.get_path()
+		loadout_button.focus_neighbor_top = pet_button.get_path()
+
 	if first_btn:
 		first_btn.grab_focus()
 
@@ -302,6 +323,26 @@ func _select_character(char_id: StringName) -> void:
 			loadout_button.disabled = false
 		if fullbody_texture:
 			fullbody_texture.modulate = Color.WHITE
+
+	_refresh_pet_display()
+
+func _refresh_pet_display() -> void:
+	var sel_pid := SaveManager.get_selected_pet()
+	var pet_res := PetData.get_pet(sel_pid)
+	if pet_res:
+		if pet_icon:
+			pet_icon.texture = pet_res.icon
+		if pet_name:
+			pet_name.text = pet_res.display_name
+			pet_name.modulate = pet_res.theme_color
+
+func _on_pet_card_pressed() -> void:
+	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		pet_selection_modal.open_modal()
+
+func _on_pet_selected(_pid: StringName) -> void:
+	_refresh_pet_display()
 
 func _on_launch_pressed() -> void:
 	if not SaveManager.is_character_unlocked(current_character_id):

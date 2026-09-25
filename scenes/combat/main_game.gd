@@ -53,6 +53,7 @@ var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
 var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
+var active_pet: CompanionPet = null
 
 const AUTO_SAVE_INTERVAL: float = 5.0
 const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
@@ -64,6 +65,7 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
+	_spawn_companion_pet()
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)
@@ -281,6 +283,12 @@ func _process(delta: float) -> void:
 
 	# Cronómetro de tiempo total de la run
 	run_time_elapsed += delta
+
+	# Chequeo de desbloqueo de Mascota Secreta Cosmo (10 Minutos = 600s de supervivencia)
+	if run_time_elapsed >= 600.0 and not SaveManager.is_pet_unlocked(&"cosmo"):
+		var newly_unlocked := SaveManager.unlock_pet(&"cosmo")
+		if newly_unlocked and hud and hud.has_method("show_character_unlock_banner"):
+			hud.show_character_unlock_banner(&"cosmo", "¡NUEVA MASCOTA DESBLOQUEADA: COSMO!", "Has sobrevivido 10 minutos. El Gatito Astral se ha unido a tu flota.")
 
 	# Temporizador de auto-guardado periódico en segundo plano
 	_auto_save_timer += delta
@@ -974,3 +982,14 @@ func restore_run_state(run_data: Dictionary) -> void:
 	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 	player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
 	player.bomb_used.emit(player.bomb_count)
+
+func _spawn_companion_pet() -> void:
+	var pet_scene: PackedScene = preload("res://scenes/combat/pets/companion_pet.tscn")
+	if not pet_scene or not is_instance_valid(player):
+		return
+	var pet_id := SaveManager.get_selected_pet()
+	var p_data := PetData.get_pet(pet_id)
+	active_pet = pet_scene.instantiate() as CompanionPet
+	active_pet.setup(p_data, player)
+	add_child(active_pet)
+

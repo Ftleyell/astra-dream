@@ -15,6 +15,8 @@ signal closed()
 @onready var subtitle_label: Label = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/TitleBox/SubtitleLabel")
 @onready var reset_career_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/ResetCareerButton")
 @onready var set_bosses_9_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/SetBosses9Button")
+@onready var simulate_10m_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/Simulate10mButton")
+@onready var lock_cosmo_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/LockCosmoButton")
 
 @onready var stats_container: VBoxContainer = $CenterContainer/MainPanel/Margin/VBox/StatsScroll/StatsList
 @onready var reset_button: Button = $CenterContainer/MainPanel/Margin/VBox/ActionsRow/ResetButton
@@ -48,6 +50,14 @@ func _ready() -> void:
 	if set_bosses_9_btn:
 		set_bosses_9_btn.pressed.connect(_on_set_bosses_9_pressed)
 		UIFocusHelper.apply_cyber_focus(set_bosses_9_btn)
+
+	if simulate_10m_btn:
+		simulate_10m_btn.pressed.connect(_on_simulate_10m_pressed)
+		UIFocusHelper.apply_cyber_focus(simulate_10m_btn)
+
+	if lock_cosmo_btn:
+		lock_cosmo_btn.pressed.connect(_on_lock_cosmo_pressed)
+		UIFocusHelper.apply_cyber_focus(lock_cosmo_btn)
 
 	if reset_button:
 		reset_button.pressed.connect(reset_to_defaults)
@@ -257,22 +267,57 @@ func _setup_focus_chain() -> void:
 	if reset_career_btn and set_bosses_9_btn:
 		reset_career_btn.focus_neighbor_top = last_ctrl.slider.get_path()
 		reset_career_btn.focus_neighbor_right = set_bosses_9_btn.get_path()
-		reset_career_btn.focus_neighbor_bottom = reset_button.get_path()
+		reset_career_btn.focus_neighbor_bottom = simulate_10m_btn.get_path() if simulate_10m_btn else reset_button.get_path()
 		set_bosses_9_btn.focus_neighbor_top = last_ctrl.input.get_path()
 		set_bosses_9_btn.focus_neighbor_left = reset_career_btn.get_path()
-		set_bosses_9_btn.focus_neighbor_bottom = close_button.get_path()
+		set_bosses_9_btn.focus_neighbor_bottom = lock_cosmo_btn.get_path() if lock_cosmo_btn else close_button.get_path()
+
+	if simulate_10m_btn and lock_cosmo_btn:
+		simulate_10m_btn.focus_neighbor_top = reset_career_btn.get_path() if reset_career_btn else last_ctrl.slider.get_path()
+		simulate_10m_btn.focus_neighbor_right = lock_cosmo_btn.get_path()
+		simulate_10m_btn.focus_neighbor_bottom = reset_button.get_path()
+		lock_cosmo_btn.focus_neighbor_top = set_bosses_9_btn.get_path() if set_bosses_9_btn else last_ctrl.input.get_path()
+		lock_cosmo_btn.focus_neighbor_left = simulate_10m_btn.get_path()
+		lock_cosmo_btn.focus_neighbor_bottom = close_button.get_path()
 
 	if reset_button and close_button:
-		if reset_career_btn:
+		if simulate_10m_btn:
+			reset_button.focus_neighbor_top = simulate_10m_btn.get_path()
+		elif reset_career_btn:
 			reset_button.focus_neighbor_top = reset_career_btn.get_path()
 		else:
 			reset_button.focus_neighbor_top = last_ctrl.slider.get_path()
 		reset_button.focus_neighbor_right = close_button.get_path()
-		if set_bosses_9_btn:
+
+		if lock_cosmo_btn:
+			close_button.focus_neighbor_top = lock_cosmo_btn.get_path()
+		elif set_bosses_9_btn:
 			close_button.focus_neighbor_top = set_bosses_9_btn.get_path()
 		else:
 			close_button.focus_neighbor_top = last_ctrl.input.get_path()
 		close_button.focus_neighbor_left = reset_button.get_path()
+
+func _on_simulate_10m_pressed() -> void:
+	var cur_scene = get_tree().current_scene
+	if cur_scene and "run_time_elapsed" in cur_scene:
+		cur_scene.run_time_elapsed = 599.0
+	else:
+		SaveManager.unlock_pet(&"cosmo")
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ 10 MINUTOS SIMULADOS. ¡PET SECRETO COSMO DESBLOQUEADO!"
+		subtitle_label.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0, 1.0))
+
+func _on_lock_cosmo_pressed() -> void:
+	SaveManager.lock_pet(&"cosmo")
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ PET COSMO BLOQUEADO (REQUERIRÁ SOBREVIVIR 10 MIN EN COMBATE)."
+		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.4, 1.0))
 
 func _on_reset_career_pressed() -> void:
 	SaveManager.reset_career_stats()

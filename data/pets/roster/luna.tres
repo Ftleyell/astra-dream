@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PetData" load_steps=3 format=3 uid="uid://pet_luna_01"]
+
+[ext_resource type="Script" path="res://data/pets/pet_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/pets/pet_luna.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+pet_id = &"luna"
+display_name = "Luna"
+title = "El Hada Purpurina"
+description = "Gatita blanca celestial que emite ondas de sanación biológica y ralentiza el fuego hostil."
+power_description = "Habilidad: Pulso Purpurina. Cada 15s restaura +8 HP a la nave y frena balas enemigas cercanas."
+icon = ExtResource("2_icon")
+theme_color = Color(0.4, 0.75, 1.0, 1)
+is_secret = false
+unlock_time_req = 0.0
+sort_order = 3

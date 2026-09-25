@@ -1,0 +1,95 @@
+[gd_scene load_steps=3 format=3 uid="uid://petselectionmodal01"]
+
+[ext_resource type="Script" path="res://scenes/ui/character_select/pet_selection_modal.gd" id="1_modal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.04, 0.06, 0.1, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.85)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0.85, 1, 0.25)
+shadow_size = 12
+
+[node name="PetSelectionModal" type="CanvasLayer"]
+process_mode = 3
+layer = 125
+script = ExtResource("1_modal")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.025, 0.045, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="DimOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="DimOverlay/CenterContainer"]
+custom_minimum_size = Vector2(740, 680)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 20
+text = "🐾 SELECCIÓN DE MASCOTA // DRON DE ASISTENCIA"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.85, 1, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "ELIGE AL ACOMPAÑANTE FELINO QUE ASISTIRÁ A TU PILOTO EN COMBATE"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 470)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PetsList" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HSeparator2" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+custom_minimum_size = Vector2(300, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "CERRAR [ESC]"

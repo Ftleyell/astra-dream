@@ -16,7 +16,9 @@ static func save_profile(
 	p_dark_matter: int = -1,
 	p_trophies: Variant = null,
 	p_game_speed: float = -1.0,
-	p_career_stats: Variant = null
+	p_career_stats: Variant = null,
+	p_selected_pet: StringName = &"",
+	p_unlocked_pets: Variant = null
 ) -> Error:
 	var existing_prof: Dictionary = {}
 	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
@@ -90,6 +92,19 @@ static func save_profile(
 	else:
 		current_career = p_career_stats
 
+	var current_pet: StringName = p_selected_pet
+	if current_pet == &"":
+		current_pet = StringName(str(existing_prof.get("selected_pet", "mochi")))
+
+	var str_unlocked_pets: Array[String] = []
+	if p_unlocked_pets != null:
+		for p in p_unlocked_pets:
+			str_unlocked_pets.append(String(p))
+	else:
+		var raw_pets: Array = existing_prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+		for p in raw_pets:
+			str_unlocked_pets.append(String(p))
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -102,7 +117,9 @@ static func save_profile(
 		"character_skills": skills_serializable,
 		"selected_character": String(current_char),
 		"game_speed": current_speed,
-		"career_stats": current_career
+		"career_stats": current_career,
+		"selected_pet": String(current_pet),
+		"unlocked_pets": str_unlocked_pets
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -178,7 +195,9 @@ static func _get_default_profile() -> Dictionary:
 		"character_skills": {} as Dictionary,
 		"selected_character": &"nova",
 		"game_speed": 1.0,
-		"career_stats": _get_default_career_stats()
+		"career_stats": _get_default_career_stats(),
+		"selected_pet": &"mochi",
+		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName]
 	}
 
 
@@ -218,8 +237,16 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"character_skills": {} as Dictionary,
 		"selected_character": StringName(str(raw.get("selected_character", "nova"))),
 		"game_speed": float(raw.get("game_speed", 1.0)),
-		"career_stats": career_clean
+		"career_stats": career_clean,
+		"selected_pet": StringName(str(raw.get("selected_pet", "mochi"))),
+		"unlocked_pets": [] as Array[StringName]
 	}
+
+	if raw.has("unlocked_pets"):
+		for p in raw["unlocked_pets"]:
+			cleaned["unlocked_pets"].append(StringName(p))
+	else:
+		cleaned["unlocked_pets"] = [&"mochi", &"kuro", &"luna", &"pip"]
 
 	if raw.has("unlocked_items"):
 		for item in raw["unlocked_items"]:
@@ -587,6 +614,95 @@ static func unlock_character(char_id: StringName) -> bool:
 		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
 		return true
 	return false
+
+
+# ==============================================================================
+# PETS & COMPANIONS PERSISTENCE
+# ==============================================================================
+
+static func get_selected_pet() -> StringName:
+	var prof := load_profile()
+	var pet := StringName(str(prof.get("selected_pet", "mochi")))
+	if not is_pet_unlocked(pet):
+		return &"mochi"
+	return pet
+
+static func set_selected_pet(pet_id: StringName) -> void:
+	if pet_id == &"":
+		return
+	var prof := load_profile()
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = prof.get("unlocked_characters", [])
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, pet_id, unlocked_pets)
+
+static func get_unlocked_pets() -> Array[StringName]:
+	var prof := load_profile()
+	var raw_pets: Array = prof.get("unlocked_pets", [&"mochi", &"kuro", &"luna", &"pip"])
+	var res: Array[StringName] = []
+	for p in raw_pets:
+		res.append(StringName(str(p)))
+	return res
+
+static func is_pet_unlocked(pet_id: StringName) -> bool:
+	var unlocked := get_unlocked_pets()
+	return unlocked.has(pet_id) or unlocked.has(String(pet_id))
+
+static func unlock_pet(pet_id: StringName) -> bool:
+	var prof := load_profile()
+	var unlocked := get_unlocked_pets()
+	if not unlocked.has(pet_id):
+		unlocked.append(pet_id)
+		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+		var chars: Array[StringName] = prof.get("unlocked_characters", [])
+		var bans: Dictionary = prof.get("character_banlists", {})
+		var bio: int = int(prof.get("biomass", 0))
+		var anti: int = int(prof.get("antimatter", 0))
+		var skills: Dictionary = prof.get("character_skills", {})
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var dm: int = int(prof.get("dark_matter", 0))
+		var trophies: Dictionary = prof.get("trophies_unlocked", {})
+		var spd: float = float(prof.get("game_speed", 1.0))
+		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+		var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+
+		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked)
+		return true
+	return false
+
+static func lock_pet(pet_id: StringName) -> void:
+	var prof := load_profile()
+	var unlocked := get_unlocked_pets()
+	unlocked.erase(pet_id)
+	unlocked.erase(String(pet_id))
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = prof.get("unlocked_characters", [])
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+	if sel_pet == pet_id:
+		sel_pet = &"mochi"
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked)
+
 
 static func record_boss_kill() -> bool:
 	var prof := load_profile()
