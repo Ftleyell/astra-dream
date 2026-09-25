@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" uid="uid://cudisollrj4w4" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
-[ext_resource type="ArrayMesh" uid="uid://3alnwgfb4lbw" path="res://scratch/downloads/space_kit/Models/OBJ format/hangar_smallA.obj" id="2_dj0jb"]
+[ext_resource type="ArrayMesh" uid="uid://3alnwgfb4lbw" path="res://assets/models/kenney_space_kit/Models/OBJ format/hangar_smallA.obj" id="2_dj0jb"]
 [ext_resource type="Texture2D" uid="uid://dqso2by16x2fr" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
 [ext_resource type="Texture2D" uid="uid://ddop52mdbtewy" path="res://assets/characters/fullbody/fullbody_valentina.png" id="3_valentina"]
 [ext_resource type="Texture2D" uid="uid://w2jx2vitbxy5" path="res://assets/characters/fullbody/fullbody_kira.png" id="4_kira"]
@@ -22,7 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://c6kj3y2p8dlif" path="res://assets/environments/hub_surfaces/hangar_ceiling_emission.png" id="23_ceil_emi"]
 [ext_resource type="Texture2D" uid="uid://nhggp5mfqav" path="res://assets/environments/hub_surfaces/hangar_railing_albedo.png" id="24_rail_alb"]
 [ext_resource type="Texture2D" uid="uid://r3kjw1e6tkms" path="res://assets/environments/hub_surfaces/hangar_railing_emission.png" id="25_rail_emi"]
-[ext_resource type="ArrayMesh" uid="uid://bjt3gob0rrso8" path="res://scratch/downloads/space_kit/Models/OBJ format/platform_low.obj" id="26_kck51"]
+[ext_resource type="ArrayMesh" uid="uid://bjt3gob0rrso8" path="res://assets/models/kenney_space_kit/Models/OBJ format/platform_low.obj" id="26_kck51"]
 [ext_resource type="Texture2D" uid="uid://ba3qf3sklch5p" path="res://assets/environments/hub_machines/terminal_mission_albedo.png" id="26_term_alb"]
 [ext_resource type="Texture2D" uid="uid://dusumv6mng3c7" path="res://assets/environments/hub_machines/terminal_mission_emission.png" id="27_term_emi"]
 [ext_resource type="Texture2D" uid="uid://cgt7cuj8mt4xj" path="res://assets/environments/hub_machines/arcade_cabinet_albedo.png" id="28_arc_alb"]

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b336uomt2lrao"
+path="res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"]
+
+source_file="res://scratch/downloads/space_kit/Models/OBJ format/platform_smallDiagonal.obj"
+dest_files=["res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh", "res://.godot/imported/platform_smallDiagonal.obj-b12cfab28298fa4ad23a546bd9ed8efb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

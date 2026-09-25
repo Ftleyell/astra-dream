@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://l6kev3ko4rcy"
+path="res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"
+
+[deps]
+
+files=["res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"]
+
+source_file="res://scratch/downloads/space_kit/Models/OBJ format/monorail_trackStraight.obj"
+dest_files=["res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh", "res://.godot/imported/monorail_trackStraight.obj-324c8412055402083cf423303d2db5ad.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
