@@ -102,7 +102,7 @@ func _spawn_guide_line(target: Node2D) -> void:
 	main_game.add_child(line)
 	active_guide_line = line
 
-func _on_target_reached(target: Node2D) -> void:
+func _on_target_reached(target: Node2D = null) -> void:
 	if not is_instance_valid(player) or not navigator_data:
 		return
 
@@ -220,9 +220,9 @@ func _find_best_target_for_navigator() -> Node2D:
 			else:
 				candidate = _find_nearest_in_groups([&"satellite_beacon", &"satellite_beacons", &"satellite_shops"])
 		&"anomaly":
-			if main_game and "current_boss" in main_game and is_instance_valid(main_game.current_boss) and not bool(main_game.current_boss.get("is_dying")):
+			if main_game and "current_boss" in main_game and is_instance_valid(main_game.current_boss) and main_game.current_boss.get("is_dying") != true:
 				candidate = main_game.current_boss
-			elif main_game and "current_rival" in main_game and is_instance_valid(main_game.current_rival) and not bool(main_game.current_rival.get("is_dying")):
+			elif main_game and "current_rival" in main_game and is_instance_valid(main_game.current_rival) and main_game.current_rival.get("is_dying") != true:
 				candidate = main_game.current_rival
 			else:
 				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"rival_pilots", &"rival_pilot", &"elites", &"anomalies", &"rainbow_enemies"])
@@ -242,7 +242,7 @@ func _find_nearest_in_groups(group_names: Array[StringName]) -> Node2D:
 		var nodes := tree.get_nodes_in_group(gname)
 		for n in nodes:
 			if is_instance_valid(n) and n is Node2D and n.is_inside_tree() and not n.is_queued_for_deletion():
-				if bool(n.get("is_dying")) or bool(n.get("is_dead")) or bool(n.get("is_escaping")):
+				if n.get("is_dying") == true or n.get("is_dead") == true or n.get("is_escaping") == true:
 					continue
 				var dist: float = p_pos.distance_to(n.global_position)
 				# Ignorar nodos que estén demasiado cerca (ya encima del jugador) o más allá de min_dist

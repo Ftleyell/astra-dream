@@ -74,7 +74,8 @@ func _process(delta: float) -> void:
 
 func _on_reached() -> void:
 	is_active = false
-	target_reached.emit(target_node)
+	var valid_target: Node2D = target_node if is_instance_valid(target_node) else null
+	target_reached.emit(valid_target)
 	_play_reached_effect()
 
 func _play_reached_effect() -> void:
