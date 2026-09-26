@@ -32,6 +32,7 @@ func _setup_visuals() -> void:
 	if not ship_sprite:
 		ship_sprite = Sprite2D.new()
 		ship_sprite.name = "ShipSprite"
+		ship_sprite.scale = Vector2(0.42, 0.42)
 		add_child(ship_sprite)
 
 	var roster := CharacterData.load_roster()
@@ -49,17 +50,17 @@ func _setup_visuals() -> void:
 		var pts := PackedVector2Array()
 		for i in range(17):
 			var a := (TAU / 16.0) * float(i)
-			pts.append(Vector2(cos(a), sin(a)) * 34.0)
+			pts.append(Vector2(cos(a), sin(a)) * 20.0)
 		shield_ring.points = pts
 		add_child(shield_ring)
 
 func _warp_in_effect() -> void:
-	scale = Vector2(0.1, 2.5)
+	scale = Vector2(0.1, 1.2)
 	modulate.a = 0.0
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.4).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "modulate:a", 1.0, 0.4)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "modulate:a", 1.0, 0.35)
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(player):

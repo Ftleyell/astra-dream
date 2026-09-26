@@ -188,16 +188,31 @@ func _ready() -> void:
 
 func _setup_rival_queue() -> void:
 	rival_queue.clear()
-	var all_pilots: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
 	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	var available: Array[StringName] = []
-	for pid in all_pilots:
-		if pid != player_pid:
-			available.append(pid)
-	var preferred: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
-	for pid in preferred:
-		if available.has(pid) and rival_queue.size() < 5:
-			rival_queue.append(pid)
+	if player_pid == &"nyx":
+		var base_6: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
+		base_6.shuffle()
+		for i in range(5):
+			rival_queue.append(base_6[i])
+	else:
+		var all_pilots: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
+		var available: Array[StringName] = []
+		for pid in all_pilots:
+			if pid != player_pid:
+				available.append(pid)
+		for pid in all_pilots:
+			if available.has(pid) and rival_queue.size() < 5:
+				rival_queue.append(pid)
+
+func _get_genocide_escort_pilot_id() -> StringName:
+	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+	if player_pid == &"nyx":
+		var base_6: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
+		for pid in base_6:
+			if not rivals_killed.has(pid):
+				return pid
+		return &"nova"
+	return &"nyx"
 
 func _get_dialogic() -> Node:
 	return get_node_or_null("/root/Dialogic")
@@ -536,13 +551,17 @@ func _trigger_climax_dialogue(route: String) -> void:
 			text += "nyx: ¡No saldrás con vida de este sector!\n"
 			text += "leave --All--\n"
 		else:
-			text += "join sombra_nyx right\n"
+			var escort_pid := _get_genocide_escort_pilot_id()
+			var escort_str := String(escort_pid)
+			var roster := CharacterData.load_roster()
+			var e_name := roster[escort_pid].display_name if roster.has(escort_pid) else escort_str.capitalize()
+			text += "join " + escort_str + " right\n"
 			text += "join nyx left\n"
-			text += "sombra_nyx: [shake rate=18.0 level=5][color=#bf55ec]¿Reconoces tu propio reflejo, traidora?[/color][/shake]\n"
-			text += "sombra_nyx: Astra Prime ha forjado este eco del Vacío con las almas de las 5 pilotos que exterminaste.\n"
-			text += "sombra_nyx: Yo soy la retribución que sembraste. El poder que mancillaste se alza ahora en tu contra.\n"
-			text += "nyx: Solo un burdo espectro nacido del pánico del Núcleo. Desgarraré tu sombra y lo destruiré.\n"
-			text += "sombra_nyx: ¡Comprueba la verdadera furia del abismo estelar!\n"
+			text += escort_str + ": [shake rate=18.0 level=5][color=#ff1744]¡Nyx! ¿Cómo pudiste traicionar a la Flota?[/color][/shake]\n"
+			text += escort_str + ": Asesinaste a mis 5 compañeras sin piedad... ¡escuché sus últimas transmisiones apagarse en el vacío!\n"
+			text += escort_str + ": Soy la última que queda en pie. ¡Astra Prime y yo acabaremos con tu demencia aquí y ahora!\n"
+			text += "nyx: Eran débiles... se interpusieron en el camino del Vacío. Tú serás la última en extinguirte.\n"
+			text += escort_str + ": ¡Por la memoria de la Flota Astra, jamás te permitiré tocar el Núcleo!\n"
 			text += "leave --All--\n"
 
 	else: # neutral
@@ -811,7 +830,7 @@ func _spawn_final_boss() -> void:
 	_trigger_climax_dialogue(route)
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var boss_pos := player.global_position + forward * 680.0
+	var boss_pos := player.global_position + forward * 420.0
 
 	var prime = boss_astra_prime_scene.instantiate()
 	prime.global_position = boss_pos
@@ -832,10 +851,10 @@ func _spawn_final_boss() -> void:
 	elif route == "slayer":
 		player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, self))
 		var escort = nyx_boss_escort_scene.instantiate()
-		var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-		var is_shadow := (p_pid == &"nyx")
-		escort.global_position = boss_pos + Vector2(220.0, 120.0)
-		escort.setup(is_shadow, prime)
+		var escort_pid := _get_genocide_escort_pilot_id()
+		var side_dir := Vector2(-forward.y, forward.x)
+		escort.global_position = boss_pos + side_dir * 110.0
+		escort.setup(escort_pid, prime)
 		add_child(escort)
 		current_genocide_escort = escort
 

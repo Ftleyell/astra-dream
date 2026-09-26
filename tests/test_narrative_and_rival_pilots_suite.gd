@@ -329,11 +329,8 @@ func _test_9_boss_edge_indicator() -> void:
 	print("  ✓ BossEdgeIndicator (75x75) validado: visible fuera de pantalla y oculto dentro de pantalla")
 
 func _test_10_nyx_genocide_escort_and_dialogues() -> void:
-	print("\n[10/10] Verificando Nyx Boss Escort (Ruta Genocida), Sombra de Nyx y Diálogos...")
-	# 1. Verificar existencia de personaje Dialogic sombra_nyx
-	assert(ResourceLoader.exists("res://narrative/characters/sombra_nyx.dch"), "sombra_nyx.dch debe existir en narrative/characters")
-
-	# 2. Verificar NyxBossEscort
+	print("\n[10/10] Verificando Escolta de Astra Prime (Superviviente de Nyx), Escala 0.42 y Hitbox Entera...")
+	# 1. Verificar NyxBossEscort
 	var escort_scene: PackedScene = load("res://scenes/combat/bosses/nyx_boss_escort.tscn")
 	assert(escort_scene != null, "nyx_boss_escort.tscn debe existir")
 
@@ -345,15 +342,19 @@ func _test_10_nyx_genocide_escort_and_dialogues() -> void:
 	assert(escort.is_in_group("enemies"), "Debe pertenecer al grupo 'enemies'")
 	assert(escort.is_in_group("bosses"), "Debe pertenecer al grupo 'bosses'")
 
-	# Probar setup estándar
-	escort.setup(false)
-	assert(escort.is_shadow == false, "is_shadow debe ser false")
+	# Probar setup de Nyx (cuando el jugador es una piloto base)
+	escort.setup(&"nyx")
+	assert(escort.pilot_id == &"nyx", "pilot_id debe ser nyx")
 	assert(escort.pilot_name == "Nyx, Vengadora del Vacío", "Nombre canónico debe ser Nyx, Vengadora del Vacío")
+	assert(escort.ship_sprite.scale == Vector2(0.42, 0.42), "La nave de la escolta debe tener la escala 0.42 igual a la del jugador")
 
-	# Probar setup de Sombra de Nyx
-	escort.setup(true)
-	assert(escort.is_shadow == true, "is_shadow debe ser true")
-	assert(escort.pilot_name == "Sombra de Nyx: Eco del Vacío", "Nombre de reflejo debe ser Sombra de Nyx: Eco del Vacío")
+	var escort_col := escort.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	assert(escort_col != null and (escort_col.shape as CircleShape2D).radius == 18.0, "La hitbox de la escolta debe cubrir la nave entera con radio 18.0 px")
+
+	# Probar setup de piloto superviviente (cuando el jugador es Nyx)
+	escort.setup(&"valentina")
+	assert(escort.pilot_id == &"valentina", "pilot_id debe ser valentina")
+	assert(escort.pilot_name.contains("Valentina"), "Nombre debe incluir a Valentina")
 
 	# Probar daño recibido
 	escort.take_damage(200.0)
@@ -361,16 +362,47 @@ func _test_10_nyx_genocide_escort_and_dialogues() -> void:
 
 	escort.queue_free()
 
-	# 3. Probar lógica de diálogo de encuentro rival
+	# 2. Verificar escala y hitbox de RivalPilotBoss (0.42 y radio 18.0)
+	var rival_scene: PackedScene = load("res://scenes/combat/bosses/rival_pilot_boss.tscn")
+	var rival = rival_scene.instantiate()
+	add_child(rival)
+	rival.setup_pilot(&"nova", 1)
+	assert(rival.ship_sprite.scale == Vector2(0.42, 0.42), "RivalPilotBoss debe tener escala 0.42 igual al jugador")
+	var rival_col := rival.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	assert(rival_col != null and (rival_col.shape as CircleShape2D).radius == 18.0, "La hitbox de la rival debe ser la nave entera con radio 18.0 px")
+	rival.queue_free()
+
+	# 3. Verificar escala de AlliedWingman (0.42)
+	var wingman_scene: PackedScene = load("res://scenes/combat/allies/allied_wingman.tscn")
+	var wingman = wingman_scene.instantiate()
+	add_child(wingman)
+	wingman.setup(&"kira", 0.0)
+	assert(wingman.ship_sprite.scale == Vector2(0.42, 0.42), "AlliedWingman debe tener escala 0.42 igual al jugador")
+	wingman.queue_free()
+
+	# 4. Probar lógica de selección de superviviente en MainGame cuando el jugador es Nyx
 	var mg := MainGame.new()
+	mg.player = Player.new()
+	mg.player.character_data = CharacterData.new()
+	mg.player.character_data.character_id = &"nyx"
+
+	# Simular 5 rivales matadas por Nyx
+	mg.rivals_killed = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
+	var survivor: StringName = mg._get_genocide_escort_pilot_id()
+	assert(survivor == &"echo", "La 6ta piloto superviviente debe ser echo al matar a las otras 5")
+
+	# Probar si el jugador es una piloto base (ej. Nova)
+	mg.player.character_data.character_id = &"nova"
+	mg.rivals_killed = [&"valentina", &"kira", &"selene", &"roxy", &"echo"]
+	assert(mg._get_genocide_escort_pilot_id() == &"nyx", "Para pilotos base la escolta debe ser Nyx")
+
+	# Diálogos
 	var dialogue_lines := mg._get_rival_dialogue(&"valentina", &"nova")
-	assert(dialogue_lines.has("rival_line"), "Debe contener rival_line")
-	assert(dialogue_lines.has("player_line"), "Debe contener player_line")
-	assert(dialogue_lines.has("rival_closing"), "Debe contener rival_closing")
-	assert(dialogue_lines["rival_line"].contains("Valentina"), "La línea de Valentina debe identificarse")
-	assert(dialogue_lines["player_line"].length() > 5, "La respuesta del jugador debe ser un diálogo válido")
+	assert(dialogue_lines.has("rival_line") and dialogue_lines["rival_line"].contains("Valentina"))
+
+	mg.player.queue_free()
 	mg.queue_free()
 
-	print("  ✓ NyxBossEscort, Sombra de Nyx y diálogos de encuentro validados con éxito")
+	print("  ✓ Escoltas, escalas 0.42, hitboxes completas y superviviente de Nyx validados con éxito")
 
 

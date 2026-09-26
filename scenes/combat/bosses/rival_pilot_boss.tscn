@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rival"]
-radius = 28.0
+radius = 18.0
 
 [node name="RivalPilotBoss" type="CharacterBody2D"]
 collision_layer = 2

@@ -88,9 +88,11 @@ func _acquire_references() -> void:
 			bullet_server = get_parent().get_node_or_null("BulletServer") as BulletServer
 
 func _setup_visuals() -> void:
-	ship_sprite = Sprite2D.new()
-	ship_sprite.name = "ShipSprite"
-	add_child(ship_sprite)
+	if not ship_sprite:
+		ship_sprite = Sprite2D.new()
+		ship_sprite.name = "ShipSprite"
+		ship_sprite.scale = Vector2(0.42, 0.42)
+		add_child(ship_sprite)
 
 	if character_data:
 		var tex := character_data.get_ship_texture()
@@ -102,12 +104,16 @@ func _setup_visuals() -> void:
 		if ResourceLoader.exists(fb_path):
 			ship_sprite.texture = load(fb_path) as Texture2D
 
-	# Colisión básica para recibir impactos
-	var col := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
-	circle.radius = 24.0
-	col.shape = circle
-	add_child(col)
+	# Colisión de la nave entera (escala 0.42 de nave ~36px -> radio 18.0)
+	var existing_col := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if existing_col and existing_col.shape is CircleShape2D:
+		(existing_col.shape as CircleShape2D).radius = 18.0
+	elif not existing_col:
+		var col := CollisionShape2D.new()
+		var circle := CircleShape2D.new()
+		circle.radius = 18.0
+		col.shape = circle
+		add_child(col)
 
 	# Label de advertencia
 	warning_label = Label.new()
