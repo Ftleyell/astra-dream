@@ -18,6 +18,7 @@ func _ready() -> void:
 	_test_4_allied_wingman_mechanics()
 	_test_5_boss_astra_prime_routes()
 	_test_6_save_manager_endings_and_victory_modal()
+	_test_7_wave_1_encounter_trigger_and_visibility()
 
 	print("\n==================================================================")
 	print("[TEST] ✓ TODAS LAS PRUEBAS DE NARRATIVA Y RIVALES PASARON CON ÉXITO")
@@ -61,8 +62,9 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 
 	assert(rival.is_in_group("rival_pilots"), "RivalPilotBoss debe pertenecer al grupo 'rival_pilots'")
 	assert(rival.is_in_group("enemies"), "RivalPilotBoss debe pertenecer al grupo 'enemies'")
-	assert(rival.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Debe iniciar en estado PEACEFUL_WARN")
-	assert(rival.WARNING_RADIUS == 720.0, "El radio de advertencia debe ser 720 px")
+	assert(rival.WARNING_RADIUS == 650.0, "El radio de advertencia debe ser 650 px")
+	assert(rival.COMBAT_TRIGGER_RADIUS == 340.0, "El radio de detonación de combate debe ser 340 px")
+	assert(rival.ESCAPE_RADIUS == 950.0, "El radio de escape debe ser 950 px")
 
 	# Probar cambio a combate al entrar en perímetro o ser atacada
 	var engaged_signal := [false]
@@ -200,3 +202,42 @@ func _test_6_save_manager_endings_and_victory_modal() -> void:
 
 	modal.queue_free()
 	print("  ✓ Persistencia de los 3 finales y presentación visual de Victoria en GameOverModal validadas")
+
+func _test_7_wave_1_encounter_trigger_and_visibility() -> void:
+	print("\n[7/7] Verificando Visibilidad en Pantalla de la Oleada 1 y Transiciones de Distancia...")
+	var rival_scene: PackedScene = load("res://scenes/combat/bosses/rival_pilot_boss.tscn")
+	assert(rival_scene != null, "rival_pilot_boss.tscn debe existir")
+
+	var rival = rival_scene.instantiate()
+	add_child(rival)
+	rival.setup_pilot(&"valentina", 1)
+
+	# 1. Verificar visibilidad en viewport: spawn a 450 px no excede 540 px vertical ni 960 px horizontal
+	var spawn_dist := 450.0
+	assert(spawn_dist < 540.0, "La distancia de spawn (450 px) debe ser menor a la mitad de altura del viewport (540 px)")
+	assert(spawn_dist > rival.COMBAT_TRIGGER_RADIUS, "La distancia de spawn debe ser mayor al radio de combate para no iniciar instantáneamente")
+
+	# 2. Verificar estado inicial a 450 px
+	assert(rival.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Debe estar en PEACEFUL_WARN al spawnear")
+	assert(rival.spared_timer == 0.0, "El temporizador de perdón debe iniciar en 0")
+
+	# 3. Simular aproximación del jugador (< COMBAT_TRIGGER_RADIUS = 340.0)
+	rival._process_peaceful_warn(0.1, 300.0)
+	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "Acercarse a <340 px debe detonar DOGFIGHT")
+
+	# 4. Probar reinicio y escape pacífico por alejamiento (> ESCAPE_RADIUS = 950.0)
+	var rival2 = rival_scene.instantiate()
+	add_child(rival2)
+	rival2.setup_pilot(&"selene", 1)
+	assert(rival2.current_state == RivalPilotBossScript.State.PEACEFUL_WARN)
+
+	# Simular alejamiento durante 4 segundos
+	for i in range(41):
+		rival2._process_peaceful_warn(0.1, 1000.0)
+
+	assert(rival2.current_state == RivalPilotBossScript.State.WARPING_OUT, "Alejarse >950 px por 4s debe iniciar WARPING_OUT pacífico")
+
+	rival.queue_free()
+	rival2.queue_free()
+	print("  ✓ Mecánica de aparición en Oleada 1, visibilidad en pantalla y transiciones de radio validadas")
+

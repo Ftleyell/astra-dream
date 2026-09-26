@@ -19,8 +19,9 @@ enum State {
 	DYING
 }
 
-const WARNING_RADIUS: float = 720.0
-const ESCAPE_RADIUS: float = 1400.0
+const WARNING_RADIUS: float = 650.0
+const COMBAT_TRIGGER_RADIUS: float = 340.0
+const ESCAPE_RADIUS: float = 950.0
 const SPARED_REQUIRED_TIME: float = 4.0
 
 @export var pilot_id: StringName = &"nova"
@@ -123,8 +124,13 @@ func _update_warning_label() -> void:
 	if not warning_label:
 		return
 	if current_state == State.PEACEFUL_WARN:
-		warning_label.text = "⚠️ %s: ¡ALÉJATE DEL SECTOR!\n(Retrocede para evitar el combate)" % pilot_name.to_upper()
-		warning_label.modulate = Color(1.0, 0.85, 0.2, 0.95)
+		if spared_timer > 0.0:
+			var remaining := maxf(0.0, SPARED_REQUIRED_TIME - spared_timer)
+			warning_label.text = "⚠️ %s: RETIRÁNDOSE (%.1fs)...\n(Mantén distancia para perdonar)" % [pilot_name.to_upper(), remaining]
+			warning_label.modulate = Color(0.3, 1.0, 0.5, 0.95)
+		else:
+			warning_label.text = "⚠️ %s: ¡ALÉJATE DEL SECTOR!\n[ Retrocede para perdonar | Acércate o ataca para combatir ]" % pilot_name.to_upper()
+			warning_label.modulate = Color(1.0, 0.85, 0.2, 0.95)
 	elif current_state == State.DOGFIGHT:
 		warning_label.text = "⚔️ EN DUELO: PILOTO %s" % pilot_name.to_upper()
 		warning_label.modulate = Color(1.0, 0.2, 0.2, 0.95)
@@ -140,12 +146,14 @@ func _draw() -> void:
 	if current_state == State.PEACEFUL_WARN:
 		var alpha := 0.35 + sin(warning_ring_pulse) * 0.15
 		var col := Color(1.0, 0.8, 0.15, alpha)
-		draw_arc(Vector2.ZERO, WARNING_RADIUS, 0, TAU, 64, col, 3.0, true)
-		# Anillo de peligro interno
-		draw_arc(Vector2.ZERO, WARNING_RADIUS * 0.5, 0, TAU, 48, Color(1.0, 0.4, 0.1, alpha * 0.6), 1.5, true)
+		# Anillo de advertencia exterior
+		draw_arc(Vector2.ZERO, WARNING_RADIUS, 0, TAU, 64, col, 2.5, true)
+		# Anillo de peligro / detonador de combate interior
+		var combat_col := Color(1.0, 0.25, 0.15, alpha * 0.9)
+		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS, 0, TAU, 48, combat_col, 2.5, true)
 	elif current_state == State.DOGFIGHT:
 		var alpha := 0.5 + sin(warning_ring_pulse * 1.5) * 0.25
-		draw_arc(Vector2.ZERO, 380.0, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
+		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
 
 func _physics_process(delta: float) -> void:
 	if current_state == State.DYING or current_state == State.WARPING_OUT:
@@ -165,26 +173,29 @@ func _physics_process(delta: float) -> void:
 			_process_dogfight(delta, dist_to_player)
 
 func _process_peaceful_warn(delta: float, dist: float) -> void:
-	# Rotar mirando al jugador con cautela
-	var dir := (player.global_position - global_position).normalized()
-	rotation = lerp_angle(rotation, dir.angle() + PI / 2.0, 5.0 * delta)
+	if is_instance_valid(player):
+		# Rotar mirando al jugador con cautela
+		var dir := (player.global_position - global_position).normalized()
+		rotation = lerp_angle(rotation, dir.angle() + PI / 2.0, 5.0 * delta)
 
-	# Suave flotación orbital
-	velocity = Vector2(-dir.y, dir.x) * sin(elapsed_time * 1.5) * 45.0
-	move_and_slide()
+		# Suave flotación orbital
+		velocity = Vector2(-dir.y, dir.x) * sin(elapsed_time * 1.5) * 45.0
+		move_and_slide()
 
-	# Condición de combate: el jugador cruza el perímetro
-	if dist <= WARNING_RADIUS:
+	# Condición de combate: el jugador cruza el perímetro de combate interior
+	if dist <= COMBAT_TRIGGER_RADIUS:
 		engage_combat()
 		return
 
-	# Condición de perdón: el jugador se aleja (> 1400 px) o permanece fuera respetando la distancia
-	if dist >= ESCAPE_RADIUS or dist >= (WARNING_RADIUS + 250.0):
+	# Condición de perdón: el jugador se aleja (> ESCAPE_RADIUS)
+	if dist >= ESCAPE_RADIUS:
 		spared_timer += delta
+		_update_warning_label()
 		if spared_timer >= SPARED_REQUIRED_TIME:
 			_warp_out_peacefully()
 	else:
-		spared_timer = maxf(0.0, spared_timer - delta * 0.5)
+		spared_timer = maxf(0.0, spared_timer - delta * 0.8)
+		_update_warning_label()
 
 func engage_combat() -> void:
 	if current_state == State.DOGFIGHT:
@@ -217,6 +228,8 @@ func _warp_out_peacefully() -> void:
 	tw.chain().tween_callback(queue_free)
 
 func _process_dogfight(delta: float, dist: float) -> void:
+	if not is_instance_valid(player):
+		return
 	var to_player := (player.global_position - global_position).normalized()
 	rotation = lerp_angle(rotation, to_player.angle() + PI / 2.0, 8.0 * delta)
 

@@ -63,6 +63,9 @@ var enemies_killed_count: int = 0
 var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
+var _wave_encounter_checked_for_wave: int = 0
+var _wave_encounter_timer: float = 0.0
+var _wave_encounter_pending: bool = false
 
 const AUTO_SAVE_INTERVAL: float = 5.0
 const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
@@ -417,6 +420,18 @@ func _process(delta: float) -> void:
 	# Cronómetro de tiempo total de la run
 	run_time_elapsed += delta
 
+	# Chequeo de inicio de encuentro para la oleada (ej. Oleada 1 tras briefing)
+	if _wave_encounter_checked_for_wave != current_wave:
+		_wave_encounter_checked_for_wave = current_wave
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 2.0
+
+	if _wave_encounter_pending:
+		_wave_encounter_timer -= delta
+		if _wave_encounter_timer <= 0.0:
+			_wave_encounter_pending = false
+			_check_wave_encounters()
+
 	# Chequeo de desbloqueo de Mascota Secreta Cosmo (10 Minutos = 600s de supervivencia)
 	if run_time_elapsed >= 600.0 and not SaveManager.is_pet_unlocked(&"cosmo"):
 		var newly_unlocked := SaveManager.unlock_pet(&"cosmo")
@@ -437,7 +452,9 @@ func _process(delta: float) -> void:
 		wave_satellites_spawned = 0
 		if enemy_spawner and enemy_spawner.has_method("set_wave"):
 			enemy_spawner.set_wave(current_wave)
-		_check_wave_encounters()
+		_wave_encounter_checked_for_wave = current_wave
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 2.0
 		save_current_run_state()
 		_spawn_next_satellite_for_wave()
 		if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
@@ -520,7 +537,7 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		next_pid = unencountered[0]
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var spawn_pos := player.global_position + forward * 800.0
+	var spawn_pos := player.global_position + forward * 450.0
 
 	var rival = rival_pilot_scene.instantiate()
 	rival.global_position = spawn_pos
@@ -532,14 +549,25 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	rival.rival_engaged.connect(_on_rival_engaged)
 	rival.rival_defeated.connect(_on_rival_defeated)
 
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("dash", 0.0, 0.7)
+
 	_trigger_pet_rival_alert(rival.pilot_name)
 
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
 		rivals_spared.append(p_id)
+	var r_name := String(p_id).capitalize()
+	if current_rival and "pilot_name" in current_rival:
+		r_name = current_rival.pilot_name
 	current_rival = null
 	if hud and hud.has_method("hide_boss"):
 		hud.hide_boss()
+	if hud and hud.has_method("show_character_unlock_banner"):
+		hud.show_character_unlock_banner(p_id, "PILOTO RESPETADA: " + r_name.to_upper(), "Has permitido que la piloto escape pacíficamente. Decisión registrada.")
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(false)
 	save_current_run_state()
 
 func _on_rival_engaged(p_id: StringName) -> void:
@@ -552,12 +580,18 @@ func _on_rival_engaged(p_id: StringName) -> void:
 		if current_rival.has_signal("health_changed"):
 			current_rival.connect("health_changed", hud.update_boss_health)
 
-func _on_rival_defeated(p_id: StringName, _weapon: WeaponData) -> void:
+func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	if not rivals_killed.has(p_id):
 		rivals_killed.append(p_id)
+	var r_name := String(p_id).capitalize()
+	if current_rival and "pilot_name" in current_rival:
+		r_name = current_rival.pilot_name
 	current_rival = null
 	if hud and hud.has_method("hide_boss"):
 		hud.hide_boss()
+	if hud and hud.has_method("show_character_unlock_banner"):
+		var w_name := weapon.weapon_name if weapon else "Arma Insignia"
+		hud.show_character_unlock_banner(p_id, "RIVAL ELIMINADA: " + r_name.to_upper(), "Has abatido a " + r_name + ". ¡Arma insignia " + w_name + " obtenida!")
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
 	save_current_run_state()
@@ -1229,7 +1263,8 @@ func get_current_run_state() -> Dictionary:
 		"chosen_stat_cards": cards_data,
 		"rivals_spared": rivals_spared.duplicate(),
 		"rivals_killed": rivals_killed.duplicate(),
-		"rival_queue": rival_queue.duplicate()
+		"rival_queue": rival_queue.duplicate(),
+		"_wave_encounter_checked_for_wave": _wave_encounter_checked_for_wave
 	}
 
 func save_current_run_state() -> void:
@@ -1250,6 +1285,8 @@ func restore_run_state(run_data: Dictionary) -> void:
 	enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
 	bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
 	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
+	_wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", current_wave))
+	_wave_encounter_pending = false
 
 	if run_data.has("rivals_spared"):
 		rivals_spared.clear()
