@@ -19,6 +19,7 @@ extends CanvasLayer
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 @onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
+@onready var boss_tracker: Control = find_child("BossEdgeIndicator", true, false) as Control
 
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
@@ -44,6 +45,8 @@ func _ready() -> void:
 		satellite_tracker.set_player(player)
 	if arcana_tracker and is_instance_valid(player):
 		arcana_tracker.set_player(player)
+	if boss_tracker and is_instance_valid(player):
+		boss_tracker.set_player(player)
 
 	if player:
 		player.health_changed.connect(_on_health_changed)
@@ -493,9 +496,20 @@ func set_boss_phase(new_phase: int) -> void:
 	if boss_health_bar:
 		boss_health_bar.set_phase(new_phase)
 
+func track_boss(target: Node2D, title: String = "JEFE") -> void:
+	if boss_tracker:
+		if is_instance_valid(player):
+			boss_tracker.set_player(player)
+		boss_tracker.set_target_node(target, title)
+
+func clear_boss_tracking() -> void:
+	if boss_tracker:
+		boss_tracker.clear_target()
+
 func hide_boss() -> void:
 	if boss_health_bar:
 		boss_health_bar.hide_boss()
+	clear_boss_tracking()
 
 func _on_dash_updated(current_charges: int, max_charges: int, recharge_ratio: float, is_focus: bool) -> void:
 	if not dash_label:

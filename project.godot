@@ -47,6 +47,7 @@ directories/dch_directory={
 "pip": "res://narrative/characters/pip.dch",
 "roxy": "res://narrative/characters/roxy.dch",
 "selene": "res://narrative/characters/selene.dch",
+"sombra_nyx": "res://narrative/characters/sombra_nyx.dch",
 "valentina": "res://narrative/characters/valentina.dch"
 }
 directories/dtl_directory={

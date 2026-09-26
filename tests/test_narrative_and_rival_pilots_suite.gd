@@ -20,6 +20,8 @@ func _ready() -> void:
 	_test_6_save_manager_endings_and_victory_modal()
 	_test_7_wave_1_encounter_trigger_and_visibility()
 	_test_8_debug_route_shortcuts_to_wave_11()
+	_test_9_boss_edge_indicator()
+	_test_10_nyx_genocide_escort_and_dialogues()
 
 	print("\n==================================================================")
 	print("[TEST] ✓ TODAS LAS PRUEBAS DE NARRATIVA Y RIVALES PASARON CON ÉXITO")
@@ -277,5 +279,98 @@ func _test_8_debug_route_shortcuts_to_wave_11() -> void:
 
 	modal.queue_free()
 	print("  ✓ Botones del Debug Menu configuran correctamente el inicio de partida en la última oleada (Wave 11)")
+
+func _test_9_boss_edge_indicator() -> void:
+	print("\n[9/10] Verificando BossEdgeIndicator (Tamaño 75x75, Ocultamiento en Pantalla y Clamping)...")
+	var indicator_scene: PackedScene = load("res://scenes/ui/hud/boss_edge_indicator.tscn")
+	assert(indicator_scene != null, "boss_edge_indicator.tscn debe existir")
+
+	var indicator = indicator_scene.instantiate()
+	assert(indicator != null, "La escena debe instanciarse")
+	add_child(indicator)
+
+	assert(indicator.BOX_SIZE == Vector2(75, 75), "El tamaño de caja debe ser exactamente 75x75 px")
+	assert(indicator.custom_minimum_size == Vector2(75, 75), "custom_minimum_size debe ser 75x75")
+
+	# Target dummy y jugador dummy
+	var dummy_player := Node2D.new()
+	dummy_player.global_position = Vector2(960, 540)
+	add_child(dummy_player)
+	indicator.set_player(dummy_player)
+
+	var dummy_boss := Node2D.new()
+	add_child(dummy_boss)
+
+	# 1. Asignar target y comprobar set_target_node
+	dummy_boss.global_position = Vector2(3000, 3000) # Bien lejos de la pantalla
+	indicator.set_target_node(dummy_boss, "TITÁN")
+	assert(indicator.has_target == true, "has_target debe ser true tras asignar dummy")
+	assert(indicator.target_title == "TITÁN", "target_title debe ser 'TITÁN'")
+
+	# Simular process con objetivo fuera de pantalla
+	indicator._process(0.016)
+	assert(indicator.visible == true, "El indicador debe ser VISIBLE cuando el jefe está fuera de pantalla")
+	assert(indicator.arrow_indicator.visible == true, "La flecha indicadora debe ser visible fuera de pantalla")
+
+	# 2. Simular jefe dentro de pantalla (debe ocultarse para no obstruir combate)
+	var vp_size := indicator.get_viewport().get_visible_rect().size
+	dummy_boss.global_position = vp_size * 0.5
+	indicator._process(0.016)
+	assert(indicator.visible == false, "El indicador debe OCULTARSE cuando el jefe entra en la pantalla")
+
+	# 3. Limpiar target
+	indicator.clear_target()
+	assert(indicator.has_target == false, "has_target debe ser false tras clear_target")
+	assert(indicator.visible == false, "indicator debe ocultarse tras clear_target")
+
+	dummy_boss.queue_free()
+	dummy_player.queue_free()
+	indicator.queue_free()
+	print("  ✓ BossEdgeIndicator (75x75) validado: visible fuera de pantalla y oculto dentro de pantalla")
+
+func _test_10_nyx_genocide_escort_and_dialogues() -> void:
+	print("\n[10/10] Verificando Nyx Boss Escort (Ruta Genocida), Sombra de Nyx y Diálogos...")
+	# 1. Verificar existencia de personaje Dialogic sombra_nyx
+	assert(ResourceLoader.exists("res://narrative/characters/sombra_nyx.dch"), "sombra_nyx.dch debe existir en narrative/characters")
+
+	# 2. Verificar NyxBossEscort
+	var escort_scene: PackedScene = load("res://scenes/combat/bosses/nyx_boss_escort.tscn")
+	assert(escort_scene != null, "nyx_boss_escort.tscn debe existir")
+
+	var escort = escort_scene.instantiate()
+	assert(escort != null, "La escena debe instanciarse")
+	add_child(escort)
+
+	assert(escort.max_health == 1600.0, "La vida máxima debe ser 1600 HP")
+	assert(escort.is_in_group("enemies"), "Debe pertenecer al grupo 'enemies'")
+	assert(escort.is_in_group("bosses"), "Debe pertenecer al grupo 'bosses'")
+
+	# Probar setup estándar
+	escort.setup(false)
+	assert(escort.is_shadow == false, "is_shadow debe ser false")
+	assert(escort.pilot_name == "Nyx, Vengadora del Vacío", "Nombre canónico debe ser Nyx, Vengadora del Vacío")
+
+	# Probar setup de Sombra de Nyx
+	escort.setup(true)
+	assert(escort.is_shadow == true, "is_shadow debe ser true")
+	assert(escort.pilot_name == "Sombra de Nyx: Eco del Vacío", "Nombre de reflejo debe ser Sombra de Nyx: Eco del Vacío")
+
+	# Probar daño recibido
+	escort.take_damage(200.0)
+	assert(escort.current_health == 1400.0, "current_health debe reducirse a 1400")
+
+	escort.queue_free()
+
+	# 3. Probar lógica de diálogo de encuentro rival
+	var mg := MainGame.new()
+	var dialogue_lines := mg._get_rival_dialogue(&"valentina", &"nova")
+	assert(dialogue_lines.has("rival_line"), "Debe contener rival_line")
+	assert(dialogue_lines.has("player_line"), "Debe contener player_line")
+	assert(dialogue_lines.has("rival_closing"), "Debe contener rival_closing")
+	assert(dialogue_lines["rival_line"].contains("Valentina"), "La línea de Valentina debe identificarse")
+	assert(dialogue_lines["player_line"].length() > 5, "La respuesta del jugador debe ser un diálogo válido")
+	mg.queue_free()
+
+	print("  ✓ NyxBossEscort, Sombra de Nyx y diálogos de encuentro validados con éxito")
 
 

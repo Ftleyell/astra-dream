@@ -39,8 +39,10 @@ var boss_overflow_vortex_scene: PackedScene = preload("res://scenes/combat/bosse
 var boss_astra_prime_scene: PackedScene = preload("res://scenes/combat/bosses/boss_astra_prime.tscn")
 var rival_pilot_scene: PackedScene = preload("res://scenes/combat/bosses/rival_pilot_boss.tscn")
 var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/allied_wingman.tscn")
+var nyx_boss_escort_scene: PackedScene = preload("res://scenes/combat/bosses/nyx_boss_escort.tscn")
 var current_boss: Node2D = null
 var current_rival: Node2D = null
+var current_genocide_escort: Node2D = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -333,7 +335,91 @@ func _on_dialogic_timeline_ended() -> void:
 	elif not is_any_combat_modal_active():
 		get_tree().paused = false
 
+func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
+	var r_line := "¡Piloto en mi vector! Detecto armas cargadas. Si no buscas pelea, apaga los motores y déjame pasar."
+	var p_line := "Te recibo fuerte y claro. No busco un conflicto innecesario, pero me defenderé si atacas."
+	var r_close := "La decisión es tuya: mantén distancia y nos retiraremos... o cruza el perímetro."
+
+	match rival_pid:
+		&"nova":
+			r_line = "¡Piloto en mi vector! Detecto armas cargadas. Si no buscas pelea, apaga motores y déjame pasar."
+		&"valentina":
+			r_line = "Aquí Valentina. Mi cuadrante está bajo custodia estricta. Mantén distancia o deberé neutralizarte."
+		&"kira":
+			r_line = "¡Vaya, vaya! ¿Un intruso en mi sector? Mejor da media vuelta si no quieres terminar como chatarra."
+		&"selene":
+			r_line = "Cálculos balísticos completados. No tengo hostilidad primaria, pero cruzar activará fuego reactivo."
+		&"roxy":
+			r_line = "¿Te crees con suerte? Este sector es territorio de caza. Una sola provocación y te pulverizo."
+		&"echo":
+			r_line = "Frecuencia captada... ecos de batalla en tu estela. Retírate antes de que nuestros destinos colisionen."
+		&"nyx":
+			r_line = "Las sombras cósmicas no toleran intrusos. Si avanzas un metro más, el Vacío consumirá tu luz."
+
+	match player_pid:
+		&"nova":
+			p_line = "Te recibo fuerte y claro. Evaluaré la situación... no desates algo de lo que te arrepientas."
+		&"valentina":
+			p_line = "Aquí el puesto de mando. No buscamos conflicto, pero responderemos con fuerza ante una agresión."
+		&"kira":
+			p_line = "Relaja los cañones. Si quieres pelea la tendrás, pero si te calmas ambos saldremos ilesos."
+		&"selene":
+			p_line = "Parámetros registrados. Tomaré la decisión óptima para la preservación de ambas naves."
+		&"roxy":
+			p_line = "Mucho hablar y poco vuelo. Veremos quién sobrevive si decides cruzar mi camino."
+		&"echo":
+			p_line = "Entendido... mantendré mis sensores alertas ante cualquier alteración de tu curso."
+		&"nyx":
+			p_line = "No me intimidan tus amenazas. Conozco la oscuridad mejor que nadie."
+
+	return {
+		"rival_line": r_line,
+		"player_line": p_line,
+		"rival_closing": r_close
+	}
+
+func _trigger_pet_rival_encounter(rival: Node2D) -> void:
+	var dialogic_node := _get_dialogic()
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		return
+	is_cockpit_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+		pet_id = "mochi"
+
+	var r_name: String = rival.pilot_name if "pilot_name" in rival else "Piloto Rival"
+	var r_pid: StringName = rival.pilot_id if "pilot_id" in rival else &"nova"
+	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+
+	var lines := _get_rival_dialogue(r_pid, p_pid)
+
+	var text := "join " + pet_id + " right\n"
+	text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]\n"
+	text += pet_id + ": La nave de " + r_name + " ha entrado al sector proyectando un perímetro de advertencia.\n"
+	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
+	text += "leave " + pet_id + "\n"
+	text += "join " + String(r_pid) + " right\n"
+	text += "join " + String(p_pid) + " left\n"
+	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
+	text += String(p_pid) + ": " + lines["player_line"] + "\n"
+	text += String(r_pid) + ": " + lines["rival_closing"] + "\n"
+	text += "leave --All--\n"
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
+
 func _trigger_pet_rival_alert(pilot_name: String) -> void:
+	if current_rival != null:
+		_trigger_pet_rival_encounter(current_rival)
+		return
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
 		return
@@ -389,7 +475,7 @@ leave --All--
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_dialogic_audio(layout)
 
-func _trigger_pet_climax_alert(route: String) -> void:
+func _trigger_climax_dialogue(route: String) -> void:
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
 		return
@@ -402,19 +488,71 @@ func _trigger_pet_climax_alert(route: String) -> void:
 	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
 		pet_id = "mochi"
 
-	var route_desc := "Las 5 pilotos perdonadas se unen a nuestros flancos. ¡La Flota de la Esperanza está aquí!"
-	if route == "slayer":
-		route_desc = "Has erradicado a todas las rivales y acumulado su armamento. ¡Astra Prime entrará en furia extrema!"
-	elif route == "neutral":
-		route_desc = "Sobrevivimos hasta el epicentro del universo. ¡Este es el duelo definitivo por el destino cósmico!"
+	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+	var text := ""
 
-	var text := """
-join %s right
-%s: [shake rate=25.0 level=7][color=#00e5ff]¡ALERTA CÓSMICA: LLEGADA AL NÚCLEO SUPREMO ASTRA PRIME![/color][/shake]
-%s: %s
-%s: [wave amp=18.0 freq=3.5]¡Todos los reactores al 100%%! ¡Por la victoria estelar![/wave]
-leave --All--
-""" % [pet_id, pet_id, pet_id, route_desc, pet_id]
+	if route == "pacifist":
+		var fleet_lines := {
+			&"nova": "¡Estamos contigo, comandante! La Flota de la Esperanza cubre tu retaguardia.",
+			&"valentina": "Formación de combate establecida. No permitiremos que caigas ante el Núcleo.",
+			&"kira": "¡Armas al máximo! ¡Vamos a romper ese coloso en mil pedazos juntas!",
+			&"selene": "Vectores balísticos sincronizados. La probabilidad de victoria es del 100% con nosotras.",
+			&"roxy": "Más vale que me dejes el tiro de gracia. ¡Hagamos pedazos a Astra Prime!",
+			&"echo": "El destino resuena con luz... volaremos a tu lado hasta el final del cosmos.",
+			&"nyx": "La oscuridad del Vacío no prevalecerá hoy. Mis guadañas te protegen."
+		}
+
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [shake rate=20.0 level=6][color=#00e5ff]¡ALERTA CÓSMICA: LLEGADA AL NÚCLEO SUPREMO ASTRA PRIME![/color][/shake]\n"
+		text += pet_id + ": ¡Increíble! ¡Las señales de las 5 pilotos que perdonaste emergen del hiperespacio!\n"
+		text += "leave " + pet_id + "\n"
+
+		for pid in rivals_spared:
+			var line: String = fleet_lines.get(pid, "¡A tu lado hasta la victoria estelar!")
+			text += "join " + String(pid) + " right\n"
+			text += String(pid) + ": " + line + "\n"
+			text += "leave " + String(pid) + "\n"
+
+		text += "join " + String(p_pid) + " left\n"
+		text += String(p_pid) + ": ¡Flota de la Esperanza unida! ¡Iniciemos las maniobras para liberar el Núcleo Astra!\n"
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [wave amp=16.0 freq=3.5]¡Todos los reactores al 100%! ¡Por la victoria estelar![/wave]\n"
+		text += "leave --All--\n"
+
+	elif route == "slayer":
+		var is_player_nyx := (p_pid == &"nyx")
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [shake rate=25.0 level=8][color=#ff0044]¡COLAPSO ESPACIO-TEMPORAL CRÍTICO![/color][/shake]\n"
+		text += pet_id + ": ¡Toda la galaxia tiembla por la masacre de las 5 pilotos...! ¡Y una nave de combate apoya al Núcleo Astra Prime!\n"
+		text += "leave " + pet_id + "\n"
+
+		if not is_player_nyx:
+			text += "join nyx right\n"
+			text += "join " + String(p_pid) + " left\n"
+			text += "nyx: [shake rate=18.0 level=5][color=#ff1744]¿Creíste que tu carnicería cósmica quedaría impune?[/color][/shake]\n"
+			text += "nyx: Has erradicado a cada una de mis compañeras. Sentí sus almas apagarse en el tejido estelar...\n"
+			text += "nyx: Astra Prime y yo seremos tus verdugos. ¡El Vacío te devorará por completo!\n"
+			text += String(p_pid) + ": Eran obstáculos en mi ascenso estelar. Si te interpones, compartirás su mismo destino.\n"
+			text += "nyx: ¡No saldrás con vida de este sector!\n"
+			text += "leave --All--\n"
+		else:
+			text += "join sombra_nyx right\n"
+			text += "join nyx left\n"
+			text += "sombra_nyx: [shake rate=18.0 level=5][color=#bf55ec]¿Reconoces tu propio reflejo, traidora?[/color][/shake]\n"
+			text += "sombra_nyx: Astra Prime ha forjado este eco del Vacío con las almas de las 5 pilotos que exterminaste.\n"
+			text += "sombra_nyx: Yo soy la retribución que sembraste. El poder que mancillaste se alza ahora en tu contra.\n"
+			text += "nyx: Solo un burdo espectro nacido del pánico del Núcleo. Desgarraré tu sombra y lo destruiré.\n"
+			text += "sombra_nyx: ¡Comprueba la verdadera furia del abismo estelar!\n"
+			text += "leave --All--\n"
+
+	else: # neutral
+		text += "join " + pet_id + " right\n"
+		text += "join " + String(p_pid) + " left\n"
+		text += pet_id + ": Hemos llegado al epicentro del universo... pero el costo ha sido inmenso.\n"
+		text += String(p_pid) + ": Hicimos lo necesario para llegar con vida. Ni santos ni monstruos... solo supervivientes.\n"
+		text += pet_id + ": El Núcleo Supremo Astra Prime inicia su escaneo estelar. ¿Cuál será su veredicto?\n"
+		text += String(p_pid) + ": Solo hay un veredicto posible para nosotros: salir victoriosos cueste lo que cueste.\n"
+		text += "leave --All--\n"
 
 	var tl := DialogicTimeline.new()
 	tl.from_text(text)
@@ -422,6 +560,9 @@ leave --All--
 	if layout:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_dialogic_audio(layout)
+
+func _trigger_pet_climax_alert(route: String) -> void:
+	_trigger_climax_dialogue(route)
 
 
 func _process(delta: float) -> void:
@@ -560,11 +701,14 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	rival.rival_engaged.connect(_on_rival_engaged)
 	rival.rival_defeated.connect(_on_rival_defeated)
 
+	if hud and hud.has_method("track_boss"):
+		hud.track_boss(rival, "RIVAL")
+
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("dash", 0.0, 0.7)
 
-	_trigger_pet_rival_alert(rival.pilot_name)
+	_trigger_pet_rival_encounter(rival)
 
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
@@ -646,6 +790,9 @@ func _spawn_wave_boss() -> void:
 	if current_boss.has_signal("boss_defeated"):
 		current_boss.connect("boss_defeated", _on_boss_defeated)
 
+	if hud and hud.has_method("track_boss"):
+		hud.track_boss(current_boss, "JEFE")
+
 	_trigger_pet_boss_alert(b_name)
 
 func _spawn_final_boss() -> void:
@@ -661,7 +808,7 @@ func _spawn_final_boss() -> void:
 	elif rivals_killed.size() >= 5:
 		route = "slayer"
 
-	_trigger_pet_climax_alert(route)
+	_trigger_climax_dialogue(route)
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
 	var boss_pos := player.global_position + forward * 680.0
@@ -677,10 +824,20 @@ func _spawn_final_boss() -> void:
 	prime.phase_changed.connect(hud.set_boss_phase)
 	prime.boss_defeated.connect(func(_b_id): _on_final_boss_defeated(route))
 
+	if hud and hud.has_method("track_boss"):
+		hud.track_boss(prime, "JEFE FINAL")
+
 	if route == "pacifist":
 		_spawn_allied_wingmen()
 	elif route == "slayer":
 		player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, self))
+		var escort = nyx_boss_escort_scene.instantiate()
+		var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+		var is_shadow := (p_pid == &"nyx")
+		escort.global_position = boss_pos + Vector2(220.0, 120.0)
+		escort.setup(is_shadow, prime)
+		add_child(escort)
+		current_genocide_escort = escort
 
 func _spawn_allied_wingmen() -> void:
 	for i in range(rivals_spared.size()):
@@ -707,6 +864,9 @@ func _on_boss_defeated(_boss_id: String) -> void:
 func _on_final_boss_defeated(route: String) -> void:
 	bosses_defeated_count += 1
 	current_boss = null
+	if current_genocide_escort and is_instance_valid(current_genocide_escort):
+		current_genocide_escort.queue_free()
+		current_genocide_escort = null
 	hud.hide_boss()
 	is_wave_11_cleared = true
 
