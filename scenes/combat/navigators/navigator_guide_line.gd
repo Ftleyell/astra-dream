@@ -29,6 +29,8 @@ func setup(p_player: Node2D, p_target: Node2D, p_color: Color, p_lifetime: float
 	z_index = 25 # Encima del fondo y proyectiles normales, debajo de HUD
 	if is_instance_valid(target_node):
 		target_position = target_node.global_position
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	if not is_active:

@@ -27,6 +27,8 @@ const NORMAL_SCAN_INTERVAL: float = 38.0
 var active_buff_duration: float = 0.0
 var is_buff_active: bool = false
 var caelia_shield_active: bool = false
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func setup(p_main_game: Node2D, p_player: Player, p_hud: GameHUD) -> void:
 	main_game = p_main_game

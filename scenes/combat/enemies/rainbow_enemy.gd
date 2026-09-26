@@ -15,10 +15,12 @@ var is_escaping: bool = false
 var _flight_wobble_time: float = 0.0
 var time_since_last_hit: float = 999.0
 var hp_bar: ProgressBar = null
+var has_been_engaged: bool = false
 
 @onready var engine_particles: CPUParticles2D = get_node_or_null("EngineParticles")
 
 func _ready_custom() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemy_id = &"enemy_rainbow"
 	max_health = 350.0
 	current_health = max_health
@@ -77,10 +79,13 @@ func setup_transverse_flight(center: Vector2, spawn_angle: float) -> void:
 	rotation = _current_flight_dir.angle() + PI * 0.5
 
 func take_damage(arg) -> void:
+	if is_dying or (get_tree() and get_tree().paused):
+		return
 	super.take_damage(arg)
+	has_been_engaged = true
 	time_since_last_hit = 0.0
-	# Si recibe daño, se le da al jugador una prórroga para cazarlo
-	escape_timer = maxf(escape_timer, 16.0)
+	# Si recibe daño, nunca escapa; el jugador tiene asegurada la cacería
+	escape_timer = 999999.0
 
 	if hp_bar:
 		hp_bar.value = current_health
@@ -91,20 +96,22 @@ func take_damage(arg) -> void:
 	_spawn_panic_sparks()
 
 func _update_behavior(delta: float) -> void:
-	if is_dying or is_escaping:
+	if is_dying or is_escaping or (get_tree() and get_tree().paused):
 		return
 
-	time_since_last_hit += delta
+	# Si ya fue atacado por el jugador, nunca se desvanece ni escapa
+	if not has_been_engaged:
+		time_since_last_hit += delta
 
-	# Solo descontar tiempo de escape si el jugador lleva más de 4s sin dañarlo
-	if time_since_last_hit > 4.0:
-		escape_timer -= delta
+		# Solo descontar tiempo de escape si el jugador lleva más de 4s sin dañarlo
+		if time_since_last_hit > 4.0:
+			escape_timer -= delta
 
-	# No escapar mientras el jugador esté activamente persiguiéndolo en pantalla
-	var dist_to_p := global_position.distance_to(player.global_position) if is_instance_valid(player) else 9999.0
-	if escape_timer <= 0.0 and dist_to_p > 850.0:
-		_warp_escape()
-		return
+		# No escapar mientras el jugador esté activamente persiguiéndolo en pantalla
+		var dist_to_p := global_position.distance_to(player.global_position) if is_instance_valid(player) else 9999.0
+		if escape_timer <= 0.0 and dist_to_p > 1200.0:
+			_warp_escape()
+			return
 
 	_flight_wobble_time += delta
 
@@ -154,7 +161,7 @@ func _spawn_panic_sparks() -> void:
 		tw.chain().tween_callback(spark.queue_free)
 
 func _warp_escape() -> void:
-	if is_escaping or is_dying:
+	if is_escaping or is_dying or has_been_engaged:
 		return
 	is_escaping = true
 	if engine_particles:
@@ -194,10 +201,20 @@ func _on_die_extra() -> void:
 		_spawn_jackpot_fountain(p_parent)
 		FloatingText.spawn(p_parent, global_position + Vector2(0, -35), "💰 +250 CRÉDITOS // ¡NIVEL OBTENIDO!", Color(1.0, 0.88, 0.25))
 
-	# 5. Otorga 1 nivel completo instantáneo al jugador
+	# 5. Otorga 1 nivel completo diferido al jugador para que vea la explosión y el jackpot antes del modal
 	if is_instance_valid(player) and player.has_method("add_exp"):
 		var exp_needed: float = maxf(1.0, player.exp_to_next - player.current_exp)
-		player.add_exp(exp_needed)
+		var p_target: Player = player
+		var tw := player.create_tween()
+		if tw:
+			tw.set_pause_mode(Tween.TWEEN_PAUSE_STOP)
+			tw.tween_interval(0.45)
+			tw.tween_callback(func():
+				if is_instance_valid(p_target):
+					p_target.add_exp(exp_needed)
+			)
+		else:
+			player.add_exp(exp_needed)
 
 	# 6. Audio cinematográfico de detonación de reactor botín
 	var audio_mgr := get_node_or_null("/root/AudioManager")

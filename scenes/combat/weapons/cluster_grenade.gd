@@ -25,6 +25,8 @@ func setup(p_origin: Vector2, p_target: Vector2, p_ctx: HitContext, p_player: No
 	fuse_time = flight_duration
 	velocity = dir * (dist / flight_duration)
 	add_to_group("player_projectiles")
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	current_time += delta

@@ -16,6 +16,8 @@ func setup(p_origin: Vector2, p_ctx: HitContext, p_size_mult: float = 1.0) -> vo
 	global_position = p_origin
 	hit_context = p_ctx
 	max_radius *= p_size_mult
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	current_time += delta

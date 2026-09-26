@@ -24,6 +24,7 @@ func setup(p_origin: Vector2, p_target_pos: Vector2, p_ctx: HitContext, p_jumps:
 		_generate_chain()
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if not has_generated and (origin_pos != Vector2.ZERO or target_pos != Vector2.ZERO):
 		_generate_chain()
 

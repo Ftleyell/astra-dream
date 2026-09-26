@@ -42,7 +42,7 @@ func _acquire_player() -> void:
 		player = get_tree().get_first_node_in_group("player") as Player
 
 func _physics_process(delta: float) -> void:
-	if is_dying:
+	if is_dying or (get_tree() and get_tree().paused):
 		return
 
 	if contact_cooldown > 0.0:
@@ -73,7 +73,7 @@ func _on_contact_with_player() -> void:
 		player.take_damage(contact_damage)
 
 func take_damage(arg) -> void:
-	if is_dying:
+	if is_dying or (get_tree() and get_tree().paused):
 		return
 
 	var dmg: float = 0.0

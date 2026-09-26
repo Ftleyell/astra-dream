@@ -20,6 +20,8 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_width_mult: f
 	hit_context = p_ctx
 	beam_width *= p_width_mult
 	_update_beam_visual()
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	current_time += delta

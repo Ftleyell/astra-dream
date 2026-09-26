@@ -16,6 +16,7 @@ var last_lead_angle: float = 0.0
 @onready var blade_core: Line2D = get_node_or_null("BladeCore") as Line2D
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if not blade_ring:
 		blade_ring = get_node_or_null("BladeRing") as Line2D
 	if not blade_core:

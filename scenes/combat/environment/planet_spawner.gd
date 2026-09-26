@@ -18,6 +18,7 @@ var active_planets: Array[Node2D] = []
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_acquire_player()
 	if is_instance_valid(player):
 		last_player_pos = player.global_position

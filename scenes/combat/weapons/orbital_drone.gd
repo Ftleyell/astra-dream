@@ -18,6 +18,8 @@ func setup(p_player: Node2D, p_starting_angle: float, p_ctx: HitContext) -> void
 	player = p_player
 	current_angle = p_starting_angle
 	hit_context = p_ctx
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(player):

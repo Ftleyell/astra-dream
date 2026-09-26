@@ -34,6 +34,7 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext) -> void:
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if beam_dir.length_squared() > 0.001:
 		_activate_laser()
 

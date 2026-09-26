@@ -27,6 +27,8 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_count: int = 
 		_execute_single_slash()
 	else:
 		ready.connect(_execute_single_slash, CONNECT_ONE_SHOT)
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	if current_flurry < flurry_count:

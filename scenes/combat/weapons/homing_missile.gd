@@ -44,6 +44,7 @@ func setup(p_origin: Vector2, p_initial_dir: Vector2, p_ctx: HitContext, p_targe
 	rotation = flight_direction.angle()
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("player_projectiles")
 	if flight_direction.length_squared() > 0.001:
 		current_velocity = flight_direction * speed

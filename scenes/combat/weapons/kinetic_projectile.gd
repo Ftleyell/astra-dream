@@ -22,6 +22,7 @@ var hit_targets: Array[Node2D] = []
 @onready var visual_poly: Polygon2D = get_node_or_null("VisualPolygon")
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("player_projectiles")
 
 func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_player: Node2D = null, p_speed_mult: float = 1.0, p_size_mult: float = 1.0) -> void:

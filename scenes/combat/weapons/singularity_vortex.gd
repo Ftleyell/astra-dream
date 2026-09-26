@@ -20,6 +20,7 @@ func setup(p_pos: Vector2, p_ctx: HitContext, p_size_mult: float = 1.0) -> void:
 	scale = Vector2(p_size_mult, p_size_mult)
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	# Spawn sound si audio manager está activo
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
