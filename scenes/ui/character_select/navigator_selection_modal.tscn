@@ -89,20 +89,20 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="DimOverlay/CenterContainer"]
-custom_minimum_size = Vector2(1180, 720)
+custom_minimum_size = Vector2(1180, 680)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 14
+theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_bottom = 16
 
 [node name="RootVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
 [node name="ModalHeader" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
 layout_mode = 2
@@ -127,17 +127,27 @@ text = "[ 01 / 05 ]"
 [node name="HSeparator" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
 layout_mode = 2
 
-[node name="CoverFlowSection" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+[node name="MainColumns" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_vertical = 3
+theme_override_constants/separation = 26
 
-[node name="CoverFlowRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection"]
+[node name="CoverFlowSection" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns"]
+custom_minimum_size = Vector2(570, 0)
 layout_mode = 2
-theme_override_constants/separation = 16
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
 alignment = 1
 
-[node name="PrevButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
-custom_minimum_size = Vector2(60, 110)
+[node name="CoverFlowRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="PrevButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow"]
+custom_minimum_size = Vector2(46, 90)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
@@ -145,8 +155,15 @@ theme_override_font_sizes/font_size = 16
 text = "◀
 [A]"
 
-[node name="LeftCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
-custom_minimum_size = Vector2(230, 310)
+[node name="CardsRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = -40
+alignment = 1
+
+[node name="LeftCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
+custom_minimum_size = Vector2(170, 400)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")
@@ -154,7 +171,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_side_card")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_side_card")
 flat = false
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard"]
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -163,33 +180,35 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="LeftTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard/VBox"]
+[node name="LeftTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LeftLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard/VBox"]
-custom_minimum_size = Vector2(0, 26)
+[node name="LeftLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 0.85)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "ANTERIOR"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ArtworkFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
+[node name="ArtworkFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
+z_index = 2
 clip_contents = true
-custom_minimum_size = Vector2(380, 340)
+custom_minimum_size = Vector2(250, 480)
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_artwork")
 
-[node name="ArtworkViewport" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame"]
+[node name="ArtworkViewport" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame"]
 clip_contents = true
 layout_mode = 2
 
-[node name="FullbodyTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/ArtworkViewport"]
+[node name="FullbodyTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -199,11 +218,11 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LockedOverlay" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame"]
+[node name="LockedOverlay" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame"]
 visible = false
 layout_mode = 2
 
-[node name="Dim" type="ColorRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay"]
+[node name="Dim" type="ColorRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -212,7 +231,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.035, 0.065, 0.85)
 
-[node name="LockCenter" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay"]
+[node name="LockCenter" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -224,20 +243,20 @@ grow_vertical = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="LockIcon" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay/LockCenter"]
+[node name="LockIcon" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 38
 text = "🔒"
 horizontal_alignment = 1
 
-[node name="LockTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay/LockCenter"]
+[node name="LockTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
 theme_override_font_sizes/font_size = 15
 text = "NAVEGANTE BLOQUEADA"
 horizontal_alignment = 1
 
-[node name="LockDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay/LockCenter"]
+[node name="LockDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 0.9)
 theme_override_font_sizes/font_size = 11
@@ -245,8 +264,8 @@ text = "Completa cualquiera de los 3 finales del juego (Pacifista, Genocida o Ne
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="RightCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
-custom_minimum_size = Vector2(230, 310)
+[node name="RightCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
+custom_minimum_size = Vector2(170, 400)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")
@@ -254,7 +273,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_side_card")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_side_card")
 flat = false
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard"]
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -263,24 +282,24 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="RightTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard/VBox"]
+[node name="RightTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RightLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard/VBox"]
-custom_minimum_size = Vector2(0, 26)
+[node name="RightLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 0.85)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "SIGUIENTE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NextButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
-custom_minimum_size = Vector2(60, 110)
+[node name="NextButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow"]
+custom_minimum_size = Vector2(46, 90)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
@@ -288,45 +307,39 @@ theme_override_font_sizes/font_size = 16
 text = "▶
 [D]"
 
-[node name="DotsContainer" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection"]
+[node name="DotsContainer" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection"]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 12
+alignment = 1
 
-[node name="HSeparator2" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
-layout_mode = 2
-
-[node name="DossierSection" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="LeftCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
+[node name="DossierSection" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
-[node name="DossierHeader" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol"]
+[node name="DossierHeader" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="CategoryLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+[node name="CategoryLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.8, 1, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "PERFIL DE OFICIAL TÁCTICA // ASIGNACIÓN DE ENLACE"
 
-[node name="NameRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+[node name="NameRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="NameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow"]
+[node name="NameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 24
 text = "LYRA"
 
-[node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow"]
+[node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
@@ -334,124 +347,121 @@ theme_override_font_sizes/font_size = 13
 text = "[✓ ENLACE ACTIVO]"
 vertical_alignment = 2
 
-[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "CARTÓGRAFA BIOLÓGICA"
 
-[node name="RadioCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol"]
+[node name="RadioCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
 layout_mode = 2
-size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/RadioCard"]
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/RadioCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="RadioHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/RadioCard/Margin/VBox"]
+[node name="RadioHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 11
 text = "💬 FRECUENCIA DE COMUNICACIÓN ABIERTA"
 
-[node name="RadioDialogue" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/RadioCard/Margin/VBox"]
+[node name="RadioDialogue" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.88, 1, 0.9)
 theme_override_font_sizes/font_size = 12
 text = "\"¡Lecturas orgánicas detectadas! Un segmento planetario fértil está a nuestro alcance.\""
 autowrap_mode = 2
 
-[node name="CenterCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-
-[node name="RadarCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol"]
+[node name="RadarCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/RadarCard"]
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/RadarCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="RadarHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/RadarCard/Margin/VBox"]
+[node name="RadarHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 11
 text = "📡 RADAR TÁCTICO Y LOCALIZACIÓN EN COMBATE"
 
-[node name="RadarDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/RadarCard/Margin/VBox"]
+[node name="RadarDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 12
 text = "Especializada en biosferas estelares. Rastrea planetas, capullos bio y orbes de biomasa."
 autowrap_mode = 2
 
-[node name="BuffCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol"]
+[node name="BuffCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
 layout_mode = 2
-size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_buff")
 
-[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard"]
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin"]
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="BuffHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin/VBox"]
+[node name="BuffHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 11
 text = "⚡ BUFF DE NAVEGACIÓN ACTIVO (AL SINCRONIZAR OBJETIVO)"
 
-[node name="BuffNameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin/VBox"]
+[node name="BuffNameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "Sobrecarga de Propulsión"
 
-[node name="BuffDescLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin/VBox"]
+[node name="BuffDescLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.95, 0.88, 0.95)
 theme_override_font_sizes/font_size = 12
 text = "+25% Velocidad y x2 Radio de Imán por 10s al sincronizar el objetivo marcado."
 autowrap_mode = 2
 
-[node name="RightCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
-custom_minimum_size = Vector2(230, 0)
+[node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
 layout_mode = 2
-theme_override_constants/separation = 12
-alignment = 1
+size_flags_vertical = 3
 
-[node name="SelectButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol"]
-custom_minimum_size = Vector2(0, 52)
+[node name="ButtonsContainer" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_constants/separation = 8
+
+[node name="SelectButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer"]
+custom_minimum_size = Vector2(250, 48)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
-theme_override_font_sizes/font_size = 14
-text = "⚡ ENLAZAR [ESPACIO]"
-
-[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol"]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
 theme_override_font_sizes/font_size = 13
+text = "✓ ENLACE ACTIVO (SELECCIONADA)"
+
+[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer"]
+custom_minimum_size = Vector2(250, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "CERRAR [ESC]"

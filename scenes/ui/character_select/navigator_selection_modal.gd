@@ -6,37 +6,37 @@ signal closed()
 
 @onready var index_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader/IndexBadge
 
-@onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/PrevButton
-@onready var next_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/NextButton
+@onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/PrevButton
+@onready var next_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/NextButton
 
-@onready var left_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard
-@onready var left_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard/VBox/LeftTexture
-@onready var left_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/LeftCard/VBox/LeftLabel
+@onready var left_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard
+@onready var left_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftTexture
+@onready var left_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftLabel
 
-@onready var artwork_frame: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame
-@onready var artwork_viewport: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/ArtworkViewport
-@onready var fullbody_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/ArtworkViewport/FullbodyTexture
-@onready var locked_overlay: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay
-@onready var lock_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/ArtworkFrame/LockedOverlay/LockCenter/LockDesc
+@onready var artwork_frame: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame
+@onready var artwork_viewport: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport
+@onready var fullbody_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport/FullbodyTexture
+@onready var locked_overlay: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay
+@onready var lock_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter/LockDesc
 
-@onready var right_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard
-@onready var right_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard/VBox/RightTexture
-@onready var right_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/RightCard/VBox/RightLabel
+@onready var right_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard
+@onready var right_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox/RightTexture
+@onready var right_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox/RightLabel
 
-@onready var dots_container: HBoxContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/DotsContainer
+@onready var dots_container: HBoxContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/DotsContainer
 
-@onready var name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow/NameLabel
-@onready var status_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow/StatusBadge
-@onready var title_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/TitleLabel
-@onready var radio_dialogue: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/RadioCard/Margin/VBox/RadioDialogue
+@onready var name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow/NameLabel
+@onready var status_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow/StatusBadge
+@onready var title_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/TitleLabel
+@onready var radio_dialogue: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard/Margin/VBox/RadioDialogue
 
-@onready var radar_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/RadarCard/Margin/VBox/RadarDesc
-@onready var buff_card: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard
-@onready var buff_name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin/VBox/BuffNameLabel
-@onready var buff_desc_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/BuffCard/Margin/VBox/BuffDescLabel
+@onready var radar_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard/Margin/VBox/RadarDesc
+@onready var buff_card: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard
+@onready var buff_name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox/BuffNameLabel
+@onready var buff_desc_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox/BuffDescLabel
 
-@onready var select_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/SelectButton
-@onready var close_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/CloseButton
+@onready var select_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer/SelectButton
+@onready var close_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer/CloseButton
 
 var is_open: bool = false
 var current_index: int = 0
@@ -365,11 +365,18 @@ func _on_select_pressed() -> void:
 	close_modal()
 
 func _setup_focus_neighbors() -> void:
+	if left_card:
+		left_card.focus_mode = Control.FOCUS_NONE
+	if right_card:
+		right_card.focus_mode = Control.FOCUS_NONE
+
 	if prev_btn and next_btn and select_btn and close_btn:
 		prev_btn.focus_neighbor_right = next_btn.get_path()
 		prev_btn.focus_neighbor_bottom = select_btn.get_path()
 		next_btn.focus_neighbor_left = prev_btn.get_path()
+		next_btn.focus_neighbor_right = select_btn.get_path()
 		next_btn.focus_neighbor_bottom = select_btn.get_path()
-		select_btn.focus_neighbor_top = next_btn.get_path()
+		select_btn.focus_neighbor_left = next_btn.get_path()
 		select_btn.focus_neighbor_bottom = close_btn.get_path()
+		close_btn.focus_neighbor_left = next_btn.get_path()
 		close_btn.focus_neighbor_top = select_btn.get_path()
