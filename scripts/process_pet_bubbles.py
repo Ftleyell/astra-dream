@@ -1,23 +1,30 @@
 import os
 import math
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
-INPUT_DIR = r"C:\Users\Frani\.gemini\antigravity\brain\1f8d9939-8c9e-40c8-8722-3b68b1b59aff"
-OUTPUT_DIR = r"C:\Users\Frani\.gemini\antigravity\scratch\astra_dream\assets\pets"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+INPUT_DIR = REPO_ROOT / "assets" / "pets" / "raw"
+OUTPUT_DIR = REPO_ROOT / "assets" / "pets"
 
 PET_FILES = {
-    "mochi": "pet_mochi_raw_1790406283889.jpg",
-    "kuro": "pet_kuro_raw_1790406349905.jpg",
-    "luna": "pet_luna_raw_1790406372485.jpg",
-    "pip": "pet_pip_raw_1790406400689.jpg",
-    "cosmo": "pet_cosmo_raw_1790406435650.jpg",
+    "mochi": "pet_mochi_raw.jpg",
+    "kuro": "pet_kuro_raw.jpg",
+    "luna": "pet_luna_raw.jpg",
+    "pip": "pet_pip_raw.jpg",
+    "cosmo": "pet_cosmo_raw.jpg",
 }
 
 TARGET_SIZE = 512
 
 def process_pet(pet_name, filename):
-    in_path = os.path.join(INPUT_DIR, filename)
-    out_path = os.path.join(OUTPUT_DIR, f"pet_{pet_name}.png")
+    in_path = INPUT_DIR / filename
+    out_path = OUTPUT_DIR / f"pet_{pet_name}.png"
+
+    if not in_path.exists():
+        print(f"Warning: Input file does not exist: {in_path}")
+        return
 
     img = Image.open(in_path).convert("RGBA")
     w, h = img.size
@@ -37,8 +44,7 @@ def process_pet(pet_name, filename):
 
     print(f"Processing {pet_name}: center=({cx:.1f}, {cy:.1f}), radius={radius:.1f}")
 
-    # Create high-resolution supersampled mask for ultra-smooth anti-aliasing
-    # Using 4x supersampling for the circle mask
+    # Create high-resolution supersampled mask for ultra-smooth anti-aliasing (4x)
     mask_scale = 4
     mask_w = w * mask_scale
     mask_h = h * mask_scale
@@ -79,7 +85,7 @@ def process_pet(pet_name, filename):
     print(f"Saved: {out_path} ({TARGET_SIZE}x{TARGET_SIZE})")
 
 def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for pet_name, filename in PET_FILES.items():
         process_pet(pet_name, filename)
     print("All pets processed successfully!")

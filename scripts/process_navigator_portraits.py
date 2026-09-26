@@ -1,8 +1,12 @@
 import os
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
-BRAIN_DIR = r"C:\Users\Frani\.gemini\antigravity\brain\1f8d9939-8c9e-40c8-8722-3b68b1b59aff"
-OUTPUT_DIR = r"C:\Users\Frani\.gemini\antigravity\scratch\astra_dream\assets\characters\navigators\portraits"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+RAW_DIR = REPO_ROOT / "assets" / "characters" / "navigators" / "raw"
+FULL_DIR = REPO_ROOT / "assets" / "characters" / "navigators" / "full"
+OUTPUT_DIR = REPO_ROOT / "assets" / "characters" / "navigators" / "portraits"
 TARGET_SIZE = 512
 
 def process_bubble_image(in_path, out_path):
@@ -107,42 +111,42 @@ def process_tight_crop_bubble(in_path, center_x, center_y, crop_radius, theme_co
     print(f"Processed tight crop bubble portrait: {out_path}")
 
 def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     
     # 1. Lyra
     process_bubble_image(
-        os.path.join(BRAIN_DIR, "nav_portrait_lyra_1790410117756.jpg"),
-        os.path.join(OUTPUT_DIR, "portrait_lyra.png")
+        RAW_DIR / "nav_portrait_lyra_raw.jpg",
+        OUTPUT_DIR / "portrait_lyra.png"
     )
     
     # 2. Vespera
     process_bubble_image(
-        os.path.join(BRAIN_DIR, "nav_portrait_vespera_1790410158098.jpg"),
-        os.path.join(OUTPUT_DIR, "portrait_vespera.png")
+        RAW_DIR / "nav_portrait_vespera_raw.jpg",
+        OUTPUT_DIR / "portrait_vespera.png"
     )
     
     # 3. Caelia
     process_tight_crop_bubble(
-        os.path.join(BRAIN_DIR, "navigator_caelia_1790395351483.jpg"),
+        FULL_DIR / "navigator_caelia.png",
         center_x=380, center_y=280, crop_radius=160,
         theme_color_rgb=(255, 184, 51),
-        out_path=os.path.join(OUTPUT_DIR, "portrait_caelia.png")
+        out_path=OUTPUT_DIR / "portrait_caelia.png"
     )
     
     # 4. Zephyr
     process_tight_crop_bubble(
-        os.path.join(BRAIN_DIR, "navigator_zephyr_1790395403767.jpg"),
+        FULL_DIR / "navigator_zephyr.png",
         center_x=425, center_y=260, crop_radius=160,
         theme_color_rgb=(26, 217, 255),
-        out_path=os.path.join(OUTPUT_DIR, "portrait_zephyr.png")
+        out_path=OUTPUT_DIR / "portrait_zephyr.png"
     )
     
     # 5. Iris
     process_tight_crop_bubble(
-        os.path.join(BRAIN_DIR, "navigator_iris_1790395423362.jpg"),
+        FULL_DIR / "navigator_iris.png",
         center_x=415, center_y=285, crop_radius=165,
         theme_color_rgb=(225, 210, 255),
-        out_path=os.path.join(OUTPUT_DIR, "portrait_iris.png")
+        out_path=OUTPUT_DIR / "portrait_iris.png"
     )
     
     print("All 5 navigator circular portraits generated successfully!")

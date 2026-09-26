@@ -10,8 +10,11 @@
 *.otf filter=lfs diff=lfs merge=lfs -text
 AstraLauncher.exe filter=lfs diff=lfs merge=lfs -text
 
-# Pixel art pets (standard binary, excluded from Git LFS so they pull directly without LFS)
-assets/pets/*.png -filter -diff -merge binary
+# Pet assets and raw artworks (standard binary, excluded from Git LFS so they pull directly without LFS)
+assets/pets/** -filter -diff -merge binary
+
+# Navigator circular portraits (standard binary, excluded from Git LFS so they pull directly without LFS)
+assets/characters/navigators/portraits/** -filter -diff -merge binary
 
 # Normalize line endings to LF for Godot text formats to prevent false dirty git status on Windows
 *.import text eol=lf
