@@ -303,6 +303,9 @@ func bomb_clear_all() -> void:
 	active_common_bullets = 0
 	RenderingServer.multimesh_set_visible_instances(multimesh_rid, 0)
 
+func clear_all_bullets() -> void:
+	bomb_clear_all()
+
 # MÉTODOS DE CONTROL PARA ENEMIGOS COMUNES (LÍMITE ESTRICTO ANTI-LAG A VELOCIDAD X4)
 func can_common_enemy_shoot() -> bool:
 	return active_common_bullets < MAX_COMMON_ENEMY_BULLETS

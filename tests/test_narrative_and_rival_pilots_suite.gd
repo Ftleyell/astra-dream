@@ -151,8 +151,14 @@ func _test_5_boss_astra_prime_routes() -> void:
 	prime.set_route("pacifist")
 	assert(prime.route == "pacifist", "Ruta debe ser pacifist")
 
-	prime.queue_free()
-	print("  ✓ Adaptabilidad de rutas de BossAstraPrime validada exitosamente")
+	# Probar muerte y emisión de señal boss_defeated sin excepciones
+	var boss_defeated_signal := [false]
+	prime.boss_defeated.connect(func(_b_id): boss_defeated_signal[0] = true)
+	prime.take_damage(10000.0)
+	assert(prime.is_dying == true, "BossAstraPrime debe entrar en is_dying al ser abatido")
+	assert(boss_defeated_signal[0] == true, "BossAstraPrime debe emitir boss_defeated sin errores de BulletServer")
+
+	print("  ✓ Adaptabilidad de rutas y muerte de BossAstraPrime validadas exitosamente")
 
 func _test_6_save_manager_endings_and_victory_modal() -> void:
 	print("\n[6/6] Verificando Persistencia de 3 Finales en SaveManager y Pantalla de Victoria...")

@@ -238,7 +238,10 @@ func _die() -> void:
 	set_physics_process(false)
 
 	if is_instance_valid(bullet_server):
-		bullet_server.clear_all_bullets()
+		if bullet_server.has_method("bomb_clear_all"):
+			bullet_server.bomb_clear_all()
+		elif bullet_server.has_method("clear_all_bullets"):
+			bullet_server.clear_all_bullets()
 
 	boss_defeated.emit(boss_id)
 
