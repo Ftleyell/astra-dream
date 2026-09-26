@@ -46,6 +46,9 @@ var current_genocide_escort: Node2D = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
+var is_pre_round: bool = true
+const PRE_ROUND_DURATION: float = 30.0
+var pre_round_timer: float = PRE_ROUND_DURATION
 var wave_timer: float = WAVE_DURATION
 var wave_satellites_spawned: int = 0
 var satellites_collected_total: int = 0
@@ -458,6 +461,9 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_dialogic_audio(layout)
 
+func _trigger_cockpit_interlude() -> void:
+	_trigger_pet_rival_alert("Piloto Desconocida")
+
 func _trigger_pet_rival_alert(pilot_name: String) -> void:
 	if current_rival != null:
 		_trigger_pet_rival_encounter(current_rival)
@@ -704,8 +710,8 @@ func _process(delta: float) -> void:
 	# Cronómetro de tiempo total de la run
 	run_time_elapsed += delta
 
-	# Chequeo de inicio de encuentro para la oleada (ej. Oleada 1 tras briefing)
-	if _wave_encounter_checked_for_wave != current_wave:
+	# Chequeo de inicio de encuentro para la oleada (ej. Oleada 1 tras pre-ronda)
+	if not is_pre_round and _wave_encounter_checked_for_wave != current_wave:
 		_wave_encounter_checked_for_wave = current_wave
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 2.0
@@ -728,27 +734,43 @@ func _process(delta: float) -> void:
 		_auto_save_timer = 0.0
 		save_current_run_state()
 
-	# Lógica del temporizador de oleada
-	wave_timer -= delta
-	if wave_timer <= 0.0:
-		current_wave += 1
-		wave_timer = WAVE_DURATION
-		wave_satellites_spawned = 0
-		if enemy_spawner and enemy_spawner.has_method("set_wave"):
-			enemy_spawner.set_wave(current_wave)
-		_wave_encounter_checked_for_wave = current_wave
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 2.0
-		save_current_run_state()
-		_spawn_next_satellite_for_wave()
-		if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
-			space_object_spawner.force_spawn_monolith()
+	# Lógica de Pre-Ronda (Fase de Despliegue de 30s) o Temporizador de Oleada regular
+	if is_pre_round:
+		pre_round_timer -= delta
+		if hud and is_instance_valid(hud):
+			hud.update_pre_round_status(pre_round_timer)
+		if pre_round_timer <= 0.0:
+			is_pre_round = false
+			current_wave = 1
+			wave_timer = WAVE_DURATION
+			wave_satellites_spawned = 0
+			_wave_encounter_checked_for_wave = 0
+			if enemy_spawner and enemy_spawner.has_method("set_wave"):
+				enemy_spawner.set_wave(1)
+			_spawn_next_satellite_for_wave()
+			save_current_run_state()
+	else:
+		wave_timer -= delta
+		if wave_timer <= 0.0:
+			current_wave += 1
+			wave_timer = WAVE_DURATION
+			wave_satellites_spawned = 0
+			if enemy_spawner and enemy_spawner.has_method("set_wave"):
+				enemy_spawner.set_wave(current_wave)
+			_wave_encounter_checked_for_wave = current_wave
+			_wave_encounter_pending = true
+			_wave_encounter_timer = 2.0
+			save_current_run_state()
+			_spawn_next_satellite_for_wave()
+			if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
+				space_object_spawner.force_spawn_monolith()
+
+		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
 	# Distancia requerida que escala con cada satélite recolectado
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
 	var current_dist: float = player.global_position.distance_to(last_anchor_pos)
 
-	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 	hud.update_satellite_travel_dist(current_dist, req_dist)
 
 	# Chequeo de desespawn cuando el jugador se aleja 10k del satélite
@@ -1092,6 +1114,7 @@ func _on_final_boss_defeated(route: String) -> void:
 	)
 
 func jump_to_wave_11(route: String = "neutral") -> void:
+	is_pre_round = false
 	current_wave = 11
 	wave_timer = WAVE_DURATION
 	_wave_encounter_checked_for_wave = 11
@@ -1222,20 +1245,9 @@ func _on_satellite_exited(_index: int) -> void:
 	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE and not is_exiting_run and is_inside_tree() and not is_queued_for_deletion():
 		_spawn_next_satellite_for_wave()
 
-func trigger_boss_transmission(_speaker: String = "", _text: String = "") -> void:
-	is_boss_transmission_active = true
-	get_tree().paused = true
-	if skip_badge_layer:
-		skip_badge_layer.show()
-	var dialogic_node := _get_dialogic()
-	if dialogic_node and dialogic_node.has_method("start"):
-		var layout = dialogic_node.start("res://narrative/timelines/boss_titan_alert.dtl")
-		if layout:
-			layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		_setup_dialogic_audio(layout)
-	else:
-		is_boss_transmission_active = false
-		get_tree().paused = false
+func trigger_boss_transmission(speaker: String = "CENTINELA TITÁN", _text: String = "") -> void:
+	var b_name := speaker if not speaker.is_empty() else "CENTINELA TITÁN"
+	_trigger_pet_boss_alert(b_name)
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	var debug_mgr = get_node_or_null("/root/DebugManager")

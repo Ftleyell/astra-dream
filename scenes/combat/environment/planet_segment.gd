@@ -60,6 +60,8 @@ func _ensure_nodes() -> void:
 
 func _ready() -> void:
 	add_to_group("destructibles")
+	add_to_group("planet_segment")
+	add_to_group("planets")
 	_ensure_nodes()
 
 	# Capa 1: Sólido contra la nave del jugador (move_and_slide). Máscara 0 para ser inamovible.

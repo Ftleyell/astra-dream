@@ -26,6 +26,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("pickups")
 	add_to_group("arcana_orbs")
+	add_to_group("arcana_orb")
+	add_to_group("astra_pacts")
+	add_to_group("pact")
 
 	# Impulso inicial suave hacia arriba/afuera
 	var angle := randf_range(-PI * 0.8, -PI * 0.2)

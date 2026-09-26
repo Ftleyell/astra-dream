@@ -106,6 +106,11 @@ func _on_target_reached(target: Node2D) -> void:
 	if not is_instance_valid(player) or not navigator_data:
 		return
 
+	# Si el objetivo alcanzado es un satélite, solo Zephyr lo reclama y otorga su buff
+	var is_sat: bool = (is_instance_valid(target) and (target.is_in_group("satellite_beacon") or (main_game and "current_satellite" in main_game and target == main_game.current_satellite)))
+	if is_sat and navigator_data.navigator_id != &"zephyr":
+		return
+
 	# Notificar en el HUD
 	if comms_widget:
 		comms_widget.show_buff_activated(navigator_data)
@@ -202,11 +207,11 @@ func _find_best_target_for_navigator() -> Node2D:
 
 	match t_type:
 		&"planet":
-			candidate = _find_nearest_in_groups([&"planet_segment", &"planets", &"bio_cocoon", &"biomass_orbs"])
+			candidate = _find_nearest_in_groups([&"planet_segment", &"planets", &"bio_cocoon", &"bio_cocoons", &"biomass_orbs"])
 		&"pact":
-			candidate = _find_nearest_in_groups([&"arcana_orb", &"arcana_orbs", &"astra_pacts"])
+			candidate = _find_nearest_in_groups([&"arcana_orb", &"arcana_orbs", &"astra_pacts", &"pact", &"dark_matter_orbs"])
 		&"monolith":
-			candidate = _find_nearest_in_groups([&"monolith", &"monoliths", &"astral_geodes", &"space_objects"])
+			candidate = _find_nearest_in_groups([&"monolith", &"monoliths", &"astral_geodes", &"astral_geode", &"destructibles"])
 		&"satellite":
 			if main_game and "current_satellite" in main_game and is_instance_valid(main_game.current_satellite):
 				candidate = main_game.current_satellite
@@ -218,14 +223,9 @@ func _find_best_target_for_navigator() -> Node2D:
 			elif main_game and "current_rival" in main_game and is_instance_valid(main_game.current_rival):
 				candidate = main_game.current_rival
 			else:
-				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"elites"])
-
-	# Fallback inteligente si la categoría primaria no tiene elementos activos en ese segundo
-	if not is_instance_valid(candidate):
-		if main_game and "current_satellite" in main_game and is_instance_valid(main_game.current_satellite):
-			candidate = main_game.current_satellite
-		else:
-			candidate = _find_nearest_in_groups([&"space_objects", &"destructibles", &"enemies"])
+				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"rival_pilots", &"rival_pilot", &"elites"])
+				if not is_instance_valid(candidate):
+					candidate = _create_fallback_anomaly_target()
 
 	return candidate
 

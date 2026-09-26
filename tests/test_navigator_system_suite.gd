@@ -200,6 +200,21 @@ func test_navigator_controller_and_buff_applications() -> void:
 	test_assert(dummy_player.stats.get_stat(&"crit_chance") >= base_crit + 0.29, "El buff de Iris debe otorgar +30% probabilidad crítica")
 	controller._expire_buff()
 
+	# Probar que satélites solo dan buff a Zephyr y no a otras navegadoras (ej. Lyra)
+	var dummy_sat := Node2D.new()
+	dummy_sat.add_to_group("satellite_beacon")
+	add_child(dummy_sat)
+
+	controller.navigator_data = NavigatorDataScript.get_navigator(&"lyra")
+	controller._on_target_reached(dummy_sat)
+	test_assert(not controller.is_buff_active, "Lyra no debe recibir buff al tocar un satélite")
+
+	controller.navigator_data = NavigatorDataScript.get_navigator(&"zephyr")
+	controller._on_target_reached(dummy_sat)
+	test_assert(controller.is_buff_active, "Zephyr sí debe recibir su buff al enlazar un satélite")
+	controller._expire_buff()
+	dummy_sat.queue_free()
+
 	controller.queue_free()
 	main_game_inst.queue_free()
 
@@ -216,12 +231,18 @@ func test_navigator_selection_modal_ui() -> void:
 	test_assert(modal._nav_buttons.size() == 5, "Deben crearse exactamente 5 indicadores de navegantes en el carrusel")
 	test_assert(modal.fullbody_texture != null and modal.fullbody_texture.texture != null, "El carrusel debe mostrar la textura full-body de la navegante activa")
 
-	# Probar desplazamiento vertical en el carrusel
+	# Probar desplazamiento Cover Flow
 	var start_idx: int = modal.current_index
 	modal._cycle(1)
-	test_assert(modal.current_index == (start_idx + 1) % 5, "Avanzar verticalmente debe cambiar el índice al siguiente")
+	test_assert(modal.current_index == (start_idx + 1) % 5, "Avanzar Cover Flow debe cambiar el índice al siguiente")
 	modal._cycle(-1)
-	test_assert(modal.current_index == start_idx, "Retroceder verticalmente debe restaurar el índice previo")
+	test_assert(modal.current_index == start_idx, "Retroceder Cover Flow debe restaurar el índice previo")
+
+	# Probar clic directo en las cartas laterales de Cover Flow
+	modal.left_card.emit_signal("pressed")
+	test_assert(modal.current_index == (start_idx - 1 + 5) % 5, "Hacer clic en la carta izquierda debe retroceder")
+	modal.right_card.emit_signal("pressed")
+	test_assert(modal.current_index == start_idx, "Hacer clic en la carta derecha debe avanzar")
 
 	# Probar selección de navegante mediante el botón principal
 	modal._set_index(1) # Vespera

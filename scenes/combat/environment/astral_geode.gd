@@ -23,6 +23,7 @@ func _ready() -> void:
 	obstacle_radius = 50.0
 	shard_color = Color(0.9, 0.7, 1.0, 1.0) # Cuarzo prismático iridiscente
 	add_to_group("astral_geodes")
+	add_to_group("astral_geode")
 
 	# Deriva inercial lenta
 	if drift_velocity == Vector2.ZERO:

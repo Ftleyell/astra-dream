@@ -53,6 +53,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("rival_pilots")
+	add_to_group("rival_pilot")
+	add_to_group("bosses")
 
 	current_health = max_health
 	_acquire_references()

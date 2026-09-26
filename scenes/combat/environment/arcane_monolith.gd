@@ -24,6 +24,7 @@ func _ready() -> void:
 	obstacle_radius = 44.0
 	shard_color = Color(0.1, 0.95, 1.0, 1.0)
 	add_to_group("monoliths")
+	add_to_group("monolith")
 
 	# Deriva inercial lenta y mística
 	if drift_velocity == Vector2.ZERO:

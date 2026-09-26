@@ -36,6 +36,8 @@ var wave_satellites_spawned: int = 0
 var max_wave_satellites: int = 3
 var current_travel_dist: float = 0.0
 var required_travel_dist: float = 600.0
+var is_pre_round_active: bool = false
+var pre_round_time_left: float = 30.0
 var _inventory_chips: Dictionary[StringName, PanelContainer] = {}
 
 func _ready() -> void:
@@ -90,9 +92,15 @@ func _process(delta: float) -> void:
 
 
 	run_time += delta
-	var wave_m: int = int(float(wave_time_left) / 60.0)
-	var wave_s: int = int(wave_time_left) % 60
-	timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
+	if is_pre_round_active:
+		var s: int = int(ceil(maxf(0.0, pre_round_time_left)))
+		timer_label.text = "PRE-RONDA [00:%02d] | FASE DE DESPLIEGUE" % s
+		timer_label.add_theme_color_override("font_color", Color(0.2, 0.95, 1.0))
+	else:
+		timer_label.remove_theme_color_override("font_color")
+		var wave_m: int = int(float(wave_time_left) / 60.0)
+		var wave_s: int = int(wave_time_left) % 60
+		timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
 
 
 	if has_satellite and player:
@@ -110,7 +118,12 @@ func _process(delta: float) -> void:
 		else:
 			satellite_radar_label.text = "Satélites de oleada agotados. Resiste hasta la prox. oleada"
 
+func update_pre_round_status(time_left: float) -> void:
+	is_pre_round_active = true
+	pre_round_time_left = time_left
+
 func update_wave_status(wave: int, time_left: float, satellites_spawned: int, max_satellites: int) -> void:
+	is_pre_round_active = false
 	current_wave = wave
 	wave_time_left = time_left
 	wave_satellites_spawned = satellites_spawned

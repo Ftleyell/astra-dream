@@ -26,6 +26,7 @@ func _ready() -> void:
 	obstacle_radius = 42.0
 	shard_color = Color(0.85, 0.15, 0.45, 1.0) # Quitina orgánica violácea/carmesí
 	add_to_group("bio_cocoons")
+	add_to_group("bio_cocoon")
 
 	# Deriva inercial muy sutil tipo materia viva flotante
 	if drift_velocity == Vector2.ZERO:
