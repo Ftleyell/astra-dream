@@ -40,9 +40,15 @@ var boss_astra_prime_scene: PackedScene = preload("res://scenes/combat/bosses/bo
 var rival_pilot_scene: PackedScene = preload("res://scenes/combat/bosses/rival_pilot_boss.tscn")
 var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/allied_wingman.tscn")
 var nyx_boss_escort_scene: PackedScene = preload("res://scenes/combat/bosses/nyx_boss_escort.tscn")
+var elite_herald_scene: PackedScene = preload("res://scenes/combat/bosses/elite_herald_boss.tscn")
+var crisis_event_manager_scene: PackedScene = preload("res://scenes/combat/events/crisis_event_manager.tscn")
+var crisis_alert_banner_scene: PackedScene = preload("res://scenes/ui/hud/crisis_alert_banner.tscn")
+
 var current_boss: Node2D = null
 var current_rival: Node2D = null
 var current_genocide_escort: Node2D = null
+var crisis_manager: Node2D = null
+var crisis_banner: CanvasLayer = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -114,6 +120,15 @@ func _ready() -> void:
 			add_child(arcana_modal)
 	if arcana_modal:
 		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
+
+	# Inicializar sistema de eventos de crisis dinámicas y banners
+	if not crisis_banner and crisis_alert_banner_scene:
+		crisis_banner = crisis_alert_banner_scene.instantiate() as CanvasLayer
+		add_child(crisis_banner)
+
+	if not crisis_manager and crisis_event_manager_scene:
+		crisis_manager = crisis_event_manager_scene.instantiate() as Node2D
+		add_child(crisis_manager)
 
 	_last_player_hp = player.current_health
 
@@ -827,6 +842,27 @@ func _check_wave_encounters() -> void:
 	else:
 		# Oleadas pares (2, 4, 6, 8, 10): Jefes de Dominio
 		_spawn_wave_boss()
+
+func _spawn_elite_herald() -> void:
+	if current_boss != null or not is_instance_valid(player) or not elite_herald_scene:
+		return
+
+	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
+	var elite_pos := player.global_position + forward * 580.0
+
+	var herald: Node2D = elite_herald_scene.instantiate() as Node2D
+	herald.global_position = elite_pos
+	herald.setup_type(current_wave)
+	current_boss = herald
+	add_child(herald)
+
+	var b_name: String = herald.boss_name
+	var b_hp: float = herald.max_health
+	hud.show_boss(b_name, b_hp)
+	if herald.has_signal("health_changed"):
+		herald.connect("health_changed", hud.update_boss_health)
+	if herald.has_signal("boss_defeated"):
+		herald.connect("boss_defeated", _on_boss_defeated)
 
 func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if current_rival != null or current_boss != null or not is_instance_valid(player):

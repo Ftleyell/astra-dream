@@ -13,6 +13,14 @@ var proc_chain: Array[StringName] = []
 
 const MAX_DEPTH: int = 4
 
+static func create_direct_hit(dmg: float, crit: bool = false, proc_coeff: float = 1.0) -> HitContext:
+	var ctx := HitContext.new()
+	ctx.raw_damage = dmg
+	ctx.final_damage = dmg
+	ctx.is_crit = crit
+	ctx.proc_coefficient = proc_coeff
+	return ctx
+
 func fork_child_hit(new_damage: float, new_proc_coeff: float, triggered_by: StringName) -> HitContext:
 	var child := HitContext.new()
 	child.attacker = attacker

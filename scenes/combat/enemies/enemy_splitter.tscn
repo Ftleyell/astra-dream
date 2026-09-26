@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://splitter_enemy_001"]
+
+[ext_resource type="Script" path="res://scenes/combat/enemies/enemy_splitter.gd" id="1_split"]
+[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_split"]
+radius = 18.0
+
+[node name="EnemySplitter" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_split")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.2, 0.9, 0.45, 1)
+polygon = PackedVector2Array(-14, -14, 0, -20, 14, -14, 20, 0, 14, 14, 0, 20, -14, 14, -20, 0)
+
+[node name="CellCore" type="Polygon2D" parent="."]
+color = Color(1.0, 0.25, 0.5, 1)
+polygon = PackedVector2Array(-6, -6, 0, -8, 6, -6, 8, 0, 6, 6, 0, 8, -6, 6, -8, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_split")
+
+[node name="DamageAccumulator" parent="." instance=ExtResource("2_dmg")]

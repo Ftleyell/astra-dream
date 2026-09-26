@@ -11,6 +11,8 @@ extends Node2D
 @export var tank_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_tank.tscn")
 @export var shooter_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_shooter.tscn")
 @export var rainbow_scene: PackedScene = preload("res://scenes/combat/enemies/rainbow_enemy.tscn")
+@export var micro_flock_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_micro_flock.tscn")
+@export var splitter_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_splitter.tscn")
 
 @export var max_enemies: int = 80
 @export var base_spawn_interval: float = 1.2
@@ -134,9 +136,24 @@ func _try_spawn_cluster() -> void:
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
 
-	# Elegir un cuadrante de aproximación aleatorio
+	# Intercepción geométrica: 50% probabilidad de cortar la ruta de escape según player.velocity
 	var base_angle := randf() * TAU
+	var is_intercepting := false
+	if is_instance_valid(player) and player.velocity.length_squared() > 100.0 and randf() < 0.50:
+		is_intercepting = true
+		var player_heading := player.velocity.angle()
+		# 50% frontal directo, 50% pinza lateral a +/- 60 grados
+		if randf() < 0.5:
+			base_angle = player_heading + randf_range(-0.35, 0.35)
+		else:
+			var side_sign := 1.0 if randf() < 0.5 else -1.0
+			base_angle = player_heading + (side_sign * 1.05) + randf_range(-0.2, 0.2)
+
 	var base_dist := randf_range(spawn_radius_min, spawn_radius_max)
+	if is_intercepting:
+		# Acercar ligeramente el spawn en caso de intercepción para que corte efectivamente el vector
+		base_dist = clampf(base_dist * 0.88, 620.0, 850.0)
+
 	var cluster_origin := center + Vector2(cos(base_angle), sin(base_angle)) * base_dist
 
 	# Spawner de la manada con formación en abanico
@@ -150,26 +167,36 @@ func _try_spawn_cluster() -> void:
 func _select_enemy_scene() -> PackedScene:
 	var roll := randf()
 	if current_wave <= 1:
-		# Oleada 1: 80% Drones, 20% Kamikazes
-		if roll < 0.80:
-			return drone_scene
-		return kamikaze_scene
-	elif current_wave == 2:
-		# Oleada 2: 65% Drones, 25% Kamikazes, 10% Artilleros
-		if roll < 0.65:
+		# Oleada 1: 75% Drones, 15% Kamikazes, 10% Micro-Flocks
+		if roll < 0.75:
 			return drone_scene
 		elif roll < 0.90:
 			return kamikaze_scene
-		return shooter_scene
-	else:
-		# Oleada 3+: 50% Drones, 25% Kamikazes, 15% Tanques (bloqueo físico), 10% Artilleros (apoyo telegrafiado)
+		return micro_flock_scene
+	elif current_wave == 2:
+		# Oleada 2: 50% Drones, 20% Kamikazes, 15% Micro-Flocks, 10% Artilleros, 5% Splitters
 		if roll < 0.50:
 			return drone_scene
-		elif roll < 0.75:
+		elif roll < 0.70:
 			return kamikaze_scene
-		elif roll < 0.90:
+		elif roll < 0.85:
+			return micro_flock_scene
+		elif roll < 0.95:
+			return shooter_scene
+		return splitter_scene
+	else:
+		# Oleada 3+: 35% Drones, 20% Kamikazes, 15% Micro-Flocks, 12% Tanques, 10% Artilleros, 8% Splitters
+		if roll < 0.35:
+			return drone_scene
+		elif roll < 0.55:
+			return kamikaze_scene
+		elif roll < 0.70:
+			return micro_flock_scene
+		elif roll < 0.82:
 			return tank_scene
-		return shooter_scene
+		elif roll < 0.92:
+			return shooter_scene
+		return splitter_scene
 
 func _trigger_swarm_rush() -> void:
 	var existing_enemies := get_tree().get_nodes_in_group("enemies")

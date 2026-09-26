@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://elite_herald_001"]
+
+[ext_resource type="Script" path="res://scenes/combat/bosses/elite_herald_boss.gd" id="1_herald"]
+[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_herald"]
+radius = 26.0
+
+[node name="EliteHeraldBoss" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_herald")
+
+[node name="VisualFrame" type="Polygon2D" parent="."]
+color = Color(0.85, 0.6, 0.1, 1)
+polygon = PackedVector2Array(-24, -14, 0, -28, 24, -14, 28, 0, 24, 14, 0, 28, -24, 14, -28, 0)
+
+[node name="VisualCore" type="Polygon2D" parent="."]
+color = Color(1, 0.8, 0.2, 1)
+polygon = PackedVector2Array(-12, -8, 0, -16, 12, -8, 16, 0, 12, 8, 0, 16, -12, 8, -16, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_herald")
+
+[node name="DamageAccumulator" parent="." instance=ExtResource("2_dmg")]

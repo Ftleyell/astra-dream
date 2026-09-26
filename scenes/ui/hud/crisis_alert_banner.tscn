@@ -1,0 +1,75 @@
+[gd_scene load_steps=3 format=3 uid="uid://crisis_banner_001"]
+
+[ext_resource type="Script" path="res://scenes/ui/hud/crisis_alert_banner.gd" id="1_banner"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.05, 0.05, 0.1, 0.88)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.35, 0.1, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(1, 0.2, 0, 0.4)
+shadow_size = 12
+
+[node name="CrisisAlertBanner" type="CanvasLayer"]
+layer = 25
+script = ExtResource("1_banner")
+
+[node name="RootContainer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="RootContainer"]
+custom_minimum_size = Vector2(580, 110)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -290.0
+offset_top = 70.0
+offset_right = 290.0
+offset_bottom = 180.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 10.0
+offset_right = -16.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="RootContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "⚠ CRISIS DE SECTOR: ANOMALÍA DETECTADA ⚠"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="RootContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Perturbación electromagnética severa en curso."
+horizontal_alignment = 1
+
+[node name="CountdownLabel" type="Label" parent="RootContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "IMPACTO INMINENTE EN: 3"
+horizontal_alignment = 1
