@@ -23,3 +23,5 @@ assets/characters/navigators/portraits/** -filter -diff -merge binary
 *.tres text eol=lf
 *.godot text eol=lf
 *.md text eol=lf
+*.bat text eol=crlf
+.githooks/* text eol=lf

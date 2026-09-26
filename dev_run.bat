@@ -29,8 +29,12 @@ pause
 exit /b 1
 
 :run_godot
-echo [*] Sincronizando e importando assets/scripts con Godot...
-"%GODOT_EXE%" --headless --path "%~dp0." --editor --quit >nul 2>&1
+if exist "%~dp0tools\sync_assets.ps1" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\sync_assets.ps1"
+) else (
+    echo [*] Sincronizando e importando assets/scripts con Godot...
+    "%GODOT_EXE%" --headless --path "%~dp0." --editor --quit >nul 2>&1
+)
 
 echo [+] Iniciando Astra Dream...
 start "" "%GODOT_EXE%" --path "%~dp0."

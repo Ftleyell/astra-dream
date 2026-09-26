@@ -1,0 +1,18 @@
+#!/bin/sh
+command -v git-lfs >/dev/null 2>&1 || { printf >&2 "\n%s\n\n" "This repository is configured for Git LFS but 'git-lfs' was not found on your path."; }
+if command -v git-lfs >/dev/null 2>&1; then
+    git lfs post-checkout "$@"
+fi
+
+if [ "$3" = "1" ]; then
+    echo ""
+    echo "[Astra Dream Hook] Cambio de rama detectado. Sincronizando assets..."
+    HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+    PROJECT_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+
+    if command -v powershell.exe >/dev/null 2>&1; then
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PROJECT_ROOT/tools/sync_assets.ps1"
+    elif command -v pwsh.exe >/dev/null 2>&1; then
+        pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "$PROJECT_ROOT/tools/sync_assets.ps1"
+    fi
+fi

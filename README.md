@@ -59,30 +59,93 @@ Si prefieres descargarlo manualmente a través de tu navegador:
 
 ---
 
-## 🛠 Requisitos de Entorno
+## 🛠 Requisitos de Entorno para Desarrolladores
 * **Godot Engine 4.7+ (Stable)**
 * **Git** con soporte para **Git LFS** (`git lfs install`)
+* **PowerShell 5.1+ / 7+** (incluido de serie en Windows 10/11)
 
 ---
 
-## 🚀 Puesta en Marcha (Clonar y Ejecutar)
+## 🚀 Puesta en Marcha Rápida (Entorno de Desarrollo en 1 Clic)
+
+Si vas a colaborar o ejecutar el juego desde la copia del repositorio:
 
 ```powershell
-# 1. Clonar el repositorio con LFS
+# 1. Clonar el repositorio
 git clone https://github.com/Ftleyell/astra-dream.git
 cd astra-dream
-git lfs pull
 
-# 2. Inicializar la caché interna del motor
-& "C:\Ruta\Hacia\Godot_console.exe" --editor --headless --quit
-
-# 3. Ejecutar el juego desde el menú principal
-& "C:\Ruta\Hacia\Godot_console.exe" --path .
+# 2. Configurar el entorno de desarrollo y Git Hooks (Solo 1 vez)
+.\setup_dev.bat
 ```
 
 > [!TIP]
-> **Ejecución en 1 Clic para Desarrolladores:**
-> También puedes hacer doble clic directamente sobre `dev_run.bat` (o ejecutar `.\dev_run.bat` en la terminal). El script detecta Godot automáticamente, recompila la caché interna de nuevos assets/scripts y lanza el juego de una sola vez.
+> **¿Qué hace `setup_dev.bat`?**
+> 1. Configura los **Git Hooks automáticos** del repositorio (`.githooks/`).
+> 2. Inicializa los filtros globales de **Git LFS** para garantizar la descarga íntegra de binarios pesados (PNG, GLB, WAV).
+> 3. Purga cualquier textura "dummy" corrupta que haya quedado en caché.
+> 4. Ejecuta una reimportación headless con Godot Engine para que todos los modelos y texturas estén 100% listos.
+
+---
+
+## 🔄 Flujo de Trabajo Diario: Trabajar y Lanzar Sin Problemas
+
+Una vez ejecutado `setup_dev.bat`, no necesitas preocuparte por texturas que falten o entornos 3D desincronizados:
+
+### 1. Actualizar el repositorio (`git pull` o cambio de rama)
+Al tener activos los Git Hooks (`.githooks/post-merge` y `.githooks/post-checkout`), cada vez que ejecutes en consola:
+```bash
+git pull
+```
+o
+```bash
+git checkout otra-rama
+```
+Git ejecutará automáticamente en segundo plano la descarga de los binarios reales de Git LFS y la reimportación limpia en Godot sin intervención manual.
+
+### 2. Lanzar el juego
+Puedes lanzar el proyecto de tres maneras:
+* **Opción A (Recomendada):** Haz doble clic en `dev_run.bat` (o ejecuta `.\dev_run.bat` en consola). Verifica assets, purga posibles corruptelas y abre Godot al instante.
+* **Opción B (Desde el Editor de Godot):** Abre Godot Engine y carga la carpeta del proyecto.
+* **Opción C (Línea de Comandos directa):** Ejecuta `godot --path .` desde tu consola habitual.
+
+---
+
+## 🔍 ¿Por qué ocurren conflictos de texturas 2D y entornos 3D entre PCs?
+
+Es muy común que en proyectos con Godot y Git ocurra que en la PC de quien sube el commit todo funcione impecable, pero al pullear en otra máquina las texturas aparezcan vacías/invisibles, de 1x1 píxel o los modelos 3D fallen. Esto se debe a dos factores técnicos fundamentales:
+
+### 1. El Runtime de Godot NO importa assets en tiempo de ejecución
+Godot separa estrictamente el **Editor** del **Juego en Ejecución (Runtime)**:
+* Cuando ejecutas el juego directamente (`godot --path .` o un ejecutable exportado), el motor **nunca procesa ni lee los archivos `.png`, `.jpg` o `.glb` crudos**.
+* En su lugar, el juego lee exclusivamente los binarios intermedios optimizados que el Editor compila dentro de la carpeta oculta `.godot/imported/` (archivos `.ctex` para texturas y `.mesh` para modelos 3D).
+* Si haces `git pull` de una nueva imagen o modelo pero lanzas el juego directamente sin abrir previamente el Editor de Godot o sin ejecutar una reimportación headless (`godot --headless --editor --quit`), el juego intentará buscar la versión compilada en `.godot/imported/`, la cual no existe o está desactualizada, provocando que el asset no cargue.
+
+### 2. Punteros de Git LFS vs Archivos Reales
+* Git LFS almacena los archivos binarios pesados en servidores dedicados y deja en el árbol de Git únicamente un archivo de texto plano de ~130 bytes con un hash (por ejemplo, `oid sha256:... size 548291`).
+* Si un desarrollador hace `git pull` sin tener configurado el filtro smudge de Git LFS o sin correr `git lfs pull`, el disco solo contendrá ese archivo de texto de 130 bytes.
+* Si Godot intenta leer ese texto creyendo que es una imagen PNG real, generará en `.godot/imported/` una textura "dummy" corrupta de ~500 bytes y la guardará en caché con una firma MD5 inválida.
+* **El problema de persistencia:** Incluso si después ejecutas `git lfs pull` y descargas el PNG real, Godot puede conservar la caché `.ctex` corrupta hasta que se purgue manualmente.
+
+---
+
+## 🧰 Guía de Solución de Problemas (Troubleshooting)
+
+Si en algún momento notas que una textura se ve deforme, en blanco, o un modelo 3D no aparece:
+
+### Solución Rápida en 1 Comando:
+Ejecuta en tu terminal de PowerShell:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\sync_assets.ps1
+```
+*Este script automáticamente descarga los objetos LFS pendientes, detecta y purga cualquier `.ctex` corrupto (< 1 KB) en `.godot/imported/`, y comanda a Godot en modo headless para reconstruir la caché al 100%.*
+
+### Si Git LFS no descarga los archivos reales:
+1. Asegúrate de tener Git LFS instalado en el sistema (`git-lfs --version`). Si no lo tienes, instálalo desde [git-lfs.com](https://git-lfs.com/) o vía winget: `winget install GitHub.GitLFS`.
+2. Vuelve a ejecutar:
+   ```cmd
+   setup_dev.bat
+   ```
 
 ---
 
