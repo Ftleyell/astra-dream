@@ -1,5 +1,5 @@
 # GUÍA Y AUDITORÍA MAESTRA DE SISTEMAS: ASTRA DREAM
-**Versión del Proyecto:** 0.1.0-alpha  
+**Versión del Proyecto:** 0.4.1-prealpha  
 **Motor:** Godot Engine 4.7.2 Forward Mobile (Vulkan 1.4)  
 **Arquitectura:** Modular, Data-Driven (.tres), Zero-Allocation Danmaku (SoA BulletServer)
 
@@ -309,7 +309,11 @@ Astra Dream cuenta con un ecosistema de **7 entidades destructibles espaciales**
    - *Mecánica:* Proyectiles balísticos secundarios expulsados al fracturarse cualquier destructible.
    - *Daño:* Escalado según el nivel del objeto: `D = max(15.0, tier * 20.0)` (Tier 1: 20 dmg, Tier 2: 40 dmg, Tier 3: 60 dmg). Aplican knockback físico de 360 px/s a los enemigos impactados.
 8. **Generador Dinámico Periférico (`SpaceObjectSpawner`):**
-   - Inyecta periódicamente (cada 28s) macro-objetos en la periferia de navegación del jugador (radio 1000-1350 px), orientando las apariciones según el vector de movimiento de la nave para garantizar encuentros tácticos continuos.
+   - *Inyección Continua:* Genera macro-objetos en la periferia de navegación del jugador (radio 1000-1350 px), proyectando su posición hacia el vector de velocidad del piloto.
+   - *Garantía por Oleada:* Invocación forzosa asegurada de al menos un Monolito Arcano al iniciar la partida y en cada transición de oleada (`force_spawn_monolith()`).
+   - *Respawn Dinámico de Monolitos (45s):* Si en cualquier momento hay 0 monolitos activos en el espacio (`get_active_monolith_count() == 0`), un temporizador genera automáticamente uno nuevo en la trayectoria de vuelo.
+   - *Separación Estricta de Cupos:* Cuota independiente y prioritaria para Monolitos (`max_active_monoliths = 2`), garantizando que la acumulación pasiva de cápsulas, geodas o capullos nunca asfixie la aparición de Arcanas.
+   - *Filtrado de Nodos en Muerte:* Exclusión instantánea de entidades en proceso de destrucción (`is_dying` o `is_queued_for_deletion()`) para un recálculo determinista de cupos libres.
 
 ---
 
@@ -668,7 +672,79 @@ Ubicada en la sección norte del Hangar 3D (`HubWorld`), contiene **5 pedestales
    - *Bono Global:* **+15% Radio de Recogida y +10% Suerte global (+5% / +5% por nivel)**.
 
 ### 7.3. Indicador Periférico de Satélite (`SatelliteEdgeIndicator`)
-Un radar cyberpunk proyectado dinámicamente en los bordes de la pantalla que rastrea el satélite de la oleada cuando queda fuera del viewport. Calcula el ángulo y la distancia euclidiana en tiempo real para guiar al piloto a través de la inmensidad del espacio.
+Un radar cyberpunk proyectado dinámicamente en los bordes de la pantalla que rastrea el satélite de la oleada cuando queda fuera del viewport. Calcula el ángulo y la distancia euclidiana en tiempo real para guiar al piloto a través de la inmensidad del espacio, desprendiéndose al centro al entrar en visión.
+
+### 7.4. Indicador Direccional Arcano en el Borde del HUD (`ArcanaEdgeIndicator`)
+- **Estética Mística Psycho-Pop:** Panel perimétrico compacto con reborde magenta (`#FF1493`), resplandor cian neón (`#00F0FF`), icono rúnico vectorial (`icon_arcana_rune.svg`) y etiqueta de telemetría de distancia en metros.
+- **Rastreo y Conmutación Inteligente:** Detecta en tiempo real el `ArcaneMonolith` más próximo al jugador. Si se destruye, conmuta automáticamente al siguiente sin saltos bruscos.
+- **Comportamiento en Pantalla:**
+  * *Fuera de pantalla:* Se proyecta fijado al margen del viewport apuntando con una flecha orientada hacia las coordenadas exactas de la anomalía.
+  * *Dentro de pantalla / Sin Monolitos:* Se oculta de forma limpia (`hide()`) para no saturar el campo de combate cuando el objeto ya es visible o no hay entidades activas.
+
+### 7.5. Pantalla de Game Over y Telemetría Post-Incursión (`GameOverModal`)
+- **Secuencia de Destrucción de la Nave (`PlayerExplosionVFX`):**
+  * Al llegar a 0 HP, la nave detona con un efecto procedimental multi-capa: destello nuclear central, ondas expansivas concéntricas de plasma, esquirlas de fuselaje con dispersión angular y chispas radiales.
+  * Pausa dramática de 1.0s con bloqueo inmediato de controles y trauma de sacudida de cámara.
+- **Telemetría y Resumen Táctico:**
+  * **Puntuación Algorítmica:** Puntuación global calculada sobre bajas hostiles, oleadas completadas, jefes abatidos, créditos y tiempo de supervivencia.
+  * **Distintivo de Récord:** Indicador visual dinámico `★ ¡NUEVO RÉCORD HISTÓRICO - TOP #1! ★` o puesto en el ranking histórico persistente de los 10 mejores registros (`SaveManager`).
+  * **Métricas de Combate:** Oleadas alcanzadas, tiempo de incursión (MM:SS), jefes derrotados y conteo de bajas enemigas.
+  * **Recursos Extraídos:** BioMasa, Materia Oscura y Créditos consolidados.
+  * **Desglose de Carga (Loadout):** Panel visual con todas las Arcanas adquiridas, ítems pasivos con sus multiplicadores de acumulación (`x2`, `x3`, etc.) y armas activas con su nivel alcanzado.
+  * **Navegación Rápida:** Atajos integrados `[R] Reiniciar Misión` (reinicio instantáneo) y `[H] Volver al HUB` (retorno al Hangar 3D).
+
+### 7.6. Modificadores de Velocidad en Despliegue (1x / 2x / 4x)
+- Selector de ritmo de juego integrado directamente en el Menú de Despliegue de Piloto (`CharacterSelectUI`).
+- Permite acelerar la escala temporal del motor (`Engine.time_scale`) a 1x (Normal), 2x (Acelerado) o 4x (Hiper-Velocidad) para jugadores veteranos o sesiones rápidas.
+- Soporte para atajos de teclado (`1`, `2`, `3`) y persistencia automática en el perfil de guardado.
+
+### 7.7. Autotargeting y Apuntado Manual Híbrido (Tecla `E` / Botón `RB`)
+- **Trayectoria Balística Directa:** Los misiles y armas secundarias viajan en línea recta estricta a alta velocidad sin curvas asistidas artificiales.
+- **Fijación Automática Inteligente:** Prioriza automáticamente al hostil más próximo dentro del perímetro de disparo efectivo de la nave.
+- **Escalado con Radio de Imán:** Rango de autoaim acoplado linealmente al radio de atracción magnética ($2 \times \text{pickup\_radius}$ base), beneficiándose directamente de mejoras pasivas y arcanas de imán.
+- **Conmutación Manual en Caliente:** Alterna en cualquier instante entre auto-apuntado y puntero del ratón mediante la tecla `E` o `RB` en gamepad, acompañado de retícula holográfica e indicador `AUTOAIM: ON / OFF`.
+
+### 7.8. Maniobras Evasivas Avanzadas y Dashes Únicos por Heroína
+Cada heroína dispone de una mecánica de dash con invulnerabilidad temporal y efectos tácticos exclusivos:
+1. **Nova — Fire Trail & Nova Omega Spin:**
+   - Doble carga de propulsión rápida dejando un rastro ígneo continuo que daña a enemigos que lo cruzan.
+   - *Omega Spin:* Al realizar un dash con el condensador láser al 100% de carga, Nova ejecuta un giro continuo de 360° barriendo toda la arena con un haz láser circular de pantalla completa (con deduplicación de daño por enemigo).
+2. **Valentina — Sniper Charge & Bullet-Time:**
+   - Salto de repliegue táctico en sentido opuesto a la mira.
+   - Activa dilatación temporal (*Bullet-Time* al 55% de velocidad del juego) y garantiza un impacto crítico al 100% en el siguiente disparo.
+3. **Kira — Drone Decoy Dash:**
+   - Despliega una mina señuelo holográfica reactiva en las coordenadas de despegue que absorbe proyectiles, atrae esbirros y detona en área al expirar.
+4. **Selene — Quantum Void Phase:**
+   - Teletransporte cuántico de fase de 240 px en la dirección del cursor.
+   - Genera un vórtice gravitacional de implosión que atrae esbirros y absorbe orbes de EXP y fragmentos hacia el punto de destino.
+5. **Roxy — Seismic Barrier Ram:**
+   - Embestida pesada frontal con escudo cinético que desvía proyectiles hostiles e inflige un golpe físico de alto impacto con knockback masivo (360 px/s).
+6. **Echo — Quantum Glitch EMP:**
+   - Parpadeo dimensional instantáneo de 200 px con cuadros de invulnerabilidad ampliados y descarga de arco voltaico en cadena que electrocuta a múltiples hostiles cercanos.
+
+### 7.9. Cola de Subida de Nivel y Protección contra Miss-Clicks (`LevelUpModal`)
+- **Encolamiento Seguro FIFO:** Si el jugador acumula múltiples niveles simultáneamente (por absorber grandes cúmulos de EXP o matar jefes), las subidas se encolan ordenadamente. El encabezado notifica dinámicamente: `¡SUBIDA DE NIVEL X! (+Y PENDIENTES)`.
+- **Protección contra Clics Accidentales (Miss-Clicks):**
+  * Botones de selección compactos y centrados (110x30 px).
+  * Los clics sobre el cuerpo o panel de la carta son ignorados para no seleccionar mejoras por accidente durante tiroteos intensos.
+  * Período de gracia inicial con bloqueo temporal de ratón (`_mouse_lockout_active`) al desplegarse el modal para descartar clics remanentes del arma.
+
+### 7.10. Overlay Táctico de Estadísticas del Cockpit ([Tecla `C`])
+- Pausa táctica activable en cualquier momento del combate mediante la tecla **`C`**.
+- Presenta el retrato oficial de la heroína en combate, cabecera temática y colores característicos adaptados dinámicamente a la paleta del personaje activo.
+- Desglose exhaustivo de las **14 estadísticas clave** en formato unificado `ESTADISTICA = VALOR` (Daño, Vel. Ataque, Prob. Crítica, Daño Crítico, Proyectiles, Vel. Proyectil, Rango, Vida Máxima, Armadura, Regeneración, Vel. Movimiento, Cooldown, Suerte e Imán).
+- Listado en vivo de todas las **Arcanas Activas** en la run y los **Trofeos Globales Permanentes** aplicados.
+
+### 7.11. Menú de Depuración / Cheat Menu (`DebugMenuModal`)
+- Acceso táctico de depuración y testing para balance rápido en partidas de prueba.
+- Permite alternar invencibilidad (Modo Dios), créditos infinitos, agregar BioMasa o Materia Oscura, forzar subidas de nivel inmediatas y saltar a oleadas avanzadas.
+
+### 7.12. Menú de Despliegue con Parallax Estelar y Naves Ambientales (`DeploymentSpaceBackground`)
+- Fondo cinemático interactivo en el hangar y pantalla de selección de personajes con 3 planos ópticos de profundidad, polvo estelar flotante y tránsito periódico de naves aliadas y de carga en segundo plano.
+
+### 7.13. Blindaje de Menús y Sistema Anticolapso de Pausa
+- Arquitectura estricta de capas CanvasLayer para evitar solapamientos (`GameHUD` capa 10, `GameOverModal` capa 35, `LevelUpModal` capa 40, `PauseMenu` capa 50, `SettingsModal` capa 60, `ArcanaSelectionModal` capa 60).
+- La reanudación del combate (`get_tree().paused = false`) está condicionada a que ningún otro modal o diálogo esté activo o tenga selecciones pendientes en cola (`is_any_combat_modal_active()`).
 
 ---
 

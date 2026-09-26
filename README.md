@@ -95,6 +95,7 @@ git lfs pull
 * **E:** Alternar modo de apuntado pasivo (Autoaim / Puntero Manual).
 * **Q / Espacio:** Bomba de pantalla que destruye instantáneamente todas las balas hostiles.
 * **Rozar Balas (Graze):** Acercarse al núcleo de las balas enemigas otorga EXP sin recibir daño.
+* **C:** Abrir el **Cockpit de Estadísticas Tácticas** (pausa de combate con desglose de las 14 estadísticas, arcanas activas y trofeos globales permanentes).
 * **ESC:** Pausar partida y abrir el **Build Inspector** (artefactos equipados y mejoras de nivel obtenidas).
 * **R (Mantener 1.2s):** Reinicio seguro de la run (con oscurecimiento progresivo de pantalla).
 * **T:** Disparar transmisión de radio de jefe (Dialogic 2.0 con modulación dinámica de audio).
