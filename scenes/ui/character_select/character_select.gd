@@ -116,6 +116,8 @@ func _ready() -> void:
 
 	if pet_selection_modal and pet_selection_modal.has_signal("pet_selected"):
 		pet_selection_modal.pet_selected.connect(_on_pet_selected)
+	if pet_selection_modal and pet_selection_modal.has_signal("closed"):
+		pet_selection_modal.closed.connect(_on_pet_modal_closed)
 
 	_refresh_pet_display()
 
@@ -125,6 +127,8 @@ func _ready() -> void:
 
 	if navigator_selection_modal and navigator_selection_modal.has_signal("navigator_selected"):
 		navigator_selection_modal.navigator_selected.connect(_on_navigator_selected)
+	if navigator_selection_modal and navigator_selection_modal.has_signal("closed"):
+		navigator_selection_modal.closed.connect(_on_navigator_modal_closed)
 
 	_refresh_navigator_display()
 
@@ -204,10 +208,7 @@ func _populate_roster() -> void:
 			btn.modulate = Color(0.65, 0.65, 0.75, 0.75)
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.pressed.connect(func():
-			if current_character_id == cid:
-				_on_character_art_clicked()
-			else:
-				_select_character(cid)
+			_select_character(cid)
 		)
 		btn.focus_entered.connect(func(): _select_character(cid))
 
@@ -288,6 +289,30 @@ func _on_debug_modal_closed() -> void:
 		target_focus.grab_focus()
 		var target_pos: Vector2 = target_focus.get_global_rect().get_center()
 		get_viewport().warp_mouse(target_pos)
+
+func _on_pet_modal_closed() -> void:
+	var target_focus: Control = null
+	if pet_button and pet_button.is_visible_in_tree():
+		target_focus = pet_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+
+func _on_navigator_modal_closed() -> void:
+	var target_focus: Control = null
+	if navigator_button and navigator_button.is_visible_in_tree():
+		target_focus = navigator_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id

@@ -7,12 +7,14 @@ extends EnemyBase
 ## Al ser destruido, genera una explosión sci-fi completa con restos de nave, onda expansiva,
 ## sacudida de pantalla, jackpot de créditos y un nivel completo instantáneo.
 
-var escape_timer: float = 16.0
+var escape_timer: float = 45.0
 var panic_timer: float = 0.0
 const PANIC_BOOST: float = 60.0
 var _current_flight_dir: Vector2 = Vector2.RIGHT
 var is_escaping: bool = false
 var _flight_wobble_time: float = 0.0
+var time_since_last_hit: float = 999.0
+var hp_bar: ProgressBar = null
 
 @onready var engine_particles: CPUParticles2D = get_node_or_null("EngineParticles")
 
@@ -33,9 +35,33 @@ func _ready_custom() -> void:
 
 	rotation = _current_flight_dir.angle() + PI * 0.5
 
+	_setup_overhead_hud()
+
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click", 0.0, 1.7)
+
+func _setup_overhead_hud() -> void:
+	hp_bar = ProgressBar.new()
+	hp_bar.min_value = 0.0
+	hp_bar.max_value = max_health
+	hp_bar.value = current_health
+	hp_bar.show_percentage = false
+	hp_bar.custom_minimum_size = Vector2(44, 5)
+	hp_bar.position = Vector2(-22, -32)
+	hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var sb_bg := StyleBoxFlat.new()
+	sb_bg.bg_color = Color(0.04, 0.06, 0.1, 0.8)
+	sb_bg.set_corner_radius_all(3)
+	hp_bar.add_theme_stylebox_override("background", sb_bg)
+
+	var sb_fill := StyleBoxFlat.new()
+	sb_fill.bg_color = Color(1.0, 0.84, 0.2, 0.95)
+	sb_fill.set_corner_radius_all(3)
+	hp_bar.add_theme_stylebox_override("fill", sb_fill)
+
+	add_child(hp_bar)
 
 func setup_transverse_flight(center: Vector2, spawn_angle: float) -> void:
 	# Trayectoria transversal en arco a través del campo visual del jugador
@@ -48,6 +74,13 @@ func setup_transverse_flight(center: Vector2, spawn_angle: float) -> void:
 
 func take_damage(arg) -> void:
 	super.take_damage(arg)
+	time_since_last_hit = 0.0
+	# Si recibe daño, se le da al jugador una prórroga para cazarlo
+	escape_timer = maxf(escape_timer, 16.0)
+
+	if hp_bar:
+		hp_bar.value = current_health
+
 	if is_dying:
 		return
 	panic_timer = 0.45
@@ -57,8 +90,15 @@ func _update_behavior(delta: float) -> void:
 	if is_dying or is_escaping:
 		return
 
-	escape_timer -= delta
-	if escape_timer <= 0.0:
+	time_since_last_hit += delta
+
+	# Solo descontar tiempo de escape si el jugador lleva más de 4s sin dañarlo
+	if time_since_last_hit > 4.0:
+		escape_timer -= delta
+
+	# No escapar mientras el jugador esté activamente persiguiéndolo en pantalla
+	var dist_to_p := global_position.distance_to(player.global_position) if is_instance_valid(player) else 9999.0
+	if escape_timer <= 0.0 and dist_to_p > 850.0:
 		_warp_escape()
 		return
 

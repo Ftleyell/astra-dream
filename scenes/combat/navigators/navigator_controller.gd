@@ -69,9 +69,6 @@ func trigger_scan() -> void:
 
 	var target := _find_best_target_for_navigator()
 	if not is_instance_valid(target):
-		target = _create_fallback_anomaly_target()
-
-	if not is_instance_valid(target):
 		return
 
 	current_target_node = target
@@ -209,7 +206,9 @@ func _find_best_target_for_navigator() -> Node2D:
 		&"planet":
 			candidate = _find_nearest_in_groups([&"planet_segment", &"planets", &"bio_cocoon", &"bio_cocoons", &"biomass_orbs"])
 		&"pact":
-			candidate = _find_nearest_in_groups([&"arcana_orb", &"arcana_orbs", &"astra_pacts", &"pact", &"dark_matter_orbs"])
+			candidate = _find_nearest_in_groups([&"arcana_orb", &"arcana_orbs", &"astra_pacts", &"pact"])
+			if not is_instance_valid(candidate):
+				candidate = _find_nearest_in_groups([&"monolith", &"monoliths"])
 		&"monolith":
 			candidate = _find_nearest_in_groups([&"monolith", &"monoliths", &"astral_geodes", &"astral_geode", &"destructibles"])
 		&"satellite":
@@ -224,8 +223,6 @@ func _find_best_target_for_navigator() -> Node2D:
 				candidate = main_game.current_rival
 			else:
 				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"rival_pilots", &"rival_pilot", &"elites"])
-				if not is_instance_valid(candidate):
-					candidate = _create_fallback_anomaly_target()
 
 	return candidate
 
@@ -249,26 +246,6 @@ func _find_nearest_in_groups(group_names: Array[StringName]) -> Node2D:
 					nearest = n
 
 	return nearest
-
-func _create_fallback_anomaly_target() -> Node2D:
-	if not is_instance_valid(player) or not is_instance_valid(main_game):
-		return null
-
-	# Si no hay ningún objeto especial en escena, spawnear una Baliza de Anomalía Cuántica
-	var anomaly := Node2D.new()
-	anomaly.name = "SpatialAnomaly"
-	var angle := randf() * TAU
-	var spawn_dist := randf_range(500.0, 850.0)
-	anomaly.global_position = player.global_position + Vector2(cos(angle), sin(angle)) * spawn_dist
-	main_game.add_child(anomaly)
-
-	# Auto-destrucción tras 35s si no se alcanza
-	var timer := get_tree().create_timer(35.0)
-	timer.timeout.connect(func():
-		if is_instance_valid(anomaly):
-			anomaly.queue_free()
-	)
-	return anomaly
 
 func _get_target_hint_text() -> String:
 	match navigator_data.target_type:
