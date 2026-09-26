@@ -69,6 +69,9 @@ func trigger_scan() -> void:
 
 	var target := _find_best_target_for_navigator()
 	if not is_instance_valid(target):
+		target = _spawn_fallback_target_for_navigator()
+
+	if not is_instance_valid(target):
 		return
 
 	current_target_node = target
@@ -212,17 +215,17 @@ func _find_best_target_for_navigator() -> Node2D:
 		&"monolith":
 			candidate = _find_nearest_in_groups([&"monolith", &"monoliths", &"astral_geodes", &"astral_geode", &"destructibles"])
 		&"satellite":
-			if main_game and "current_satellite" in main_game and is_instance_valid(main_game.current_satellite):
+			if main_game and "current_satellite" in main_game and is_instance_valid(main_game.current_satellite) and not main_game.current_satellite.is_queued_for_deletion():
 				candidate = main_game.current_satellite
 			else:
 				candidate = _find_nearest_in_groups([&"satellite_beacon", &"satellite_beacons", &"satellite_shops"])
 		&"anomaly":
-			if main_game and "current_boss" in main_game and is_instance_valid(main_game.current_boss):
+			if main_game and "current_boss" in main_game and is_instance_valid(main_game.current_boss) and not bool(main_game.current_boss.get("is_dying")):
 				candidate = main_game.current_boss
-			elif main_game and "current_rival" in main_game and is_instance_valid(main_game.current_rival):
+			elif main_game and "current_rival" in main_game and is_instance_valid(main_game.current_rival) and not bool(main_game.current_rival.get("is_dying")):
 				candidate = main_game.current_rival
 			else:
-				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"rival_pilots", &"rival_pilot", &"elites"])
+				candidate = _find_nearest_in_groups([&"bosses", &"boss", &"rival_pilots", &"rival_pilot", &"elites", &"anomalies", &"rainbow_enemies"])
 
 	return candidate
 
@@ -232,20 +235,94 @@ func _find_nearest_in_groups(group_names: Array[StringName]) -> Node2D:
 		return null
 
 	var nearest: Node2D = null
-	var min_dist: float = 999999.0
+	var min_dist: float = 3500.0 # Búsqueda inteligente: si excede 3500px, conviene generar nuevo objetivo offscreen (1200px)
 	var p_pos := player.global_position
 
 	for gname in group_names:
 		var nodes := tree.get_nodes_in_group(gname)
 		for n in nodes:
-			if is_instance_valid(n) and n is Node2D and n.is_inside_tree() and n.visible:
+			if is_instance_valid(n) and n is Node2D and n.is_inside_tree() and not n.is_queued_for_deletion():
+				if bool(n.get("is_dying")) or bool(n.get("is_dead")) or bool(n.get("is_escaping")):
+					continue
 				var dist: float = p_pos.distance_to(n.global_position)
-				# Ignorar nodos que estén demasiado cerca (ya encima del jugador) o a distancias descomunales
+				# Ignorar nodos que estén demasiado cerca (ya encima del jugador) o más allá de min_dist
 				if dist > 80.0 and dist < min_dist:
 					min_dist = dist
 					nearest = n
 
 	return nearest
+
+func _get_offscreen_spawn_pos() -> Vector2:
+	if not is_instance_valid(player):
+		return Vector2.ZERO
+	var p_pos := player.global_position
+	var base_angle := randf() * TAU
+	if player.velocity.length_squared() > 100.0:
+		var heading := player.velocity.angle()
+		# 70% probabilidad de proyectar al frente del vector de vuelo
+		if randf() < 0.70:
+			base_angle = heading + randf_range(-PI * 0.35, PI * 0.35)
+	var dist := randf_range(1150.0, 1450.0)
+	return p_pos + Vector2(cos(base_angle), sin(base_angle)) * dist
+
+func _spawn_fallback_target_for_navigator() -> Node2D:
+	if not is_instance_valid(player) or not is_instance_valid(main_game):
+		return null
+
+	var spawn_pos := _get_offscreen_spawn_pos()
+	var t_type: StringName = navigator_data.target_type if navigator_data else &"planet"
+	var spawned_node: Node2D = null
+
+	match t_type:
+		&"planet":
+			const BioCocoonScene := preload("res://scenes/combat/environment/bio_cocoon.tscn")
+			if BioCocoonScene:
+				var cocoon := BioCocoonScene.instantiate() as Node2D
+				cocoon.global_position = spawn_pos
+				main_game.add_child(cocoon)
+				spawned_node = cocoon
+
+		&"pact":
+			const MonolithScene := preload("res://scenes/combat/environment/arcane_monolith.tscn")
+			if MonolithScene:
+				var monolith := MonolithScene.instantiate() as Node2D
+				monolith.global_position = spawn_pos
+				main_game.add_child(monolith)
+				spawned_node = monolith
+
+		&"monolith":
+			const GeodeScene := preload("res://scenes/combat/environment/astral_geode.tscn")
+			if GeodeScene:
+				var geode := GeodeScene.instantiate() as Node2D
+				geode.global_position = spawn_pos
+				main_game.add_child(geode)
+				spawned_node = geode
+
+		&"satellite":
+			if main_game.has_method("_spawn_next_satellite"):
+				main_game._spawn_next_satellite(spawn_pos)
+				if "current_satellite" in main_game and is_instance_valid(main_game.current_satellite):
+					spawned_node = main_game.current_satellite
+			else:
+				const SatScene := preload("res://scenes/combat/satellite/satellite_beacon.tscn")
+				if SatScene:
+					var sat := SatScene.instantiate() as Node2D
+					sat.global_position = spawn_pos
+					main_game.add_child(sat)
+					spawned_node = sat
+
+		&"anomaly":
+			const RainbowScene := preload("res://scenes/combat/enemies/rainbow_enemy.tscn")
+			if RainbowScene:
+				var rainbow_enemy := RainbowScene.instantiate() as RainbowEnemy
+				rainbow_enemy.global_position = spawn_pos
+				main_game.add_child(rainbow_enemy)
+				if is_instance_valid(player):
+					var angle_from_player := (spawn_pos - player.global_position).angle()
+					rainbow_enemy.setup_transverse_flight(player.global_position, angle_from_player)
+				spawned_node = rainbow_enemy
+
+	return spawned_node
 
 func _get_target_hint_text() -> String:
 	match navigator_data.target_type:

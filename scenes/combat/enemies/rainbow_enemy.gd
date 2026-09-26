@@ -27,6 +27,10 @@ func _ready_custom() -> void:
 	credits_reward = 250
 	exp_reward = 100.0
 
+	add_to_group("elites")
+	add_to_group("anomalies")
+	add_to_group("rainbow_enemies")
+
 	_acquire_player()
 	if _current_flight_dir == Vector2.RIGHT and is_instance_valid(player):
 		var to_self := (global_position - player.global_position).normalized()

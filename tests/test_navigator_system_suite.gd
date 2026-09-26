@@ -213,7 +213,15 @@ func test_navigator_controller_and_buff_applications() -> void:
 	controller._on_target_reached(dummy_sat)
 	test_assert(controller.is_buff_active, "Zephyr sí debe recibir su buff al enlazar un satélite")
 	controller._expire_buff()
-	dummy_sat.queue_free()
+	# Probar Spawning Offscreen Dinámico cuando no hay objetivos en el mapa
+	for nid in [&"lyra", &"vespera", &"caelia", &"zephyr", &"iris"]:
+		controller.navigator_data = NavigatorDataScript.get_navigator(nid)
+		var spawned: Node2D = controller._spawn_fallback_target_for_navigator()
+		test_assert(spawned != null and is_instance_valid(spawned), "Navegante %s debe generar un nodo de su especialidad cuando no hay objetivos" % nid)
+		if spawned:
+			var dist: float = dummy_player.global_position.distance_to(spawned.global_position)
+			test_assert(dist >= 1100.0, "El objetivo de %s debe ser generado offscreen (dist >= 1100px, actual: %.1f)" % [nid, dist])
+			spawned.queue_free()
 
 	controller.queue_free()
 	main_game_inst.queue_free()

@@ -57,7 +57,7 @@ func _process(delta: float) -> void:
 		target_position = target_node.global_position
 	else:
 		# Si el nodo fue destruido / recogido por el jugador mientras nos acercábamos, cuenta como alcanzado
-		if player.global_position.distance_to(target_position) <= REACH_RADIUS * 2.5:
+		if player.global_position.distance_to(target_position) <= 900.0:
 			_on_reached()
 			return
 		elif not is_fading:

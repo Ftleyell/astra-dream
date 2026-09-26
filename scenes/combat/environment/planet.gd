@@ -37,6 +37,7 @@ var active_defenders: Array[Node2D] = []
 
 
 func _ready() -> void:
+	add_to_group("planets")
 	if not planet_data:
 		_pick_random_planet_data()
 
