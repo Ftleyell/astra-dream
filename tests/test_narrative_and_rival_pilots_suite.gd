@@ -452,7 +452,23 @@ func _test_11_flipped_portraits_and_victory_dialogue() -> void:
 	mg.player.queue_free()
 	mg.queue_free()
 
-	print("  ✓ Retratos Flipped y flujo de Diálogo Post-Jefe hacia Pantalla de Victoria verificados con éxito")
+	# 3. Comprobar nombres estilizados de armas para las pantallas de informe (Victoria / Game Over)
+	assert(WeaponData.get_stylized_name_for_id("crescent_blade").contains("Crescent Slash"), "crescent_blade debe estilizarse con Crescent Slash")
+	assert(WeaponData.get_stylized_name_for_id("crescent_slash").contains("Crescent Slash"), "crescent_slash debe estilizarse con Crescent Slash")
+	assert(WeaponData.get_stylized_name_for_id("rail_launcher").contains("Vanguard"), "rail_launcher debe estilizarse con Vanguard")
+	assert(WeaponData.get_stylized_name_for_id("hive_cannon").contains("Colmena"), "hive_cannon debe estilizarse con Colmena")
+	assert(WeaponData.get_stylized_name_for_id("singularity_pulsar").contains("Singularity"), "singularity_pulsar debe estilizarse con Singularity")
+	assert(WeaponData.get_stylized_name_for_id("sniper_rifle").contains("Ojo de Águila"), "sniper_rifle debe estilizarse con Ojo de Águila")
+	assert(WeaponData.get_stylized_name_for_id("tesla_arc").contains("Descarga Sonora") or WeaponData.get_stylized_name_for_id("tesla_arc").contains("Tesla"), "tesla_arc debe estilizarse")
+	assert(WeaponData.get_stylized_name_for_id("titan_shotgun").contains("Titán"), "titan_shotgun debe estilizarse")
+
+	# Verificar que ninguna de las armas canónicas muestre identificadores en minúsculas con guiones bajos
+	var canonical_wpns := ["crescent_blade", "rail_launcher", "hive_cannon", "singularity_pulsar", "sniper_rifle", "tesla_arc", "titan_shotgun", "cluster_submunition", "dimensional_blade", "nova_flak", "solar_beam"]
+	for w_id in canonical_wpns:
+		var stylized := WeaponData.get_stylized_name_for_id(w_id)
+		assert(not stylized.contains("_"), "El nombre estilizado de %s no debe contener guiones bajos: %s" % [w_id, stylized])
+
+	print("  ✓ Retratos Flipped, Diálogo Post-Jefe y Nombres Estilizados de Armas verificados con éxito")
 
 
 

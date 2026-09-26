@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"rail_launcher"
-weapon_name = "Cañón Rail-Launcher Mk.I"
+weapon_name = "Cañón de Riel 'Vanguard Mk.I'"
 description = "Haz láser de penetración lineal térmica concentrada acompañado de salvas pasivas de micro-misiles teledirigidos."
 icon = ExtResource("2_ico")
 rarity = 0

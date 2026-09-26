@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"crescent_blade"
-weapon_name = "Hoja Crepuscular"
+weapon_name = "Sable Astral 'Crescent Slash'"
 description = "Espada dimensional que descarga tajos en medialuna (escala golpes con Proyectiles) y un torbellino 360° que destruye proyectiles hostiles."
 icon = ExtResource("2_ico")
 rarity = 1

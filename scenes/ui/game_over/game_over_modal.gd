@@ -217,14 +217,28 @@ func _populate_weapons(weapons_list: Array) -> void:
 		var w_lvl: int = 1
 		var w_icon: Texture2D = null
 		if w_info is Dictionary:
-			w_name = str(w_info.get("name", "Arma"))
+			w_name = str(w_info.get("name", ""))
+			var raw_id: String = str(w_info.get("id", ""))
+			if w_name.is_empty() or w_name == "Arma" or w_name.contains("_"):
+				w_name = WeaponData.get_stylized_name_for_id(raw_id if not raw_id.is_empty() else w_name)
 			w_lvl = int(w_info.get("level", 1))
+			w_icon = w_info.get("icon", null)
 		elif "weapon_data" in w_info and w_info.weapon_data:
-			w_name = w_info.weapon_data.name if "name" in w_info.weapon_data else str(w_info.weapon_data.weapon_id)
+			if w_info.weapon_data.has_method("get_display_name"):
+				w_name = w_info.weapon_data.get_display_name()
+			elif "weapon_name" in w_info.weapon_data and not w_info.weapon_data.weapon_name.is_empty():
+				w_name = w_info.weapon_data.weapon_name
+			else:
+				w_name = WeaponData.get_stylized_name_for_id(str(w_info.weapon_data.weapon_id))
 			w_lvl = int(w_info.level) if "level" in w_info else 1
 			w_icon = w_info.weapon_data.icon if "icon" in w_info.weapon_data else null
 		elif "weapon_id" in w_info:
-			w_name = str(w_info.weapon_id)
+			w_name = WeaponData.get_stylized_name_for_id(str(w_info.weapon_id))
+		else:
+			w_name = WeaponData.get_stylized_name_for_id(str(w_info))
+
+		if w_name.is_empty():
+			w_name = "Arma Estelar"
 
 		var chip_text := "%s (Nvl %d)" % [w_name, w_lvl]
 		var chip := _create_chip(chip_text, Color(1.0, 0.75, 0.2, 1.0), w_icon)

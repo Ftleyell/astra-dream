@@ -1047,8 +1047,17 @@ func _on_final_boss_defeated(route: String) -> void:
 	if w_ctrl:
 		for inst in w_ctrl.equipped_weapons:
 			if inst and inst.weapon_data:
+				var w_dname := ""
+				if inst.weapon_data.has_method("get_display_name"):
+					w_dname = inst.weapon_data.get_display_name()
+				elif "weapon_name" in inst.weapon_data and not inst.weapon_data.weapon_name.is_empty():
+					w_dname = inst.weapon_data.weapon_name
+				else:
+					w_dname = WeaponData.get_stylized_name_for_id(str(inst.weapon_data.weapon_id))
+
 				weapons_summary.append({
-					"name": inst.weapon_data.name if "name" in inst.weapon_data else str(inst.weapon_data.weapon_id),
+					"name": w_dname,
+					"id": str(inst.weapon_data.weapon_id),
 					"level": inst.level,
 					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
 				})
@@ -1466,8 +1475,17 @@ func _on_player_died() -> void:
 	if w_ctrl:
 		for inst in w_ctrl.equipped_weapons:
 			if inst and inst.weapon_data:
+				var w_dname := ""
+				if inst.weapon_data.has_method("get_display_name"):
+					w_dname = inst.weapon_data.get_display_name()
+				elif "weapon_name" in inst.weapon_data and not inst.weapon_data.weapon_name.is_empty():
+					w_dname = inst.weapon_data.weapon_name
+				else:
+					w_dname = WeaponData.get_stylized_name_for_id(str(inst.weapon_data.weapon_id))
+
 				weapons_summary.append({
-					"name": inst.weapon_data.name if "name" in inst.weapon_data else str(inst.weapon_data.weapon_id),
+					"name": w_dname,
+					"id": str(inst.weapon_data.weapon_id),
 					"level": inst.level,
 					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
 				})

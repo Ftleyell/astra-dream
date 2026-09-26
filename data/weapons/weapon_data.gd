@@ -1,6 +1,42 @@
 class_name WeaponData
 extends Resource
 
+const STYLIZED_WEAPON_NAMES: Dictionary = {
+	"crescent_blade": "Sable Astral 'Crescent Slash'",
+	"crescent_slash": "Sable Astral 'Crescent Slash'",
+	"crescent_cyclone": "Sable Astral 'Crescent Slash'",
+	"rail_launcher": "Cañón de Riel 'Vanguard Mk.I'",
+	"hive_cannon": "Cañón de Enjambre 'Colmena-9'",
+	"singularity_pulsar": "Púlsar Gravitatorio 'Singularity'",
+	"sniper_rifle": "Fusil de Iones 'Ojo de Águila'",
+	"tesla_arc": "Proyector Tesla 'Descarga Sonora'",
+	"titan_shotgun": "Escopeta Sísmica 'Ruptura Titán'",
+	"cluster_submunition": "Lanzador de Racimo 'Clúster'",
+	"dimensional_blade": "Cuchilla Dimensional Astra",
+	"nova_flak": "Batería Antiaérea 'Nova-Flak'",
+	"solar_beam": "Haz Solar Orbital 'Helios'"
+}
+
+static func get_stylized_name_for_id(id_or_name: String) -> String:
+	var clean := id_or_name.to_lower().strip_edges()
+	if STYLIZED_WEAPON_NAMES.has(clean):
+		return STYLIZED_WEAPON_NAMES[clean]
+	if clean.contains(" ") and not clean.contains("_"):
+		return id_or_name
+	return id_or_name.replace("_", " ").capitalize()
+
+func get_display_name() -> String:
+	var s_id := String(weapon_id).to_lower().strip_edges()
+	if STYLIZED_WEAPON_NAMES.has(s_id):
+		return STYLIZED_WEAPON_NAMES[s_id]
+	if not weapon_name.is_empty() and weapon_name != "Arma Base":
+		return weapon_name
+	return get_stylized_name_for_id(s_id)
+
+var name: String:
+	get:
+		return get_display_name()
+
 @export_group("Identity")
 @export var weapon_id: StringName = &"weapon_default"
 @export var weapon_name: String = "Arma Base"
