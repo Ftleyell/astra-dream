@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NavigatorData" load_steps=2 format=3 uid="uid://nav_caelia_03"]
+
+[ext_resource type="Script" path="res://data/navigators/navigator_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+navigator_id = &"caelia"
+display_name = "Caelia"
+title = "Geóloga de Materia Oscura"
+specialty_desc = "Especializada en densidad mineral. Localiza monolitos arcanos y geodas astrales."
+buff_name = "Blindaje Gravitacional"
+buff_desc = "Absorbe 1 impacto gratis y otorga +20% Armadura por 12s al asegurar el monolito."
+theme_color = Color(1, 0.72, 0.2, 1)
+is_secret = false
+sort_order = 3
+target_type = &"monolith"
+dialogue_callouts = [
+    "¡Firma gravimétrica anómala! Un monolito ancestral o geoda de alta densidad detectada.",
+    "Mis taladros resonadores marcan un depósito mineral crítico. ¡Vamos a fracturarlo!",
+    "Densidad de materia oscura en alza. Te he marcado la roca para minería táctica."
+]

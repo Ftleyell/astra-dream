@@ -67,6 +67,7 @@ var enemies_killed_count: int = 0
 var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
+var active_navigator_controller = null
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
 var _wave_encounter_pending: bool = false
@@ -83,6 +84,7 @@ func _ready() -> void:
 	add_to_group("main_game")
 	_setup_rival_queue()
 	_spawn_companion_pet()
+	_spawn_navigator_controller()
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	player.credits_changed.connect(hud.update_credits)
@@ -1749,4 +1751,14 @@ func _spawn_companion_pet() -> void:
 	active_pet = pet_scene.instantiate() as CompanionPet
 	add_child(active_pet)
 	active_pet.setup(p_data, player)
+
+func _spawn_navigator_controller() -> void:
+	const NavControllerScript := preload("res://scenes/combat/navigators/navigator_controller.gd")
+	if not NavControllerScript or not is_instance_valid(player):
+		return
+	active_navigator_controller = NavControllerScript.new()
+	active_navigator_controller.name = "NavigatorController"
+	add_child(active_navigator_controller)
+	active_navigator_controller.setup(self, player, hud)
+
 

@@ -19,7 +19,9 @@ static func save_profile(
 	p_career_stats: Variant = null,
 	p_selected_pet: StringName = &"",
 	p_unlocked_pets: Variant = null,
-	p_unlocked_endings: Variant = null
+	p_unlocked_endings: Variant = null,
+	p_selected_navigator: StringName = &"",
+	p_unlocked_navigators: Variant = null
 ) -> Error:
 	var existing_prof: Dictionary = {}
 	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
@@ -115,6 +117,19 @@ static func save_profile(
 		for e in raw_endings:
 			str_unlocked_endings.append(String(e))
 
+	var current_nav: StringName = p_selected_navigator
+	if current_nav == &"":
+		current_nav = StringName(str(existing_prof.get("selected_navigator", "lyra")))
+
+	var str_unlocked_navs: Array[String] = []
+	if p_unlocked_navigators != null:
+		for n in p_unlocked_navigators:
+			str_unlocked_navs.append(String(n))
+	else:
+		var raw_navs: Array = existing_prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
+		for n in raw_navs:
+			str_unlocked_navs.append(String(n))
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -130,7 +145,9 @@ static func save_profile(
 		"career_stats": current_career,
 		"selected_pet": String(current_pet),
 		"unlocked_pets": str_unlocked_pets,
-		"unlocked_endings": str_unlocked_endings
+		"unlocked_endings": str_unlocked_endings,
+		"selected_navigator": String(current_nav),
+		"unlocked_navigators": str_unlocked_navs
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -209,7 +226,9 @@ static func _get_default_profile() -> Dictionary:
 		"career_stats": _get_default_career_stats(),
 		"selected_pet": &"mochi",
 		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName],
-		"unlocked_endings": [] as Array[String]
+		"unlocked_endings": [] as Array[String],
+		"selected_navigator": &"lyra",
+		"unlocked_navigators": [&"lyra", &"vespera", &"caelia", &"zephyr"] as Array[StringName]
 	}
 
 
@@ -252,7 +271,9 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"career_stats": career_clean,
 		"selected_pet": StringName(str(raw.get("selected_pet", "mochi"))),
 		"unlocked_pets": [] as Array[StringName],
-		"unlocked_endings": [] as Array[String]
+		"unlocked_endings": [] as Array[String],
+		"selected_navigator": StringName(str(raw.get("selected_navigator", "lyra"))),
+		"unlocked_navigators": [] as Array[StringName]
 	}
 
 	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
@@ -272,6 +293,20 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 	for default_pid in [&"mochi", &"kuro", &"luna", &"pip"]:
 		if not cleaned["unlocked_pets"].has(default_pid):
 			cleaned["unlocked_pets"].append(default_pid)
+
+	if cleaned["selected_navigator"] == &"":
+		cleaned["selected_navigator"] = &"lyra"
+
+	if raw.has("unlocked_navigators") and (raw["unlocked_navigators"] is Array) and not raw["unlocked_navigators"].is_empty():
+		for n in raw["unlocked_navigators"]:
+			cleaned["unlocked_navigators"].append(StringName(n))
+	else:
+		cleaned["unlocked_navigators"] = [&"lyra", &"vespera", &"caelia", &"zephyr"]
+
+	# Garantizar que las 4 navegantes base nunca queden bloqueadas o ausentes por saves viejos
+	for default_nid in [&"lyra", &"vespera", &"caelia", &"zephyr"]:
+		if not cleaned["unlocked_navigators"].has(default_nid):
+			cleaned["unlocked_navigators"].append(default_nid)
 
 	if raw.has("unlocked_items"):
 		for item in raw["unlocked_items"]:
@@ -761,8 +796,116 @@ static func record_ending(ending_id: String) -> bool:
 	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
 	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
 	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, current)
+	var unlocked_navs = prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
+	var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
+	
+	# Desbloquear a Iris al completar cualquier final
+	var nav_arr: Array = []
+	for n in unlocked_navs:
+		nav_arr.append(StringName(str(n)))
+	if not nav_arr.has(&"iris"):
+		nav_arr.append(&"iris")
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, current, sel_nav, nav_arr)
 	return is_new
+
+
+# ==============================================================================
+# NAVIGATORS PERSISTENCE (NAVEGANTES)
+# ==============================================================================
+
+static func get_selected_navigator() -> StringName:
+	var prof := load_profile()
+	var nav := StringName(str(prof.get("selected_navigator", "lyra")))
+	if not is_navigator_unlocked(nav):
+		return &"lyra"
+	return nav
+
+static func set_selected_navigator(nav_id: StringName) -> void:
+	if nav_id == &"":
+		return
+	var prof := load_profile()
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = prof.get("unlocked_characters", [])
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+	var unlocked_endings = prof.get("unlocked_endings", [])
+	var unlocked_navs = prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, nav_id, unlocked_navs)
+
+static func get_unlocked_navigators() -> Array[StringName]:
+	var prof := load_profile()
+	var raw_navs: Array = prof.get("unlocked_navigators", [&"lyra", &"vespera", &"caelia", &"zephyr"])
+	var res: Array[StringName] = []
+	for n in raw_navs:
+		res.append(StringName(str(n)))
+	return res
+
+static func is_navigator_unlocked(nav_id: StringName) -> bool:
+	var unlocked := get_unlocked_navigators()
+	return unlocked.has(nav_id) or unlocked.has(String(nav_id))
+
+static func unlock_navigator(nav_id: StringName) -> bool:
+	var prof := load_profile()
+	var unlocked := get_unlocked_navigators()
+	if not unlocked.has(nav_id):
+		unlocked.append(nav_id)
+		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+		var chars: Array[StringName] = prof.get("unlocked_characters", [])
+		var bans: Dictionary = prof.get("character_banlists", {})
+		var bio: int = int(prof.get("biomass", 0))
+		var anti: int = int(prof.get("antimatter", 0))
+		var skills: Dictionary = prof.get("character_skills", {})
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var dm: int = int(prof.get("dark_matter", 0))
+		var trophies: Dictionary = prof.get("trophies_unlocked", {})
+		var spd: float = float(prof.get("game_speed", 1.0))
+		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+		var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+		var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+		var unlocked_endings = prof.get("unlocked_endings", [])
+		var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
+
+		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, sel_nav, unlocked)
+		return true
+	return false
+
+static func lock_navigator(nav_id: StringName) -> void:
+	var prof := load_profile()
+	var unlocked := get_unlocked_navigators()
+	unlocked.erase(nav_id)
+	unlocked.erase(String(nav_id))
+
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = prof.get("unlocked_characters", [])
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+	var unlocked_endings = prof.get("unlocked_endings", [])
+	var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
+	if sel_nav == nav_id:
+		sel_nav = &"lyra"
+
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, sel_nav, unlocked)
+
 
 
 static func record_boss_kill() -> bool:

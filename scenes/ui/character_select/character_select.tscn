@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/rocket.svg" id="3_rocket"]
 [ext_resource type="PackedScene" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/pet_selection_modal.tscn" id="5_petmodal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_select/navigator_selection_modal.tscn" id="6_navmodal"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -322,6 +323,54 @@ flat = true
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 
+[node name="NavigatorCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+custom_minimum_size = Vector2(0, 106)
+layout_mode = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+
+[node name="NavigatorBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="NavigatorIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorBox"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NavigatorLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 3
+
+[node name="NavigatorHeader" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorBox/NavigatorLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.8, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "🧭 OFICIAL DE NAVEGACIÓN // TÁCTICA DE ENLACE [CAMBIAR]"
+
+[node name="NavigatorName" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorBox/NavigatorLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "LYRA — CARTÓGRAFA BIOLÓGICA"
+
+[node name="NavigatorDesc" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorBox/NavigatorLabelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.96, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Rastrea biosferas estelares y segmentos planetarios. Otorga Sobrecarga de Propulsión (+25% Vel, x2 Imán)."
+autowrap_mode = 2
+
+[node name="NavigatorButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard"]
+layout_mode = 2
+flat = true
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+
 [node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -344,3 +393,5 @@ flip_h = true
 [node name="DebugMenuModal" parent="." instance=ExtResource("4_debug")]
 
 [node name="PetSelectionModal" parent="." instance=ExtResource("5_petmodal")]
+
+[node name="NavigatorSelectionModal" parent="." instance=ExtResource("6_navmodal")]

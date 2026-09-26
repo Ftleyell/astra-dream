@@ -827,6 +827,15 @@ func take_damage(amount: float) -> void:
 	var debug_mgr = get_node_or_null("/root/DebugManager")
 	if debug_mgr and debug_mgr.has_method("is_infinite_hp_active") and debug_mgr.is_infinite_hp_active():
 		return
+	if has_meta("caelia_shield_hook"):
+		remove_meta("caelia_shield_hook")
+		var tw := create_tween()
+		tw.tween_property(self, "modulate", Color(1.0, 0.8, 0.2, 1.0), 0.1)
+		tw.tween_property(self, "modulate", Color.WHITE, 0.2)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+		return
 	var armor_val: float = stats.get_stat(&"armor") if stats else 0.0
 	var mitigated_dmg: float = amount
 	if armor_val >= 0.0:

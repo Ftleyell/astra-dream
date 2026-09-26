@@ -1,0 +1,114 @@
+[gd_scene load_steps=3 format=3 uid="uid://nav_comms_widget_01"]
+
+[ext_resource type="Script" path="res://scenes/ui/hud/navigator_comms_widget.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.03, 0.05, 0.09, 0.92)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0.85, 1, 0.35)
+shadow_size = 8
+
+[node name="NavigatorCommsWidget" type="CanvasLayer"]
+process_mode = 3
+layer = 15
+script = ExtResource("1_script")
+
+[node name="CommsAnchor" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CommsAnchor"]
+custom_minimum_size = Vector2(430, 100)
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 24.0
+offset_top = -50.0
+offset_right = 454.0
+offset_bottom = 50.0
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="CommsAnchor/PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HBox" type="HBoxContainer" parent="CommsAnchor/PanelContainer/Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="PortraitFrame" type="Control" parent="CommsAnchor/PanelContainer/Margin/HBox"]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="Portrait" type="TextureRect" parent="CommsAnchor/PanelContainer/Margin/HBox/PortraitFrame"]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ContentVBox" type="VBoxContainer" parent="CommsAnchor/PanelContainer/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="HeaderBox" type="HBoxContainer" parent="CommsAnchor/PanelContainer/Margin/HBox/ContentVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="CommsAnchor/PanelContainer/Margin/HBox/ContentVBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "LYRA // OFICIAL TÁCTICA"
+
+[node name="BadgeLabel" type="Label" parent="CommsAnchor/PanelContainer/Margin/HBox/ContentVBox/HeaderBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "[OBJETIVO DETECTADO]"
+horizontal_alignment = 2
+
+[node name="MessageLabel" type="Label" parent="CommsAnchor/PanelContainer/Margin/HBox/ContentVBox"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.9, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Lecturas orgánicas detectadas. Un segmento planetario fértil está a nuestro alcance."
+autowrap_mode = 2
+
+[node name="BuffHintLabel" type="Label" parent="CommsAnchor/PanelContainer/Margin/HBox/ContentVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "✦ Sobrecarga de Propulsión (+25% Vel, x2 Imán)"

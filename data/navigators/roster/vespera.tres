@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NavigatorData" load_steps=2 format=3 uid="uid://nav_vespera_02"]
+
+[ext_resource type="Script" path="res://data/navigators/navigator_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+navigator_id = &"vespera"
+display_name = "Vespera"
+title = "Mística del Éter y Arcanas"
+specialty_desc = "Especializada en resonancias astrales. Detecta pactos del destino y orbes arcanos."
+buff_name = "Sintonía Arcana"
+buff_desc = "+20% Reducción de Enfriamiento y +15% Daño por 10s al alcanzar el vórtice."
+theme_color = Color(0.75, 0.45, 1, 1)
+is_secret = false
+sort_order = 2
+target_type = &"pact"
+dialogue_callouts = [
+    "Las cartas estelares susurran... Un Pacto Astra resuena en esta coordenada.",
+    "Detecto una perturbación mística en el tejido cuántico. Sigue el vector arcano.",
+    "El destino nos llama, piloto. Una ofrenda cósmica aguarda en el punto marcado."
+]

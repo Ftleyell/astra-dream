@@ -17,6 +17,8 @@ signal closed()
 @onready var set_bosses_9_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/SetBosses9Button")
 @onready var simulate_10m_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/Simulate10mButton")
 @onready var lock_cosmo_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/LockCosmoButton")
+@onready var unlock_iris_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NavigatorsDebugRow/UnlockIrisButton")
+@onready var lock_iris_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NavigatorsDebugRow/LockIrisButton")
 @onready var jump_pacifist_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpPacifistButton")
 @onready var jump_slayer_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpSlayerButton")
 @onready var jump_neutral_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpNeutralButton")
@@ -62,6 +64,14 @@ func _ready() -> void:
 	if lock_cosmo_btn:
 		lock_cosmo_btn.pressed.connect(_on_lock_cosmo_pressed)
 		UIFocusHelper.apply_cyber_focus(lock_cosmo_btn)
+
+	if unlock_iris_btn:
+		unlock_iris_btn.pressed.connect(_on_unlock_iris_pressed)
+		UIFocusHelper.apply_cyber_focus(unlock_iris_btn)
+
+	if lock_iris_btn:
+		lock_iris_btn.pressed.connect(_on_lock_iris_pressed)
+		UIFocusHelper.apply_cyber_focus(lock_iris_btn)
 
 	if jump_pacifist_btn:
 		jump_pacifist_btn.pressed.connect(_on_jump_pacifist_pressed)
@@ -337,6 +347,24 @@ func _on_lock_cosmo_pressed() -> void:
 		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
 	if subtitle_label:
 		subtitle_label.text = "✓ PET COSMO BLOQUEADO (REQUERIRÁ SOBREVIVIR 10 MIN EN COMBATE)."
+		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.4, 1.0))
+
+func _on_unlock_iris_pressed() -> void:
+	SaveManager.unlock_navigator(&"iris")
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ ¡NAVEGANTE SECRETA IRIS DESBLOQUEADA!"
+		subtitle_label.add_theme_color_override("font_color", Color(0.9, 0.75, 1.0, 1.0))
+
+func _on_lock_iris_pressed() -> void:
+	SaveManager.lock_navigator(&"iris")
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.8, 1.0)
+	if subtitle_label:
+		subtitle_label.text = "✓ NAVEGANTE IRIS BLOQUEADA (REQUIERE COMPLETAR UN FINAL)."
 		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.4, 1.0))
 
 func _on_reset_career_pressed() -> void:

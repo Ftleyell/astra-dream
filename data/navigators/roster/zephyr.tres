@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NavigatorData" load_steps=2 format=3 uid="uid://nav_zephyr_04"]
+
+[ext_resource type="Script" path="res://data/navigators/navigator_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+navigator_id = &"zephyr"
+display_name = "Zephyr"
+title = "Operadora de Red y Satélites"
+specialty_desc = "Especializada en señales cibernéticas. Encuentra satélites baliza y estaciones de tienda."
+buff_name = "Bolsillo Táctico"
+buff_desc = "Otorga +50 Créditos inmediatos y +15% Cadencia de Fuego por 10s al enlazar."
+theme_color = Color(0.1, 0.85, 1, 1)
+is_secret = false
+sort_order = 4
+target_type = &"satellite"
+dialogue_callouts = [
+    "¡Ping de baliza confirmado! Un satélite comercial o estación está emitiendo en frecuencia abierta.",
+    "Canal de radio interceptado: suministros y créditos listos. ¡Conéctate a la baliza!",
+    "Radar táctico online: tenemos una estación de apoyo en el horizonte. ¡A por ella!"
+]

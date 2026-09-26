@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NavigatorData" load_steps=2 format=3 uid="uid://nav_lyra_01"]
+
+[ext_resource type="Script" path="res://data/navigators/navigator_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+navigator_id = &"lyra"
+display_name = "Lyra"
+title = "Cartógrafa Biológica"
+specialty_desc = "Especializada en biosferas estelares. Rastrea planetas, capullos bio y orbes de biomasa."
+buff_name = "Sobrecarga de Propulsión"
+buff_desc = "+25% Velocidad y x2 Radio de Imán por 10s al sincronizar el objetivo."
+theme_color = Color(0.2, 0.95, 0.65, 1)
+is_secret = false
+sort_order = 1
+target_type = &"planet"
+dialogue_callouts = [
+    "¡Lecturas orgánicas detectadas! Un segmento planetario fértil está a nuestro alcance.",
+    "Piloto, mis biosensores captan una concentración de biomasa. ¡Trazo la ruta!",
+    "Ecosistema espacial localizado. Acelera hacia el cuadrante marcado."
+]
