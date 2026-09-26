@@ -17,6 +17,10 @@ signal closed()
 @onready var set_bosses_9_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CareerDebugRow/SetBosses9Button")
 @onready var simulate_10m_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/Simulate10mButton")
 @onready var lock_cosmo_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/PetsDebugRow/LockCosmoButton")
+@onready var jump_pacifist_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpPacifistButton")
+@onready var jump_slayer_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpSlayerButton")
+@onready var jump_neutral_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/JumpNeutralButton")
+@onready var spawn_rival_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/NarrativeDebugRow/SpawnRivalButton")
 
 @onready var stats_container: VBoxContainer = $CenterContainer/MainPanel/Margin/VBox/StatsScroll/StatsList
 @onready var reset_button: Button = $CenterContainer/MainPanel/Margin/VBox/ActionsRow/ResetButton
@@ -58,6 +62,22 @@ func _ready() -> void:
 	if lock_cosmo_btn:
 		lock_cosmo_btn.pressed.connect(_on_lock_cosmo_pressed)
 		UIFocusHelper.apply_cyber_focus(lock_cosmo_btn)
+
+	if jump_pacifist_btn:
+		jump_pacifist_btn.pressed.connect(_on_jump_pacifist_pressed)
+		UIFocusHelper.apply_cyber_focus(jump_pacifist_btn)
+
+	if jump_slayer_btn:
+		jump_slayer_btn.pressed.connect(_on_jump_slayer_pressed)
+		UIFocusHelper.apply_cyber_focus(jump_slayer_btn)
+
+	if jump_neutral_btn:
+		jump_neutral_btn.pressed.connect(_on_jump_neutral_pressed)
+		UIFocusHelper.apply_cyber_focus(jump_neutral_btn)
+
+	if spawn_rival_btn:
+		spawn_rival_btn.pressed.connect(_on_spawn_rival_pressed)
+		UIFocusHelper.apply_cyber_focus(spawn_rival_btn)
 
 	if reset_button:
 		reset_button.pressed.connect(reset_to_defaults)
@@ -358,3 +378,39 @@ func _on_infinite_consumables_toggled(toggled_on: bool) -> void:
 	DebugManager.infinite_consumables = toggled_on
 	if toggled_on:
 		DebugManager.is_enabled = true
+
+func _on_jump_pacifist_pressed() -> void:
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.has_method("jump_to_wave_11"):
+		mg.jump_to_wave_11("pacifist")
+		close_menu()
+	elif subtitle_label:
+		subtitle_label.text = "★ MODO PACIFISTA SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
+		subtitle_label.add_theme_color_override("font_color", Color(0.2, 0.95, 1.0, 1.0))
+
+func _on_jump_slayer_pressed() -> void:
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.has_method("jump_to_wave_11"):
+		mg.jump_to_wave_11("slayer")
+		close_menu()
+	elif subtitle_label:
+		subtitle_label.text = "⚔ MODO EXTERMINADOR SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
+		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.4, 1.0))
+
+func _on_jump_neutral_pressed() -> void:
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.has_method("jump_to_wave_11"):
+		mg.jump_to_wave_11("neutral")
+		close_menu()
+	elif subtitle_label:
+		subtitle_label.text = "⚖ MODO NEUTRAL SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
+		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+
+func _on_spawn_rival_pressed() -> void:
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.has_method("spawn_next_rival_pilot"):
+		mg.spawn_next_rival_pilot()
+		close_menu()
+	elif subtitle_label:
+		subtitle_label.text = "👾 INVOCAR RIVAL (DISPONIBLE DURANTE COMBATE ACTIVO)"
+		subtitle_label.add_theme_color_override("font_color", Color(0.85, 0.5, 1.0, 1.0))

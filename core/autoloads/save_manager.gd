@@ -18,7 +18,8 @@ static func save_profile(
 	p_game_speed: float = -1.0,
 	p_career_stats: Variant = null,
 	p_selected_pet: StringName = &"",
-	p_unlocked_pets: Variant = null
+	p_unlocked_pets: Variant = null,
+	p_unlocked_endings: Variant = null
 ) -> Error:
 	var existing_prof: Dictionary = {}
 	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
@@ -105,6 +106,15 @@ static func save_profile(
 		for p in raw_pets:
 			str_unlocked_pets.append(String(p))
 
+	var str_unlocked_endings: Array[String] = []
+	if p_unlocked_endings != null:
+		for e in p_unlocked_endings:
+			str_unlocked_endings.append(String(e))
+	else:
+		var raw_endings: Array = existing_prof.get("unlocked_endings", [])
+		for e in raw_endings:
+			str_unlocked_endings.append(String(e))
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -119,7 +129,8 @@ static func save_profile(
 		"game_speed": current_speed,
 		"career_stats": current_career,
 		"selected_pet": String(current_pet),
-		"unlocked_pets": str_unlocked_pets
+		"unlocked_pets": str_unlocked_pets,
+		"unlocked_endings": str_unlocked_endings
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -197,7 +208,8 @@ static func _get_default_profile() -> Dictionary:
 		"game_speed": 1.0,
 		"career_stats": _get_default_career_stats(),
 		"selected_pet": &"mochi",
-		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName]
+		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName],
+		"unlocked_endings": [] as Array[String]
 	}
 
 
@@ -239,8 +251,13 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"game_speed": float(raw.get("game_speed", 1.0)),
 		"career_stats": career_clean,
 		"selected_pet": StringName(str(raw.get("selected_pet", "mochi"))),
-		"unlocked_pets": [] as Array[StringName]
+		"unlocked_pets": [] as Array[StringName],
+		"unlocked_endings": [] as Array[String]
 	}
+
+	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
+		for e in raw["unlocked_endings"]:
+			cleaned["unlocked_endings"].append(String(e))
 
 	if cleaned["selected_pet"] == &"":
 		cleaned["selected_pet"] = &"mochi"
@@ -710,6 +727,42 @@ static func lock_pet(pet_id: StringName) -> void:
 		sel_pet = &"mochi"
 
 	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked)
+
+
+static func get_unlocked_endings() -> Array[String]:
+	var prof := load_profile()
+	var raw = prof.get("unlocked_endings", [])
+	var list: Array[String] = []
+	if raw is Array:
+		for e in raw:
+			list.append(str(e))
+	return list
+
+static func has_unlocked_ending(ending_id: String) -> bool:
+	return get_unlocked_endings().has(ending_id)
+
+static func record_ending(ending_id: String) -> bool:
+	var prof := load_profile()
+	var current := get_unlocked_endings()
+	var is_new: bool = false
+	if not current.has(ending_id):
+		current.append(ending_id)
+		is_new = true
+	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+	var chars: Array[StringName] = prof.get("unlocked_characters", [])
+	var bans: Dictionary = prof.get("character_banlists", {})
+	var bio: int = int(prof.get("biomass", 0))
+	var anti: int = int(prof.get("antimatter", 0))
+	var skills: Dictionary = prof.get("character_skills", {})
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var dm: int = int(prof.get("dark_matter", 0))
+	var trophies: Dictionary = prof.get("trophies_unlocked", {})
+	var spd: float = float(prof.get("game_speed", 1.0))
+	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
+	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
+	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, current)
+	return is_new
 
 
 static func record_boss_kill() -> bool:

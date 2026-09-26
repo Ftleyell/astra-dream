@@ -1,0 +1,5 @@
+join mochi right
+mochi: [shake rate=20.0 level=6][color=#ff3333]¡ALERTA DE DISTORSIÓN CRÍTICA EN EL RADAR![/color][/shake]
+mochi: Una firma titánica de clase Dominio acaba de manifestarse en las coordenadas del sector.
+mochi: [wave amp=15.0 freq=4.0]¡Detectores fijados en el coloso! ¡Prepara los propulsores para la evasión![/wave]
+leave --All--

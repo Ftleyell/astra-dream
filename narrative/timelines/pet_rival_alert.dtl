@@ -1,0 +1,5 @@
+join mochi right
+mochi: [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL DE CORTO ALCANCE![/color][/shake]
+mochi: Una nave de combate de la flota Astra ha entrado en nuestro sector orbital.
+mochi: [wave amp=12.0 freq=3.0]Nos están proyectando un perímetro de advertencia. Si nos alejamos romperán contacto pacíficamente... pero si nos acercamos comenzará el combate.[/wave]
+leave --All--

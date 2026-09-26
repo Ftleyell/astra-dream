@@ -1,0 +1,25 @@
+{
+"@path": "res://addons/dialogic/Resources/character.gd",
+"@subpath": NodePath(""),
+&"_translation_id": "",
+&"color": Color(1.0, 0.88, 0.2, 1),
+&"custom_info": {},
+&"default_portrait": "Normal",
+&"description": "Copiloto Cibernético y Gestor de Créditos.",
+&"display_name": "Pip [Copiloto]",
+&"mirror": false,
+&"nicknames": [],
+&"offset": Vector2(0, 0),
+&"portraits": {
+		"Normal": {
+			"export_overrides": {
+				"image": "\"res://assets/pets/pet_pip.png\""
+			},
+			"mirror": false,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
+		}
+	},
+&"scale": 1.0
+}

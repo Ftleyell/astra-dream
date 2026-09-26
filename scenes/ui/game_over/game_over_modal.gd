@@ -78,11 +78,33 @@ func _populate_screen(data: Dictionary) -> void:
 	if score_value_label:
 		score_value_label.text = "%s PTS" % _format_number(score)
 
+	var is_victory: bool = bool(data.get("victory", false))
+	var ending_title: String = str(data.get("ending_title", ""))
+
+	if title_label:
+		if is_victory:
+			title_label.text = "★ ¡VICTORIA ESTELAR - INCURSIÓN CUMPLIDA! ★"
+			title_label.modulate = Color(0.2, 1.0, 0.65, 1.0)
+		else:
+			title_label.text = "SEÑAL DE NAVE PERDIDA (GAME OVER)"
+			title_label.modulate = Color(1.0, 0.25, 0.25, 1.0)
+
 	var is_new_record: bool = bool(data.get("is_new_highscore", false))
 	var rank: int = int(data.get("rank", -1))
 
 	if highscore_badge:
-		if is_new_record:
+		if not ending_title.is_empty():
+			highscore_badge.show()
+			if highscore_label:
+				highscore_label.text = "✦ %s ✦" % ending_title.to_upper()
+				var e_type: String = str(data.get("ending_type", "neutral"))
+				if e_type == "pacifist":
+					highscore_label.modulate = Color(0.2, 0.95, 1.0, 1.0)
+				elif e_type == "slayer":
+					highscore_label.modulate = Color(1.0, 0.25, 0.35, 1.0)
+				else:
+					highscore_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+		elif is_new_record:
 			highscore_badge.show()
 			if highscore_label:
 				highscore_label.text = "★ ¡NUEVO RÉCORD HISTÓRICO - TOP #1! ★"
@@ -98,7 +120,10 @@ func _populate_screen(data: Dictionary) -> void:
 	# 2. Piloto
 	var pilot_name: String = str(data.get("pilot_name", "Nova"))
 	if pilot_label:
-		pilot_label.text = "PILOTO: %s" % pilot_name.to_upper()
+		var pilot_line := "PILOTO: %s" % pilot_name.to_upper()
+		if not str(data.get("epilogue_text", "")).is_empty():
+			pilot_line += " | %s" % str(data.get("epilogue_text", ""))
+		pilot_label.text = pilot_line
 
 	# 3. Estadísticas de Incursión
 	if wave_val_label:

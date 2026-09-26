@@ -1,0 +1,25 @@
+{
+"@path": "res://addons/dialogic/Resources/character.gd",
+"@subpath": NodePath(""),
+&"_translation_id": "",
+&"color": Color(1.0, 0.6, 0.2, 1),
+&"custom_info": {},
+&"default_portrait": "Normal",
+&"description": "Copiloto Felino y Cazador de Polvo Estelar.",
+&"display_name": "Mochi [Copiloto]",
+&"mirror": false,
+&"nicknames": [],
+&"offset": Vector2(0, 0),
+&"portraits": {
+		"Normal": {
+			"export_overrides": {
+				"image": "\"res://assets/pets/pet_mochi.png\""
+			},
+			"mirror": false,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
+		}
+	},
+&"scale": 1.0
+}

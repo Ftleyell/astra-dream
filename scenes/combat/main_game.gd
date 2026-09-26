@@ -36,7 +36,11 @@ var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_he
 var boss_ash_clock_scene: PackedScene = preload("res://scenes/combat/bosses/boss_ash_clock.tscn")
 var boss_broken_mirror_scene: PackedScene = preload("res://scenes/combat/bosses/boss_broken_mirror.tscn")
 var boss_overflow_vortex_scene: PackedScene = preload("res://scenes/combat/bosses/boss_overflow_vortex.tscn")
+var boss_astra_prime_scene: PackedScene = preload("res://scenes/combat/bosses/boss_astra_prime.tscn")
+var rival_pilot_scene: PackedScene = preload("res://scenes/combat/bosses/rival_pilot_boss.tscn")
+var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/allied_wingman.tscn")
 var current_boss: Node2D = null
+var current_rival: Node2D = null
 var _last_player_hp: float = 100.0
 
 var current_wave: int = 1
@@ -44,6 +48,11 @@ var wave_timer: float = WAVE_DURATION
 var wave_satellites_spawned: int = 0
 var satellites_collected_total: int = 0
 var last_anchor_pos: Vector2 = Vector2.ZERO
+
+var rival_queue: Array[StringName] = []
+var rivals_spared: Array[StringName] = []
+var rivals_killed: Array[StringName] = []
+var is_wave_11_cleared: bool = false
 
 var is_briefing_active: bool = true
 var is_cockpit_active: bool = false
@@ -65,6 +74,7 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
+	_setup_rival_queue()
 	_spawn_companion_pet()
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
@@ -160,6 +170,19 @@ func _ready() -> void:
 	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
 	_start_prologue_briefing()
 
+func _setup_rival_queue() -> void:
+	rival_queue.clear()
+	var all_pilots: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
+	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+	var available: Array[StringName] = []
+	for pid in all_pilots:
+		if pid != player_pid:
+			available.append(pid)
+	var preferred: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
+	for pid in preferred:
+		if available.has(pid) and rival_queue.size() < 5:
+			rival_queue.append(pid)
+
 func _get_dialogic() -> Node:
 	return get_node_or_null("/root/Dialogic")
 
@@ -171,7 +194,42 @@ func _start_prologue_briefing() -> void:
 
 	var dialogic_node := _get_dialogic()
 	if dialogic_node and dialogic_node.has_method("start"):
-		var layout = dialogic_node.start("res://narrative/timelines/prologue_briefing.dtl")
+		var p_id: String = String(player.character_data.character_id).to_lower() if (player and player.character_data and player.character_data.character_id != &"") else "nova"
+		if not ["nova", "valentina", "kira", "selene", "roxy", "echo", "nyx"].has(p_id):
+			p_id = "nova"
+		var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+		if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+			pet_id = "mochi"
+
+		var pilot_label: String = p_id
+		var pet_label: String = pet_id
+
+		var dtl_text := """
+join %s left
+join %s right
+%s: Cabina presurizada y reactores listos. ¿Cómo están los sensores de navegación, %s?
+%s: [wave amp=16.0 freq=3.0]¡Todo calibrado! Radar y telemetría de sector en línea.[/wave]
+%s: Contamos con excedente en los capacitores de despegue. ¿En qué sistema canalizamos la energía inicial?
+- [color=#ffd700]Financiamiento Táctico[/color] (+100 Créditos)
+	%s: Transfiere los fondos. Requeriremos suministros en las balizas del satélite.
+	[signal arg="briefing_credits"]
+	%s: ¡Entendido! +100 créditos orbitales transferidos al terminal táctico.
+- [color=#00e5ff]Sobrecarga de Reactores[/color] (+15%% Velocidad)
+	%s: Potencia total a las toberas. Necesitamos maniobrabilidad máxima.
+	[signal arg="briefing_speed"]
+	%s: Limitadores de inercia retirados. Vector de aceleración optimizado.
+- [color=#00ff88]Blindaje Refractario[/color] (+25 HP Máx)
+	%s: Refuerza la integridad del casco con placas refractarias de carburo.
+	[signal arg="briefing_hull"]
+	%s: Casco blindado y sellos de presurización estabilizados al máximo.
+%s: [shake rate=15.0 level=4]¡Detectando firmas hostiles en la órbita! Iniciando despliegue.[/shake]
+%s: ¡Sistemas de combate online! ¡Vamos allá!
+leave --All--
+""" % [pilot_label, pet_label, pilot_label, pet_label.capitalize(), pet_label, pet_label, pilot_label, pet_label, pilot_label, pet_label, pilot_label, pet_label, pet_label, pilot_label]
+
+		var tl := DialogicTimeline.new()
+		tl.from_text(dtl_text)
+		var layout = dialogic_node.start(tl)
 		if layout:
 			layout.process_mode = Node.PROCESS_MODE_ALWAYS
 		_setup_dialogic_audio(layout)
@@ -261,20 +319,95 @@ func _on_dialogic_timeline_ended() -> void:
 	elif not is_any_combat_modal_active():
 		get_tree().paused = false
 
-func _trigger_cockpit_interlude() -> void:
+func _trigger_pet_rival_alert(pilot_name: String) -> void:
+	var dialogic_node := _get_dialogic()
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		return
 	is_cockpit_active = true
 	get_tree().paused = true
 	if skip_badge_layer:
 		skip_badge_layer.show()
+
+	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+		pet_id = "mochi"
+
+	var text := """
+join %s right
+%s: [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]
+%s: La nave de %s ha entrado al sector proyectando un perímetro de advertencia.
+%s: [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]
+leave --All--
+""" % [pet_id, pet_id, pet_id, pilot_name, pet_id]
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
+
+func _trigger_pet_boss_alert(boss_name: String) -> void:
 	var dialogic_node := _get_dialogic()
-	if dialogic_node and dialogic_node.has_method("start"):
-		var layout = dialogic_node.start("res://narrative/timelines/wave_interlude_cockpit.dtl")
-		if layout:
-			layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		_setup_dialogic_audio(layout)
-	else:
-		is_cockpit_active = false
-		get_tree().paused = false
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		return
+	is_boss_transmission_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+		pet_id = "mochi"
+
+	var text := """
+join %s right
+%s: [shake rate=20.0 level=6][color=#ff3333]¡ALERTA DE DISTORSIÓN CRÍTICA EN EL RADAR![/color][/shake]
+%s: La firma titánica de %s se ha manifestado en el sector.
+%s: [wave amp=15.0 freq=4.0]¡Detectores fijados en el coloso! ¡Prepara los propulsores para esquivar sus proyectiles![/wave]
+leave --All--
+""" % [pet_id, pet_id, pet_id, boss_name, pet_id]
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
+
+func _trigger_pet_climax_alert(route: String) -> void:
+	var dialogic_node := _get_dialogic()
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		return
+	is_boss_transmission_active = true
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+		pet_id = "mochi"
+
+	var route_desc := "Las 5 pilotos perdonadas se unen a nuestros flancos. ¡La Flota de la Esperanza está aquí!"
+	if route == "slayer":
+		route_desc = "Has erradicado a todas las rivales y acumulado su armamento. ¡Astra Prime entrará en furia extrema!"
+	elif route == "neutral":
+		route_desc = "Sobrevivimos hasta el epicentro del universo. ¡Este es el duelo definitivo por el destino cósmico!"
+
+	var text := """
+join %s right
+%s: [shake rate=25.0 level=7][color=#00e5ff]¡ALERTA CÓSMICA: LLEGADA AL NÚCLEO SUPREMO ASTRA PRIME![/color][/shake]
+%s: %s
+%s: [wave amp=18.0 freq=3.5]¡Todos los reactores al 100%%! ¡Por la victoria estelar![/wave]
+leave --All--
+""" % [pet_id, pet_id, pet_id, route_desc, pet_id]
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
 
 
 func _process(delta: float) -> void:
@@ -304,8 +437,7 @@ func _process(delta: float) -> void:
 		wave_satellites_spawned = 0
 		if enemy_spawner and enemy_spawner.has_method("set_wave"):
 			enemy_spawner.set_wave(current_wave)
-		_trigger_cockpit_interlude()
-		_check_wave_boss_spawn()
+		_check_wave_encounters()
 		save_current_run_state()
 		_spawn_next_satellite_for_wave()
 		if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
@@ -362,10 +494,73 @@ func _spawn_next_satellite_for_wave() -> void:
 	wave_satellites_spawned += 1
 	_spawn_next_satellite(spawn_pos)
 
-func _check_wave_boss_spawn() -> void:
-	# Aparece en oleadas pares (2, 4, 6...)
-	if current_wave % 2 == 0 and current_boss == null:
+func _check_wave_encounters() -> void:
+	if current_wave == 11:
+		_spawn_final_boss()
+	elif current_wave % 2 == 1:
+		# Oleadas impares (1, 3, 5, 7, 9): Encuentro de Piloto Rival
+		if current_wave <= 9:
+			_spawn_rival_pilot()
+	else:
+		# Oleadas pares (2, 4, 6, 8, 10): Jefes de Dominio
 		_spawn_wave_boss()
+
+func _spawn_rival_pilot(override_id: StringName = &"") -> void:
+	if current_rival != null or current_boss != null or not is_instance_valid(player):
+		return
+
+	var next_pid := override_id
+	if next_pid == &"":
+		var unencountered: Array[StringName] = []
+		for pid in rival_queue:
+			if not rivals_spared.has(pid) and not rivals_killed.has(pid):
+				unencountered.append(pid)
+		if unencountered.is_empty():
+			return
+		next_pid = unencountered[0]
+
+	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
+	var spawn_pos := player.global_position + forward * 800.0
+
+	var rival = rival_pilot_scene.instantiate()
+	rival.global_position = spawn_pos
+	rival.setup_pilot(next_pid, current_wave)
+	add_child(rival)
+	current_rival = rival
+
+	rival.rival_spared.connect(_on_rival_spared)
+	rival.rival_engaged.connect(_on_rival_engaged)
+	rival.rival_defeated.connect(_on_rival_defeated)
+
+	_trigger_pet_rival_alert(rival.pilot_name)
+
+func _on_rival_spared(p_id: StringName) -> void:
+	if not rivals_spared.has(p_id):
+		rivals_spared.append(p_id)
+	current_rival = null
+	if hud and hud.has_method("hide_boss"):
+		hud.hide_boss()
+	save_current_run_state()
+
+func _on_rival_engaged(p_id: StringName) -> void:
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+	if current_rival:
+		var r_name: String = "DUELO: " + (current_rival.pilot_name if "pilot_name" in current_rival else String(p_id).to_upper())
+		var r_hp: float = current_rival.max_health if "max_health" in current_rival else 950.0
+		hud.show_boss(r_name, r_hp)
+		if current_rival.has_signal("health_changed"):
+			current_rival.connect("health_changed", hud.update_boss_health)
+
+func _on_rival_defeated(p_id: StringName, _weapon: WeaponData) -> void:
+	if not rivals_killed.has(p_id):
+		rivals_killed.append(p_id)
+	current_rival = null
+	if hud and hud.has_method("hide_boss"):
+		hud.hide_boss()
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(false)
+	save_current_run_state()
 
 func _spawn_wave_boss() -> void:
 	if current_boss != null or not is_instance_valid(player):
@@ -406,11 +601,49 @@ func _spawn_wave_boss() -> void:
 	if current_boss.has_signal("boss_defeated"):
 		current_boss.connect("boss_defeated", _on_boss_defeated)
 
-	# Transmisión narrativa opcional
-	var bus := get_node_or_null("/root/EventBus")
-	if bus and bus.has_signal("boss_spawn_requested"):
-		var b_id: String = current_boss.get("boss_id") if "boss_id" in current_boss else "boss_unknown"
-		bus.boss_spawn_requested.emit("boss_titan_alert", b_id, false)
+	_trigger_pet_boss_alert(b_name)
+
+func _spawn_final_boss() -> void:
+	if current_boss != null or not is_instance_valid(player):
+		return
+
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+
+	var route := "neutral"
+	if rivals_spared.size() >= 5:
+		route = "pacifist"
+	elif rivals_killed.size() >= 5:
+		route = "slayer"
+
+	_trigger_pet_climax_alert(route)
+
+	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
+	var boss_pos := player.global_position + forward * 680.0
+
+	var prime = boss_astra_prime_scene.instantiate()
+	prime.global_position = boss_pos
+	prime.set_route(route)
+	add_child(prime)
+	current_boss = prime
+
+	hud.show_boss(prime.boss_name, prime.max_health)
+	prime.health_changed.connect(hud.update_boss_health)
+	prime.phase_changed.connect(hud.set_boss_phase)
+	prime.boss_defeated.connect(func(_b_id): _on_final_boss_defeated(route))
+
+	if route == "pacifist":
+		_spawn_allied_wingmen()
+	elif route == "slayer":
+		player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, self))
+
+func _spawn_allied_wingmen() -> void:
+	for i in range(rivals_spared.size()):
+		var pid := rivals_spared[i]
+		var wingman = allied_wingman_scene.instantiate()
+		wingman.global_position = player.global_position + Vector2(cos((TAU / 5.0) * float(i)), sin((TAU / 5.0) * float(i))) * 230.0
+		wingman.setup(pid, (TAU / 5.0) * float(i))
+		add_child(wingman)
 
 func _on_boss_defeated(_boss_id: String) -> void:
 	bosses_defeated_count += 1
@@ -426,6 +659,120 @@ func _on_boss_defeated(_boss_id: String) -> void:
 		enemy_spawner.set_spawning_paused(false)
 	save_current_run_state()
 
+func _on_final_boss_defeated(route: String) -> void:
+	bosses_defeated_count += 1
+	current_boss = null
+	hud.hide_boss()
+	is_wave_11_cleared = true
+
+	SaveManager.record_ending(route)
+
+	var ending_title := "FINAL NEUTRAL: EQUILIBRIO FRAGMENTADO"
+	var epilogue := "Sobreviviste tomando decisiones pragmáticas. El orden cósmico permanece en una frágil calma."
+	if route == "pacifist":
+		ending_title = "FINAL PACIFISTA: FLOTA DE LA ESPERANZA"
+		epilogue = "Las 5 pilotos perdonadas se unieron a tu vuelo, liberando el Núcleo Astra y salvando la galaxia."
+	elif route == "slayer":
+		ending_title = "FINAL EXTERMINADOR: EL LOBO SOLITARIO"
+		epilogue = "Erradicaste a todas las rivales y absorbiste sus armas. Ahora reinas como el soberano absoluto del vacío."
+
+	var minutes := int(run_time_elapsed) / 60
+	var seconds := int(run_time_elapsed) % 60
+	var time_str := "%02d:%02d" % [minutes, seconds]
+	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
+	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
+
+	var final_score := int((enemies_killed_count * 50) + (current_wave * 1500) + (bosses_defeated_count * 8000) + (player.run_credits * 15) + int(run_time_elapsed * 25))
+
+	var rank := SaveManager.record_run_score({
+		"pilot_id": pilot_id,
+		"pilot_name": pilot_name,
+		"wave_reached": current_wave,
+		"time_survived_seconds": run_time_elapsed,
+		"time_survived_formatted": time_str,
+		"enemies_killed": enemies_killed_count,
+		"credits_earned": player.run_credits,
+		"victory": true,
+		"score": final_score
+	})
+
+	SaveManager.record_career_run_end({
+		"time_survived": run_time_elapsed,
+		"credits_earned": player.run_credits,
+		"biomass_earned": player.run_biomass,
+		"enemies_killed": enemies_killed_count,
+		"satellites_collected": satellites_collected_total,
+		"victory": true
+	})
+
+	SaveManager.clear_active_run()
+
+	var weapons_summary: Array = []
+	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl:
+		for inst in w_ctrl.equipped_weapons:
+			if inst and inst.weapon_data:
+				weapons_summary.append({
+					"name": inst.weapon_data.name if "name" in inst.weapon_data else str(inst.weapon_data.weapon_id),
+					"level": inst.level,
+					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
+				})
+
+	var victory_data := {
+		"score": final_score,
+		"is_new_highscore": (rank == 1),
+		"rank": rank,
+		"pilot_name": pilot_name,
+		"pilot_id": pilot_id,
+		"waves_survived": current_wave,
+		"time_survived_seconds": run_time_elapsed,
+		"time_formatted": time_str,
+		"bosses_defeated": bosses_defeated_count,
+		"enemies_killed": enemies_killed_count,
+		"biomass_collected": player.run_biomass,
+		"dark_matter_collected": player.run_dark_matter,
+		"credits_collected": player.run_credits,
+		"arcanas": player.active_arcanas.duplicate(),
+		"items": player.inventory.get_all_items() if player.inventory else [],
+		"weapons": weapons_summary,
+		"victory": true,
+		"ending_type": route,
+		"ending_title": ending_title,
+		"epilogue_text": epilogue
+	}
+
+	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
+		_show_game_over_screen(victory_data)
+	)
+
+func jump_to_wave_11(route: String = "neutral") -> void:
+	current_wave = 11
+	wave_timer = WAVE_DURATION
+	if current_boss and is_instance_valid(current_boss):
+		current_boss.queue_free()
+		current_boss = null
+	if current_rival and is_instance_valid(current_rival):
+		current_rival.queue_free()
+		current_rival = null
+
+	rivals_spared.clear()
+	rivals_killed.clear()
+	if route == "pacifist":
+		rivals_spared = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
+	elif route == "slayer":
+		rivals_killed = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
+	else:
+		rivals_spared = [&"nova", &"valentina"]
+		rivals_killed = [&"kira", &"selene"]
+
+	_spawn_final_boss()
+
+func spawn_next_rival_pilot() -> void:
+	if current_rival and is_instance_valid(current_rival):
+		current_rival.queue_free()
+		current_rival = null
+	_spawn_rival_pilot()
+
 func _input(event: InputEvent) -> void:
 	# Atajo para saltar el briefing o secuencias de diálogo cinematográfico con ESC o acción dialogue_skip
 	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
@@ -435,16 +782,25 @@ func _input(event: InputEvent) -> void:
 			return
 
 	if event is InputEventKey and event.pressed and not event.echo:
-		# Tecla B para invocar o testear al jefe inmediatamente
+		# Tecla B para invocar al jefe de la oleada
 		if event.keycode == KEY_B:
 			if current_boss == null:
 				_spawn_wave_boss()
-		# Tecla T para testear en cualquier momento la transmisión cinemática de jefe
+		# Tecla R para invocar o testear a la siguiente piloto rival
+		elif event.keycode == KEY_R:
+			spawn_next_rival_pilot()
+		# Tecla P para saltar a la Oleada 11 en Ruta Pacifista (5 perdonadas)
+		elif event.keycode == KEY_P:
+			jump_to_wave_11("pacifist")
+		# Tecla K para saltar a la Oleada 11 en Ruta Exterminadora / Slayer (5 eliminadas)
+		elif event.keycode == KEY_K:
+			jump_to_wave_11("slayer")
+		# Tecla N para saltar a la Oleada 11 en Ruta Neutral
+		elif event.keycode == KEY_N:
+			jump_to_wave_11("neutral")
+		# Tecla T para testear transmisión
 		elif event.keycode == KEY_T:
 			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
-		# Tecla C para testear en cualquier momento la secuencia de diálogo de cabina en vivo
-		elif event.keycode == KEY_C:
-			_trigger_cockpit_interlude()
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
 	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
@@ -870,7 +1226,10 @@ func get_current_run_state() -> Dictionary:
 		"bomb_count": player.bomb_count,
 		"equipped_weapons": weapons_data,
 		"equipped_items": items_data,
-		"chosen_stat_cards": cards_data
+		"chosen_stat_cards": cards_data,
+		"rivals_spared": rivals_spared.duplicate(),
+		"rivals_killed": rivals_killed.duplicate(),
+		"rival_queue": rival_queue.duplicate()
 	}
 
 func save_current_run_state() -> void:
@@ -891,6 +1250,19 @@ func restore_run_state(run_data: Dictionary) -> void:
 	enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
 	bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
 	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
+
+	if run_data.has("rivals_spared"):
+		rivals_spared.clear()
+		for s in run_data["rivals_spared"]:
+			rivals_spared.append(StringName(s))
+	if run_data.has("rivals_killed"):
+		rivals_killed.clear()
+		for k in run_data["rivals_killed"]:
+			rivals_killed.append(StringName(k))
+	if run_data.has("rival_queue"):
+		rival_queue.clear()
+		for q in run_data["rival_queue"]:
+			rival_queue.append(StringName(q))
 
 	is_briefing_active = false
 	get_tree().paused = false

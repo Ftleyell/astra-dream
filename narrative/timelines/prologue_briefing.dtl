@@ -1,20 +1,20 @@
 join nova left
-join echo (Flipped) right
-echo: [wave amp=20.0 freq=4.0]Iniciando enlace orbital de telemetría...[/wave] Escáneres detectan anomalías gravitatorias en el sector.
-nova: Cabina presurizada y reactores listos. ¿Cuál es el estado de la baliza satelital?
-echo: Señal intermitente por interferencia del enjambre. [wait=0.4] Antes del contacto, tenemos excedente de energía para una calibración táctica inmediata.
-echo: ¿En qué sistema autorizas canalizar la reserva de despegue?
+join mochi right
+nova: Cabina presurizada y reactores listos. ¿Cómo están los sensores de navegación, Mochi?
+mochi: [wave amp=18.0 freq=3.5]¡Miau! [color=#ffa500]Telemetría y radar gravitatorio en línea.[/color][/wave]
+mochi: Tenemos excedente en los capacitores de despegue. ¿En qué sistema canalizamos la energía inicial?
 - [color=#ffd700]Financiamiento de Emergencia[/color] (+100 Créditos)
-	nova: Transfiere los fondos. Necesitaremos comprar suministros de inmediato en las balizas.
+	nova: Transfiere los fondos. Necesitaremos suministros inmediatos en las balizas del satélite.
 	[signal arg="briefing_credits"]
-	echo: 100 créditos orbitales depositados en tu terminal de vuelo.
+	mochi: ¡Purr! +100 créditos orbitales cargados en tu terminal táctico.
 - [color=#00e5ff]Sobrecarga de Reactores[/color] (+15% Velocidad)
-	nova: Pasa toda la potencia a las toberas. Necesito máxima agilidad para esquivar danmaku.
+	nova: Toda la potencia a las toberas. Necesito máxima agilidad para maniobrar y esquivar proyectiles.
 	[signal arg="briefing_speed"]
-	echo: Limitadores de inercia retirados. Vector de aceleración optimizado.
+	mochi: Limitadores de inercia retirados. Vector de aceleración optimizado.
 - [color=#00ff88]Blindaje Refractario[/color] (+25 HP Máx)
-	nova: Refuerza el chasis con placas de carburo comprimido.
+	nova: Refuerza el chasis con placas refractarias de carburo comprimido.
 	[signal arg="briefing_hull"]
-	echo: Capas refractarias selladas. Integridad de la nave reforzada.
-echo: [shake rate=15.0 level=5]¡Alerta de aproximación masiva de drones![/shake] Despliegue de combate activo. ¡Buena suerte, Nova!
+	mochi: Integridad de cabina sellada al máximo. Chasis reforzado.
+mochi: [shake rate=15.0 level=5]¡Alerta de proximidad! Múltiples firmas hostiles aproximándose a hiper-velocidad.[/shake]
+nova: ¡Sistemas de armas online! Despliegue de combate activo. ¡Vamos allá!
 leave --All--

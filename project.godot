@@ -36,15 +36,23 @@ Dialogic="*uid://ds2q0uclmolvu"
 [dialogic]
 
 directories/dch_directory={
+"cosmo": "res://narrative/characters/cosmo.dch",
 "echo": "res://narrative/characters/echo.dch",
 "kira": "res://narrative/characters/kira.dch",
+"kuro": "res://narrative/characters/kuro.dch",
+"luna": "res://narrative/characters/luna.dch",
+"mochi": "res://narrative/characters/mochi.dch",
 "nova": "res://narrative/characters/nova.dch",
+"nyx": "res://narrative/characters/nyx.dch",
+"pip": "res://narrative/characters/pip.dch",
 "roxy": "res://narrative/characters/roxy.dch",
 "selene": "res://narrative/characters/selene.dch",
 "valentina": "res://narrative/characters/valentina.dch"
 }
 directories/dtl_directory={
 "boss_titan_alert": "res://narrative/timelines/boss_titan_alert.dtl",
+"pet_boss_alert": "res://narrative/timelines/pet_boss_alert.dtl",
+"pet_rival_alert": "res://narrative/timelines/pet_rival_alert.dtl",
 "prologue_briefing": "res://narrative/timelines/prologue_briefing.dtl",
 "wave_interlude_cockpit": "res://narrative/timelines/wave_interlude_cockpit.dtl"
 }

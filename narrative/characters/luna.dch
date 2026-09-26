@@ -1,0 +1,25 @@
+{
+"@path": "res://addons/dialogic/Resources/character.gd",
+"@subpath": NodePath(""),
+&"_translation_id": "",
+&"color": Color(0.4, 0.9, 0.85, 1),
+&"custom_info": {},
+&"default_portrait": "Normal",
+&"description": "Copiloto Espiritual y Sanadora Astral.",
+&"display_name": "Luna [Copiloto]",
+&"mirror": false,
+&"nicknames": [],
+&"offset": Vector2(0, 0),
+&"portraits": {
+		"Normal": {
+			"export_overrides": {
+				"image": "\"res://assets/pets/pet_luna.png\""
+			},
+			"mirror": false,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
+		}
+	},
+&"scale": 1.0
+}
