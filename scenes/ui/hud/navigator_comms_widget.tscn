@@ -29,7 +29,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="CommsAnchor"]
-custom_minimum_size = Vector2(430, 100)
+custom_minimum_size = Vector2(450, 104)
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
@@ -56,13 +56,13 @@ mouse_filter = 2
 theme_override_constants/separation = 12
 
 [node name="PortraitFrame" type="Control" parent="CommsAnchor/PanelContainer/Margin/HBox"]
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
 
 [node name="Portrait" type="TextureRect" parent="CommsAnchor/PanelContainer/Margin/HBox/PortraitFrame"]
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -71,7 +71,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
 [node name="ContentVBox" type="VBoxContainer" parent="CommsAnchor/PanelContainer/Margin/HBox"]
 layout_mode = 2

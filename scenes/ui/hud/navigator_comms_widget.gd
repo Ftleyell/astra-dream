@@ -27,6 +27,8 @@ func _ready() -> void:
 	if anim_container:
 		anim_container.position.x = HIDDEN_OFFSET_X
 		anim_container.modulate.a = 0.0
+	if portrait_rect:
+		portrait_rect.pivot_offset = Vector2(40.0, 40.0)
 	visible = true
 
 func _process(delta: float) -> void:
@@ -96,6 +98,9 @@ func slide_in(display_time: float = VISIBLE_DURATION) -> void:
 	_current_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_current_tween.tween_property(anim_container, "position:x", SHOWN_OFFSET_X, SLIDE_DURATION)
 	_current_tween.tween_property(anim_container, "modulate:a", 1.0, 0.2)
+	if portrait_rect:
+		portrait_rect.scale = Vector2(0.85, 0.85)
+		_current_tween.tween_property(portrait_rect, "scale", Vector2.ONE, SLIDE_DURATION)
 
 func slide_out() -> void:
 	if _current_tween and _current_tween.is_valid():
