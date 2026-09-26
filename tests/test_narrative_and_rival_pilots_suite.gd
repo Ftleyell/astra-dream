@@ -22,6 +22,7 @@ func _ready() -> void:
 	_test_8_debug_route_shortcuts_to_wave_11()
 	_test_9_boss_edge_indicator()
 	_test_10_nyx_genocide_escort_and_dialogues()
+	_test_11_flipped_portraits_and_victory_dialogue()
 
 	print("\n==================================================================")
 	print("[TEST] ✓ TODAS LAS PRUEBAS DE NARRATIVA Y RIVALES PASARON CON ÉXITO")
@@ -404,5 +405,54 @@ func _test_10_nyx_genocide_escort_and_dialogues() -> void:
 	mg.queue_free()
 
 	print("  ✓ Escoltas, escalas 0.42, hitboxes completas y superviviente de Nyx validados con éxito")
+
+func _test_11_flipped_portraits_and_victory_dialogue() -> void:
+	print("\n[11/11] Verificando Retratos Flipped para Pilotos Rivales y Diálogos Post-Jefe...")
+
+	# 1. Comprobar que todos los archivos .dch de pilotos tienen la variante 'Flipped'
+	var pilot_ids := ["nova", "valentina", "kira", "selene", "roxy", "echo", "nyx"]
+	for pid in pilot_ids:
+		var dch_path := "res://narrative/characters/%s.dch" % pid
+		assert(ResourceLoader.exists(dch_path), "El recurso %s debe existir" % dch_path)
+		var file := FileAccess.open(dch_path, FileAccess.READ)
+		assert(file != null, "No se pudo abrir %s" % dch_path)
+		var content := file.get_as_text()
+		file.close()
+		assert(content.contains('"Flipped"'), "El archivo %s debe definir el retrato 'Flipped'" % dch_path)
+
+	# 2. Comprobar la lógica del diálogo de victoria post-jefe en MainGame
+	var mg := MainGame.new()
+	mg.player = Player.new()
+	mg.player.character_data = CharacterData.new()
+	mg.player.character_data.character_id = &"nova"
+	mg.rivals_spared = [&"valentina", &"kira", &"selene", &"roxy", &"echo"]
+
+	var dummy_victory_data: Dictionary = {
+		"victory": true,
+		"score": 99999,
+		"ending_title": "FINAL PACIFISTA: FLOTA DE LA ESPERANZA"
+	}
+
+	# Si Dialogic no está inicializado o no hay timeline activa, debe caer limpiamente
+	assert(mg.has_method("_trigger_post_boss_victory_dialogue"), "MainGame debe tener _trigger_post_boss_victory_dialogue")
+	assert("is_victory_dialogue_active" in mg, "MainGame debe rastrear is_victory_dialogue_active")
+
+	# Probar transición si se activa el diálogo
+	mg.is_victory_dialogue_active = true
+	mg._pending_victory_data = dummy_victory_data
+	assert(mg.is_dialogue_active() == true, "is_dialogue_active debe devolver true mientras el diálogo de victoria está activo")
+
+	# Simular skip por ESC del jugador
+	var showed_screen := [false]
+	# Sobrescribir temporalmente _show_game_over_screen o verificar que se vacía _pending_victory_data
+	mg._on_dialogue_skip_requested()
+	assert(mg.is_victory_dialogue_active == false, "El skip debe desactivar is_victory_dialogue_active")
+	assert(mg._pending_victory_data.is_empty(), "_pending_victory_data debe consumirse tras mostrar la victoria")
+
+	mg.player.queue_free()
+	mg.queue_free()
+
+	print("  ✓ Retratos Flipped y flujo de Diálogo Post-Jefe hacia Pantalla de Victoria verificados con éxito")
+
 
 

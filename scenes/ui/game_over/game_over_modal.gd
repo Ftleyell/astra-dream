@@ -65,7 +65,7 @@ func show_game_over(data: Dictionary) -> void:
 	show()
 
 	# Sonido dramático de apertura
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr := get_node_or_null("/root/AudioManager") if is_inside_tree() else null
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("menu_open", 1.0, 1.0)
 

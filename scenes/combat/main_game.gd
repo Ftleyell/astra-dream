@@ -59,6 +59,8 @@ var is_wave_11_cleared: bool = false
 var is_briefing_active: bool = true
 var is_cockpit_active: bool = false
 var is_boss_transmission_active: bool = false
+var is_victory_dialogue_active: bool = false
+var _pending_victory_data: Dictionary = {}
 var prologue_bonus_chosen: bool = false
 var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
@@ -215,6 +217,9 @@ func _get_genocide_escort_pilot_id() -> StringName:
 	return &"nyx"
 
 func _get_dialogic() -> Node:
+	if not is_inside_tree():
+		var tree := Engine.get_main_loop() as SceneTree
+		return tree.root.get_node_or_null("Dialogic") if tree and tree.root else null
 	return get_node_or_null("/root/Dialogic")
 
 func _start_prologue_briefing() -> void:
@@ -303,6 +308,18 @@ func _on_dialogic_timeline_started() -> void:
 		audio_duck_manager.duck_music(true)
 
 func _on_dialogue_skip_requested() -> void:
+	if is_victory_dialogue_active:
+		is_victory_dialogue_active = false
+		var v_data := _pending_victory_data.duplicate()
+		_pending_victory_data.clear()
+		var dialogic_node := _get_dialogic()
+		if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
+			if dialogic_node.has_method("end_timeline"):
+				dialogic_node.end_timeline(true)
+		if not v_data.is_empty():
+			_show_game_over_screen(v_data)
+		return
+
 	if is_briefing_active and not prologue_bonus_chosen:
 		prologue_bonus_chosen = true
 		player.run_credits += 100
@@ -328,6 +345,14 @@ func _on_dialogic_timeline_ended() -> void:
 		skip_badge_layer.hide()
 	if audio_duck_manager:
 		audio_duck_manager.duck_music(false)
+
+	if is_victory_dialogue_active:
+		is_victory_dialogue_active = false
+		var v_data := _pending_victory_data.duplicate()
+		_pending_victory_data.clear()
+		if not v_data.is_empty():
+			_show_game_over_screen(v_data)
+		return
 
 	if is_briefing_active:
 		is_briefing_active = false
@@ -417,7 +442,7 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 	text += pet_id + ": La nave de " + r_name + " ha entrado al sector proyectando un perímetro de advertencia.\n"
 	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
 	text += "leave " + pet_id + "\n"
-	text += "join " + String(r_pid) + " right\n"
+	text += "join " + String(r_pid) + " (Flipped) right\n"
 	text += "join " + String(p_pid) + " left\n"
 	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
 	text += String(p_pid) + ": " + lines["player_line"] + "\n"
@@ -524,7 +549,7 @@ func _trigger_climax_dialogue(route: String) -> void:
 
 		for pid in rivals_spared:
 			var line: String = fleet_lines.get(pid, "¡A tu lado hasta la victoria estelar!")
-			text += "join " + String(pid) + " right\n"
+			text += "join " + String(pid) + " (Flipped) right\n"
 			text += String(pid) + ": " + line + "\n"
 			text += "leave " + String(pid) + "\n"
 
@@ -542,7 +567,7 @@ func _trigger_climax_dialogue(route: String) -> void:
 		text += "leave " + pet_id + "\n"
 
 		if not is_player_nyx:
-			text += "join nyx right\n"
+			text += "join nyx (Flipped) right\n"
 			text += "join " + String(p_pid) + " left\n"
 			text += "nyx: [shake rate=18.0 level=5][color=#ff1744]¿Creíste que tu carnicería cósmica quedaría impune?[/color][/shake]\n"
 			text += "nyx: Has erradicado a cada una de mis compañeras. Sentí sus almas apagarse en el tejido estelar...\n"
@@ -555,7 +580,7 @@ func _trigger_climax_dialogue(route: String) -> void:
 			var escort_str := String(escort_pid)
 			var roster := CharacterData.load_roster()
 			var e_name := roster[escort_pid].display_name if roster.has(escort_pid) else escort_str.capitalize()
-			text += "join " + escort_str + " right\n"
+			text += "join " + escort_str + " (Flipped) right\n"
 			text += "join nyx left\n"
 			text += escort_str + ": [shake rate=18.0 level=5][color=#ff1744]¡Nyx! ¿Cómo pudiste traicionar a la Flota?[/color][/shake]\n"
 			text += escort_str + ": Asesinaste a mis 5 compañeras sin piedad... ¡escuché sus últimas transmisiones apagarse en el vacío!\n"
@@ -583,9 +608,95 @@ func _trigger_climax_dialogue(route: String) -> void:
 func _trigger_pet_climax_alert(route: String) -> void:
 	_trigger_climax_dialogue(route)
 
+func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary) -> void:
+	var dialogic_node := _get_dialogic()
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		_show_game_over_screen(victory_data)
+		return
+
+	is_victory_dialogue_active = true
+	_pending_victory_data = victory_data
+	get_tree().paused = true
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
+	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
+		pet_id = "mochi"
+
+	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+	var text := ""
+
+	if route == "pacifist":
+		var victory_fleet_lines := {
+			&"nova": "¡Lo conseguiste, comandante! El Núcleo Astra vuelve a palpitar en armonía.",
+			&"valentina": "Firmas térmicas del Núcleo estabilizadas. Ha sido un honor cubrir tus flancos.",
+			&"kira": "¡SIII! ¡Hicimos pedazos a esa monstruosidad! ¡El cosmos nos recordará por esto!",
+			&"selene": "Cálculos post-combate finalizados: probabilidad de un nuevo amanecer al 100%. Misión perfecta.",
+			&"roxy": "Admito que tienes talento de verdad. Buen vuelo, heroína espacial.",
+			&"echo": "Las frecuencias de todas las almas estelares vibran en paz... La Flota de la Esperanza triunfó.",
+			&"nyx": "El equilibrio entre luz y oscuridad se preserva. Demostraste el poder de la unión."
+		}
+
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [shake rate=20.0 level=5][color=#00e5ff]¡LO LOGRAMOS! ¡EL NÚCLEO ASTRA SE HA LIBERADO SIN COLAPSO![/color][/shake]\n"
+		text += pet_id + ": ¡Los escudos se calman y todas las balizas orbitales resplandecen en señal de paz!\n"
+		text += "leave " + pet_id + "\n"
+
+		for pid in rivals_spared:
+			var line: String = victory_fleet_lines.get(pid, "¡Misión cumplida! El orden cósmico ha sido restaurado.")
+			text += "join " + String(pid) + " (Flipped) right\n"
+			text += String(pid) + ": " + line + "\n"
+			text += "leave " + String(pid) + "\n"
+
+		text += "join " + String(p_pid) + " left\n"
+		text += String(p_pid) + ": ¡Gracias a todas por creer en este camino! Unidas demostramos que la galaxia puede salvarse sin exterminio.\n"
+		text += "leave " + String(p_pid) + "\n"
+
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [wave amp=16.0 freq=3.5]¡Coordenadas de regreso al Hub establecidas! ¡Iniciando salto de victoria estelar![/wave]\n"
+		text += "leave --All--\n"
+
+	elif route == "slayer":
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [shake rate=20.0 level=6][color=#ff0044]El Núcleo Astra Prime... ha colapsado en un silencio sepulcral.[/color][/shake]\n"
+		text += pet_id + ": No detecto más señales de vida en el radar. Todas las pilotos rivales han perecido en tu cacería...\n"
+		text += "leave " + pet_id + "\n"
+
+		text += "join " + String(p_pid) + " left\n"
+		if p_pid == &"nyx":
+			text += "nyx: El Vacío finalmente lo ha consumido todo. No quedan rivales ni ataduras... solo mi reino en las sombras.\n"
+		else:
+			text += String(p_pid) + ": Nadie pudo detener mi ascenso. Absorbí cada fragmento de su poder... ahora gobierno el vacío estelar.\n"
+		text += "leave " + String(p_pid) + "\n"
+
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [color=#888888]El trono del cosmos es tuyo, soberano solitario... Iniciando retorno.[/color]\n"
+		text += "leave --All--\n"
+
+	else: # neutral
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡Astra Prime ha caído![/color][/shake]\n"
+		text += pet_id + ": Las lecturas del sector vuelven a niveles seguros. Hemos sobrevivido al coloso.\n"
+		text += "leave " + pet_id + "\n"
+
+		text += "join " + String(p_pid) + " left\n"
+		text += String(p_pid) + ": Fue una travesía brutal... Tomamos decisiones difíciles en cada sector, pero estamos con vida.\n"
+		text += "leave " + String(p_pid) + "\n"
+
+		text += "join " + pet_id + " right\n"
+		text += pet_id + ": [wave amp=12.0 freq=3.0]Calculando vector de salida hacia el Hub orbital. ¡Excelente pilotaje, comandante![/wave]\n"
+		text += "leave --All--\n"
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_dialogic_audio(layout)
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_briefing_active or is_cockpit_active or is_boss_transmission_active:
+	if get_tree().paused or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		return
 
 	# Cronómetro de tiempo total de la run
@@ -966,7 +1077,7 @@ func _on_final_boss_defeated(route: String) -> void:
 	}
 
 	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
-		_show_game_over_screen(victory_data)
+		_trigger_post_boss_victory_dialogue(route, victory_data)
 	)
 
 func jump_to_wave_11(route: String = "neutral") -> void:
@@ -1026,7 +1137,7 @@ func spawn_next_rival_pilot() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Atajo para saltar el briefing o secuencias de diálogo cinematográfico con ESC o acción dialogue_skip
-	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
+	if is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		if event.is_action_pressed("dialogue_skip") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
 			get_viewport().set_input_as_handled()
 			_on_dialogue_skip_requested()
@@ -1223,7 +1334,7 @@ func is_game_over_active() -> bool:
 	return game_over_modal != null and (game_over_modal.visible or game_over_modal.is_active)
 
 func is_dialogue_active() -> bool:
-	if is_briefing_active or is_cockpit_active or is_boss_transmission_active:
+	if is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		return true
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
@@ -1396,7 +1507,8 @@ func _show_game_over_screen(data: Dictionary) -> void:
 	if not game_over_modal.hub_requested.is_connected(_on_game_over_hub):
 		game_over_modal.hub_requested.connect(_on_game_over_hub)
 
-	get_tree().paused = true
+	if is_inside_tree() and get_tree():
+		get_tree().paused = true
 	game_over_modal.show_game_over(data)
 
 func _on_game_over_restart() -> void:
