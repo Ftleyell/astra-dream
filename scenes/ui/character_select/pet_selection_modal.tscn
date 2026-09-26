@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://petselectionmodal01"]
+[gd_scene load_steps=8 format=3 uid="uid://petselectionmodal01"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/pet_selection_modal.gd" id="1_modal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.04, 0.06, 0.1, 0.98)
+bg_color = Color(0.03, 0.05, 0.09, 0.98)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -14,7 +14,71 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_color = Color(0, 0.85, 1, 0.25)
-shadow_size = 12
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_artwork"]
+bg_color = Color(0.02, 0.035, 0.065, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.6, 0.2, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 0.6, 0.2, 0.25)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_side_card"]
+bg_color = Color(0.02, 0.03, 0.06, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.35, 0.5, 0.6)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dossier_box"]
+bg_color = Color(0.025, 0.04, 0.08, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.24, 0.38, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.04, 0.06, 0.11, 0.85)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.3, 0.45, 0.6)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_buff"]
+bg_color = Color(0.04, 0.07, 0.13, 0.95)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.95, 0.65, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0.2, 0.95, 0.65, 0.2)
+shadow_size = 6
 
 [node name="PetSelectionModal" type="CanvasLayer"]
 process_mode = 3
@@ -27,7 +91,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.015, 0.025, 0.045, 0.88)
+color = Color(0.015, 0.02, 0.04, 0.92)
 
 [node name="CenterContainer" type="CenterContainer" parent="DimOverlay"]
 anchors_preset = 15
@@ -37,59 +101,350 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="DimOverlay/CenterContainer"]
-custom_minimum_size = Vector2(740, 680)
+custom_minimum_size = Vector2(1060, 690)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin"]
+[node name="RootVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TitleBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+[node name="ModalHeader" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/TitleBox"]
+[node name="ModalTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 20
-text = "🐾 SELECCIÓN DE MASCOTA // DRON DE ASISTENCIA"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 17
+text = "🐾 SELECCIÓN DE MASCOTA // COVER FLOW DE ASISTENCIA"
 
-[node name="SubtitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/TitleBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.85, 1, 0.8)
-theme_override_font_sizes/font_size = 13
-text = "ELIGE AL ACOMPAÑANTE FELINO QUE ASISTIRÁ A TU PILOTO EN COMBATE"
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
-
-[node name="Scroll" type="ScrollContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 470)
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="PetsList" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox/Scroll"]
+[node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
 
-[node name="HSeparator2" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
+[node name="IndexBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "[ 01 / 05 ]"
+
+[node name="HSeparator" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
 layout_mode = 2
 
-[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/VBox"]
-custom_minimum_size = Vector2(300, 42)
+[node name="CoverFlowSection" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CoverFlowRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="PrevButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
+custom_minimum_size = Vector2(46, 85)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "◀
+[A]"
+
+[node name="CardsRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
+layout_mode = 2
+theme_override_constants/separation = -40
+alignment = 1
+
+[node name="LeftCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_side_card")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_side_card")
+flat = false
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LeftLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "ANTERIOR"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ArtworkFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow"]
+z_index = 2
+clip_contents = true
+custom_minimum_size = Vector2(285, 285)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_artwork")
+
+[node name="ArtworkViewport" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame"]
+clip_contents = true
+layout_mode = 2
+
+[node name="FullbodyTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LockedOverlay" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame"]
+visible = false
+layout_mode = 2
+
+[node name="Dim" type="ColorRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.035, 0.065, 0.88)
+
+[node name="LockCenter" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="LockIcon" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "🔒"
+horizontal_alignment = 1
+
+[node name="LockTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
+theme_override_font_sizes/font_size = 14
+text = "MASCOTA BLOQUEADA"
+horizontal_alignment = 1
+
+[node name="LockDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Sobrevive 10 minutos en una run para despertar al Gatito Astral, o actívalo en el menú Debug [F1]."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RightCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_side_card")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_side_card")
+flat = false
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/RightCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RightTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RightLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "SIGUIENTE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow"]
+custom_minimum_size = Vector2(46, 85)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "▶
+[D]"
+
+[node name="DotsContainer" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 14
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="DossierPanel" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier_box")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="DossierVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CategoryLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "DRON DE ASISTENCIA // COMPAÑERO FELINO"
+
+[node name="SeparatorLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.45, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "•"
+
+[node name="NameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "MOCHI"
+
+[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
+theme_override_font_sizes/font_size = 13
+text = "— CAZADOR DE POLVO ESTELAR"
+
+[node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "[✓ EQUIPADO]"
+
+[node name="CardsRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="BioCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/BioCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/BioCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="BioHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/BioCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 11
+text = "📖 BIOGRAFÍA Y PROTOCOLO"
+
+[node name="BioDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/BioCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Gatito naranja con casco espacial que busca y aspira gemas de EXP lejanas para llevártelas."
+autowrap_mode = 2
+
+[node name="PowerCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_buff")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/PowerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/PowerCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="PowerHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/PowerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "⚡ HABILIDAD ACTIVA Y PASIVA EN COMBATE"
+
+[node name="PowerDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/CardsRow/PowerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.96, 1, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "Habilidad: Rastreador de EXP gravitatorio. Su velocidad de vuelo y rango de absorción escalan con tu Imán (Pickup Radius)."
+autowrap_mode = 2
+
+[node name="ActionsRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="SelectButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/ActionsRow"]
+custom_minimum_size = Vector2(280, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "✓ EQUIPADO (SELECCIONADA)"
+
+[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierPanel/Margin/DossierVBox/ActionsRow"]
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
 text = "CERRAR [ESC]"

@@ -144,32 +144,52 @@ func test_hub_pet_roamer_3d() -> void:
 
 # ── 5. MODAL DE SELECCIÓN DE MASCOTAS ─────────────────────────────────────────
 func test_pet_selection_modal_ui() -> void:
-	print("[5/7] Verificando PetSelectionModal (ocultar pet secreto hasta desbloquearse)...")
+	print("[5/7] Verificando PetSelectionModal (Cover Flow cuadrado con dossier inferior)...")
 	var modal_scene := preload("res://scenes/ui/character_select/pet_selection_modal.tscn")
 	var modal = modal_scene.instantiate()
 	add_child(modal)
 
-	# 1. Con Cosmo bloqueado: no debe verse (4 mascotas en lista)
+	# 1. Apertura y estado inicial
 	SaveManager.lock_pet(&"cosmo")
 	modal.open_modal()
 	test_assert(modal.is_open, "El modal debe estar abierto tras open_modal()")
 	test_assert(modal.visible, "El modal debe ser visible")
+	test_assert(modal._nav_buttons.size() == 5, "Deben existir exactamente 5 indicadores de mascotas en el carrusel")
+	test_assert(modal.fullbody_texture != null and modal.fullbody_texture.texture != null, "El carrusel debe mostrar la textura de la mascota activa")
 
-	var cards_container = modal.get_node_or_null("DimOverlay/CenterContainer/MainPanel/Margin/VBox/Scroll/PetsList")
-	test_assert(cards_container != null, "Debe existir el contenedor PetsList")
-	test_assert(cards_container.get_child_count() == 4, "Con Cosmo bloqueado, el modal solo debe listar 4 mascotas (Cosmo oculto)")
+	# 2. Cover Flow Navigation
+	var start_idx: int = modal.current_index
+	modal._cycle(1)
+	test_assert(modal.current_index == (start_idx + 1) % 5, "Avanzar Cover Flow debe cambiar al siguiente pet")
+	modal._cycle(-1)
+	test_assert(modal.current_index == start_idx, "Retroceder Cover Flow debe volver al pet previo")
 
-	modal.close_modal()
+	# 3. Clic directo en cartas laterales
+	modal.left_card.emit_signal("pressed")
+	test_assert(modal.current_index == (start_idx - 1 + 5) % 5, "Clic en carta izquierda debe retroceder")
+	modal.right_card.emit_signal("pressed")
+	test_assert(modal.current_index == start_idx, "Clic en carta derecha debe avanzar")
 
-	# 2. Con Cosmo desbloqueado: debe verse (5 mascotas en lista)
-	SaveManager.unlock_pet(&"cosmo")
-	modal.open_modal()
-	test_assert(cards_container.get_child_count() == 5, "Con Cosmo desbloqueado, el modal debe listar las 5 mascotas")
-	modal.close_modal()
+	# 4. Comprobar bloqueo de Cosmo
+	var cosmo_idx := -1
+	for i in range(modal._pets.size()):
+		if modal._pets[i].pet_id == &"cosmo":
+			cosmo_idx = i
+			break
+	if cosmo_idx != -1:
+		modal._set_index(cosmo_idx)
+		test_assert(modal.locked_overlay.visible, "Cosmo bloqueado debe mostrar el overlay de bloqueo")
+		test_assert(modal.select_btn.disabled, "Botón de selección debe estar deshabilitado para pet bloqueado")
 
-	# Restaurar bloqueo de Cosmo
+		# Desbloquear Cosmo
+		SaveManager.unlock_pet(&"cosmo")
+		modal._display_current_pet(false)
+		test_assert(not modal.locked_overlay.visible, "Cosmo desbloqueado no debe mostrar el overlay de bloqueo")
+		test_assert(not modal.select_btn.disabled, "Botón de selección debe estar habilitado tras desbloqueo")
+
+	# 5. Confirmación y cierre
 	SaveManager.lock_pet(&"cosmo")
-
+	modal.close_modal()
 	test_assert(not modal.is_open, "El modal debe marcarse cerrado tras close_modal()")
 	test_assert(not modal.visible, "El modal debe ocultarse")
 
