@@ -63,8 +63,15 @@ func _apply_pet_visuals() -> void:
 	if not sprite:
 		sprite = get_node_or_null("Sprite2D") as Sprite2D
 	if sprite:
-		sprite.texture = pet_data.get_icon_texture()
-		sprite.scale = Vector2(0.55, 0.55)
+		var tex: Texture2D = pet_data.get_icon_texture()
+		sprite.texture = tex
+		if tex:
+			var target_px: float = 50.0
+			var max_dim: float = float(maxi(tex.get_width(), tex.get_height()))
+			var s: float = target_px / maxf(1.0, max_dim)
+			sprite.scale = Vector2(s, s)
+		else:
+			sprite.scale = Vector2(0.55, 0.55)
 	if not aura_particles:
 		aura_particles = get_node_or_null("AuraParticles") as CPUParticles2D
 	if aura_particles:

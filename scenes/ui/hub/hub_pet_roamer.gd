@@ -35,10 +35,11 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	sprite.name = "PetSprite"
 	var tex: Texture2D = pet_data.get_icon_texture() if pet_data else null
 	sprite.texture = tex
-	sprite.pixel_size = 0.012
-	sprite.offset = Vector2(0, 32)
+	var tex_h: float = float(tex.get_height()) if is_instance_valid(tex) else 64.0
+	sprite.pixel_size = 0.012 * (64.0 / maxf(1.0, tex_h))
+	sprite.offset = Vector2(0, tex_h * 0.5)
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	sprite.render_priority = 2
 	sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(sprite)
