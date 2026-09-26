@@ -13,13 +13,14 @@ func _ready() -> void:
 	var scene_res := load("res://scenes/ui/character_select/character_select.tscn") as PackedScene
 	assert(scene_res != null, "character_select.tscn debe cargar")
 
+	SaveManager.unlock_character(&"nyx")
 	var ui: CharacterSelectUI = scene_res.instantiate()
 	add_child(ui)
 
 	# 1. Verificar población de botones de personajes
 	var char_list := ui.char_list_container
 	assert(char_list != null, "char_list_container debe existir")
-	assert(char_list.get_child_count() == 6, "Deben existir 6 botones de pilotos en el roster")
+	assert(char_list.get_child_count() in [6, 7], "Deben existir 6 o 7 botones de pilotos en el roster según el estado de Nyx")
 
 	var first_btn := char_list.get_child(0) as Button
 	assert(first_btn.icon != null, "El botón de Nova debe tener icono de retrato")

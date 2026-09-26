@@ -205,7 +205,7 @@ func test_navigator_controller_and_buff_applications() -> void:
 
 # ── 6. MODAL DE SELECCIÓN DE NAVEGANTES ───────────────────────────────────────
 func test_navigator_selection_modal_ui() -> void:
-	print("[6/6] Verificando Modal de Selección de Navegantes...")
+	print("[6/6] Verificando Modal de Selección de Navegantes (Carrusel Vertical Full-Body)...")
 	var modal_scene := preload("res://scenes/ui/character_select/navigator_selection_modal.tscn")
 	var modal = modal_scene.instantiate()
 	add_child(modal)
@@ -213,7 +213,25 @@ func test_navigator_selection_modal_ui() -> void:
 	modal.open_modal()
 	test_assert(modal.is_open, "open_modal() debe poner is_open en true")
 	test_assert(modal.visible, "El modal debe hacerse visible")
-	test_assert(modal._nav_buttons.size() == 5, "Deben crearse exactamente 5 tarjetas de navegantes en el modal")
+	test_assert(modal._nav_buttons.size() == 5, "Deben crearse exactamente 5 indicadores de navegantes en el carrusel")
+	test_assert(modal.fullbody_texture != null and modal.fullbody_texture.texture != null, "El carrusel debe mostrar la textura full-body de la navegante activa")
+
+	# Probar desplazamiento vertical en el carrusel
+	var start_idx: int = modal.current_index
+	modal._cycle(1)
+	test_assert(modal.current_index == (start_idx + 1) % 5, "Avanzar verticalmente debe cambiar el índice al siguiente")
+	modal._cycle(-1)
+	test_assert(modal.current_index == start_idx, "Retroceder verticalmente debe restaurar el índice previo")
+
+	# Probar selección de navegante mediante el botón principal
+	modal._set_index(1) # Vespera
+	modal._on_select_pressed()
+	test_assert(SaveManager.get_selected_navigator() == &"vespera", "Al confirmar selección, debe enlazarse Vespera en SaveManager")
+	test_assert(not modal.is_open, "Al seleccionar, el modal debe cerrarse")
+
+	# Probar reapertura y verificar que el carrusel enfoca la navegante seleccionada
+	modal.open_modal()
+	test_assert(modal.current_index == 1, "Al reabrir el modal, el carrusel debe iniciar en la navegante seleccionada (Vespera)")
 
 	# Probar cierre
 	modal.close_modal()
