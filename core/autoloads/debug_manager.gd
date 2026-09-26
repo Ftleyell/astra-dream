@@ -10,6 +10,7 @@ var is_enabled: bool = false
 var infinite_hp: bool = false
 var infinite_credits: bool = false
 var infinite_consumables: bool = false
+var pending_debug_route: String = ""
 
 # Modificadores de estadísticas numéricas específicas
 var stat_overrides: Dictionary[StringName, float] = {}
@@ -57,10 +58,20 @@ func set_stat_override(stat: StringName, val: float) -> void:
 func clear_stat_override(stat: StringName) -> void:
 	stat_overrides.erase(stat)
 
+func set_pending_debug_route(route: String) -> void:
+	pending_debug_route = route
+	is_enabled = true
+
+func consume_pending_debug_route() -> String:
+	var r := pending_debug_route
+	pending_debug_route = ""
+	return r
+
 func reset_all() -> void:
 	infinite_hp = false
 	infinite_credits = false
 	infinite_consumables = false
+	pending_debug_route = ""
 	stat_overrides.clear()
 	is_enabled = false
 

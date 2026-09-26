@@ -19,6 +19,7 @@ func _ready() -> void:
 	_test_5_boss_astra_prime_routes()
 	_test_6_save_manager_endings_and_victory_modal()
 	_test_7_wave_1_encounter_trigger_and_visibility()
+	_test_8_debug_route_shortcuts_to_wave_11()
 
 	print("\n==================================================================")
 	print("[TEST] ✓ TODAS LAS PRUEBAS DE NARRATIVA Y RIVALES PASARON CON ÉXITO")
@@ -240,4 +241,35 @@ func _test_7_wave_1_encounter_trigger_and_visibility() -> void:
 	rival.queue_free()
 	rival2.queue_free()
 	print("  ✓ Mecánica de aparición en Oleada 1, visibilidad en pantalla y transiciones de radio validadas")
+
+func _test_8_debug_route_shortcuts_to_wave_11() -> void:
+	print("\n[8/8] Verificando Botones Debug para Iniciar Partida en Última Wave (Rutas Pacifista, Genocida, Neutral)...")
+	# 1. Probar persistencia de ruta pendiente en DebugManager
+	DebugManager.set_pending_debug_route("pacifist")
+	assert(DebugManager.pending_debug_route == "pacifist", "DebugManager debe guardar 'pacifist'")
+	assert(DebugManager.consume_pending_debug_route() == "pacifist", "consume_pending_debug_route debe devolver 'pacifist'")
+	assert(DebugManager.pending_debug_route == "", "Tras consumirse, pending_debug_route debe quedar vacía")
+
+	# 2. Instanciar DebugMenuModal y verificar que los botones configuran la ruta y la transición
+	var debug_modal_scene: PackedScene = load("res://scenes/ui/debug/debug_menu_modal.tscn")
+	assert(debug_modal_scene != null, "debug_menu_modal.tscn debe existir")
+
+	var modal = debug_modal_scene.instantiate()
+	add_child(modal)
+
+	# Probar botón pacifista fuera de combate (simula inicio de partida en W11)
+	modal._on_jump_pacifist_pressed()
+	assert(DebugManager.consume_pending_debug_route() == "pacifist", "Botón pacifista debe preparar 'pacifist' para iniciar partida en W11")
+
+	# Probar botón genocida / slayer fuera de combate
+	modal._on_jump_slayer_pressed()
+	assert(DebugManager.consume_pending_debug_route() == "slayer", "Botón genocida debe preparar 'slayer' para iniciar partida en W11")
+
+	# Probar botón neutral fuera de combate
+	modal._on_jump_neutral_pressed()
+	assert(DebugManager.consume_pending_debug_route() == "neutral", "Botón neutral debe preparar 'neutral' para iniciar partida en W11")
+
+	modal.queue_free()
+	print("  ✓ Botones del Debug Menu configuran correctamente el inicio de partida en la última oleada (Wave 11)")
+
 

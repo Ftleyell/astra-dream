@@ -262,9 +262,9 @@ func _on_save_quit_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_restart_pressed() -> void:
-	var main_game := get_parent() as MainGame
+	var main_game: Node = get_parent()
 	if not main_game and get_tree():
-		main_game = get_tree().current_scene as MainGame
+		main_game = get_tree().current_scene
 	if main_game:
 		main_game.set("is_exiting_run", true)
 
@@ -273,9 +273,9 @@ func _on_restart_pressed() -> void:
 	get_tree().reload_current_scene()
 
 func _on_hub_pressed() -> void:
-	var main_game := get_parent() as MainGame
+	var main_game: Node = get_parent()
 	if not main_game and get_tree():
-		main_game = get_tree().current_scene as MainGame
+		main_game = get_tree().current_scene
 	if main_game:
 		main_game.set("is_exiting_run", true)
 
@@ -284,9 +284,9 @@ func _on_hub_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_menu_pressed() -> void:
-	var main_game := get_parent() as MainGame
+	var main_game: Node = get_parent()
 	if not main_game and get_tree():
-		main_game = get_tree().current_scene as MainGame
+		main_game = get_tree().current_scene
 	if main_game:
 		main_game.set("is_exiting_run", true)
 

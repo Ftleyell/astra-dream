@@ -380,37 +380,43 @@ func _on_infinite_consumables_toggled(toggled_on: bool) -> void:
 		DebugManager.is_enabled = true
 
 func _on_jump_pacifist_pressed() -> void:
-	var mg = get_tree().get_first_node_in_group("main_game")
-	if mg and mg.has_method("jump_to_wave_11"):
-		mg.jump_to_wave_11("pacifist")
-		close_menu()
-	elif subtitle_label:
-		subtitle_label.text = "★ MODO PACIFISTA SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
-		subtitle_label.add_theme_color_override("font_color", Color(0.2, 0.95, 1.0, 1.0))
+	_trigger_route_jump("pacifist")
 
 func _on_jump_slayer_pressed() -> void:
-	var mg = get_tree().get_first_node_in_group("main_game")
-	if mg and mg.has_method("jump_to_wave_11"):
-		mg.jump_to_wave_11("slayer")
-		close_menu()
-	elif subtitle_label:
-		subtitle_label.text = "⚔ MODO EXTERMINADOR SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
-		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.4, 1.0))
+	_trigger_route_jump("slayer")
 
 func _on_jump_neutral_pressed() -> void:
+	_trigger_route_jump("neutral")
+
+func _trigger_route_jump(route: String) -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
 	var mg = get_tree().get_first_node_in_group("main_game")
 	if mg and mg.has_method("jump_to_wave_11"):
-		mg.jump_to_wave_11("neutral")
+		mg.jump_to_wave_11(route)
 		close_menu()
-	elif subtitle_label:
-		subtitle_label.text = "⚖ MODO NEUTRAL SELECCIONADO (USAR EN COMBATE PARA SALTAR DIRECTO A W11)"
-		subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	else:
+		# Si se presiona fuera de combate (Menú Principal, Hangar, etc.), iniciar partida directamente en la última oleada (Wave 11)
+		DebugManager.set_pending_debug_route(route)
+		close_menu()
+		get_tree().paused = false
+		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
 
 func _on_spawn_rival_pressed() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
 	var mg = get_tree().get_first_node_in_group("main_game")
 	if mg and mg.has_method("spawn_next_rival_pilot"):
 		mg.spawn_next_rival_pilot()
 		close_menu()
-	elif subtitle_label:
-		subtitle_label.text = "👾 INVOCAR RIVAL (DISPONIBLE DURANTE COMBATE ACTIVO)"
-		subtitle_label.add_theme_color_override("font_color", Color(0.85, 0.5, 1.0, 1.0))
+	else:
+		# Si se presiona fuera de combate, iniciar partida normal (la rival aparecerá en Oleada 1)
+		close_menu()
+		get_tree().paused = false
+		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")

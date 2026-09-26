@@ -159,6 +159,17 @@ func _ready() -> void:
 	space_object_spawner.name = "SpaceObjectSpawner"
 	add_child(space_object_spawner)
 
+	# Chequeo de inicio debug directo a Wave 11 (Rutas Pacifista, Genocida, Neutral)
+	var debug_route: String = DebugManager.consume_pending_debug_route() if (DebugManager and DebugManager.has_method("consume_pending_debug_route")) else ""
+	if debug_route != "":
+		is_briefing_active = false
+		prologue_bonus_chosen = true
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+		jump_to_wave_11(debug_route)
+		return
+
 	# Chequeo de reanudación de partida activa (Mid-Run Resume)
 	if SaveManager.is_resuming_run:
 		SaveManager.is_resuming_run = false
@@ -782,6 +793,8 @@ func _on_final_boss_defeated(route: String) -> void:
 func jump_to_wave_11(route: String = "neutral") -> void:
 	current_wave = 11
 	wave_timer = WAVE_DURATION
+	_wave_encounter_checked_for_wave = 11
+	_wave_encounter_pending = false
 	if current_boss and is_instance_valid(current_boss):
 		current_boss.queue_free()
 		current_boss = null
@@ -793,11 +806,36 @@ func jump_to_wave_11(route: String = "neutral") -> void:
 	rivals_killed.clear()
 	if route == "pacifist":
 		rivals_spared = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
-	elif route == "slayer":
+	elif route == "slayer" or route == "genocida":
 		rivals_killed = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
 	else:
 		rivals_spared = [&"nova", &"valentina"]
 		rivals_killed = [&"kira", &"selene"]
+
+	# Equipar armamento y estadísticas acordes a la oleada final para testeo balanceado
+	if is_instance_valid(player):
+		if player.current_level < 15:
+			player.current_level = 15
+			player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"debug_w11_hull", 100.0, false, self))
+			player.current_health = player.stats.get_stat(&"max_health")
+			if hud:
+				hud.update_exp(0, 100, player.current_level)
+		if route == "slayer" or route == "genocida":
+			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+			if w_ctrl:
+				var rival_weapons := [
+					"res://data/weapons/roster/crescent_blade.tres",
+					"res://data/weapons/roster/sonic_burst.tres",
+					"res://data/weapons/roster/plasma_spear.tres"
+				]
+				for w_path in rival_weapons:
+					if ResourceLoader.exists(w_path):
+						var w_res := load(w_path) as WeaponData
+						if w_res:
+							w_ctrl.add_weapon(w_res)
+
+	if hud:
+		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
 	_spawn_final_boss()
 

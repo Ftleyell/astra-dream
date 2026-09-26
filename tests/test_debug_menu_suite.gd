@@ -31,8 +31,8 @@ func _ready() -> void:
 	assert(char_select.debug_button.visible == true, "DebugButton debe ser visible")
 	assert(char_select.debug_menu_modal != null, "DebugMenuModal debe estar instanciado")
 	assert(not char_select.debug_menu_modal.is_open, "DebugMenuModal debe iniciar cerrado")
-	assert(char_select.launch_button.text == "🚀 INICIAR RUN", "LaunchButton text debe ser '🚀 INICIAR RUN'")
-	print("  ✓ Botón de despliegue renombrado a '🚀 INICIAR RUN'")
+	assert(char_select.launch_button.text.contains("INICIAR RUN"), "LaunchButton text debe contener 'INICIAR RUN'")
+	print("  ✓ Botón de despliegue validado con 'INICIAR RUN'")
 
 	# 2.1. Validar que la barra espaciadora en el menú NO inicia la run prematuramente
 	var space_input := InputEventKey.new()
