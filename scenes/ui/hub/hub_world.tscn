@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://cnrs8vy5qdjuu" path="res://assets/characters/fullbody/fullbody_roxy_flipped.png" id="6_roxy"]
 [ext_resource type="Texture2D" uid="uid://dgm03a4bh1vp2" path="res://assets/characters/fullbody/fullbody_echo_flipped.png" id="7_echo"]
 [ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="8_modal"]
+[ext_resource type="Texture2D" uid="uid://dw4brto43jmim" path="res://assets/characters/fullbody/fullbody_nyx.png" id="8_nyx_tex"]
 [ext_resource type="Script" uid="uid://m2ru1skefwxh" path="res://scenes/ui/hub/hub_player_controller_3d.gd" id="9_controller"]
 [ext_resource type="Script" uid="uid://r3q2lu4jkbsv" path="res://scenes/ui/hub/hub_interactable_3d.gd" id="10_interactable"]
 [ext_resource type="PackedScene" uid="uid://c8setmod001" path="res://scenes/ui/settings_modal/settings_modal.tscn" id="11_settings"]
@@ -35,7 +36,6 @@
 [ext_resource type="PackedScene" uid="uid://dr0vu6kjg6rxu" path="res://assets/models/kenney_modular_space/template-wall.glb" id="37_wall_model"]
 [ext_resource type="PackedScene" uid="uid://br6q3srrtr7xs" path="res://assets/models/kenney_modular_space/template-wall-detail-a.glb" id="38_wall_detail_model"]
 [ext_resource type="PackedScene" uid="uid://cbiywrqe40ot7" path="res://assets/models/kenney_modular_space/template-wall-corner.glb" id="39_wall_corner_model"]
-[ext_resource type="Texture2D" uid="uid://dw4brto43jmim" path="res://assets/characters/fullbody/fullbody_nyx.png" id="8_nyx_tex"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -247,14 +247,46 @@ size = Vector3(1.5, 0.12, 0.55)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_holo"]
 transparency = 1
-albedo_color = Color(1, 0.9, 0.2, 0.85)
+albedo_color = Color(0.75, 0.1, 1, 0.85)
 emission_enabled = true
-emission = Color(1, 0.9, 0.2, 1)
-emission_energy_multiplier = 2.6
+emission = Color(0.75, 0.1, 1, 1)
+emission_energy_multiplier = 2.5
 
 [sub_resource type="PrismMesh" id="PrismMesh_trophy_holo"]
 material = SubResource("StandardMaterial3D_trophy_holo")
 size = Vector3(0.45, 0.55, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_base"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_base"]
+top_radius = 0.55
+bottom_radius = 0.65
+height = 0.4
+radial_segments = 32
+
+[sub_resource type="PrismMesh" id="PrismMesh_trophy_aegis"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="SphereMesh" id="SphereMesh_trophy_biosphere"]
+radius = 0.25
+height = 0.5
+radial_segments = 32
+rings = 16
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_cryo"]
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.45
+radial_segments = 32
+
+[sub_resource type="BoxMesh" id="BoxMesh_trophy_volcanic"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="PrismMesh" id="PrismMesh_trophy_monolith"]
+size = Vector3(0.45, 0.45, 0.45)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -367,45 +399,6 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_base"]
-top_radius = 0.55
-bottom_radius = 0.65
-height = 0.4
-radial_segments = 32
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_base"]
-albedo_color = Color(0.12, 0.14, 0.18, 1)
-metallic = 0.8
-roughness = 0.35
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_holo"]
-transparency = 1
-albedo_color = Color(0.75, 0.1, 1, 0.85)
-emission_enabled = true
-emission = Color(0.75, 0.1, 1, 1)
-emission_energy_multiplier = 2.5
-
-[sub_resource type="PrismMesh" id="PrismMesh_trophy_aegis"]
-size = Vector3(0.45, 0.45, 0.45)
-
-[sub_resource type="SphereMesh" id="SphereMesh_trophy_biosphere"]
-radius = 0.25
-height = 0.5
-radial_segments = 32
-rings = 16
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_cryo"]
-top_radius = 0.25
-bottom_radius = 0.25
-height = 0.45
-radial_segments = 32
-
-[sub_resource type="BoxMesh" id="BoxMesh_trophy_volcanic"]
-size = Vector3(0.45, 0.45, 0.45)
-
-[sub_resource type="PrismMesh" id="PrismMesh_trophy_monolith"]
-size = Vector3(0.45, 0.45, 0.45)
 
 [node name="HubWorld" type="Node3D" unique_id=801519808]
 script = ExtResource("1_hub")
@@ -572,13 +565,22 @@ mesh = SubResource("QuadMesh_parallax_near")
 transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -10.37141, 12.089423, 13.92251)
 
 [node name="RightWall_Seg1" parent="SpaceParallax/Layer2_Near" unique_id=515655594 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -5.3714104, 12.089423, 13.922516)
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -5.3714104, 13.049594, 13.922516)
+
+[node name="RightWall_Seg1" parent="SpaceParallax/Layer2_Near/RightWall_Seg1" unique_id=1059563963 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.2999998, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.2999998, -8.618311, -3.8010607, -0.34787464)
+
+[node name="RightWall_Seg2" parent="SpaceParallax/Layer2_Near/RightWall_Seg1" unique_id=1772626500 instance=ExtResource("37_wall_model")]
+transform = Transform3D(-1.2999998, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.2999998, -3.618312, -3.8010607, -0.34787083)
+
+[node name="RightWall_Seg3" parent="SpaceParallax/Layer2_Near/RightWall_Seg1" unique_id=75018046 instance=ExtResource("38_wall_detail_model")]
+transform = Transform3D(-1.2999998, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.2999998, 1.3816876, -3.8010607, -0.34786415)
 
 [node name="RightWall_Seg2" parent="SpaceParallax/Layer2_Near" unique_id=1051461351 instance=ExtResource("37_wall_model")]
-transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -0.37141037, 12.089423, 13.922522)
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, -0.37141037, 13.049594, 13.922522)
 
 [node name="RightWall_Seg3" parent="SpaceParallax/Layer2_Near" unique_id=2089686561 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, 4.6285887, 12.089423, 13.922527)
+transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, 4.6285887, 13.049594, 13.922527)
 
 [node name="RightWall_Seg4" parent="SpaceParallax/Layer2_Near" unique_id=2046194715 instance=ExtResource("37_wall_model")]
 transform = Transform3D(-1.3, 0, 1.492896e-06, 0, 1.35, 0, -1.492896e-06, 0, -1.3, 9.628589, 12.089423, 13.922533)
@@ -883,7 +885,6 @@ target_character_id = &"trophy_monolith_master"
 interaction_title = "Trofeo: Reliquia Monolito"
 interaction_radius = 2.2
 prompt_offset_y = 1.6
-
 
 [node name="PlayerController" type="CharacterBody3D" parent="." unique_id=1488853602]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
