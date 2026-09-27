@@ -265,20 +265,20 @@ func _display_current_navigator(animate: bool = true, slide_direction: int = 0) 
 	if index_badge:
 		index_badge.text = "[ %02d / %02d ]" % [current_index + 1, count]
 
-	# Cartas Laterales
+	# Cartas Laterales (Navegantes Fullbody)
 	var left_idx := (current_index - 1 + count) % count
 	var right_idx := (current_index + 1) % count
 	var left_data = _navigators[left_idx]
 	var right_data = _navigators[right_idx]
 
 	if left_texture and left_data:
-		left_texture.texture = left_data.get_portrait_texture()
+		left_texture.texture = left_data.get_fullbody_texture()
 	if left_label and left_data:
 		left_label.text = "◀ %s" % left_data.display_name.to_upper()
 		left_label.modulate = left_data.theme_color
 
 	if right_texture and right_data:
-		right_texture.texture = right_data.get_portrait_texture()
+		right_texture.texture = right_data.get_fullbody_texture()
 	if right_label and right_data:
 		right_label.text = "%s ▶" % right_data.display_name.to_upper()
 		right_label.modulate = right_data.theme_color
@@ -325,20 +325,21 @@ func _display_current_navigator(animate: bool = true, slide_direction: int = 0) 
 			select_btn.text = "🔒 NAVEGANTE BLOQUEADA"
 			select_btn.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
 
-	# Retrato Central: si tiene skin equipada, mostrarla
+	# Retrato Central: siempre el Fullbody de la Navegante; si tiene skin equipada, aplicar shader cósmico sin perder el fullbody
 	if fullbody_texture:
+		fullbody_texture.texture = nav_data.get_fullbody_texture()
 		var slot_key := "navigator:" + String(nid).to_lower()
 		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
 		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
 			var stars := SaveManager.get_skin_stars(equipped_skin)
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, equipped_skin, stars)
+			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, equipped_skin, stars, false)
 		else:
-			fullbody_texture.texture = nav_data.get_fullbody_texture()
 			fullbody_texture.material = null
 
 	if locked_overlay:
 		locked_overlay.visible = not is_unlocked
 
+	_update_carousel_layout(false, nav_data.theme_color)
 	_update_dots(nav_data.theme_color, current_index)
 	_animate_center_card(animate, slide_direction, is_unlocked)
 
@@ -435,8 +436,87 @@ func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> vo
 		if lock_desc:
 			lock_desc.text = "CONSEGUIR EN GACHA"
 
+	var pal_color := Color.from_string(cur_skin.get("glow_hex", "#00F0FF"), Color.CYAN)
+	_update_carousel_layout(true, pal_color)
 	_update_dots(Color(1.0, 0.85, 0.2), _skin_index)
 	_animate_center_card(animate, slide_direction, is_unlocked)
+
+func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
+	if not artwork_frame:
+		return
+
+	if is_skin:
+		# Modo Skins: carrusel redondo circular holográfico como las pets
+		artwork_frame.custom_minimum_size = Vector2(285, 285)
+		artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var af_sb := StyleBoxFlat.new()
+		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
+		af_sb.border_color = theme_color
+		af_sb.set_border_width_all(3)
+		af_sb.set_corner_radius_all(142) # Redondo / Circular
+		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.35)
+		af_sb.shadow_size = 14
+		artwork_frame.add_theme_stylebox_override("panel", af_sb)
+
+		if left_card:
+			left_card.custom_minimum_size = Vector2(200, 200)
+			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			var side_sb := StyleBoxFlat.new()
+			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+			side_sb.set_border_width_all(2)
+			side_sb.set_corner_radius_all(100) # Redondo / Circular
+			left_card.add_theme_stylebox_override("normal", side_sb)
+			left_card.add_theme_stylebox_override("hover", side_sb)
+			left_card.add_theme_stylebox_override("pressed", side_sb)
+
+		if right_card:
+			right_card.custom_minimum_size = Vector2(200, 200)
+			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			var side_sb := StyleBoxFlat.new()
+			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+			side_sb.set_border_width_all(2)
+			side_sb.set_corner_radius_all(100) # Redondo / Circular
+			right_card.add_theme_stylebox_override("normal", side_sb)
+			right_card.add_theme_stylebox_override("hover", side_sb)
+			right_card.add_theme_stylebox_override("pressed", side_sb)
+	else:
+		# Modo Navegadoras: marco esbelto para fullbody majestuoso
+		artwork_frame.custom_minimum_size = Vector2(250, 480)
+		artwork_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		var af_sb := StyleBoxFlat.new()
+		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
+		af_sb.border_color = theme_color
+		af_sb.set_border_width_all(2)
+		af_sb.set_corner_radius_all(8)
+		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.25)
+		af_sb.shadow_size = 10
+		artwork_frame.add_theme_stylebox_override("panel", af_sb)
+
+		if left_card:
+			left_card.custom_minimum_size = Vector2(170, 400)
+			left_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			var side_sb := StyleBoxFlat.new()
+			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
+			side_sb.set_border_width_all(1)
+			side_sb.set_corner_radius_all(6)
+			left_card.add_theme_stylebox_override("normal", side_sb)
+			left_card.add_theme_stylebox_override("hover", side_sb)
+			left_card.add_theme_stylebox_override("pressed", side_sb)
+
+		if right_card:
+			right_card.custom_minimum_size = Vector2(170, 400)
+			right_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			var side_sb := StyleBoxFlat.new()
+			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
+			side_sb.set_border_width_all(1)
+			side_sb.set_corner_radius_all(6)
+			right_card.add_theme_stylebox_override("normal", side_sb)
+			right_card.add_theme_stylebox_override("hover", side_sb)
+			right_card.add_theme_stylebox_override("pressed", side_sb)
 
 func _update_dots(active_color: Color, active_idx: int) -> void:
 	for i in range(_nav_buttons.size()):

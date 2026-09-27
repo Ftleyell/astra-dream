@@ -2,6 +2,7 @@ class_name GachaModal
 extends CanvasLayer
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 signal skin_unlocked(skin_id: String, stars: int)
 signal skin_equipped(slot_key: String, skin_id: String)

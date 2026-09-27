@@ -102,7 +102,7 @@ static func load_texture(tex_path: String) -> Texture2D:
 			return ImageTexture.create_from_image(img)
 	return null
 
-static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_level: int = 1) -> void:
+static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_level: int = 1, apply_texture: bool = true) -> void:
 	if not is_instance_valid(item):
 		return
 		
@@ -111,13 +111,14 @@ static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_le
 		item.material = null
 		return
 		
-	var tex_path: String = skin_data.get("texture_path", "")
-	var tex := load_texture(tex_path)
-	if tex:
-		if item is Sprite2D:
-			(item as Sprite2D).texture = tex
-		elif item is TextureRect:
-			(item as TextureRect).texture = tex
+	if apply_texture:
+		var tex_path: String = skin_data.get("texture_path", "")
+		var tex := load_texture(tex_path)
+		if tex:
+			if item is Sprite2D:
+				(item as Sprite2D).texture = tex
+			elif item is TextureRect:
+				(item as TextureRect).texture = tex
 			
 	if star_level <= 1:
 		item.material = null

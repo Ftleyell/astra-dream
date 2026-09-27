@@ -144,7 +144,7 @@ func _build_ui() -> void:
 	# Flecha Izquierda
 	_prev_btn = Button.new()
 	_prev_btn.text = "◀"
-	_prev_btn.custom_minimum_size = Vector2(44, 180)
+	_prev_btn.custom_minimum_size = Vector2(48, 200)
 	_prev_btn.add_theme_font_size_override("font_size", 24)
 	_prev_btn.pressed.connect(func(): _cycle(-1))
 	UIFocusHelper.apply_cyber_focus(_prev_btn)
@@ -152,34 +152,40 @@ func _build_ui() -> void:
 
 	# Tarjeta Izquierda (Previsualización menor)
 	_left_card = Button.new()
-	_left_card.custom_minimum_size = Vector2(140, 200)
+	_left_card.custom_minimum_size = Vector2(160, 240)
 	_left_card.flat = true
-	_left_card.modulate = Color(1.0, 1.0, 1.0, 0.5)
+	_left_card.modulate = Color(1.0, 1.0, 1.0, 0.55)
 	_left_card.pressed.connect(func(): _cycle(-1))
 	UIFocusHelper.apply_cyber_focus(_left_card)
 	var left_vbox := VBoxContainer.new()
 	left_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	left_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	left_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_left_card.add_child(left_vbox)
 	_left_texture = TextureRect.new()
-	_left_texture.custom_minimum_size = Vector2(110, 150)
+	_left_texture.custom_minimum_size = Vector2(130, 180)
 	_left_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_left_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_left_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	left_vbox.add_child(_left_texture)
 	_left_label = Label.new()
 	_left_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_left_label.add_theme_font_size_override("font_size", 10)
+	_left_label.add_theme_font_size_override("font_size", 11)
+	_left_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	left_vbox.add_child(_left_label)
 	cover_flow_row.add_child(_left_card)
 
 	# Tarjeta Central Principal (CoverFlow Hero)
 	_artwork_frame = PanelContainer.new()
-	_artwork_frame.custom_minimum_size = Vector2(280, 290)
+	_artwork_frame.custom_minimum_size = Vector2(340, 360)
+	_artwork_frame.pivot_offset = Vector2(170, 180)
 	var frame_sb := StyleBoxFlat.new()
 	frame_sb.bg_color = Color(0.08, 0.07, 0.20, 0.95)
 	frame_sb.border_color = Color(0.2, 0.95, 1.0, 0.9)
 	frame_sb.set_border_width_all(2)
-	frame_sb.set_corner_radius_all(10)
+	frame_sb.set_corner_radius_all(12)
+	frame_sb.shadow_color = Color(0.12, 0.88, 1.0, 0.3)
+	frame_sb.shadow_size = 10
 	_artwork_frame.add_theme_stylebox_override("panel", frame_sb)
 	cover_flow_row.add_child(_artwork_frame)
 
@@ -197,6 +203,7 @@ func _build_ui() -> void:
 
 	var art_viewport := Control.new()
 	art_viewport.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	art_viewport.clip_contents = true
 	frame_vbox.add_child(art_viewport)
 
 	_fullbody_texture = TextureRect.new()
@@ -234,30 +241,33 @@ func _build_ui() -> void:
 
 	# Tarjeta Derecha
 	_right_card = Button.new()
-	_right_card.custom_minimum_size = Vector2(140, 200)
+	_right_card.custom_minimum_size = Vector2(160, 240)
 	_right_card.flat = true
-	_right_card.modulate = Color(1.0, 1.0, 1.0, 0.5)
+	_right_card.modulate = Color(1.0, 1.0, 1.0, 0.55)
 	_right_card.pressed.connect(func(): _cycle(1))
 	UIFocusHelper.apply_cyber_focus(_right_card)
 	var right_vbox := VBoxContainer.new()
 	right_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	right_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_right_card.add_child(right_vbox)
 	_right_texture = TextureRect.new()
-	_right_texture.custom_minimum_size = Vector2(110, 150)
+	_right_texture.custom_minimum_size = Vector2(130, 180)
 	_right_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_right_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_right_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	right_vbox.add_child(_right_texture)
 	_right_label = Label.new()
 	_right_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_right_label.add_theme_font_size_override("font_size", 10)
+	_right_label.add_theme_font_size_override("font_size", 11)
+	_right_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	right_vbox.add_child(_right_label)
 	cover_flow_row.add_child(_right_card)
 
 	# Flecha Derecha
 	_next_btn = Button.new()
 	_next_btn.text = "▶"
-	_next_btn.custom_minimum_size = Vector2(44, 180)
+	_next_btn.custom_minimum_size = Vector2(48, 200)
 	_next_btn.add_theme_font_size_override("font_size", 24)
 	_next_btn.pressed.connect(func(): _cycle(1))
 	UIFocusHelper.apply_cyber_focus(_next_btn)
@@ -368,13 +378,38 @@ func _switch_category(new_cat: String) -> void:
 	if _category == new_cat:
 		return
 	_category = new_cat
-	# Actualizar target_id según corresponda
-	if _category == "pet":
+	# Actualizar target_id y _default_texture según corresponda
+	if _category in ["pilot", "ship", "weapon"]:
+		const CharacterDataScript = preload("res://data/characters/character_data.gd")
+		var roster = CharacterDataScript.load_roster()
+		var char_data = roster.get(StringName(_target_id), null)
+		if char_data:
+			_display_title = char_data.display_name
+			if _category == "pilot":
+				var fb: Texture2D = char_data.get_fullbody_texture(false)
+				if not fb:
+					fb = char_data.get_fullbody_texture(true)
+				if not fb:
+					fb = char_data.get_portrait_texture()
+				_default_texture = fb
+			elif _category == "ship":
+				_default_texture = char_data.get_ship_texture()
+			elif _category == "weapon":
+				_default_texture = char_data.get_weapon_texture()
+	elif _category == "pet":
 		_target_id = String(SaveManager.get_selected_pet())
 		_display_title = _target_id.capitalize()
+		const PetDataScript = preload("res://data/pets/pet_data.gd")
+		var p_data = PetDataScript.get_pet(StringName(_target_id))
+		if p_data:
+			_default_texture = p_data.get_icon_texture()
 	elif _category == "navigator":
 		_target_id = String(SaveManager.get_selected_navigator())
 		_display_title = _target_id.capitalize()
+		const NavigatorDataScript = preload("res://data/navigators/navigator_data.gd")
+		var n_data = NavigatorDataScript.get_navigator(StringName(_target_id))
+		if n_data:
+			_default_texture = n_data.get_portrait_texture()
 	_slot_key = "%s:%s" % [_category, _target_id]
 	_load_category_skins()
 
@@ -585,6 +620,12 @@ func _display_current_skin(animated: bool = false, slide_dir: int = 0) -> void:
 	_locked_overlay.visible = not is_unlocked
 	_default_btn.disabled = (currently_equipped == "")
 
+	# Orientación flip_h para pilotos fullbody
+	var is_pilot := (_category == "pilot")
+	_fullbody_texture.flip_h = is_pilot
+	_left_texture.flip_h = is_pilot
+	_right_texture.flip_h = is_pilot
+
 	# Cargar Textura y Shader en Tarjeta Central
 	var tex_path: String = cur_skin.get("texture_path", "")
 	var tex := CosmeticsManager.load_texture(tex_path)
@@ -612,15 +653,25 @@ func _display_current_skin(animated: bool = false, slide_dir: int = 0) -> void:
 	_right_texture.texture = next_tex if next_tex else _default_texture
 	_right_label.text = next_skin.get("skin_name", "")
 
-	# Animación de CoverFlow elástica
-	if animated:
+	# Animación de CoverFlow elástica segura (dentro del Viewport sin romper el Container)
+	if animated and is_instance_valid(_fullbody_texture):
 		if _active_tween and _active_tween.is_valid():
 			_active_tween.kill()
-		_active_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		_artwork_frame.scale = Vector2(0.92, 0.92)
-		_artwork_frame.position.x += float(slide_dir) * 40.0
-		_active_tween.tween_property(_artwork_frame, "scale", Vector2(1.0, 1.0), 0.28)
-		_active_tween.tween_property(_artwork_frame, "position:x", 0.0, 0.28)
+		_active_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_artwork_frame.scale = Vector2(0.94, 0.94)
+		_active_tween.tween_property(_artwork_frame, "scale", Vector2(1.0, 1.0), 0.24)
+		var offset_x: float = 45.0 * (1.0 if slide_dir >= 0 else -1.0)
+		_fullbody_texture.position.x = offset_x
+		_active_tween.tween_property(_fullbody_texture, "position:x", 0.0, 0.24)
+		_fullbody_texture.modulate = Color(1.0, 1.0, 1.0, 0.3) if is_unlocked else Color(0.2, 0.25, 0.35, 0.3)
+		var target_modulate := Color.WHITE if is_unlocked else Color(0.3, 0.35, 0.45, 0.8)
+		_active_tween.tween_property(_fullbody_texture, "modulate", target_modulate, 0.24)
+	else:
+		if _artwork_frame:
+			_artwork_frame.scale = Vector2.ONE
+		if _fullbody_texture:
+			_fullbody_texture.position.x = 0.0
+			_fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.3, 0.35, 0.45, 0.8)
 
 func _display_empty_state() -> void:
 	_skin_name_label.text = "SIN ASPECTOS"

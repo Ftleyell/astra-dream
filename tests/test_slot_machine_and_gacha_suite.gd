@@ -289,19 +289,17 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	add_child(charsel)
 	await get_tree().process_frame
 
-	# Validar existencia de los botones rápidos de cada sistema
-	test_assert(charsel.ship_skin_button != null, "ShipSkinButton debe existir en CharacterSelect")
-	test_assert(charsel.weapon_skin_button != null, "WeaponSkinButton debe existir en CharacterSelect")
-	test_assert(charsel.pet_skin_button != null, "PetSkinButton debe existir en CharacterSelect")
-	test_assert(charsel.navigator_skin_button != null, "NavigatorSkinButton debe existir en CharacterSelect")
-	test_assert(charsel.pilot_skin_button != null, "PilotSkinButton debe existir en CharacterSelect")
-	test_assert(charsel.skins_button != null, "SkinsButton debe existir en ActionsRow")
+	# Validar existencia de los botones completos de tarjeta y modales de selección
+	test_assert(charsel.ship_button != null, "ShipButton debe existir en CharacterSelect cubriendo toda la tarjeta")
+	test_assert(charsel.weapon_button != null, "WeaponButton debe existir en CharacterSelect cubriendo toda la tarjeta")
+	test_assert(charsel.pet_button != null, "PetButton debe existir en CharacterSelect cubriendo toda la tarjeta")
+	test_assert(charsel.navigator_button != null, "NavigatorButton debe existir en CharacterSelect cubriendo toda la tarjeta")
 	test_assert(charsel.skin_selection_modal != null, "SkinSelectionModal debe estar instanciado en CharacterSelect")
 
-	# Probar apertura del selector de skins para la nave
+	# Probar apertura del selector de skins para la nave desde el botón completo de tarjeta
 	charsel._on_ship_skin_pressed()
 	await get_tree().process_frame
-	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse al presionar ShipSkinButton")
+	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse al presionar ShipButton")
 	test_assert(charsel.skin_selection_modal.visible == true, "SkinSelectionModal debe estar visible")
 
 	# Equipar una skin de prueba desde el modal
@@ -323,9 +321,33 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	charsel._select_character(&"nova")
 	test_assert(charsel.ship_icon.material == null, "ship_icon debe volver a material nulo tras desequipar")
 
-	# Cerrar modal
+	# Probar carrusel de skins de piloto
+	charsel._on_pilot_skin_pressed()
+	await get_tree().process_frame
+	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse para piloto")
+	test_assert(charsel.skin_selection_modal._category == "pilot", "Categoría debe ser pilot")
+	test_assert(charsel.skin_selection_modal._skins.size() > 0, "Debe haber skins de piloto cargadas en el carrusel")
+	test_assert(charsel.skin_selection_modal._fullbody_texture.flip_h == true, "Piloto fullbody en modal debe tener flip_h activado")
+
+	# Probar modal de navegadoras: Fullbody majestuoso en selector y carrusel redondo en skins
 	charsel.skin_selection_modal.close_modal()
-	test_assert(charsel.skin_selection_modal.is_open == false, "SkinSelectionModal debe cerrarse correctamente")
+	charsel._on_navigator_card_pressed()
+	await get_tree().process_frame
+	test_assert(charsel.navigator_selection_modal.is_open == true, "NavigatorSelectionModal debe abrirse")
+	test_assert(charsel.navigator_selection_modal.fullbody_texture.texture != null, "Navegadora debe mostrar fullbody texture")
+	
+	# Activar modo skins en navegadora (carrusel redondo)
+	charsel.navigator_selection_modal._on_skins_toggle_pressed()
+	await get_tree().process_frame
+	test_assert(charsel.navigator_selection_modal._is_skin_mode == true, "Modo skins debe activarse en navegadora")
+	test_assert(charsel.navigator_selection_modal.artwork_frame.custom_minimum_size == Vector2(285, 285), "Frame debe ser circular 285x285 para skins")
+	
+	# Regresar a modo navegadora (fullbody)
+	charsel.navigator_selection_modal._on_skins_toggle_pressed()
+	await get_tree().process_frame
+	test_assert(charsel.navigator_selection_modal._is_skin_mode == false, "Debe volver a modo navegante fullbody")
+	test_assert(charsel.navigator_selection_modal.artwork_frame.custom_minimum_size == Vector2(250, 480), "Frame debe volver a 250x480 para fullbody")
+	charsel.navigator_selection_modal.close_modal()
 
 	charsel.queue_free()
 	await get_tree().process_frame
