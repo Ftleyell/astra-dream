@@ -101,6 +101,43 @@ func _ready() -> void:
 	assert(DebugManager.is_enabled == true, "DebugManager.is_enabled debe ser true")
 	print("  ✓ Trampas activadas: Vida Infinita, Créditos Infinitos, Consumibles Infinitos")
 
+	# 6.1. Validar Pestaña de Gacha y Cosméticos
+	modal._switch_tab(1)
+	await get_tree().process_frame
+	assert(modal.active_tab_idx == 1, "Debe estar en la pestaña de Gacha (índice 1)")
+	assert(modal.combat_content.visible == false, "CombatTabContent debe estar oculto")
+	assert(modal.gacha_content.visible == true, "GachaTabContent debe estar visible")
+
+	var tokens_before = SaveManager.get_gacha_tokens()
+	modal._on_add_tokens_10_pressed()
+	assert(SaveManager.get_gacha_tokens() == tokens_before + 10, "Debe sumar 10 tokens de gacha")
+
+	var biomass_before = SaveManager.get_biomass()
+	modal._on_add_biomass_500_pressed()
+	assert(SaveManager.get_biomass() == biomass_before + 500, "Debe sumar 500 de biomasa/stardust")
+
+	modal._on_unlock_all_1star_pressed()
+	var unlocked_all = SaveManager.get_unlocked_skins()
+	assert(unlocked_all.size() >= 180, "Deben haberse desbloqueado todas las skins (1★): %d" % unlocked_all.size())
+	for skin_id in unlocked_all:
+		assert(unlocked_all[skin_id]["stars"] >= 1, "Cada skin debe tener al menos 1 estrella")
+
+	modal._on_unlock_all_3star_pressed()
+	unlocked_all = SaveManager.get_unlocked_skins()
+	for skin_id in unlocked_all:
+		assert(unlocked_all[skin_id]["stars"] == 3, "Cada skin debe estar a nivel máximo de 3 estrellas")
+
+	modal._on_lock_all_skins_pressed()
+	assert(SaveManager.get_unlocked_skins().is_empty(), "Todas las skins deben haberse bloqueado y reseteado")
+	print("  ✓ Pestaña de Gacha verificada: navegación, tokens (+10), biomasa (+500), unlock 1★/3★ y bloqueo completo")
+
+	# Volver a pestaña de combate
+	modal._switch_tab(0)
+	await get_tree().process_frame
+	assert(modal.active_tab_idx == 0, "Debe retornar a pestaña de combate (índice 0)")
+	assert(modal.combat_content.visible == true, "CombatTabContent debe volver a ser visible")
+
+
 	# 7. Cerrar modal
 	modal.close_menu()
 	await get_tree().process_frame
