@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://gachamodal001"]
+
+[ext_resource type="Script" path="res://scenes/ui/gacha/gacha_modal.gd" id="1_gacha"]
+
+[node name="GachaModal" type="CanvasLayer"]
+process_mode = 3
+layer = 130
+visible = false
+script = ExtResource("1_gacha")

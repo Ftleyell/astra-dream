@@ -10,6 +10,7 @@ signal modal_closed()
 var is_animating: bool = false
 var _active_tab: int = 0 # 0 = Gacha, 1 = Wardrobe
 var _active_category_filter: String = "all"
+var _hide_locked: bool = false
 
 # UI Nodes
 var _panel: PanelContainer
@@ -19,6 +20,7 @@ var _tab_gacha_btn: Button
 var _tab_wardrobe_btn: Button
 var _gacha_content: VBoxContainer
 var _wardrobe_content: VBoxContainer
+var _hide_locked_check: CheckBox
 var _results_layer: PanelContainer
 var _results_grid: GridContainer
 var _animation_overlay: Control
@@ -200,7 +202,22 @@ func _build_ui() -> void:
 		b.text = c["label"]
 		var cid: String = c["id"]
 		b.pressed.connect(func(): _filter_wardrobe(cid))
+		UIFocusHelper.apply_cyber_focus(b)
 		filter_bar.add_child(b)
+
+	var filter_spacer := Control.new()
+	filter_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	filter_bar.add_child(filter_spacer)
+
+	_hide_locked_check = CheckBox.new()
+	_hide_locked_check.text = "👁️ Ocultar no adquiridos"
+	_hide_locked_check.button_pressed = _hide_locked
+	_hide_locked_check.toggled.connect(func(pressed: bool):
+		_hide_locked = pressed
+		_filter_wardrobe(_active_category_filter)
+	)
+	UIFocusHelper.apply_cyber_focus(_hide_locked_check)
+	filter_bar.add_child(_hide_locked_check)
 
 	# Scrollable Wardrobe Grid
 	var scroll := ScrollContainer.new()
@@ -420,6 +437,7 @@ func _create_reward_card(skin: Dictionary, upg: Dictionary) -> Control:
 func _filter_wardrobe(category: String) -> void:
 	_active_category_filter = category
 	for child in _wardrobe_grid.get_children():
+		_wardrobe_grid.remove_child(child)
 		child.queue_free()
 
 	var skins: Array[Dictionary] = []
@@ -436,6 +454,8 @@ func _filter_wardrobe(category: String) -> void:
 	for skin in skins:
 		var sid: String = skin.get("id", "")
 		var is_unlocked: bool = unlocked.has(sid)
+		if _hide_locked and not is_unlocked:
+			continue
 		var stars: int = SaveManager.get_skin_stars(sid)
 		var slot_key: String = "%s:%s" % [skin.get("category", ""), skin.get("target_id", "")]
 		var is_equipped: bool = (String(equipped.get(slot_key, "")) == sid)
@@ -445,11 +465,11 @@ func _filter_wardrobe(category: String) -> void:
 
 func _create_wardrobe_card(skin: Dictionary, is_unlocked: bool, stars: int, is_equipped: bool, slot_key: String) -> Control:
 	var frame := PanelContainer.new()
-	frame.custom_minimum_size = Vector2(210, 150)
+	frame.custom_minimum_size = Vector2(210, 230)
 
 	var csb := StyleBoxFlat.new()
-	csb.bg_color = Color(0.07, 0.05, 0.14, 0.9)
-	csb.border_color = Color(0.2, 1.0, 0.8, 0.9) if is_equipped else Color(0.3, 0.3, 0.5, 0.6)
+	csb.bg_color = Color(0.07, 0.05, 0.14, 0.95) if is_unlocked else Color(0.03, 0.02, 0.06, 0.7)
+	csb.border_color = Color(0.2, 1.0, 0.8, 0.9) if is_equipped else (Color(0.8, 0.4, 1.0, 0.7) if is_unlocked else Color(0.25, 0.25, 0.35, 0.4))
 	csb.set_border_width_all(2)
 	csb.set_corner_radius_all(8)
 	csb.content_margin_left = 12
@@ -463,13 +483,39 @@ func _create_wardrobe_card(skin: Dictionary, is_unlocked: bool, stars: int, is_e
 	vbox.add_theme_constant_override("separation", 4)
 	frame.add_child(vbox)
 
+	# Vista previa gráfica con Shader
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(64, 64)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var tex_path: String = skin.get("texture_path", "")
+	if not tex_path.is_empty() and ResourceLoader.exists(tex_path):
+		icon.texture = load(tex_path)
+
+	if is_unlocked:
+		CosmeticsManager.apply_skin_to_canvas_item(icon, skin.get("id", ""), stars)
+	else:
+		icon.modulate = Color(0.25, 0.25, 0.35, 0.6)
+	vbox.add_child(icon)
+
+	# Nombre de la entidad (Nave, Piloto, Pet, etc.)
+	var t_name := Label.new()
+	t_name.text = skin.get("target_name", "")
+	t_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	t_name.add_theme_font_size_override("font_size", 11)
+	t_name.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0, 0.85))
+	vbox.add_child(t_name)
+
+	# Nombre de la skin / paleta
 	var title := Label.new()
 	title.text = skin.get("skin_name", "")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.add_theme_font_size_override("font_size", 12)
-	title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0) if is_unlocked else Color(0.5, 0.5, 0.6, 0.8))
 	vbox.add_child(title)
 
+	# Estrellas o Candado
 	var star_lbl := Label.new()
 	var star_str := ""
 	for i in range(stars):
@@ -477,22 +523,49 @@ func _create_wardrobe_card(skin: Dictionary, is_unlocked: bool, stars: int, is_e
 	star_lbl.text = star_str if is_unlocked else "🔒 BLOQUEADO"
 	star_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	star_lbl.add_theme_font_size_override("font_size", 11)
-	star_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0) if is_unlocked else Color(0.6, 0.6, 0.6, 1.0))
+	star_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0) if is_unlocked else Color(0.5, 0.5, 0.6, 0.8))
 	vbox.add_child(star_lbl)
 
+	# Controles de Equipar / Quitar
 	if is_unlocked:
-		var eq_btn := Button.new()
-		eq_btn.text = "✅ EQUIPADO" if is_equipped else "EQUIPAR"
-		eq_btn.disabled = is_equipped
 		var sid: String = skin.get("id", "")
-		eq_btn.pressed.connect(func():
-			SaveManager.equip_skin(slot_key, sid)
-			skin_equipped.emit(slot_key, sid)
-			_filter_wardrobe(_active_category_filter)
-		)
-		vbox.add_child(eq_btn)
+		if is_equipped:
+			var btn_box := HBoxContainer.new()
+			btn_box.alignment = BoxContainer.ALIGNMENT_CENTER
+			btn_box.add_theme_constant_override("separation", 6)
+			vbox.add_child(btn_box)
+
+			var eq_lbl := Label.new()
+			eq_lbl.text = "✅ ACTIVA"
+			eq_lbl.add_theme_font_size_override("font_size", 11)
+			eq_lbl.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4, 1.0))
+			btn_box.add_child(eq_lbl)
+
+			var unequip_btn := Button.new()
+			unequip_btn.text = "QUITAR"
+			unequip_btn.custom_minimum_size = Vector2(70, 26)
+			unequip_btn.add_theme_font_size_override("font_size", 10)
+			unequip_btn.pressed.connect(func():
+				SaveManager.unequip_skin(slot_key)
+				skin_equipped.emit(slot_key, "")
+				_filter_wardrobe(_active_category_filter)
+			)
+			UIFocusHelper.apply_cyber_focus(unequip_btn)
+			btn_box.add_child(unequip_btn)
+		else:
+			var eq_btn := Button.new()
+			eq_btn.text = "EQUIPAR"
+			eq_btn.custom_minimum_size = Vector2(110, 28)
+			eq_btn.pressed.connect(func():
+				SaveManager.equip_skin(slot_key, sid)
+				skin_equipped.emit(slot_key, sid)
+				_filter_wardrobe(_active_category_filter)
+			)
+			UIFocusHelper.apply_cyber_focus(eq_btn)
+			vbox.add_child(eq_btn)
 
 	return frame
+
 
 func _on_close_pressed() -> void:
 	hide()

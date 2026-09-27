@@ -20,6 +20,8 @@ func _ready() -> void:
 	test_slot_chest_and_item_reward_modal()
 	test_hub_gacha_modal_and_pulls()
 	test_cosmetics_canvas_item_and_shader_application()
+	test_character_select_skin_buttons_and_modal()
+
 
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE SLOTS & GACHA PASARON EXITOSAMENTE!")
@@ -196,8 +198,10 @@ func test_slot_chest_and_item_reward_modal() -> void:
 
 # ── 6. GACHA DEL HANGAR (PULLS, BANNER Y ROPERO) ────────────────────────────
 func test_hub_gacha_modal_and_pulls() -> void:
-	print("[6/7] Verificando Modal de Gacha del Hangar (Pulls x1, x5, x10 y Ropero)...")
+	print("[6/8] Verificando Modal de Gacha del Hangar (Pulls x1, x5, x10 y Ropero)...")
 	var gacha_modal = GachaModalScript.new()
+	add_child(gacha_modal)
+	await get_tree().process_frame
 	SaveManager.add_gacha_tokens(20)
 	var tokens_before := SaveManager.get_gacha_tokens()
 	
@@ -221,11 +225,40 @@ func test_hub_gacha_modal_and_pulls() -> void:
 	var fail_pulls := gacha_modal.execute_pulls(5)
 	test_assert(fail_pulls.is_empty(), "Tirada sin saldo suficiente debe devolver array vacío")
 
-	gacha_modal.free()
+	# Verificación de Armario / Colección, Toggle Ocultar no adquiridos y Desequipar
+	gacha_modal._switch_tab(1)
+	test_assert(gacha_modal._active_tab == 1, "Debe estar en la pestaña de Armario")
+	test_assert(gacha_modal._hide_locked_check != null, "El CheckBox _hide_locked_check debe existir")
+
+	# Desbloquear una skin de prueba
+	var test_ship_skin := "ship_nova_crimson_void"
+	SaveManager.unlock_or_upgrade_skin(test_ship_skin)
+	SaveManager.equip_skin("ship:nova", test_ship_skin)
+	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_ship_skin, "Debe estar equipada la skin de prueba")
+
+	# Con toggle inactivo: muestra todas las skins (186)
+	gacha_modal._hide_locked = false
+	gacha_modal._filter_wardrobe("all")
+	var count_all: int = gacha_modal._wardrobe_grid.get_child_count()
+	test_assert(count_all >= 180, "Con toggle desactivado deben mostrarse todas las skins en la colección (actual: %d)" % count_all)
+
+	# Con toggle activo: solo muestra desbloqueadas
+	gacha_modal._hide_locked = true
+	gacha_modal._filter_wardrobe("all")
+	var count_unlocked: int = gacha_modal._wardrobe_grid.get_child_count()
+	test_assert(count_unlocked <= count_all, "Con toggle activado solo deben mostrarse las desbloqueadas")
+	test_assert(count_unlocked >= 1, "Al menos la skin desbloqueada debe ser visible")
+
+	# Probar desequipar
+	SaveManager.unequip_skin("ship:nova")
+	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "La skin de ship:nova debe haberse desequipado correctamente")
+
+	gacha_modal.queue_free()
+	await get_tree().process_frame
 
 # ── 7. APLICACIÓN DE SHADER Y EFECTOS COSMÉTICOS ─────────────────────────────
 func test_cosmetics_canvas_item_and_shader_application() -> void:
-	print("[7/7] Verificando Aplicación de Materiales, Shaders y Estrellas en CanvasItems...")
+	print("[7/8] Verificando Aplicación de Materiales, Shaders y Estrellas en CanvasItems...")
 	var test_sprite := Sprite2D.new()
 	var test_skin_id := "ship_nova_crimson_void"
 	
@@ -247,3 +280,53 @@ func test_cosmetics_canvas_item_and_shader_application() -> void:
 	test_assert(mat3.get_shader_parameter("star_level") == 3, "Shader parameter star_level debe ser 3")
 
 	test_sprite.free()
+
+# ── 8. BOTONES DE SKINS EN SELECCIÓN DE PERSONAJES & MODAL COMPACTO ────────────
+func test_character_select_skin_buttons_and_modal() -> void:
+	print("[8/8] Verificando Botones de Skin en CharacterSelectUI y SkinSelectionModal...")
+	var charsel_scene: PackedScene = load("res://scenes/ui/character_select/character_select.tscn")
+	var charsel: CharacterSelectUI = charsel_scene.instantiate()
+	add_child(charsel)
+	await get_tree().process_frame
+
+	# Validar existencia de los botones rápidos de cada sistema
+	test_assert(charsel.ship_skin_button != null, "ShipSkinButton debe existir en CharacterSelect")
+	test_assert(charsel.weapon_skin_button != null, "WeaponSkinButton debe existir en CharacterSelect")
+	test_assert(charsel.pet_skin_button != null, "PetSkinButton debe existir en CharacterSelect")
+	test_assert(charsel.navigator_skin_button != null, "NavigatorSkinButton debe existir en CharacterSelect")
+	test_assert(charsel.pilot_skin_button != null, "PilotSkinButton debe existir en CharacterSelect")
+	test_assert(charsel.skins_button != null, "SkinsButton debe existir en ActionsRow")
+	test_assert(charsel.skin_selection_modal != null, "SkinSelectionModal debe estar instanciado en CharacterSelect")
+
+	# Probar apertura del selector de skins para la nave
+	charsel._on_ship_skin_pressed()
+	await get_tree().process_frame
+	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse al presionar ShipSkinButton")
+	test_assert(charsel.skin_selection_modal.visible == true, "SkinSelectionModal debe estar visible")
+
+	# Equipar una skin de prueba desde el modal
+	var test_skin_id := "ship_nova_crimson_void"
+	SaveManager.unlock_or_upgrade_skin(test_skin_id)
+	SaveManager.unlock_or_upgrade_skin(test_skin_id) # 2 estrellas (Glow)
+	charsel.skin_selection_modal._selected_skin_id = test_skin_id
+	charsel.skin_selection_modal._on_equip_pressed()
+	await get_tree().process_frame
+
+	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_skin_id, "SaveManager debe registrar la skin equipada para ship:nova")
+	charsel._select_character(&"nova")
+	test_assert(charsel.ship_icon.material is ShaderMaterial, "ship_icon debe tener el shader aplicado para la skin 2★")
+
+	# Probar equipar por defecto (desequipar)
+	charsel.skin_selection_modal._on_default_pressed()
+	await get_tree().process_frame
+	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "SaveManager no debe tener skin equipada tras _on_default_pressed")
+	charsel._select_character(&"nova")
+	test_assert(charsel.ship_icon.material == null, "ship_icon debe volver a material nulo tras desequipar")
+
+	# Cerrar modal
+	charsel.skin_selection_modal.close_modal()
+	test_assert(charsel.skin_selection_modal.is_open == false, "SkinSelectionModal debe cerrarse correctamente")
+
+	charsel.queue_free()
+	await get_tree().process_frame
+

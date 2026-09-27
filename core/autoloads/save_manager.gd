@@ -1340,7 +1340,10 @@ static func unlock_or_upgrade_skin(skin_id: String) -> Dictionary:
 static func equip_skin(slot_key: String, skin_id: String) -> void:
 	var profile := load_profile()
 	var equipped: Dictionary = profile.get("equipped_skins", {}).duplicate(true)
-	equipped[slot_key] = skin_id
+	if skin_id.is_empty():
+		equipped.erase(slot_key)
+	else:
+		equipped[slot_key] = skin_id
 
 	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
@@ -1366,6 +1369,10 @@ static func equip_skin(slot_key: String, skin_id: String) -> void:
 		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
 		tokens, unlocked_skins, equipped
 	)
+
+static func unequip_skin(slot_key: String) -> void:
+	equip_skin(slot_key, "")
+
 
 static func get_equipped_skin(slot_key: String) -> String:
 	var profile := load_profile()

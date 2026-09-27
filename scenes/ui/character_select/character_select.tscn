@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://charselect001"]
+[gd_scene load_steps=9 format=3 uid="uid://charselect001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_spacebg"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/pet_selection_modal.tscn" id="5_petmodal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/navigator_selection_modal.tscn" id="6_navmodal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/cosmetics/skin_selection_modal.tscn" id="7_skinmodal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/gacha/gacha_modal.tscn" id="8_gachamodal"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -177,6 +179,7 @@ stretch_mode = 5
 
 [node name="ShipLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox"]
 layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
 [node name="ShipTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox/ShipLabelVBox"]
@@ -189,6 +192,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.9)
 theme_override_font_sizes/font_size = 12
 text = "Interceptor Delta"
+
+[node name="ShipSkinButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/ShipCard/ShipBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 14
+text = "🎨"
 
 [node name="WeaponCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow"]
 custom_minimum_size = Vector2(270, 88)
@@ -206,6 +216,7 @@ stretch_mode = 5
 
 [node name="WeaponLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox"]
 layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
 [node name="WeaponTitle" type="Label" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox/WeaponLabelVBox"]
@@ -218,6 +229,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.5, 0.9)
 theme_override_font_sizes/font_size = 12
 text = "Blaster Ígneo Vectorial"
+
+[node name="WeaponSkinButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/EquipmentBox/EquipRow/WeaponCard/WeaponBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 14
+text = "🎨"
 
 [node name="SpeedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
 layout_mode = 2
@@ -258,6 +276,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "⚙ [C] BANLIST"
 icon = ExtResource("2_gear")
+
+[node name="SkinsButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow"]
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.45, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "🎨 SKINS"
 
 [node name="DebugButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow"]
 custom_minimum_size = Vector2(170, 56)
@@ -323,6 +348,14 @@ flat = true
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 
+[node name="PetSkinButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/PetCard"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 18
+text = "🎨"
+
 [node name="NavigatorCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
 custom_minimum_size = Vector2(0, 106)
 layout_mode = 2
@@ -371,6 +404,14 @@ flat = true
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 
+[node name="NavigatorSkinButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 18
+text = "🎨"
+
 [node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -390,8 +431,26 @@ expand_mode = 1
 stretch_mode = 5
 flip_h = true
 
+[node name="PilotSkinButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 54.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎨 SKINS PILOTO"
+
 [node name="DebugMenuModal" parent="." instance=ExtResource("4_debug")]
 
 [node name="PetSelectionModal" parent="." instance=ExtResource("5_petmodal")]
 
 [node name="NavigatorSelectionModal" parent="." instance=ExtResource("6_navmodal")]
+
+[node name="SkinSelectionModal" parent="." instance=ExtResource("7_skinmodal")]
+
+[node name="GachaModal" parent="." instance=ExtResource("8_gachamodal")]
