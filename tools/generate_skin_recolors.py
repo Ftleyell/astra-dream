@@ -144,23 +144,32 @@ def generate_all():
                 "texture_path": rel_path
             }
 
-    # 2. PILOTS (PORTRAITS)
-    print("--- Generando Skins de Pilotos ---")
+    # 2. PILOTS (FULLBODY)
+    print("--- Generando Skins de Pilotos Fullbody ---")
     for pilot in PILOTS:
+        src_fullbody = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}.png")
         src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
         for pal_id, pal in PALETTES.items():
             skin_id = f"pilot_{pilot}_{pal_id}"
-            dst_portrait = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}.png")
-            rel_path = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}.png"
+            dst_fullbody = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}.png")
+            rel_path = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}.png"
             
-            if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45):
+            if recolor_image(src_fullbody, dst_fullbody, pal["tint_rgb"], blend_factor=0.45):
                 total_generated += 1
             
-            # Optional flipped portrait
-            src_flipped = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}_flipped.png")
+            # Flipped fullbody
+            src_flipped = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_flipped.png")
+            rel_flipped = ""
             if os.path.exists(src_flipped):
-                dst_flipped = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}_flipped.png")
-                recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.45)
+                dst_flipped = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}_flipped.png")
+                if recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.45):
+                    total_generated += 1
+                    rel_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_flipped.png"
+            
+            # Also generate portrait as companion if needed
+            if os.path.exists(src_portrait):
+                dst_portrait = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}.png")
+                recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45)
             
             skin_database["skins"][skin_id] = {
                 "id": skin_id,
@@ -173,7 +182,8 @@ def generate_all():
                 "rarity": pal["rarity"],
                 "glow_hex": pal["glow_hex"],
                 "accent_hex": pal["accent_hex"],
-                "texture_path": rel_path
+                "texture_path": rel_path,
+                "flipped_texture_path": rel_flipped
             }
 
     # 3. WEAPONS (PRIMARY PROJECTILE COLOR PALETTES)

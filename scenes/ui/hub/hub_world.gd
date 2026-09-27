@@ -475,6 +475,34 @@ func _collect_and_verify_sprites() -> void:
 
 		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
 		sprite.visible = is_unlocked
+		if is_unlocked:
+			var slot_key := "pilot:" + char_id
+			var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+			if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+				var stars := SaveManager.get_skin_stars(equipped_skin)
+				var CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
+				var skin_info: Dictionary = CosmeticsManagerScript.get_skin(equipped_skin)
+				var tex_path: String = skin_info.get("flipped_texture_path", "") if is_right_side else skin_info.get("texture_path", "")
+				if tex_path.is_empty():
+					tex_path = skin_info.get("texture_path", "")
+				var custom_tex := CosmeticsManagerScript.load_texture(tex_path)
+				if custom_tex:
+					sprite.texture = custom_tex
+				if stars > 1:
+					var spatial_shader = load("res://shaders/skin_glow_spatial.gdshader")
+					if spatial_shader:
+						var mat := ShaderMaterial.new()
+						mat.shader = spatial_shader
+						mat.set_shader_parameter("texture_albedo", sprite.texture)
+						mat.set_shader_parameter("star_level", stars)
+						var glow_hex: String = skin_info.get("glow_hex", "#00F0FF")
+						var accent_hex: String = skin_info.get("accent_hex", "#FF007F")
+						mat.set_shader_parameter("glow_color", Color.from_string(glow_hex, Color.CYAN))
+						mat.set_shader_parameter("accent_color", Color.from_string(accent_hex, Color.MAGENTA))
+						mat.set_shader_parameter("glow_intensity", 1.8 if stars >= 3 else 1.2)
+						mat.set_shader_parameter("pulse_speed", 3.0 if stars >= 3 else 2.0)
+						sprite.material_override = mat
+
 		sprite_nodes.append(sprite)
 
 

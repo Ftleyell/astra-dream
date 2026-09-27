@@ -153,6 +153,8 @@ func _ready() -> void:
 
 	if pet_selection_modal and pet_selection_modal.has_signal("pet_selected"):
 		pet_selection_modal.pet_selected.connect(_on_pet_selected)
+	if pet_selection_modal and pet_selection_modal.has_signal("skin_equipped"):
+		pet_selection_modal.skin_equipped.connect(func(_slot, _sid): _refresh_pet_display())
 	if pet_selection_modal and pet_selection_modal.has_signal("closed"):
 		pet_selection_modal.closed.connect(_on_pet_modal_closed)
 
@@ -164,6 +166,8 @@ func _ready() -> void:
 
 	if navigator_selection_modal and navigator_selection_modal.has_signal("navigator_selected"):
 		navigator_selection_modal.navigator_selected.connect(_on_navigator_selected)
+	if navigator_selection_modal and navigator_selection_modal.has_signal("skin_equipped"):
+		navigator_selection_modal.skin_equipped.connect(func(_slot, _sid): _refresh_navigator_display())
 	if navigator_selection_modal and navigator_selection_modal.has_signal("closed"):
 		navigator_selection_modal.closed.connect(_on_navigator_modal_closed)
 
@@ -179,7 +183,7 @@ func _ready() -> void:
 		if skin_selection_modal.has_signal("closed"):
 			skin_selection_modal.closed.connect(_on_skin_modal_closed)
 		if skin_selection_modal.has_signal("open_gacha_requested"):
-			skin_selection_modal.open_gacha_requested.connect(_on_skins_button_pressed)
+			skin_selection_modal.open_gacha_requested.connect(_open_gacha_from_skins)
 
 	if gacha_modal:
 		if gacha_modal.has_signal("skin_equipped"):
@@ -574,11 +578,24 @@ func _on_navigator_skin_pressed() -> void:
 		_open_skin_modal("navigator", String(sel_nid), nav_res.display_name, nav_res.get_portrait_texture())
 
 func _on_skins_button_pressed() -> void:
+	var data: CharacterData = roster_dict.get(current_character_id, null)
+	if data:
+		var fb := data.get_fullbody_texture(false)
+		if not fb:
+			fb = data.get_fullbody_texture(true)
+		if not fb:
+			fb = data.get_portrait_texture()
+		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
+	elif gacha_modal:
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		gacha_modal.open_gacha_modal()
+
+func _open_gacha_from_skins() -> void:
 	if not gacha_modal:
 		return
 	_last_focused_control = get_viewport().gui_get_focus_owner()
 	gacha_modal.open_gacha_modal()
-	gacha_modal._switch_tab(1)
+	gacha_modal._switch_tab(0)
 
 func _on_skin_selected(_slot_key: String, _skin_id: String) -> void:
 	_select_character(current_character_id)

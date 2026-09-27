@@ -58,6 +58,8 @@ func set_stat_override(stat: StringName, val: float) -> void:
 func clear_stat_override(stat: StringName) -> void:
 	stat_overrides.erase(stat)
 
+var pending_slot_machine_test: bool = false
+
 func set_pending_debug_route(route: String) -> void:
 	pending_debug_route = route
 	is_enabled = true
@@ -67,11 +69,21 @@ func consume_pending_debug_route() -> String:
 	pending_debug_route = ""
 	return r
 
+func set_pending_slot_machine_test(val: bool = true) -> void:
+	pending_slot_machine_test = val
+	is_enabled = true
+
+func consume_pending_slot_machine_test() -> bool:
+	var res := pending_slot_machine_test
+	pending_slot_machine_test = false
+	return res
+
 func reset_all() -> void:
 	infinite_hp = false
 	infinite_credits = false
 	infinite_consumables = false
 	pending_debug_route = ""
+	pending_slot_machine_test = false
 	stat_overrides.clear()
 	is_enabled = false
 

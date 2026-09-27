@@ -217,6 +217,21 @@ func _ready() -> void:
 			restore_run_state(active_data)
 			return
 
+	# Chequeo de inicio debug para test de tragamonedas (arranque sobre la máquina con abundantes créditos)
+	var is_slot_test: bool = DebugManager.consume_pending_slot_machine_test() if (DebugManager and DebugManager.has_method("consume_pending_slot_machine_test")) else false
+	if is_slot_test:
+		is_briefing_active = false
+		prologue_bonus_chosen = true
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+		player.run_credits = maxi(int(player.run_credits), 25000)
+		if hud:
+			hud.update_credits(player.run_credits)
+		_spawn_next_satellite_for_wave()
+		call_deferred("_spawn_slot_machine", player.global_position + Vector2(0, -35.0))
+		return
+
 	# Generar el primer satélite de la oleada para que el radar lo indique de inmediato
 	_spawn_next_satellite_for_wave()
 
@@ -862,13 +877,13 @@ func _check_wave_encounters() -> void:
 	if current_wave == 3 or current_wave == 7:
 		_spawn_slot_machine()
 
-func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.ZERO) -> void:
+func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
 	if current_slot_machine != null and is_instance_valid(current_slot_machine):
 		return
 	if not is_instance_valid(player):
 		return
 
-	if spawn_pos == Vector2.ZERO:
+	if spawn_pos == Vector2.INF:
 		var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
 		spawn_pos = player.global_position + move_dir * 750.0
 

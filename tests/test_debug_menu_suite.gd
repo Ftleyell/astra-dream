@@ -200,6 +200,20 @@ func _ready() -> void:
 	assert(player.current_health == hp_before, "Con Vida Infinita, take_damage NO debe restar salud (salud: %f, antes: %f)" % [player.current_health, hp_before])
 	print("  ✓ Vida Infinita (God Mode) verificada: daño mitigado al 100%")
 
+	# 8.6. Validar inicio de run sobre tragamonedas con créditos abundantes
+	var dbg_scene: PackedScene = load("res://scenes/ui/debug/debug_menu_modal.tscn")
+	var slot_dbg_modal: DebugMenuModal = dbg_scene.instantiate()
+	main_game.add_child(slot_dbg_modal)
+	slot_dbg_modal._on_spawn_slot_machine_pressed()
+	await get_tree().process_frame
+	assert(player.run_credits >= 25000, "Spawn tragamonedas debe otorgar al menos 25.000 créditos al personaje (actual: %d)" % player.run_credits)
+	assert(main_game.current_slot_machine != null, "current_slot_machine debe estar spawneada")
+	assert(is_instance_valid(main_game.current_slot_machine), "current_slot_machine debe ser una instancia válida")
+	var dist_to_slot: float = player.global_position.distance_to(main_game.current_slot_machine.global_position)
+	assert(dist_to_slot <= 120.0, "La tragamonedas debe spawnear directamente sobre/junto al jugador (dist: %f)" % dist_to_slot)
+	print("  ✓ Test In-Run sobre tragamonedas validado con éxito: +25.000 coins y spawn inmediato")
+	slot_dbg_modal.queue_free()
+
 	# 9. Limpieza
 	main_game.queue_free()
 	DebugManager.reset_all()

@@ -87,10 +87,23 @@ func set_character(char_id: StringName) -> void:
 	_update_character_texture()
 
 
+const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+
 func _update_character_texture() -> void:
 	if not visual_sprite:
 		return
 	var cid := String(active_character_id).to_lower()
+	var slot_key := "pilot:" + cid
+	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+		var stars := SaveManager.get_skin_stars(equipped_skin)
+		CosmeticsManager.apply_skin_to_sprite3d(visual_sprite, equipped_skin, stars)
+		visual_sprite.pixel_size = 0.0013
+		visual_sprite.offset = Vector2(0, 800)
+		return
+
+	# Fallback original
+	visual_sprite.material_override = null
 	var fullbody_path := "res://assets/characters/fullbody/fullbody_%s.png" % cid
 	if ResourceLoader.exists(fullbody_path):
 		visual_sprite.texture = load(fullbody_path)

@@ -133,3 +133,36 @@ static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_le
 		mat.set_shader_parameter("glow_intensity", 1.8 if star_level >= 3 else 1.2)
 		mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
 		item.material = mat
+
+static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level: int = 1) -> void:
+	if not is_instance_valid(sprite):
+		return
+
+	var skin_data := get_skin(skin_id)
+	if skin_data.is_empty():
+		sprite.material_override = null
+		return
+
+	var tex_path: String = skin_data.get("texture_path", "")
+	var tex := load_texture(tex_path)
+	if tex:
+		sprite.texture = tex
+
+	if star_level <= 1:
+		sprite.material_override = null
+	else:
+		var spatial_shader = load("res://shaders/skin_glow_spatial.gdshader")
+		if spatial_shader:
+			var mat := ShaderMaterial.new()
+			mat.shader = spatial_shader
+			mat.set_shader_parameter("texture_albedo", sprite.texture)
+			mat.set_shader_parameter("star_level", star_level)
+
+			var glow_hex: String = skin_data.get("glow_hex", "#00F0FF")
+			var accent_hex: String = skin_data.get("accent_hex", "#FF007F")
+			mat.set_shader_parameter("glow_color", Color.from_string(glow_hex, Color.CYAN))
+			mat.set_shader_parameter("accent_color", Color.from_string(accent_hex, Color.MAGENTA))
+			mat.set_shader_parameter("glow_intensity", 1.8 if star_level >= 3 else 1.2)
+			mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
+			sprite.material_override = mat
+

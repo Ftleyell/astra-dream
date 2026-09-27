@@ -192,6 +192,7 @@ func _ready() -> void:
 		UIFocusHelper.apply_cyber_focus(open_gacha_modal_btn)
 
 	if spawn_slot_machine_btn:
+		spawn_slot_machine_btn.text = "🎰 INICIAR RUN SOBRE TRAGAMONEDAS (+25.000 COINS)"
 		spawn_slot_machine_btn.pressed.connect(_on_spawn_slot_machine_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_slot_machine_btn)
 
@@ -536,14 +537,28 @@ func _on_open_gacha_modal_pressed() -> void:
 
 func _on_spawn_slot_machine_pressed() -> void:
 	_play_click_sfx()
-	close_menu()
 	var mg = get_tree().get_first_node_in_group("main_game")
-	if mg and mg.has_method("_spawn_slot_machine"):
-		mg._spawn_slot_machine()
-	else:
+	if mg and is_instance_valid(mg) and "player" in mg and is_instance_valid(mg.player):
+		mg.player.run_credits = maxi(int(mg.player.run_credits) + 25000, 25000)
+		if "hud" in mg and mg.hud:
+			mg.hud.update_credits(mg.player.run_credits)
+		if "current_slot_machine" in mg and is_instance_valid(mg.current_slot_machine):
+			mg.current_slot_machine.queue_free()
+			mg.current_slot_machine = null
+		if mg.has_method("_spawn_slot_machine"):
+			mg._spawn_slot_machine(mg.player.global_position + Vector2(0, -35.0))
+		close_menu()
 		if subtitle_label:
-			subtitle_label.text = "⚠️ La máquina tragamonedas solo se puede spawnear dentro de una run de combate."
-			subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2, 1.0))
+			subtitle_label.text = "✓ MÁQUINA TRAGAMONEDAS SPAWNEADA SOBRE EL JUGADOR (+25.000 COINS)!"
+			subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	else:
+		var debug_mgr = get_node_or_null("/root/DebugManager")
+		if debug_mgr and debug_mgr.has_method("set_pending_slot_machine_test"):
+			debug_mgr.set_pending_slot_machine_test(true)
+		close_menu()
+		get_tree().paused = false
+		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
 
 func _on_spawn_slot_chest_pressed() -> void:
 	_play_click_sfx()

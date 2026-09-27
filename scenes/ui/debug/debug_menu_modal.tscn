@@ -396,7 +396,7 @@ alignment = 1
 custom_minimum_size = Vector2(460, 38)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.75, 0.2, 1)
-text = "🎰 SPAWNEAR TRAGAMONEDAS EN RUN"
+text = "🎰 INICIAR RUN SOBRE TRAGAMONEDAS (+25.000 COINS)"
 
 [node name="SpawnSlotChestBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/InRunSlotsRow"]
 custom_minimum_size = Vector2(460, 38)

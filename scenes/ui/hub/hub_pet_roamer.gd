@@ -35,6 +35,17 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	sprite.name = "PetSprite"
 	var tex: Texture2D = pet_data.get_icon_texture() if pet_data else null
 	sprite.texture = tex
+
+	if pet_data:
+		var pid_str := String(pet_data.pet_id).to_lower()
+		var slot_key := "pet:" + pid_str
+		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+			var stars := SaveManager.get_skin_stars(equipped_skin)
+			var CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
+			CosmeticsManagerScript.apply_skin_to_sprite3d(sprite, equipped_skin, stars)
+			tex = sprite.texture
+
 	var tex_h: float = float(tex.get_height()) if is_instance_valid(tex) else 64.0
 	sprite.pixel_size = 0.012 * (64.0 / maxf(1.0, tex_h))
 	sprite.offset = Vector2(0, tex_h * 0.5)

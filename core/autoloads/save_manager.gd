@@ -1259,6 +1259,11 @@ static func get_unlocked_skins() -> Dictionary:
 	var profile := load_profile()
 	return profile.get("unlocked_skins", {})
 
+static func is_skin_unlocked(skin_id: String) -> bool:
+	var profile := load_profile()
+	var skins: Dictionary = profile.get("unlocked_skins", {})
+	return skins.has(skin_id)
+
 static func get_skin_stars(skin_id: String) -> int:
 	var skins := get_unlocked_skins()
 	if skins.has(skin_id):
