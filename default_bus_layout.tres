@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://dy6aj8rnyqxp7"]
 
 [sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_music"]
 resource_name = "LowPassFilter"
@@ -9,7 +9,6 @@ resonance = 0.7
 resource_name = "Limiter"
 ceiling_db = -0.5
 threshold_db = -1.5
-soft_clip_db = 2.0
 
 [resource]
 bus/1/name = &"Music"

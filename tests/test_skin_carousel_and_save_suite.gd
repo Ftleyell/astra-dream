@@ -127,9 +127,22 @@ func _ready() -> void:
 	assert(ped_nyx.visible == true, "Cuando Nyx está desbloqueada en savegame, su pedestal DEBE ser visible")
 	assert(inter_nyx.visible == true, "Cuando Nyx está desbloqueada, su interactuable DEBE ser visible")
 
+	# D) Verificar Alineación de Terminales (Run a la izq, Gacha en el medio exacto, HighScores a la der)
+	var term_mission = hub.get_node_or_null("Terminals/MissionTerminal")
+	var term_gacha = hub.get_node_or_null("Terminals/GachaTerminal")
+	var term_scores = hub.get_node_or_null("Terminals/HighScoresTerminal")
+	assert(term_mission != null and term_gacha != null and term_scores != null, "Todos los terminales deben existir")
+	assert(is_equal_approx(term_mission.position.x, -3.2), "MissionTerminal debe estar en x = -3.2")
+	assert(is_equal_approx(term_gacha.position.x, 0.0), "GachaTerminal debe estar exactamente en el centro x = 0.0")
+	assert(is_equal_approx(term_scores.position.x, 3.2), "HighScoresTerminal debe estar en x = 3.2")
+	assert(term_gacha.get_node_or_null("KenneyArcadeGacha") != null, "GachaTerminal debe contener la carcasa de arcade de Kenney")
+	assert(hub.gacha_holo != null, "GachaCapsuleHolo debe estar vinculado")
+	assert(hub.gacha_interactable != null, "Interactable_Gacha debe estar activo")
+
 	hub._refresh_pedestal_skins()
 	hub.queue_free()
-	print("  ✓ TrophyRoom (5 pedestales), Pedestal de Nyx y visibilidad dinámica comprobados al 100%")
+	print("  ✓ TrophyRoom, Pedestal de Nyx y Alineación de Terminales (Arcade Gacha al centro) comprobados al 100%")
+
 
 	print("\n=======================================================")
 	print("🎉 TODAS LAS VERIFICACIONES COMPLETADAS CON ÉXITO!")

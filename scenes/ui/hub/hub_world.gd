@@ -587,60 +587,50 @@ func _setup_gacha_terminal() -> void:
 		term_group.name = "Terminals"
 		add_child(term_group)
 
-	var gacha_term := Node3D.new()
-	gacha_term.name = "GachaTerminal"
-	gacha_term.position = Vector3(0.0, 0.0, -6.5)
-	term_group.add_child(gacha_term)
-
-	# Base pedestal
-	var base_mesh := MeshInstance3D.new()
-	base_mesh.name = "GachaBase"
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = 1.0
-	cyl.bottom_radius = 1.2
-	cyl.height = 0.5
-	base_mesh.mesh = cyl
-	
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.05, 0.04, 0.12, 1.0)
-	mat.emission_enabled = true
-	mat.emission = Color(0.0, 0.94, 1.0, 1.0)
-	mat.emission_energy_multiplier = 0.9
-	base_mesh.material_override = mat
-	gacha_term.add_child(base_mesh)
+	var gacha_term: Node3D = term_group.get_node_or_null("GachaTerminal")
+	if not gacha_term:
+		gacha_term = Node3D.new()
+		gacha_term.name = "GachaTerminal"
+		gacha_term.position = Vector3(0.0, 0.0, -6.5)
+		term_group.add_child(gacha_term)
 
 	# Holographic Spinning Capsule
-	gacha_holo = MeshInstance3D.new()
-	gacha_holo.name = "GachaCapsuleHolo"
-	gacha_holo.position = Vector3(0, 2.2, 0)
-	var sphere := SphereMesh.new()
-	sphere.radius = 0.38
-	sphere.height = 0.76
-	gacha_holo.mesh = sphere
+	gacha_holo = gacha_term.get_node_or_null("GachaCapsuleHolo")
+	if not gacha_holo:
+		gacha_holo = MeshInstance3D.new()
+		gacha_holo.name = "GachaCapsuleHolo"
+		gacha_holo.position = Vector3(0, 2.3, 0.1)
+		var sphere := SphereMesh.new()
+		sphere.radius = 0.38
+		sphere.height = 0.76
+		gacha_holo.mesh = sphere
 
-	var h_mat := StandardMaterial3D.new()
-	h_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	h_mat.albedo_color = Color(1.0, 0.84, 0.0, 0.8)
-	h_mat.emission_enabled = true
-	h_mat.emission = Color(1.0, 0.85, 0.2, 1.0)
-	h_mat.emission_energy_multiplier = 2.0
-	gacha_holo.material_override = h_mat
-	gacha_term.add_child(gacha_holo)
+		var h_mat := StandardMaterial3D.new()
+		h_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		h_mat.albedo_color = Color(1.0, 0.84, 0.0, 0.8)
+		h_mat.emission_enabled = true
+		h_mat.emission = Color(1.0, 0.85, 0.2, 1.0)
+		h_mat.emission_energy_multiplier = 2.0
+		gacha_holo.material_override = h_mat
+		gacha_term.add_child(gacha_holo)
 
 	# Interactable 3D Area
-	var inter_script = preload("res://scenes/ui/hub/hub_interactable_3d.gd")
-	gacha_interactable = inter_script.new()
-	gacha_interactable.name = "Interactable_Gacha"
-	gacha_interactable.target_character_id = &"gacha"
-	gacha_interactable.interaction_title = "🎰 Máquina de Gacha (Cosméticos)"
-	gacha_interactable.interaction_radius = 2.8
-	gacha_interactable.prompt_offset_y = 2.4
-	gacha_term.add_child(gacha_interactable)
-	gacha_interactable.interacted.connect(_on_gacha_terminal_interacted)
+	gacha_interactable = gacha_term.get_node_or_null("Interactable_Gacha")
+	if not gacha_interactable:
+		var inter_script = preload("res://scenes/ui/hub/hub_interactable_3d.gd")
+		gacha_interactable = inter_script.new()
+		gacha_interactable.name = "Interactable_Gacha"
+		gacha_interactable.target_character_id = &"gacha"
+		gacha_interactable.interaction_title = "🎰 Máquina de Gacha (Cosméticos)"
+		gacha_interactable.interaction_radius = 2.8
+		gacha_interactable.prompt_offset_y = 2.3
+		gacha_term.add_child(gacha_interactable)
+	if not gacha_interactable.interacted.is_connected(_on_gacha_terminal_interacted):
+		gacha_interactable.interacted.connect(_on_gacha_terminal_interacted)
 
 	# Instantiate Gacha Modal UI
 	var hub_ui := get_node_or_null("HubUI")
-	if hub_ui:
+	if hub_ui and not gacha_modal:
 		gacha_modal = GachaModalScript.new()
 		gacha_modal.name = "GachaModal"
 		hub_ui.add_child(gacha_modal)
