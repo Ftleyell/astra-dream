@@ -8,8 +8,9 @@ func _ready() -> void:
 	test_autoaim_fix()
 	test_satellite_alert_and_ping()
 	test_career_stats_and_nyx_unlock()
-	test_rainbow_enemy()
+	await test_rainbow_enemy()
 	test_nyx_character_and_combat()
+
 	test_career_modal_ui()
 	test_nyx_hub_pedestal_and_skill_tree()
 	test_nyx_secret_character_integration()
@@ -157,7 +158,9 @@ func test_rainbow_enemy() -> void:
 	rainbow_enemy.player = test_player
 
 	rainbow_enemy._on_die_extra()
+	await get_tree().create_timer(0.55).timeout
 	test_assert(test_player.current_level >= 2, "La muerte del enemigo arcoíris debe otorgar un nivel completo instantáneo")
+
 
 	test_player.queue_free()
 	rainbow_enemy.queue_free()
@@ -334,15 +337,9 @@ func test_nyx_secret_character_integration() -> void:
 	test_assert(unlocked_now == true, "Al matar el décimo jefe record_boss_kill debe retornar true (nuevo desbloqueo)")
 	test_assert(SaveManager.is_character_unlocked(&"nyx") == true, "Nyx debe quedar desbloqueada tras derrotar 10 jefes")
 
-	# 6. Al desbloquearse, debe aparecer en Carrera, Selección de Personaje y Fondo
-	var hs_unlocked = highscores_scene.instantiate()
-	add_child(hs_unlocked)
-	hs_unlocked.open_career()
-	var nyx_card_unlocked = hs_unlocked.career_container.find_child("NyxCard", true, false)
-	test_assert(nyx_card_unlocked != null, "La tarjeta de Nyx debe mostrarse en Carrera una vez desbloqueada")
-	hs_unlocked.queue_free()
-
+	# 6. Al desbloquearse, debe aparecer en Selección de Personaje y Fondo
 	var char_select_unlocked = char_select_scene.instantiate()
+
 	add_child(char_select_unlocked)
 	var found_nyx_btn_unlocked := false
 	for child in char_select_unlocked.char_list_container.get_children():

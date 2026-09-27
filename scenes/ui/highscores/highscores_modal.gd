@@ -136,57 +136,13 @@ func _populate_career_view() -> void:
 	var time_fmt := "%02dh %02dm %02ds" % [hours, minutes, seconds]
 
 	var total_bosses: int = int(career_data.get("total_bosses_killed", 0))
-	var is_nyx_unlocked: bool = SaveManager.is_character_unlocked(&"nyx")
 
 	var root_vbox := VBoxContainer.new()
 	root_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root_vbox.add_theme_constant_override("separation", 16)
 
-	# 1. Panel de Desbloqueo de Nyx (Solo visible una vez desbloqueada como personaje secreto)
-	if is_nyx_unlocked:
-		var nyx_card := PanelContainer.new()
-		nyx_card.name = "NyxCard"
-		nyx_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var nyx_style := StyleBoxFlat.new()
-		nyx_style.bg_color = Color(0.08, 0.02, 0.14, 0.92)
-		nyx_style.border_color = Color(0.9, 0.3, 1.0, 1.0)
-		nyx_style.set_border_width_all(2)
-		nyx_style.set_corner_radius_all(8)
-		nyx_style.set_content_margin_all(14.0)
-		nyx_style.shadow_color = Color(0.8, 0.2, 1.0, 0.35)
-		nyx_style.shadow_size = 8
-		nyx_card.add_theme_stylebox_override("panel", nyx_style)
-
-		var nyx_vbox := VBoxContainer.new()
-		nyx_vbox.add_theme_constant_override("separation", 8)
-
-		var nyx_header := HBoxContainer.new()
-		var nyx_title := Label.new()
-		nyx_title.text = "PROYECTO NYX — ESPADACHINA DIMENSIONAL [MELEE]"
-		nyx_title.add_theme_font_size_override("font_size", 16)
-		nyx_title.add_theme_color_override("font_color", Color(0.95, 0.4, 1.0))
-		nyx_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		nyx_header.add_child(nyx_title)
-
-		var nyx_status := Label.new()
-		nyx_status.text = "✓ DESBLOQUEADA"
-		nyx_status.add_theme_color_override("font_color", Color(0.2, 1.0, 0.5))
-		nyx_status.add_theme_font_size_override("font_size", 15)
-		nyx_header.add_child(nyx_status)
-		nyx_vbox.add_child(nyx_header)
-
-		var nyx_desc := Label.new()
-		nyx_desc.text = "Guerrera cuerpo a cuerpo armada con espada en medialuna (ráfagas escalables con Proyectiles), corte ciclónico 360° que desintegra balas enemigas y dash teleport con línea de corte letal."
-		nyx_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		nyx_desc.add_theme_font_size_override("font_size", 13)
-		nyx_desc.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95, 0.85))
-		nyx_vbox.add_child(nyx_desc)
-
-		nyx_card.add_child(nyx_vbox)
-		root_vbox.add_child(nyx_card)
-
-	# 2. Rejilla de Estadísticas de Carrera
+	# Rejilla de Estadísticas de Carrera
 	var stats_panel := PanelContainer.new()
 	stats_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var stats_style := StyleBoxFlat.new()
