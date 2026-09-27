@@ -35,6 +35,7 @@ const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
 @onready var navigator_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/NavigatorCard/NavigatorButton") as Button
 @onready var navigator_selection_modal = get_node_or_null("NavigatorSelectionModal")
 
+@onready var pilot_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel/PilotButton") as Button
 @onready var skin_selection_modal = get_node_or_null("SkinSelectionModal")
 @onready var gacha_modal = get_node_or_null("GachaModal")
 
@@ -53,7 +54,7 @@ var navigator_skin_button: Button:
 		return navigator_button
 var pilot_skin_button: Button:
 	get:
-		return null
+		return pilot_button
 var skins_button: Button:
 	get:
 		return null
@@ -147,6 +148,11 @@ func _ready() -> void:
 		fullbody_texture.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		fullbody_texture.gui_input.connect(_on_character_art_gui_input)
 
+	if pilot_button:
+		UIFocusHelper.apply_cyber_focus(pilot_button)
+		pilot_button.pressed.connect(_on_pilot_skin_pressed)
+		pilot_button.tooltip_text = "Haz clic para ver y equipar los aspectos de la piloto"
+
 	var right_panel: Control = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel") as Control
 	if right_panel:
 		right_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -234,7 +240,7 @@ func _on_character_art_gui_input(event: InputEvent) -> void:
 func _on_character_art_clicked() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click")
+		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
 
 	# Animación elástica en el arte del personaje
 	if fullbody_texture:
@@ -243,14 +249,7 @@ func _on_character_art_clicked() -> void:
 		tw.tween_property(fullbody_texture, "scale", Vector2(1.04, 1.04), 0.08)
 		tw.tween_property(fullbody_texture, "scale", Vector2(1.0, 1.0), 0.12)
 
-	# Mover foco del UI y cursor del ratón hacia el botón de Iniciar Run
-	if launch_button and launch_button.is_visible_in_tree():
-		launch_button.grab_focus()
-		var target_pos: Vector2 = launch_button.get_global_rect().get_center()
-		get_viewport().warp_mouse(target_pos)
-		var tw_btn := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw_btn.tween_property(launch_button, "scale", Vector2(1.06, 1.06), 0.08)
-		tw_btn.tween_property(launch_button, "scale", Vector2(1.0, 1.0), 0.12)
+	_on_pilot_skin_pressed()
 
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
@@ -331,6 +330,11 @@ func _populate_roster() -> void:
 			navigator_button.focus_neighbor_top = pet_button.get_path()
 		else:
 			navigator_button.focus_neighbor_top = launch_button.get_path()
+
+	if pilot_button:
+		launch_button.focus_neighbor_right = pilot_button.get_path()
+		pilot_button.focus_neighbor_left = launch_button.get_path()
+		pilot_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath("")
 
 	if first_btn:
 		first_btn.grab_focus()

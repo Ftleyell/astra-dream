@@ -406,6 +406,17 @@ expand_mode = 1
 stretch_mode = 5
 flip_h = true
 
+[node name="PilotButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+
 [node name="DebugMenuModal" parent="." instance=ExtResource("4_debug")]
 
 [node name="PetSelectionModal" parent="." instance=ExtResource("5_petmodal")]
