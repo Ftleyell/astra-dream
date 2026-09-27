@@ -20,6 +20,7 @@ signal closed()
 @onready var artwork_viewport: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport
 @onready var fullbody_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport/FullbodyTexture
 @onready var locked_overlay: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay
+@onready var lock_title: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter/LockTitle
 @onready var lock_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter/LockDesc
 
 @onready var right_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard
@@ -308,9 +309,11 @@ func _display_current_navigator(animate: bool = true, slide_direction: int = 0) 
 			radio_dialogue.text = "\"Frecuencia de telemetría a la espera...\""
 
 	if radar_desc:
-		radar_desc.text = nav_data.radar_description if is_unlocked else "Algoritmo de telemetría clasificado."
+		radar_desc.text = nav_data.specialty_desc if is_unlocked else "Algoritmo de telemetría clasificado."
+	if buff_name_label:
+		buff_name_label.text = nav_data.buff_name.to_upper() if is_unlocked else "ENLACE TÁCTICO BLOQUEADO"
 	if buff_desc_label:
-		buff_desc_label.text = nav_data.passive_description if is_unlocked else "Enlace táctico bloqueado."
+		buff_desc_label.text = nav_data.buff_desc if is_unlocked else "Enlace táctico bloqueado."
 
 	# Botón de Selección
 	if select_btn:
@@ -338,6 +341,14 @@ func _display_current_navigator(animate: bool = true, slide_direction: int = 0) 
 
 	if locked_overlay:
 		locked_overlay.visible = not is_unlocked
+		if not is_unlocked:
+			if lock_title:
+				lock_title.text = "%s BLOQUEADA" % nav_data.display_name.to_upper()
+			if lock_desc:
+				if nid == &"iris":
+					lock_desc.text = "Completa cualquiera de los 3 finales (Pacifista, Genocida o Neutral) para sintonizar a Iris, o actívala en Debug [F1]."
+				else:
+					lock_desc.text = "Sintonización requerida. Desbloquea a %s en el menú de progresión o en Debug [F1]." % nav_data.display_name
 
 	_update_carousel_layout(false, nav_data.theme_color)
 	_update_dots(nav_data.theme_color, current_index)
@@ -433,8 +444,10 @@ func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> vo
 
 	if locked_overlay:
 		locked_overlay.visible = not is_unlocked
+		if lock_title:
+			lock_title.text = "ASPECTO BLOQUEADO"
 		if lock_desc:
-			lock_desc.text = "CONSEGUIR EN GACHA"
+			lock_desc.text = "CONSEGUIR EN GACHA ESTELAR"
 
 	var pal_color := Color.from_string(cur_skin.get("glow_hex", "#00F0FF"), Color.CYAN)
 	_update_carousel_layout(true, pal_color)
@@ -447,43 +460,43 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 
 	if is_skin:
 		# Modo Skins: carrusel redondo circular holográfico como las pets
-		artwork_frame.custom_minimum_size = Vector2(285, 285)
+		artwork_frame.custom_minimum_size = Vector2(260, 260)
 		artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var af_sb := StyleBoxFlat.new()
 		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
 		af_sb.border_color = theme_color
 		af_sb.set_border_width_all(3)
-		af_sb.set_corner_radius_all(142) # Redondo / Circular
+		af_sb.set_corner_radius_all(130) # Redondo / Circular
 		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.35)
 		af_sb.shadow_size = 14
 		artwork_frame.add_theme_stylebox_override("panel", af_sb)
 
 		if left_card:
-			left_card.custom_minimum_size = Vector2(200, 200)
+			left_card.custom_minimum_size = Vector2(150, 150)
 			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
 			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
 			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
 			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(100) # Redondo / Circular
+			side_sb.set_corner_radius_all(75) # Redondo / Circular
 			left_card.add_theme_stylebox_override("normal", side_sb)
 			left_card.add_theme_stylebox_override("hover", side_sb)
 			left_card.add_theme_stylebox_override("pressed", side_sb)
 
 		if right_card:
-			right_card.custom_minimum_size = Vector2(200, 200)
+			right_card.custom_minimum_size = Vector2(150, 150)
 			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
 			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
 			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
 			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(100) # Redondo / Circular
+			side_sb.set_corner_radius_all(75) # Redondo / Circular
 			right_card.add_theme_stylebox_override("normal", side_sb)
 			right_card.add_theme_stylebox_override("hover", side_sb)
 			right_card.add_theme_stylebox_override("pressed", side_sb)
 	else:
-		# Modo Navegadoras: marco esbelto para fullbody majestuoso
-		artwork_frame.custom_minimum_size = Vector2(250, 480)
+		# Modo Navegadoras: marco esbelto y proporcionado para fullbody
+		artwork_frame.custom_minimum_size = Vector2(240, 480)
 		artwork_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		var af_sb := StyleBoxFlat.new()
 		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
@@ -495,8 +508,8 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 		artwork_frame.add_theme_stylebox_override("panel", af_sb)
 
 		if left_card:
-			left_card.custom_minimum_size = Vector2(170, 400)
-			left_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			left_card.custom_minimum_size = Vector2(150, 400)
+			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
 			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
 			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
@@ -507,8 +520,8 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 			left_card.add_theme_stylebox_override("pressed", side_sb)
 
 		if right_card:
-			right_card.custom_minimum_size = Vector2(170, 400)
-			right_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			right_card.custom_minimum_size = Vector2(150, 400)
+			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
 			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
 			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
@@ -539,12 +552,12 @@ func _animate_center_card(animate: bool, slide_direction: int, is_unlocked: bool
 		var offset_x: float = 45.0 * (1.0 if slide_direction >= 0 else -1.0)
 		fullbody_texture.position.x = offset_x
 		_active_tween.tween_property(fullbody_texture, "position:x", 0.0, 0.22)
-		var target_modulate := Color.WHITE if is_unlocked else Color(0.2, 0.25, 0.35, 0.7)
+		var target_modulate := Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
 		_active_tween.tween_property(fullbody_texture, "modulate", target_modulate, 0.22)
 	else:
 		if fullbody_texture:
 			fullbody_texture.position.x = 0.0
-			fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.2, 0.25, 0.35, 0.7)
+			fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
 
 func _on_skins_toggle_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

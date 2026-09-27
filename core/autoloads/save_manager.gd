@@ -877,8 +877,13 @@ static func get_unlocked_navigators() -> Array[StringName]:
 	var prof := load_profile()
 	var raw_navs: Array = prof.get("unlocked_navigators", [&"lyra", &"vespera", &"caelia", &"zephyr"])
 	var res: Array[StringName] = []
+	var base_navs: Array[StringName] = [&"lyra", &"vespera", &"caelia", &"zephyr"]
+	for b in base_navs:
+		res.append(b)
 	for n in raw_navs:
-		res.append(StringName(str(n)))
+		var sn := StringName(str(n))
+		if not res.has(sn) and sn != &"pip" and sn != &"mochi" and sn != &"kuro" and sn != &"luna":
+			res.append(sn)
 	return res
 
 static func is_navigator_unlocked(nav_id: StringName) -> bool:

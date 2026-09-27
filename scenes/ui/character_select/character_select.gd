@@ -73,6 +73,8 @@ const DebugMenuModalScript := preload("res://scenes/ui/debug/debug_menu_modal.gd
 @onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
 @onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
 @onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
+@onready var backlight_glow: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel/BacklightGlow") as TextureRect
+var _pilot_hover_tween: Tween = null
 
 @onready var speed_1x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed1xBtn")
 @onready var speed_2x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed2xBtn")
@@ -143,21 +145,24 @@ func _ready() -> void:
 		weapon_button.pressed.connect(_on_weapon_skin_pressed)
 		_setup_card_hover_feedback(weapon_button, weapon_card, Color(1.0, 0.85, 0.35, 1.0))
 
+	_setup_pilot_backlight()
+
 	if fullbody_texture:
-		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_STOP
-		fullbody_texture.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		fullbody_texture.gui_input.connect(_on_character_art_gui_input)
+		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_PASS
+		fullbody_texture.item_rect_changed.connect(func():
+			fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
+		)
 
 	if pilot_button:
-		UIFocusHelper.apply_cyber_focus(pilot_button)
-		pilot_button.pressed.connect(_on_pilot_skin_pressed)
+		pilot_button.focus_mode = Control.FOCUS_NONE
+		pilot_button.mouse_entered.connect(_on_pilot_mouse_entered)
+		pilot_button.mouse_exited.connect(_on_pilot_mouse_exited)
+		pilot_button.pressed.connect(_on_pilot_button_pressed)
 		pilot_button.tooltip_text = "Haz clic para ver y equipar los aspectos de la piloto"
 
 	var right_panel: Control = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel") as Control
 	if right_panel:
-		right_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-		right_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		right_panel.gui_input.connect(_on_character_art_gui_input)
+		right_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	if pet_button:
 		UIFocusHelper.apply_cyber_focus(pet_button)
@@ -232,24 +237,69 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_3:
 			_set_game_speed(4.0)
 
-func _on_character_art_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_on_character_art_clicked()
-		get_viewport().set_input_as_handled()
+func _setup_pilot_backlight() -> void:
+	if not backlight_glow:
+		return
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 0.85))
+	grad.set_color(1, Color(1, 1, 1, 0.0))
+	var grad_tex := GradientTexture2D.new()
+	grad_tex.gradient = grad
+	grad_tex.fill = GradientTexture2D.FILL_RADIAL
+	grad_tex.fill_from = Vector2(0.5, 0.45)
+	grad_tex.fill_to = Vector2(0.5, 0.0)
+	grad_tex.width = 512
+	grad_tex.height = 768
+	backlight_glow.texture = grad_tex
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	backlight_glow.material = mat
+	backlight_glow.modulate.a = 0.0
 
-func _on_character_art_clicked() -> void:
+func _on_pilot_mouse_entered() -> void:
+	if not fullbody_texture:
+		return
+	fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
+	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
+		_pilot_hover_tween.kill()
+	_pilot_hover_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.22)
+	if backlight_glow:
+		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.85, 0.22)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.15)
+
+func _on_pilot_mouse_exited() -> void:
+	if not fullbody_texture:
+		return
+	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
+		_pilot_hover_tween.kill()
+	_pilot_hover_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2.ONE, 0.22)
+	if backlight_glow:
+		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.0, 0.22)
+
+func _on_pilot_button_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
 
-	# Animación elástica en el arte del personaje
 	if fullbody_texture:
-		fullbody_texture.pivot_offset = fullbody_texture.size * 0.5
+		fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
 		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.04, 1.04), 0.08)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.0, 1.0), 0.12)
+		tw.tween_property(fullbody_texture, "scale", Vector2(1.06, 1.06), 0.08)
+		tw.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.14)
 
 	_on_pilot_skin_pressed()
+
+func _on_character_art_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_on_pilot_button_pressed()
+		get_viewport().set_input_as_handled()
+
+func _on_character_art_clicked() -> void:
+	_on_pilot_button_pressed()
 
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
@@ -332,9 +382,7 @@ func _populate_roster() -> void:
 			navigator_button.focus_neighbor_top = launch_button.get_path()
 
 	if pilot_button:
-		launch_button.focus_neighbor_right = pilot_button.get_path()
-		pilot_button.focus_neighbor_left = launch_button.get_path()
-		pilot_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath("")
+		pilot_button.focus_mode = Control.FOCUS_NONE
 
 	if first_btn:
 		first_btn.grab_focus()
@@ -448,6 +496,10 @@ func _select_character(char_id: StringName) -> void:
 			fullbody_texture.texture = fb_tex
 			fullbody_texture.flip_h = true
 			fullbody_texture.visible = (fb_tex != null)
+
+	if backlight_glow:
+		var glow_col: Color = data.color if data else Color(0.2, 0.9, 1.0)
+		backlight_glow.modulate = Color(glow_col.r, glow_col.g, glow_col.b, backlight_glow.modulate.a)
 
 	var is_unlocked := SaveManager.is_character_unlocked(char_id)
 	if not is_unlocked:
@@ -629,7 +681,7 @@ func _on_gacha_modal_closed() -> void:
 	_select_character(current_character_id)
 
 func _restore_last_focus() -> void:
-	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control != pilot_button and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		_last_focused_control.grab_focus()
 	elif launch_button and launch_button.is_visible_in_tree():
 		launch_button.grab_focus()

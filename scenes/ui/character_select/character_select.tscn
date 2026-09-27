@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://charselect001"]
+[gd_scene load_steps=10 format=3 uid="uid://charselect001"]
 
 [ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_spacebg"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/navigator_selection_modal.tscn" id="6_navmodal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/cosmetics/skin_selection_modal.tscn" id="7_skinmodal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/gacha/gacha_modal.tscn" id="8_gachamodal"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pilot"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -393,6 +395,17 @@ size_flags_horizontal = 3
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 
+[node name="BacklightGlow" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
 layout_mode = 1
 anchors_preset = 15
@@ -413,6 +426,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_pilot")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_pilot")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_pilot")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_pilot")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_pilot")
 flat = true
 mouse_filter = 0
 mouse_default_cursor_shape = 2

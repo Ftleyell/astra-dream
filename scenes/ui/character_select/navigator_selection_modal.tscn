@@ -159,11 +159,11 @@ text = "◀
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = -40
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="LeftCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
-custom_minimum_size = Vector2(170, 400)
+custom_minimum_size = Vector2(150, 400)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")
@@ -197,9 +197,9 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ArtworkFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
-z_index = 2
+z_index = 1
 clip_contents = true
-custom_minimum_size = Vector2(250, 480)
+custom_minimum_size = Vector2(240, 480)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_artwork")
@@ -229,7 +229,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.035, 0.065, 0.85)
+color = Color(0.015, 0.025, 0.05, 0.38)
 
 [node name="LockCenter" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay"]
 layout_mode = 1
@@ -265,7 +265,7 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="RightCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
-custom_minimum_size = Vector2(170, 400)
+custom_minimum_size = Vector2(150, 400)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_side_card")

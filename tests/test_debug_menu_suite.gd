@@ -43,13 +43,13 @@ func _ready() -> void:
 	# Si hubiera iniciado la run, char_select habría sido cambiado de escena
 	print("  ✓ Barra espaciadora en _unhandled_input NO inicia la run prematuramente")
 
-	# 2.2. Validar que hacer click sobre el personaje mueve el foco / cursor a Iniciar Run
-	char_select.loadout_button.grab_focus()
-	assert(char_select.get_viewport().gui_get_focus_owner() == char_select.loadout_button, "El foco inicial debe estar en loadout_button")
+	# 2.2. Validar que hacer click sobre el personaje abre el modal de skins de piloto
 	char_select._on_character_art_clicked()
 	await get_tree().process_frame
-	assert(char_select.get_viewport().gui_get_focus_owner() == char_select.launch_button, "Hacer click en el personaje debe mover el foco a LaunchButton")
-	print("  ✓ Click sobre el personaje mueve el foco y cursor a 'Iniciar Run'")
+	assert(char_select.skin_selection_modal != null and char_select.skin_selection_modal.is_open == true, "Hacer click en el personaje debe abrir el modal de skins de piloto")
+	print("  ✓ Click sobre el personaje abre correctamente el modal de aspectos de piloto")
+	char_select.skin_selection_modal.close_modal()
+	await get_tree().process_frame
 
 	# 3. Abrir DebugMenuModal
 	char_select._on_debug_pressed()
