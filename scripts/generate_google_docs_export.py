@@ -194,11 +194,21 @@ def build_docx(output_path):
 
     # 1. MANIFIESTO
     add_heading_styled(doc, "🧭 1. Manifiesto y Visión: Libertad Creativa con Anclaje Sistémico", level=1)
-    add_styled_paragraph(doc, "Este documento corona y sintetiza la serie de especificaciones del proyecto. Tu rol no es simplemente 'dibujar sprites o componer pistas sueltas', sino definir el alma, el tono, la identidad sensorial y la emoción de todo el universo de Astra Dream.")
     
     create_callout(
         doc,
-        "• TU ESPACIO LIBRE: Tienes total autonomía para definir el estilo visual (Anime Mecha-Musume / Sci-Fi / Cyberpunk), los shaders, la arquitectura del Hangar 2.5D, la paleta cromática, el género musical (Synthwave, Dark Synth, Metal Orquestal) y la personalidad de las pilotos.\n\n"
+        "El título actual del proyecto ('Astra Dream'), los nombres de las heroínas (Astra, Ignis, Zephyr, Nyx, etc.), los nombres de las navegadoras, mascotas, armas, regiones, ítems y habilidades son 100% MARCADORES DE POSICIÓN (PLACEHOLDERS) PROVISIONALES.\n\n"
+        "Como Artista Principal y Director Creativo posees AUTORIDAD Y LIBERTAD TOTAL para definir el nombre comercial definitivo del juego, renombrar a las pilotos y mascotas, crear nuevas facciones y sustituir cualquier concepto estético, narrativo o sonoro. Tu única frontera son los sistemas mecánicos del motor (vuelo 360°, satélites, talentos, moral de rivales y Dialogic).",
+        title="🚨 AVISO FUNDAMENTAL: TODO EL APARTADO VISUAL, NARRATIVO Y EL TÍTULO SON PLACEHOLDERS",
+        border_color="DC2626",
+        bg_color="FEF2F2"
+    )
+
+    add_styled_paragraph(doc, "Este documento corona y sintetiza la serie de especificaciones del proyecto. Tu rol no es simplemente 'dibujar sprites o componer pistas sueltas', sino definir el alma, el tono, la identidad sensorial, el nombre y la emoción de todo este universo.")
+    
+    create_callout(
+        doc,
+        "• TU ESPACIO LIBRE (100% PLACEHOLDER): Tienes total autonomía para definir el nombre final del juego, el estilo visual (Anime Mecha-Musume / Sci-Fi / Cyberpunk), los shaders, la arquitectura del Hangar 2.5D, la paleta cromática, el género musical (Synthwave, Dark Synth, Metal Orquestal) y la personalidad de las pilotos.\n\n"
         "• EL MOTOR Y SISTEMAS: El gameplay loop de 360°, el sistema de Satélites, el motor de diálogos Dialogic 2, el sistema de perdón/combate de Pilotos Rivales y la meta-progresión son las anclas sólidas sobre las que se apoya tu arte.",
         title="🌟 ALCANCE DE LA LIBERTAD CREATIVA",
         border_color="0284C7",

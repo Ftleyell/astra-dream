@@ -6,11 +6,17 @@
 
 ## 🧭 1. Manifiesto y Visión: Libertad Creativa con Anclaje Sistémico
 
-Este documento unifica y amplía la serie de guías previas ([Lienzo y Anclas](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_lienzo_y_anclas_para_el_artista.md), [Personajes e Ítems](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_personajes_e_items_para_el_artista.md), [Enemigos y Jefes](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_enemigos_y_jefes_para_el_artista.md)). Tu rol no es simplemente "dibujar sprites o componer pistas sueltas", sino **definir el alma, el tono, la identidad sensorial y la emoción** de todo el universo de **Astra Dream**.
+> [!IMPORTANT]
+> **🚨 AVISO FUNDAMENTAL: TODO EL APARTADO VISUAL, NARRATIVO Y EL TÍTULO SON PLACEHOLDERS**  
+> El título actual del proyecto (*"Astra Dream"*), los nombres de las heroínas (*Astra, Ignis, Zephyr, Nyx, etc.*), los nombres de las navegadoras, mascotas, armas, regiones, ítems y habilidades son **100% marcadores de posición (placeholders) provisionales**.  
+> Como Artista Principal y Director Creativo posees **autoridad y libertad total para definir el nombre definitivo del juego**, renombrar a las pilotos y mascotas, crear nuevas facciones y sustituir cualquier concepto estético, narrativo o sonoro. Tu única frontera son los sistemas mecánicos del motor (el vuelo 360°, el sistema de satélites, el árbol de talentos, la toma de decisiones de rivales y el motor de diálogo Dialogic).
+
+Este documento unifica y amplía la serie de guías previas ([Lienzo y Anclas](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_lienzo_y_anclas_para_el_artista.md), [Personajes e Ítems](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_personajes_e_items_para_el_artista.md), [Enemigos y Jefes](file:///C:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/guia_enemigos_y_jefes_para_el_artista.md)). Tu rol no es simplemente "dibujar sprites o componer pistas sueltas", sino **definir el alma, el tono, la identidad sensorial, el nombre y la emoción** de todo este universo.
 
 ```mermaid
 flowchart TD
-    subgraph TOTAL_LIBERTAD["🎨 Tu Espacio Creativo (Libre)"]
+    subgraph TOTAL_LIBERTAD["🎨 Tu Espacio Creativo (Libre & 100% Placeholder)"]
+        TitleName["Título Comercial del Juego & Nombres\n(Libertad total para renombrar el juego, heroínas, pets)"]
         ArtStyle["Estilo Visual, Shaders & 2.5D\n(Anime Mecha-Musume / Sci-Fi / Cyberpunk)"]
         HubDesign["Arquitectura del Hub / Hangar 2.5D\n(Atmósfera, iluminación, estaciones interactivas)"]
         MusicUniverse["Universo Musical & BGM\n(Synthwave / Dark Synth / Orchestral Sci-Fi)"]
