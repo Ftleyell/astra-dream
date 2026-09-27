@@ -1,6 +1,8 @@
 class_name NavigatorCommsWidget
 extends CanvasLayer
 
+const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+
 ## Widget lateral de comunicaciones de Navegantes.
 ## Muestra el retrato, diálogo y objetivo detectado en el lateral izquierdo
 ## de manera no intrusiva (sin pausar ni bloquear la pantalla).
@@ -43,7 +45,14 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 		return
 
 	if portrait_rect:
-		portrait_rect.texture = nav_data.get_portrait_texture()
+		var nav_id_str: String = String(nav_data.nav_id) if "nav_id" in nav_data else ""
+		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
+		if not equipped_nav_skin.is_empty():
+			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
+			CosmeticsManager.apply_skin_to_canvas_item(portrait_rect, equipped_nav_skin, stars)
+		else:
+			portrait_rect.texture = nav_data.get_portrait_texture()
+			portrait_rect.material = null
 	if name_label:
 		name_label.text = "%s // OFICIAL TÁCTICA" % nav_data.display_name.to_upper()
 		name_label.modulate = nav_data.theme_color

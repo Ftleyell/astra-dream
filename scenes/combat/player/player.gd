@@ -1,6 +1,7 @@
 class_name Player
 extends CharacterBody2D
 
+const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -231,15 +232,27 @@ func _apply_visual_theme() -> void:
 		add_child(ship_spr)
 		move_child(ship_spr, 0)
 
-	if ship_spr:
+	# Aplicar skin cosmética a la nave si está equipada
+	var char_id_str := String(character_data.character_id) if character_data else "survivor_default"
+	var equipped_ship_skin: String = SaveManager.get_equipped_skin("ship:" + char_id_str)
+	if not equipped_ship_skin.is_empty() and ship_spr:
+		var stars: int = SaveManager.get_skin_stars(equipped_ship_skin)
+		CosmeticsManager.apply_skin_to_canvas_item(ship_spr, equipped_ship_skin, stars)
+		ship_spr.visible = true
+		ship_spr.scale = Vector2(0.42, 0.42)
+		if placeholder:
+			placeholder.visible = false
+	elif ship_spr:
 		if ship_tex:
 			ship_spr.texture = ship_tex
+			ship_spr.material = null
 			ship_spr.visible = true
 			ship_spr.scale = Vector2(0.42, 0.42)
 			if placeholder:
 				placeholder.visible = false
 		else:
 			ship_spr.visible = false
+			ship_spr.material = null
 			if placeholder:
 				placeholder.visible = true
 
@@ -258,13 +271,23 @@ func _apply_visual_theme() -> void:
 		var w_tex: Texture2D = character_data.get_weapon_texture() if character_data.has_method("get_weapon_texture") else null
 		var w_spr := w_ctrl.get_node_or_null("WeaponSprite") as Sprite2D
 		var w_poly := w_ctrl.get_node_or_null("WeaponVisual") as Polygon2D
-		if not w_spr and w_tex:
+		if not w_spr and (w_tex or not SaveManager.get_equipped_skin("weapon:" + char_id_str).is_empty()):
 			w_spr = Sprite2D.new()
 			w_spr.name = "WeaponSprite"
 			w_ctrl.add_child(w_spr)
 		if w_spr:
-			if w_tex:
+			var equipped_w_skin: String = SaveManager.get_equipped_skin("weapon:" + char_id_str)
+			if not equipped_w_skin.is_empty():
+				var w_stars: int = SaveManager.get_skin_stars(equipped_w_skin)
+				CosmeticsManager.apply_skin_to_canvas_item(w_spr, equipped_w_skin, w_stars)
+				w_spr.position = Vector2(16, 0)
+				w_spr.scale = Vector2(0.35, 0.35)
+				w_spr.visible = true
+				if w_poly:
+					w_poly.visible = false
+			elif w_tex:
 				w_spr.texture = w_tex
+				w_spr.material = null
 				w_spr.position = Vector2(16, 0)
 				w_spr.scale = Vector2(0.35, 0.35)
 				w_spr.visible = true
@@ -272,6 +295,7 @@ func _apply_visual_theme() -> void:
 					w_poly.visible = false
 			else:
 				w_spr.visible = false
+				w_spr.material = null
 				if w_poly:
 					w_poly.visible = true
 

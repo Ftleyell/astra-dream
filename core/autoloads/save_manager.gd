@@ -21,7 +21,10 @@ static func save_profile(
 	p_unlocked_pets: Variant = null,
 	p_unlocked_endings: Variant = null,
 	p_selected_navigator: StringName = &"",
-	p_unlocked_navigators: Variant = null
+	p_unlocked_navigators: Variant = null,
+	p_gacha_tokens: int = -1,
+	p_unlocked_skins: Variant = null,
+	p_equipped_skins: Variant = null
 ) -> Error:
 	var existing_prof: Dictionary = {}
 	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
@@ -130,6 +133,22 @@ static func save_profile(
 		for n in raw_navs:
 			str_unlocked_navs.append(String(n))
 
+	var current_tokens: int = p_gacha_tokens
+	if current_tokens < 0:
+		current_tokens = int(existing_prof.get("gacha_tokens", 0))
+
+	var current_unlocked_skins: Dictionary
+	if p_unlocked_skins != null and p_unlocked_skins is Dictionary:
+		current_unlocked_skins = p_unlocked_skins
+	else:
+		current_unlocked_skins = existing_prof.get("unlocked_skins", {})
+
+	var current_equipped_skins: Dictionary
+	if p_equipped_skins != null and p_equipped_skins is Dictionary:
+		current_equipped_skins = p_equipped_skins
+	else:
+		current_equipped_skins = existing_prof.get("equipped_skins", {})
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -147,7 +166,10 @@ static func save_profile(
 		"unlocked_pets": str_unlocked_pets,
 		"unlocked_endings": str_unlocked_endings,
 		"selected_navigator": String(current_nav),
-		"unlocked_navigators": str_unlocked_navs
+		"unlocked_navigators": str_unlocked_navs,
+		"gacha_tokens": current_tokens,
+		"unlocked_skins": current_unlocked_skins,
+		"equipped_skins": current_equipped_skins
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -228,7 +250,10 @@ static func _get_default_profile() -> Dictionary:
 		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName],
 		"unlocked_endings": [] as Array[String],
 		"selected_navigator": &"lyra",
-		"unlocked_navigators": [&"lyra", &"vespera", &"caelia", &"zephyr"] as Array[StringName]
+		"unlocked_navigators": [&"lyra", &"vespera", &"caelia", &"zephyr"] as Array[StringName],
+		"gacha_tokens": 0,
+		"unlocked_skins": {} as Dictionary,
+		"equipped_skins": {} as Dictionary
 	}
 
 
@@ -273,7 +298,10 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_pets": [] as Array[StringName],
 		"unlocked_endings": [] as Array[String],
 		"selected_navigator": StringName(str(raw.get("selected_navigator", "lyra"))),
-		"unlocked_navigators": [] as Array[StringName]
+		"unlocked_navigators": [] as Array[StringName],
+		"gacha_tokens": int(raw.get("gacha_tokens", 0)),
+		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
+		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary
 	}
 
 	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
@@ -1149,3 +1177,200 @@ static func _get_default_highscores() -> Array[Dictionary]:
 			"date": "2026-09-20 12:00"
 		}
 	]
+
+
+# ==============================================================================
+# GACHA & COSMÉTICOS (SKINS & 3-STAR PROGRESSION)
+# ==============================================================================
+
+static func get_gacha_tokens() -> int:
+	var profile := load_profile()
+	return int(profile.get("gacha_tokens", 0))
+
+static func add_gacha_tokens(amount: int) -> int:
+	if amount <= 0:
+		return get_gacha_tokens()
+	var profile := load_profile()
+	var current: int = int(profile.get("gacha_tokens", 0))
+	var new_total := current + amount
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
+	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
+
+	save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		new_total, unlocked_skins, equipped_skins
+	)
+	return new_total
+
+static func spend_gacha_tokens(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	var profile := load_profile()
+	var current: int = int(profile.get("gacha_tokens", 0))
+	if current < amount:
+		return false
+	var new_total := current - amount
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
+	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
+
+	save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		new_total, unlocked_skins, equipped_skins
+	)
+	return true
+
+static func get_unlocked_skins() -> Dictionary:
+	var profile := load_profile()
+	return profile.get("unlocked_skins", {})
+
+static func get_skin_stars(skin_id: String) -> int:
+	var skins := get_unlocked_skins()
+	if skins.has(skin_id):
+		var entry = skins[skin_id]
+		if entry is Dictionary:
+			return int(entry.get("stars", 1))
+		elif entry is int or entry is float:
+			return int(entry)
+	return 0
+
+static func unlock_or_upgrade_skin(skin_id: String) -> Dictionary:
+	var profile := load_profile()
+	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {}).duplicate(true)
+	var current_biomass: int = int(profile.get("biomass", 0))
+	var current_stars: int = 0
+	
+	if unlocked_skins.has(skin_id):
+		var entry = unlocked_skins[skin_id]
+		if entry is Dictionary:
+			current_stars = int(entry.get("stars", 1))
+		else:
+			current_stars = int(entry)
+	
+	var result := {
+		"skin_id": skin_id,
+		"previous_stars": current_stars,
+		"new_stars": current_stars,
+		"status": "new", # "new", "upgraded", "max_converted"
+		"biomass_awarded": 0
+	}
+	
+	if current_stars == 0:
+		unlocked_skins[skin_id] = {
+			"stars": 1,
+			"unlocked_at": Time.get_datetime_string_from_system(false, true)
+		}
+		result["new_stars"] = 1
+		result["status"] = "new"
+	elif current_stars < 3:
+		var next_stars := current_stars + 1
+		unlocked_skins[skin_id] = {
+			"stars": next_stars,
+			"unlocked_at": Time.get_datetime_string_from_system(false, true)
+		}
+		result["new_stars"] = next_stars
+		result["status"] = "upgraded"
+	else:
+		# Duplicado en 3★: Otorgar 150 Polvo Estelar (Biomasa para el árbol de talentos)
+		result["new_stars"] = 3
+		result["status"] = "max_converted"
+		result["biomass_awarded"] = 150
+		current_biomass += 150
+
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var tokens: int = int(profile.get("gacha_tokens", 0))
+	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
+
+	save_profile(
+		unlocked_items, bans, unlocked_chars, current_biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		tokens, unlocked_skins, equipped_skins
+	)
+	return result
+
+static func equip_skin(slot_key: String, skin_id: String) -> void:
+	var profile := load_profile()
+	var equipped: Dictionary = profile.get("equipped_skins", {}).duplicate(true)
+	equipped[slot_key] = skin_id
+
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var tokens: int = int(profile.get("gacha_tokens", 0))
+	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
+
+	save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		tokens, unlocked_skins, equipped
+	)
+
+static func get_equipped_skin(slot_key: String) -> String:
+	var profile := load_profile()
+	var equipped: Dictionary = profile.get("equipped_skins", {})
+	return str(equipped.get(slot_key, ""))
+
+static func get_equipped_skins() -> Dictionary:
+	var profile := load_profile()
+	return profile.get("equipped_skins", {})
+

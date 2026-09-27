@@ -77,6 +77,14 @@ var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
 var active_navigator_controller = null
+const InRunSlotMachineModalScript := preload("res://scenes/ui/modals/in_run_slot_machine_modal.gd")
+const SlotMachineRewardModalScript := preload("res://scenes/ui/modals/slot_machine_reward_modal.gd")
+const SlotMachineBeaconScript := preload("res://scenes/combat/satellite/slot_machine_beacon.gd")
+const SlotMachineChestScript := preload("res://scenes/combat/satellite/slot_machine_chest.gd")
+
+var current_slot_machine: Node2D = null
+var slot_machine_modal: CanvasLayer = null
+var slot_machine_reward_modal: CanvasLayer = null
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
 var _wave_encounter_pending: bool = false
@@ -120,6 +128,13 @@ func _ready() -> void:
 			add_child(arcana_modal)
 	if arcana_modal:
 		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
+
+	# Instanciar modales de la máquina tragamonedas in-run y cofre de recompensa
+	slot_machine_modal = InRunSlotMachineModalScript.new()
+	add_child(slot_machine_modal)
+
+	slot_machine_reward_modal = SlotMachineRewardModalScript.new()
+	add_child(slot_machine_reward_modal)
 
 	# Inicializar sistema de eventos de crisis dinámicas y banners
 	if not crisis_banner and crisis_alert_banner_scene:
@@ -843,6 +858,45 @@ func _check_wave_encounters() -> void:
 		# Oleadas pares (2, 4, 6, 8, 10): Jefes de Dominio
 		_spawn_wave_boss()
 
+	# Aparición de la Máquina Tragamonedas en las oleadas 3 y 7
+	if current_wave == 3 or current_wave == 7:
+		_spawn_slot_machine()
+
+func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.ZERO) -> void:
+	if current_slot_machine != null and is_instance_valid(current_slot_machine):
+		return
+	if not is_instance_valid(player):
+		return
+
+	if spawn_pos == Vector2.ZERO:
+		var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
+		spawn_pos = player.global_position + move_dir * 750.0
+
+	var beacon = SlotMachineBeaconScript.new()
+	beacon.global_position = spawn_pos
+	beacon.interacted.connect(_on_slot_machine_interacted)
+	beacon.exploded.connect(_on_slot_machine_exploded)
+	current_slot_machine = beacon
+	add_child(beacon)
+
+func _on_slot_machine_interacted(beacon: Node2D) -> void:
+	if slot_machine_modal and is_instance_valid(player):
+		slot_machine_modal.open_slot_machine(beacon, player)
+
+func _on_slot_machine_exploded(pos: Vector2) -> void:
+	if camera:
+		camera.add_trauma(0.65)
+	current_slot_machine = null
+
+	var chest = SlotMachineChestScript.new()
+	chest.global_position = pos
+	chest.chest_opened.connect(_on_slot_machine_chest_opened)
+	add_child(chest)
+
+func _on_slot_machine_chest_opened(chest: Node2D) -> void:
+	if slot_machine_reward_modal and is_instance_valid(player):
+		slot_machine_reward_modal.show_reward(chest, player)
+
 func _spawn_elite_herald() -> void:
 	if current_boss != null or not is_instance_valid(player) or not elite_herald_scene:
 		return
@@ -1061,6 +1115,10 @@ func _on_final_boss_defeated(route: String) -> void:
 	is_wave_11_cleared = true
 
 	SaveManager.record_ending(route)
+
+	# Fichas de Gacha: +3 por Pacifista o Genocida/Exterminador, +1 por victoria regular
+	var tokens_awarded := 3 if (route == "pacifist" or route == "slayer") else 1
+	SaveManager.add_gacha_tokens(tokens_awarded)
 
 	var ending_title := "FINAL NEUTRAL: EQUILIBRIO FRAGMENTADO"
 	var epilogue := "Sobreviviste tomando decisiones pragmáticas. El orden cósmico permanece en una frágil calma."
@@ -1433,6 +1491,10 @@ func is_any_combat_modal_active() -> bool:
 	if is_game_over_active():
 		return true
 	if is_character_stats_active():
+		return true
+	if slot_machine_modal and slot_machine_modal.visible:
+		return true
+	if slot_machine_reward_modal and slot_machine_reward_modal.visible:
 		return true
 	var reset_overlay = get_node_or_null("HoldToResetOverlay") as HoldToResetOverlay
 	if reset_overlay and (reset_overlay.visible or reset_overlay.current_hold > 0.0):

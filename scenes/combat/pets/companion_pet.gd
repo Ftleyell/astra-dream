@@ -1,6 +1,8 @@
 class_name CompanionPet
 extends Node2D
 
+const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+
 ## companion_pet.gd
 ## Mascota acompañante espacial que asiste al jugador en combate sin hitbox.
 ## Flota y orbita alegremente alrededor de la nave espacial ejecutando habilidades
@@ -63,11 +65,19 @@ func _apply_pet_visuals() -> void:
 	if not sprite:
 		sprite = get_node_or_null("Sprite2D") as Sprite2D
 	if sprite:
-		var tex: Texture2D = pet_data.get_icon_texture()
-		sprite.texture = tex
-		if tex:
+		var pet_id_str := String(pet_data.pet_id)
+		var equipped_skin_id: String = SaveManager.get_equipped_skin("pet:" + pet_id_str)
+		if not equipped_skin_id.is_empty():
+			var stars: int = SaveManager.get_skin_stars(equipped_skin_id)
+			CosmeticsManager.apply_skin_to_canvas_item(sprite, equipped_skin_id, stars)
+		else:
+			var tex: Texture2D = pet_data.get_icon_texture()
+			sprite.texture = tex
+			sprite.material = null
+			
+		if sprite.texture:
 			var target_px: float = 50.0
-			var max_dim: float = float(maxi(tex.get_width(), tex.get_height()))
+			var max_dim: float = float(maxi(sprite.texture.get_width(), sprite.texture.get_height()))
 			var s: float = target_px / maxf(1.0, max_dim)
 			sprite.scale = Vector2(s, s)
 		else:

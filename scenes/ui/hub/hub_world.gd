@@ -135,6 +135,9 @@ var trophy_holo_nodes: Array[MeshInstance3D] = []
 # Hologramas en terminales
 @onready var mission_holo_core: MeshInstance3D = get_node_or_null("Terminals/MissionTerminal/HoloCore")
 @onready var highscores_trophy_holo: MeshInstance3D = get_node_or_null("Terminals/HighScoresTerminal/TrophyHolo")
+var gacha_holo: MeshInstance3D = null
+var gacha_interactable: HubInteractable3D = null
+var gacha_modal: GachaModal = null
 var _idle_time: float = 0.0
 
 
@@ -146,6 +149,7 @@ func _ready() -> void:
 	_collect_and_verify_sprites()
 	_setup_interactables()
 	_setup_terminals()
+	_setup_gacha_terminal()
 	_apply_psychopop_styles()
 	_build_pilot_selector_buttons()
 	_update_materials_display()
@@ -199,6 +203,9 @@ func _process(delta: float) -> void:
 	if highscores_trophy_holo and is_instance_valid(highscores_trophy_holo):
 		highscores_trophy_holo.rotation.y += delta * 2.0
 		highscores_trophy_holo.position.y = 2.3 + sin(_idle_time * 2.0) * 0.06
+	if gacha_holo and is_instance_valid(gacha_holo):
+		gacha_holo.rotation.y += delta * 2.5
+		gacha_holo.position.y = 2.2 + sin(_idle_time * 2.8) * 0.08
 	for holo in trophy_holo_nodes:
 		if is_instance_valid(holo):
 			holo.rotation.y += delta * 1.8
@@ -538,6 +545,80 @@ func _setup_terminals() -> void:
 		btn_prompt_cancel.pressed.connect(_on_prompt_cancelled)
 
 
+func _setup_gacha_terminal() -> void:
+	var term_group := get_node_or_null("Terminals")
+	if not term_group:
+		term_group = Node3D.new()
+		term_group.name = "Terminals"
+		add_child(term_group)
+
+	var gacha_term := Node3D.new()
+	gacha_term.name = "GachaTerminal"
+	gacha_term.position = Vector3(0.0, 0.0, -6.5)
+	term_group.add_child(gacha_term)
+
+	# Base pedestal
+	var base_mesh := MeshInstance3D.new()
+	base_mesh.name = "GachaBase"
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 1.0
+	cyl.bottom_radius = 1.2
+	cyl.height = 0.5
+	base_mesh.mesh = cyl
+	
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.05, 0.04, 0.12, 1.0)
+	mat.emission_enabled = true
+	mat.emission = Color(0.0, 0.94, 1.0, 1.0)
+	mat.emission_energy_multiplier = 0.9
+	base_mesh.material_override = mat
+	gacha_term.add_child(base_mesh)
+
+	# Holographic Spinning Capsule
+	gacha_holo = MeshInstance3D.new()
+	gacha_holo.name = "GachaCapsuleHolo"
+	gacha_holo.position = Vector3(0, 2.2, 0)
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.38
+	sphere.height = 0.76
+	gacha_holo.mesh = sphere
+
+	var h_mat := StandardMaterial3D.new()
+	h_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	h_mat.albedo_color = Color(1.0, 0.84, 0.0, 0.8)
+	h_mat.emission_enabled = true
+	h_mat.emission = Color(1.0, 0.85, 0.2, 1.0)
+	h_mat.emission_energy_multiplier = 2.0
+	gacha_holo.material_override = h_mat
+	gacha_term.add_child(gacha_holo)
+
+	# Interactable 3D Area
+	var inter_script = preload("res://scenes/ui/hub/hub_interactable_3d.gd")
+	gacha_interactable = inter_script.new()
+	gacha_interactable.name = "Interactable_Gacha"
+	gacha_interactable.target_character_id = &"gacha"
+	gacha_interactable.interaction_title = "🎰 Máquina de Gacha (Cosméticos)"
+	gacha_interactable.interaction_radius = 2.8
+	gacha_interactable.prompt_offset_y = 2.4
+	gacha_term.add_child(gacha_interactable)
+	gacha_interactable.interacted.connect(_on_gacha_terminal_interacted)
+
+	# Instantiate Gacha Modal UI
+	var hub_ui := get_node_or_null("HubUI")
+	if hub_ui:
+		gacha_modal = GachaModal.new()
+		gacha_modal.name = "GachaModal"
+		hub_ui.add_child(gacha_modal)
+		gacha_modal.modal_closed.connect(_on_modal_closed)
+
+func _on_gacha_terminal_interacted(_interactable: HubInteractable3D, _player: Node3D) -> void:
+	_play_sfx("ui_click")
+	if gacha_modal:
+		if player_controller:
+			player_controller.is_movement_locked = true
+		gacha_modal.open_gacha_modal()
+
+
 const PetDataScript := preload("res://data/pets/pet_data.gd")
 const HubPetRoamerScript := preload("res://scenes/ui/hub/hub_pet_roamer.gd")
 
@@ -697,6 +778,8 @@ func _is_modal_active() -> bool:
 	if skill_tree_modal and skill_tree_modal.visible:
 		return true
 	if mission_prompt_modal and mission_prompt_modal.visible:
+		return true
+	if gacha_modal and gacha_modal.visible:
 		return true
 	return false
 
