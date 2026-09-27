@@ -232,6 +232,21 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_modal_active():
 		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+			if gacha_modal and gacha_modal.visible:
+				if gacha_modal.has_method("close_modal"):
+					gacha_modal.close_modal()
+				else:
+					gacha_modal._on_close_pressed()
+				get_viewport().set_input_as_handled()
+				return
+			if highscores_modal and highscores_modal.visible:
+				if highscores_modal.has_method("close_modal"):
+					highscores_modal.close_modal()
+				elif highscores_modal.has_method("hide"):
+					highscores_modal.hide()
+					_on_modal_closed()
+				get_viewport().set_input_as_handled()
+				return
 			if trophy_modal and trophy_modal.visible:
 				trophy_modal.close_modal()
 				get_viewport().set_input_as_handled()
@@ -249,6 +264,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 		return
+
 
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:

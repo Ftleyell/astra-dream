@@ -139,9 +139,21 @@ func _ready() -> void:
 	assert(hub.gacha_holo != null, "GachaCapsuleHolo debe estar vinculado")
 	assert(hub.gacha_interactable != null, "Interactable_Gacha debe estar activo")
 
+	# E) Probar que GachaModal responde a tecla ESC (ui_cancel) para cerrarse
+	hub.gacha_modal.open_gacha_modal()
+	assert(hub.gacha_modal.visible == true, "GachaModal debe abrirse y estar visible")
+	assert(hub._is_modal_active() == true, "El Hub debe reportar modal activo")
+	var esc_event := InputEventKey.new()
+	esc_event.pressed = true
+	esc_event.keycode = KEY_ESCAPE
+	hub._unhandled_input(esc_event)
+	assert(hub.gacha_modal.visible == false, "GachaModal debe cerrarse inmediatamente al presionar ESC")
+	assert(hub._is_modal_active() == false, "Ningún modal debe quedar activo tras presionar ESC")
+
 	hub._refresh_pedestal_skins()
 	hub.queue_free()
-	print("  ✓ TrophyRoom, Pedestal de Nyx y Alineación de Terminales (Arcade Gacha al centro) comprobados al 100%")
+	print("  ✓ TrophyRoom, Pedestal de Nyx, Alineación de Terminales y Cierre de Gacha con ESC comprobados al 100%")
+
 
 
 	print("\n=======================================================")

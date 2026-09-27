@@ -568,7 +568,25 @@ func _create_wardrobe_card(skin: Dictionary, is_unlocked: bool, stars: int, is_e
 	return frame
 
 
+func close_modal() -> void:
+	_on_close_pressed()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+		if _results_layer and _results_layer.visible:
+			_results_layer.hide()
+			_refresh_currency()
+			get_viewport().set_input_as_handled()
+			return
+		close_modal()
+		get_viewport().set_input_as_handled()
+
+
 func _on_close_pressed() -> void:
 	hide()
 	get_tree().paused = false
 	modal_closed.emit()
+
