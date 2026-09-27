@@ -663,7 +663,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_crimson_void_flipped.png"
     },
     "pilot_nova_cyber_neon": {
       "id": "pilot_nova_cyber_neon",
@@ -677,7 +679,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_cyber_neon_flipped.png"
     },
     "pilot_nova_solar_gold": {
       "id": "pilot_nova_solar_gold",
@@ -691,7 +695,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_solar_gold_flipped.png"
     },
     "pilot_nova_glacial_frost": {
       "id": "pilot_nova_glacial_frost",
@@ -705,7 +711,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_glacial_frost_flipped.png"
     },
     "pilot_nova_royal_amethyst": {
       "id": "pilot_nova_royal_amethyst",
@@ -719,7 +727,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_royal_amethyst_flipped.png"
     },
     "pilot_nova_emerald_matrix": {
       "id": "pilot_nova_emerald_matrix",
@@ -733,7 +743,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_nova_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nova_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nova_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nova_emerald_matrix_flipped.png"
     },
     "pilot_valentina_crimson_void": {
       "id": "pilot_valentina_crimson_void",
@@ -747,7 +759,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_crimson_void_flipped.png"
     },
     "pilot_valentina_cyber_neon": {
       "id": "pilot_valentina_cyber_neon",
@@ -761,7 +775,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_cyber_neon_flipped.png"
     },
     "pilot_valentina_solar_gold": {
       "id": "pilot_valentina_solar_gold",
@@ -775,7 +791,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_solar_gold_flipped.png"
     },
     "pilot_valentina_glacial_frost": {
       "id": "pilot_valentina_glacial_frost",
@@ -789,7 +807,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_glacial_frost_flipped.png"
     },
     "pilot_valentina_royal_amethyst": {
       "id": "pilot_valentina_royal_amethyst",
@@ -803,7 +823,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_royal_amethyst_flipped.png"
     },
     "pilot_valentina_emerald_matrix": {
       "id": "pilot_valentina_emerald_matrix",
@@ -817,7 +839,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_valentina_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_valentina_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_valentina_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_valentina_emerald_matrix_flipped.png"
     },
     "pilot_kira_crimson_void": {
       "id": "pilot_kira_crimson_void",
@@ -831,7 +855,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_crimson_void_flipped.png"
     },
     "pilot_kira_cyber_neon": {
       "id": "pilot_kira_cyber_neon",
@@ -845,7 +871,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_cyber_neon_flipped.png"
     },
     "pilot_kira_solar_gold": {
       "id": "pilot_kira_solar_gold",
@@ -859,7 +887,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_solar_gold_flipped.png"
     },
     "pilot_kira_glacial_frost": {
       "id": "pilot_kira_glacial_frost",
@@ -873,7 +903,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_glacial_frost_flipped.png"
     },
     "pilot_kira_royal_amethyst": {
       "id": "pilot_kira_royal_amethyst",
@@ -887,7 +919,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_royal_amethyst_flipped.png"
     },
     "pilot_kira_emerald_matrix": {
       "id": "pilot_kira_emerald_matrix",
@@ -901,7 +935,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_kira_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_kira_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_kira_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_kira_emerald_matrix_flipped.png"
     },
     "pilot_selene_crimson_void": {
       "id": "pilot_selene_crimson_void",
@@ -915,7 +951,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_crimson_void_flipped.png"
     },
     "pilot_selene_cyber_neon": {
       "id": "pilot_selene_cyber_neon",
@@ -929,7 +967,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_cyber_neon_flipped.png"
     },
     "pilot_selene_solar_gold": {
       "id": "pilot_selene_solar_gold",
@@ -943,7 +983,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_solar_gold_flipped.png"
     },
     "pilot_selene_glacial_frost": {
       "id": "pilot_selene_glacial_frost",
@@ -957,7 +999,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_glacial_frost_flipped.png"
     },
     "pilot_selene_royal_amethyst": {
       "id": "pilot_selene_royal_amethyst",
@@ -971,7 +1015,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_royal_amethyst_flipped.png"
     },
     "pilot_selene_emerald_matrix": {
       "id": "pilot_selene_emerald_matrix",
@@ -985,7 +1031,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_selene_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_selene_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_selene_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_selene_emerald_matrix_flipped.png"
     },
     "pilot_roxy_crimson_void": {
       "id": "pilot_roxy_crimson_void",
@@ -999,7 +1047,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_crimson_void_flipped.png"
     },
     "pilot_roxy_cyber_neon": {
       "id": "pilot_roxy_cyber_neon",
@@ -1013,7 +1063,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_cyber_neon_flipped.png"
     },
     "pilot_roxy_solar_gold": {
       "id": "pilot_roxy_solar_gold",
@@ -1027,7 +1079,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_solar_gold_flipped.png"
     },
     "pilot_roxy_glacial_frost": {
       "id": "pilot_roxy_glacial_frost",
@@ -1041,7 +1095,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_glacial_frost_flipped.png"
     },
     "pilot_roxy_royal_amethyst": {
       "id": "pilot_roxy_royal_amethyst",
@@ -1055,7 +1111,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_royal_amethyst_flipped.png"
     },
     "pilot_roxy_emerald_matrix": {
       "id": "pilot_roxy_emerald_matrix",
@@ -1069,7 +1127,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_roxy_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_roxy_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_roxy_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_roxy_emerald_matrix_flipped.png"
     },
     "pilot_echo_crimson_void": {
       "id": "pilot_echo_crimson_void",
@@ -1083,7 +1143,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_crimson_void_flipped.png"
     },
     "pilot_echo_cyber_neon": {
       "id": "pilot_echo_cyber_neon",
@@ -1097,7 +1159,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_cyber_neon_flipped.png"
     },
     "pilot_echo_solar_gold": {
       "id": "pilot_echo_solar_gold",
@@ -1111,7 +1175,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_solar_gold_flipped.png"
     },
     "pilot_echo_glacial_frost": {
       "id": "pilot_echo_glacial_frost",
@@ -1125,7 +1191,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_glacial_frost_flipped.png"
     },
     "pilot_echo_royal_amethyst": {
       "id": "pilot_echo_royal_amethyst",
@@ -1139,7 +1207,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_royal_amethyst_flipped.png"
     },
     "pilot_echo_emerald_matrix": {
       "id": "pilot_echo_emerald_matrix",
@@ -1153,7 +1223,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_echo_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_echo_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_echo_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_echo_emerald_matrix_flipped.png"
     },
     "pilot_nyx_crimson_void": {
       "id": "pilot_nyx_crimson_void",
@@ -1167,7 +1239,9 @@
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_crimson_void.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_crimson_void_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_crimson_void_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_crimson_void.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_crimson_void_flipped.png"
     },
     "pilot_nyx_cyber_neon": {
       "id": "pilot_nyx_cyber_neon",
@@ -1181,7 +1255,9 @@
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_cyber_neon.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_cyber_neon_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_cyber_neon_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_cyber_neon.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_cyber_neon_flipped.png"
     },
     "pilot_nyx_solar_gold": {
       "id": "pilot_nyx_solar_gold",
@@ -1195,7 +1271,9 @@
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_solar_gold.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_solar_gold_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_solar_gold_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_solar_gold.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_solar_gold_flipped.png"
     },
     "pilot_nyx_glacial_frost": {
       "id": "pilot_nyx_glacial_frost",
@@ -1209,7 +1287,9 @@
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_glacial_frost.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_glacial_frost_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_glacial_frost_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_glacial_frost.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_glacial_frost_flipped.png"
     },
     "pilot_nyx_royal_amethyst": {
       "id": "pilot_nyx_royal_amethyst",
@@ -1223,7 +1303,9 @@
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_royal_amethyst.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_royal_amethyst_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_royal_amethyst_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_royal_amethyst.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_royal_amethyst_flipped.png"
     },
     "pilot_nyx_emerald_matrix": {
       "id": "pilot_nyx_emerald_matrix",
@@ -1237,7 +1319,9 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/pilots/fullbody_nyx_emerald_matrix.png",
-      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_emerald_matrix_flipped.png"
+      "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_emerald_matrix_flipped.png",
+      "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_emerald_matrix.png",
+      "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_emerald_matrix_flipped.png"
     },
     "weapon_nova_crimson_void": {
       "id": "weapon_nova_crimson_void",
@@ -2006,7 +2090,8 @@
       "rarity": "rare",
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_crimson_void.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_crimson_void.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_crimson_void.png"
     },
     "pet_mochi_cyber_neon": {
       "id": "pet_mochi_cyber_neon",
@@ -2019,7 +2104,8 @@
       "rarity": "rare",
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_cyber_neon.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_cyber_neon.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_cyber_neon.png"
     },
     "pet_mochi_solar_gold": {
       "id": "pet_mochi_solar_gold",
@@ -2032,7 +2118,8 @@
       "rarity": "epic",
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_solar_gold.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_solar_gold.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_solar_gold.png"
     },
     "pet_mochi_glacial_frost": {
       "id": "pet_mochi_glacial_frost",
@@ -2045,7 +2132,8 @@
       "rarity": "common",
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_glacial_frost.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_glacial_frost.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_glacial_frost.png"
     },
     "pet_mochi_royal_amethyst": {
       "id": "pet_mochi_royal_amethyst",
@@ -2058,7 +2146,8 @@
       "rarity": "epic",
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_royal_amethyst.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_royal_amethyst.png"
     },
     "pet_mochi_emerald_matrix": {
       "id": "pet_mochi_emerald_matrix",
@@ -2071,7 +2160,8 @@
       "rarity": "common",
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
-      "texture_path": "res://assets/recolors/pets/pet_mochi_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/pets/pet_mochi_emerald_matrix.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_mochi_emerald_matrix.png"
     },
     "pet_kuro_crimson_void": {
       "id": "pet_kuro_crimson_void",
@@ -2084,7 +2174,8 @@
       "rarity": "rare",
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_crimson_void.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_crimson_void.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_crimson_void.png"
     },
     "pet_kuro_cyber_neon": {
       "id": "pet_kuro_cyber_neon",
@@ -2097,7 +2188,8 @@
       "rarity": "rare",
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_cyber_neon.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_cyber_neon.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_cyber_neon.png"
     },
     "pet_kuro_solar_gold": {
       "id": "pet_kuro_solar_gold",
@@ -2110,7 +2202,8 @@
       "rarity": "epic",
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_solar_gold.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_solar_gold.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_solar_gold.png"
     },
     "pet_kuro_glacial_frost": {
       "id": "pet_kuro_glacial_frost",
@@ -2123,7 +2216,8 @@
       "rarity": "common",
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_glacial_frost.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_glacial_frost.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_glacial_frost.png"
     },
     "pet_kuro_royal_amethyst": {
       "id": "pet_kuro_royal_amethyst",
@@ -2136,7 +2230,8 @@
       "rarity": "epic",
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_royal_amethyst.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_royal_amethyst.png"
     },
     "pet_kuro_emerald_matrix": {
       "id": "pet_kuro_emerald_matrix",
@@ -2149,7 +2244,8 @@
       "rarity": "common",
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
-      "texture_path": "res://assets/recolors/pets/pet_kuro_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/pets/pet_kuro_emerald_matrix.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_kuro_emerald_matrix.png"
     },
     "pet_luna_crimson_void": {
       "id": "pet_luna_crimson_void",
@@ -2162,7 +2258,8 @@
       "rarity": "rare",
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
-      "texture_path": "res://assets/recolors/pets/pet_luna_crimson_void.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_crimson_void.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_crimson_void.png"
     },
     "pet_luna_cyber_neon": {
       "id": "pet_luna_cyber_neon",
@@ -2175,7 +2272,8 @@
       "rarity": "rare",
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
-      "texture_path": "res://assets/recolors/pets/pet_luna_cyber_neon.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_cyber_neon.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_cyber_neon.png"
     },
     "pet_luna_solar_gold": {
       "id": "pet_luna_solar_gold",
@@ -2188,7 +2286,8 @@
       "rarity": "epic",
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
-      "texture_path": "res://assets/recolors/pets/pet_luna_solar_gold.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_solar_gold.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_solar_gold.png"
     },
     "pet_luna_glacial_frost": {
       "id": "pet_luna_glacial_frost",
@@ -2201,7 +2300,8 @@
       "rarity": "common",
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
-      "texture_path": "res://assets/recolors/pets/pet_luna_glacial_frost.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_glacial_frost.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_glacial_frost.png"
     },
     "pet_luna_royal_amethyst": {
       "id": "pet_luna_royal_amethyst",
@@ -2214,7 +2314,8 @@
       "rarity": "epic",
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
-      "texture_path": "res://assets/recolors/pets/pet_luna_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_royal_amethyst.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_royal_amethyst.png"
     },
     "pet_luna_emerald_matrix": {
       "id": "pet_luna_emerald_matrix",
@@ -2227,7 +2328,8 @@
       "rarity": "common",
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
-      "texture_path": "res://assets/recolors/pets/pet_luna_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/pets/pet_luna_emerald_matrix.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_luna_emerald_matrix.png"
     },
     "pet_pip_crimson_void": {
       "id": "pet_pip_crimson_void",
@@ -2240,7 +2342,8 @@
       "rarity": "rare",
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
-      "texture_path": "res://assets/recolors/pets/pet_pip_crimson_void.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_crimson_void.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_crimson_void.png"
     },
     "pet_pip_cyber_neon": {
       "id": "pet_pip_cyber_neon",
@@ -2253,7 +2356,8 @@
       "rarity": "rare",
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
-      "texture_path": "res://assets/recolors/pets/pet_pip_cyber_neon.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_cyber_neon.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_cyber_neon.png"
     },
     "pet_pip_solar_gold": {
       "id": "pet_pip_solar_gold",
@@ -2266,7 +2370,8 @@
       "rarity": "epic",
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
-      "texture_path": "res://assets/recolors/pets/pet_pip_solar_gold.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_solar_gold.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_solar_gold.png"
     },
     "pet_pip_glacial_frost": {
       "id": "pet_pip_glacial_frost",
@@ -2279,7 +2384,8 @@
       "rarity": "common",
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
-      "texture_path": "res://assets/recolors/pets/pet_pip_glacial_frost.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_glacial_frost.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_glacial_frost.png"
     },
     "pet_pip_royal_amethyst": {
       "id": "pet_pip_royal_amethyst",
@@ -2292,7 +2398,8 @@
       "rarity": "epic",
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
-      "texture_path": "res://assets/recolors/pets/pet_pip_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_royal_amethyst.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_royal_amethyst.png"
     },
     "pet_pip_emerald_matrix": {
       "id": "pet_pip_emerald_matrix",
@@ -2305,7 +2412,8 @@
       "rarity": "common",
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
-      "texture_path": "res://assets/recolors/pets/pet_pip_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/pets/pet_pip_emerald_matrix.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_pip_emerald_matrix.png"
     },
     "pet_cosmo_crimson_void": {
       "id": "pet_cosmo_crimson_void",
@@ -2318,7 +2426,8 @@
       "rarity": "rare",
       "glow_hex": "#FF6B8B",
       "accent_hex": "#FFA8B8",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_crimson_void.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_crimson_void.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_crimson_void.png"
     },
     "pet_cosmo_cyber_neon": {
       "id": "pet_cosmo_cyber_neon",
@@ -2331,7 +2440,8 @@
       "rarity": "rare",
       "glow_hex": "#70FFFF",
       "accent_hex": "#FF007F",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_cyber_neon.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_cyber_neon.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_cyber_neon.png"
     },
     "pet_cosmo_solar_gold": {
       "id": "pet_cosmo_solar_gold",
@@ -2344,7 +2454,8 @@
       "rarity": "epic",
       "glow_hex": "#FFF275",
       "accent_hex": "#FF9900",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_solar_gold.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_solar_gold.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_solar_gold.png"
     },
     "pet_cosmo_glacial_frost": {
       "id": "pet_cosmo_glacial_frost",
@@ -2357,7 +2468,8 @@
       "rarity": "common",
       "glow_hex": "#E0F2FE",
       "accent_hex": "#38BDF8",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_glacial_frost.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_glacial_frost.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_glacial_frost.png"
     },
     "pet_cosmo_royal_amethyst": {
       "id": "pet_cosmo_royal_amethyst",
@@ -2370,7 +2482,8 @@
       "rarity": "epic",
       "glow_hex": "#F3E8FF",
       "accent_hex": "#E879F9",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_royal_amethyst.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_royal_amethyst.png"
     },
     "pet_cosmo_emerald_matrix": {
       "id": "pet_cosmo_emerald_matrix",
@@ -2383,7 +2496,8 @@
       "rarity": "common",
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
-      "texture_path": "res://assets/recolors/pets/pet_cosmo_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/pets/pet_cosmo_emerald_matrix.png",
+      "portrait_texture_path": "res://assets/recolors/pets/pet_cosmo_emerald_matrix.png"
     },
     "navigator_lyra_crimson_void": {
       "id": "navigator_lyra_crimson_void",

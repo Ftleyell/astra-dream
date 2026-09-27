@@ -88,6 +88,49 @@ func _ready() -> void:
 	modal.queue_free()
 	print("  ✓ Cover Flow circular de skins y z-indexing verificado correctamente")
 
+	# 5. Verificación de HubWorld: TrophyRoom y Pedestal de Nyx en Escena
+	print("\n[5/5] Verificando HubWorld: TrophyRoom y Pedestal de Nyx...")
+	var hub_scene := load("res://scenes/ui/hub/hub_world.tscn")
+	assert(hub_scene != null, "HubWorld scene debe existir")
+	var hub = hub_scene.instantiate()
+	add_child(hub)
+	await get_tree().process_frame
+
+	# A) Verificar Sala de Trofeos
+	var trophy_room = hub.get_node_or_null("TrophyRoom")
+	assert(trophy_room != null, "TrophyRoom debe existir en la escena")
+	assert(trophy_room.get_child_count() == 5, "TrophyRoom debe contener los 5 pedestales de trofeos")
+	assert(hub.trophy_holo_nodes.size() == 5, "trophy_holo_nodes debe contener los 5 hologramas para animación")
+
+	# B) Verificar Pedestal y Cutout de Nyx
+	var ped_nyx: Node3D = hub.get_node_or_null("Pedestals/Pedestal_Nyx")
+	assert(ped_nyx != null, "Pedestal_Nyx debe existir en la escena (visible para el editor)")
+	var cutout_nyx: Sprite3D = hub.get_node_or_null("RosterCutouts/Cutout_Nyx")
+	assert(cutout_nyx != null, "Cutout_Nyx debe existir en la escena (visible para el editor)")
+	var inter_nyx: Area3D = hub.get_node_or_null("RosterCutouts/Interactable_Nyx")
+	assert(inter_nyx != null, "Interactable_Nyx debe existir en la escena")
+
+	# C) Probar comportamiento cuando Nyx está bloqueada vs desbloqueada
+	# Probar bloqueada:
+	SaveManager.lock_character(&"nyx")
+	hub._collect_and_verify_sprites()
+	hub._setup_interactables()
+	assert(cutout_nyx.visible == false, "Cuando Nyx está bloqueada en savegame, su cutout DEBE estar oculto")
+	assert(ped_nyx.visible == false, "Cuando Nyx está bloqueada en savegame, su pedestal DEBE estar oculto")
+	assert(inter_nyx.visible == false, "Cuando Nyx está bloqueada, su interactuable DEBE estar oculto")
+
+	# Probar desbloqueada:
+	SaveManager.unlock_character(&"nyx")
+	hub._collect_and_verify_sprites()
+	hub._setup_interactables()
+	assert(cutout_nyx.visible == true, "Cuando Nyx está desbloqueada en savegame, su cutout DEBE ser visible")
+	assert(ped_nyx.visible == true, "Cuando Nyx está desbloqueada en savegame, su pedestal DEBE ser visible")
+	assert(inter_nyx.visible == true, "Cuando Nyx está desbloqueada, su interactuable DEBE ser visible")
+
+	hub._refresh_pedestal_skins()
+	hub.queue_free()
+	print("  ✓ TrophyRoom (5 pedestales), Pedestal de Nyx y visibilidad dinámica comprobados al 100%")
+
 	print("\n=======================================================")
 	print("🎉 TODAS LAS VERIFICACIONES COMPLETADAS CON ÉXITO!")
 	print("=======================================================\n")

@@ -166,10 +166,28 @@ def generate_all():
                     total_generated += 1
                     rel_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_flipped.png"
             
-            # Also generate portrait as companion if needed
+            # Portraits (Normal and Flipped for in-game Dialogic dialogues)
+            src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
+            if not os.path.exists(src_portrait):
+                src_portrait = os.path.join(ASSETS_DIR, "portraits", f"portrait_{pilot}.png")
+            
+            src_portrait_flipped = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}_flipped.png")
+            if not os.path.exists(src_portrait_flipped):
+                src_portrait_flipped = os.path.join(ASSETS_DIR, "portraits", f"portrait_{pilot}_flipped.png")
+
+            rel_portrait = ""
             if os.path.exists(src_portrait):
                 dst_portrait = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}.png")
-                recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45)
+                if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45):
+                    total_generated += 1
+                    rel_portrait = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}.png"
+
+            rel_portrait_flipped = ""
+            if os.path.exists(src_portrait_flipped):
+                dst_portrait_flipped = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}_flipped.png")
+                if recolor_image(src_portrait_flipped, dst_portrait_flipped, pal["tint_rgb"], blend_factor=0.45):
+                    total_generated += 1
+                    rel_portrait_flipped = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}_flipped.png"
             
             skin_database["skins"][skin_id] = {
                 "id": skin_id,
@@ -183,7 +201,9 @@ def generate_all():
                 "glow_hex": pal["glow_hex"],
                 "accent_hex": pal["accent_hex"],
                 "texture_path": rel_path,
-                "flipped_texture_path": rel_flipped
+                "flipped_texture_path": rel_flipped,
+                "portrait_texture_path": rel_portrait,
+                "portrait_flipped_texture_path": rel_portrait_flipped
             }
 
     # 3. WEAPONS (PRIMARY PROJECTILE COLOR PALETTES)
@@ -229,7 +249,8 @@ def generate_all():
                 "rarity": pal["rarity"],
                 "glow_hex": pal["glow_hex"],
                 "accent_hex": pal["accent_hex"],
-                "texture_path": rel_path
+                "texture_path": rel_path,
+                "portrait_texture_path": rel_path
             }
 
     # 5. NAVIGATORS

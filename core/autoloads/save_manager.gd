@@ -704,6 +704,31 @@ static func unlock_character(char_id: StringName) -> bool:
 		return true
 	return false
 
+static func lock_character(char_id: StringName) -> bool:
+	var prof := load_profile()
+	var chars: Array[StringName] = []
+	var found: bool = false
+	for c in prof.get("unlocked_characters", []):
+		if StringName(str(c)) == char_id:
+			found = true
+		else:
+			chars.append(StringName(str(c)))
+	if found:
+		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
+		var bans: Dictionary = prof.get("character_banlists", {})
+		var bio: int = int(prof.get("biomass", 0))
+		var anti: int = int(prof.get("antimatter", 0))
+		var skills: Dictionary = prof.get("character_skills", {})
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var dm: int = int(prof.get("dark_matter", 0))
+		var trophies: Dictionary = prof.get("trophies_unlocked", {})
+		var spd: float = float(prof.get("game_speed", 1.0))
+		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
+		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
+		return true
+	return false
+
+
 
 # ==============================================================================
 # PETS & COMPANIONS PERSISTENCE

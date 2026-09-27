@@ -503,7 +503,12 @@ func _collect_and_verify_sprites() -> void:
 						mat.set_shader_parameter("pulse_speed", 3.0 if stars >= 3 else 2.0)
 						sprite.material_override = mat
 
+		var platform_ped: Node3D = get_node_or_null("Pedestals/Pedestal_" + char_id.capitalize())
+		if platform_ped:
+			platform_ped.visible = is_unlocked
+
 		sprite_nodes.append(sprite)
+
 
 
 func _setup_interactables() -> void:
@@ -694,7 +699,7 @@ func _refresh_pedestal_skins() -> void:
 		sprite.visible = is_unlocked
 		if not is_unlocked:
 			continue
-		var is_right_side: bool = char_data["pos"].x > 0.0
+		var is_right_side: bool = char_data.get("pedestal_pos", Vector3.ZERO).x > 0.0
 		var slot_key := "pilot:" + cid
 		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
 		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
@@ -724,9 +729,13 @@ func _refresh_pedestal_skins() -> void:
 			else:
 				sprite.material_override = null
 		else:
-			var base_tex: Texture2D = char_data.get("tex_flipped" if is_right_side else "tex")
-			if base_tex:
-				sprite.texture = base_tex
+			var fullbody_tex := ("res://assets/characters/fullbody/fullbody_%s_flipped.png" % cid) if is_right_side else ("res://assets/characters/fullbody/fullbody_%s.png" % cid)
+			if ResourceLoader.exists(fullbody_tex):
+				sprite.texture = load(fullbody_tex)
+			else:
+				var portrait_tex := "res://assets/portraits/portrait_%s.png" % cid
+				if ResourceLoader.exists(portrait_tex):
+					sprite.texture = load(portrait_tex)
 			sprite.material_override = null
 
 
@@ -1246,7 +1255,6 @@ func _setup_trophy_room() -> void:
 				elif "radius" in holo_mesh.mesh:
 					holo_mesh.mesh.set("radius", 0.25)
 			p_node.add_child(holo_mesh)
-			trophy_holo_nodes.append(holo_mesh)
 
 			# Interactuable 3D
 			var inter = inter_script.new()
@@ -1256,7 +1264,14 @@ func _setup_trophy_room() -> void:
 			inter.interaction_radius = 2.2
 			inter.prompt_offset_y = 1.6
 			p_node.add_child(inter)
-			inter.interacted.connect(_on_trophy_pedestal_interacted)
+
+		var holo_mesh_node: MeshInstance3D = p_node.get_node_or_null("HoloMesh")
+		if holo_mesh_node and not trophy_holo_nodes.has(holo_mesh_node):
+			trophy_holo_nodes.append(holo_mesh_node)
+
+		var inter_node = p_node.get_node_or_null("Interactable_" + String(tid))
+		if inter_node and inter_node.has_signal("interacted") and not inter_node.interacted.is_connected(_on_trophy_pedestal_interacted):
+			inter_node.interacted.connect(_on_trophy_pedestal_interacted)
 
 	_refresh_trophy_visuals()
 

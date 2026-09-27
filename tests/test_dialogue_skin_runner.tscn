@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dialogueskinrunner01"]
+
+[ext_resource type="Script" path="res://tests/test_dialogue_skin_suite.gd" id="1_test"]
+
+[node name="TestDialogueSkinRunner" type="Node"]
+script = ExtResource("1_test")

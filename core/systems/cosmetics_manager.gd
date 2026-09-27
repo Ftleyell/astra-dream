@@ -32,6 +32,11 @@ static func load_database() -> Dictionary:
 	_is_loaded = true
 	return _cached_database
 
+static func reload_database() -> Dictionary:
+	_cached_database.clear()
+	_is_loaded = false
+	return load_database()
+
 static func get_all_skins() -> Dictionary:
 	var db := load_database()
 	return db.get("skins", {})
@@ -166,4 +171,89 @@ static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level
 			mat.set_shader_parameter("glow_intensity", 1.8 if star_level >= 3 else 1.2)
 			mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
 			sprite.material_override = mat
+	return
 
+static func apply_skin_to_dialogue_portrait(portrait_node: Node, char_identifier: String, portrait_name: String) -> bool:
+	if not is_instance_valid(portrait_node):
+		return false
+
+	var char_id := char_identifier.to_lower().strip_edges()
+
+	# Determinar si el personaje que habla es el piloto activo o la mascota activa de la run
+	var active_pilot := ""
+	var active_pet := ""
+
+	var sm_script = load("res://core/autoloads/save_manager.gd")
+	if sm_script:
+		if sm_script.has_method("get_selected_character"):
+			active_pilot = String(sm_script.get_selected_character()).to_lower()
+		if sm_script.has_method("get_selected_pet"):
+			active_pet = String(sm_script.get_selected_pet()).to_lower()
+
+	var is_active_pilot := (not active_pilot.is_empty() and char_id == active_pilot)
+	var is_active_pet := (not active_pet.is_empty() and char_id == active_pet)
+
+	# Regla estricta a la run activa: solo el piloto y mascota del jugador reflejan skins en diálogo
+	if not is_active_pilot and not is_active_pet:
+		return false
+
+	var slot_key := ""
+	if is_active_pilot:
+		slot_key = "pilot:" + char_id
+	elif is_active_pet:
+		slot_key = "pet:" + char_id
+
+	var skin_id := ""
+	var stars := 1
+	if sm_script:
+		if sm_script.has_method("get_equipped_skin"):
+			skin_id = sm_script.get_equipped_skin(slot_key)
+		if sm_script.has_method("get_skin_stars") and not skin_id.is_empty():
+			stars = sm_script.get_skin_stars(skin_id)
+
+	if skin_id.is_empty():
+		return false
+
+	var skin_data := get_skin(skin_id)
+	if skin_data.is_empty():
+		return false
+
+	# Detectar orientación flipped
+	var is_flipped := false
+	var p_lower := portrait_name.to_lower()
+	if "flip" in p_lower:
+		is_flipped = true
+	elif portrait_node is Sprite2D and (portrait_node as Sprite2D).flip_h:
+		is_flipped = true
+
+	var tex_path := ""
+	if is_flipped:
+		tex_path = skin_data.get("portrait_flipped_texture_path", "")
+		if tex_path.is_empty():
+			tex_path = skin_data.get("flipped_texture_path", "")
+
+	if tex_path.is_empty():
+		tex_path = skin_data.get("portrait_texture_path", "")
+	if tex_path.is_empty():
+		tex_path = skin_data.get("texture_path", "")
+
+	if tex_path.is_empty():
+		return false
+
+	var tex := load_texture(tex_path)
+	if not tex:
+		return false
+
+	if portrait_node is Sprite2D:
+		var s := portrait_node as Sprite2D
+		s.texture = tex
+		if is_flipped and not skin_data.get("portrait_flipped_texture_path", "").is_empty():
+			s.flip_h = false
+	elif portrait_node is TextureRect:
+		(portrait_node as TextureRect).texture = tex
+
+	# Aplicar efectos de video / shader según el nivel de estrellas
+	if portrait_node is CanvasItem:
+		apply_skin_to_canvas_item(portrait_node as CanvasItem, skin_id, stars, false)
+
+	return true

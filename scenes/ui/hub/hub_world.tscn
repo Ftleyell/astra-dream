@@ -35,6 +35,7 @@
 [ext_resource type="PackedScene" uid="uid://dr0vu6kjg6rxu" path="res://assets/models/kenney_modular_space/template-wall.glb" id="37_wall_model"]
 [ext_resource type="PackedScene" uid="uid://br6q3srrtr7xs" path="res://assets/models/kenney_modular_space/template-wall-detail-a.glb" id="38_wall_detail_model"]
 [ext_resource type="PackedScene" uid="uid://cbiywrqe40ot7" path="res://assets/models/kenney_modular_space/template-wall-corner.glb" id="39_wall_corner_model"]
+[ext_resource type="Texture2D" uid="uid://dw4brto43jmim" path="res://assets/characters/fullbody/fullbody_nyx.png" id="8_nyx_tex"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -367,6 +368,45 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_base"]
+top_radius = 0.55
+bottom_radius = 0.65
+height = 0.4
+radial_segments = 32
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_base"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trophy_holo"]
+transparency = 1
+albedo_color = Color(0.75, 0.1, 1, 0.85)
+emission_enabled = true
+emission = Color(0.75, 0.1, 1, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="PrismMesh" id="PrismMesh_trophy_aegis"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="SphereMesh" id="SphereMesh_trophy_biosphere"]
+radius = 0.25
+height = 0.5
+radial_segments = 32
+rings = 16
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_trophy_cryo"]
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.45
+radial_segments = 32
+
+[sub_resource type="BoxMesh" id="BoxMesh_trophy_volcanic"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="PrismMesh" id="PrismMesh_trophy_monolith"]
+size = Vector3(0.45, 0.45, 0.45)
+
 [node name="HubWorld" type="Node3D" unique_id=801519808]
 script = ExtResource("1_hub")
 
@@ -651,6 +691,10 @@ mesh = ExtResource("26_kck51")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -0.3306169, 8)
 mesh = ExtResource("26_kck51")
 
+[node name="Pedestal_Nyx" type="MeshInstance3D" parent="Pedestals" unique_id=1447788991]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3004803, 10.5)
+mesh = ExtResource("26_kck51")
+
 [node name="RosterCutouts" type="Node3D" parent="." unique_id=1874363401]
 
 [node name="Cutout_Nova" type="Sprite3D" parent="RosterCutouts" unique_id=1218629768]
@@ -729,6 +773,117 @@ texture = ExtResource("7_echo")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.15, 8)
 script = ExtResource("10_interactable")
 target_character_id = &"echo"
+
+[node name="Cutout_Nyx" type="Sprite3D" parent="RosterCutouts" unique_id=1447788992]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 10.5)
+offset = Vector2(0, 800)
+pixel_size = 0.0013
+billboard = 2
+alpha_cut = 1
+texture = ExtResource("8_nyx_tex")
+
+[node name="Interactable_Nyx" type="Area3D" parent="RosterCutouts" unique_id=1447788993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 10.5)
+script = ExtResource("10_interactable")
+target_character_id = &"nyx"
+
+[node name="TrophyRoom" type="Node3D" parent="." unique_id=1447788994]
+
+[node name="Pedestal_trophy_boss_aegis" type="Node3D" parent="TrophyRoom" unique_id=1447788995]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.15, 13.5)
+
+[node name="BaseMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_boss_aegis" unique_id=1447788996]
+material_override = SubResource("StandardMaterial3D_trophy_base")
+mesh = SubResource("CylinderMesh_trophy_base")
+
+[node name="HoloMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_boss_aegis" unique_id=1447788997]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("StandardMaterial3D_trophy_holo")
+mesh = SubResource("PrismMesh_trophy_aegis")
+
+[node name="Interactable_trophy_boss_aegis" type="Area3D" parent="TrophyRoom/Pedestal_trophy_boss_aegis" unique_id=1447788998]
+script = ExtResource("10_interactable")
+target_character_id = &"trophy_boss_aegis"
+interaction_title = "Trofeo: Nodriza Aegis"
+interaction_radius = 2.2
+prompt_offset_y = 1.6
+
+[node name="Pedestal_trophy_biosphere_core" type="Node3D" parent="TrophyRoom" unique_id=1447788999]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 0.15, 13.5)
+
+[node name="BaseMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_biosphere_core" unique_id=1447789000]
+material_override = SubResource("StandardMaterial3D_trophy_base")
+mesh = SubResource("CylinderMesh_trophy_base")
+
+[node name="HoloMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_biosphere_core" unique_id=1447789001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("StandardMaterial3D_trophy_holo")
+mesh = SubResource("SphereMesh_trophy_biosphere")
+
+[node name="Interactable_trophy_biosphere_core" type="Area3D" parent="TrophyRoom/Pedestal_trophy_biosphere_core" unique_id=1447789002]
+script = ExtResource("10_interactable")
+target_character_id = &"trophy_biosphere_core"
+interaction_title = "Trofeo: Núcleo Bio-Planeta"
+interaction_radius = 2.2
+prompt_offset_y = 1.6
+
+[node name="Pedestal_trophy_cryo_core" type="Node3D" parent="TrophyRoom" unique_id=1447789003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 13.5)
+
+[node name="BaseMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_cryo_core" unique_id=1447789004]
+material_override = SubResource("StandardMaterial3D_trophy_base")
+mesh = SubResource("CylinderMesh_trophy_base")
+
+[node name="HoloMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_cryo_core" unique_id=1447789005]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("StandardMaterial3D_trophy_holo")
+mesh = SubResource("CylinderMesh_trophy_cryo")
+
+[node name="Interactable_trophy_cryo_core" type="Area3D" parent="TrophyRoom/Pedestal_trophy_cryo_core" unique_id=1447789006]
+script = ExtResource("10_interactable")
+target_character_id = &"trophy_cryo_core"
+interaction_title = "Trofeo: Núcleo Criogénico"
+interaction_radius = 2.2
+prompt_offset_y = 1.6
+
+[node name="Pedestal_trophy_volcanic_core" type="Node3D" parent="TrophyRoom" unique_id=1447789007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.15, 13.5)
+
+[node name="BaseMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_volcanic_core" unique_id=1447789008]
+material_override = SubResource("StandardMaterial3D_trophy_base")
+mesh = SubResource("CylinderMesh_trophy_base")
+
+[node name="HoloMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_volcanic_core" unique_id=1447789009]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("StandardMaterial3D_trophy_holo")
+mesh = SubResource("BoxMesh_trophy_volcanic")
+
+[node name="Interactable_trophy_volcanic_core" type="Area3D" parent="TrophyRoom/Pedestal_trophy_volcanic_core" unique_id=1447789010]
+script = ExtResource("10_interactable")
+target_character_id = &"trophy_volcanic_core"
+interaction_title = "Trofeo: Núcleo Volcánico"
+interaction_radius = 2.2
+prompt_offset_y = 1.6
+
+[node name="Pedestal_trophy_monolith_master" type="Node3D" parent="TrophyRoom" unique_id=1447789011]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.15, 13.5)
+
+[node name="BaseMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_monolith_master" unique_id=1447789012]
+material_override = SubResource("StandardMaterial3D_trophy_base")
+mesh = SubResource("CylinderMesh_trophy_base")
+
+[node name="HoloMesh" type="MeshInstance3D" parent="TrophyRoom/Pedestal_trophy_monolith_master" unique_id=1447789013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+material_override = SubResource("StandardMaterial3D_trophy_holo")
+mesh = SubResource("PrismMesh_trophy_monolith")
+
+[node name="Interactable_trophy_monolith_master" type="Area3D" parent="TrophyRoom/Pedestal_trophy_monolith_master" unique_id=1447789014]
+script = ExtResource("10_interactable")
+target_character_id = &"trophy_monolith_master"
+interaction_title = "Trofeo: Reliquia Monolito"
+interaction_radius = 2.2
+prompt_offset_y = 1.6
+
 
 [node name="PlayerController" type="CharacterBody3D" parent="." unique_id=1488853602]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
