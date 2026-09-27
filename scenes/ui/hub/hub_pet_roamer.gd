@@ -1,6 +1,9 @@
 class_name HubPetRoamer
 extends Node3D
 
+const SaveManager = preload("res://core/autoloads/save_manager.gd")
+
+
 ## HubPetRoamer.gd
 ## Mascota dron felina en 3D para el Hangar Espacial.
 ## Se desplaza de forma autónoma en el área central con saltitos y animación idle.
@@ -33,27 +36,13 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	# Sprite3D del gatito
 	sprite = Sprite3D.new()
 	sprite.name = "PetSprite"
-	var tex: Texture2D = pet_data.get_icon_texture() if pet_data else null
-	sprite.texture = tex
-
-	if pet_data:
-		var pid_str := String(pet_data.pet_id).to_lower()
-		var slot_key := "pet:" + pid_str
-		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
-		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
-			var stars := SaveManager.get_skin_stars(equipped_skin)
-			var CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
-			CosmeticsManagerScript.apply_skin_to_sprite3d(sprite, equipped_skin, stars)
-			tex = sprite.texture
-
-	var tex_h: float = float(tex.get_height()) if is_instance_valid(tex) else 64.0
-	sprite.pixel_size = 0.012 * (64.0 / maxf(1.0, tex_h))
-	sprite.offset = Vector2(0, tex_h * 0.5)
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	sprite.render_priority = 2
 	sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(sprite)
+
+	update_skin()
 
 	# Sombra suave bajo la mascota
 	shadow = MeshInstance3D.new()
@@ -109,3 +98,24 @@ func _pick_new_target() -> Vector3:
 		FLOOR_Y,
 		randf_range(CENTER_MIN_Z, CENTER_MAX_Z)
 	)
+
+func update_skin() -> void:
+	if not is_instance_valid(sprite) or not pet_data:
+		return
+	var tex: Texture2D = pet_data.get_icon_texture()
+	var pid_str := String(pet_data.pet_id).to_lower()
+	var slot_key := "pet:" + pid_str
+	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+		var stars := SaveManager.get_skin_stars(equipped_skin)
+		var CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
+		CosmeticsManagerScript.apply_skin_to_sprite3d(sprite, equipped_skin, stars)
+		tex = sprite.texture
+	else:
+		sprite.texture = tex
+		sprite.material_override = null
+
+	var tex_h: float = float(tex.get_height()) if is_instance_valid(tex) else 64.0
+	sprite.pixel_size = 0.012 * (64.0 / maxf(1.0, tex_h))
+	sprite.offset = Vector2(0, tex_h * 0.5)
+

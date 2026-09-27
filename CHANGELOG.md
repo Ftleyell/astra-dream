@@ -3,6 +3,28 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.4.2] - 2026-09-27 — Armario de Cosméticos, Carrusel de Navegantes, Shaders 3D en Hub y Blindaje de Savegame
+
+### Añadido
+* **Shader Spatial 3D con Billboarding Esférico (`skin_glow_spatial.gdshader`):**
+  * Implementada función de transformación de vértices `vertex()` con billboard esférico dinámico que preserva la escala del nodo y garantiza que los Sprite3D en el Hangar miren siempre a la cámara.
+  * Mascotas errantes (`HubPetRoamer`) y pedestales holográficos de pilotos en el Hub 2.5D ahora reflejan los aspectos equipados con sus auras pulsantes de 2★ y 3★ sin cortes ni distorsiones angulares.
+* **Refresco en Caliente del Hangar 3D tras Salir de Menús:**
+  * Métodos `update_skin()` en `HubPetRoamer` y `_refresh_pedestal_skins()` en `HubWorld` invocados automáticamente al cerrar cualquier ventana modal (Gacha, Selección de Personaje, Árbol de Talentos, etc.).
+* **Suite de Pruebas Automatizadas de Cosméticos y Guardado:**
+  * Añadido runner `tests/test_skin_carousel_and_save_runner.tscn` y suite de verificación para persistencia de skins, equipamiento, billboarding 3D y layout de Cover Flow.
+
+### Corregido
+* **Blindaje Crítico de Guardado en `SaveManager`:**
+  * Carga incondicional de `existing_prof = load_profile()` en `save_profile()`. Se elimina el riesgo de que llamadas parciales (fin de incursión, ajustes de velocidad de juego o compra de talentos) sobreescriban `unlocked_skins`, `equipped_skins` o `gacha_tokens` con diccionarios vacíos.
+* **Profundidad y Resplandor del Carrusel de Skins de Navegantes (`NavigatorSelectionModal`):**
+  * Disposición Cover Flow perfeccionada: separación negativa (`-45px`) en `CardsRow` para ubicar las cartas laterales ligeramente por detrás del círculo central.
+  * Asignación jerárquica de `z_index` (`artwork_frame.z_index = 2`, cartas laterales en `0` con modulación atenuada `Color(0.75, 0.82, 0.95, 0.65)`).
+  * Ocultamiento automático de los textos "ANTERIOR" / "SIGUIENTE" en modo aspectos circulares para evitar que se superpongan a los retratos de las navegantes.
+  * Removido `clip_contents = true` en `ArtworkFrame` para permitir que el resplandor y halo luminoso holográfico (`shadow_size = 18`) se expanda de forma continua y suave sin cortes rectangulares en sus bordes.
+* **Fallback Robusto en Selección de Personajes (`CharacterSelectUI`):**
+  * Prevención de texturas nulas al equipar aspectos no cargados, garantizando la visualización continua de los sprites y retratos de cada piloto.
+
 ---
 
 ## [0.4.1] - 2026-09-25 — Pantalla de Game Over, Secuencia de Muerte y Controles de Despliegue

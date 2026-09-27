@@ -198,7 +198,6 @@ vertical_alignment = 1
 
 [node name="ArtworkFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow"]
 z_index = 1
-clip_contents = true
 custom_minimum_size = Vector2(240, 480)
 layout_mode = 2
 size_flags_vertical = 4

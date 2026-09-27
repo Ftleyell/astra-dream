@@ -658,9 +658,13 @@ func _setup_hub_pets() -> void:
 		pets_group = Node3D.new()
 		pets_group.name = "HubPets"
 		add_child(pets_group)
-	else:
-		for c in pets_group.get_children():
-			c.queue_free()
+
+	var existing_roamers := pets_group.get_children()
+	if not existing_roamers.is_empty():
+		for roamer in existing_roamers:
+			if roamer.has_method("update_skin"):
+				roamer.update_skin()
+		return
 
 	var roster := PetDataScript.load_roster_ordered()
 	for p_data in roster:
@@ -677,6 +681,54 @@ func _setup_hub_pets() -> void:
 			randf_range(0.0, 6.0)
 		)
 		roamer.setup(p_data, spawn_pos)
+
+
+func _refresh_pedestal_skins() -> void:
+	for i in range(min(PILOT_ROSTER.size(), sprite_nodes.size())):
+		var char_data: Dictionary = PILOT_ROSTER[i]
+		var cid: String = String(char_data["id"])
+		var sprite := sprite_nodes[i]
+		if not is_instance_valid(sprite):
+			continue
+		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
+		sprite.visible = is_unlocked
+		if not is_unlocked:
+			continue
+		var is_right_side: bool = char_data["pos"].x > 0.0
+		var slot_key := "pilot:" + cid
+		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+			var stars := SaveManager.get_skin_stars(equipped_skin)
+			var CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
+			var skin_info: Dictionary = CosmeticsManagerScript.get_skin(equipped_skin)
+			var tex_path: String = skin_info.get("flipped_texture_path", "") if is_right_side else skin_info.get("texture_path", "")
+			if tex_path.is_empty():
+				tex_path = skin_info.get("texture_path", "")
+			var custom_tex := CosmeticsManagerScript.load_texture(tex_path)
+			if custom_tex:
+				sprite.texture = custom_tex
+			if stars > 1:
+				var spatial_shader = load("res://shaders/skin_glow_spatial.gdshader")
+				if spatial_shader:
+					var mat := ShaderMaterial.new()
+					mat.shader = spatial_shader
+					mat.set_shader_parameter("texture_albedo", sprite.texture)
+					mat.set_shader_parameter("star_level", stars)
+					var glow_hex: String = skin_info.get("glow_hex", "#00F0FF")
+					var accent_hex: String = skin_info.get("accent_hex", "#FF007F")
+					mat.set_shader_parameter("glow_color", Color.from_string(glow_hex, Color.CYAN))
+					mat.set_shader_parameter("accent_color", Color.from_string(accent_hex, Color.MAGENTA))
+					mat.set_shader_parameter("glow_intensity", 1.8 if stars >= 3 else 1.2)
+					mat.set_shader_parameter("pulse_speed", 3.0 if stars >= 3 else 2.0)
+					sprite.material_override = mat
+			else:
+				sprite.material_override = null
+		else:
+			var base_tex: Texture2D = char_data.get("tex_flipped" if is_right_side else "tex")
+			if base_tex:
+				sprite.texture = base_tex
+			sprite.material_override = null
+
 
 
 
@@ -796,6 +848,9 @@ func _on_modal_closed() -> void:
 	_update_materials_display()
 	_update_dark_matter_display()
 	_refresh_trophy_visuals()
+	_setup_hub_pets()
+	_refresh_pedestal_skins()
+
 
 
 func _is_modal_active() -> bool:

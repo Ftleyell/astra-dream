@@ -484,18 +484,20 @@ func _select_character(char_id: StringName) -> void:
 		if not pilot_skin_id.is_empty():
 			var stars := SaveManager.get_skin_stars(pilot_skin_id)
 			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, pilot_skin_id, stars)
-			fullbody_texture.flip_h = true
-			fullbody_texture.visible = true
 		else:
 			fullbody_texture.material = null
+			fullbody_texture.texture = null
+
+		if fullbody_texture.texture == null and data:
 			var fb_tex := data.get_fullbody_texture(false)
 			if not fb_tex:
 				fb_tex = data.get_fullbody_texture(true)
 			if not fb_tex:
 				fb_tex = data.get_portrait_texture()
 			fullbody_texture.texture = fb_tex
-			fullbody_texture.flip_h = true
-			fullbody_texture.visible = (fb_tex != null)
+
+		fullbody_texture.flip_h = true
+		fullbody_texture.visible = (fullbody_texture.texture != null)
 
 	if backlight_glow:
 		var glow_col: Color = data.color if data else Color(0.2, 0.9, 1.0)

@@ -28,9 +28,8 @@ static func save_profile(
 	p_unlocked_skins: Variant = null,
 	p_equipped_skins: Variant = null
 ) -> Error:
-	var existing_prof: Dictionary = {}
-	if p_game_speed <= 0.0 or p_skills == null or p_selected_char == &"" or p_career_stats == null:
-		existing_prof = load_profile()
+	var existing_prof: Dictionary = load_profile()
+
 
 	var current_speed: float = p_game_speed
 	if current_speed <= 0.0:

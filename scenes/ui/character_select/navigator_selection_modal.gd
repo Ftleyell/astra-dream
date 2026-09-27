@@ -12,6 +12,7 @@ signal closed()
 @onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/PrevButton
 @onready var next_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/NextButton
 
+@onready var cards_row: HBoxContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow
 @onready var left_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard
 @onready var left_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftTexture
 @onready var left_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftLabel
@@ -459,7 +460,11 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 		return
 
 	if is_skin:
-		# Modo Skins: carrusel redondo circular holográfico como las pets
+		# Modo Skins: carrusel circular holográfico estilo Cover Flow
+		if cards_row:
+			cards_row.add_theme_constant_override("separation", -45)
+
+		artwork_frame.z_index = 2
 		artwork_frame.custom_minimum_size = Vector2(260, 260)
 		artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var af_sb := StyleBoxFlat.new()
@@ -467,11 +472,13 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 		af_sb.border_color = theme_color
 		af_sb.set_border_width_all(3)
 		af_sb.set_corner_radius_all(130) # Redondo / Circular
-		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.35)
-		af_sb.shadow_size = 14
+		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+		af_sb.shadow_size = 18
 		artwork_frame.add_theme_stylebox_override("panel", af_sb)
 
 		if left_card:
+			left_card.z_index = 0
+			left_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
 			left_card.custom_minimum_size = Vector2(150, 150)
 			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
@@ -482,8 +489,12 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 			left_card.add_theme_stylebox_override("normal", side_sb)
 			left_card.add_theme_stylebox_override("hover", side_sb)
 			left_card.add_theme_stylebox_override("pressed", side_sb)
+		if left_label:
+			left_label.visible = false
 
 		if right_card:
+			right_card.z_index = 0
+			right_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
 			right_card.custom_minimum_size = Vector2(150, 150)
 			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
@@ -494,8 +505,14 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 			right_card.add_theme_stylebox_override("normal", side_sb)
 			right_card.add_theme_stylebox_override("hover", side_sb)
 			right_card.add_theme_stylebox_override("pressed", side_sb)
+		if right_label:
+			right_label.visible = false
 	else:
 		# Modo Navegadoras: marco esbelto y proporcionado para fullbody
+		if cards_row:
+			cards_row.add_theme_constant_override("separation", 12)
+
+		artwork_frame.z_index = 1
 		artwork_frame.custom_minimum_size = Vector2(240, 480)
 		artwork_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		var af_sb := StyleBoxFlat.new()
@@ -508,6 +525,8 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 		artwork_frame.add_theme_stylebox_override("panel", af_sb)
 
 		if left_card:
+			left_card.z_index = 0
+			left_card.modulate = Color.WHITE
 			left_card.custom_minimum_size = Vector2(150, 400)
 			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
@@ -518,8 +537,12 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 			left_card.add_theme_stylebox_override("normal", side_sb)
 			left_card.add_theme_stylebox_override("hover", side_sb)
 			left_card.add_theme_stylebox_override("pressed", side_sb)
+		if left_label:
+			left_label.visible = true
 
 		if right_card:
+			right_card.z_index = 0
+			right_card.modulate = Color.WHITE
 			right_card.custom_minimum_size = Vector2(150, 400)
 			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			var side_sb := StyleBoxFlat.new()
@@ -530,6 +553,8 @@ func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
 			right_card.add_theme_stylebox_override("normal", side_sb)
 			right_card.add_theme_stylebox_override("hover", side_sb)
 			right_card.add_theme_stylebox_override("pressed", side_sb)
+		if right_label:
+			right_label.visible = true
 
 func _update_dots(active_color: Color, active_idx: int) -> void:
 	for i in range(_nav_buttons.size()):

@@ -8,6 +8,17 @@ uniform vec4 accent_color : source_color = vec4(1.0, 0.0, 0.5, 1.0);
 uniform float glow_intensity : hint_range(0.0, 5.0) = 1.5;
 uniform float pulse_speed : hint_range(0.1, 10.0) = 2.5;
 
+void vertex() {
+	// Spherical camera-facing billboard keeping node scaling
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(
+		vec4(normalize(INV_VIEW_MATRIX[0].xyz) * length(MODEL_MATRIX[0].xyz), 0.0),
+		vec4(normalize(INV_VIEW_MATRIX[1].xyz) * length(MODEL_MATRIX[1].xyz), 0.0),
+		vec4(normalize(INV_VIEW_MATRIX[2].xyz) * length(MODEL_MATRIX[2].xyz), 0.0),
+		MODEL_MATRIX[3]
+	);
+	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
+}
+
 void fragment() {
 	vec4 tex_color = texture(texture_albedo, UV);
 	if (tex_color.a < 0.05) {
