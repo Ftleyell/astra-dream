@@ -74,8 +74,10 @@ var _item_cards: Dictionary = {}
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
+		var vp := get_viewport()
+		if vp:
+			vp.set_input_as_handled()
 		get_tree().change_scene_to_file("res://scenes/ui/character_select/character_select.tscn")
-		get_viewport().set_input_as_handled()
 
 func _refresh_banlist_ui() -> void:
 	var active_bans: Array[StringName] = _get_current_character_bans()
