@@ -132,12 +132,14 @@ var trophy_holo_nodes: Array[MeshInstance3D] = []
 @onready var parallax_mid: MeshInstance3D = get_node_or_null("SpaceParallax/Layer1_Mid")
 @onready var parallax_deep: MeshInstance3D = get_node_or_null("SpaceParallax/Layer0_Deep")
 
+const GachaModalScript := preload("res://scenes/ui/gacha/gacha_modal.gd")
+
 # Hologramas en terminales
 @onready var mission_holo_core: MeshInstance3D = get_node_or_null("Terminals/MissionTerminal/HoloCore")
 @onready var highscores_trophy_holo: MeshInstance3D = get_node_or_null("Terminals/HighScoresTerminal/TrophyHolo")
 var gacha_holo: MeshInstance3D = null
 var gacha_interactable: HubInteractable3D = null
-var gacha_modal: GachaModal = null
+var gacha_modal: CanvasLayer = null
 var _idle_time: float = 0.0
 
 
@@ -606,7 +608,7 @@ func _setup_gacha_terminal() -> void:
 	# Instantiate Gacha Modal UI
 	var hub_ui := get_node_or_null("HubUI")
 	if hub_ui:
-		gacha_modal = GachaModal.new()
+		gacha_modal = GachaModalScript.new()
 		gacha_modal.name = "GachaModal"
 		hub_ui.add_child(gacha_modal)
 		gacha_modal.modal_closed.connect(_on_modal_closed)
