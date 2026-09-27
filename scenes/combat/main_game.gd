@@ -879,9 +879,11 @@ func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.ZERO) -> void:
 	current_slot_machine = beacon
 	add_child(beacon)
 
-func _on_slot_machine_interacted(beacon: Node2D) -> void:
-	if slot_machine_modal and is_instance_valid(player):
-		slot_machine_modal.open_slot_machine(beacon, player)
+func _on_slot_machine_interacted(_beacon: Node2D) -> void:
+	# La máquina tragamonedas in-run es un bumper arcade 100% in-game:
+	# Rebota al jugador físicamente, gira los rodillos sobre la máquina y entrega
+	# premios en tiempo real sin pausar la partida ni abrir ventanas modales.
+	pass
 
 func _on_slot_machine_exploded(pos: Vector2) -> void:
 	if camera:
