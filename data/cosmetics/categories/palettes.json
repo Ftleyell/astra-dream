@@ -1,0 +1,106 @@
+{
+  "palettes": {
+    "crimson_void": {
+      "name": "Carmesí del Vacío",
+      "description": "Fusión de plasma carmesí y energía del vacío.",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "secondary_rgb": [
+        138,
+        0,
+        34
+      ],
+      "rarity": "rare"
+    },
+    "cyber_neon": {
+      "name": "Ciberneón",
+      "description": "Luminiscencia cian eléctrica y pulsos cyberpunk.",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "secondary_rgb": [
+        0,
+        85,
+        170
+      ],
+      "rarity": "rare"
+    },
+    "solar_gold": {
+      "name": "Oro Solar",
+      "description": "Blindaje forjado con radiación y oro estelar.",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "secondary_rgb": [
+        204,
+        136,
+        0
+      ],
+      "rarity": "epic"
+    },
+    "glacial_frost": {
+      "name": "Glaciar Ártico",
+      "description": "Cristales de hielo cósmico a cero absoluto.",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "secondary_rgb": [
+        2,
+        132,
+        199
+      ],
+      "rarity": "common"
+    },
+    "royal_amethyst": {
+      "name": "Amatista Real",
+      "description": "Resonancia mística de cuarzo púrpura profundo.",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "secondary_rgb": [
+        107,
+        33,
+        168
+      ],
+      "rarity": "epic"
+    },
+    "emerald_matrix": {
+      "name": "Matriz Esmeralda",
+      "description": "Nanomáquinas bio-sintéticas de flujo esmeralda.",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "secondary_rgb": [
+        6,
+        95,
+        70
+      ],
+      "rarity": "common"
+    }
+  }
+}

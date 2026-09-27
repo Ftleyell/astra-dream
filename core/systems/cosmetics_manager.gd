@@ -2,6 +2,15 @@ class_name CosmeticsManager
 extends RefCounted
 
 const DATABASE_PATH := "res://data/cosmetics/skin_database.json"
+const CATEGORIES_DIR := "res://data/cosmetics/categories"
+const CATEGORY_FILES := {
+	"ship": "res://data/cosmetics/categories/skins_ships.json",
+	"pilot": "res://data/cosmetics/categories/skins_pilots.json",
+	"weapon": "res://data/cosmetics/categories/skins_weapons.json",
+	"pet": "res://data/cosmetics/categories/skins_pets.json",
+	"navigator": "res://data/cosmetics/categories/skins_navigators.json",
+}
+const PALETTES_FILE := "res://data/cosmetics/categories/palettes.json"
 const GLOW_SHADER := preload("res://shaders/skin_glow_vfx.gdshader")
 
 static var _cached_database: Dictionary = {}
@@ -11,26 +20,60 @@ static func load_database() -> Dictionary:
 	if _is_loaded and not _cached_database.is_empty():
 		return _cached_database
 
-	if not FileAccess.file_exists(DATABASE_PATH):
-		push_warning("CosmeticsManager: Database not found at %s" % DATABASE_PATH)
-		return {}
+	# Cargar desde la arquitectura modular fragmentada por categorías
+	if FileAccess.file_exists(PALETTES_FILE):
+		var merged_db: Dictionary = {"version": "1.0", "palettes": {}, "skins": {}}
+		var pal_file := FileAccess.open(PALETTES_FILE, FileAccess.READ)
+		if pal_file:
+			var p_data = JSON.parse_string(pal_file.get_as_text())
+			if p_data is Dictionary:
+				merged_db["palettes"] = p_data.get("palettes", {})
+			pal_file.close()
 
-	var file := FileAccess.open(DATABASE_PATH, FileAccess.READ)
-	if not file:
-		return {}
+		for cat_path in CATEGORY_FILES.values():
+			if FileAccess.file_exists(cat_path):
+				var c_file := FileAccess.open(cat_path, FileAccess.READ)
+				if c_file:
+					var c_data = JSON.parse_string(c_file.get_as_text())
+					if c_data is Dictionary and c_data.has("skins"):
+						var cat_skins: Dictionary = c_data["skins"]
+						for sid in cat_skins.keys():
+							merged_db["skins"][sid] = cat_skins[sid]
+					c_file.close()
 
-	var json_str := file.get_as_text()
-	file.close()
+		if not merged_db["skins"].is_empty():
+			_cached_database = merged_db
+			_is_loaded = true
+			return _cached_database
 
-	var parser := JSON.new()
-	var err := parser.parse(json_str)
-	if err != OK or not (parser.data is Dictionary):
-		push_error("CosmeticsManager: JSON parse error in %s" % DATABASE_PATH)
-		return {}
+	# Fallback a archivo monolítico legado si existiera
+	if FileAccess.file_exists(DATABASE_PATH):
+		var file := FileAccess.open(DATABASE_PATH, FileAccess.READ)
+		if file:
+			var parser := JSON.new()
+			var err := parser.parse(file.get_as_text())
+			file.close()
+			if err == OK and parser.data is Dictionary:
+				_cached_database = parser.data
+				_is_loaded = true
+				return _cached_database
 
-	_cached_database = parser.data
-	_is_loaded = true
-	return _cached_database
+	push_warning("CosmeticsManager: Database not found")
+	return {}
+
+static func get_category_skins(category: String) -> Dictionary:
+	var path: String = CATEGORY_FILES.get(category, "")
+	if path != "" and FileAccess.file_exists(path):
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f:
+			var d = JSON.parse_string(f.get_as_text())
+			f.close()
+			if d is Dictionary and d.has("skins"):
+				return d["skins"]
+	var result: Dictionary = {}
+	for s in get_skins_by_category(category):
+		result[s.get("id", "")] = s
+	return result
 
 static func reload_database() -> Dictionary:
 	_cached_database.clear()

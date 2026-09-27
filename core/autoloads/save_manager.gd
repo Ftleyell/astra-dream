@@ -1,6 +1,9 @@
 extends Node
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const SaveSkinsModule = preload("res://core/autoloads/save_modules/save_skins_module.gd")
+const SaveRosterModule = preload("res://core/autoloads/save_modules/save_roster_module.gd")
+const SaveActiveRunModule = preload("res://core/autoloads/save_modules/save_active_run_module.gd")
 
 static var is_resuming_run: bool = false
 
@@ -392,6 +395,19 @@ static func add_biomass(amount: int) -> int:
 static func add_test_biomass(amount: int = 100) -> int:
 	return add_biomass(amount)
 
+static func set_biomass(amount: int) -> void:
+	var profile := load_profile()
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	save_profile(unlocked_items, bans, unlocked_chars, maxi(0, amount), antimatter, skills, sel_char, dark_matter, trophies)
+
+
 static func get_antimatter() -> int:
 	var profile := load_profile()
 	return int(profile.get("antimatter", 0))
@@ -735,133 +751,36 @@ static func lock_character(char_id: StringName) -> bool:
 # ==============================================================================
 
 static func get_selected_pet() -> StringName:
-	var prof := load_profile()
-	var pet := StringName(str(prof.get("selected_pet", "mochi")))
-	if not is_pet_unlocked(pet):
-		return &"mochi"
-	return pet
+	return SaveRosterModule.get_selected_pet(load_profile(), is_pet_unlocked)
 
 static func set_selected_pet(pet_id: StringName) -> void:
-	if pet_id == &"":
-		return
-	var prof := load_profile()
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = prof.get("unlocked_characters", [])
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, pet_id, unlocked_pets)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveRosterModule.set_selected_pet(pet_id, self_class)
 
 static func get_unlocked_pets() -> Array[StringName]:
-	var prof := load_profile()
-	var raw_pets: Array = prof.get("unlocked_pets", [&"mochi", &"kuro", &"luna", &"pip"])
-	var res: Array[StringName] = []
-	for p in raw_pets:
-		res.append(StringName(str(p)))
-	return res
+	return SaveRosterModule.get_unlocked_pets(load_profile())
 
 static func is_pet_unlocked(pet_id: StringName) -> bool:
-	var unlocked := get_unlocked_pets()
-	return unlocked.has(pet_id) or unlocked.has(String(pet_id))
+	return SaveRosterModule.is_pet_unlocked(pet_id, load_profile())
 
 static func unlock_pet(pet_id: StringName) -> bool:
-	var prof := load_profile()
-	var unlocked := get_unlocked_pets()
-	if not unlocked.has(pet_id):
-		unlocked.append(pet_id)
-		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-		var chars: Array[StringName] = prof.get("unlocked_characters", [])
-		var bans: Dictionary = prof.get("character_banlists", {})
-		var bio: int = int(prof.get("biomass", 0))
-		var anti: int = int(prof.get("antimatter", 0))
-		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-		var dm: int = int(prof.get("dark_matter", 0))
-		var trophies: Dictionary = prof.get("trophies_unlocked", {})
-		var spd: float = float(prof.get("game_speed", 1.0))
-		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-		var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-
-		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked)
-		return true
-	return false
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveRosterModule.unlock_pet(pet_id, self_class)
 
 static func lock_pet(pet_id: StringName) -> void:
-	var prof := load_profile()
-	var unlocked := get_unlocked_pets()
-	unlocked.erase(pet_id)
-	unlocked.erase(String(pet_id))
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = prof.get("unlocked_characters", [])
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-	if sel_pet == pet_id:
-		sel_pet = &"mochi"
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveRosterModule.lock_pet(pet_id, self_class)
 
 
 static func get_unlocked_endings() -> Array[String]:
-	var prof := load_profile()
-	var raw = prof.get("unlocked_endings", [])
-	var list: Array[String] = []
-	if raw is Array:
-		for e in raw:
-			list.append(str(e))
-	return list
+	return SaveRosterModule.get_unlocked_endings(load_profile())
 
 static func has_unlocked_ending(ending_id: String) -> bool:
-	return get_unlocked_endings().has(ending_id)
+	return SaveRosterModule.has_unlocked_ending(ending_id, load_profile())
 
 static func record_ending(ending_id: String) -> bool:
-	var prof := load_profile()
-	var current := get_unlocked_endings()
-	var is_new: bool = false
-	if not current.has(ending_id):
-		current.append(ending_id)
-		is_new = true
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = prof.get("unlocked_characters", [])
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-	var unlocked_navs = prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
-	var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
-	
-	# Desbloquear a Iris al completar cualquier final
-	var nav_arr: Array = []
-	for n in unlocked_navs:
-		nav_arr.append(StringName(str(n)))
-	if not nav_arr.has(&"iris"):
-		nav_arr.append(&"iris")
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, current, sel_nav, nav_arr)
-	return is_new
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveRosterModule.record_ending(ending_id, self_class)
 
 
 # ==============================================================================
@@ -869,101 +788,25 @@ static func record_ending(ending_id: String) -> bool:
 # ==============================================================================
 
 static func get_selected_navigator() -> StringName:
-	var prof := load_profile()
-	var nav := StringName(str(prof.get("selected_navigator", "lyra")))
-	if not is_navigator_unlocked(nav):
-		return &"lyra"
-	return nav
+	return SaveRosterModule.get_selected_navigator(load_profile(), is_navigator_unlocked)
 
 static func set_selected_navigator(nav_id: StringName) -> void:
-	if nav_id == &"":
-		return
-	var prof := load_profile()
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = prof.get("unlocked_characters", [])
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-	var unlocked_endings = prof.get("unlocked_endings", [])
-	var unlocked_navs = prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, nav_id, unlocked_navs)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveRosterModule.set_selected_navigator(nav_id, self_class)
 
 static func get_unlocked_navigators() -> Array[StringName]:
-	var prof := load_profile()
-	var raw_navs: Array = prof.get("unlocked_navigators", [&"lyra", &"vespera", &"caelia", &"zephyr"])
-	var res: Array[StringName] = []
-	var base_navs: Array[StringName] = [&"lyra", &"vespera", &"caelia", &"zephyr"]
-	for b in base_navs:
-		res.append(b)
-	for n in raw_navs:
-		var sn := StringName(str(n))
-		if not res.has(sn) and sn != &"pip" and sn != &"mochi" and sn != &"kuro" and sn != &"luna":
-			res.append(sn)
-	return res
+	return SaveRosterModule.get_unlocked_navigators(load_profile())
 
 static func is_navigator_unlocked(nav_id: StringName) -> bool:
-	var unlocked := get_unlocked_navigators()
-	return unlocked.has(nav_id) or unlocked.has(String(nav_id))
+	return SaveRosterModule.is_navigator_unlocked(nav_id, load_profile())
 
 static func unlock_navigator(nav_id: StringName) -> bool:
-	var prof := load_profile()
-	var unlocked := get_unlocked_navigators()
-	if not unlocked.has(nav_id):
-		unlocked.append(nav_id)
-		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-		var chars: Array[StringName] = prof.get("unlocked_characters", [])
-		var bans: Dictionary = prof.get("character_banlists", {})
-		var bio: int = int(prof.get("biomass", 0))
-		var anti: int = int(prof.get("antimatter", 0))
-		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-		var dm: int = int(prof.get("dark_matter", 0))
-		var trophies: Dictionary = prof.get("trophies_unlocked", {})
-		var spd: float = float(prof.get("game_speed", 1.0))
-		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-		var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-		var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-		var unlocked_endings = prof.get("unlocked_endings", [])
-		var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
-
-		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, sel_nav, unlocked)
-		return true
-	return false
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveRosterModule.unlock_navigator(nav_id, self_class)
 
 static func lock_navigator(nav_id: StringName) -> void:
-	var prof := load_profile()
-	var unlocked := get_unlocked_navigators()
-	unlocked.erase(nav_id)
-	unlocked.erase(String(nav_id))
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = prof.get("unlocked_characters", [])
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-	var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-	var sel_pet: StringName = StringName(str(prof.get("selected_pet", "mochi")))
-	var unlocked_pets = prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-	var unlocked_endings = prof.get("unlocked_endings", [])
-	var sel_nav: StringName = StringName(str(prof.get("selected_navigator", "lyra")))
-	if sel_nav == nav_id:
-		sel_nav = &"lyra"
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career, sel_pet, unlocked_pets, unlocked_endings, sel_nav, unlocked)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveRosterModule.lock_navigator(nav_id, self_class)
 
 
 
@@ -1087,35 +930,16 @@ static func set_career_bosses_killed(count: int) -> void:
 const ACTIVE_RUN_PATH := "user://active_run.json"
 
 static func save_active_run(run_data: Dictionary) -> Error:
-	var file := FileAccess.open(ACTIVE_RUN_PATH, FileAccess.WRITE)
-	if not file:
-		return FileAccess.get_open_error()
-
-	var json_str := JSON.stringify(run_data, "\t")
-	file.store_string(json_str)
-	file.close()
-	return OK
+	return SaveActiveRunModule.save_active_run(run_data)
 
 static func has_active_run() -> bool:
-	return FileAccess.file_exists(ACTIVE_RUN_PATH)
+	return SaveActiveRunModule.has_active_run()
 
 static func load_active_run() -> Dictionary:
-	if not has_active_run():
-		return {}
-	var file := FileAccess.open(ACTIVE_RUN_PATH, FileAccess.READ)
-	if not file:
-		return {}
-	var json_str := file.get_as_text()
-	file.close()
-	var parser := JSON.new()
-	var err := parser.parse(json_str)
-	if err != OK or not (parser.data is Dictionary):
-		return {}
-	return parser.data
+	return SaveActiveRunModule.load_active_run()
 
 static func clear_active_run() -> void:
-	if has_active_run():
-		DirAccess.remove_absolute(ACTIVE_RUN_PATH)
+	SaveActiveRunModule.clear_active_run()
 
 
 # ==============================================================================
@@ -1126,88 +950,16 @@ const HIGHSCORES_PATH := "user://highscores.json"
 const MAX_HIGHSCORES := 10
 
 static func record_run_score(result: Dictionary) -> int:
-	var scores := get_top_highscores()
-
-	var new_entry := {
-		"pilot_id": str(result.get("pilot_id", "nova")),
-		"pilot_name": str(result.get("pilot_name", "Nova")),
-		"wave_reached": int(result.get("wave_reached", 1)),
-		"time_survived_seconds": float(result.get("time_survived_seconds", 0.0)),
-		"time_survived_formatted": str(result.get("time_survived_formatted", "00:00")),
-		"enemies_killed": int(result.get("enemies_killed", 0)),
-		"credits_earned": int(result.get("credits_earned", 0)),
-		"victory": bool(result.get("victory", false)),
-		"score": int(result.get("score", 0)),
-		"date": Time.get_datetime_string_from_system(false, true)
-	}
-
-	scores.append(new_entry)
-
-	scores.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var wave_a: int = a.get("wave_reached", 0)
-		var wave_b: int = b.get("wave_reached", 0)
-		if wave_a != wave_b:
-			return wave_a > wave_b
-		var time_a: float = a.get("time_survived_seconds", 0.0)
-		var time_b: float = b.get("time_survived_seconds", 0.0)
-		if time_a != time_b:
-			return time_a > time_b
-		return int(a.get("enemies_killed", 0)) > int(b.get("enemies_killed", 0))
-	)
-
-	if scores.size() > MAX_HIGHSCORES:
-		scores.resize(MAX_HIGHSCORES)
-
-	var file := FileAccess.open(HIGHSCORES_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(scores, "\t"))
-		file.close()
-
-	for idx in range(scores.size()):
-		if scores[idx] == new_entry:
-			return idx + 1
-	return -1
+	return SaveActiveRunModule.record_run_score(result)
 
 static func clear_highscores() -> void:
-	if FileAccess.file_exists(HIGHSCORES_PATH):
-		DirAccess.remove_absolute(HIGHSCORES_PATH)
+	SaveActiveRunModule.clear_highscores()
 
 static func get_top_highscores() -> Array[Dictionary]:
-	if not FileAccess.file_exists(HIGHSCORES_PATH):
-		return _get_default_highscores()
-
-	var file := FileAccess.open(HIGHSCORES_PATH, FileAccess.READ)
-	if not file:
-		return _get_default_highscores()
-
-	var json_str := file.get_as_text()
-	file.close()
-
-	var parser := JSON.new()
-	var err := parser.parse(json_str)
-	if err != OK or not (parser.data is Array):
-		return _get_default_highscores()
-
-	var res: Array[Dictionary] = []
-	for item in parser.data:
-		if item is Dictionary:
-			res.append(item)
-	return res
+	return SaveActiveRunModule.get_top_highscores()
 
 static func _get_default_highscores() -> Array[Dictionary]:
-	return [
-		{
-			"pilot_id": "nova",
-			"pilot_name": "Nova",
-			"wave_reached": 6,
-			"time_survived_seconds": 360.0,
-			"time_survived_formatted": "06:00",
-			"enemies_killed": 420,
-			"credits_earned": 350,
-			"victory": true,
-			"date": "2026-09-20 12:00"
-		}
-	]
+	return SaveActiveRunModule._get_default_highscores()
 
 
 # ==============================================================================
@@ -1215,323 +967,52 @@ static func _get_default_highscores() -> Array[Dictionary]:
 # ==============================================================================
 
 static func get_gacha_tokens() -> int:
-	var profile := load_profile()
-	return int(profile.get("gacha_tokens", 0))
+	return SaveSkinsModule.get_gacha_tokens(load_profile())
 
 static func add_gacha_tokens(amount: int) -> int:
-	if amount <= 0:
-		return get_gacha_tokens()
-	var profile := load_profile()
-	var current: int = int(profile.get("gacha_tokens", 0))
-	var new_total := current + amount
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
-	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		new_total, unlocked_skins, equipped_skins
-	)
-	return new_total
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveSkinsModule.add_gacha_tokens(amount, self_class)
 
 static func spend_gacha_tokens(amount: int) -> bool:
-	if amount <= 0:
-		return true
-	var profile := load_profile()
-	var current: int = int(profile.get("gacha_tokens", 0))
-	if current < amount:
-		return false
-	var new_total := current - amount
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
-	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		new_total, unlocked_skins, equipped_skins
-	)
-	return true
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveSkinsModule.spend_gacha_tokens(amount, self_class)
 
 static func get_unlocked_skins() -> Dictionary:
-	var profile := load_profile()
-	return profile.get("unlocked_skins", {})
+	return SaveSkinsModule.get_unlocked_skins(load_profile())
 
 static func is_skin_unlocked(skin_id: String) -> bool:
-	var profile := load_profile()
-	var skins: Dictionary = profile.get("unlocked_skins", {})
-	return skins.has(skin_id)
+	return SaveSkinsModule.is_skin_unlocked(skin_id, load_profile())
 
 static func get_skin_stars(skin_id: String) -> int:
-	var skins := get_unlocked_skins()
-	if skins.has(skin_id):
-		var entry = skins[skin_id]
-		if entry is Dictionary:
-			return int(entry.get("stars", 1))
-		elif entry is int or entry is float:
-			return int(entry)
-	return 0
+	return SaveSkinsModule.get_skin_stars(skin_id, load_profile())
 
 static func unlock_or_upgrade_skin(skin_id: String) -> Dictionary:
-	var profile := load_profile()
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {}).duplicate(true)
-	var current_biomass: int = int(profile.get("biomass", 0))
-	var current_stars: int = 0
-	
-	if unlocked_skins.has(skin_id):
-		var entry = unlocked_skins[skin_id]
-		if entry is Dictionary:
-			current_stars = int(entry.get("stars", 1))
-		else:
-			current_stars = int(entry)
-	
-	var result := {
-		"skin_id": skin_id,
-		"previous_stars": current_stars,
-		"new_stars": current_stars,
-		"status": "new", # "new", "upgraded", "max_converted"
-		"biomass_awarded": 0
-	}
-	
-	if current_stars == 0:
-		unlocked_skins[skin_id] = {
-			"stars": 1,
-			"unlocked_at": Time.get_datetime_string_from_system(false, true)
-		}
-		result["new_stars"] = 1
-		result["status"] = "new"
-	elif current_stars < 3:
-		var next_stars := current_stars + 1
-		unlocked_skins[skin_id] = {
-			"stars": next_stars,
-			"unlocked_at": Time.get_datetime_string_from_system(false, true)
-		}
-		result["new_stars"] = next_stars
-		result["status"] = "upgraded"
-	else:
-		# Duplicado en 3★: Otorgar 150 Polvo Estelar (Biomasa para el árbol de talentos)
-		result["new_stars"] = 3
-		result["status"] = "max_converted"
-		result["biomass_awarded"] = 150
-		current_biomass += 150
-
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var tokens: int = int(profile.get("gacha_tokens", 0))
-	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, current_biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		tokens, unlocked_skins, equipped_skins
-	)
-	return result
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveSkinsModule.unlock_or_upgrade_skin(skin_id, self_class)
 
 static func equip_skin(slot_key: String, skin_id: String) -> void:
-	var profile := load_profile()
-	var equipped: Dictionary = profile.get("equipped_skins", {}).duplicate(true)
-	if skin_id.is_empty():
-		equipped.erase(slot_key)
-	else:
-		equipped[slot_key] = skin_id
-
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var tokens: int = int(profile.get("gacha_tokens", 0))
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		tokens, unlocked_skins, equipped
-	)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.equip_skin(slot_key, skin_id, self_class)
 
 static func unequip_skin(slot_key: String) -> void:
-	equip_skin(slot_key, "")
-
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.unequip_skin(slot_key, self_class)
 
 static func get_equipped_skin(slot_key: String) -> String:
-	var profile := load_profile()
-	var equipped: Dictionary = profile.get("equipped_skins", {})
-	return str(equipped.get(slot_key, ""))
+	return SaveSkinsModule.get_equipped_skin(slot_key, load_profile())
 
 static func get_equipped_skins() -> Dictionary:
-	var profile := load_profile()
-	return profile.get("equipped_skins", {})
-
-static func set_biomass(amount: int) -> void:
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var tokens: int = int(profile.get("gacha_tokens", 0))
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
-	var equipped: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, maxi(0, amount), antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		tokens, unlocked_skins, equipped
-	)
+	return SaveSkinsModule.get_equipped_skins(load_profile())
 
 static func set_gacha_tokens(amount: int) -> void:
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {})
-	var equipped: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		maxi(0, amount), unlocked_skins, equipped
-	)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.set_gacha_tokens(amount, self_class)
 
 static func unlock_all_skins(star_level: int = 1) -> int:
-	var profile := load_profile()
-	var skins_dict: Dictionary = CosmeticsManager.get_all_skins()
-	var unlocked: Dictionary = profile.get("unlocked_skins", {}).duplicate(true)
-	var count := 0
-	for sid in skins_dict.keys():
-		unlocked[sid] = {
-			"stars": clampi(star_level, 1, 3),
-			"unlocked_at": Time.get_datetime_string_from_system(false, true)
-		}
-		count += 1
-
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var tokens: int = int(profile.get("gacha_tokens", 0))
-	var equipped: Dictionary = profile.get("equipped_skins", {})
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		tokens, unlocked, equipped
-	)
-	return count
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveSkinsModule.unlock_all_skins(star_level, self_class)
 
 static func lock_all_skins() -> void:
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var speed: float = float(profile.get("game_speed", 1.0))
-	var career: Dictionary = profile.get("career_stats", {})
-	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
-	var pets: Array[StringName] = profile.get("unlocked_pets", [])
-	var endings: Array[String] = profile.get("unlocked_endings", [])
-	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
-	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
-	var tokens: int = int(profile.get("gacha_tokens", 0))
-
-	save_profile(
-		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
-		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
-		tokens, {}, {}
-	)
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.lock_all_skins(self_class)
 

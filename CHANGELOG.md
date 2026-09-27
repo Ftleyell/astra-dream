@@ -3,6 +3,27 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.4.3] - 2026-09-27 — Optimización Radical de Contexto y Arquitectura Modular
+
+### Añadido
+* **Reglas con Progressive Disclosure (`.agents/rules/`):**
+  * Reemplazado el archivo monolítico `project_rules.md` (177 líneas siempre cargadas en contexto) por `core_rules.md` ultraligero (<15 líneas, `always_on`).
+  * Desplegadas reglas especializadas bajo demanda: `gdscript_style.md` (activada por glob `*.gd`), `combat_contracts.md`, `architecture_data.md` y `git_workflow.md` (activadas por `model_decision`). Reducción estimada de ~2.500 tokens por turno.
+* **Fragmentación de la Base de Datos de Cosméticos (`data/cosmetics/categories/`):**
+  * Desacoplado el catálogo monolítico `skin_database.json` (+3.300 líneas) en 6 archivos categorizados: `palettes.json`, `skins_pilots.json`, `skins_ships.json`, `skins_weapons.json`, `skins_pets.json` y `skins_navigators.json`.
+  * `CosmeticsManager` ahora carga y une automáticamente las categorías o recupera colecciones puntuales mediante `get_category_skins()`.
+* **Modularización de `SaveManager` (`core/autoloads/save_modules/`):**
+  * Extraído `SaveSkinsModule` para la gestión de tokens de gacha, desbloqueo y equipamiento de aspectos cosméticos.
+  * Extraído `SaveRosterModule` para persistencia y estados de mascotas (`selected_pet`, `unlocked_pets`), navegantes (`selected_navigator`, `unlocked_navigators`) y finales (`unlocked_endings`).
+  * Extraído `SaveActiveRunModule` para serialización de partidas en curso (mid-run resume) y tabla de récords (`highscores.json`).
+  * `SaveManager` mantiene 100% de compatibilidad estática pública operando como Facade limpio.
+
+### Optimizado
+* **Higiene de Repositorio Git:**
+  * Actualizado `.gitignore` con exclusiones para `.import/`, `*.tmp`, artefactos binarios `.res`, `.scn` y presets de exportación (`export_presets.cfg`), preservando el control de versiones de texturas (`*.png`) y audio (`*.ogg`, `*.wav`).
+
+---
+
 ## [0.4.2] - 2026-09-27 — Armario de Cosméticos, Carrusel de Navegantes, Shaders 3D en Hub y Blindaje de Savegame
 
 ### Añadido
