@@ -259,6 +259,8 @@ func _on_save_quit_pressed() -> void:
 
 	hide()
 	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SaveManager.set_game_speed(1.0)
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_restart_pressed() -> void:
@@ -281,6 +283,8 @@ func _on_hub_pressed() -> void:
 
 	hide()
 	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SaveManager.set_game_speed(1.0)
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 func _on_menu_pressed() -> void:
@@ -292,4 +296,6 @@ func _on_menu_pressed() -> void:
 
 	hide()
 	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SaveManager.set_game_speed(1.0)
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")

@@ -24,6 +24,8 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
   * Removido `clip_contents = true` en `ArtworkFrame` para permitir que el resplandor y halo luminoso holográfico (`shadow_size = 18`) se expanda de forma continua y suave sin cortes rectangulares en sus bordes.
 * **Fallback Robusto en Selección de Personajes (`CharacterSelectUI`):**
   * Prevención de texturas nulas al equipar aspectos no cargados, garantizando la visualización continua de los sprites y retratos de cada piloto.
+* **Restablecimiento Forzoso de Velocidad al Hub (1x):**
+  * Al regresar al Hub desde la pantalla de selección de personajes (botón "VOLVER AL HUB" o tecla ESC), tras abandonar la run desde el menú de pausa o tras la pantalla de Game Over, `Engine.time_scale` y `SaveManager.set_game_speed()` retornan obligatoriamente a 1.0 (Normal), evitando desplazarse por el Hangar espacial en 2x o 4x.
 
 ---
 

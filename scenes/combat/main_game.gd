@@ -1670,6 +1670,7 @@ func _on_game_over_hub() -> void:
 	SaveManager.clear_active_run()
 	get_tree().paused = false
 	Engine.time_scale = 1.0
+	SaveManager.set_game_speed(1.0)
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 

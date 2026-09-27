@@ -146,6 +146,8 @@ var _idle_time: float = 0.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SaveManager.set_game_speed(1.0)
 	_setup_camera()
 	_build_pilot_pedestals_and_vfx()
 	_collect_and_verify_sprites()

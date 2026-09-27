@@ -73,7 +73,21 @@ func _test_loadout_gamespeed_buttons() -> void:
 
 	deploy.queue_free()
 	await get_tree().process_frame
-	print("  ✓ Deployment Menu (CharacterSelect): Comportamiento radio-button de 3 botones (1x, 2x, 4x) verificado.")
+
+	# Verificar que al entrar al Hub la velocidad siempre se resetea a 1x (incluso si venía en 4x)
+	SaveManager.set_game_speed(4.0)
+	assert(is_equal_approx(SaveManager.get_game_speed(), 4.0), "Velocidad previa configurada en 4x")
+	assert(is_equal_approx(Engine.time_scale, 4.0), "Engine.time_scale en 4.0 antes del Hub")
+	var hub_scene = load("res://scenes/ui/hub/hub_world.tscn")
+	var hub = hub_scene.instantiate()
+	add_child(hub)
+	await get_tree().process_frame
+	assert(is_equal_approx(SaveManager.get_game_speed(), 1.0), "SaveManager debe restablecer la velocidad a 1x al inicializar el Hub")
+	assert(is_equal_approx(Engine.time_scale, 1.0), "Engine.time_scale debe restablecerse a 1.0 al inicializar el Hub")
+	hub.queue_free()
+	await get_tree().process_frame
+
+	print("  ✓ Deployment Menu (CharacterSelect) y HubWorld: Radio buttons y reseteo forzoso a 1x en el Hub verificados.")
 
 func _test_satellite_10k_despawn() -> void:
 	print("\n[3/3] Testing Satellite 10k Despawn System in MainGame...")
