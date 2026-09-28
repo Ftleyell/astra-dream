@@ -93,47 +93,94 @@ if ($HasGit) {
         } else {
             Write-Host "  [*] NUEVO PARCHE DETECTADO EN GITHUB!" -ForegroundColor Magenta
             Write-Host "      Ultimo Commit: $($RemoteSha.Substring(0,7)) - $CommitMsg" -ForegroundColor Cyan
-            Write-Host "      Descargando actualizacion automatica desde master..." -ForegroundColor Yellow
+            Write-Host "      Descargando actualizacion completa (AstraLauncher Standalone)..." -ForegroundColor Yellow
 
-            $TempZip = "$GameDir\_patch_temp.zip"
-            $TempExtract = "$GameDir\_patch_extracted"
+            $LauncherUrl = "https://github.com/$RepoOwner/$RepoName/raw/$Branch/AstraLauncher.exe"
+            $TempLauncher = "$GameDir\_AstraLauncher_update.exe"
 
+            $downloadedOk = $false
             try {
                 $downloader = New-Object System.Net.WebClient
                 $downloader.Headers.Add("User-Agent", "AstraDreamLauncher")
-                $downloader.DownloadFile($ZipUrl, $TempZip)
+                $downloader.DownloadFile($LauncherUrl, $TempLauncher)
                 $downloader.Dispose()
 
-                Write-Host "      Extrayendo archivos del parche..." -ForegroundColor Gray
-                if (Test-Path $TempExtract) {
-                    Remove-Item -Recurse -Force $TempExtract
+                if ((Test-Path $TempLauncher) -and ((Get-Item $TempLauncher).Length -gt 10000000)) {
+                    Write-Host "  [+] Paquete compilado actualizado con exito!" -ForegroundColor Green
+                    Move-Item -Path $TempLauncher -Destination "$GameDir\AstraLauncher.exe" -Force
+                    Set-Content -Path $VersionFile -Value $RemoteSha -Force
+                    $downloadedOk = $true
+
+                    Write-Host "  >> Iniciando Astra Dream con la version mas reciente..." -ForegroundColor Cyan
+                    Start-Process -FilePath "$GameDir\AstraLauncher.exe" -WorkingDirectory $GameDir
+                    Start-Sleep -Seconds 2
+                    exit 0
                 }
-                Expand-Archive -Path $TempZip -DestinationPath $TempExtract -Force
-
-                $ExtractedRoot = "$TempExtract\$RepoName-$Branch"
-                if (Test-Path $ExtractedRoot) {
-                    Copy-Item -Path "$ExtractedRoot\*" -Destination $GameDir -Recurse -Force
-                }
-
-                Set-Content -Path $VersionFile -Value $RemoteSha -Force
-
-                Write-Host "  [+] Juego actualizado con exito a la version $($RemoteSha.Substring(0,7))!" -ForegroundColor Green
             } catch {
-                Write-Host "  [!] Error al descargar o aplicar el parche: $($_.Exception.Message)" -ForegroundColor Red
-                Write-Host "      Continuando con los archivos locales..." -ForegroundColor Gray
-            } finally {
-                if (Test-Path $TempZip) { Remove-Item -Force $TempZip -ErrorAction SilentlyContinue }
-                if (Test-Path $TempExtract) { Remove-Item -Recurse -Force $TempExtract -ErrorAction SilentlyContinue }
+                Write-Host "  [!] Aviso: No se pudo descargar AstraLauncher.exe ($($_.Exception.Message))." -ForegroundColor Yellow
+                if (Test-Path $TempLauncher) { Remove-Item -Force $TempLauncher -ErrorAction SilentlyContinue }
+            }
+
+            if (-not $downloadedOk) {
+                Write-Host "      Intentando actualizar mediante archivo Zip..." -ForegroundColor Gray
+                $TempZip = "$GameDir\_patch_temp.zip"
+                $TempExtract = "$GameDir\_patch_extracted"
+                try {
+                    $downloader = New-Object System.Net.WebClient
+                    $downloader.Headers.Add("User-Agent", "AstraDreamLauncher")
+                    $downloader.DownloadFile($ZipUrl, $TempZip)
+                    $downloader.Dispose()
+
+                    Write-Host "      Extrayendo archivos del parche..." -ForegroundColor Gray
+                    if (Test-Path $TempExtract) { Remove-Item -Recurse -Force $TempExtract }
+                    Expand-Archive -Path $TempZip -DestinationPath $TempExtract -Force
+
+                    $ExtractedRoot = "$TempExtract\$RepoName-$Branch"
+                    if (Test-Path $ExtractedRoot) {
+                        Copy-Item -Path "$ExtractedRoot\*" -Destination $GameDir -Recurse -Force
+                    }
+                    Set-Content -Path $VersionFile -Value $RemoteSha -Force
+                    Write-Host "  [+] Archivos sincronizados a la version $($RemoteSha.Substring(0,7))!" -ForegroundColor Green
+                } catch {
+                    Write-Host "  [!] Error al descargar o aplicar el parche: $($_.Exception.Message)" -ForegroundColor Red
+                    Write-Host "      Continuando con los archivos locales..." -ForegroundColor Gray
+                } finally {
+                    if (Test-Path $TempZip) { Remove-Item -Force $TempZip -ErrorAction SilentlyContinue }
+                    if (Test-Path $TempExtract) { Remove-Item -Recurse -Force $TempExtract -ErrorAction SilentlyContinue }
+                }
             }
         }
     }
 }
 
 Write-Host ""
-Write-Host "  [2/2] Buscando ejecutable de Astra Dream..." -ForegroundColor Yellow
+Write-Host "  [2/2] Iniciando Astra Dream..." -ForegroundColor Yellow
 
-# Buscar el ejecutable en orden de prioridad
+# Si estamos en un repositorio de desarrollo con Git y project.godot, ejecutar con el motor Godot para reflejar cambios en vivo
+if ($HasGit -and (Test-Path "$GameDir\project.godot")) {
+    $GodotExe = "godot"
+    $GodotCmd = Get-Command godot -ErrorAction SilentlyContinue
+    if (-not $GodotCmd) {
+        $WinGetCandidate = (Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "*godot*console*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        if (-not $WinGetCandidate) {
+            $WinGetCandidate = (Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter "*godot*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        }
+        if ($WinGetCandidate -and (Test-Path $WinGetCandidate)) {
+            $GodotExe = $WinGetCandidate
+            $GodotCmd = $true
+        }
+    }
+    if ($GodotCmd) {
+        Write-Host "  [+] Entorno de desarrollo: Ejecutando en vivo con Godot Engine..." -ForegroundColor Green
+        Start-Process -FilePath $GodotExe -ArgumentList "--path `"$GameDir`"" -WorkingDirectory $GameDir
+        Start-Sleep -Seconds 2
+        exit 0
+    }
+}
+
+# Modo Standalone / Producción: Buscar el ejecutable en orden de prioridad
 $ExecutablesToTry = @(
+    "$GameDir\AstraLauncher.exe",
     "$GameDir\AstraDream.exe",
     "$GameDir\builds\AstraDream_PreAlpha\AstraDream.exe",
     "$GameDir\builds\AstraDream.exe",
@@ -175,8 +222,8 @@ if ($FoundExe) {
         Start-Process -FilePath $GodotExe -ArgumentList "--path `"$GameDir`"" -WorkingDirectory $GameDir
         Start-Sleep -Seconds 2
     } else {
-        Write-Host "  [!] No se encontro AstraDream.exe en esta carpeta." -ForegroundColor Red
-        Write-Host "      Por favor coloca AstraDream.exe en la misma carpeta que el launcher." -ForegroundColor Yellow
+        Write-Host "  [!] No se encontro AstraDream.exe ni AstraLauncher.exe en esta carpeta." -ForegroundColor Red
+        Write-Host "      Por favor descarga AstraLauncher.exe en la misma carpeta." -ForegroundColor Yellow
         Write-Host ""
         Read-Host "  Presiona ENTER para cerrar el launcher..."
     }

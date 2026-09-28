@@ -16,6 +16,9 @@ assets/pets/** -filter -diff -merge binary
 # Navigator circular portraits (standard binary, excluded from Git LFS so they pull directly without LFS)
 assets/characters/navigators/portraits/** -filter -diff -merge binary
 
+# UI assets (standard binary, excluded from Git LFS so they pull directly without LFS)
+assets/ui/** -filter -diff -merge binary
+
 # Normalize line endings to LF for Godot text formats to prevent false dirty git status on Windows
 *.import text eol=lf
 *.gd text eol=lf
