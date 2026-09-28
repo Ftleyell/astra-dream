@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://hubworld001"]
 
 [ext_resource type="Script" uid="uid://cudisollrj4w4" path="res://scenes/ui/hub/hub_world.gd" id="1_hub"]
-[ext_resource type="ArrayMesh" uid="uid://3alnwgfb4lbw" path="res://scratch/downloads/space_kit/Models/OBJ format/hangar_smallA.obj" id="2_dj0jb"]
+[ext_resource type="ArrayMesh" uid="uid://3alnwgfb4lbw" path="res://assets/models/kenney_space_kit/Models/OBJ format/hangar_smallA.obj" id="2_dj0jb"]
 [ext_resource type="Texture2D" uid="uid://dqso2by16x2fr" path="res://assets/characters/fullbody/fullbody_nova.png" id="2_nova"]
 [ext_resource type="Texture2D" uid="uid://ddop52mdbtewy" path="res://assets/characters/fullbody/fullbody_valentina.png" id="3_valentina"]
 [ext_resource type="Texture2D" uid="uid://w2jx2vitbxy5" path="res://assets/characters/fullbody/fullbody_kira.png" id="4_kira"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://g2b8g2eiik60" path="res://assets/models/kenney_modular_space/template-floor-layer.glb" id="12_687da"]
 [ext_resource type="PackedScene" uid="uid://orjy3a3vua0g" path="res://scenes/ui/highscores/highscores_modal.tscn" id="12_highscores"]
 [ext_resource type="Texture2D" uid="uid://dij7fkcdv8l82" path="res://assets/environments/space_parallax/space_parallax_layer0_deep.png" id="15_plx0"]
+[ext_resource type="PackedScene" uid="uid://d0n6j58rx3le6" path="res://assets/models/kenney_space_kit/Models/DAE format/barrels_rail.dae" id="15_s8mwv"]
 [ext_resource type="PackedScene" uid="uid://sq7todtefrif" path="res://assets/models/kenney_mini_arcade/claw-machine.glb" id="16_5320e"]
 [ext_resource type="Texture2D" uid="uid://wdsbi2nlyxll" path="res://assets/environments/space_parallax/space_parallax_layer1_mid.png" id="16_plx1"]
 [ext_resource type="Texture2D" uid="uid://c4r8rtvb8prbn" path="res://assets/environments/space_parallax/space_parallax_layer2_near.png" id="17_plx2"]
@@ -25,7 +26,8 @@
 [ext_resource type="Texture2D" uid="uid://c6kj3y2p8dlif" path="res://assets/environments/hub_surfaces/hangar_ceiling_emission.png" id="23_ceil_emi"]
 [ext_resource type="Texture2D" uid="uid://nhggp5mfqav" path="res://assets/environments/hub_surfaces/hangar_railing_albedo.png" id="24_rail_alb"]
 [ext_resource type="Texture2D" uid="uid://r3kjw1e6tkms" path="res://assets/environments/hub_surfaces/hangar_railing_emission.png" id="25_rail_emi"]
-[ext_resource type="ArrayMesh" uid="uid://bjt3gob0rrso8" path="res://scratch/downloads/space_kit/Models/OBJ format/platform_low.obj" id="26_kck51"]
+[ext_resource type="PackedScene" uid="uid://bvj0fuhuqfibg" path="res://assets/models/kenney_space_kit/Models/DAE format/craft_racer.dae" id="25_uisse"]
+[ext_resource type="ArrayMesh" uid="uid://bjt3gob0rrso8" path="res://assets/models/kenney_space_kit/Models/OBJ format/platform_low.obj" id="26_kck51"]
 [ext_resource type="Texture2D" uid="uid://ba3qf3sklch5p" path="res://assets/environments/hub_machines/terminal_mission_albedo.png" id="26_term_alb"]
 [ext_resource type="Texture2D" uid="uid://dusumv6mng3c7" path="res://assets/environments/hub_machines/terminal_mission_emission.png" id="27_term_emi"]
 [ext_resource type="Texture2D" uid="uid://cgt7cuj8mt4xj" path="res://assets/environments/hub_machines/arcade_cabinet_albedo.png" id="28_arc_alb"]
@@ -286,6 +288,17 @@ bottom_radius = 0.65
 height = 0.4
 radial_segments = 32
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_trophy"]
+height = 0.4
+radius = 0.65
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_barrels_rail"]
+size = Vector3(0.55, 0.35, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_craft_racer"]
+size = Vector3(1.2, 0.75, 2.05)
+
+
 [sub_resource type="PrismMesh" id="PrismMesh_trophy_aegis"]
 size = Vector3(0.45, 0.45, 0.45)
 
@@ -306,10 +319,6 @@ size = Vector3(0.45, 0.45, 0.45)
 
 [sub_resource type="PrismMesh" id="PrismMesh_trophy_monolith"]
 size = Vector3(0.45, 0.45, 0.45)
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_trophy"]
-height = 0.4
-radius = 0.65
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -595,94 +604,94 @@ transform = Transform3D(-16, 0, -2.414935e-06, 0, 16, 0, 2.414935e-06, 0, -16, -
 mesh = ExtResource("2_dj0jb")
 
 [node name="South_LeftWall_Seg0" parent="HangarRoom/MirroredWing" unique_id=200000003 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, 0.215, 39.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, -0.10158482, 39.57)
 
 [node name="South_LeftWall_Seg1" parent="HangarRoom/MirroredWing" unique_id=200000004 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, 0.215, 34.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, -0.10158482, 34.57)
 
 [node name="South_LeftWall_Seg2" parent="HangarRoom/MirroredWing" unique_id=200000005 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, 0.215, 29.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, -0.10158482, 29.57)
 
 [node name="South_LeftWall_Seg3" parent="HangarRoom/MirroredWing" unique_id=200000006 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, 0.215, 24.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, -0.10158482, 24.57)
 
 [node name="South_LeftWall_Seg4" parent="HangarRoom/MirroredWing" unique_id=200000007 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, 0.215, 19.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.915, -0.10158482, 19.57)
 
 [node name="South_LeftWall_Seg5" parent="HangarRoom/MirroredWing" unique_id=704934751 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.7900734, 39.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.2558756, 39.57)
 
 [node name="South_LeftWall_Seg6" parent="HangarRoom/MirroredWing" unique_id=515655594 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.7900734, 34.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.2558756, 34.57)
 
 [node name="South_LeftWall_Seg7" parent="HangarRoom/MirroredWing" unique_id=774972266 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.7900734, 29.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.2558756, 29.57)
 
 [node name="South_LeftWall_Seg8" parent="HangarRoom/MirroredWing" unique_id=1639718439 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.780967, 5.8441505, 24.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.780967, 5.2564974, 24.57)
 
 [node name="South_LeftWall_Seg9" parent="HangarRoom/MirroredWing" unique_id=759591478 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.7900734, 19.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 5.2558756, 19.57)
 
 [node name="South_LeftWall_Seg10" parent="HangarRoom/MirroredWing" unique_id=1739720993 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 11.193516, 39.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 10.659318, 39.57)
 
 [node name="South_LeftWall_Seg11" parent="HangarRoom/MirroredWing" unique_id=1103358986 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 11.193516, 34.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 10.659318, 34.57)
 
 [node name="South_LeftWall_Seg12" parent="HangarRoom/MirroredWing" unique_id=532717081 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 11.193516, 29.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 10.659318, 29.57)
 
 [node name="South_LeftWall_Seg13" parent="HangarRoom/MirroredWing" unique_id=1563134622 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.767478, 11.247593, 24.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.767478, 10.71343, 24.57)
 
 [node name="South_LeftWall_Seg14" parent="HangarRoom/MirroredWing" unique_id=119416939 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 11.193516, 19.57)
+transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, -12.772117, 10.659318, 19.57)
 
 [node name="South_RightWall_Seg0" parent="HangarRoom/MirroredWing" unique_id=200000008 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 0.1, 39.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, -0.06165018, 39.56)
 
 [node name="South_RightWall_Seg1" parent="HangarRoom/MirroredWing" unique_id=200000009 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 0.1, 34.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, -0.06165018, 34.56)
 
 [node name="South_RightWall_Seg2" parent="HangarRoom/MirroredWing" unique_id=200000010 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 0.1, 29.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, -0.06165018, 29.56)
 
 [node name="South_RightWall_Seg3" parent="HangarRoom/MirroredWing" unique_id=200000011 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 0.1, 24.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, -0.06165018, 24.56)
 
 [node name="South_RightWall_Seg4" parent="HangarRoom/MirroredWing" unique_id=200000012 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 0.1, 19.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, -0.06165018, 19.56)
 
 [node name="South_RightWall_Seg5" parent="HangarRoom/MirroredWing" unique_id=2072444310 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 5.570367, 39.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 5.4087167, 39.56)
 
 [node name="South_RightWall_Seg6" parent="HangarRoom/MirroredWing" unique_id=729321240 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 5.570367, 34.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 5.4087167, 34.56)
 
 [node name="South_RightWall_Seg7" parent="HangarRoom/MirroredWing" unique_id=1566685700 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 5.570367, 29.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 5.4087167, 29.56)
 
 [node name="South_RightWall_Seg8" parent="HangarRoom/MirroredWing" unique_id=676796079 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 5.570367, 24.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 5.4087167, 24.56)
 
 [node name="South_RightWall_Seg9" parent="HangarRoom/MirroredWing" unique_id=80775442 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 5.570367, 19.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 5.4087167, 19.56)
 
 [node name="South_RightWall_Seg10" parent="HangarRoom/MirroredWing" unique_id=1930436934 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 10.635888, 39.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 10.474237, 39.56)
 
 [node name="South_RightWall_Seg11" parent="HangarRoom/MirroredWing" unique_id=1600549403 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 10.635888, 34.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 10.474237, 34.56)
 
 [node name="South_RightWall_Seg12" parent="HangarRoom/MirroredWing" unique_id=1678211909 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 10.635888, 29.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 10.474237, 29.56)
 
 [node name="South_RightWall_Seg13" parent="HangarRoom/MirroredWing" unique_id=93181038 instance=ExtResource("38_wall_detail_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 10.635888, 24.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 10.474237, 24.56)
 
 [node name="South_RightWall_Seg14" parent="HangarRoom/MirroredWing" unique_id=919034317 instance=ExtResource("37_wall_model")]
-transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.892, 10.635888, 19.56)
+transform = Transform3D(0, 0, -1.3, 0, 1.35, 0, 1.3, 0, 0, 12.313154, 10.474237, 19.56)
 
 [node name="South_Corner_BL" parent="HangarRoom/MirroredWing" unique_id=200000013 instance=ExtResource("39_wall_corner_model")]
 transform = Transform3D(1.3, 0, 0, 0, 1.35, 0, 0, 0, 1.3, -12.4, 0, 43.1)
@@ -691,7 +700,7 @@ transform = Transform3D(1.3, 0, 0, 0, 1.35, 0, 0, 0, 1.3, -12.4, 0, 43.1)
 transform = Transform3D(0, 0, 1.3, 0, 1.35, 0, -1.3, 0, 0, 12.4, 0, 43.1)
 
 [node name="SouthWallWindow" parent="HangarRoom/MirroredWing" unique_id=200000015 instance=ExtResource("38_46iu0")]
-transform = Transform3D(-17, 0, -2.565868e-06, 0, 17, 0, 2.565868e-06, 0, -17, -0.39799988, 0.848, 44.482323)
+transform = Transform3D(-17, 0, -2.565868e-06, 0, 17, 0, 2.565868e-06, 0, -17, -0.39799988, -0.26741982, 43.784363)
 
 [node name="SouthFrontRailing" type="StaticBody3D" parent="HangarRoom/MirroredWing" unique_id=200000016]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 43.1)
@@ -703,6 +712,17 @@ shape = SubResource("BoxShape3D_front_railing")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HangarRoom/MirroredWing/SouthFrontRailing" unique_id=200000022]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.18396, 0)
 mesh = SubResource("BoxMesh_front_railing")
+
+[node name="barrels_rail" parent="HangarRoom/MirroredWing" unique_id=523342907 instance=ExtResource("15_s8mwv")]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 8.934743, -0.08811998, 20.385628)
+
+[node name="BarrelsRailCollision" type="StaticBody3D" parent="HangarRoom/MirroredWing/barrels_rail" unique_id=200000030]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HangarRoom/MirroredWing/barrels_rail/BarrelsRailCollision" unique_id=200000031]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
+shape = SubResource("BoxShape3D_barrels_rail")
+
 
 [node name="SpaceParallax" type="Node3D" parent="." unique_id=1280196303]
 
@@ -780,12 +800,26 @@ mesh = SubResource("BoxMesh_mission_holo")
 [node name="KenneyCables" parent="Terminals/MissionTerminal" unique_id=515398540 instance=ExtResource("36_cables_model")]
 transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 1.3520889, 0, 10.457129)
 
+[node name="KenneyCables2" parent="Terminals/MissionTerminal" unique_id=707072064 instance=ExtResource("36_cables_model")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -3.43342, 0, 29.497791)
+
 [node name="Interactable_Mission" type="Area3D" parent="Terminals/MissionTerminal" unique_id=1838241905]
 script = ExtResource("10_interactable")
 target_character_id = &"mission"
 interaction_title = "Terminal de Misiones"
 interaction_radius = 2.8
 prompt_offset_y = 2.3
+
+[node name="craft_racer" parent="Terminals/MissionTerminal" unique_id=1246085350 instance=ExtResource("25_uisse")]
+transform = Transform3D(2.4782948, 0, -1.6905782, 0, 3, 0, 1.6905782, 0, 2.4782948, 11.752183, 0.32686234, 40.913586)
+
+[node name="CraftRacerCollision" type="StaticBody3D" parent="Terminals/MissionTerminal/craft_racer" unique_id=200000032]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Terminals/MissionTerminal/craft_racer/CraftRacerCollision" unique_id=200000033]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+shape = SubResource("BoxShape3D_craft_racer")
+
 
 [node name="GachaTerminal" type="Node3D" parent="Terminals" unique_id=1409202601]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
@@ -796,7 +830,6 @@ transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
 [node name="GachaCapsuleHolo" type="MeshInstance3D" parent="Terminals/GachaTerminal" unique_id=1409202603]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4445617, 0.099999905)
 mesh = SubResource("SphereMesh_gacha_holo")
-
 
 [node name="Interactable_Gacha" type="Area3D" parent="Terminals/GachaTerminal" unique_id=1409202604]
 script = ExtResource("10_interactable")
