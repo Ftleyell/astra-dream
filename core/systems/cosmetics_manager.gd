@@ -136,6 +136,60 @@ static func roll_random_skin() -> Dictionary:
 	var all_keys := skins.keys()
 	return skins[all_keys[randi() % all_keys.size()]]
 
+static func roll_banner_skin(banner_id: String, is_pity: bool = false) -> Dictionary:
+	var skins := get_all_skins()
+	if skins.is_empty():
+		return {}
+
+	# Filtrar pool según el banner temático
+	var banner_skins: Array[Dictionary] = []
+	for sid in skins.keys():
+		var s: Dictionary = skins[sid]
+		var cat: String = s.get("category", "")
+		match banner_id:
+			"ships":
+				if cat == "ship" or cat == "weapon":
+					banner_skins.append(s)
+			"pilots":
+				if cat == "pilot" or cat == "navigator":
+					banner_skins.append(s)
+			_: # "general"
+				banner_skins.append(s)
+
+	if banner_skins.is_empty():
+		return roll_random_skin()
+
+	var common_pool: Array[Dictionary] = []
+	var rare_pool: Array[Dictionary] = []
+	var epic_pool: Array[Dictionary] = []
+
+	for s in banner_skins:
+		var rarity: String = s.get("rarity", "common")
+		if rarity == "epic":
+			epic_pool.append(s)
+		elif rarity == "rare":
+			rare_pool.append(s)
+		else:
+			common_pool.append(s)
+
+	# Si se activa el Pity (10 tiradas acumuladas), garantizar Épico (o Raro si no hay épico)
+	if is_pity:
+		if not epic_pool.is_empty():
+			return epic_pool[randi() % epic_pool.size()]
+		elif not rare_pool.is_empty():
+			return rare_pool[randi() % rare_pool.size()]
+
+	# Probabilidades estándar: 15% Épico, 35% Raro, 50% Común
+	var roll := randf()
+	if roll < 0.15 and not epic_pool.is_empty():
+		return epic_pool[randi() % epic_pool.size()]
+	elif roll < 0.50 and not rare_pool.is_empty():
+		return rare_pool[randi() % rare_pool.size()]
+	elif not common_pool.is_empty():
+		return common_pool[randi() % common_pool.size()]
+
+	return banner_skins[randi() % banner_skins.size()]
+
 static func load_texture(tex_path: String) -> Texture2D:
 	if tex_path.is_empty():
 		return null
@@ -150,6 +204,28 @@ static func load_texture(tex_path: String) -> Texture2D:
 			return ImageTexture.create_from_image(img)
 	return null
 
+static func get_skin_texture(skin_data: Dictionary) -> Texture2D:
+	var tex_path: String = skin_data.get("texture_path", "")
+	if not tex_path.is_empty():
+		var tex := load_texture(tex_path)
+		if tex:
+			return tex
+	# Fallback para armas según target_id
+	var cat: String = skin_data.get("category", "")
+	if cat == "weapon":
+		var tid: String = skin_data.get("target_id", "")
+		var weapon_path := "res://assets/characters/weapons/weapon_%s.png" % tid
+		if ResourceLoader.exists(weapon_path):
+			var w_tex = load(weapon_path)
+			if w_tex is Texture2D:
+				return w_tex
+		var default_gun := "res://assets/models/kenney_space_kit/Side/weapon_gun.png"
+		if ResourceLoader.exists(default_gun):
+			var g_tex = load(default_gun)
+			if g_tex is Texture2D:
+				return g_tex
+	return null
+
 static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_level: int = 1, apply_texture: bool = true) -> void:
 	if not is_instance_valid(item):
 		return
@@ -160,8 +236,7 @@ static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_le
 		return
 		
 	if apply_texture:
-		var tex_path: String = skin_data.get("texture_path", "")
-		var tex := load_texture(tex_path)
+		var tex := get_skin_texture(skin_data)
 		if tex:
 			if item is Sprite2D:
 				(item as Sprite2D).texture = tex

@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://cdeploybg001" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_bg"]
 [ext_resource type="PackedScene" path="res://scenes/ui/title_screen/patch_notes_panel.tscn" id="3_patchpanel"]
 
+[ext_resource type="Texture2D" uid="uid://cbbx6plpdbona" path="res://assets/ui/astra_dream_logo.png" id="4_logo"]
+
 [node name="TitleScreen" type="Control"]
 process_mode = 3
 layout_mode = 3
@@ -33,26 +35,24 @@ alignment = 1
 [node name="LeftVBox" type="VBoxContainer" parent="MainHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 28
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="MainHBox/LeftVBox"]
+[node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox"]
+custom_minimum_size = Vector2(580, 290)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.94, 1, 1)
-theme_override_colors/font_shadow_color = Color(1, 0.08, 0.58, 0.6)
-theme_override_constants/shadow_offset_x = 4
-theme_override_constants/shadow_offset_y = 4
-theme_override_font_sizes/font_size = 72
+size_flags_horizontal = 0
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="MainHBox/LeftVBox"]
+visible = false
+layout_mode = 2
 text = "ASTRA : DREAM"
 
-[node name="SubtitleLabel" type="Label" parent="MainHBox/LeftVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.8)
-theme_override_font_sizes/font_size = 18
-text = "— ARCADE BULLET HELL ROGUELITE —"
-
 [node name="Spacer" type="Control" parent="MainHBox/LeftVBox"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="PromptLabel" type="Label" parent="MainHBox/LeftVBox"]

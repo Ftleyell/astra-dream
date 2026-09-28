@@ -29,7 +29,8 @@ static func save_profile(
 	p_unlocked_navigators: Variant = null,
 	p_gacha_tokens: int = -1,
 	p_unlocked_skins: Variant = null,
-	p_equipped_skins: Variant = null
+	p_equipped_skins: Variant = null,
+	p_gacha_pity: Variant = null
 ) -> Error:
 	var existing_prof: Dictionary = load_profile()
 
@@ -153,6 +154,12 @@ static func save_profile(
 	else:
 		current_equipped_skins = existing_prof.get("equipped_skins", {})
 
+	var current_gacha_pity: Dictionary
+	if p_gacha_pity != null and p_gacha_pity is Dictionary:
+		current_gacha_pity = p_gacha_pity
+	else:
+		current_gacha_pity = existing_prof.get("gacha_pity", {"general": 0, "ships": 0, "pilots": 0})
+
 	var payload := {
 		"version": SCHEMA_VERSION,
 		"unlocked_items": str_unlocked_items,
@@ -173,7 +180,8 @@ static func save_profile(
 		"unlocked_navigators": str_unlocked_navs,
 		"gacha_tokens": current_tokens,
 		"unlocked_skins": current_unlocked_skins,
-		"equipped_skins": current_equipped_skins
+		"equipped_skins": current_equipped_skins,
+		"gacha_pity": current_gacha_pity
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -257,7 +265,8 @@ static func _get_default_profile() -> Dictionary:
 		"unlocked_navigators": [&"lyra", &"vespera", &"caelia", &"zephyr"] as Array[StringName],
 		"gacha_tokens": 0,
 		"unlocked_skins": {} as Dictionary,
-		"equipped_skins": {} as Dictionary
+		"equipped_skins": {} as Dictionary,
+		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary
 	}
 
 
@@ -305,7 +314,12 @@ static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_navigators": [] as Array[StringName],
 		"gacha_tokens": int(raw.get("gacha_tokens", 0)),
 		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
-		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary
+		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
+		"gacha_pity": {
+			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
+			"ships": int(raw.get("gacha_pity", {}).get("ships", 0)),
+			"pilots": int(raw.get("gacha_pity", {}).get("pilots", 0))
+		} as Dictionary
 	}
 
 	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
@@ -1015,4 +1029,15 @@ static func unlock_all_skins(star_level: int = 1) -> int:
 static func lock_all_skins() -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	SaveSkinsModule.lock_all_skins(self_class)
+
+static func get_banner_pity(banner_id: String) -> int:
+	return SaveSkinsModule.get_banner_pity(banner_id, load_profile())
+
+static func increment_banner_pity(banner_id: String, amount: int) -> int:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return SaveSkinsModule.increment_banner_pity(banner_id, amount, self_class)
+
+static func reset_banner_pity(banner_id: String) -> void:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.reset_banner_pity(banner_id, self_class)
 

@@ -293,3 +293,73 @@ static func lock_all_skins(save_manager_ref: Object) -> void:
 		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
 		tokens, {}, {}
 	)
+
+static func get_banner_pity(banner_id: String, profile: Dictionary) -> int:
+	var pity_dict: Dictionary = profile.get("gacha_pity", {})
+	return int(pity_dict.get(banner_id, 0))
+
+static func increment_banner_pity(banner_id: String, amount: int, save_manager_ref: Object) -> int:
+	var profile: Dictionary = save_manager_ref.load_profile()
+	var pity_dict: Dictionary = profile.get("gacha_pity", {}).duplicate()
+	var current: int = int(pity_dict.get(banner_id, 0))
+	var updated: int = clampi(current + amount, 0, 10)
+	pity_dict[banner_id] = updated
+
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var tokens: int = int(profile.get("gacha_tokens", 0))
+	var skins: Dictionary = profile.get("unlocked_skins", {})
+	var equipped: Dictionary = profile.get("equipped_skins", {})
+
+	save_manager_ref.save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		tokens, skins, equipped, pity_dict
+	)
+	return updated
+
+static func reset_banner_pity(banner_id: String, save_manager_ref: Object) -> void:
+	var profile: Dictionary = save_manager_ref.load_profile()
+	var pity_dict: Dictionary = profile.get("gacha_pity", {}).duplicate()
+	pity_dict[banner_id] = 0
+
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var tokens: int = int(profile.get("gacha_tokens", 0))
+	var skins: Dictionary = profile.get("unlocked_skins", {})
+	var equipped: Dictionary = profile.get("equipped_skins", {})
+
+	save_manager_ref.save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		tokens, skins, equipped, pity_dict
+	)
+

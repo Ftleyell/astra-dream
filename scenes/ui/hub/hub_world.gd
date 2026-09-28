@@ -132,6 +132,11 @@ var trophy_holo_nodes: Array[MeshInstance3D] = []
 @onready var parallax_mid: MeshInstance3D = get_node_or_null("SpaceParallax/Layer1_Mid")
 @onready var parallax_deep: MeshInstance3D = get_node_or_null("SpaceParallax/Layer0_Deep")
 
+# Parallax 3D Sur (Espejado)
+@onready var parallax_south_near: MeshInstance3D = get_node_or_null("SpaceParallax_South/Layer2_Near_South")
+@onready var parallax_south_mid: MeshInstance3D = get_node_or_null("SpaceParallax_South/Layer1_Mid_South")
+@onready var parallax_south_deep: MeshInstance3D = get_node_or_null("SpaceParallax_South/Layer0_Deep_South")
+
 const GachaModalScript := preload("res://scenes/ui/gacha/gacha_modal.gd")
 
 # Hologramas en terminales
@@ -154,6 +159,8 @@ func _ready() -> void:
 	_setup_interactables()
 	_setup_terminals()
 	_setup_gacha_terminal()
+	_build_mirrored_hangar_wing()
+	_setup_environment_collisions()
 	_apply_psychopop_styles()
 	_build_pilot_selector_buttons()
 	_update_materials_display()
@@ -185,19 +192,36 @@ func _process(delta: float) -> void:
 		var cam_pos: Vector3 = camera.global_position
 		var approach: float = clampf((-cam_pos.z) / 7.5, 0.0, 1.0)
 
-		if parallax_near:
+		# Parallax Norte (Ventanal Original Z = -10.0)
+		if parallax_near and is_instance_valid(parallax_near):
 			parallax_near.position.x = cam_pos.x * 0.35
 			parallax_near.position.y = 4.0 + (cam_pos.y - 3.2) * 0.25
 			var s_near: float = 1.0 + approach * 0.12
 			parallax_near.scale = Vector3(s_near, s_near, 1.0)
-		if parallax_mid:
+		if parallax_mid and is_instance_valid(parallax_mid):
 			parallax_mid.position.x = cam_pos.x * 0.14
 			parallax_mid.position.y = 6.0 + (cam_pos.y - 3.2) * 0.12
 			var s_mid: float = 1.0 + approach * 0.06
 			parallax_mid.scale = Vector3(s_mid, s_mid, 1.0)
-		if parallax_deep:
+		if parallax_deep and is_instance_valid(parallax_deep):
 			parallax_deep.position.x = cam_pos.x * 0.04
 			parallax_deep.position.y = 10.0 + (cam_pos.y - 3.2) * 0.04
+
+		# Parallax Sur (Ventanal Espejado Z = 43.6)
+		var approach_south: float = clampf((cam_pos.z - 33.5) / 7.5, 0.0, 1.0)
+		if parallax_south_near and is_instance_valid(parallax_south_near):
+			parallax_south_near.position.x = -cam_pos.x * 0.35
+			parallax_south_near.position.y = 4.0 + (cam_pos.y - 3.2) * 0.25
+			var s_snear: float = 1.0 + approach_south * 0.12
+			parallax_south_near.scale = Vector3(s_snear, s_snear, 1.0)
+		if parallax_south_mid and is_instance_valid(parallax_south_mid):
+			parallax_south_mid.position.x = -cam_pos.x * 0.14
+			parallax_south_mid.position.y = 6.0 + (cam_pos.y - 3.2) * 0.12
+			var s_smid: float = 1.0 + approach_south * 0.06
+			parallax_south_mid.scale = Vector3(s_smid, s_smid, 1.0)
+		if parallax_south_deep and is_instance_valid(parallax_south_deep):
+			parallax_south_deep.position.x = -cam_pos.x * 0.04
+			parallax_south_deep.position.y = 10.0 + (cam_pos.y - 3.2) * 0.04
 
 	# Animación idle de hologramas en las máquinas
 	_idle_time += delta
@@ -334,6 +358,22 @@ func _build_pilot_pedestals_and_vfx() -> void:
 			base_mat.roughness = 0.35
 			base_mesh_node.material_override = base_mat
 			ped_root.add_child(base_mesh_node)
+
+		# Colisión física sólida del pedestal (plataforma baja de 0.16m para step-up/slopes)
+		var ped_col: StaticBody3D = ped_root.get_node_or_null("PedestalCollision")
+		if not ped_col:
+			ped_col = StaticBody3D.new()
+			ped_col.name = "PedestalCollision"
+			ped_col.collision_layer = 1
+			ped_col.collision_mask = 0
+			var c_shape := CollisionShape3D.new()
+			var cyl_shape := CylinderShape3D.new()
+			cyl_shape.radius = 1.45
+			cyl_shape.height = 0.16
+			c_shape.shape = cyl_shape
+			c_shape.position = Vector3(0, 0.08, 0)
+			ped_col.add_child(c_shape)
+			ped_root.add_child(ped_col)
 
 		# 2. Anillo de Borde Neón (TorusMesh)
 		var rim_node: MeshInstance3D = ped_root.get_node_or_null("RimNeon")
@@ -1207,19 +1247,22 @@ func _setup_trophy_room() -> void:
 			trophy_modal.modal_closed.connect(_on_modal_closed)
 			trophy_modal.trophy_upgraded.connect(_on_trophy_upgraded)
 
-	# 2. Configurar pedestales e interactuables 3D de la Sala de Trofeos
+	# 2. Configurar pedestales e interactuables 3D en el Ala Sur ceremonial (Z = 30.2)
 	var trophy_group := get_node_or_null("TrophyRoom")
 	if not trophy_group:
 		trophy_group = Node3D.new()
 		trophy_group.name = "TrophyRoom"
 		add_child(trophy_group)
 
+	trophy_holo_nodes.clear()
+
+	# Ubicación ceremonial en semicírculo en el hangar sur (Z ≈ 30.2)
 	var trophies_spec := [
-		{"id": &"trophy_boss_aegis", "title": "Nodriza Aegis", "pos": Vector3(-4.5, 0.15, 13.5), "mesh_type": "prism"},
-		{"id": &"trophy_biosphere_core", "title": "Núcleo Bio-Planeta", "pos": Vector3(-2.2, 0.15, 13.5), "mesh_type": "sphere"},
-		{"id": &"trophy_cryo_core", "title": "Núcleo Criogénico", "pos": Vector3(0.0, 0.15, 13.5), "mesh_type": "cylinder"},
-		{"id": &"trophy_volcanic_core", "title": "Núcleo Volcánico", "pos": Vector3(2.2, 0.15, 13.5), "mesh_type": "box"},
-		{"id": &"trophy_monolith_master", "title": "Reliquia Monolito", "pos": Vector3(4.5, 0.15, 13.5), "mesh_type": "prism"}
+		{"id": &"trophy_boss_aegis", "title": "Nodriza Aegis", "pos": Vector3(-3.2, 0.16, 28.6), "mesh_type": "prism"},
+		{"id": &"trophy_biosphere_core", "title": "Núcleo Bio-Planeta", "pos": Vector3(-1.8, 0.16, 31.6), "mesh_type": "sphere"},
+		{"id": &"trophy_cryo_core", "title": "Núcleo Criogénico", "pos": Vector3(0.0, 0.16, 32.4), "mesh_type": "cylinder"},
+		{"id": &"trophy_volcanic_core", "title": "Núcleo Volcánico", "pos": Vector3(1.8, 0.16, 31.6), "mesh_type": "box"},
+		{"id": &"trophy_monolith_master", "title": "Reliquia Monolito", "pos": Vector3(3.2, 0.16, 28.6), "mesh_type": "prism"}
 	]
 
 	var inter_script = load("res://scenes/ui/hub/hub_interactable_3d.gd")
@@ -1231,11 +1274,25 @@ func _setup_trophy_room() -> void:
 		if not p_node:
 			p_node = Node3D.new()
 			p_node.name = p_name
-			p_node.position = spec["pos"]
 			trophy_group.add_child(p_node)
 
-			# Pedestal visual
-			var base_mesh := MeshInstance3D.new()
+		# Actualizar posición ceremonial
+		p_node.position = spec["pos"]
+
+		# Purgar cualquier HoloMesh duplicado residual
+		var extra_holos: Array[Node] = []
+		for child in p_node.get_children():
+			if child is MeshInstance3D and child.name.begins_with("HoloMesh"):
+				extra_holos.append(child)
+		while extra_holos.size() > 1:
+			var duplicate_node: Node = extra_holos.pop_back()
+			p_node.remove_child(duplicate_node)
+			duplicate_node.queue_free()
+
+		# Pedestal visual
+		var base_mesh: MeshInstance3D = p_node.get_node_or_null("BaseMesh")
+		if not base_mesh:
+			base_mesh = MeshInstance3D.new()
 			base_mesh.name = "BaseMesh"
 			var cyl := CylinderMesh.new()
 			cyl.top_radius = 0.55
@@ -1244,27 +1301,56 @@ func _setup_trophy_room() -> void:
 			base_mesh.mesh = cyl
 			p_node.add_child(base_mesh)
 
-			# Holograma rotatorio
-			var holo_mesh := MeshInstance3D.new()
+		# Colisión sólida del pedestal de trofeo
+		var trophy_col: StaticBody3D = p_node.get_node_or_null("TrophyCollision")
+		if not trophy_col:
+			trophy_col = StaticBody3D.new()
+			trophy_col.name = "TrophyCollision"
+			trophy_col.collision_layer = 1
+			trophy_col.collision_mask = 0
+			var t_col_shape := CollisionShape3D.new()
+			var t_cyl_shape := CylinderShape3D.new()
+			t_cyl_shape.radius = 0.65
+			t_cyl_shape.height = 0.4
+			t_col_shape.shape = t_cyl_shape
+			t_col_shape.position = Vector3(0, 0.04, 0)
+			trophy_col.add_child(t_col_shape)
+			p_node.add_child(trophy_col)
+
+		# Holograma rotatorio único
+		var holo_mesh: MeshInstance3D = p_node.get_node_or_null("HoloMesh")
+		if not holo_mesh:
+			holo_mesh = MeshInstance3D.new()
 			holo_mesh.name = "HoloMesh"
 			holo_mesh.position = Vector3(0, 0.8, 0)
 			match spec["mesh_type"]:
 				"prism":
-					holo_mesh.mesh = PrismMesh.new()
+					var pm := PrismMesh.new()
+					pm.size = Vector3(0.45, 0.45, 0.45)
+					holo_mesh.mesh = pm
 				"sphere":
-					holo_mesh.mesh = SphereMesh.new()
+					var sm := SphereMesh.new()
+					sm.radius = 0.25
+					sm.height = 0.5
+					holo_mesh.mesh = sm
 				"cylinder":
-					holo_mesh.mesh = CylinderMesh.new()
+					var cm := CylinderMesh.new()
+					cm.top_radius = 0.25
+					cm.bottom_radius = 0.25
+					cm.height = 0.45
+					holo_mesh.mesh = cm
 				"box":
-					holo_mesh.mesh = BoxMesh.new()
-			if holo_mesh.mesh:
-				if "size" in holo_mesh.mesh:
-					holo_mesh.mesh.set("size", Vector3(0.45, 0.45, 0.45))
-				elif "radius" in holo_mesh.mesh:
-					holo_mesh.mesh.set("radius", 0.25)
+					var bm := BoxMesh.new()
+					bm.size = Vector3(0.45, 0.45, 0.45)
+					holo_mesh.mesh = bm
 			p_node.add_child(holo_mesh)
 
-			# Interactuable 3D
+		if holo_mesh and not trophy_holo_nodes.has(holo_mesh):
+			trophy_holo_nodes.append(holo_mesh)
+
+		# Interactuable 3D
+		var inter_node = p_node.get_node_or_null("Interactable_" + String(tid))
+		if not inter_node:
 			var inter = inter_script.new()
 			inter.name = "Interactable_" + String(tid)
 			inter.target_character_id = tid
@@ -1272,12 +1358,8 @@ func _setup_trophy_room() -> void:
 			inter.interaction_radius = 2.2
 			inter.prompt_offset_y = 1.6
 			p_node.add_child(inter)
+			inter_node = inter
 
-		var holo_mesh_node: MeshInstance3D = p_node.get_node_or_null("HoloMesh")
-		if holo_mesh_node and not trophy_holo_nodes.has(holo_mesh_node):
-			trophy_holo_nodes.append(holo_mesh_node)
-
-		var inter_node = p_node.get_node_or_null("Interactable_" + String(tid))
 		if inter_node and inter_node.has_signal("interacted") and not inter_node.interacted.is_connected(_on_trophy_pedestal_interacted):
 			inter_node.interacted.connect(_on_trophy_pedestal_interacted)
 
@@ -1349,3 +1431,270 @@ func _update_dark_matter_display() -> void:
 	var val_label := dm_row.get_node_or_null("DarkMatterValue") as Label
 	if val_label:
 		val_label.text = "%d u." % SaveManager.get_dark_matter()
+
+
+# ── COLISIONES 3D DEL ENTORNO ──────────────────────────────────────────────────
+func _setup_environment_collisions() -> void:
+	# 1. Terminal Central de Misiones (Arcade Cabinet)
+	var mission_term: Node3D = get_node_or_null("Terminals/MissionTerminal")
+	if mission_term:
+		_ensure_static_box_collider(mission_term, Vector3(1.6, 2.2, 1.4), Vector3(0.0, 1.1, 0.0))
+
+	# 2. Terminal de Récords (Arcade Cabinet)
+	var highscores_term: Node3D = get_node_or_null("Terminals/HighScoresTerminal")
+	if highscores_term:
+		_ensure_static_box_collider(highscores_term, Vector3(1.6, 2.2, 1.4), Vector3(0.0, 1.1, 0.0))
+
+	# 3. Terminal de Gacha / Máquina de Garras
+	var gacha_claw: Node3D = get_node_or_null("SpaceParallax/claw-machine2")
+	if gacha_claw:
+		_ensure_static_box_collider(gacha_claw, Vector3(0.55, 0.8, 0.5), Vector3(0.0, 0.4, 0.0))
+	var gacha_term: Node3D = get_node_or_null("Terminals/GachaTerminal")
+	if gacha_term and not gacha_claw:
+		_ensure_static_box_collider(gacha_term, Vector3(1.6, 2.4, 1.5), Vector3(0.0, 1.2, 0.0))
+
+	# 4. Vehículo Rover Espacial (el modelo local mide 0.30 x 0.39 x 0.35, escalado 4x)
+	var rover_node: Node3D = get_node_or_null("rover")
+	if rover_node:
+		_ensure_static_box_collider(rover_node, Vector3(0.32, 0.38, 0.36), Vector3(0.0, 0.19, 0.0))
+
+	# 5. Generador Eléctrico Sci-Fi (el modelo local mide 0.50 x 0.40 x 0.40, escalado 3x)
+	var gen_node: Node3D = get_node_or_null("machine_generator")
+	if gen_node:
+		_ensure_static_box_collider(gen_node, Vector3(0.52, 0.42, 0.42), Vector3(0.0, 0.20, 0.0))
+
+	# 6. Muros Perimetrales del Hangar (Bloqueo físico de 2m de espesor y 8m de alto para ambos hangares Z in [-9.5, 43.6])
+	var hangar: Node3D = get_node_or_null("HangarRoom")
+	if hangar:
+		_setup_perimeter_wall(hangar, "LeftWall", Vector3(-12.5, 3.0, 17.0), Vector3(2.0, 8.0, 58.0))
+		_setup_perimeter_wall(hangar, "RightWall", Vector3(12.5, 3.0, 17.0), Vector3(2.0, 8.0, 58.0))
+		_setup_perimeter_wall(hangar, "BackWall", Vector3(0.0, 3.0, 43.6), Vector3(28.0, 8.0, 2.0))
+		_setup_perimeter_wall(hangar, "FrontWall", Vector3(0.0, 3.0, -9.5), Vector3(28.0, 8.0, 2.0))
+
+
+func _build_mirrored_hangar_wing() -> void:
+	var hangar: Node3D = get_node_or_null("HangarRoom")
+	if not hangar:
+		return
+
+	# Si ya existe en la escena (guardado en .tscn o instanciado), no duplicar
+	if hangar.get_node_or_null("MirroredWing"):
+		_build_south_parallax()
+		return
+
+	var wing := Node3D.new()
+	wing.name = "MirroredWing"
+	hangar.add_child(wing)
+
+	var hangar_mesh_res: Resource = load("res://scratch/downloads/space_kit/Models/OBJ format/hangar_smallA.obj")
+	if hangar_mesh_res:
+		var south_roof := MeshInstance3D.new()
+		south_roof.name = "SouthHangarRoofMesh"
+		south_roof.mesh = hangar_mesh_res as Mesh
+		south_roof.transform = Transform3D(
+			Basis.from_euler(Vector3(0.0, PI, 0.0)).scaled(Vector3(16.0, 16.0, 16.0)),
+			Vector3(-0.042, -15.725, 33.704)
+		)
+		wing.add_child(south_roof)
+
+	var wall_res: PackedScene = load("res://assets/models/kenney_modular_space/template-wall.glb") as PackedScene
+	var wall_detail_res: PackedScene = load("res://assets/models/kenney_modular_space/template-wall-detail-a.glb") as PackedScene
+	var wall_window_res: PackedScene = load("res://assets/models/kenney_mini_arcade/wall-window.glb") as PackedScene
+	var corner_res: PackedScene = load("res://assets/models/kenney_modular_space/template-wall-corner.glb") as PackedScene
+
+	var left_positions: Array[float] = [39.57, 34.57, 29.57, 24.57, 19.57]
+	for idx in range(left_positions.size()):
+		var z_pos: float = left_positions[idx]
+		var seg_scene: PackedScene = wall_detail_res if (idx % 2 == 1) else wall_res
+		if seg_scene:
+			var seg: Node3D = seg_scene.instantiate() as Node3D
+			seg.name = "South_LeftWall_Seg%d" % idx
+			seg.transform = Transform3D(
+				Basis(Vector3(0.0, 0.0, 1.3), Vector3(0.0, 1.35, 0.0), Vector3(-1.3, 0.0, 0.0)),
+				Vector3(-12.915, 0.215, z_pos)
+			)
+			wing.add_child(seg)
+
+	var right_positions: Array[float] = [39.56, 34.56, 29.56, 24.56, 19.56]
+	for idx in range(right_positions.size()):
+		var z_pos: float = right_positions[idx]
+		var seg_scene: PackedScene = wall_detail_res if (idx % 2 == 1) else wall_res
+		if seg_scene:
+			var seg: Node3D = seg_scene.instantiate() as Node3D
+			seg.name = "South_RightWall_Seg%d" % idx
+			seg.transform = Transform3D(
+				Basis(Vector3(0.0, 0.0, -1.3), Vector3(0.0, 1.35, 0.0), Vector3(1.3, 0.0, 0.0)),
+				Vector3(12.892, 0.1, z_pos)
+			)
+			wing.add_child(seg)
+
+	if corner_res:
+		var c_bl: Node3D = corner_res.instantiate() as Node3D
+		c_bl.name = "South_Corner_BL"
+		c_bl.transform = Transform3D(
+			Basis(Vector3(1.3, 0.0, 0.0), Vector3(0.0, 1.35, 0.0), Vector3(0.0, 0.0, 1.3)),
+			Vector3(-12.4, 0.0, 43.1)
+		)
+		wing.add_child(c_bl)
+
+		var c_br: Node3D = corner_res.instantiate() as Node3D
+		c_br.name = "South_Corner_BR"
+		c_br.transform = Transform3D(
+			Basis(Vector3(0.0, 0.0, 1.3), Vector3(0.0, 1.35, 0.0), Vector3(-1.3, 0.0, 0.0)),
+			Vector3(12.4, 0.0, 43.1)
+		)
+		wing.add_child(c_br)
+
+	if wall_window_res:
+		var south_win: Node3D = wall_window_res.instantiate() as Node3D
+		south_win.name = "SouthWallWindow"
+		south_win.transform = Transform3D(
+			Basis.from_euler(Vector3(0.0, PI, 0.0)).scaled(Vector3(17.0, 17.0, 17.0)),
+			Vector3(-0.398, 0.848, 43.6)
+		)
+		wing.add_child(south_win)
+
+	var rail_mesh: BoxMesh = BoxMesh.new()
+	rail_mesh.size = Vector3(26.0, 1.2, 0.5)
+	var rail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rail_mat.albedo_color = Color(0.9, 0.92, 0.96, 1.0)
+	rail_mat.metallic = 0.9
+	rail_mat.roughness = 0.2
+	rail_mat.emission_enabled = true
+	rail_mat.emission = Color(0.0, 0.94, 1.0, 1.0)
+	rail_mat.emission_energy_multiplier = 0.8
+	rail_mesh.material = rail_mat
+
+	var south_railing_mesh := MeshInstance3D.new()
+	south_railing_mesh.name = "SouthFrontRailingMesh"
+	south_railing_mesh.mesh = rail_mesh
+	south_railing_mesh.position = Vector3(0.0, 0.816, 43.1)
+	wing.add_child(south_railing_mesh)
+
+	_build_south_parallax()
+
+
+func _build_south_parallax() -> void:
+	var existing_sp := get_node_or_null("SpaceParallax_South")
+	if existing_sp:
+		if not parallax_south_deep:
+			parallax_south_deep = existing_sp.get_node_or_null("Layer0_Deep_South") as MeshInstance3D
+		if not parallax_south_mid:
+			parallax_south_mid = existing_sp.get_node_or_null("Layer1_Mid_South") as MeshInstance3D
+		if not parallax_south_near:
+			parallax_south_near = existing_sp.get_node_or_null("Layer2_Near_South") as MeshInstance3D
+		return
+
+	var south_px := Node3D.new()
+	south_px.name = "SpaceParallax_South"
+	add_child(south_px)
+
+	var tex0: Texture2D = load("res://assets/environments/space_parallax/space_parallax_layer0_deep.png") as Texture2D
+	var tex1: Texture2D = load("res://assets/environments/space_parallax/space_parallax_layer1_mid.png") as Texture2D
+	var tex2: Texture2D = load("res://assets/environments/space_parallax/space_parallax_layer2_near.png") as Texture2D
+
+	var rot180_basis := Basis.from_euler(Vector3(0.0, PI, 0.0))
+
+	var mat0 := StandardMaterial3D.new()
+	mat0.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat0.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat0.albedo_texture = tex0
+	var qmesh0 := QuadMesh.new()
+	qmesh0.size = Vector2(380.0, 210.0)
+	qmesh0.material = mat0
+	parallax_south_deep = MeshInstance3D.new()
+	parallax_south_deep.name = "Layer0_Deep_South"
+	parallax_south_deep.mesh = qmesh0
+	parallax_south_deep.transform = Transform3D(rot180_basis, Vector3(0.0, 10.0, 128.0))
+	south_px.add_child(parallax_south_deep)
+
+	var mat1 := StandardMaterial3D.new()
+	mat1.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat1.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat1.albedo_texture = tex1
+	var qmesh1 := QuadMesh.new()
+	qmesh1.size = Vector2(260.0, 145.0)
+	qmesh1.material = mat1
+	parallax_south_mid = MeshInstance3D.new()
+	parallax_south_mid.name = "Layer1_Mid_South"
+	parallax_south_mid.mesh = qmesh1
+	parallax_south_mid.transform = Transform3D(rot180_basis, Vector3(0.0, 6.0, 92.0))
+	south_px.add_child(parallax_south_mid)
+
+	var mat2 := StandardMaterial3D.new()
+	mat2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat2.albedo_texture = tex2
+	var qmesh2 := QuadMesh.new()
+	qmesh2.size = Vector2(180.0, 100.0)
+	qmesh2.material = mat2
+	parallax_south_near = MeshInstance3D.new()
+	parallax_south_near.name = "Layer2_Near_South"
+	parallax_south_near.mesh = qmesh2
+	parallax_south_near.transform = Transform3D(rot180_basis, Vector3(0.0, 4.1, 64.0))
+	south_px.add_child(parallax_south_near)
+
+
+func _setup_perimeter_wall(parent: Node3D, wall_name: String, pos: Vector3, box_size: Vector3) -> void:
+	var wall: StaticBody3D = parent.get_node_or_null(wall_name)
+	if not wall:
+		wall = StaticBody3D.new()
+		wall.name = wall_name
+		parent.add_child(wall)
+	wall.collision_layer = 1
+	wall.collision_mask = 0
+	wall.position = pos
+
+	var cshape: CollisionShape3D = wall.get_node_or_null("CollisionShape3D")
+	if not cshape:
+		cshape = CollisionShape3D.new()
+		cshape.name = "CollisionShape3D"
+		wall.add_child(cshape)
+
+	var box := BoxShape3D.new()
+	box.size = box_size
+	cshape.shape = box
+	cshape.position = Vector3.ZERO
+
+
+func _ensure_static_box_collider(parent: Node3D, box_size: Vector3, center_pos: Vector3) -> void:
+	if not parent:
+		return
+	var existing: StaticBody3D = parent.get_node_or_null("EnvironmentCollision")
+	if not existing:
+		existing = StaticBody3D.new()
+		existing.name = "EnvironmentCollision"
+		parent.add_child(existing)
+	existing.collision_layer = 1
+	existing.collision_mask = 0
+
+	var cshape: CollisionShape3D = existing.get_node_or_null("CollisionShape3D")
+	if not cshape:
+		cshape = CollisionShape3D.new()
+		cshape.name = "CollisionShape3D"
+		existing.add_child(cshape)
+
+	var box := BoxShape3D.new()
+	box.size = box_size
+	cshape.shape = box
+	cshape.position = center_pos
+
+
+func _ensure_static_cylinder_collider(parent: Node3D, radius: float, height: float, center_pos: Vector3) -> void:
+	if not parent:
+		return
+	var existing: StaticBody3D = parent.get_node_or_null("EnvironmentCollision")
+	if not existing:
+		existing = StaticBody3D.new()
+		existing.name = "EnvironmentCollision"
+		existing.collision_layer = 1
+		existing.collision_mask = 0
+		var cshape := CollisionShape3D.new()
+		var cyl := CylinderShape3D.new()
+		cyl.radius = radius
+		cyl.height = height
+		cshape.shape = cyl
+		cshape.position = center_pos
+		existing.add_child(cshape)
+		parent.add_child(existing)
+

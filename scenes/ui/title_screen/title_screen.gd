@@ -7,8 +7,9 @@ extends Control
 ## y el panel integrado de Notas del Parche permanentemente visible y abierto.
 ## Al recibir cualquier input principal, transiciona cinematográficamente hacia el Hub 3D.
 
-@onready var title_label: Label = $MainHBox/LeftVBox/TitleLabel
-@onready var subtitle_label: Label = $MainHBox/LeftVBox/SubtitleLabel
+@onready var logo_texture: TextureRect = $MainHBox/LeftVBox.get_node_or_null("LogoTexture") as TextureRect
+@onready var title_label: Label = $MainHBox/LeftVBox.get_node_or_null("TitleLabel") as Label
+@onready var subtitle_label: Label = $MainHBox/LeftVBox.get_node_or_null("SubtitleLabel") as Label
 @onready var prompt_label: Label = $MainHBox/LeftVBox/PromptLabel
 @onready var fade_rect: ColorRect = $FadeRect
 @onready var patch_notes_panel: Control = $MainHBox/PatchNotesPanel
