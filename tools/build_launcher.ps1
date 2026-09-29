@@ -61,6 +61,8 @@ if (-not $SkipExport) {
         }
     }
     Write-Host "    Usando Godot: $GodotExe" -ForegroundColor Gray
+    Write-Host "    Importando y sincronizando assets en caché..." -ForegroundColor DarkGray
+    & $GodotExe --headless --path "$ProjectRoot" --editor --quit
     & $GodotExe --headless --path "$ProjectRoot" --export-pack "Windows Desktop" "$PreAlphaDir\AstraDream.pck"
     Write-Host "[+] AstraDream.pck exportado con exito." -ForegroundColor Green
 } else {
