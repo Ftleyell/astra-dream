@@ -1,11 +1,12 @@
 import os
 import json
-from PIL import Image, ImageEnhance, ImageOps
+from PIL import Image, ImageOps
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 RECOLORS_DIR = os.path.join(ASSETS_DIR, "recolors")
 DATA_DIR = os.path.join(BASE_DIR, "data", "cosmetics")
+CATEGORIES_DIR = os.path.join(DATA_DIR, "categories")
 
 PALETTES = {
     "crimson_void": {
@@ -79,8 +80,8 @@ NAV_DISPLAY_NAMES = {
     "lyra": "Lyra", "vespera": "Vespera", "caelia": "Caelia", "zephyr": "Zephyr", "iris": "Iris"
 }
 
-def recolor_image(src_path, dst_path, tint_rgb, blend_factor=0.6):
-    """Applies a smooth color tint and contrast curve preserving alpha and luminescence."""
+def recolor_image(src_path, dst_path, tint_rgb, blend_factor=0.65, preserve_skin=False):
+    """Applies color tint with optional facial and skin tone preservation."""
     if not os.path.exists(src_path):
         print(f"Warning: Source not found: {src_path}")
         return False
@@ -88,38 +89,76 @@ def recolor_image(src_path, dst_path, tint_rgb, blend_factor=0.6):
     img = Image.open(src_path).convert("RGBA")
     r, g, b, a = img.split()
     
-    # Convert RGB to grayscale to get luminosity
     gray = ImageOps.grayscale(img)
+    tinted = ImageOps.colorize(
+        gray,
+        black=(0, 0, 0),
+        white=tint_rgb,
+        mid=(int(tint_rgb[0] * 0.6), int(tint_rgb[1] * 0.6), int(tint_rgb[2] * 0.6))
+    )
     
-    # Create colored overlay based on tint_rgb
-    color_img = Image.new("RGB", img.size, tint_rgb)
-    
-    # Multiply/Blend tint with grayscale luminosity
-    tinted = ImageOps.colorize(gray, black=(0, 0, 0), white=tint_rgb, mid=(int(tint_rgb[0]*0.6), int(tint_rgb[1]*0.6), int(tint_rgb[2]*0.6)))
-    
-    # Blend original and tinted
-    blended = Image.blend(img.convert("RGB"), tinted, blend_factor)
-    
-    # Re-apply alpha channel
-    final_img = Image.merge("RGBA", (*blended.split(), a))
-    
+    if not preserve_skin:
+        blended = Image.blend(img.convert("RGB"), tinted, blend_factor)
+        final_img = Image.merge("RGBA", (*blended.split(), a))
+        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+        final_img.save(dst_path, "PNG")
+        return True
+
+    # Protección de tonos de piel / rostro
+    img_rgb = img.convert("RGB")
+    pixels_orig = list(img_rgb.getdata())
+    pixels_tinted = list(tinted.getdata())
+    out_pixels = []
+
+    for orig, tnt in zip(pixels_orig, pixels_tinted):
+        ro, go, bo = orig
+        # Detección de tonos cálidos y de piel
+        is_skin = (
+            ro > 70 and go > 35 and bo > 20 and
+            ro > go and (ro - go) >= 10 and (go >= bo) and
+            (ro - bo) >= 15
+        )
+        
+        factor = blend_factor * 0.15 if is_skin else blend_factor
+            
+        rf = int(ro * (1.0 - factor) + tnt[0] * factor)
+        gf = int(go * (1.0 - factor) + tnt[1] * factor)
+        bf = int(bo * (1.0 - factor) + tnt[2] * factor)
+        out_pixels.append((rf, gf, bf))
+
+    out_rgb = Image.new("RGB", img.size)
+    out_rgb.putdata(out_pixels)
+    final_img = Image.merge("RGBA", (*out_rgb.split(), a))
+
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     final_img.save(dst_path, "PNG")
     return True
 
 def generate_all():
     os.makedirs(DATA_DIR, exist_ok=True)
+    os.makedirs(CATEGORIES_DIR, exist_ok=True)
+    os.makedirs(os.path.join(RECOLORS_DIR, "ships"), exist_ok=True)
+    os.makedirs(os.path.join(RECOLORS_DIR, "weapons"), exist_ok=True)
+    os.makedirs(os.path.join(RECOLORS_DIR, "pilots"), exist_ok=True)
+    os.makedirs(os.path.join(RECOLORS_DIR, "pets"), exist_ok=True)
+    os.makedirs(os.path.join(RECOLORS_DIR, "navigators"), exist_ok=True)
     
     skin_database = {
-        "version": 1,
+        "version": "1.0",
         "palettes": PALETTES,
         "skins": {}
     }
     
+    cat_ships = {"category": "ship", "skins": {}}
+    cat_weapons = {"category": "weapon", "skins": {}}
+    cat_pilots = {"category": "pilot", "skins": {}}
+    cat_pets = {"category": "pet", "skins": {}}
+    cat_navigators = {"category": "navigator", "skins": {}}
+
     total_generated = 0
     
-    # 1. SHIPS
-    print("--- Generando Skins de Naves ---")
+    # 1. SHIPS (Exotrajes 256x256 con protección de rostro)
+    print("--- Generando Skins de Naves (Exotrajes) ---")
     for pilot in PILOTS:
         src_ship = os.path.join(ASSETS_DIR, "characters", "ships", f"ship_{pilot}.png")
         for pal_id, pal in PALETTES.items():
@@ -127,10 +166,11 @@ def generate_all():
             dst_ship = os.path.join(RECOLORS_DIR, "ships", f"ship_{pilot}_{pal_id}.png")
             rel_path = f"res://assets/recolors/ships/ship_{pilot}_{pal_id}.png"
             
-            if recolor_image(src_ship, dst_ship, pal["tint_rgb"], blend_factor=0.65):
+            # Recolor preservando el rostro y tiñendo el exotraje/blindaje
+            if recolor_image(src_ship, dst_ship, pal["tint_rgb"], blend_factor=0.68, preserve_skin=True):
                 total_generated += 1
             
-            skin_database["skins"][skin_id] = {
+            skin_entry = {
                 "id": skin_id,
                 "category": "ship",
                 "target_id": pilot,
@@ -143,30 +183,64 @@ def generate_all():
                 "accent_hex": pal["accent_hex"],
                 "texture_path": rel_path
             }
+            skin_database["skins"][skin_id] = skin_entry
+            cat_ships["skins"][skin_id] = skin_entry
 
-    # 2. PILOTS (FULLBODY)
+    # 2. WEAPONS (Armas 128x128 y HD 1024x1024)
+    print("--- Generando Skins de Armas ---")
+    for pilot in PILOTS:
+        src_weapon = os.path.join(ASSETS_DIR, "characters", "weapons", f"weapon_{pilot}.png")
+        src_weapon_hd = os.path.join(ASSETS_DIR, "characters", "weapons", f"weapon_{pilot}_hd.png")
+        
+        for pal_id, pal in PALETTES.items():
+            skin_id = f"weapon_{pilot}_{pal_id}"
+            dst_weapon = os.path.join(RECOLORS_DIR, "weapons", f"weapon_{pilot}_{pal_id}.png")
+            rel_path = f"res://assets/recolors/weapons/weapon_{pilot}_{pal_id}.png"
+            
+            if recolor_image(src_weapon, dst_weapon, pal["tint_rgb"], blend_factor=0.72, preserve_skin=False):
+                total_generated += 1
+
+            if os.path.exists(src_weapon_hd):
+                dst_weapon_hd = os.path.join(RECOLORS_DIR, "weapons", f"weapon_{pilot}_{pal_id}_hd.png")
+                recolor_image(src_weapon_hd, dst_weapon_hd, pal["tint_rgb"], blend_factor=0.72, preserve_skin=False)
+
+            skin_entry = {
+                "id": skin_id,
+                "category": "weapon",
+                "target_id": pilot,
+                "target_name": f"Arma de {PILOT_DISPLAY_NAMES.get(pilot, pilot.capitalize())}",
+                "palette_id": pal_id,
+                "skin_name": f"{pal['name']} - Fuego de {PILOT_DISPLAY_NAMES.get(pilot, pilot.capitalize())}",
+                "description": f"Modifica el chasis, proyectiles y partículas del arma a {pal['name']}.",
+                "rarity": pal["rarity"],
+                "glow_hex": pal["glow_hex"],
+                "accent_hex": pal["accent_hex"],
+                "tint_rgb": pal["tint_rgb"],
+                "texture_path": rel_path
+            }
+            skin_database["skins"][skin_id] = skin_entry
+            cat_weapons["skins"][skin_id] = skin_entry
+
+    # 3. PILOTS (Fullbody y Retratos con protección de rostro)
     print("--- Generando Skins de Pilotos Fullbody ---")
     for pilot in PILOTS:
         src_fullbody = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}.png")
-        src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
         for pal_id, pal in PALETTES.items():
             skin_id = f"pilot_{pilot}_{pal_id}"
             dst_fullbody = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}.png")
             rel_path = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}.png"
             
-            if recolor_image(src_fullbody, dst_fullbody, pal["tint_rgb"], blend_factor=0.45):
+            if recolor_image(src_fullbody, dst_fullbody, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                 total_generated += 1
             
-            # Flipped fullbody
             src_flipped = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_flipped.png")
             rel_flipped = ""
             if os.path.exists(src_flipped):
                 dst_flipped = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}_flipped.png")
-                if recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.45):
+                if recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                     total_generated += 1
                     rel_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_flipped.png"
             
-            # Portraits (Normal and Flipped for in-game Dialogic dialogues)
             src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
             if not os.path.exists(src_portrait):
                 src_portrait = os.path.join(ASSETS_DIR, "portraits", f"portrait_{pilot}.png")
@@ -178,18 +252,18 @@ def generate_all():
             rel_portrait = ""
             if os.path.exists(src_portrait):
                 dst_portrait = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}.png")
-                if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45):
+                if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.42, preserve_skin=True):
                     total_generated += 1
                     rel_portrait = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}.png"
 
             rel_portrait_flipped = ""
             if os.path.exists(src_portrait_flipped):
                 dst_portrait_flipped = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}_flipped.png")
-                if recolor_image(src_portrait_flipped, dst_portrait_flipped, pal["tint_rgb"], blend_factor=0.45):
+                if recolor_image(src_portrait_flipped, dst_portrait_flipped, pal["tint_rgb"], blend_factor=0.42, preserve_skin=True):
                     total_generated += 1
                     rel_portrait_flipped = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}_flipped.png"
             
-            skin_database["skins"][skin_id] = {
+            skin_entry = {
                 "id": skin_id,
                 "category": "pilot",
                 "target_id": pilot,
@@ -205,26 +279,8 @@ def generate_all():
                 "portrait_texture_path": rel_portrait,
                 "portrait_flipped_texture_path": rel_portrait_flipped
             }
-
-    # 3. WEAPONS (PRIMARY PROJECTILE COLOR PALETTES)
-    print("--- Generando Skins de Armas ---")
-    for pilot in PILOTS:
-        for pal_id, pal in PALETTES.items():
-            skin_id = f"weapon_{pilot}_{pal_id}"
-            skin_database["skins"][skin_id] = {
-                "id": skin_id,
-                "category": "weapon",
-                "target_id": pilot,
-                "target_name": f"Arma de {PILOT_DISPLAY_NAMES.get(pilot, pilot.capitalize())}",
-                "palette_id": pal_id,
-                "skin_name": f"{pal['name']} - Fuego de {PILOT_DISPLAY_NAMES.get(pilot, pilot.capitalize())}",
-                "description": f"Modifica el haz, proyectiles y partículas del arma a {pal['name']}.",
-                "rarity": pal["rarity"],
-                "glow_hex": pal["glow_hex"],
-                "accent_hex": pal["accent_hex"],
-                "tint_rgb": pal["tint_rgb"],
-                "texture_path": "" # Procedural color/shader based
-            }
+            skin_database["skins"][skin_id] = skin_entry
+            cat_pilots["skins"][skin_id] = skin_entry
 
     # 4. PETS
     print("--- Generando Skins de Pets ---")
@@ -238,7 +294,7 @@ def generate_all():
             if recolor_image(src_pet, dst_pet, pal["tint_rgb"], blend_factor=0.55):
                 total_generated += 1
                 
-            skin_database["skins"][skin_id] = {
+            skin_entry = {
                 "id": skin_id,
                 "category": "pet",
                 "target_id": pet,
@@ -252,6 +308,8 @@ def generate_all():
                 "texture_path": rel_path,
                 "portrait_texture_path": rel_path
             }
+            skin_database["skins"][skin_id] = skin_entry
+            cat_pets["skins"][skin_id] = skin_entry
 
     # 5. NAVIGATORS
     print("--- Generando Skins de Navegadoras ---")
@@ -262,10 +320,10 @@ def generate_all():
             dst_nav = os.path.join(RECOLORS_DIR, "navigators", f"portrait_{nav}_{pal_id}.png")
             rel_path = f"res://assets/recolors/navigators/portrait_{nav}_{pal_id}.png"
             
-            if recolor_image(src_nav, dst_nav, pal["tint_rgb"], blend_factor=0.45):
+            if recolor_image(src_nav, dst_nav, pal["tint_rgb"], blend_factor=0.45, preserve_skin=True):
                 total_generated += 1
                 
-            skin_database["skins"][skin_id] = {
+            skin_entry = {
                 "id": skin_id,
                 "category": "navigator",
                 "target_id": nav,
@@ -278,15 +336,33 @@ def generate_all():
                 "accent_hex": pal["accent_hex"],
                 "texture_path": rel_path
             }
+            skin_database["skins"][skin_id] = skin_entry
+            cat_navigators["skins"][skin_id] = skin_entry
 
-    # Write database JSON
+    # Write databases (both monolithic and modular category JSONs)
     json_path = os.path.join(DATA_DIR, "skin_database.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(skin_database, f, indent=2, ensure_ascii=False)
+        
+    with open(os.path.join(CATEGORIES_DIR, "skins_ships.json"), "w", encoding="utf-8") as f:
+        json.dump(cat_ships, f, indent=2, ensure_ascii=False)
+
+    with open(os.path.join(CATEGORIES_DIR, "skins_weapons.json"), "w", encoding="utf-8") as f:
+        json.dump(cat_weapons, f, indent=2, ensure_ascii=False)
+
+    with open(os.path.join(CATEGORIES_DIR, "skins_pilots.json"), "w", encoding="utf-8") as f:
+        json.dump(cat_pilots, f, indent=2, ensure_ascii=False)
+
+    with open(os.path.join(CATEGORIES_DIR, "skins_pets.json"), "w", encoding="utf-8") as f:
+        json.dump(cat_pets, f, indent=2, ensure_ascii=False)
+
+    with open(os.path.join(CATEGORIES_DIR, "skins_navigators.json"), "w", encoding="utf-8") as f:
+        json.dump(cat_navigators, f, indent=2, ensure_ascii=False)
     
     print(f"\n[OK] Total de skins generadas e indexadas: {len(skin_database['skins'])}")
     print(f"[OK] Archivos PNG creados en disco: {total_generated}")
-    print(f"[OK] Base de datos guardada en: {json_path}")
+    print(f"[OK] Base de datos global guardada en: {json_path}")
+    print(f"[OK] Archivos modulares guardados en: {CATEGORIES_DIR}")
 
 if __name__ == "__main__":
     generate_all()

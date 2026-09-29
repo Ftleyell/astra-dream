@@ -46,11 +46,14 @@ func _ready() -> void:
 		player_node.is_dashing = true
 		player_node._update_pilot_shader(0.016, true)
 
-		# Spawnear manualmente un par de afterimages detrás para la foto
+		# Spawnear manualmente 5 afterimages para visualizar el ciclo Ping-Pong en la foto
 		var vfx_comp = player_node.get_node_or_null("SandevistanFlightVFX")
 		if vfx_comp:
-			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 45), true)
-			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 90), true)
+			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 36), true)
+			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 72), true)
+			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 108), true)
+			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 144), true)
+			vfx_comp._spawn_ghost(player_node.global_position + Vector2(0, 180), true)
 
 	for i in range(10):
 		await get_tree().process_frame

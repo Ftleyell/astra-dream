@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": "1.0",
   "palettes": {
     "crimson_void": {
       "name": "Carmesí del Vacío",
@@ -650,6 +650,762 @@
       "glow_hex": "#A7F3D0",
       "accent_hex": "#10B981",
       "texture_path": "res://assets/recolors/ships/ship_nyx_emerald_matrix.png"
+    },
+    "weapon_nova_crimson_void": {
+      "id": "weapon_nova_crimson_void",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_crimson_void.png"
+    },
+    "weapon_nova_cyber_neon": {
+      "id": "weapon_nova_cyber_neon",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_cyber_neon.png"
+    },
+    "weapon_nova_solar_gold": {
+      "id": "weapon_nova_solar_gold",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_solar_gold.png"
+    },
+    "weapon_nova_glacial_frost": {
+      "id": "weapon_nova_glacial_frost",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_glacial_frost.png"
+    },
+    "weapon_nova_royal_amethyst": {
+      "id": "weapon_nova_royal_amethyst",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_royal_amethyst.png"
+    },
+    "weapon_nova_emerald_matrix": {
+      "id": "weapon_nova_emerald_matrix",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Nova",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_emerald_matrix.png"
+    },
+    "weapon_valentina_crimson_void": {
+      "id": "weapon_valentina_crimson_void",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_crimson_void.png"
+    },
+    "weapon_valentina_cyber_neon": {
+      "id": "weapon_valentina_cyber_neon",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_cyber_neon.png"
+    },
+    "weapon_valentina_solar_gold": {
+      "id": "weapon_valentina_solar_gold",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_solar_gold.png"
+    },
+    "weapon_valentina_glacial_frost": {
+      "id": "weapon_valentina_glacial_frost",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_glacial_frost.png"
+    },
+    "weapon_valentina_royal_amethyst": {
+      "id": "weapon_valentina_royal_amethyst",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_royal_amethyst.png"
+    },
+    "weapon_valentina_emerald_matrix": {
+      "id": "weapon_valentina_emerald_matrix",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Valentina",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_emerald_matrix.png"
+    },
+    "weapon_kira_crimson_void": {
+      "id": "weapon_kira_crimson_void",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_crimson_void.png"
+    },
+    "weapon_kira_cyber_neon": {
+      "id": "weapon_kira_cyber_neon",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_cyber_neon.png"
+    },
+    "weapon_kira_solar_gold": {
+      "id": "weapon_kira_solar_gold",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_solar_gold.png"
+    },
+    "weapon_kira_glacial_frost": {
+      "id": "weapon_kira_glacial_frost",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_glacial_frost.png"
+    },
+    "weapon_kira_royal_amethyst": {
+      "id": "weapon_kira_royal_amethyst",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_royal_amethyst.png"
+    },
+    "weapon_kira_emerald_matrix": {
+      "id": "weapon_kira_emerald_matrix",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Kira",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_emerald_matrix.png"
+    },
+    "weapon_selene_crimson_void": {
+      "id": "weapon_selene_crimson_void",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_crimson_void.png"
+    },
+    "weapon_selene_cyber_neon": {
+      "id": "weapon_selene_cyber_neon",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_cyber_neon.png"
+    },
+    "weapon_selene_solar_gold": {
+      "id": "weapon_selene_solar_gold",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_solar_gold.png"
+    },
+    "weapon_selene_glacial_frost": {
+      "id": "weapon_selene_glacial_frost",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_glacial_frost.png"
+    },
+    "weapon_selene_royal_amethyst": {
+      "id": "weapon_selene_royal_amethyst",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_royal_amethyst.png"
+    },
+    "weapon_selene_emerald_matrix": {
+      "id": "weapon_selene_emerald_matrix",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Selene",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_emerald_matrix.png"
+    },
+    "weapon_roxy_crimson_void": {
+      "id": "weapon_roxy_crimson_void",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_crimson_void.png"
+    },
+    "weapon_roxy_cyber_neon": {
+      "id": "weapon_roxy_cyber_neon",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_cyber_neon.png"
+    },
+    "weapon_roxy_solar_gold": {
+      "id": "weapon_roxy_solar_gold",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_solar_gold.png"
+    },
+    "weapon_roxy_glacial_frost": {
+      "id": "weapon_roxy_glacial_frost",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_glacial_frost.png"
+    },
+    "weapon_roxy_royal_amethyst": {
+      "id": "weapon_roxy_royal_amethyst",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_royal_amethyst.png"
+    },
+    "weapon_roxy_emerald_matrix": {
+      "id": "weapon_roxy_emerald_matrix",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Roxy",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_emerald_matrix.png"
+    },
+    "weapon_echo_crimson_void": {
+      "id": "weapon_echo_crimson_void",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_crimson_void.png"
+    },
+    "weapon_echo_cyber_neon": {
+      "id": "weapon_echo_cyber_neon",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_cyber_neon.png"
+    },
+    "weapon_echo_solar_gold": {
+      "id": "weapon_echo_solar_gold",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_solar_gold.png"
+    },
+    "weapon_echo_glacial_frost": {
+      "id": "weapon_echo_glacial_frost",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_glacial_frost.png"
+    },
+    "weapon_echo_royal_amethyst": {
+      "id": "weapon_echo_royal_amethyst",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_royal_amethyst.png"
+    },
+    "weapon_echo_emerald_matrix": {
+      "id": "weapon_echo_emerald_matrix",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Echo",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_emerald_matrix.png"
+    },
+    "weapon_nyx_crimson_void": {
+      "id": "weapon_nyx_crimson_void",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "crimson_void",
+      "skin_name": "Carmesí del Vacío - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "rarity": "rare",
+      "glow_hex": "#FF6B8B",
+      "accent_hex": "#FFA8B8",
+      "tint_rgb": [
+        255,
+        42,
+        85
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_crimson_void.png"
+    },
+    "weapon_nyx_cyber_neon": {
+      "id": "weapon_nyx_cyber_neon",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "cyber_neon",
+      "skin_name": "Ciberneón - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "rarity": "rare",
+      "glow_hex": "#70FFFF",
+      "accent_hex": "#FF007F",
+      "tint_rgb": [
+        0,
+        240,
+        255
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_cyber_neon.png"
+    },
+    "weapon_nyx_solar_gold": {
+      "id": "weapon_nyx_solar_gold",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "solar_gold",
+      "skin_name": "Oro Solar - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "rarity": "epic",
+      "glow_hex": "#FFF275",
+      "accent_hex": "#FF9900",
+      "tint_rgb": [
+        255,
+        215,
+        0
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_solar_gold.png"
+    },
+    "weapon_nyx_glacial_frost": {
+      "id": "weapon_nyx_glacial_frost",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "glacial_frost",
+      "skin_name": "Glaciar Ártico - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#E0F2FE",
+      "accent_hex": "#38BDF8",
+      "tint_rgb": [
+        165,
+        243,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_glacial_frost.png"
+    },
+    "weapon_nyx_royal_amethyst": {
+      "id": "weapon_nyx_royal_amethyst",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "royal_amethyst",
+      "skin_name": "Amatista Real - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
+      "rarity": "epic",
+      "glow_hex": "#F3E8FF",
+      "accent_hex": "#E879F9",
+      "tint_rgb": [
+        192,
+        132,
+        252
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_royal_amethyst.png"
+    },
+    "weapon_nyx_emerald_matrix": {
+      "id": "weapon_nyx_emerald_matrix",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "emerald_matrix",
+      "skin_name": "Matriz Esmeralda - Fuego de Nyx",
+      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
+      "rarity": "common",
+      "glow_hex": "#A7F3D0",
+      "accent_hex": "#10B981",
+      "tint_rgb": [
+        52,
+        211,
+        153
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_emerald_matrix.png"
     },
     "pilot_nova_crimson_void": {
       "id": "pilot_nova_crimson_void",
@@ -1322,762 +2078,6 @@
       "flipped_texture_path": "res://assets/recolors/pilots/fullbody_nyx_emerald_matrix_flipped.png",
       "portrait_texture_path": "res://assets/recolors/pilots/portrait_nyx_emerald_matrix.png",
       "portrait_flipped_texture_path": "res://assets/recolors/pilots/portrait_nyx_emerald_matrix_flipped.png"
-    },
-    "weapon_nova_crimson_void": {
-      "id": "weapon_nova_crimson_void",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_nova_cyber_neon": {
-      "id": "weapon_nova_cyber_neon",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_nova_solar_gold": {
-      "id": "weapon_nova_solar_gold",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_nova_glacial_frost": {
-      "id": "weapon_nova_glacial_frost",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_nova_royal_amethyst": {
-      "id": "weapon_nova_royal_amethyst",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_nova_emerald_matrix": {
-      "id": "weapon_nova_emerald_matrix",
-      "category": "weapon",
-      "target_id": "nova",
-      "target_name": "Arma de Nova",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Nova",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_crimson_void": {
-      "id": "weapon_valentina_crimson_void",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_cyber_neon": {
-      "id": "weapon_valentina_cyber_neon",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_solar_gold": {
-      "id": "weapon_valentina_solar_gold",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_glacial_frost": {
-      "id": "weapon_valentina_glacial_frost",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_royal_amethyst": {
-      "id": "weapon_valentina_royal_amethyst",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_valentina_emerald_matrix": {
-      "id": "weapon_valentina_emerald_matrix",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Valentina",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_crimson_void": {
-      "id": "weapon_kira_crimson_void",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_cyber_neon": {
-      "id": "weapon_kira_cyber_neon",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_solar_gold": {
-      "id": "weapon_kira_solar_gold",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_glacial_frost": {
-      "id": "weapon_kira_glacial_frost",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_royal_amethyst": {
-      "id": "weapon_kira_royal_amethyst",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_kira_emerald_matrix": {
-      "id": "weapon_kira_emerald_matrix",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Kira",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_crimson_void": {
-      "id": "weapon_selene_crimson_void",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_cyber_neon": {
-      "id": "weapon_selene_cyber_neon",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_solar_gold": {
-      "id": "weapon_selene_solar_gold",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_glacial_frost": {
-      "id": "weapon_selene_glacial_frost",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_royal_amethyst": {
-      "id": "weapon_selene_royal_amethyst",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_selene_emerald_matrix": {
-      "id": "weapon_selene_emerald_matrix",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Selene",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_crimson_void": {
-      "id": "weapon_roxy_crimson_void",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_cyber_neon": {
-      "id": "weapon_roxy_cyber_neon",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_solar_gold": {
-      "id": "weapon_roxy_solar_gold",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_glacial_frost": {
-      "id": "weapon_roxy_glacial_frost",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_royal_amethyst": {
-      "id": "weapon_roxy_royal_amethyst",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_roxy_emerald_matrix": {
-      "id": "weapon_roxy_emerald_matrix",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Roxy",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_crimson_void": {
-      "id": "weapon_echo_crimson_void",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_cyber_neon": {
-      "id": "weapon_echo_cyber_neon",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_solar_gold": {
-      "id": "weapon_echo_solar_gold",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_glacial_frost": {
-      "id": "weapon_echo_glacial_frost",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_royal_amethyst": {
-      "id": "weapon_echo_royal_amethyst",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_echo_emerald_matrix": {
-      "id": "weapon_echo_emerald_matrix",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Echo",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_crimson_void": {
-      "id": "weapon_nyx_crimson_void",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_cyber_neon": {
-      "id": "weapon_nyx_cyber_neon",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
-      "tint_rgb": [
-        0,
-        240,
-        255
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_solar_gold": {
-      "id": "weapon_nyx_solar_gold",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
-      "tint_rgb": [
-        255,
-        215,
-        0
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_glacial_frost": {
-      "id": "weapon_nyx_glacial_frost",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_royal_amethyst": {
-      "id": "weapon_nyx_royal_amethyst",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": ""
-    },
-    "weapon_nyx_emerald_matrix": {
-      "id": "weapon_nyx_emerald_matrix",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Nyx",
-      "description": "Modifica el haz, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": ""
     },
     "pet_mochi_crimson_void": {
       "id": "pet_mochi_crimson_void",

@@ -20,6 +20,8 @@ const POOL_CAPACITY: int = 20
 var _pool: Array[Sprite2D] = []
 var _tweens: Array[Tween] = []
 var _pool_index: int = 0
+var _cycle_step: int = 0
+const PINGPONG_STEPS: int = 6
 var _last_spawn_pos: Vector2 = Vector2.ZERO
 var _primary_color: Color = Color(0.2, 0.75, 1.0, 1.0)
 var _secondary_color: Color = Color(1.0, 0.85, 0.4, 1.0)
@@ -111,8 +113,17 @@ func _spawn_ghost(spawn_pos: Vector2, is_dashing: bool) -> void:
 	ghost.modulate.a = 0.85 if is_dashing else 0.55
 	ghost.visible = true
 
+	# Ciclo Ping-Pong gradual de color entre primario y complementario/secundario
+	var cycle_mod: float = float(_cycle_step % (PINGPONG_STEPS * 2))
+	var t: float = (cycle_mod / float(PINGPONG_STEPS)) if cycle_mod <= float(PINGPONG_STEPS) else (2.0 - cycle_mod / float(PINGPONG_STEPS))
+	var ghost_primary: Color = _primary_color.lerp(_secondary_color, t)
+	var ghost_secondary: Color = _secondary_color.lerp(_primary_color, t)
+	_cycle_step += 1
+
 	var mat := ghost.material as ShaderMaterial
 	if mat:
+		mat.set_shader_parameter("primary_color", ghost_primary)
+		mat.set_shader_parameter("secondary_color", ghost_secondary)
 		mat.set_shader_parameter("silhouette_solidarity", 0.85 if is_dashing else 0.45)
 		mat.set_shader_parameter("thrust_intensity", 2.0 if is_dashing else 1.0)
 		mat.set_shader_parameter("flame_thickness", 16.0 if is_dashing else 10.0)
