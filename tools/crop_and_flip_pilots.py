@@ -9,6 +9,7 @@ PORTRAITS_CHAR_DIR = os.path.join(ASSETS_DIR, "characters", "portraits")
 PORTRAITS_ROOT_DIR = os.path.join(ASSETS_DIR, "portraits")
 
 PILOTS = ["nova", "valentina", "kira", "selene", "roxy", "echo", "nyx"]
+RAW_FACES_RIGHT = {"valentina"}
 
 def ensure_dirs():
     os.makedirs(SELECTION_DIR, exist_ok=True)
@@ -44,42 +45,39 @@ def process_pilot(pilot: str):
     img_flipped.save(fb_flip_path, "PNG")
     img_flipped.save(sel_flip_path, "PNG")
 
-    # 4. Calcular recorte cuadrado superior inteligente (1200x1200 o min(w, h))
-    # Margen superior: detectamos bbox para no cortar pelo
-    alpha = img.split()[-1]
-    bbox = alpha.getbbox()
-    top_y = bbox[1] if bbox else 0
-
-    # Usar ancho completo como tamaño del cuadrado para no cortar poses laterales
-    square_size = min(w, h)
-    
-    # y_start comienza con suficiente margen sobre el pelo
-    y_start = 0
-    if top_y > 30:
-        y_start = 0 # Deja espacio natural arriba
+    # 4. Asegurar que portrait (Normal) mire hacia la DERECHA para el lado IZQUIERDO de la conversación
+    if pilot in RAW_FACES_RIGHT:
+        facing_right = img
     else:
-        y_start = max(0, top_y - 20)
-        
-    y_end = min(h, y_start + square_size)
-    if (y_end - y_start) < square_size:
-        y_start = max(0, y_end - square_size)
+        facing_right = ImageOps.mirror(img)
 
-    crop_box = (0, y_start, square_size, y_end)
-    portrait = img.crop(crop_box)
-    portrait_flipped = ImageOps.mirror(portrait)
+    # 5. Encuadre cuadrado 1080x1080 pegado al borde (x=0) para disimular recortes
+    S = 1080
+    top_slice = facing_right.crop((0, 0, w, min(h, S)))
+    alpha = top_slice.split()[-1]
+    bbox = alpha.getbbox()
+    x_back = bbox[0] if bbox else 0
 
-    # 5. Guardar portraits en ambas ubicaciones (characters/portraits y portraits/)
+    # Crear lienzo cuadrado transparente
+    portrait_left = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    # Pegar alineando la espalda del personaje en x=0 (pegado al borde izquierdo de la pantalla)
+    portrait_left.paste(facing_right, (-x_back, 0))
+
+    # 6. portrait_flipped mira hacia la IZQUIERDA y su espalda toca x=S (borde derecho de la pantalla)
+    portrait_right = ImageOps.mirror(portrait_left)
+
+    # 7. Guardar en ambas ubicaciones
     char_port_path = os.path.join(PORTRAITS_CHAR_DIR, f"portrait_{pilot}.png")
     char_port_flip_path = os.path.join(PORTRAITS_CHAR_DIR, f"portrait_{pilot}_flipped.png")
     root_port_path = os.path.join(PORTRAITS_ROOT_DIR, f"portrait_{pilot}.png")
     root_port_flip_path = os.path.join(PORTRAITS_ROOT_DIR, f"portrait_{pilot}_flipped.png")
 
-    portrait.save(char_port_path, "PNG")
-    portrait.save(root_port_path, "PNG")
-    portrait_flipped.save(char_port_flip_path, "PNG")
-    portrait_flipped.save(root_port_flip_path, "PNG")
+    portrait_left.save(char_port_path, "PNG")
+    portrait_left.save(root_port_path, "PNG")
+    portrait_right.save(char_port_flip_path, "PNG")
+    portrait_right.save(root_port_flip_path, "PNG")
 
-    print(f"    -> Portrait {portrait.size} guardado y espejado en carpetas de portraits.")
+    print(f"    -> Portrait {portrait_left.size} pegado a bordes y orientado hacia adentro.")
     return True
 
 def main():
