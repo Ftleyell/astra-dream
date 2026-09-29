@@ -261,6 +261,22 @@ def generate_all():
                     total_generated += 1
                     rel_portrait_flipped = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}_flipped.png"
             
+            src_back = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_back.png")
+            rel_back = ""
+            if os.path.exists(src_back):
+                dst_back = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}_back.png")
+                if recolor_image(src_back, dst_back, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
+                    total_generated += 1
+                    rel_back = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_back.png"
+
+            src_back_flipped = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_back_flipped.png")
+            rel_back_flipped = ""
+            if os.path.exists(src_back_flipped):
+                dst_back_flipped = os.path.join(RECOLORS_DIR, "pilots", f"fullbody_{pilot}_{pal_id}_back_flipped.png")
+                if recolor_image(src_back_flipped, dst_back_flipped, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
+                    total_generated += 1
+                    rel_back_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_back_flipped.png"
+
             skin_entry = {
                 "id": skin_id,
                 "category": "pilot",
@@ -274,6 +290,8 @@ def generate_all():
                 "accent_hex": pal["accent_hex"],
                 "texture_path": rel_path,
                 "flipped_texture_path": rel_flipped,
+                "back_texture_path": rel_back,
+                "back_flipped_texture_path": rel_back_flipped,
                 "selection_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}.png",
                 "selection_flipped_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}_flipped.png" if rel_flipped else "",
                 "portrait_texture_path": rel_portrait,

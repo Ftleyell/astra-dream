@@ -259,7 +259,7 @@ func _setup_pilot_backlight() -> void:
 func _on_pilot_mouse_entered() -> void:
 	if not fullbody_texture:
 		return
-	fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
+	fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
 	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
 		_pilot_hover_tween.kill()
 	_pilot_hover_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -286,7 +286,7 @@ func _on_pilot_button_pressed() -> void:
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
 
 	if fullbody_texture:
-		fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
+		fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
 		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(fullbody_texture, "scale", Vector2(1.06, 1.06), 0.08)
 		tw.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.14)

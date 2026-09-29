@@ -98,10 +98,13 @@ func _setup_camera() -> void:
 
 func set_character(char_id: StringName) -> void:
 	active_character_id = char_id
+	_is_facing_back = false
 	_update_character_texture()
 
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+
+var _is_facing_back: bool = false
 
 func _update_character_texture() -> void:
 	if not visual_sprite:
@@ -111,13 +114,21 @@ func _update_character_texture() -> void:
 	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
 	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
 		var stars := SaveManager.get_skin_stars(equipped_skin)
-		CosmeticsManager.apply_skin_to_sprite3d(visual_sprite, equipped_skin, stars)
+		CosmeticsManager.apply_skin_to_sprite3d(visual_sprite, equipped_skin, stars, _is_facing_back, false)
 		visual_sprite.pixel_size = 0.0013
 		visual_sprite.offset = Vector2(0, 800)
 		return
 
-	# Fallback original
+	# Fallback original (sin skin)
 	visual_sprite.material_override = null
+	if _is_facing_back:
+		var back_path := "res://assets/characters/fullbody/fullbody_%s_back.png" % cid
+		if ResourceLoader.exists(back_path):
+			visual_sprite.texture = load(back_path)
+			visual_sprite.pixel_size = 0.0013
+			visual_sprite.offset = Vector2(0, 800)
+			return
+
 	var fullbody_path := "res://assets/characters/fullbody/fullbody_%s.png" % cid
 	if ResourceLoader.exists(fullbody_path):
 		visual_sprite.texture = load(fullbody_path)
@@ -164,6 +175,19 @@ func _physics_process(delta: float) -> void:
 	# y 'D' (derecha en pantalla) mueve a la derecha de la perspectiva del jugador de forma 100% intuitiva.
 	var raw_x: float = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
 	var raw_z: float = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
+
+	# Detección de orientación frente/espalda respecto a la perspectiva de la cámara
+	# raw_z < -0.1 indica avance hacia el fondo (opuesto a la cámara)
+	# raw_z > 0.1 indica avance hacia el frente (en dirección a la cámara)
+	# Si abs(raw_z) <= 0.1 (movimiento puramente lateral o reposo), se conserva la orientación actual
+	if raw_z < -0.1:
+		if not _is_facing_back:
+			_is_facing_back = true
+			_update_character_texture()
+	elif raw_z > 0.1:
+		if _is_facing_back:
+			_is_facing_back = false
+			_update_character_texture()
 
 	# Ángulo de vista de cámara en el plano horizontal según _cam_flip_t (0° a 180°)
 	var cam_yaw: float = _cam_flip_t * PI

@@ -33,7 +33,7 @@ grow_vertical = 2
 theme_override_constants/margin_left = 40
 theme_override_constants/margin_top = 28
 theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_bottom = 0
 
 [node name="RootVBox" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
@@ -93,6 +93,10 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
+
+[node name="LeftBottomSpacer" type="Control" parent="MarginContainer/RootVBox/MainColumns/LeftPanel"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
 
 [node name="CenterPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainColumns"]
 custom_minimum_size = Vector2(580, 0)
@@ -389,43 +393,35 @@ flat = true
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 
-[node name="RightPanel" type="Control" parent="MarginContainer/RootVBox/MainColumns"]
+[node name="CenterBottomSpacer" type="Control" parent="MarginContainer/RootVBox/MainColumns/CenterPanel"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+
+[node name="RightPanel" type="AspectRatioContainer" parent="MarginContainer/RootVBox/MainColumns"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 mouse_filter = 0
 mouse_default_cursor_shape = 2
+ratio = 0.75
+alignment_vertical = 2
 
 [node name="BacklightGlow" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 0
 
 [node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 0
 mouse_default_cursor_shape = 2
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 0
 flip_h = true
 
 [node name="PilotButton" type="Button" parent="MarginContainer/RootVBox/MainColumns/RightPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_pilot")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_pilot")

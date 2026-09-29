@@ -258,7 +258,7 @@ static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_le
 		mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
 		item.material = mat
 
-static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level: int = 1) -> void:
+static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level: int = 1, is_back: bool = false, is_flipped: bool = false) -> void:
 	if not is_instance_valid(sprite):
 		return
 
@@ -267,7 +267,21 @@ static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level
 		sprite.material_override = null
 		return
 
-	var tex_path: String = skin_data.get("texture_path", "")
+	var tex_path := ""
+	if is_back:
+		if is_flipped:
+			tex_path = skin_data.get("back_flipped_texture_path", "")
+		if tex_path.is_empty():
+			tex_path = skin_data.get("back_texture_path", "")
+	else:
+		if is_flipped:
+			tex_path = skin_data.get("flipped_texture_path", "")
+		if tex_path.is_empty():
+			tex_path = skin_data.get("texture_path", "")
+
+	if tex_path.is_empty():
+		tex_path = skin_data.get("texture_path", "")
+
 	var tex := load_texture(tex_path)
 	if tex:
 		sprite.texture = tex
