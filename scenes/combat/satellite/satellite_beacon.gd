@@ -15,7 +15,7 @@ signal planted(index: int, pos: Vector2)
 signal exited_perimeter(index: int)
 
 @onready var area: Area2D = $PerimeterArea
-@onready var visual_core: Polygon2D = $VisualCore
+@onready var visual_core: CanvasItem = $VisualCore
 @onready var radius_visual: Line2D = $RadiusVisual
 
 func _ready() -> void:
@@ -96,6 +96,6 @@ func _on_body_exited(body: Node2D) -> void:
 
 func plant_satellite() -> void:
 	is_planted = true
-	visual_core.color = Color(0.2, 1.0, 0.4, 1.0) # Verde activo
+	visual_core.modulate = Color(0.4, 1.2, 0.6, 1.0) # Verde activo
 	radius_visual.default_color = Color(0.2, 1.0, 0.4, 0.4)
 	planted.emit(satellite_index, global_position)

@@ -12,9 +12,7 @@ extends "res://scenes/combat/environment/destructible_space_object.gd"
 var consumable_scene: PackedScene = preload("res://scenes/combat/pickups/field_consumable.tscn")
 var _time: float = 0.0
 
-@onready var visual_box: Polygon2D = get_node_or_null("VisualBox")
-@onready var hazard_stripes: Line2D = get_node_or_null("HazardStripes")
-@onready var beacon_light: Polygon2D = get_node_or_null("BeaconLight")
+@onready var visual_box: CanvasItem = get_node_or_null("VisualBox")
 
 
 func _ready() -> void:
@@ -40,10 +38,9 @@ func _process(delta: float) -> void:
 		return
 
 	_time += delta * beacon_blink_speed
-	if beacon_light:
+	if visual_box is CanvasItem:
 		var blink := (sin(_time) + 1.0) * 0.5
-		beacon_light.color = Color(1.0, 0.5, 0.0).lerp(Color(1.0, 1.0, 0.2), blink)
-		beacon_light.scale = Vector2.ONE * (0.8 + blink * 0.4)
+		(visual_box as CanvasItem).modulate = Color(1.0, 1.0, 1.0).lerp(Color(1.15, 0.95, 0.7), blink)
 
 
 ## Mitigación de armadura plana por impacto

@@ -15,12 +15,12 @@ func _init() -> void:
 	contact_interval = 0.8
 
 func _ready_custom() -> void:
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex and sprite:
 			sprite.texture = tex
-			sprite.scale = Vector2(0.45, 0.45)
+			sprite.scale = Vector2(0.08, 0.08)
 
 func _update_behavior(delta: float) -> void:
 	# Avance pesado constante hacia la posición del jugador con giro amortiguado

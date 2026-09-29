@@ -13,7 +13,7 @@ var _time: float = 0.0
 var arcana_orb_scene: PackedScene = preload("res://scenes/combat/pickups/arcana_orb.tscn")
 var biomass_orb_scene: PackedScene = preload("res://scenes/combat/pickups/biomass_orb.tscn")
 
-@onready var visual_base: Polygon2D = get_node_or_null("VisualBase")
+@onready var visual_base: CanvasItem = get_node_or_null("VisualBase")
 @onready var visual_crystal: Polygon2D = get_node_or_null("FloatingCrystal")
 @onready var runes_line: Line2D = get_node_or_null("RunesLine")
 @onready var aura_polygon: Polygon2D = get_node_or_null("AuraPolygon")
@@ -44,15 +44,13 @@ func _process(delta: float) -> void:
 
 	_time += delta * pulse_speed
 
-	# Levitación vertical suave del cristal flotante
-	if visual_crystal:
-		visual_crystal.position.y = -36.0 + sin(_time) * float_amplitude
+	# Levitación vertical suave del monolito
+	if visual_base is Node2D:
+		(visual_base as Node2D).position.y = sin(_time) * (float_amplitude * 0.5)
 
-	# Pulso cromático de las inscripciones rúnicas (cian <-> magenta)
+	# Pulso cromático del aura (cian <-> magenta)
 	var blend := (sin(_time * 1.2) + 1.0) * 0.5
 	var rune_color := Color(0.0, 0.9, 1.0).lerp(Color(1.0, 0.1, 0.65), blend)
-	if runes_line:
-		runes_line.default_color = rune_color
 	if aura_polygon:
 		aura_polygon.color = Color(rune_color.r, rune_color.g, rune_color.b, 0.18 + sin(_time) * 0.08)
 
@@ -61,9 +59,10 @@ func _die() -> void:
 	if is_dying:
 		return
 
-	# Instanciar el orbe de Arcana antes de la eliminación del nodo
 	_spawn_arcana_orb()
-	SaveManager.unlock_or_upgrade_trophy(&"trophy_monolith_master", 1)
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr and save_mgr.has_method("unlock_or_upgrade_trophy"):
+		save_mgr.unlock_or_upgrade_trophy(&"trophy_monolith_master", 1)
 	_spawn_biomass_bonus()
 
 	# Invocación de la secuencia base de muerte (shattered signal, esquirlas cinemáticas y knockback)

@@ -30,6 +30,7 @@ var player: Player = null
 var defender_timer: float = 2.0
 var active_defenders: Array[Node2D] = []
 
+@onready var planet_globe: Sprite2D = get_node_or_null("PlanetGlobe")
 @onready var planet_core: PlanetCore = get_node_or_null("PlanetCore")
 @onready var deep_mantle_container: Node2D = get_node_or_null("DeepMantleContainer")
 @onready var mid_mantle_container: Node2D = get_node_or_null("MidMantleContainer")
@@ -58,6 +59,11 @@ func _pick_random_planet_data() -> void:
 func _initialize_planet() -> void:
 	if not planet_data:
 		return
+
+	# Asignar textura del globo planetario si está disponible
+	if planet_globe and planet_data.texture_overlay:
+		planet_globe.texture = planet_data.texture_overlay
+		planet_globe.scale = Vector2((crust_radius * 2.0) / 512.0, (crust_radius * 2.0) / 512.0)
 
 	# 1. Configurar Núcleo central (radio 50 px, recompensa 20 BioMasa)
 	if planet_core:
@@ -124,7 +130,9 @@ func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col:
 
 
 func _process(delta: float) -> void:
-	# Rotación diferencial sutil de las capas
+	# Rotación diferencial sutil de las capas y el globo
+	if planet_globe:
+		planet_globe.rotation += delta * 0.004
 	if crust_container:
 		crust_container.rotation += delta * 0.015
 	if mid_mantle_container:

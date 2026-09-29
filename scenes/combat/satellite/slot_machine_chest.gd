@@ -7,7 +7,7 @@ signal chest_opened(chest: SlotMachineChest)
 
 var player_inside: bool = false
 var is_opened: bool = false
-var _visual: Polygon2D
+var _visual: CanvasItem
 var _glow: Line2D
 var _area: Area2D
 var _label: Label
@@ -18,22 +18,14 @@ func _ready() -> void:
 	_setup_area()
 
 func _setup_visuals() -> void:
-	# Gold Chest Box
-	_visual = Polygon2D.new()
-	_visual.polygon = PackedVector2Array([
-		Vector2(-20, -14), Vector2(20, -14),
-		Vector2(24, 14), Vector2(-24, 14)
-	])
-	_visual.color = Color(1.0, 0.84, 0.0, 1.0) # Gold
+	# Gold Chest Sprite
+	var sprite := Sprite2D.new()
+	var tex = load("res://assets/sprites/interactables/slot_machine_chest.png") as Texture2D
+	if tex:
+		sprite.texture = tex
+		sprite.scale = Vector2(0.18, 0.18)
+	_visual = sprite
 	add_child(_visual)
-
-	# Chest Lid / Gem
-	var gem := Polygon2D.new()
-	gem.polygon = PackedVector2Array([
-		Vector2(0, -18), Vector2(8, -10), Vector2(0, -2), Vector2(-8, -10)
-	])
-	gem.color = Color(0.2, 0.9, 1.0, 1.0) # Diamond cyan
-	add_child(gem)
 
 	# Glow Ring
 	_glow = Line2D.new()

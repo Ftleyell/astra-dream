@@ -18,6 +18,7 @@ var is_digitized: bool = false
 var player_in_range: bool = false
 var player_ref: Player = null
 
+@onready var core_sprite: Sprite2D = get_node_or_null("CoreSprite")
 @onready var core_visual: Polygon2D = get_node_or_null("CoreVisual")
 @onready var core_border: Line2D = get_node_or_null("CoreBorder")
 @onready var core_aura: Polygon2D = get_node_or_null("CoreAura")
@@ -46,6 +47,10 @@ func setup_core(r: float, col: Color, p_type: StringName, reward: int = 20) -> v
 
 
 func rebuild_core_geometry() -> void:
+	if core_sprite:
+		core_sprite.scale = Vector2((core_radius * 2.2) / 512.0, (core_radius * 2.2) / 512.0)
+		core_sprite.modulate = core_color
+
 	var pts: PackedVector2Array = []
 	var steps: int = 20
 	for i in range(steps):
@@ -86,6 +91,8 @@ func _process(delta: float) -> void:
 	# Pulso visual de energía
 	var t := Time.get_ticks_msec() * 0.003
 	var pulse: float = 1.0 + sin(t) * 0.12
+	if core_sprite:
+		core_sprite.rotation += delta * 0.25
 	if core_aura:
 		core_aura.scale = Vector2(pulse, pulse)
 		core_aura.rotation += delta * 0.4

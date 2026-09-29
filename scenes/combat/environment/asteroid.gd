@@ -19,6 +19,7 @@ var base_radius: float = 46.0
 var base_health: float = 90.0
 var base_xp: int = 0
 
+@onready var asteroid_sprite: Sprite2D = get_node_or_null("AsteroidSprite")
 @onready var visual_polygon: Polygon2D = get_node_or_null("VisualPolygon")
 @onready var border_line: Line2D = get_node_or_null("BorderLine")
 @onready var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
@@ -67,9 +68,21 @@ func _configure_tier_stats() -> void:
 	# Ajustar forma de colisión y hurtbox
 	_update_collision_radii(base_radius)
 
+	# Ajustar escala del sprite de alta resolución
+	if asteroid_sprite:
+		var s := (base_radius * 2.1) / 512.0
+		asteroid_sprite.scale = Vector2(s, s)
+
 
 ## Genera un contorno rocoso facetado aleatorio para variedad visual
 func _generate_procedural_rock_shape() -> void:
+	if asteroid_sprite:
+		asteroid_sprite.rotation = randf() * TAU
+		if randf() > 0.5:
+			asteroid_sprite.flip_h = true
+		if randf() > 0.5:
+			asteroid_sprite.flip_v = true
+
 	if not visual_polygon:
 		return
 

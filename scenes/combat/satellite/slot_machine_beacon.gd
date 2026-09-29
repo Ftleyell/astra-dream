@@ -27,7 +27,7 @@ var _bump_cooldown: float = 0.0
 const SYMBOLS: Array[String] = ["💰", "💣", "🧲", "💖", "⭐"]
 
 # Nodos visuales in-game
-var _visual_core: Polygon2D
+var _visual_core: CanvasItem
 var _radius_visual: Line2D
 var _area: Area2D
 
@@ -46,23 +46,14 @@ func _ready() -> void:
 	_setup_area()
 
 func _setup_visuals() -> void:
-	# Pedestal de base dorada y púrpura neón
-	_visual_core = Polygon2D.new()
-	var core_pts := PackedVector2Array([
-		Vector2(-26, -30), Vector2(26, -30), Vector2(34, -14),
-		Vector2(30, 32), Vector2(-30, 32), Vector2(-34, -14)
-	])
-	_visual_core.polygon = core_pts
-	_visual_core.color = Color(1.0, 0.82, 0.15, 1.0) # Oro vibrante
+	# Sprite de alta resolución arcade pinball bumper
+	var sprite := Sprite2D.new()
+	var tex = load("res://assets/sprites/interactables/slot_machine_beacon.png") as Texture2D
+	if tex:
+		sprite.texture = tex
+		sprite.scale = Vector2(0.24, 0.24)
+	_visual_core = sprite
 	add_child(_visual_core)
-
-	# Borde interior / pantalla base
-	var screen_poly := Polygon2D.new()
-	screen_poly.polygon = PackedVector2Array([
-		Vector2(-18, -20), Vector2(18, -20), Vector2(18, 12), Vector2(-18, 12)
-	])
-	screen_poly.color = Color(0.12, 0.06, 0.28, 1.0) # Púrpura cósmico
-	add_child(screen_poly)
 
 	# Anillo de Bumper alrededor del pedestal
 	_radius_visual = Line2D.new()
@@ -183,7 +174,7 @@ func _process(delta: float) -> void:
 	# Pulsación de luces neón
 	if _visual_core:
 		var pulse := 0.88 + 0.12 * sin(Time.get_ticks_msec() * 0.006)
-		_visual_core.color = Color(1.0 * pulse, 0.82 * pulse, 0.15, 1.0)
+		_visual_core.modulate = Color(1.0 * pulse, 0.82 * pulse, 0.15, 1.0)
 
 func _on_body_entered(body: Node2D) -> void:
 	if _is_tearing_down or is_exploded or not is_inside_tree() or is_queued_for_deletion():

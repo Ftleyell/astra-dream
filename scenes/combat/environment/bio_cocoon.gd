@@ -16,9 +16,7 @@ var minion_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_kamik
 var biomass_orb_scene: PackedScene = preload("res://scenes/combat/pickups/biomass_orb.tscn")
 var _anim_time: float = 0.0
 
-@onready var visual_body: Polygon2D = get_node_or_null("VisualBody")
-@onready var visual_tendrils: Line2D = get_node_or_null("VisualTendrils")
-@onready var core_egg: Polygon2D = get_node_or_null("CoreEgg")
+@onready var visual_body: CanvasItem = get_node_or_null("VisualBody")
 
 
 func _ready() -> void:
@@ -48,16 +46,9 @@ func _process(delta: float) -> void:
 
 	# Latido senoidal orgánico (Breathing pulse)
 	var breath := sin(_anim_time)
-	var current_scale := 1.0 + breath * 0.07
-	if visual_body:
-		visual_body.scale = Vector2(current_scale, current_scale)
-		# Tinte fluctuante de advertencia
-		var blend := (breath + 1.0) * 0.5
-		visual_body.color = Color(0.38, 0.12, 0.42).lerp(Color(0.72, 0.12, 0.25), blend)
-
-	if core_egg:
-		var egg_pulse := 1.0 + sin(_anim_time * 1.5) * 0.12
-		core_egg.scale = Vector2(egg_pulse, egg_pulse)
+	var current_scale := (1.0 + breath * 0.07) * 0.20
+	if visual_body is Node2D:
+		(visual_body as Node2D).scale = Vector2(current_scale, current_scale)
 
 	# Lógica periódica de engendrado
 	spawn_timer -= delta

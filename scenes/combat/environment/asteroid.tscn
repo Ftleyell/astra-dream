@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scenes/combat/environment/asteroid.gd" id="1_asteroid"]
 [ext_resource type="Script" path="res://core/components/health_component.gd" id="2_health"]
 [ext_resource type="Script" path="res://core/components/hurtbox_component.gd" id="3_hurtbox"]
 [ext_resource type="Script" path="res://core/components/hit_flash_component.gd" id="4_hitflash"]
 [ext_resource type="Script" path="res://core/components/drop_component.gd" id="5_drop"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/asteroid.png" id="6_ast_tex"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 46.0
@@ -17,12 +18,9 @@ collision_layer = 0
 collision_mask = 0
 script = ExtResource("1_asteroid")
 
-[node name="VisualPolygon" type="Polygon2D" parent="."]
-color = Color(0.42, 0.41, 0.44, 1)
-
-[node name="BorderLine" type="Line2D" parent="."]
-width = 3.0
-default_color = Color(0.58, 0.57, 0.62, 1)
+[node name="AsteroidSprite" type="Sprite2D" parent="."]
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("6_ast_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_body")
@@ -44,7 +42,7 @@ shape = SubResource("CircleShape2D_hurtbox")
 [node name="HitFlashComponent" type="Node" parent="." node_paths=PackedStringArray("health_component", "target_visual")]
 script = ExtResource("4_hitflash")
 health_component = NodePath("../HealthComponent")
-target_visual = NodePath("../VisualPolygon")
+target_visual = NodePath("../AsteroidSprite")
 
 [node name="DropComponent" type="Node" parent="." node_paths=PackedStringArray("health_component")]
 script = ExtResource("5_drop")
