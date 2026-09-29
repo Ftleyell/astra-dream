@@ -489,9 +489,11 @@ func _select_character(char_id: StringName) -> void:
 			fullbody_texture.texture = null
 
 		if fullbody_texture.texture == null and data:
-			var fb_tex := data.get_fullbody_texture(false)
+			var fb_tex := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 			if not fb_tex:
-				fb_tex = data.get_fullbody_texture(true)
+				fb_tex = data.get_selection_texture(true) if data.has_method("get_selection_texture") else data.get_fullbody_texture(true)
+			if not fb_tex:
+				fb_tex = data.get_fullbody_texture(false)
 			if not fb_tex:
 				fb_tex = data.get_portrait_texture()
 			fullbody_texture.texture = fb_tex
@@ -627,9 +629,9 @@ func _on_weapon_skin_pressed() -> void:
 func _on_pilot_skin_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
-		var fb := data.get_fullbody_texture(false)
+		var fb := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 		if not fb:
-			fb = data.get_fullbody_texture(true)
+			fb = data.get_fullbody_texture(false)
 		if not fb:
 			fb = data.get_portrait_texture()
 		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
@@ -651,9 +653,9 @@ func _on_navigator_skin_pressed() -> void:
 func _on_skins_button_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
-		var fb := data.get_fullbody_texture(false)
+		var fb := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 		if not fb:
-			fb = data.get_fullbody_texture(true)
+			fb = data.get_fullbody_texture(false)
 		if not fb:
 			fb = data.get_portrait_texture()
 		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)

@@ -1,6 +1,7 @@
 import os
 import json
-from PIL import Image, ImageOps
+import shutil
+from PIL import Image, ImageOps, ImageChops, ImageFilter
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
@@ -88,6 +89,7 @@ def recolor_image(src_path, dst_path, tint_rgb, blend_factor=0.65, preserve_skin
     
     img = Image.open(src_path).convert("RGBA")
     r, g, b, a = img.split()
+    img_rgb = img.convert("RGB")
     
     gray = ImageOps.grayscale(img)
     tinted = ImageOps.colorize(
@@ -98,37 +100,29 @@ def recolor_image(src_path, dst_path, tint_rgb, blend_factor=0.65, preserve_skin
     )
     
     if not preserve_skin:
-        blended = Image.blend(img.convert("RGB"), tinted, blend_factor)
+        blended = Image.blend(img_rgb, tinted, blend_factor)
         final_img = Image.merge("RGBA", (*blended.split(), a))
         os.makedirs(os.path.dirname(dst_path), exist_ok=True)
         final_img.save(dst_path, "PNG")
         return True
 
-    # Protección de tonos de piel / rostro
-    img_rgb = img.convert("RGB")
-    pixels_orig = list(img_rgb.getdata())
-    pixels_tinted = list(tinted.getdata())
-    out_pixels = []
+    # Máscara C-acelerada en espacio HSV para detección de tonos de piel/rostro
+    h, s, v = img_rgb.convert("HSV").split()
+    lut_h = [255 if (x <= 32 or x >= 245) else 0 for x in range(256)]
+    lut_s = [255 if (28 <= x <= 185) else 0 for x in range(256)]
+    lut_v = [255 if (x >= 55) else 0 for x in range(256)]
 
-    for orig, tnt in zip(pixels_orig, pixels_tinted):
-        ro, go, bo = orig
-        # Detección de tonos cálidos y de piel
-        is_skin = (
-            ro > 70 and go > 35 and bo > 20 and
-            ro > go and (ro - go) >= 10 and (go >= bo) and
-            (ro - bo) >= 15
-        )
-        
-        factor = blend_factor * 0.15 if is_skin else blend_factor
-            
-        rf = int(ro * (1.0 - factor) + tnt[0] * factor)
-        gf = int(go * (1.0 - factor) + tnt[1] * factor)
-        bf = int(bo * (1.0 - factor) + tnt[2] * factor)
-        out_pixels.append((rf, gf, bf))
+    mask_h = h.point(lut_h)
+    mask_s = s.point(lut_s)
+    mask_v = v.point(lut_v)
+    mask = ImageChops.multiply(mask_h, ImageChops.multiply(mask_s, mask_v))
+    mask = mask.filter(ImageFilter.BoxBlur(1))
 
-    out_rgb = Image.new("RGB", img.size)
-    out_rgb.putdata(out_pixels)
-    final_img = Image.merge("RGBA", (*out_rgb.split(), a))
+    # Composición: tinte pleno en ropa/tecnología y atenuado en piel/ojos
+    blended_outfit = Image.blend(img_rgb, tinted, blend_factor)
+    blended_skin = Image.blend(img_rgb, tinted, blend_factor * 0.12)
+    final_rgb = Image.composite(blended_skin, blended_outfit, mask)
+    final_img = Image.merge("RGBA", (*final_rgb.split(), a))
 
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     final_img.save(dst_path, "PNG")
@@ -232,6 +226,8 @@ def generate_all():
             
             if recolor_image(src_fullbody, dst_fullbody, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                 total_generated += 1
+                dst_selection = os.path.join(RECOLORS_DIR, "pilots", f"selection_{pilot}_{pal_id}.png")
+                shutil.copy2(dst_fullbody, dst_selection)
             
             src_flipped = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_flipped.png")
             rel_flipped = ""
@@ -240,6 +236,8 @@ def generate_all():
                 if recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                     total_generated += 1
                     rel_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_flipped.png"
+                    dst_selection_flipped = os.path.join(RECOLORS_DIR, "pilots", f"selection_{pilot}_{pal_id}_flipped.png")
+                    shutil.copy2(dst_flipped, dst_selection_flipped)
             
             src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
             if not os.path.exists(src_portrait):
@@ -252,14 +250,14 @@ def generate_all():
             rel_portrait = ""
             if os.path.exists(src_portrait):
                 dst_portrait = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}.png")
-                if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.42, preserve_skin=True):
+                if recolor_image(src_portrait, dst_portrait, pal["tint_rgb"], blend_factor=0.45, preserve_skin=True):
                     total_generated += 1
                     rel_portrait = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}.png"
 
             rel_portrait_flipped = ""
             if os.path.exists(src_portrait_flipped):
                 dst_portrait_flipped = os.path.join(RECOLORS_DIR, "pilots", f"portrait_{pilot}_{pal_id}_flipped.png")
-                if recolor_image(src_portrait_flipped, dst_portrait_flipped, pal["tint_rgb"], blend_factor=0.42, preserve_skin=True):
+                if recolor_image(src_portrait_flipped, dst_portrait_flipped, pal["tint_rgb"], blend_factor=0.45, preserve_skin=True):
                     total_generated += 1
                     rel_portrait_flipped = f"res://assets/recolors/pilots/portrait_{pilot}_{pal_id}_flipped.png"
             
@@ -276,6 +274,8 @@ def generate_all():
                 "accent_hex": pal["accent_hex"],
                 "texture_path": rel_path,
                 "flipped_texture_path": rel_flipped,
+                "selection_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}.png",
+                "selection_flipped_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}_flipped.png" if rel_flipped else "",
                 "portrait_texture_path": rel_portrait,
                 "portrait_flipped_texture_path": rel_portrait_flipped
             }

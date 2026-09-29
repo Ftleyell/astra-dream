@@ -104,6 +104,16 @@ func get_fullbody_texture(flipped: bool = false) -> Texture2D:
 		return load(path) as Texture2D
 	return null
 
+func get_selection_texture(flipped: bool = false) -> Texture2D:
+	if flipped:
+		var path_flip := "res://assets/characters/selection/selection_%s_flipped.png" % str(character_id).to_lower()
+		if ResourceLoader.exists(path_flip):
+			return load(path_flip) as Texture2D
+	var path := "res://assets/characters/selection/selection_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return get_fullbody_texture(flipped)
+
 func get_weapon_texture() -> Texture2D:
 	if weapon_sprite:
 		return weapon_sprite
