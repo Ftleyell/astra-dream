@@ -1,15 +1,16 @@
 class_name RivalWeaponPickup
 extends Node2D
 
-## Cápsula de Armamento de Piloto Rival
+## Cofre de Armamento de Piloto Rival
 ## Aparece cuando una piloto rival es derrotada en combate dogfight.
-## Al ser recolectada, desbloquea o sube de nivel su arma insignia en el arsenal del jugador.
+## Se presenta como un cofre dorado interactivo idéntico al de la máquina tragamonedas.
+## Al ser recolectado, entrega y desbloquea el arma insignia de la piloto rival.
 
 signal collected(weapon: WeaponData)
 
-@export var pulse_speed: float = 4.5
-@export var pickup_radius: float = 260.0
-@export var collect_radius: float = 34.0
+@export var pulse_speed: float = 4.0
+@export var pickup_radius: float = 240.0
+@export var collect_radius: float = 45.0
 
 var weapon_data: WeaponData = null
 var pilot_name: String = ""
@@ -17,6 +18,8 @@ var player: Player = null
 var is_collected: bool = false
 var velocity: Vector2 = Vector2.ZERO
 var magnet_speed: float = 0.0
+
+var chest_sprite: Sprite2D = null
 
 @onready var visual_aura: Polygon2D = get_node_or_null("VisualAura")
 @onready var visual_ring: Line2D = get_node_or_null("VisualRing")
@@ -28,12 +31,33 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("pickups")
 	add_to_group("rival_weapon_pickups")
+	scale = Vector2(1.2, 1.2)
+
+	_setup_chest_visual()
 
 	# Impulso inicial suave
 	var angle := randf_range(-PI, PI)
-	velocity = Vector2(cos(angle), sin(angle)) * randf_range(50.0, 110.0)
+	velocity = Vector2(cos(angle), sin(angle)) * randf_range(50.0, 100.0)
 
 	_update_appearance()
+
+func _setup_chest_visual() -> void:
+	if not chest_sprite:
+		chest_sprite = Sprite2D.new()
+		chest_sprite.name = "ChestSprite"
+		var tex := load("res://assets/sprites/interactables/slot_machine_chest.png") as Texture2D
+		if tex:
+			chest_sprite.texture = tex
+		chest_sprite.scale = Vector2(0.18, 0.18)
+		add_child(chest_sprite)
+		move_child(chest_sprite, 0)
+
+	if visual_core:
+		visual_core.visible = false
+	if visual_aura:
+		visual_aura.color = Color(1.0, 0.84, 0.0, 0.3)
+	if visual_ring:
+		visual_ring.default_color = Color(1.0, 0.85, 0.2, 0.7)
 
 func setup(p_pos: Vector2, p_weapon: WeaponData, p_pilot_name: String = "") -> void:
 	global_position = p_pos
@@ -46,28 +70,36 @@ func _update_appearance() -> void:
 		return
 
 	if label_name:
+		var p_title: String = pilot_name.to_upper() if not pilot_name.is_empty() else "RIVAL"
 		var w_name: String = weapon_data.name if "name" in weapon_data and not weapon_data.name.is_empty() else str(weapon_data.weapon_id)
-		label_name.text = "CÁPSULA: %s" % w_name.to_upper()
-		label_name.modulate = Color(1.0, 0.85, 0.2, 0.95)
+		label_name.text = "🎁 COFRE DE %s (%s)" % [p_title, w_name.to_upper()]
+		label_name.modulate = Color(1.0, 0.9, 0.3, 1.0)
+		label_name.position = Vector2(-120, -44)
+		label_name.custom_minimum_size = Vector2(240, 20)
 
 	if weapon_icon and "icon" in weapon_data and weapon_data.icon:
-		weapon_icon.texture = weapon_data.icon
-		weapon_icon.scale = Vector2(0.55, 0.55)
+		var icon_tex: Texture2D = weapon_data.icon
+		weapon_icon.texture = icon_tex
+		var max_dim: float = maxf(float(icon_tex.get_width()), float(icon_tex.get_height()))
+		var target_px: float = 28.0
+		var s: float = target_px / maxf(1.0, max_dim)
+		weapon_icon.scale = Vector2(s, s)
+		weapon_icon.position = Vector2(0, -18)
+		weapon_icon.visible = true
 
 func _process(delta: float) -> void:
 	if is_collected:
 		return
 
 	var t := Time.get_ticks_msec() * 0.001 * pulse_speed
-	var s := 1.0 + sin(t) * 0.22
+	var pulse := (0.95 + 0.05 * sin(t * 1.5)) * 0.18
+	if chest_sprite:
+		chest_sprite.scale = Vector2(pulse, pulse)
 
-	if visual_core:
-		visual_core.scale = Vector2(s, s)
 	if visual_ring:
-		visual_ring.rotation += delta * 2.8
+		visual_ring.rotation += delta * 2.0
 	if visual_aura:
-		visual_aura.rotation -= delta * 1.5
-		visual_aura.scale = Vector2(1.0 + cos(t * 0.8) * 0.15, 1.0 + cos(t * 0.8) * 0.15)
+		visual_aura.rotation -= delta * 1.2
 
 func _physics_process(delta: float) -> void:
 	if is_collected:

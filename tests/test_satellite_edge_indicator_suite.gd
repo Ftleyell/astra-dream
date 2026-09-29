@@ -139,14 +139,18 @@ func _ready() -> void:
 	assert(tracker.global_position.distance_to(expected_dead_center) < 1.0,
 		"Al estar en pantalla, el indicador debe quedar DEAD CENTER sobre el satélite (pos: %s, esperado: %s)" % [tracker.global_position, expected_dead_center])
 	assert(not tracker.arrow_indicator.visible, "El puntero/flecha direccional debe estar oculto cuando está centrado en pantalla")
-	print("  ✓ Satélite en pantalla -> Indicador desprendido del borde y ubicado DEAD CENTER sobre la baliza orbital: %s (Flecha oculta: %s)" % [tracker.global_position, not tracker.arrow_indicator.visible])
+	assert(not tracker.panel_container.visible, "El panel de información debe ocultarse al estar en pantalla")
+	assert(tracker.is_on_screen_active, "El modo círculo de resaltado debe estar activo cuando está en pantalla")
+	print("  ✓ Satélite en pantalla -> Indicador desprendido del borde, caja oculta y resaltado en círculo activado DEAD CENTER: %s" % [tracker.global_position])
 
 	# Ahora mover satélite fuera de pantalla para verificar que vuelve al borde y activa la flecha
 	var sat_offscreen := cam_pos + Vector2(2500, 0)
 	hud.set_active_satellite(sat_offscreen, 1)
 	tracker._process(0.016)
 	assert(tracker.arrow_indicator.visible, "El puntero/flecha direccional debe activarse al estar fuera de pantalla")
-	print("  ✓ Satélite fuera de pantalla -> Indicador anclado al borde con flecha direccional visible.")
+	assert(tracker.panel_container.visible, "El panel de información debe reactivarse al estar fuera de pantalla")
+	assert(not tracker.is_on_screen_active, "El modo círculo de resaltado debe desactivarse fuera de pantalla")
+	print("  ✓ Satélite fuera de pantalla -> Indicador anclado al borde con flecha y panel visibles.")
 
 	print("\n==========================================")
 	print("[PASS] ALL SATELLITE EDGE INDICATOR TESTS PASSED (100%)!")

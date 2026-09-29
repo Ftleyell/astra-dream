@@ -30,6 +30,8 @@ var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
+	scale = Vector2(2.0, 2.0)
+	contact_radius *= 2.0
 	current_health = max_health
 	_acquire_player()
 	

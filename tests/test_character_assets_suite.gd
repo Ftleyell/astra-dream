@@ -70,6 +70,8 @@ func _ready() -> void:
 	assert(wpn_spr != null, "WeaponController debe instanciar WeaponSprite")
 	assert(wpn_spr.texture != null, "WeaponSprite debe tener la textura del arma asignada")
 	assert(wpn_spr.visible == true, "WeaponSprite debe estar visible")
+	assert(wpn_spr.position == Vector2.ZERO, "WeaponSprite debe estar montado centrado sobre el chasis (Vector2.ZERO)")
+	assert(wpn_spr.z_index >= 20, "WeaponSprite debe tener Z-index superior a la nave para verse por encima")
 
 	print("  ✓ Player y WeaponController configuraron ShipSprite y WeaponSprite correctamente")
 	test_player.queue_free()

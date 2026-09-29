@@ -52,6 +52,10 @@ func add_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	_is_dirty[stat_name] = true
 	stat_changed.emit(stat_name, get_stat(stat_name))
 
+func add_stat_bonus(stat_name: StringName, amount: float, is_pct: bool = false, source: Variant = null) -> void:
+	var mod_id: StringName = StringName(str(stat_name) + "_bonus_" + str(Time.get_ticks_usec()))
+	add_modifier(stat_name, StatModifier.new(mod_id, amount, is_pct, source))
+
 func set_or_replace_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	if not _modifiers.has(stat_name):
 		_modifiers[stat_name] = []

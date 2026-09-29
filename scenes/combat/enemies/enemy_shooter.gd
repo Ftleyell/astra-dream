@@ -17,9 +17,9 @@ var bullet_server: BulletServer = null
 func _init() -> void:
 	enemy_id = &"enemy_shooter"
 	max_health = 45.0
-	move_speed = 120.0
-	contact_damage = 10.0
-	exp_reward = 35.0
+	move_speed = 130.0
+	contact_damage = 12.0
+	exp_reward = 40.0
 	credits_reward = 4
 	contact_radius = 24.0
 

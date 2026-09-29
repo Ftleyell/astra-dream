@@ -20,13 +20,15 @@ static func trigger_global_magnet(tree: SceneTree) -> void:
 
 const MERGE_RADIUS_SQ: float = 52.0 * 52.0
 const PICKUP_RADIUS_SQ: float = 140.0 * 140.0
-const COLLECT_RADIUS_SQ: float = 22.0 * 22.0
+const COLLECT_RADIUS_SQ: float = 44.0 * 44.0
+
+const TEX_TIER_1 := preload("res://assets/sprites/pickups/exp_crystal_tier1.png")
+const TEX_TIER_2 := preload("res://assets/sprites/pickups/exp_crystal_tier2.png")
+const TEX_TIER_3 := preload("res://assets/sprites/pickups/exp_crystal_tier3.png")
+const TEX_TIER_4 := preload("res://assets/sprites/pickups/exp_crystal_tier4.png")
 
 @onready var crystal_visual: Node2D = get_node_or_null("CrystalVisual")
-@onready var facet_back: Polygon2D = get_node_or_null("CrystalVisual/FacetBack")
-@onready var facet_main: Polygon2D = get_node_or_null("CrystalVisual/FacetMain")
-@onready var facet_top: Polygon2D = get_node_or_null("CrystalVisual/FacetTop")
-@onready var sparkle_core: Polygon2D = get_node_or_null("CrystalVisual/SparkleCore")
+@onready var crystal_sprite: Sprite2D = get_node_or_null("CrystalVisual/CrystalSprite")
 
 func _ready() -> void:
 	add_to_group("exp_blobs")
@@ -41,14 +43,12 @@ func setup(p_exp: float, p_pos: Vector2) -> void:
 	if is_inside_tree():
 		_update_visuals()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# Animación de levitación y oscilación suave del cristal
 	if crystal_visual and not is_being_absorbed and not is_collected:
 		var time := Time.get_ticks_msec() * 0.004
 		crystal_visual.position.y = sin(time) * 3.5
 		crystal_visual.rotation = sin(time * 0.7) * 0.12
-		if sparkle_core:
-			sparkle_core.rotation += delta * 1.5
 
 func _physics_process(delta: float) -> void:
 	if is_being_absorbed or is_collected:
@@ -146,41 +146,25 @@ func _collect() -> void:
 
 func _get_target_scale() -> Vector2:
 	if exp_value < 45.0:
-		return Vector2(1.0, 1.0)
+		return Vector2(2.0, 2.0)
 	elif exp_value < 150.0:
-		return Vector2(1.35, 1.35)
+		return Vector2(2.7, 2.7)
 	elif exp_value < 450.0:
-		return Vector2(1.75, 1.75)
+		return Vector2(3.5, 3.5)
 	else:
-		return Vector2(2.25, 2.25)
+		return Vector2(4.5, 4.5)
 
 func _update_visuals() -> void:
 	scale = _get_target_scale()
 
-	if not facet_main or not facet_top or not facet_back:
+	if not crystal_sprite:
 		return
 
 	if exp_value < 45.0:
-		# Tier 1: Cristal Esmeralda Radiante
-		facet_back.color = Color(0.02, 0.55, 0.28, 0.95)
-		facet_main.color = Color(0.0, 0.95, 0.50, 0.90)
-		facet_top.color = Color(0.65, 1.0, 0.82, 0.98)
-		if sparkle_core: sparkle_core.color = Color.WHITE
+		crystal_sprite.texture = TEX_TIER_1
 	elif exp_value < 150.0:
-		# Tier 2: Cristal Diamante Cian Glaciar
-		facet_back.color = Color(0.0, 0.45, 0.75, 0.95)
-		facet_main.color = Color(0.0, 0.85, 1.0, 0.90)
-		facet_top.color = Color(0.70, 0.95, 1.0, 0.98)
-		if sparkle_core: sparkle_core.color = Color.WHITE
+		crystal_sprite.texture = TEX_TIER_2
 	elif exp_value < 450.0:
-		# Tier 3: Cristal Prisma Dorado
-		facet_back.color = Color(0.65, 0.45, 0.0, 0.95)
-		facet_main.color = Color(1.0, 0.82, 0.1, 0.90)
-		facet_top.color = Color(1.0, 0.96, 0.65, 0.98)
-		if sparkle_core: sparkle_core.color = Color.WHITE
+		crystal_sprite.texture = TEX_TIER_3
 	else:
-		# Tier 4: Cristal Amatista Cuántico
-		facet_back.color = Color(0.45, 0.05, 0.65, 0.95)
-		facet_main.color = Color(0.85, 0.25, 1.0, 0.90)
-		facet_top.color = Color(0.95, 0.75, 1.0, 0.98)
-		if sparkle_core: sparkle_core.color = Color.WHITE
+		crystal_sprite.texture = TEX_TIER_4

@@ -59,6 +59,14 @@ var chosen_stat_cards: Array[StatCardData] = []
 var active_arcanas: Array[ArcanaData] = []
 var run_dark_matter: int = 0
 
+# Kinematics & Flight Shader State
+var current_facing_angle: float = -PI / 2.0 # Inicialmente mirando hacia arriba
+var current_bank_tilt: float = 0.0
+var idle_bob_timer: float = 0.0
+var hit_flash_timer: float = 0.0
+const ROTATION_SMOOTH_SPEED: float = 14.0
+const BANK_SMOOTH_SPEED: float = 8.0
+
 # Core Hitbox Node
 @onready var hitbox_core: Node2D = $HitboxCore
 @onready var weapon_controller: Node2D = $WeaponController
@@ -79,6 +87,8 @@ var current_health: float = 100.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("player")
+	z_index = 5
+	scale = Vector2(1.2, 1.2)
 	if not character_data or character_data.character_id == &"survivor_default":
 		var sel_id := SaveManager.get_selected_character()
 		var roster := CharacterData.load_roster()
@@ -229,15 +239,39 @@ func _apply_visual_theme() -> void:
 	if not ship_spr and ship_tex:
 		ship_spr = Sprite2D.new()
 		ship_spr.name = "ShipSprite"
+		ship_spr.z_index = 1
 		add_child(ship_spr)
 		move_child(ship_spr, 0)
+	elif ship_spr:
+		ship_spr.z_index = 1
+
+	# Aplicar Shader Maestro de vuelo de exo-piloto
+	var flight_shader := preload("res://shaders/exo_pilot_flight.gdshader")
+	var flight_mat := ShaderMaterial.new()
+	flight_mat.shader = flight_shader
+	var p_color: Color = character_data.color if character_data else Color(0.2, 0.75, 1.0, 1.0)
+	flight_mat.set_shader_parameter("primary_color", p_color)
+	flight_mat.set_shader_parameter("secondary_color", Color(1.0, 0.95, 0.85, 1.0))
+	flight_mat.set_shader_parameter("thrust_intensity", 0.25)
+	flight_mat.set_shader_parameter("speed_ratio", 0.0)
+	flight_mat.set_shader_parameter("bank_tilt", 0.0)
+	flight_mat.set_shader_parameter("holo_glow_power", 0.8)
+	flight_mat.set_shader_parameter("chromatic_offset", 0.005)
+	flight_mat.set_shader_parameter("hit_flash", 0.0)
+	flight_mat.set_shader_parameter("core_gem_glow", 1.2)
 
 	# Aplicar skin cosmética a la nave si está equipada
 	var char_id_str := String(character_data.character_id) if character_data else "survivor_default"
 	var equipped_ship_skin: String = SaveManager.get_equipped_skin("ship:" + char_id_str)
 	if not equipped_ship_skin.is_empty() and ship_spr:
-		var stars: int = SaveManager.get_skin_stars(equipped_ship_skin)
-		CosmeticsManager.apply_skin_to_canvas_item(ship_spr, equipped_ship_skin, stars)
+		var skin_data := CosmeticsManager.get_skin(equipped_ship_skin)
+		var custom_tex := CosmeticsManager.get_skin_texture(skin_data)
+		if custom_tex:
+			ship_spr.texture = custom_tex
+		var glow_hex: String = skin_data.get("glow_hex", "")
+		if not glow_hex.is_empty():
+			flight_mat.set_shader_parameter("primary_color", Color.from_string(glow_hex, p_color))
+		ship_spr.material = flight_mat
 		ship_spr.visible = true
 		ship_spr.scale = Vector2(0.42, 0.42)
 		if placeholder:
@@ -245,7 +279,7 @@ func _apply_visual_theme() -> void:
 	elif ship_spr:
 		if ship_tex:
 			ship_spr.texture = ship_tex
-			ship_spr.material = null
+			ship_spr.material = flight_mat
 			ship_spr.visible = true
 			ship_spr.scale = Vector2(0.42, 0.42)
 			if placeholder:
@@ -265,9 +299,12 @@ func _apply_visual_theme() -> void:
 				scaled_pts.append(pt * 0.35)
 			placeholder.polygon = scaled_pts
 
-	# Configurar sprite del arma rotatoria en WeaponController
+	# Configurar sprite del arma rotatoria en WeaponController montado directamente sobre el chasis del jugador
 	var w_ctrl := get_node_or_null("WeaponController") as WeaponController
 	if w_ctrl:
+		w_ctrl.z_index = 20
+		w_ctrl.z_as_relative = false
+		move_child(w_ctrl, get_child_count() - 1)
 		var w_tex: Texture2D = character_data.get_weapon_texture() if character_data.has_method("get_weapon_texture") else null
 		var w_spr := w_ctrl.get_node_or_null("WeaponSprite") as Sprite2D
 		var w_poly := w_ctrl.get_node_or_null("WeaponVisual") as Polygon2D
@@ -276,20 +313,21 @@ func _apply_visual_theme() -> void:
 			w_spr.name = "WeaponSprite"
 			w_ctrl.add_child(w_spr)
 		if w_spr:
+			w_spr.z_as_relative = false
+			w_spr.z_index = 20
+			w_spr.move_to_front()
 			var equipped_w_skin: String = SaveManager.get_equipped_skin("weapon:" + char_id_str)
 			if not equipped_w_skin.is_empty():
 				var w_stars: int = SaveManager.get_skin_stars(equipped_w_skin)
 				CosmeticsManager.apply_skin_to_canvas_item(w_spr, equipped_w_skin, w_stars)
-				w_spr.position = Vector2(16, 0)
-				w_spr.scale = Vector2(0.35, 0.35)
+				w_spr.position = Vector2.ZERO
 				w_spr.visible = true
 				if w_poly:
 					w_poly.visible = false
 			elif w_tex:
 				w_spr.texture = w_tex
 				w_spr.material = null
-				w_spr.position = Vector2(16, 0)
-				w_spr.scale = Vector2(0.35, 0.35)
+				w_spr.position = Vector2.ZERO
 				w_spr.visible = true
 				if w_poly:
 					w_poly.visible = false
@@ -297,7 +335,23 @@ func _apply_visual_theme() -> void:
 				w_spr.visible = false
 				w_spr.material = null
 				if w_poly:
+					w_poly.z_as_relative = false
+					w_poly.z_index = 20
+					w_poly.position = Vector2.ZERO
 					w_poly.visible = true
+
+			# Escalar para montarse sobre el chasis de la nave (aprox. 45% del tamaño de la nave)
+			if w_spr.visible:
+				var char_visual_size: float = 108.0
+				if ship_spr and ship_spr.texture:
+					char_visual_size = maxf(float(ship_spr.texture.get_width()) * ship_spr.scale.x, float(ship_spr.texture.get_height()) * ship_spr.scale.y)
+				var target_weapon_pixel_size: float = char_visual_size * 0.45
+				var tex_dim: float = 128.0
+				if w_spr.texture:
+					tex_dim = maxf(float(w_spr.texture.get_width()), float(w_spr.texture.get_height()))
+				var target_scale: float = target_weapon_pixel_size / maxf(tex_dim, 1.0)
+				w_spr.scale = Vector2(target_scale, target_scale)
+
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -319,24 +373,81 @@ func _physics_process(delta: float) -> void:
 	_handle_actions()
 	_handle_health_regen(delta)
 
-	# Orientación 360° de la nave hacia el apuntado (offset de PI/2 por estar dibujada hacia ARRIBA)
-	# Durante el Omega Spin, la rotación la conduce sincronizadamente el rayo láser
+	# Cinemática de Vuelo 360° orientada hacia el vector de movimiento
+	idle_bob_timer += delta
+	if hit_flash_timer > 0.0:
+		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
+
+	var is_moving: bool = velocity.length_squared() > 10.0
+	var target_bank: float = 0.0
+
+	# Durante el Omega Spin de Nova, la rotación la conduce sincronizadamente el rayo láser
 	if not is_omega_spinning:
-		var aim_angle := (get_global_mouse_position() - global_position).angle()
+		if is_moving:
+			var move_angle := velocity.angle()
+			var angle_diff := wrapf(move_angle - current_facing_angle, -PI, PI)
+			current_facing_angle = lerp_angle(current_facing_angle, move_angle, ROTATION_SMOOTH_SPEED * delta)
+			target_bank = clampf(angle_diff * 1.8, -1.0, 1.0)
+		else:
+			target_bank = 0.0
+
+		current_bank_tilt = move_toward(current_bank_tilt, target_bank, BANK_SMOOTH_SPEED * delta)
+
+		# Offset de PI/2 porque los sprites base de las chicas están dibujados hacia ARRIBA (-Y)
+		var visual_rotation := current_facing_angle + PI / 2.0
 		var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
 		if ship_spr and ship_spr.visible:
-			ship_spr.rotation = aim_angle + PI / 2.0
+			ship_spr.rotation = visual_rotation
+			# Micro-flotación orgánica (idle bobbing) cuando la piloto está en reposo
+			if not is_moving and not is_dashing:
+				ship_spr.position.y = sin(idle_bob_timer * 3.5) * 1.5
+			else:
+				ship_spr.position.y = move_toward(ship_spr.position.y, 0.0, 8.0 * delta)
+
 		var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
 		if exo_spr:
-			exo_spr.rotation = aim_angle + PI / 2.0
+			exo_spr.rotation = visual_rotation
+
 		var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
 		if placeholder and placeholder.visible:
-			placeholder.rotation = aim_angle
+			placeholder.rotation = current_facing_angle
 
+	# Actualizar uniforms del shader de vuelo de la piloto
+	_update_pilot_shader(delta, is_moving)
 
 	if bullet_server:
 		bullet_server.player_pos = global_position
 		bullet_server.player_invulnerable = is_dashing
+
+func _update_pilot_shader(_delta: float, is_moving: bool) -> void:
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if not ship_spr or not (ship_spr.material is ShaderMaterial):
+		return
+
+	var mat := ship_spr.material as ShaderMaterial
+	var max_spd: float = maxf(1.0, stats.get_stat(&"move_speed"))
+	var spd_ratio: float = clampf(velocity.length() / max_spd, 0.0, 1.0)
+
+	var target_thrust: float = 0.25
+	if is_dashing:
+		target_thrust = 2.4 # Estado 3: Sobrecarga hiperbólica en Dash
+	elif is_moving:
+		target_thrust = lerpf(0.65, 1.25, spd_ratio) # Estado 2: Vuelo reactivo a la velocidad
+	else:
+		target_thrust = 0.25 + 0.08 * sin(idle_bob_timer * 6.0) # Estado 1: Llama piloto parpadeante en reposo
+
+	mat.set_shader_parameter("thrust_intensity", target_thrust)
+	mat.set_shader_parameter("speed_ratio", spd_ratio)
+	mat.set_shader_parameter("bank_tilt", current_bank_tilt)
+	mat.set_shader_parameter("hit_flash", 1.0 if hit_flash_timer > 0.0 else 0.0)
+
+	# Brillo del reactor / HitboxCore (intensificado al esquivar o recibir daño)
+	var gem_glow: float = 1.2
+	if is_dashing:
+		gem_glow = 2.2
+	elif hit_flash_timer > 0.0:
+		gem_glow = 2.8
+	mat.set_shader_parameter("core_gem_glow", gem_glow)
 
 func _handle_movement(delta: float) -> void:
 	if is_dashing:
@@ -868,6 +979,7 @@ func take_damage(amount: float) -> void:
 		mitigated_dmg = amount * (2.0 - (100.0 / (100.0 - armor_val)))
 
 	current_health -= mitigated_dmg
+	hit_flash_timer = 0.22
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")

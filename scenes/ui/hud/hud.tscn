@@ -1,13 +1,172 @@
-[gd_scene load_steps=9 format=3 uid="uid://d3m0c7q35k89"]
+[gd_scene load_steps=21 format=3 uid="uid://d3m0c7q35k89"]
 
 [ext_resource type="Script" path="res://scenes/ui/hud/hud.gd" id="1_hud"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_laser.png" id="2_laser_ico"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_bomb.png" id="3_bomb_ico"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_credit.png" id="4_credit_ico"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_health_bar.tscn" id="5_boss"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/satellite_edge_indicator.tscn" id="6_satedge"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/arcana_edge_indicator.tscn" id="7_arcedge"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_edge_indicator.tscn" id="8_bossedge"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/laser_ability_icon.png" id="2_laser_ico"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/dash_ability_icon.png" id="3_dash_ico"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/bomb_ability_icon.png" id="4_bomb_ico"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/credit_coin_icon.png" id="5_credit_ico"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_health_bar.tscn" id="6_boss"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/satellite_edge_indicator.tscn" id="7_satedge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/arcana_edge_indicator.tscn" id="8_arcedge"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_edge_indicator.tscn" id="9_bossedge"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/biomass_dna_icon.png" id="10_bio_ico"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_credits_large"]
+content_margin_left = 20.0
+content_margin_top = 5.0
+content_margin_right = 20.0
+content_margin_bottom = 5.0
+bg_color = Color(0.03, 0.06, 0.12, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.82, 0.2, 0.7)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(1, 0.7, 0, 0.25)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_capsule"]
+content_margin_left = 16.0
+content_margin_top = 4.0
+content_margin_right = 16.0
+content_margin_bottom = 4.0
+bg_color = Color(0.02, 0.06, 0.14, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.9, 1, 0.55)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0.8, 1, 0.2)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cooldown_btn"]
+bg_color = Color(0.02, 0.05, 0.12, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0.7, 1, 0.3)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bomb_special_btn"]
+bg_color = Color(0.08, 0.02, 0.13, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.3, 1, 0.95)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.95, 0.25, 1, 0.42)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pip_lit"]
+bg_color = Color(0.1, 0.95, 0.8, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0, 0.9, 1, 0.6)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pip_dim"]
+bg_color = Color(0.08, 0.14, 0.22, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.25, 0.38, 0.5)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bomb_pip_lit"]
+bg_color = Color(1, 0.35, 1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(1, 0.2, 1, 0.7)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bomb_pip_dim"]
+bg_color = Color(0.12, 0.08, 0.16, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.18, 0.35, 0.5)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bottom_bar"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.02, 0.05, 0.1, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.7, 0.9, 0.35)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level_badge"]
+content_margin_left = 10.0
+content_margin_top = 2.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
+bg_color = Color(0.05, 0.1, 0.2, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.9, 1, 0.75)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_bg"]
+bg_color = Color(0.03, 0.05, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.25, 0.45, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_fill"]
+bg_color = Color(0, 0.88, 1, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="GameHUD" type="CanvasLayer"]
 layer = 10
@@ -16,11 +175,11 @@ script = ExtResource("1_hud")
 [node name="SatelliteTrackerLayer" type="CanvasLayer" parent="."]
 layer = 8
 
-[node name="SatelliteEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("6_satedge")]
+[node name="SatelliteEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("7_satedge")]
 
-[node name="ArcanaEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("7_arcedge")]
+[node name="ArcanaEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("8_arcedge")]
 
-[node name="BossEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("8_bossedge")]
+[node name="BossEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("9_bossedge")]
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15
@@ -29,139 +188,335 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_bottom = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TopBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="HealthLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "100 / 100"
-
-[node name="HealthBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(180, 20)
-layout_mode = 2
-size_flags_vertical = 4
-value = 100.0
-show_percentage = false
-
-[node name="VSepDash" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
+[node name="InventoryContainer" type="Control" parent="MarginContainer/VBoxContainer/TopBar"]
 layout_mode = 2
 
-[node name="DashLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+[node name="EquipmentVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/InventoryContainer"]
+modulate = Color(1, 1, 1, 0.82)
+layout_mode = 0
+offset_right = 200.0
+offset_bottom = 80.0
+theme_override_constants/separation = 4
+
+[node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/InventoryContainer/EquipmentVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "Dash: [LISTO]"
+theme_override_constants/separation = 8
 
-[node name="VSep1" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
+[node name="InventoryRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/InventoryContainer/EquipmentVBox"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="LaserIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(24, 24)
-layout_mode = 2
-size_flags_vertical = 4
-texture = ExtResource("2_laser_ico")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="LaserCDLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "Láser: [LISTO]"
-
-[node name="VSepAim" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-
-[node name="AimModeLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[E] AIM: AUTO"
-
-[node name="VSep2" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-
-
-[node name="BombIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(24, 24)
-layout_mode = 2
-size_flags_vertical = 4
-texture = ExtResource("3_bomb_ico")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BombLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "Bombas: 2"
-
-[node name="VSep3" type="VSeparator" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-
-[node name="CreditIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(24, 24)
-layout_mode = 2
-size_flags_vertical = 4
-texture = ExtResource("4_credit_ico")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CreditsLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "Créditos: 100 C"
-
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/TopRow"]
+[node name="SpacerLeft" type="Control" parent="MarginContainer/VBoxContainer/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+[node name="CenterCluster" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="CreditsCard" type="PanelContainer" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_credits_large")
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster/CreditsCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="CreditIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster/CreditsCard/HBox"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_credit_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CreditsLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster/CreditsCard/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_font_sizes/font_size = 26
+text = "100 C"
+vertical_alignment = 1
+
+[node name="MissionPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_capsule")
+
+[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar/CenterCluster/MissionPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
 text = "00:00 | Amenaza: 1.0x"
+horizontal_alignment = 1
+
+[node name="SpacerRight" type="Control" parent="MarginContainer/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BiomassHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BiomassIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopBar/BiomassHBox"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("10_bio_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BiomassLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar/BiomassHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 1, 0.7, 1)
+theme_override_colors/font_shadow_color = Color(0, 1, 0.65, 0.8)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 10
+theme_override_font_sizes/font_size = 24
+text = "0"
+vertical_alignment = 1
 
 [node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TacticalAbilitiesRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_horizontal = 4
+theme_override_constants/separation = 22
+alignment = 1
 
-[node name="InventoryRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="DashModule" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="DashKeybind" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.85, 1, 0.85)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 11
+text = "[SHIFT]"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule"]
 layout_mode = 2
 theme_override_constants/separation = 6
+alignment = 1
 
-[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="DashButtonBody" type="PanelContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox"]
+clip_contents = true
+custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_styles/panel = SubResource("StyleBoxFlat_cooldown_btn")
 
-[node name="LevelLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
+[node name="DashIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox/DashButtonBody"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+texture = ExtResource("3_dash_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DashCDOverlay" type="ColorRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox/DashButtonBody"]
+visible = false
+layout_mode = 2
+color = Color(0.015, 0.04, 0.09, 0.8)
+
+[node name="DashCDNum" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox/DashButtonBody"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DashPipsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox"]
+custom_minimum_size = Vector2(8, 88)
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="DashPip1" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox/DashPipsVBox"]
+custom_minimum_size = Vector2(8, 40)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pip_lit")
+
+[node name="DashPip2" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/DashModule/HBox/DashPipsVBox"]
+custom_minimum_size = Vector2(8, 40)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pip_lit")
+
+[node name="LaserModule" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="LaserKeybind" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.85, 1, 0.85)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 11
+text = "[CLICK DER]"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule"]
+layout_mode = 2
+alignment = 1
+
+[node name="LaserButtonBody" type="PanelContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule/HBox"]
+clip_contents = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cooldown_btn")
+
+[node name="LaserIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule/HBox/LaserButtonBody"]
+layout_mode = 2
+texture = ExtResource("2_laser_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LaserCDOverlay" type="ColorRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule/HBox/LaserButtonBody"]
+visible = false
+layout_mode = 2
+color = Color(0.015, 0.04, 0.09, 0.8)
+
+[node name="LaserCDNum" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/LaserModule/HBox/LaserButtonBody"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BombModule" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="BombKeybind" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.95, 0.95)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 11
+text = "[Q] BOMBA"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BombButtonBody" type="PanelContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox"]
+clip_contents = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_special_btn")
+
+[node name="BombIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombButtonBody"]
+layout_mode = 2
+texture = ExtResource("4_bomb_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BombOverlay" type="ColorRect" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombButtonBody"]
+visible = false
+layout_mode = 2
+color = Color(0.02, 0.04, 0.08, 0.82)
+
+[node name="BombPipsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox"]
+custom_minimum_size = Vector2(8, 88)
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="BombPip1" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
+custom_minimum_size = Vector2(8, 26)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
+
+[node name="BombPip2" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
+custom_minimum_size = Vector2(8, 26)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
+
+[node name="BombPip3" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
+custom_minimum_size = Vector2(8, 26)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
+
+[node name="BottomBar" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_bar")
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BottomBar"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LevelBadge" type="PanelContainer" parent="MarginContainer/VBoxContainer/BottomBar/HBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_level_badge")
+
+[node name="LevelLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomBar/HBox/LevelBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
 text = "NV. 1"
 
-[node name="ExpBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BottomRow"]
-custom_minimum_size = Vector2(300, 16)
-layout_mode = 2
-size_flags_vertical = 4
-show_percentage = false
-
-[node name="Spacer2" type="Control" parent="MarginContainer/VBoxContainer/BottomRow"]
+[node name="ExpBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BottomBar/HBox"]
+custom_minimum_size = Vector2(300, 14)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/background = SubResource("StyleBoxFlat_exp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_exp_fill")
+show_percentage = false
 
-[node name="SatelliteRadarLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
+[node name="HiddenCompat" type="Control" parent="MarginContainer"]
+visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Satélite #1: 450 m [→]"
 
-[node name="BossHealthBar" parent="." instance=ExtResource("5_boss")]
+[node name="DashLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="LaserCDLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="BombLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="SatelliteRadarLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="HealthLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+text = "100 / 100"
+
+[node name="HealthBar" type="ProgressBar" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="AimModeLabel" type="Label" parent="MarginContainer/HiddenCompat"]
+layout_mode = 0
+
+[node name="BossHealthBar" parent="." instance=ExtResource("6_boss")]

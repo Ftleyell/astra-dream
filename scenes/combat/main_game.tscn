@@ -60,6 +60,8 @@ polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
 shape = SubResource("CircleShape2D_core")
 
 [node name="WeaponController" type="Node2D" parent="Player" node_paths=PackedStringArray("player")]
+z_index = 20
+z_as_relative = false
 script = ExtResource("4_weapon_controller")
 player = NodePath("..")
 
@@ -72,11 +74,9 @@ polygon = PackedVector2Array(-6, -3, 12, -2, 12, 2, -6, 3)
 player = NodePath("..")
 
 [node name="LaserChargeBar" parent="Player" node_paths=PackedStringArray("weapon_controller") instance=ExtResource("18_laserchg")]
-position = Vector2(0, -20)
 weapon_controller = NodePath("../WeaponController")
 
 [node name="AimModeIndicator" parent="Player" node_paths=PackedStringArray("weapon_controller") instance=ExtResource("21_aimind")]
-position = Vector2(0, 26)
 weapon_controller = NodePath("../WeaponController")
 
 [node name="HUD" parent="." node_paths=PackedStringArray("player") instance=ExtResource("7_hud")]

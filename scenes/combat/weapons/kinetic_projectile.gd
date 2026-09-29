@@ -79,9 +79,25 @@ func _check_collisions() -> void:
 		var target := node as Node2D
 		if target in hit_targets:
 			continue
-		var t_radius: float = target.get("obstacle_radius") if "obstacle_radius" in target else 24.0
-		var hit_r := radius + t_radius
-		if global_position.distance_squared_to(target.global_position) <= hit_r * hit_r:
+		if target.get("is_dead") or target.get("is_dying"):
+			continue
+
+		var is_hit := false
+		if target is PlanetSector:
+			var sec := target as PlanetSector
+			if sec.is_dead or sec.is_dying:
+				continue
+			var local_p := sec.to_local(global_position)
+			if sec.collision_poly and not sec.collision_poly.disabled:
+				is_hit = Geometry2D.is_point_in_polygon(local_p, sec.collision_poly.polygon)
+
+		if not is_hit:
+			var t_radius: float = target.get("obstacle_radius") if "obstacle_radius" in target else 24.0
+			var hit_r := radius + t_radius
+			if global_position.distance_squared_to(target.global_position) <= hit_r * hit_r:
+				is_hit = true
+
+		if is_hit:
 			hit_targets.append(target)
 			_apply_hit(target)
 			if pierces_left <= 0:

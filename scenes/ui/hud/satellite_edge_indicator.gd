@@ -21,9 +21,25 @@ const PING_INTERVAL: float = 10.0
 var _ping_ring_radius: float = 0.0
 var _ping_ring_alpha: float = 0.0
 var _ping_tween: Tween = null
+var is_on_screen_active: bool = false
+var _onscreen_pulse: float = 0.0
 
 func _draw() -> void:
-	if _ping_ring_alpha > 0.01:
+	if is_on_screen_active:
+		var center: Vector2 = BOX_SIZE * 0.5
+		var r: float = 46.0 + sin(_onscreen_pulse) * 4.0
+		# Anillo exterior de alta visibilidad cian
+		draw_arc(center, r, 0.0, TAU, 48, Color(0.0, 0.95, 1.0, 0.92), 2.5)
+		# Halo interior translúcido
+		draw_arc(center, r * 0.75, 0.0, TAU, 36, Color(0.0, 0.8, 1.0, 0.38), 1.5)
+		# 4 miras tácticas cardinales
+		var tick_len: float = 9.0
+		var col_tick: Color = Color(0.0, 1.0, 0.85, 0.95)
+		draw_line(center + Vector2(-r - tick_len, 0), center + Vector2(-r + 2.0, 0), col_tick, 2.0)
+		draw_line(center + Vector2(r - 2.0, 0), center + Vector2(r + tick_len, 0), col_tick, 2.0)
+		draw_line(center + Vector2(0, -r - tick_len), center + Vector2(0, -r + 2.0), col_tick, 2.0)
+		draw_line(center + Vector2(0, r - 2.0), center + Vector2(0, r + tick_len), col_tick, 2.0)
+	elif _ping_ring_alpha > 0.01:
 		draw_arc(BOX_SIZE * 0.5, _ping_ring_radius, 0.0, TAU, 36, Color(0.0, 0.95, 1.0, _ping_ring_alpha), 2.5)
 
 func _ready() -> void:
@@ -79,10 +95,13 @@ func trigger_ping() -> void:
 
 func clear_target() -> void:
 	has_satellite = false
+	is_on_screen_active = false
 	ping_timer = 0.0
 	if _ping_tween and _ping_tween.is_valid():
 		_ping_tween.kill()
 	_ping_ring_alpha = 0.0
+	if panel_container:
+		panel_container.visible = true
 	queue_redraw()
 	hide()
 
@@ -176,11 +195,20 @@ func _process(delta: float) -> void:
 	var is_on_screen: bool = (sat_screen.x >= min_x and sat_screen.x <= max_x and sat_screen.y >= min_y and sat_screen.y <= max_y)
 
 	if is_on_screen:
-		# Al aparecer el satélite en pantalla: soltarse del borde y quedar DEAD CENTER sobre el mismo
+		# Al aparecer el satélite en pantalla: el indicador de borde desaparece y se convierte en un círculo marcador alrededor del satélite
 		global_position = sat_screen - BOX_SIZE * 0.5
 		if arrow_indicator:
 			arrow_indicator.visible = false
+		if panel_container:
+			panel_container.visible = false
+		is_on_screen_active = true
+		_onscreen_pulse += delta * 6.0
+		queue_redraw()
 	else:
+		is_on_screen_active = false
+		if panel_container:
+			panel_container.visible = true
+
 		# Fuera de pantalla: desplazarse por el borde en el punto de contacto entre jugador y satélite
 		var origin := player_screen.clamp(Vector2(min_x, min_y), Vector2(max_x, max_y))
 		var dir := sat_screen - player_screen
@@ -219,6 +247,7 @@ func _process(delta: float) -> void:
 			var angle := dir.angle()
 			arrow_indicator.rotation = angle
 			arrow_indicator.position = BOX_SIZE * 0.5 + Vector2(cos(angle), sin(angle)) * (half_w + 3.0)
+		queue_redraw()
 
 	# Pulso suave en la frontera cuando el jugador está en camino
 	_pulse_timer += delta * (6.0 if dist <= 300.0 else 3.0)

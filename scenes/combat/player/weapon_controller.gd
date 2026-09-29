@@ -139,7 +139,7 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	_handle_toggle_input()
 	_update_locked_target()
-	_handle_aim()
+	_handle_aim(delta)
 	_handle_active_fire(delta)
 	_handle_passive_fire(delta)
 
@@ -227,19 +227,26 @@ func _get_passive_aim_info() -> Dictionary:
 
 	return { "direction": fallback_dir, "target": null }
 
-func _handle_aim() -> void:
+func _handle_aim(delta: float = 0.0) -> void:
 	if player and player.is_omega_spinning:
 		return
+	var target_pos := Vector2.ZERO
 	if is_manual_aim:
-		look_at(get_global_mouse_position())
+		target_pos = get_global_mouse_position()
 	else:
 		if current_locked_target and is_instance_valid(current_locked_target):
-			look_at(current_locked_target.global_position)
+			target_pos = current_locked_target.global_position
 		elif Input.is_action_pressed("fire_active"):
-			look_at(get_global_mouse_position())
+			target_pos = get_global_mouse_position()
 		else:
 			var info := _get_passive_aim_info()
-			look_at(global_position + info.direction * 100.0)
+			target_pos = global_position + info.direction * 100.0
+
+	var target_angle := (target_pos - global_position).angle()
+	if delta > 0.0:
+		rotation = lerp_angle(rotation, target_angle, 20.0 * delta)
+	else:
+		rotation = target_angle
 
 
 

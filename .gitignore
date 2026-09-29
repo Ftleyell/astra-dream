@@ -59,6 +59,7 @@ scratch/
 # Crash logs and debug traces
 *.log
 crash_dump*
+tests/screenshots/
 
 # Teamwork multi-agent artifacts
 .agents/*

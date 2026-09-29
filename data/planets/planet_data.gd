@@ -28,3 +28,4 @@ extends Resource
 # Metadatos para digitalización
 @export var core_type: StringName = &"biosphere_core"
 @export var texture_overlay: Texture2D = null
+@export var interior_texture: Texture2D = null

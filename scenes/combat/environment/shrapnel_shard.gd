@@ -183,7 +183,7 @@ static func spawn_shattered_burst(container: Node, pos: Vector2, p_tier: int, co
 		return spawned
 
 	var parent_target: Node = container
-	if container is DestructibleSpaceObject or container is PlanetSegment:
+	if container is DestructibleSpaceObject or container is PlanetSegment or container is PlanetSector:
 		parent_target = container.get_parent() if container.get_parent() else tree.current_scene
 
 	for i in range(num_shards):

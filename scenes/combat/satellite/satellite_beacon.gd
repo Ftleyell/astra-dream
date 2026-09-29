@@ -20,6 +20,7 @@ signal exited_perimeter(index: int)
 
 func _ready() -> void:
 	add_to_group("satellite_beacon")
+	scale = Vector2(2.0, 2.0)
 	_draw_radius_circle()
 	_setup_ping_line()
 	trigger_beacon_ping()

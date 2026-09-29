@@ -14,6 +14,7 @@ var _label: Label
 
 func _ready() -> void:
 	add_to_group("slot_machine_chest")
+	scale = Vector2(1.2, 1.2)
 	_setup_visuals()
 	_setup_area()
 
@@ -61,7 +62,7 @@ func _setup_area() -> void:
 func _process(delta: float) -> void:
 	if is_opened:
 		return
-	var pulse := 0.8 + 0.2 * sin(Time.get_ticks_msec() * 0.006)
+	var pulse := (0.95 + 0.05 * sin(Time.get_ticks_msec() * 0.006)) * 0.18
 	_visual.scale = Vector2(pulse, pulse)
 
 func _on_body_entered(body: Node2D) -> void:

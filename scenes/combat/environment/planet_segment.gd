@@ -21,6 +21,8 @@ signal shattered(pos: Vector2, tier: int)
 @export var max_segment_health: float = 120.0
 @export var layer_type: int = 0 # 0: Corteza (Tierra), 1: Manto Medio (Roca), 2: Manto Profundo (Piedra Negra)
 @export var obstacle_radius: float = 40.0
+@export var custom_texture: Texture2D = null
+@export var max_crust_radius: float = 300.0
 
 var is_dying: bool = false
 var centroid: Vector2 = Vector2.ZERO
@@ -89,7 +91,7 @@ func _exit_tree() -> void:
 	_unregister_from_bullet_server()
 
 
-func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col: Color, b_col: Color, hp: float, xp_biomass: int, l_type: int = 0) -> void:
+func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col: Color, b_col: Color, hp: float, xp_biomass: int, l_type: int = 0, p_custom_tex: Texture2D = null, p_crust_radius: float = 300.0) -> void:
 	inner_radius = r_in
 	outer_radius = r_out
 	start_angle = a_start
@@ -99,6 +101,8 @@ func setup_segment(r_in: float, r_out: float, a_start: float, a_end: float, col:
 	max_segment_health = hp
 	biomass_reward = xp_biomass
 	layer_type = l_type
+	custom_texture = p_custom_tex
+	max_crust_radius = p_crust_radius
 	current_fracture_stage = 0
 
 	# Calcular el centroide geométrico del sector angular
@@ -173,7 +177,7 @@ static func _get_layer_texture(p_layer: int) -> ImageTexture:
 
 
 func _apply_geological_texture() -> void:
-	if not visual_polygon:
+	if not visual_polygon or custom_texture != null:
 		return
 	var tex := _get_layer_texture(layer_type)
 	if tex:
@@ -203,7 +207,7 @@ func _on_health_changed(new_hp: float, max_hp: float) -> void:
 ## Aplica deformación física y muescas según la fase de fractura
 func rebuild_geometry() -> void:
 	var pts: PackedVector2Array = []
-	var steps: int = 8 # Resolución del arco para mallas melladas
+	var steps: int = 16 if layer_type == 0 else 8 # Mayor resolución perimétrica en corteza para curvatura perfecta
 
 	var radial_depth := outer_radius - inner_radius
 
@@ -249,26 +253,49 @@ func rebuild_geometry() -> void:
 
 	if visual_polygon:
 		visual_polygon.polygon = pts
-		visual_polygon.color = segment_color
+		if custom_texture:
+			visual_polygon.texture = custom_texture
+			visual_polygon.texture_repeat = CanvasItem.TEXTURE_REPEAT_DISABLED
+			# UVs mapeadas de manera que el círculo de radio max_crust_radius encaje en [0, 1] x [0, 1]
+			var tex_size := custom_texture.get_size()
+			var uvs: PackedVector2Array = []
+			for p in pts:
+				var planet_pos := p + centroid
+				var uv_norm := (planet_pos / (max_crust_radius * 2.0)) + Vector2(0.5, 0.5)
+				uvs.append(uv_norm * tex_size)
+			visual_polygon.uv = uvs
+			visual_polygon.color = Color.WHITE
+		else:
+			visual_polygon.color = segment_color
 
 	if border_line:
 		border_line.clear_points()
-		for p in pts:
-			border_line.add_point(p)
-		if pts.size() > 0:
-			border_line.add_point(pts[0])
+		if layer_type == 0 and current_fracture_stage == 0:
+			# Corteza intacta: SIN borde visible para fundirse 100% como un planeta completo e impecable
+			border_line.visible = false
+		else:
+			border_line.visible = true
+			for p in pts:
+				border_line.add_point(p)
+			if pts.size() > 0:
+				border_line.add_point(pts[0])
 
-		# Ajuste visual del borde según el estado de cuarteado
-		match current_fracture_stage:
-			0:
-				border_line.default_color = border_color
-				border_line.width = 2.0
-			1:
-				border_line.default_color = border_color.lightened(0.25)
-				border_line.width = 2.4
-			2:
-				border_line.default_color = Color(1.0, 0.4, 0.3, 0.95) # Borde incandescente/fracturado
-				border_line.width = 2.8
+			# Ajuste visual del borde según el tipo de capa y estado de fractura
+			match current_fracture_stage:
+				0:
+					# Mantos interiores intactos: borde sutil del color de la roca
+					border_line.default_color = border_color
+					border_line.width = 1.8
+				1:
+					# Fase 1 (66%-33% HP): Grieta incandescente / fractura visible
+					var crack_col: Color = border_color.lightened(0.4)
+					crack_col.a = 0.9
+					border_line.default_color = crack_col
+					border_line.width = 2.4
+				2:
+					# Fase 2 (<33% HP): Falla tectónica crítica, magma/energía expuesta
+					border_line.default_color = Color(1.0, 0.45, 0.2, 0.95)
+					border_line.width = 3.2
 
 	# Sincronización exacta de colisión física (bloqueo al jugador) y hurtbox (área de daño)
 	if collision_poly:

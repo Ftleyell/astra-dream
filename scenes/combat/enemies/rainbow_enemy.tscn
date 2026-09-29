@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/combat/enemies/rainbow_enemy.gd" id="1_rainbow"]
 [ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
-[ext_resource type="Texture2D" path="res://assets/characters/ships/ship_echo.png" id="3_ship"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/enemy_rainbow.png" id="3_rainbow_tex"]
 [ext_resource type="Shader" path="res://core/shaders/rainbow_iridescent.gdshader" id="4_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rainbow"]
@@ -42,8 +42,8 @@ color_ramp = SubResource("Gradient_rainbow_thrust")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_rainbow")
-scale = Vector2(0.42, 0.42)
-texture = ExtResource("3_ship")
+scale = Vector2(0.08, 0.08)
+texture = ExtResource("3_rainbow_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_body")

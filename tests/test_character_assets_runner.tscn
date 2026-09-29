@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://testcharassets001"]
+[gd_scene load_steps=2 format=3 uid="uid://charassetrun01"]
 
-[ext_resource type="Script" path="res://tests/test_character_assets_suite.gd" id="1_suite"]
+[ext_resource type="Script" path="res://tests/test_character_assets_suite.gd" id="1_charasset"]
 
 [node name="TestCharacterAssetsRunner" type="Node"]
-script = ExtResource("1_suite")
+script = ExtResource("1_charasset")

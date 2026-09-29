@@ -232,6 +232,23 @@ func _ready() -> void:
 		call_deferred("_spawn_slot_machine", player.global_position + Vector2(0, -35.0))
 		return
 
+	# Chequeo de inicio debug para test de planetas (run sin enemigos, 3 planetas inmediatos)
+	var is_planet_test: bool = DebugManager.consume_pending_planet_test() if (DebugManager and DebugManager.has_method("consume_pending_planet_test")) else false
+	if is_planet_test:
+		is_briefing_active = false
+		prologue_bonus_chosen = true
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+		if enemy_spawner:
+			enemy_spawner.process_mode = Node.PROCESS_MODE_DISABLED
+		# Ajustar estadísticas del jugador para pruebas cómodas
+		if player and player.stats:
+			player.stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"planet_test_speed", 150.0, false, self))
+			player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"planet_test_damage", 50.0, false, self))
+		call_deferred("_spawn_debug_test_planets")
+		return
+
 	# Generar el primer satélite de la oleada para que el radar lo indique de inmediato
 	_spawn_next_satellite_for_wave()
 
@@ -950,7 +967,12 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		next_pid = unencountered[0]
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var spawn_pos := player.global_position + forward * 450.0
+	# Spawn lateral (60° a 75° de desviación respecto al avance) a 650px de distancia
+	# Nunca en trayectoria directa para garantizar la posibilidad de ruta pacifista y evasión
+	var lateral_sign: float = -1.0 if randf() < 0.5 else 1.0
+	var spawn_angle: float = deg_to_rad(randf_range(60.0, 75.0) * lateral_sign)
+	var spawn_dir := forward.rotated(spawn_angle).normalized()
+	var spawn_pos := player.global_position + spawn_dir * 650.0
 
 	var rival = rival_pilot_scene.instantiate()
 	rival.global_position = spawn_pos
@@ -1888,5 +1910,41 @@ func _spawn_navigator_controller() -> void:
 	active_navigator_controller.name = "NavigatorController"
 	add_child(active_navigator_controller)
 	active_navigator_controller.setup(self, player, hud)
+
+func _spawn_debug_test_planets() -> void:
+	if not is_instance_valid(player):
+		return
+
+	var planet_scene := load("res://scenes/combat/environment/planet.tscn") as PackedScene
+	if not planet_scene:
+		return
+
+	var configs: Array[Dictionary] = [
+		{
+			"res": "res://data/planets/verdant_planet.tres",
+			"offset": Vector2(650.0, -250.0) # Arriba a la derecha
+		},
+		{
+			"res": "res://data/planets/volcanic_planet.tres",
+			"offset": Vector2(-750.0, 300.0) # Abajo a la izquierda
+		},
+		{
+			"res": "res://data/planets/cryo_planet.tres",
+			"offset": Vector2(850.0, 600.0) # Abajo a la derecha
+		}
+	]
+
+	for cfg in configs:
+		var p_res := load(cfg["res"]) as PlanetData
+		if not p_res:
+			continue
+		var planet := planet_scene.instantiate() as Planet
+		if not planet:
+			continue
+		planet.planet_data = p_res
+		planet.disable_defenders = true # Sin defensores molestos en la pseudo-run de prueba de planetas
+		planet.global_position = player.global_position + cfg["offset"]
+		add_child(planet)
+
 
 

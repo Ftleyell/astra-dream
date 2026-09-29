@@ -9,7 +9,7 @@ signal collected(amount: int)
 
 @export var value: int = 5
 @export var pickup_radius: float = 260.0
-@export var collect_radius: float = 30.0
+@export var collect_radius: float = 60.0
 
 var player: Node2D = null
 var is_collected: bool = false
@@ -23,6 +23,7 @@ var magnet_speed: float = 0.0
 func _ready() -> void:
 	add_to_group("dark_matter_orbs")
 	add_to_group("pickups")
+	scale = Vector2(2.0, 2.0)
 
 	var angle := randf() * TAU
 	velocity = Vector2(cos(angle), sin(angle)) * randf_range(50.0, 130.0)

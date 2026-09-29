@@ -15,7 +15,7 @@ enum ConsumableType {
 
 const MAX_LIFETIME: float = 45.0
 const BLINK_START: float = 37.0
-const PICKUP_RADIUS_SQ: float = 28.0 * 28.0
+const PICKUP_RADIUS_SQ: float = 56.0 * 56.0
 
 var current_lifetime: float = 0.0
 var is_collected: bool = false
@@ -28,6 +28,7 @@ var player_ref: Player = null
 
 func _ready() -> void:
 	add_to_group("field_consumables")
+	scale = Vector2(2.0, 2.0)
 	_find_player()
 	_apply_visuals()
 
@@ -48,19 +49,19 @@ func _apply_visuals() -> void:
 	match type:
 		ConsumableType.HEAL:
 			glow_polygon.color = Color(0.12, 0.95, 0.5, 0.35)
-			icon_sprite.texture = load("res://assets/icons/items/icon_heart.svg")
-			icon_sprite.modulate = Color(0.2, 1.0, 0.6)
-			icon_sprite.scale = Vector2(0.055, 0.055)
+			icon_sprite.texture = load("res://assets/sprites/pickups/drop_heal.png")
+			icon_sprite.modulate = Color.WHITE
+			icon_sprite.scale = Vector2(0.18, 0.18)
 		ConsumableType.MAGNET:
 			glow_polygon.color = Color(0.05, 0.8, 1.0, 0.35)
-			icon_sprite.texture = load("res://assets/icons/items/icon_magnet.svg")
-			icon_sprite.modulate = Color(0.2, 0.9, 1.0)
-			icon_sprite.scale = Vector2(0.055, 0.055)
+			icon_sprite.texture = load("res://assets/sprites/pickups/drop_magnet.png")
+			icon_sprite.modulate = Color.WHITE
+			icon_sprite.scale = Vector2(0.18, 0.18)
 		ConsumableType.BOMB:
-			glow_polygon.color = Color(1.0, 0.35, 0.1, 0.35)
-			icon_sprite.texture = load("res://assets/icons/icon_bomb.png")
-			icon_sprite.modulate = Color(1.0, 0.55, 0.2)
-			icon_sprite.scale = Vector2(0.48, 0.48)
+			glow_polygon.color = Color(0.9, 0.25, 0.95, 0.35)
+			icon_sprite.texture = load("res://assets/sprites/pickups/drop_bomb.png")
+			icon_sprite.modulate = Color.WHITE
+			icon_sprite.scale = Vector2(0.18, 0.18)
 
 func _physics_process(delta: float) -> void:
 	if is_collected:
@@ -123,7 +124,7 @@ func collect(player: Player) -> void:
 			if stored:
 				if audio_mgr and audio_mgr.has_method("play_sfx"):
 					audio_mgr.play_sfx("bomb", 1.35)
-				floating_text_script.spawn(parent_node, global_position, "+1 BOMBA", Color(1.0, 0.65, 0.15))
+				floating_text_script.spawn(parent_node, global_position, "+1 BOMBA", Color(0.9, 0.35, 1.0))
 			else:
 				# Ya estaba en 5: detonación inmediata de pantalla
 				var camera := get_viewport().get_camera_2d()

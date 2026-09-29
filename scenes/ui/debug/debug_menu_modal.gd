@@ -37,6 +37,7 @@ signal closed()
 @onready var jump_slayer_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow/JumpSlayerButton")
 @onready var jump_neutral_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow/JumpNeutralButton")
 @onready var spawn_rival_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow/SpawnRivalButton")
+@onready var test_planets_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/PlanetDebugRow/TestPlanetsButton")
 
 # Gacha Tab Controls
 @onready var tokens_label: Label = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/GachaTabContent/GachaStatsPanel/GachaStatsHBox/TokensLabel")
@@ -137,6 +138,10 @@ func _ready() -> void:
 	if spawn_rival_btn:
 		spawn_rival_btn.pressed.connect(_on_spawn_rival_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_rival_btn)
+
+	if test_planets_btn:
+		test_planets_btn.pressed.connect(_on_test_planets_pressed)
+		UIFocusHelper.apply_cyber_focus(test_planets_btn)
 
 	# Gacha Tab Connects
 	if add_tokens_10_btn:
@@ -681,3 +686,14 @@ func _on_spawn_rival_pressed() -> void:
 		get_tree().paused = false
 		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
 			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+
+func _on_test_planets_pressed() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
+	DebugManager.set_pending_planet_test(true)
+	close_menu()
+	get_tree().paused = false
+	if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+		get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")

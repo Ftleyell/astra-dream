@@ -37,6 +37,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
+	scale = Vector2(1.2, 1.2)
 
 	current_health = max_health
 	_acquire_references()

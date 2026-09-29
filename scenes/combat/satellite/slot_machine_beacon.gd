@@ -39,6 +39,7 @@ var _msg_label: Label
 
 func _ready() -> void:
 	add_to_group("slot_machine_beacon")
+	scale = Vector2(2.0, 2.0)
 	if remaining_uses <= 0:
 		remaining_uses = randi_range(3, 5)
 	_setup_visuals()

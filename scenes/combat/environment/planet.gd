@@ -2,39 +2,46 @@ class_name Planet
 extends Node2D
 
 ## Planet.gd
-## Macro-entidad planetaria colosal (radio 300 px, diámetro 600 px, ~20x la nave).
-## Consta de un Núcleo central accionable protegido por 3 capas concéntricas:
-## - Manto profundo / Roca basal (50 - 120 px, 6 segmentos, 700 HP)
-## - Manto intermedio (120 - 200 px, 8 segmentos, 350 HP)
-## - Corteza exterior (200 - 300 px, 12 segmentos, 120 HP)
-## Actúa además como nido defensor con radio de alerta de 950 px.
+## Macro-entidad planetaria colosal rediseñada (diámetro 600 px).
+## 
+## Arquitectura Visual y Mecánica:
+## 1. Núcleo central (PlanetCore, radio 55 px) accionable con [E] para obtener BioMasa.
+## 2. Manto Interior (Sprite2D con textura generada de interior rocoso/magma/hielo según planeta).
+## 3. Corteza Exterior (Sprite2D con shader de erosión y fractura dinámica en 8 sectores).
+## 4. Colisión y Daño limpios: 8 sectores angulares (PlanetSector) que deshabilitan su sólido
+##    abriendo paso a la nave hacia el interior conforme son destruidos.
+## 5. Halo atmosférico suave alrededor del cuerpo celeste.
 
 @export var planet_data: PlanetData
-@export var core_radius: float = 50.0
-@export var deep_mantle_radius: float = 120.0
-@export var mid_mantle_radius: float = 200.0
+@export var core_radius: float = 55.0
+@export var mantle_radius: float = 190.0
 @export var crust_radius: float = 300.0
-
-@export var deep_mantle_segments_count: int = 6
-@export var mid_mantle_segments_count: int = 8
-@export var crust_segments_count: int = 12
+@export var sector_count: int = 8
 
 @export var defender_spawn_interval: float = 6.0
 @export var max_defenders: int = 4
 @export var nest_trigger_radius: float = 950.0
+@export var disable_defenders: bool = false
 
-var segment_scene: PackedScene = preload("res://scenes/combat/environment/planet_segment.tscn")
+const PlanetSectorScript := preload("res://scenes/combat/environment/planet_sector.gd")
+var sector_scene: PackedScene = preload("res://scenes/combat/environment/planet_sector.tscn")
 var drone_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_drone.tscn")
 
 var player: Player = null
 var defender_timer: float = 2.0
 var active_defenders: Array[Node2D] = []
+var atmosphere_color: Color = Color(0.3, 0.7, 1.0, 0.15)
 
-@onready var planet_globe: Sprite2D = get_node_or_null("PlanetGlobe")
-@onready var planet_core: PlanetCore = get_node_or_null("PlanetCore")
-@onready var deep_mantle_container: Node2D = get_node_or_null("DeepMantleContainer")
-@onready var mid_mantle_container: Node2D = get_node_or_null("MidMantleContainer")
-@onready var crust_container: Node2D = get_node_or_null("CrustContainer")
+# Array de daño por sector [0.0 = intacto, 1.0 = destruido]
+var crust_damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+var mantle_damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+@onready var atmosphere_aura: Node2D = get_node_or_null("AtmosphereAura")
+@onready var planet_core: Node2D = get_node_or_null("PlanetCore")
+@onready var mantle_sprite: Sprite2D = get_node_or_null("MantleSprite")
+@onready var crust_sprite: Sprite2D = get_node_or_null("CrustSprite")
+@onready var crust_sectors_container: Node2D = get_node_or_null("CrustSectors")
+@onready var mantle_sectors_container: Node2D = get_node_or_null("MantleSectors")
 
 
 func _ready() -> void:
@@ -43,6 +50,13 @@ func _ready() -> void:
 		_pick_random_planet_data()
 
 	_initialize_planet()
+
+
+func _draw() -> void:
+	# Dibujar halo atmosférico celestial etéreo rodeando el planeta
+	var atmo_radius: float = crust_radius + 14.0
+	draw_arc(Vector2.ZERO, atmo_radius, 0.0, TAU, 64, atmosphere_color, 16.0, true)
+	draw_arc(Vector2.ZERO, atmo_radius + 12.0, 0.0, TAU, 64, Color(atmosphere_color.r, atmosphere_color.g, atmosphere_color.b, atmosphere_color.a * 0.4), 8.0, true)
 
 
 func _pick_random_planet_data() -> void:
@@ -60,94 +74,106 @@ func _initialize_planet() -> void:
 	if not planet_data:
 		return
 
-	# Asignar textura del globo planetario si está disponible
-	if planet_globe and planet_data.texture_overlay:
-		planet_globe.texture = planet_data.texture_overlay
-		planet_globe.scale = Vector2((crust_radius * 2.0) / 512.0, (crust_radius * 2.0) / 512.0)
+	atmosphere_color = Color(planet_data.crust_border_color.r, planet_data.crust_border_color.g, planet_data.crust_border_color.b, 0.22)
+	queue_redraw()
 
-	# 1. Configurar Núcleo central (radio 50 px, recompensa 20 BioMasa)
+	# 1. Configurar Núcleo central
 	if planet_core:
 		planet_core.setup_core(core_radius, planet_data.core_color, planet_data.core_type, planet_data.core_biomass_reward)
 
-	# 2. Generar Capa de Manto Profundo (50 - 120 px, 6 gajos, 700 HP) -> Piedra Negra (Tipo 2)
-	_build_layer(
-		deep_mantle_container,
-		core_radius,
-		deep_mantle_radius,
-		deep_mantle_segments_count,
-		planet_data.deep_mantle_color,
-		planet_data.deep_mantle_color.lightened(0.2),
-		planet_data.deep_mantle_health,
-		planet_data.biomass_per_deep_mantle,
-		2
-	)
+	# 2. Configurar Sprite del Manto / Fondo Interior
+	if mantle_sprite:
+		if planet_data.interior_texture:
+			mantle_sprite.texture = planet_data.interior_texture
+		elif planet_data.texture_overlay:
+			mantle_sprite.texture = planet_data.texture_overlay
+			mantle_sprite.modulate = Color(0.4, 0.35, 0.35, 1.0)
+		# Escala para cubrir diámetro 600 px (textura 512x512 -> scale ~1.17)
+		mantle_sprite.scale = Vector2((crust_radius * 2.0) / 512.0, (crust_radius * 2.0) / 512.0)
+		mantle_sprite.material = null # Fondo celestial que se mantiene intacto sin modificarse
 
-	# 3. Generar Capa de Manto Intermedio (120 - 200 px, 8 gajos, 350 HP) -> Roca (Tipo 1)
-	_build_layer(
-		mid_mantle_container,
-		deep_mantle_radius,
-		mid_mantle_radius,
-		mid_mantle_segments_count,
-		planet_data.mid_mantle_color,
-		planet_data.mid_mantle_color.lightened(0.25),
-		planet_data.mid_mantle_health,
-		planet_data.biomass_per_mid_mantle,
-		1
-	)
+	# 3. Configurar Sprite de la Corteza Exterior con Shader de Fractura
+	if crust_sprite:
+		crust_sprite.texture = planet_data.texture_overlay
+		crust_sprite.scale = Vector2((crust_radius * 2.0) / 512.0, (crust_radius * 2.0) / 512.0)
+		_setup_crust_shader()
 
-	# 4. Generar Capa de Corteza Exterior (200 - 300 px, 12 gajos, 120 HP) -> Tierra (Tipo 0)
-	_build_layer(
-		crust_container,
-		mid_mantle_radius,
-		crust_radius,
-		crust_segments_count,
-		planet_data.crust_color,
-		planet_data.crust_border_color,
-		planet_data.crust_health,
-		planet_data.biomass_per_crust,
-		0
-	)
+	# 4. Construir sectores invisibles de colisión y daño
+	_build_sectors()
 
 
-func _build_layer(container: Node2D, r_in: float, r_out: float, count: int, col: Color, b_col: Color, hp: float, xp_biomass: int, l_type: int = 0) -> void:
-	if not container or not segment_scene:
+func _setup_crust_shader() -> void:
+	if not crust_sprite:
+		return
+	var shader_res := load("res://core/shaders/planet_crust_destruction.gdshader") as Shader
+	if shader_res:
+		var mat := ShaderMaterial.new()
+		mat.shader = shader_res
+		mat.set_shader_parameter("glow_color", planet_data.crust_border_color)
+		mat.set_shader_parameter("inner_radius_ratio", mantle_radius / (crust_radius * 2.0))
+		mat.set_shader_parameter("outer_radius_ratio", 0.50)
+		for i in range(8):
+			crust_damage[i] = 0.0
+		mat.set_shader_parameter("sector_damage", crust_damage)
+		crust_sprite.material = mat
+
+
+func _build_sectors() -> void:
+	if not sector_scene:
 		return
 
-	for child in container.get_children():
-		child.queue_free()
+	# Limpiar anteriores
+	if crust_sectors_container:
+		for c in crust_sectors_container.get_children():
+			c.queue_free()
+	if mantle_sectors_container:
+		for c in mantle_sectors_container.get_children():
+			c.queue_free()
 
-	var angle_step := TAU / float(count)
-	for i in range(count):
+	var angle_step := TAU / float(sector_count)
+
+	for i in range(sector_count):
 		var a_start := angle_step * float(i)
 		var a_end := angle_step * float(i + 1)
 
-		var seg := segment_scene.instantiate() as PlanetSegment
-		if not seg:
-			continue
+		# Sector de Corteza (mantle_radius -> crust_radius)
+		var sec_c: PlanetSector = null
+		if crust_sectors_container:
+			sec_c = sector_scene.instantiate() as PlanetSector
+			if sec_c:
+				crust_sectors_container.add_child(sec_c)
+				sec_c.setup_sector(0, i, mantle_radius, crust_radius, a_start, a_end, planet_data.crust_health)
+				sec_c.sector_damaged.connect(_on_sector_damaged)
 
-		container.add_child(seg)
-		seg.setup_segment(r_in, r_out, a_start, a_end, col, b_col, hp, xp_biomass, l_type)
+		# Sector de Manto (core_radius -> mantle_radius)
+		if mantle_sectors_container:
+			var sec_m := sector_scene.instantiate() as PlanetSector
+			if sec_m:
+				mantle_sectors_container.add_child(sec_m)
+				sec_m.setup_sector(1, i, core_radius, mantle_radius, a_start, a_end, planet_data.mid_mantle_health)
+				sec_m.sector_damaged.connect(_on_sector_damaged)
+
+
+func _on_sector_damaged(layer_i: int, sector_i: int, damage_ratio: float) -> void:
+	if layer_i == 0:
+		crust_damage[sector_i] = damage_ratio
+		if crust_sprite and crust_sprite.material is ShaderMaterial:
+			(crust_sprite.material as ShaderMaterial).set_shader_parameter("sector_damage", crust_damage)
+	elif layer_i == 1:
+		mantle_damage[sector_i] = damage_ratio
 
 
 func _process(delta: float) -> void:
-	# Rotación diferencial sutil de las capas y el globo
-	if planet_globe:
-		planet_globe.rotation += delta * 0.004
-	if crust_container:
-		crust_container.rotation += delta * 0.015
-	if mid_mantle_container:
-		mid_mantle_container.rotation -= delta * 0.01
-	if deep_mantle_container:
-		deep_mantle_container.rotation += delta * 0.005
-
+	# Rotación celestial sincrónica unificada (0.005 rad/s)
+	var rot_step: float = delta * 0.005
+	rotation += rot_step
 	_handle_defender_nest(delta)
 
 
 func _handle_defender_nest(delta: float) -> void:
-	if not drone_scene or not is_inside_tree():
+	if disable_defenders or not drone_scene or not is_inside_tree():
 		return
 
-	# Poda segura y determinista de defensores destruidos sin lambdas no tipadas
 	for i in range(active_defenders.size() - 1, -1, -1):
 		if not is_instance_valid(active_defenders[i]):
 			active_defenders.remove_at(i)

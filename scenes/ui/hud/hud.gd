@@ -3,23 +3,41 @@ extends CanvasLayer
 
 @export var player: Player
 
-@onready var health_bar: ProgressBar = $MarginContainer/VBoxContainer/TopRow/HealthBar
-@onready var health_label: Label = $MarginContainer/VBoxContainer/TopRow/HealthLabel
-@onready var dash_label: Label = get_node_or_null("MarginContainer/VBoxContainer/TopRow/DashLabel")
-@onready var bomb_label: Label = $MarginContainer/VBoxContainer/TopRow/BombLabel
-@onready var laser_cd_label: Label = $MarginContainer/VBoxContainer/TopRow/LaserCDLabel
-@onready var aim_mode_label: Label = get_node_or_null("MarginContainer/VBoxContainer/TopRow/AimModeLabel")
-@onready var credits_label: Label = $MarginContainer/VBoxContainer/TopRow/CreditsLabel
-@onready var timer_label: Label = $MarginContainer/VBoxContainer/TopRow/TimerLabel
-@onready var satellite_radar_label: Label = $MarginContainer/VBoxContainer/BottomRow/SatelliteRadarLabel
-@onready var exp_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/ExpBar
-@onready var level_label: Label = $MarginContainer/VBoxContainer/BottomRow/LevelLabel
-@onready var inventory_row: HBoxContainer = $MarginContainer/VBoxContainer/InventoryRow
-@onready var weapon_slots_row: HBoxContainer = get_node_or_null("MarginContainer/VBoxContainer/WeaponSlotsRow")
+@onready var health_bar: ProgressBar = find_child("HealthBar", true, false) as ProgressBar
+@onready var health_label: Label = find_child("HealthLabel", true, false) as Label
+@onready var dash_label: Label = find_child("DashLabel", true, false) as Label
+@onready var bomb_label: Label = find_child("BombLabel", true, false) as Label
+@onready var laser_cd_label: Label = find_child("LaserCDLabel", true, false) as Label
+@onready var aim_mode_label: Label = find_child("AimModeLabel", true, false) as Label
+@onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
+@onready var biomass_label: Label = find_child("BiomassLabel", true, false) as Label
+@onready var credit_icon: TextureRect = find_child("CreditIcon", true, false) as TextureRect
+@onready var timer_label: Label = find_child("TimerLabel", true, false) as Label
+@onready var satellite_radar_label: Label = find_child("SatelliteRadarLabel", true, false) as Label
+@onready var exp_bar: ProgressBar = find_child("ExpBar", true, false) as ProgressBar
+@onready var level_label: Label = find_child("LevelLabel", true, false) as Label
+@onready var inventory_row: HBoxContainer = find_child("InventoryRow", true, false) as HBoxContainer
+@onready var weapon_slots_row: HBoxContainer = find_child("WeaponSlotsRow", true, false) as HBoxContainer
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 @onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
 @onready var boss_tracker: Control = find_child("BossEdgeIndicator", true, false) as Control
+
+@onready var dash_button_body: Control = find_child("DashButtonBody", true, false) as Control
+@onready var dash_cd_overlay: ColorRect = find_child("DashCDOverlay", true, false) as ColorRect
+@onready var dash_cd_num: Label = find_child("DashCDNum", true, false) as Label
+@onready var dash_pip_1: Panel = find_child("DashPip1", true, false) as Panel
+@onready var dash_pip_2: Panel = find_child("DashPip2", true, false) as Panel
+
+@onready var laser_button_body: Control = find_child("LaserButtonBody", true, false) as Control
+@onready var laser_cd_overlay: ColorRect = find_child("LaserCDOverlay", true, false) as ColorRect
+@onready var laser_cd_num: Label = find_child("LaserCDNum", true, false) as Label
+
+@onready var bomb_button_body: Control = find_child("BombButtonBody", true, false) as Control
+@onready var bomb_overlay: ColorRect = find_child("BombOverlay", true, false) as ColorRect
+@onready var bomb_pip_1: Panel = find_child("BombPip1", true, false) as Panel
+@onready var bomb_pip_2: Panel = find_child("BombPip2", true, false) as Panel
+@onready var bomb_pip_3: Panel = find_child("BombPip3", true, false) as Panel
 
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
@@ -49,6 +67,14 @@ func _ready() -> void:
 		arcana_tracker.set_player(player)
 	if boss_tracker and is_instance_valid(player):
 		boss_tracker.set_player(player)
+
+	# Ocultar barra rectangular superior para priorizar el anillo diegético bajo la nave
+	if health_bar:
+		health_bar.visible = false
+	if health_label:
+		health_label.visible = false
+	if satellite_radar_label:
+		satellite_radar_label.visible = false
 
 	if player:
 		player.health_changed.connect(_on_health_changed)
@@ -139,14 +165,31 @@ func clear_satellite() -> void:
 		satellite_tracker.clear_target()
 
 func update_laser_cooldown(current: float, max_val: float) -> void:
-	if not laser_cd_label:
-		return
 	if current <= 0.0:
-		laser_cd_label.text = "Disparo Activo: [LISTO]"
-		laser_cd_label.modulate = Color(0.2, 1.0, 1.0, 1.0)
+		if laser_cd_overlay:
+			laser_cd_overlay.visible = false
+		if laser_cd_num:
+			laser_cd_num.visible = false
+			laser_cd_num.text = ""
+		if laser_cd_label:
+			laser_cd_label.text = "[LISTO]"
+			laser_cd_label.modulate = Color(0.2, 1.0, 1.0, 1.0)
 	else:
-		laser_cd_label.text = "Disparo Activo: [%.1fs]" % current
-		laser_cd_label.modulate = Color(1.0, 0.7, 0.2, 1.0)
+		var cd_fraction: float = clampf(current / maxf(0.001, max_val), 0.0, 1.0)
+		if laser_cd_overlay and laser_button_body:
+			laser_cd_overlay.visible = true
+			var h: float = laser_button_body.size.y if laser_button_body.size.y > 0.0 else 88.0
+			var w: float = laser_button_body.size.x if laser_button_body.size.x > 0.0 else 88.0
+			laser_cd_overlay.size = Vector2(w, h * cd_fraction)
+			laser_cd_overlay.position = Vector2.ZERO
+
+		if laser_cd_num:
+			laser_cd_num.visible = true
+			laser_cd_num.text = "%.1f" % current
+
+		if laser_cd_label:
+			laser_cd_label.text = "[%.1fs]" % current
+			laser_cd_label.modulate = Color(1.0, 0.7, 0.2, 1.0)
 
 func update_weapon_slots(weapons: Array) -> void:
 	if not weapon_slots_row:
@@ -171,6 +214,7 @@ func update_weapon_slots(weapons: Array) -> void:
 		style.border_color = rarity_color
 		style.set_corner_radius_all(6)
 		chip.add_theme_stylebox_override("panel", style)
+		chip.modulate.a = 0.85
 
 		var icon_rect := TextureRect.new()
 		icon_rect.custom_minimum_size = Vector2(24, 24)
@@ -397,9 +441,21 @@ func _create_unlock_banner_ui() -> void:
 var current_credits: int = 120
 var current_biomass: int = 0
 
+var _credit_punch_tween: Tween = null
+
 func update_credits(amount: int) -> void:
+	var diff: int = amount - current_credits
 	current_credits = amount
 	_refresh_economy_label()
+	if diff > 0 and is_inside_tree() and is_instance_valid(credit_icon):
+		if _credit_punch_tween and _credit_punch_tween.is_valid():
+			_credit_punch_tween.kill()
+		credit_icon.pivot_offset = credit_icon.size / 2.0
+		_credit_punch_tween = create_tween()
+		_credit_punch_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_credit_punch_tween.tween_property(credit_icon, "scale", Vector2(1.35, 1.35), 0.1)
+		_credit_punch_tween.chain().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_credit_punch_tween.tween_property(credit_icon, "scale", Vector2(1.0, 1.0), 0.16)
 
 func update_biomass(_run_amount: int, total_persistent: int) -> void:
 	current_biomass = total_persistent
@@ -407,7 +463,9 @@ func update_biomass(_run_amount: int, total_persistent: int) -> void:
 
 func _refresh_economy_label() -> void:
 	if credits_label:
-		credits_label.text = "Créditos: %d C | BioMasa: %d" % [current_credits, current_biomass]
+		credits_label.text = "%d C" % current_credits
+	if biomass_label:
+		biomass_label.text = "%d" % current_biomass
 
 func update_exp(current: float, max_val: float, level: int) -> void:
 	exp_bar.max_value = max_val
@@ -415,12 +473,46 @@ func update_exp(current: float, max_val: float, level: int) -> void:
 	level_label.text = "NV. %d" % level
 
 func _on_health_changed(current: float, max_val: float) -> void:
-	health_bar.max_value = max_val
-	health_bar.value = current
-	health_label.text = "%d / %d" % [int(current), int(max_val)]
+	if health_bar:
+		health_bar.max_value = max_val
+		health_bar.value = current
+	if health_label:
+		health_label.text = "%d / %d" % [int(current), int(max_val)]
+
+var _bomb_pip_lit_style: StyleBoxFlat = null
+var _bomb_pip_dim_style: StyleBoxFlat = null
+
+func _setup_bomb_pip_styles() -> void:
+	_bomb_pip_lit_style = StyleBoxFlat.new()
+	_bomb_pip_lit_style.bg_color = Color(1.0, 0.35, 1.0, 1.0)
+	_bomb_pip_lit_style.set_corner_radius_all(3)
+	_bomb_pip_lit_style.shadow_color = Color(1.0, 0.2, 1.0, 0.7)
+	_bomb_pip_lit_style.shadow_size = 4
+
+	_bomb_pip_dim_style = StyleBoxFlat.new()
+	_bomb_pip_dim_style.bg_color = Color(0.12, 0.08, 0.16, 0.55)
+	_bomb_pip_dim_style.set_border_width_all(1)
+	_bomb_pip_dim_style.border_color = Color(0.28, 0.18, 0.35, 0.5)
+	_bomb_pip_dim_style.set_corner_radius_all(3)
 
 func _on_bomb_used(remaining: int) -> void:
-	bomb_label.text = "Bombas: %d" % remaining
+	if not _bomb_pip_lit_style:
+		_setup_bomb_pip_styles()
+
+	if bomb_pip_1:
+		bomb_pip_1.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 1 else _bomb_pip_dim_style)
+	if bomb_pip_2:
+		bomb_pip_2.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 2 else _bomb_pip_dim_style)
+	if bomb_pip_3:
+		bomb_pip_3.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 3 else _bomb_pip_dim_style)
+
+	if bomb_overlay:
+		bomb_overlay.visible = (remaining <= 0)
+		if remaining <= 0:
+			bomb_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	if bomb_label:
+		bomb_label.text = "x%d" % remaining
 
 func _on_inventory_item_added(item: ItemData, count: int) -> void:
 	if not inventory_row:
@@ -448,6 +540,7 @@ func _on_inventory_item_added(item: ItemData, count: int) -> void:
 	style.border_color = rarity_color
 	style.set_corner_radius_all(4)
 	chip.add_theme_stylebox_override("panel", style)
+	chip.modulate.a = 0.85
 
 	var icon_rect := TextureRect.new()
 	icon_rect.custom_minimum_size = Vector2(24, 24)
@@ -524,24 +617,63 @@ func hide_boss() -> void:
 		boss_health_bar.hide_boss()
 	clear_boss_tracking()
 
+var _pip_lit_style: StyleBoxFlat = null
+var _pip_dim_style: StyleBoxFlat = null
+
+func _setup_pip_styles() -> void:
+	_pip_lit_style = StyleBoxFlat.new()
+	_pip_lit_style.bg_color = Color(0.1, 0.95, 0.8, 1.0)
+	_pip_lit_style.set_corner_radius_all(3)
+	_pip_lit_style.shadow_color = Color(0.0, 0.9, 1.0, 0.6)
+	_pip_lit_style.shadow_size = 4
+
+	_pip_dim_style = StyleBoxFlat.new()
+	_pip_dim_style.bg_color = Color(0.08, 0.14, 0.22, 0.55)
+	_pip_dim_style.set_border_width_all(1)
+	_pip_dim_style.border_color = Color(0.15, 0.25, 0.38, 0.5)
+	_pip_dim_style.set_corner_radius_all(3)
+
 func _on_dash_updated(current_charges: int, max_charges: int, recharge_ratio: float, is_focus: bool) -> void:
-	if not dash_label:
-		return
-	if is_focus:
-		dash_label.text = "ENFOQUE: 100% CRIT"
-		dash_label.modulate = Color(1.0, 0.3, 0.9, 1.0)
-	elif current_charges > 0:
-		if max_charges > 1:
-			var diamonds := ""
-			for i in range(max_charges):
-				diamonds += "◆ " if i < current_charges else "◇ "
-			dash_label.text = "Dash: [%s]" % diamonds.strip_edges()
-		else:
-			dash_label.text = "Dash: [LISTO]"
-		dash_label.modulate = Color(0.3, 1.0, 0.6, 1.0)
+	if not _pip_lit_style:
+		_setup_pip_styles()
+
+	if dash_pip_1:
+		dash_pip_1.add_theme_stylebox_override("panel", _pip_lit_style if current_charges >= 1 else _pip_dim_style)
+	if dash_pip_2:
+		dash_pip_2.add_theme_stylebox_override("panel", _pip_lit_style if current_charges >= 2 else _pip_dim_style)
+
+	var is_recharging: bool = (current_charges < max_charges)
+	if is_recharging:
+		var cd_fraction: float = clampf(1.0 - recharge_ratio, 0.0, 1.0)
+		if dash_cd_overlay and dash_button_body:
+			dash_cd_overlay.visible = true
+			var h: float = dash_button_body.size.y if dash_button_body.size.y > 0.0 else 88.0
+			var w: float = dash_button_body.size.x if dash_button_body.size.x > 0.0 else 88.0
+			dash_cd_overlay.size = Vector2(w, h * cd_fraction)
+			dash_cd_overlay.position = Vector2.ZERO
+
+		if dash_cd_num:
+			dash_cd_num.visible = true
+			var dash_max_time: float = player.dash_recharge_max if (is_instance_valid(player) and "dash_recharge_max" in player) else 1.6
+			var time_left: float = maxf(0.0, dash_max_time * (1.0 - recharge_ratio))
+			dash_cd_num.text = "%.1f" % time_left
 	else:
-		dash_label.text = "Dash: [%d%%]" % int(recharge_ratio * 100.0)
-		dash_label.modulate = Color(0.7, 0.7, 0.7, 1.0)
+		if dash_cd_overlay:
+			dash_cd_overlay.visible = false
+		if dash_cd_num:
+			dash_cd_num.visible = false
+			dash_cd_num.text = ""
+
+	if dash_label:
+		if is_focus:
+			dash_label.text = "ENFOQUE"
+			dash_label.modulate = Color(1.0, 0.3, 0.9, 1.0)
+		elif current_charges > 0:
+			dash_label.text = "[LISTO]"
+			dash_label.modulate = Color(0.3, 1.0, 0.6, 1.0)
+		else:
+			dash_label.text = "[%d%%]" % int(recharge_ratio * 100.0)
+			dash_label.modulate = Color(0.7, 0.7, 0.7, 1.0)
 
 func _on_aim_mode_changed(is_manual: bool) -> void:
 	if not aim_mode_label:

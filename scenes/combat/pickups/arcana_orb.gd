@@ -10,7 +10,7 @@ signal collected(orb: ArcanaOrb)
 
 @export var pulse_speed: float = 4.0
 @export var pickup_radius: float = 240.0
-@export var collect_radius: float = 28.0
+@export var collect_radius: float = 56.0
 
 var player: Node2D = null
 var is_collected: bool = false
@@ -20,11 +20,13 @@ var magnet_speed: float = 0.0
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_ring: Line2D = get_node_or_null("VisualRing")
 @onready var visual_aura: Polygon2D = get_node_or_null("VisualAura")
+@onready var visual_sprite: Sprite2D = get_node_or_null("VisualSprite")
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("pickups")
+	scale = Vector2(1.0, 1.0)
 	add_to_group("arcana_orbs")
 	add_to_group("arcana_orb")
 	add_to_group("astra_pacts")
@@ -44,7 +46,11 @@ func _process(delta: float) -> void:
 		return
 
 	var t := Time.get_ticks_msec() * 0.001 * pulse_speed
-	var s := 1.0 + sin(t) * 0.22
+	var s := 1.0 + sin(t) * 0.1
+
+	if visual_sprite:
+		visual_sprite.scale = Vector2(0.24 * s, 0.24 * s)
+		visual_sprite.rotation += delta * 0.65
 
 	if visual_core:
 		visual_core.scale = Vector2(s, s)
@@ -55,7 +61,9 @@ func _process(delta: float) -> void:
 	if visual_ring:
 		visual_ring.rotation += delta * 2.5
 	if visual_aura:
-		visual_aura.rotation -= delta * 1.8
+		visual_aura.rotation -= delta * 1.2
+		var blend := (sin(t * 1.2) + 1.0) * 0.5
+		visual_aura.color = Color(0.0, 0.95, 1.0, 0.22).lerp(Color(1.0, 0.1, 0.65, 0.22), blend)
 
 
 func _physics_process(delta: float) -> void:
@@ -106,6 +114,6 @@ func _collect() -> void:
 	# Animación de implosión y destello
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(self, "scale", Vector2(2.2, 2.2), 0.15)
+	tween.tween_property(self, "scale", scale * 1.3, 0.15)
 	tween.tween_property(self, "modulate:a", 0.0, 0.15)
 	tween.chain().tween_callback(queue_free)

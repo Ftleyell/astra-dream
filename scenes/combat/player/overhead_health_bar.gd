@@ -1,40 +1,90 @@
 class_name OverheadHealthBar
 extends Node2D
 
+## Anillo Diegético de Salud: Se renderiza por debajo de la nave como un anillo verde continuo de 360°.
+## Se vacía en sentido horario con suavizado al perder vida, destella al recibir daño y pulsa en rojo con poca vida.
+
 @export var player: Player
 
-@onready var health_bar: ProgressBar = $ProgressBar
-@onready var percent_label: Label = $PercentLabel
+@onready var health_bar: ProgressBar = get_node_or_null("ProgressBar")
+@onready var percent_label: Label = get_node_or_null("PercentLabel")
+
+const HEALTH_RING_RADIUS: float = 46.0
+const RING_WIDTH: float = 6.5
+
+var current_health: float = 100.0
+var max_health: float = 100.0
+var target_ratio: float = 1.0
+var displayed_ratio: float = 1.0
+
+var flash_timer: float = 0.0
+var pulse_time: float = 0.0
 
 func _ready() -> void:
-	if not player:
+	z_index = -1
+	if get_parent() is Player:
+		position = Vector2.ZERO
+
+	# Ocultar las antiguas barras rectangulares si existen en la escena
+	if health_bar:
+		health_bar.visible = false
+	if percent_label:
+		percent_label.visible = false
+
+	if not player and get_parent() is Player:
 		player = get_parent() as Player
 
 	if player:
 		player.health_changed.connect(_on_health_changed)
-		_update_display(player.current_health, player.stats.get_stat(&"max_health"))
+		if player.stats:
+			_update_display(player.current_health, player.stats.get_stat(&"max_health"))
+		else:
+			_update_display(player.current_health, 100.0)
+
+func _process(delta: float) -> void:
+	pulse_time += delta
+	if flash_timer > 0.0:
+		flash_timer = maxf(0.0, flash_timer - delta)
+
+	# Interpolación suave del arco
+	if absf(displayed_ratio - target_ratio) > 0.001:
+		displayed_ratio = lerpf(displayed_ratio, target_ratio, 14.0 * delta)
+	else:
+		displayed_ratio = target_ratio
+
+	queue_redraw()
 
 func _on_health_changed(current: float, max_val: float) -> void:
+	if current < current_health:
+		flash_timer = 0.14
 	_update_display(current, max_val)
 
 func _update_display(current: float, max_val: float) -> void:
-	if not health_bar or not percent_label:
+	current_health = current
+	max_health = maxf(1.0, max_val)
+	target_ratio = clampf(current_health / max_health, 0.0, 1.0)
+	queue_redraw()
+
+func _draw() -> void:
+	# 1. Halo de fondo oscuro transparente (indica la capacidad total máxima)
+	var bg_col := Color(0.04, 0.14, 0.08, 0.45)
+	draw_arc(Vector2.ZERO, HEALTH_RING_RADIUS, 0, TAU, 48, bg_col, RING_WIDTH, true)
+
+	if displayed_ratio <= 0.001:
 		return
 
-	max_val = maxf(1.0, max_val)
-	var ratio: float = clampf(current / max_val, 0.0, 1.0)
-	var pct: int = int(ratio * 100.0)
+	# 2. Color reactivo del anillo
+	var ring_col := Color(0.18, 0.95, 0.45, 0.92)
+	if flash_timer > 0.0:
+		ring_col = Color(1.8, 1.8, 1.8, 1.0)
+	elif displayed_ratio <= 0.25:
+		var p := 0.65 + sin(pulse_time * 8.0) * 0.35
+		ring_col = Color(1.0, 0.2, 0.25, p)
+	elif displayed_ratio <= 0.5:
+		ring_col = Color(1.0, 0.8, 0.2, 0.95)
 
-	health_bar.max_value = max_val
-	health_bar.value = current
-	percent_label.text = "%d%%" % pct
-
-	# Color reactivo según porcentaje
-	var col := Color(0.2, 0.9, 0.5, 0.95)
-	if ratio <= 0.25:
-		col = Color(1.0, 0.25, 0.35, 1.0)
-	elif ratio <= 0.5:
-		col = Color(1.0, 0.75, 0.2, 1.0)
-
-	percent_label.modulate = col
-	health_bar.modulate = col
+	# 3. Dibujar arco activo de vida en sentido horario desde la cima (-PI / 2)
+	var start_angle := -PI / 2.0
+	var end_angle := start_angle + (TAU * displayed_ratio)
+	var point_count := maxi(8, int(48 * displayed_ratio))
+	draw_arc(Vector2.ZERO, HEALTH_RING_RADIUS, start_angle, end_angle, point_count, ring_col, RING_WIDTH, true)

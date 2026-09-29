@@ -37,8 +37,24 @@ func _apply_stats() -> void:
 func _ready_custom() -> void:
 	_apply_stats()
 	current_health = max_health
+	var visual: Node = get_node_or_null("Visual")
+	var cell_core: Node = get_node_or_null("CellCore")
+	var tex_path := "res://assets/sprites/enemies/enemy_splitter.png"
+	if ResourceLoader.exists(tex_path):
+		var tex := load(tex_path) as Texture2D
+		if tex:
+			var spr := Sprite2D.new()
+			spr.name = "SplitterSprite"
+			spr.texture = tex
+			spr.scale = Vector2(0.06, 0.06)
+			add_child(spr)
+			move_child(spr, 0)
+			if visual:
+				visual.visible = false
+			if cell_core:
+				cell_core.visible = false
 	if is_micro_clone:
-		scale = Vector2(0.65, 0.65)
+		scale = Vector2(1.3, 1.3)
 		tether_line = Line2D.new()
 		tether_line.width = 2.0
 		tether_line.default_color = Color(0.2, 1.0, 0.5, 0.7)

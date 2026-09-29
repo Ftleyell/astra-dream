@@ -67,7 +67,7 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 	assert(rival.is_in_group("rival_pilots"), "RivalPilotBoss debe pertenecer al grupo 'rival_pilots'")
 	assert(rival.is_in_group("enemies"), "RivalPilotBoss debe pertenecer al grupo 'enemies'")
 	assert(rival.WARNING_RADIUS == 650.0, "El radio de advertencia debe ser 650 px")
-	assert(rival.COMBAT_TRIGGER_RADIUS == 340.0, "El radio de detonación de combate debe ser 340 px")
+	assert(rival.COMBAT_TRIGGER_RADIUS == 480.0, "El radio de detonación de combate debe ser 480 px (escudo de proximidad)")
 	assert(rival.ESCAPE_RADIUS == 950.0, "El radio de escape debe ser 950 px")
 
 	# Probar cambio a combate al entrar en perímetro o ser atacada
@@ -77,13 +77,24 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "El estado debe cambiar a DOGFIGHT")
 	assert(engaged_signal[0] == true, "Debe emitirse la señal rival_engaged")
 
-	# Probar daño
+	# Probar daño en DOGFIGHT
 	var initial_hp: float = rival.current_health
 	rival.take_damage(100.0)
 	assert(rival.current_health == initial_hp - 100.0, "take_damage debe reducir la salud")
 
+	# Probar absorción e inmunidad del escudo en PEACEFUL_WARN
+	var rival_peace: RivalPilotBoss = rival_scene.instantiate() as RivalPilotBoss
+	add_child(rival_peace)
+	rival_peace.setup_pilot(&"nova", 1)
+	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN)
+	var hp_before: float = rival_peace.current_health
+	rival_peace.take_damage(200.0)
+	assert(rival_peace.current_health == hp_before, "El escudo de proximidad debe absorber los ataques durante PEACEFUL_WARN sin perder HP")
+	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Atacar el escudo en PEACEFUL_WARN no debe provocar combate")
+	rival_peace.queue_free()
+
 	rival.queue_free()
-	print("  ✓ Comportamiento y máquina de estados de RivalPilotBoss validados correctamente")
+	print("  ✓ Comportamiento, escudo de proximidad y máquina de estados de RivalPilotBoss validados correctamente")
 
 func _test_3_rival_weapon_pickup_and_weapon_controller() -> void:
 	print("\n[3/6] Verificando Cápsula de Arma de Rival y WeaponController...")
@@ -222,18 +233,23 @@ func _test_7_wave_1_encounter_trigger_and_visibility() -> void:
 	add_child(rival)
 	rival.setup_pilot(&"valentina", 1)
 
-	# 1. Verificar visibilidad en viewport: spawn a 450 px no excede 540 px vertical ni 960 px horizontal
-	var spawn_dist := 450.0
-	assert(spawn_dist < 540.0, "La distancia de spawn (450 px) debe ser menor a la mitad de altura del viewport (540 px)")
-	assert(spawn_dist > rival.COMBAT_TRIGGER_RADIUS, "La distancia de spawn debe ser mayor al radio de combate para no iniciar instantáneamente")
+	# 1. Verificar visibilidad en viewport: spawn lateral a 650 px está en rango visual pero fuera de trayectoria directa
+	var spawn_dist := 650.0
+	assert(spawn_dist > rival.COMBAT_TRIGGER_RADIUS, "La distancia de spawn (650 px) debe ser mayor al radio de combate (480 px) para no iniciar instantáneamente")
 
-	# 2. Verificar estado inicial a 450 px
+	# 2. Verificar estado inicial a 650 px
 	assert(rival.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Debe estar en PEACEFUL_WARN al spawnear")
 	assert(rival.spared_timer == 0.0, "El temporizador de perdón debe iniciar en 0")
 
-	# 3. Simular aproximación del jugador (< COMBAT_TRIGGER_RADIUS = 340.0)
-	rival._process_peaceful_warn(0.1, 300.0)
-	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "Acercarse a <340 px debe detonar DOGFIGHT")
+	# 3. Simular aproximación del jugador a la zona de reto (< COMBAT_TRIGGER_RADIUS = 480.0)
+	rival._process_peaceful_warn(0.1, 400.0)
+	assert(rival.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Un paso fugaz por la zona no debe detonar DOGFIGHT instantáneamente")
+	assert(rival.challenge_timer > 0.0, "El temporizador de reto debe comenzar a acumularse")
+
+	# Permanecer en la zona hasta completar CHALLENGE_REQUIRED_TIME (2.5s)
+	for i in range(26):
+		rival._process_peaceful_warn(0.1, 400.0)
+	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "Permanecer en la zona de reto por 2.5s debe detonar DOGFIGHT")
 
 	# 4. Probar reinicio y escape pacífico por alejamiento (> ESCAPE_RADIUS = 950.0)
 	var rival2 = rival_scene.instantiate()

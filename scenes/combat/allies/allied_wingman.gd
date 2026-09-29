@@ -20,6 +20,7 @@ var shield_ring: Line2D = null
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("allies")
+	scale = Vector2(1.2, 1.2)
 	_setup_visuals()
 	_warp_in_effect()
 

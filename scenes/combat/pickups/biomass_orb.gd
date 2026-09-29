@@ -13,7 +13,7 @@ var velocity: Vector2 = Vector2.ZERO
 var magnet_speed: float = 0.0
 
 const PICKUP_RADIUS_SQ: float = 180.0 * 180.0
-const COLLECT_RADIUS_SQ: float = 24.0 * 24.0
+const COLLECT_RADIUS_SQ: float = 48.0 * 48.0
 
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_aura: Polygon2D = get_node_or_null("VisualAura")
@@ -21,6 +21,7 @@ const COLLECT_RADIUS_SQ: float = 24.0 * 24.0
 
 func _ready() -> void:
 	add_to_group("biomass_orbs")
+	scale = Vector2(2.0, 2.0)
 	# Pequeño impulso inicial de eyección radial
 	var angle := randf() * TAU
 	velocity = Vector2(cos(angle), sin(angle)) * randf_range(40.0, 110.0)

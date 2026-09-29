@@ -20,19 +20,12 @@ func _init() -> void:
 	contact_radius = 22.0
 
 func _ready_custom() -> void:
-	var tex_path := "res://assets/enemies/enemy_kamikaze.png"
+	var tex_path := "res://assets/sprites/enemies/enemy_kamikaze.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
-		if tex:
-			var spr := Sprite2D.new()
-			spr.name = "KamikazeSprite"
-			spr.texture = tex
-			spr.scale = Vector2(0.45, 0.45)
-			add_child(spr)
-			move_child(spr, 0)
-			var visual := get_node_or_null("Visual")
-			if visual:
-				visual.visible = false
+		if tex and sprite:
+			sprite.texture = tex
+			sprite.scale = Vector2(0.05, 0.05)
 
 func _update_behavior(delta: float) -> void:
 	var dist_to_player := global_position.distance_to(player.global_position)

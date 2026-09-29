@@ -72,7 +72,7 @@ func _activate_laser() -> void:
 	var current_solid_dist := (solid_hit_pos - global_position).length()
 	var destructibles := get_tree().get_nodes_in_group("destructibles")
 	for d_node in destructibles:
-		if d_node is Node2D and is_instance_valid(d_node) and not d_node.get("is_dying"):
+		if d_node is Node2D and is_instance_valid(d_node) and not d_node.get("is_dying") and not d_node.get("is_dead"):
 			var to_node := (d_node as Node2D).global_position - global_position
 			var proj := to_node.dot(beam_dir)
 			if proj > 0.0 and proj < current_solid_dist:

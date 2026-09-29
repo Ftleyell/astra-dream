@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="PlanetData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlanetData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://data/planets/planet_data.gd" id="1_data"]
 [ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_verdant.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_verdant_interior.png" id="3_int_tex"]
 
 [resource]
 script = ExtResource("1_data")
@@ -21,3 +22,4 @@ biomass_per_deep_mantle = 3
 core_biomass_reward = 20
 core_type = &"biosphere_core"
 texture_overlay = ExtResource("2_tex")
+interior_texture = ExtResource("3_int_tex")

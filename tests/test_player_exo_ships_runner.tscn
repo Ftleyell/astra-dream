@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cxexoships01"]
+
+[ext_resource type="Script" path="res://tests/test_player_exo_ships_suite.gd" id="1_exoshp"]
+
+[node name="TestPlayerExoShipsRunner" type="Node"]
+script = ExtResource("1_exoshp")

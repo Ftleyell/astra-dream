@@ -10,11 +10,12 @@ radius = 85.0
 [node name="Planet" type="Node2D"]
 script = ExtResource("1_planet")
 
-[node name="PlanetGlobe" type="Sprite2D" parent="."]
-z_index = -1
+[node name="MantleSprite" type="Sprite2D" parent="."]
+z_index = 0
 scale = Vector2(1.17, 1.17)
 
 [node name="PlanetCore" type="Node2D" parent="."]
+z_index = 1
 script = ExtResource("2_core")
 
 [node name="CoreSprite" type="Sprite2D" parent="PlanetCore"]
@@ -23,20 +24,15 @@ texture = ExtResource("3_core_tex")
 
 [node name="InteractionArea" type="Area2D" parent="PlanetCore"]
 collision_layer = 0
+collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlanetCore/InteractionArea"]
 shape = SubResource("CircleShape2D_interact")
 
-[node name="PromptLabel" type="Label" parent="PlanetCore"]
-offset_left = -140.0
-offset_top = -80.0
-offset_right = 140.0
-offset_bottom = -54.0
-text = "[E] Digitalizar Núcleo (+20 BioMasa)"
-horizontal_alignment = 1
+[node name="CrustSprite" type="Sprite2D" parent="."]
+z_index = 2
+scale = Vector2(1.17, 1.17)
 
-[node name="DeepMantleContainer" type="Node2D" parent="."]
+[node name="MantleSectors" type="Node2D" parent="."]
 
-[node name="MidMantleContainer" type="Node2D" parent="."]
-
-[node name="CrustContainer" type="Node2D" parent="."]
+[node name="CrustSectors" type="Node2D" parent="."]

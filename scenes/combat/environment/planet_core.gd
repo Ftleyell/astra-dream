@@ -1,11 +1,10 @@
 class_name PlanetCore
 extends Node2D
 
-
 ## PlanetCore.gd
 ## Núcleo central del planeta (radio 50 px).
-## Rodeado por las 3 capas protectoras, accionable interactivamente con la tecla [E]
-## para digitalizar y obtener 20 unidades de BioMasa persistente.
+## Rodeado por las capas protectoras, se absorbe y digitaliza automáticamente al tocarlo
+## para obtener 20 unidades de BioMasa persistente y desbloquear el trofeo planetario.
 
 signal core_digitalized(core_type: StringName, pos: Vector2)
 
@@ -15,7 +14,6 @@ signal core_digitalized(core_type: StringName, pos: Vector2)
 @export var biomass_reward: int = 20
 
 var is_digitized: bool = false
-var player_in_range: bool = false
 var player_ref: Player = null
 
 @onready var core_sprite: Sprite2D = get_node_or_null("CoreSprite")
@@ -23,18 +21,12 @@ var player_ref: Player = null
 @onready var core_border: Line2D = get_node_or_null("CoreBorder")
 @onready var core_aura: Polygon2D = get_node_or_null("CoreAura")
 @onready var interact_area: Area2D = get_node_or_null("InteractionArea")
-@onready var prompt_label: Label = get_node_or_null("PromptLabel")
 
 
 func _ready() -> void:
 	rebuild_core_geometry()
 	if interact_area:
 		interact_area.body_entered.connect(_on_body_entered)
-		interact_area.body_exited.connect(_on_body_exited)
-
-	if prompt_label:
-		prompt_label.visible = false
-		prompt_label.text = "[E] Digitalizar Núcleo (+20 BioMasa)"
 
 
 func setup_core(r: float, col: Color, p_type: StringName, reward: int = 20) -> void:
@@ -98,39 +90,18 @@ func _process(delta: float) -> void:
 		core_aura.rotation += delta * 0.4
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if is_digitized or not player_in_range:
-		return
-
-	# Acción de teclado [E] para digitalizar
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_E:
-			digitalize()
-
-
 func _on_body_entered(body: Node2D) -> void:
-	if body is Player:
-		player_in_range = true
-		player_ref = body as Player
-		if prompt_label and not is_digitized:
-			prompt_label.visible = true
-
-
-func _on_body_exited(body: Node2D) -> void:
-	if body is Player:
-		player_in_range = false
-		player_ref = null
-		if prompt_label:
-			prompt_label.visible = false
+	if is_digitized:
+		return
+	if body is Player or body.is_in_group("player"):
+		player_ref = body as Player if body is Player else (get_tree().get_first_node_in_group("player") as Player)
+		digitalize()
 
 
 func digitalize() -> void:
 	if is_digitized:
 		return
 	is_digitized = true
-
-	if prompt_label:
-		prompt_label.visible = false
 
 	# 1. Otorgar los 20 de BioMasa persistente
 	if not is_instance_valid(player_ref):
@@ -145,7 +116,6 @@ func digitalize() -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser_fire")
 
-	
 	# Otorgar Materia Oscura y desbloquear trofeo planetario (Fase 3)
 	var p_trophy_id := &"trophy_biosphere_core"
 	if core_type == &"cryo_core" or core_type == &"ice_core":
