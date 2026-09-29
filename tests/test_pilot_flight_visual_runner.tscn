@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7x8p1v4m9n2q"]
+
+[ext_resource type="Script" path="res://tests/test_pilot_flight_visual.gd" id="1_vis"]
+
+[node name="TestPilotFlightVisualRunner" type="Node"]
+script = ExtResource("1_vis")

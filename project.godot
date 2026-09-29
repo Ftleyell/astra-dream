@@ -188,4 +188,5 @@ toggle_aim_mode={
 [rendering]
 
 renderer/rendering_method="mobile"
+viewport/hdr_2d=true
 environment/defaults/default_clear_color=Color(0.025, 0.025, 0.055, 1)

@@ -2,6 +2,7 @@ class_name Player
 extends CharacterBody2D
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const SandevistanFlightVFX = preload("res://scenes/combat/player/sandevistan_flight_vfx.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -250,15 +251,35 @@ func _apply_visual_theme() -> void:
 	var flight_mat := ShaderMaterial.new()
 	flight_mat.shader = flight_shader
 	var p_color: Color = character_data.color if character_data else Color(0.2, 0.75, 1.0, 1.0)
+	var sec_color := Color(1.0, 0.85, 0.4, 1.0)
+	if p_color.h < 0.5:
+		sec_color = Color.from_hsv(wrapf(p_color.h + 0.15, 0.0, 1.0), 0.7, 1.1)
+	else:
+		sec_color = Color.from_hsv(wrapf(p_color.h - 0.15, 0.0, 1.0), 0.7, 1.1)
+
+	var noise_res := preload("res://shaders/flame_noise.tres")
+	if noise_res:
+		flight_mat.set_shader_parameter("noise_texture", noise_res)
+
 	flight_mat.set_shader_parameter("primary_color", p_color)
-	flight_mat.set_shader_parameter("secondary_color", Color(1.0, 0.95, 0.85, 1.0))
-	flight_mat.set_shader_parameter("thrust_intensity", 0.25)
+	flight_mat.set_shader_parameter("secondary_color", sec_color)
+	flight_mat.set_shader_parameter("thrust_intensity", 0.35)
 	flight_mat.set_shader_parameter("speed_ratio", 0.0)
 	flight_mat.set_shader_parameter("bank_tilt", 0.0)
-	flight_mat.set_shader_parameter("holo_glow_power", 0.8)
-	flight_mat.set_shader_parameter("chromatic_offset", 0.005)
+	flight_mat.set_shader_parameter("chromatic_offset", 0.004)
 	flight_mat.set_shader_parameter("hit_flash", 0.0)
 	flight_mat.set_shader_parameter("core_gem_glow", 1.2)
+	flight_mat.set_shader_parameter("flame_direction", Vector2(0.0, 1.0))
+
+	# Componente de imágenes residuales Sandevistan
+	var vfx_comp := get_node_or_null("SandevistanFlightVFX") as SandevistanFlightVFX
+	if not vfx_comp and ship_spr:
+		vfx_comp = SandevistanFlightVFX.new()
+		vfx_comp.name = "SandevistanFlightVFX"
+		vfx_comp.source_sprite = ship_spr
+		add_child(vfx_comp)
+	if vfx_comp:
+		vfx_comp.configure_colors(p_color, sec_color)
 
 	# Aplicar skin cosmética a la nave si está equipada
 	var char_id_str := String(character_data.character_id) if character_data else "survivor_default"
@@ -270,7 +291,10 @@ func _apply_visual_theme() -> void:
 			ship_spr.texture = custom_tex
 		var glow_hex: String = skin_data.get("glow_hex", "")
 		if not glow_hex.is_empty():
-			flight_mat.set_shader_parameter("primary_color", Color.from_string(glow_hex, p_color))
+			var skin_primary := Color.from_string(glow_hex, p_color)
+			flight_mat.set_shader_parameter("primary_color", skin_primary)
+			if vfx_comp:
+				vfx_comp.configure_colors(skin_primary, sec_color)
 		ship_spr.material = flight_mat
 		ship_spr.visible = true
 		ship_spr.scale = Vector2(0.42, 0.42)
@@ -448,6 +472,21 @@ func _update_pilot_shader(_delta: float, is_moving: bool) -> void:
 	elif hit_flash_timer > 0.0:
 		gem_glow = 2.8
 	mat.set_shader_parameter("core_gem_glow", gem_glow)
+
+	# Dirección del flameo opuesta al arrastre cinemático en coordenadas locales del sprite
+	var visual_rot := current_facing_angle + PI / 2.0
+	var local_burn := Vector2(0.0, 1.0)
+	if is_moving and velocity.length_squared() > 100.0:
+		var local_vel := velocity.rotated(-visual_rot)
+		var dir := -local_vel.normalized()
+		if not dir.is_zero_approx():
+			local_burn = dir
+	mat.set_shader_parameter("flame_direction", local_burn)
+
+	# Actualizar estela cinemática de afterimages Sandevistan
+	var vfx_comp := get_node_or_null("SandevistanFlightVFX") as SandevistanFlightVFX
+	if vfx_comp:
+		vfx_comp.update_flight(_delta, velocity, is_dashing)
 
 func _handle_movement(delta: float) -> void:
 	if is_dashing:
