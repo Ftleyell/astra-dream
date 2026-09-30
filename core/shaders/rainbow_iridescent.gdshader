@@ -8,7 +8,7 @@ uniform float blend_intensity : hint_range(0.0, 1.0) = 0.38;
 
 // Outline violeta neón para silueta del enemigo arcoíris
 uniform vec4 outline_color : source_color = vec4(0.75, 0.15, 1.0, 1.0);
-uniform float outline_thickness : hint_range(0.0, 60.0) = 30.0;
+uniform float outline_thickness : hint_range(0.0, 120.0) = 60.0;
 uniform float alpha_threshold : hint_range(0.0, 1.0) = 0.05;
 
 vec3 hsv2rgb(vec3 c) {
@@ -38,26 +38,27 @@ void fragment() {
 
 		COLOR = vec4(final_rgb, tex.a) * COLOR;
 	} else {
-		// Si el pixel es transparente, muestrear silueta para el contorno violeta grueso
-	float max_alpha = 0.0;
-	vec2 pixel_size = TEXTURE_PIXEL_SIZE;
-	const int ANGLES = 16;
-	for (int i = 0; i < ANGLES; i++) {
-		float angle = float(i) * (6.28318530718 / float(ANGLES));
-		vec2 dir = vec2(cos(angle), sin(angle));
-		float a1 = texture(TEXTURE, UV + dir * pixel_size * outline_thickness).a;
-		float a2 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.65)).a;
-		float a3 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.35)).a;
-		max_alpha = max(max_alpha, max(a1, max(a2, a3)));
-		if (max_alpha >= 0.9) {
-			break;
+		// Si el pixel es transparente, muestrear silueta para el contorno violeta con doble grosor (60px)
+		float max_alpha = 0.0;
+		vec2 pixel_size = TEXTURE_PIXEL_SIZE;
+		const int ANGLES = 16;
+		for (int i = 0; i < ANGLES; i++) {
+			float angle = float(i) * (6.28318530718 / float(ANGLES));
+			vec2 dir = vec2(cos(angle), sin(angle));
+			float a1 = texture(TEXTURE, UV + dir * pixel_size * outline_thickness).a;
+			float a2 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.75)).a;
+			float a3 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.50)).a;
+			float a4 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.25)).a;
+			max_alpha = max(max_alpha, max(max(a1, a2), max(a3, a4)));
+			if (max_alpha >= 0.9) {
+				break;
+			}
 		}
-	}
 
-	if (max_alpha > alpha_threshold) {
-		COLOR = vec4(outline_color.rgb * COLOR.rgb, outline_color.a * COLOR.a * smoothstep(alpha_threshold, 0.35, max_alpha));
-	} else {
-		COLOR = vec4(0.0);
-	}
+		if (max_alpha > alpha_threshold) {
+			COLOR = vec4(outline_color.rgb * COLOR.rgb, outline_color.a * COLOR.a * smoothstep(alpha_threshold, 0.35, max_alpha));
+		} else {
+			COLOR = vec4(0.0);
+		}
 	}
 }

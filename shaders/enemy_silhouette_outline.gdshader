@@ -1,8 +1,8 @@
 shader_type canvas_item;
 
-// Outline violeta neón de alta visibilidad para siluetas de enemigos en combate espacial
+// Outline violeta neón de alta visibilidad para siluetas de enemigos en combate espacial (Doble grosor)
 uniform vec4 outline_color : source_color = vec4(0.75, 0.15, 1.0, 1.0);
-uniform float outline_thickness : hint_range(0.0, 60.0) = 30.0;
+uniform float outline_thickness : hint_range(0.0, 120.0) = 60.0;
 uniform float alpha_threshold : hint_range(0.0, 1.0) = 0.05;
 
 void fragment() {
@@ -21,12 +21,13 @@ void fragment() {
 			float angle = float(i) * (6.28318530718 / float(ANGLES));
 			vec2 dir = vec2(cos(angle), sin(angle));
 			
-			// Muestreo concéntrico en 3 radios para asegurar un trazo continuo, grueso y denso
+			// Muestreo concéntrico en 4 radios para asegurar trazo continuo con doble grosor (60px)
 			float a1 = texture(TEXTURE, UV + dir * pixel_size * outline_thickness).a;
-			float a2 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.65)).a;
-			float a3 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.35)).a;
+			float a2 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.75)).a;
+			float a3 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.50)).a;
+			float a4 = texture(TEXTURE, UV + dir * pixel_size * (outline_thickness * 0.25)).a;
 			
-			max_alpha = max(max_alpha, max(a1, max(a2, a3)));
+			max_alpha = max(max_alpha, max(max(a1, a2), max(a3, a4)));
 			if (max_alpha >= 0.9) {
 				break;
 			}
