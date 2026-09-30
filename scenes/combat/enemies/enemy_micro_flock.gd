@@ -30,6 +30,7 @@ func _ready_custom() -> void:
 			spr.scale = Vector2(0.035, 0.035)
 			add_child(spr)
 			move_child(spr, 0)
+			sprite = spr
 			if visual:
 				visual.visible = false
 			if core_glow:

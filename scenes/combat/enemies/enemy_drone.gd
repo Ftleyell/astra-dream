@@ -25,6 +25,7 @@ func _ready_custom() -> void:
 			spr.scale = Vector2(0.045, 0.045)
 			add_child(spr)
 			move_child(spr, 0)
+			sprite = spr
 			if visual:
 				visual.visible = false
 			if eye_core:

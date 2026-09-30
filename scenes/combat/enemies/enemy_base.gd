@@ -27,6 +27,16 @@ var contact_cooldown: float = 0.0
 
 var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.tscn")
 
+static var _cached_outline_material: ShaderMaterial = null
+
+static func _get_shared_outline_material() -> ShaderMaterial:
+	if not _cached_outline_material:
+		var shader := load("res://shaders/enemy_silhouette_outline.gdshader") as Shader
+		if shader:
+			_cached_outline_material = ShaderMaterial.new()
+			_cached_outline_material.shader = shader
+	return _cached_outline_material
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
@@ -35,9 +45,24 @@ func _ready() -> void:
 	current_health = max_health
 	_acquire_player()
 	_ready_custom()
+	_apply_silhouette_outline()
 
 func _ready_custom() -> void:
 	pass
+
+func _apply_silhouette_outline() -> void:
+	if not is_instance_valid(sprite):
+		for child in get_children():
+			if child is Sprite2D:
+				sprite = child
+				break
+	if not is_instance_valid(sprite):
+		return
+
+	if sprite.material == null:
+		var outline_mat: ShaderMaterial = _get_shared_outline_material()
+		if outline_mat:
+			sprite.material = outline_mat
 
 func _acquire_player() -> void:
 	if not is_instance_valid(player):

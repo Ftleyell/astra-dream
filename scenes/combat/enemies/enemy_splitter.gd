@@ -49,6 +49,7 @@ func _ready_custom() -> void:
 			spr.scale = Vector2(0.06, 0.06)
 			add_child(spr)
 			move_child(spr, 0)
+			sprite = spr
 			if visual:
 				visual.visible = false
 			if cell_core:
