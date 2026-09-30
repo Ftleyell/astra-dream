@@ -65,3 +65,7 @@ tests/screenshots/
 .agents/*
 !.agents/rules/
 ORIGINAL_REQUEST.md
+
+__pycache__/
+*.pyc
+

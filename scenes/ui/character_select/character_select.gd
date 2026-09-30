@@ -150,7 +150,7 @@ func _ready() -> void:
 	if fullbody_texture:
 		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_PASS
 		fullbody_texture.item_rect_changed.connect(func():
-			fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y * 0.8)
+			fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
 		)
 
 	if pilot_button:
@@ -483,7 +483,7 @@ func _select_character(char_id: StringName) -> void:
 	if fullbody_texture:
 		if not pilot_skin_id.is_empty():
 			var stars := SaveManager.get_skin_stars(pilot_skin_id)
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, pilot_skin_id, stars)
+			CosmeticsManager.apply_pilot_selection_to_canvas_item(fullbody_texture, pilot_skin_id, stars, false)
 		else:
 			fullbody_texture.material = null
 			fullbody_texture.texture = null
@@ -629,11 +629,9 @@ func _on_weapon_skin_pressed() -> void:
 func _on_pilot_skin_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
-		var fb := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
+		var fb := data.get_fullbody_texture(false)
 		if not fb:
-			fb = data.get_fullbody_texture(false)
-		if not fb:
-			fb = data.get_portrait_texture()
+			fb = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_portrait_texture()
 		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 
 func _on_pet_skin_pressed() -> void:
@@ -653,11 +651,9 @@ func _on_navigator_skin_pressed() -> void:
 func _on_skins_button_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
-		var fb := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
+		var fb := data.get_fullbody_texture(false)
 		if not fb:
-			fb = data.get_fullbody_texture(false)
-		if not fb:
-			fb = data.get_portrait_texture()
+			fb = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_portrait_texture()
 		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 	elif gacha_modal:
 		_last_focused_control = get_viewport().gui_get_focus_owner()

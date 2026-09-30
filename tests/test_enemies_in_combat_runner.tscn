@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://combatmonst001"]
+
+[ext_resource type="Script" path="res://tests/test_enemies_in_combat_capture.gd" id="1_cap"]
+
+[node name="TestEnemiesInCombatRunner" type="Node"]
+script = ExtResource("1_cap")

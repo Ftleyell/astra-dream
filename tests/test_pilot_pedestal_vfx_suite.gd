@@ -18,7 +18,7 @@ func _run_assertions(hub: Node) -> void:
 	# 1. Verificar existencia del grupo de pedestales
 	var ped_group = hub.get_node_or_null("PilotPedestals")
 	assert(ped_group != null, "PilotPedestals group must exist in HubWorld")
-	assert(hub.pilot_vfx_data.size() == 6, "pilot_vfx_data must contain entries for all 6 pilots")
+	assert(hub.pilot_vfx_data.size() == hub.PILOT_ROSTER.size(), "pilot_vfx_data must contain entries for all pilots in roster")
 
 	# 2. Verificar estructura de cada pedestal
 	for i in range(hub.pilot_vfx_data.size()):
@@ -77,7 +77,7 @@ func _run_assertions(hub: Node) -> void:
 	print("  ✓ Transición a Valentina: VFX transferido dinámicamente con su color carmesí.")
 
 	# 6. Probar actualización de prompts interactuables
-	assert(hub.interactable_nodes.size() == 6, "Deben registrarse los 6 interactables de las heroínas")
+	assert(hub.interactable_nodes.size() == hub.PILOT_ROSTER.size(), "Deben registrarse los interactables de las heroínas")
 	var inter1 = hub.interactable_nodes[1]
 	var inter3 = hub.interactable_nodes[3]
 	assert(inter1.label_3d.text.contains("ACTIVA") or inter1.label_3d.text.contains("SELECCIONADA"), "Prompt de heroína seleccionada debe indicar que está activa")

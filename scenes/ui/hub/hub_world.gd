@@ -511,6 +511,11 @@ func _collect_and_verify_sprites() -> void:
 			sprite.name = sprite_name
 			roster_group.add_child(sprite)
 
+		# Limpiar nodo de sombra residual de pedestal si existiese
+		var old_shadow := roster_group.get_node_or_null("Shadow_" + char_id.capitalize())
+		if old_shadow:
+			old_shadow.queue_free()
+
 		sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 		sprite.shaded = false
 		sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
@@ -561,7 +566,9 @@ func _collect_and_verify_sprites() -> void:
 						mat.set_shader_parameter("pulse_speed", 3.0 if stars >= 3 else 2.0)
 						sprite.material_override = mat
 
-		var platform_ped: Node3D = get_node_or_null("Pedestals/Pedestal_" + char_id.capitalize())
+		var platform_ped: Node3D = get_node_or_null("PilotPedestals/Pedestal_" + char_id.capitalize())
+		if not platform_ped:
+			platform_ped = get_node_or_null("Pedestals/Pedestal_" + char_id.capitalize())
 		if platform_ped:
 			platform_ped.visible = is_unlocked
 

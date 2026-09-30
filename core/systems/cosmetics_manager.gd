@@ -258,6 +258,46 @@ static func apply_skin_to_canvas_item(item: CanvasItem, skin_id: String, star_le
 		mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
 		item.material = mat
 
+
+static func apply_pilot_selection_to_canvas_item(item: CanvasItem, skin_id: String, star_level: int = 1, is_flipped: bool = false) -> void:
+	if not is_instance_valid(item):
+		return
+
+	var skin_data := get_skin(skin_id)
+	if skin_data.is_empty():
+		item.material = null
+		return
+
+	var tex_path := ""
+	if is_flipped:
+		tex_path = skin_data.get("selection_flipped_texture_path", "")
+	if tex_path.is_empty():
+		tex_path = skin_data.get("selection_texture_path", "")
+	if tex_path.is_empty():
+		tex_path = skin_data.get("texture_path", "")
+
+	var tex := load_texture(tex_path)
+	if tex:
+		if item is Sprite2D:
+			(item as Sprite2D).texture = tex
+		elif item is TextureRect:
+			(item as TextureRect).texture = tex
+
+	if star_level <= 1:
+		item.material = null
+	else:
+		var mat := ShaderMaterial.new()
+		mat.shader = GLOW_SHADER
+		mat.set_shader_parameter("star_level", star_level)
+
+		var glow_hex: String = skin_data.get("glow_hex", "#00F0FF")
+		var accent_hex: String = skin_data.get("accent_hex", "#FF007F")
+		mat.set_shader_parameter("glow_color", Color.from_string(glow_hex, Color.CYAN))
+		mat.set_shader_parameter("accent_color", Color.from_string(accent_hex, Color.MAGENTA))
+		mat.set_shader_parameter("glow_intensity", 1.8 if star_level >= 3 else 1.2)
+		mat.set_shader_parameter("pulse_speed", 3.0 if star_level >= 3 else 2.0)
+		item.material = mat
+
 static func apply_skin_to_sprite3d(sprite: Sprite3D, skin_id: String, star_level: int = 1, is_back: bool = false, is_flipped: bool = false) -> void:
 	if not is_instance_valid(sprite):
 		return

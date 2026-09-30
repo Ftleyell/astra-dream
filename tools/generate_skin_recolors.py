@@ -226,8 +226,14 @@ def generate_all():
             
             if recolor_image(src_fullbody, dst_fullbody, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                 total_generated += 1
+            
+            src_selection = os.path.join(ASSETS_DIR, "characters", "selection", f"selection_{pilot}.png")
+            rel_selection = ""
+            if os.path.exists(src_selection):
                 dst_selection = os.path.join(RECOLORS_DIR, "pilots", f"selection_{pilot}_{pal_id}.png")
-                shutil.copy2(dst_fullbody, dst_selection)
+                if recolor_image(src_selection, dst_selection, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
+                    total_generated += 1
+                    rel_selection = f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}.png"
             
             src_flipped = os.path.join(ASSETS_DIR, "characters", "fullbody", f"fullbody_{pilot}_flipped.png")
             rel_flipped = ""
@@ -236,8 +242,14 @@ def generate_all():
                 if recolor_image(src_flipped, dst_flipped, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
                     total_generated += 1
                     rel_flipped = f"res://assets/recolors/pilots/fullbody_{pilot}_{pal_id}_flipped.png"
-                    dst_selection_flipped = os.path.join(RECOLORS_DIR, "pilots", f"selection_{pilot}_{pal_id}_flipped.png")
-                    shutil.copy2(dst_flipped, dst_selection_flipped)
+            
+            src_selection_flipped = os.path.join(ASSETS_DIR, "characters", "selection", f"selection_{pilot}_flipped.png")
+            rel_selection_flipped = ""
+            if os.path.exists(src_selection_flipped):
+                dst_selection_flipped = os.path.join(RECOLORS_DIR, "pilots", f"selection_{pilot}_{pal_id}_flipped.png")
+                if recolor_image(src_selection_flipped, dst_selection_flipped, pal["tint_rgb"], blend_factor=0.48, preserve_skin=True):
+                    total_generated += 1
+                    rel_selection_flipped = f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}_flipped.png"
             
             src_portrait = os.path.join(ASSETS_DIR, "characters", "portraits", f"portrait_{pilot}.png")
             if not os.path.exists(src_portrait):
@@ -292,8 +304,8 @@ def generate_all():
                 "flipped_texture_path": rel_flipped,
                 "back_texture_path": rel_back,
                 "back_flipped_texture_path": rel_back_flipped,
-                "selection_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}.png",
-                "selection_flipped_texture_path": f"res://assets/recolors/pilots/selection_{pilot}_{pal_id}_flipped.png" if rel_flipped else "",
+                "selection_texture_path": rel_selection,
+                "selection_flipped_texture_path": rel_selection_flipped,
                 "portrait_texture_path": rel_portrait,
                 "portrait_flipped_texture_path": rel_portrait_flipped
             }

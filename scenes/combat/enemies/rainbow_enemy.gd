@@ -39,7 +39,7 @@ func _ready_custom() -> void:
 		var tangent := Vector2(-to_self.y, to_self.x)
 		_current_flight_dir = (tangent * 0.75 + to_self * 0.25).normalized()
 
-	rotation = _current_flight_dir.angle() + PI * 0.5
+	rotation = _current_flight_dir.angle()
 
 	_setup_overhead_hud()
 
@@ -76,7 +76,7 @@ func setup_transverse_flight(center: Vector2, spawn_angle: float) -> void:
 	var tangent_dir := Vector2(-radial_dir.y * sign_tangent, radial_dir.x * sign_tangent)
 	# 75% tangencial (cruzando pantalla), 25% radial leve hacia afuera
 	_current_flight_dir = (tangent_dir * 0.75 + radial_dir * 0.25).normalized()
-	rotation = _current_flight_dir.angle() + PI * 0.5
+	rotation = _current_flight_dir.angle()
 
 func take_damage(arg) -> void:
 	if is_dying or (get_tree() and get_tree().paused):
@@ -133,8 +133,8 @@ func _update_behavior(delta: float) -> void:
 	var cur_speed := move_speed + (PANIC_BOOST if panic_timer > 0.0 else 0.0)
 	velocity = _current_flight_dir * cur_speed
 
-	# Orientación suave y precisa del morro de la nave en dirección al vector de vuelo
-	var target_rot := _current_flight_dir.angle() + PI * 0.5
+	# Orientación suave y precisa del morro de la criatura en dirección al vector de vuelo
+	var target_rot := _current_flight_dir.angle()
 	rotation = rotate_toward(rotation, target_rot, delta * 12.0)
 	move_and_slide()
 

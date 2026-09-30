@@ -87,9 +87,10 @@ func _ready() -> void:
 	bullet_server.bomb_clear_all()
 	shooter.global_position = Vector2(450.0, 0.0)
 	shooter.shoot_timer = 0.01
-	shooter._physics_process(0.02)
-	assert(bullet_server.active_count == 3, "El Artillero debe haber disparado una salva de 3 proyectiles (actual: %d)" % bullet_server.active_count)
-	print("  ✓ Artillero Danmaku dispara salva de 3 proyectiles dirigidos en abanico")
+	shooter._physics_process(0.02) # Inicia carga telegrafiada (CHARGE_DURATION = 0.35s)
+	shooter._physics_process(0.40) # Completa carga y ejecuta _fire_telegraphed_shot()
+	assert(bullet_server.active_count == 1, "El Artillero debe haber disparado un proyectil dirigido (actual: %d)" % bullet_server.active_count)
+	print("  ✓ Artillero Danmaku dispara proyectil balístico dirigido")
 	bullet_server.bomb_clear_all()
 
 	# --- TEST 4: COMPORTAMIENTO DEL TANQUE (ABSORCIÓN Y DAÑO) ---

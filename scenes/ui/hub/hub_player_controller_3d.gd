@@ -25,6 +25,7 @@ var nearby_interactables: Array[Area3D] = []
 @onready var visual_sprite: Sprite3D = $Sprite3D
 @onready var camera: Camera3D = $Camera3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
+var shadow_sprite: Sprite3D = null
 
 const SPRITE_BASE_Y: float = 0.04
 
@@ -77,8 +78,113 @@ func _setup_sprite() -> void:
 	visual_sprite.pixel_size = 0.0013
 	visual_sprite.offset = Vector2(0, 800)
 	visual_sprite.position = Vector3(0, SPRITE_BASE_Y, 0)
+	visual_sprite.render_priority = 2
 
+	_setup_shadow()
 	_update_character_texture()
+
+
+const SILHOUETTE_SHADOW_SHADER = preload("res://shaders/character_silhouette_shadow.gdshader")
+const SHADOW_BASE_ALPHA: float = 0.48
+const SHADOW_HOP_ALPHA: float = 0.36
+const DEFAULT_LIGHT_DIR := Vector3(-0.353553, -0.707107, -0.612372)
+
+var _directional_light: DirectionalLight3D = null
+var _shadow_proj_scale := Vector3(0.95, 1.0, 0.75)
+var _current_shadow_alpha: float = SHADOW_BASE_ALPHA
+var _shadow_mat: ShaderMaterial = null
+
+func _get_light_direction() -> Vector3:
+	if not _directional_light or not is_instance_valid(_directional_light):
+		var root := get_tree().current_scene
+		if root:
+			var light_node := root.get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+			if light_node:
+				_directional_light = light_node
+			else:
+				for child in root.get_children():
+					if child is DirectionalLight3D:
+						_directional_light = child
+						break
+	if _directional_light and is_instance_valid(_directional_light):
+		return -_directional_light.global_transform.basis.z.normalized()
+	return DEFAULT_LIGHT_DIR.normalized()
+
+
+func _setup_shadow() -> void:
+	if not shadow_sprite:
+		shadow_sprite = get_node_or_null("PlayerShadow") as Sprite3D
+	if not shadow_sprite:
+		shadow_sprite = Sprite3D.new()
+		shadow_sprite.name = "PlayerShadow"
+		add_child(shadow_sprite)
+
+	shadow_sprite.axis = Vector3.AXIS_Y
+	shadow_sprite.shaded = false
+	shadow_sprite.pixel_size = 0.0013
+	# Altura a 0.035 para descansar limpia sobre el suelo (top mesh en Y=0.0253)
+	shadow_sprite.position = Vector3(0.0, 0.035, 0.0)
+	shadow_sprite.render_priority = 1
+	shadow_sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+	if not _shadow_mat:
+		_shadow_mat = ShaderMaterial.new()
+		_shadow_mat.shader = SILHOUETTE_SHADOW_SHADER
+		_shadow_mat.render_priority = 1
+		_shadow_mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, SHADOW_BASE_ALPHA))
+	shadow_sprite.material_override = _shadow_mat
+	_sync_shadow_texture()
+
+
+func _update_shadow_projection() -> void:
+	if not shadow_sprite or not visual_sprite:
+		return
+
+	# Pivot exacto en los pies (heredado de visual_sprite para que la sombra nazca del contacto)
+	shadow_sprite.offset = visual_sprite.offset
+	shadow_sprite.pixel_size = visual_sprite.pixel_size
+
+	var light_dir := _get_light_direction()
+	var ground_proj := Vector3(light_dir.x, 0.0, light_dir.z)
+	var ground_dist := ground_proj.length()
+	var ground_norm: Vector3 = (ground_proj / ground_dist) if ground_dist > 0.001 else Vector3(0.0, 0.0, -1.0)
+
+	# Orientar el vector de cabeza (-Z local en Sprite3D AXIS_Y) hacia la proyección del vector de luz
+	var phi: float = atan2(-ground_norm.x, -ground_norm.z)
+	shadow_sprite.rotation = Vector3(0.0, phi, 0.0)
+
+	# Elongación proporcional al ángulo cenital de la luz (clamp estético para perspectiva diorama)
+	var pitch_ratio: float = ground_dist / maxf(absf(light_dir.y), 0.001)
+	var shadow_length: float = clampf(pitch_ratio * 0.75, 0.5, 1.1)
+	_shadow_proj_scale = Vector3(0.95, 1.0, shadow_length)
+	shadow_sprite.scale = _shadow_proj_scale
+
+
+func _sync_shadow_texture() -> void:
+	if not shadow_sprite or not visual_sprite:
+		return
+	shadow_sprite.texture = visual_sprite.texture
+	shadow_sprite.flip_h = visual_sprite.flip_h
+	shadow_sprite.pixel_size = visual_sprite.pixel_size
+	shadow_sprite.offset = visual_sprite.offset
+	if _shadow_mat and visual_sprite.texture:
+		_shadow_mat.set_shader_parameter("texture_albedo", visual_sprite.texture)
+	_update_shadow_projection()
+
+
+func _update_shadow_hop(hop_factor: float, delta: float) -> void:
+	if not shadow_sprite:
+		return
+	# Contracción dinámica: al subir la piloto en el saltito, la sombra se contrae ~12%
+	var scale_mult: float = 1.0 - (hop_factor * 0.12)
+	var target_scale := Vector3(_shadow_proj_scale.x * scale_mult, 1.0, _shadow_proj_scale.z * scale_mult)
+	shadow_sprite.scale = shadow_sprite.scale.lerp(target_scale, clampf(14.0 * delta, 0.0, 1.0))
+
+	# Atenuación dinámica: al subir, la sombra se hace sutilmente más tenue
+	var target_alpha := lerpf(SHADOW_BASE_ALPHA, SHADOW_HOP_ALPHA, hop_factor)
+	_current_shadow_alpha = lerpf(_current_shadow_alpha, target_alpha, clampf(14.0 * delta, 0.0, 1.0))
+	if _shadow_mat:
+		_shadow_mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, _current_shadow_alpha))
 
 
 func _setup_camera() -> void:
@@ -117,6 +223,7 @@ func _update_character_texture() -> void:
 		CosmeticsManager.apply_skin_to_sprite3d(visual_sprite, equipped_skin, stars, _is_facing_back, false)
 		visual_sprite.pixel_size = 0.0013
 		visual_sprite.offset = Vector2(0, 800)
+		_sync_shadow_texture()
 		return
 
 	# Fallback original (sin skin)
@@ -127,6 +234,7 @@ func _update_character_texture() -> void:
 			visual_sprite.texture = load(back_path)
 			visual_sprite.pixel_size = 0.0013
 			visual_sprite.offset = Vector2(0, 800)
+			_sync_shadow_texture()
 			return
 
 	var fullbody_path := "res://assets/characters/fullbody/fullbody_%s.png" % cid
@@ -140,6 +248,7 @@ func _update_character_texture() -> void:
 			visual_sprite.texture = load(portrait_path)
 			visual_sprite.pixel_size = 0.005
 			visual_sprite.offset = Vector2(0, 256)
+	_sync_shadow_texture()
 
 
 # Orientación y transición de cámara en el Hangar Doble
@@ -201,17 +310,27 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, target_vel.x, acceleration * delta)
 		velocity.z = move_toward(velocity.z, target_vel.z, acceleration * delta)
 
+		if absf(input_x) > 0.1:
+			var should_flip: bool = (input_x < 0.0)
+			if visual_sprite and visual_sprite.flip_h != should_flip:
+				visual_sprite.flip_h = should_flip
+				if shadow_sprite:
+					shadow_sprite.flip_h = should_flip
+
 		# Animación ligera de balanceo del recorte 2.5D al caminar
 		_walk_cycle += delta * 12.0
+		var hop_phase: float = absf(sin(_walk_cycle * 2.0))
 		if visual_sprite:
 			visual_sprite.rotation.z = sin(_walk_cycle) * 0.08
-			visual_sprite.position.y = SPRITE_BASE_Y + absf(sin(_walk_cycle * 2.0)) * 0.06
+			visual_sprite.position.y = SPRITE_BASE_Y + hop_phase * 0.06
+		_update_shadow_hop(hop_phase, delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
 		if visual_sprite:
 			visual_sprite.rotation.z = move_toward(visual_sprite.rotation.z, 0.0, delta * 4.0)
 			visual_sprite.position.y = move_toward(visual_sprite.position.y, SPRITE_BASE_Y, delta * 2.0)
+		_update_shadow_hop(0.0, delta)
 
 	# Asistencia de ascenso automático de pequeños escalones y plataformas bajas
 	if auto_step_climb and is_on_floor() and not is_movement_locked:

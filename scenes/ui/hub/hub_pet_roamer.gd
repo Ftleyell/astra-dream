@@ -44,7 +44,7 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 
 	update_skin()
 
-	# Sombra suave bajo la mascota
+	# Sombra redonda bajo la mascota (estilo retro arcade definido)
 	shadow = MeshInstance3D.new()
 	shadow.name = "PetShadow"
 	var quad := QuadMesh.new()
@@ -52,12 +52,13 @@ func setup(data: PetData, spawn_pos: Vector3) -> void:
 	quad.orientation = PlaneMesh.FACE_Y
 	shadow.mesh = quad
 
-	var mat := StandardMaterial3D.new()
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0, 0, 0, 0.45)
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var mat := ShaderMaterial.new()
+	const CIRCLE_SHADOW_SHADER = preload("res://shaders/retro_circle_shadow.gdshader")
+	mat.shader = CIRCLE_SHADOW_SHADER
+	mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, 0.45))
+	mat.set_shader_parameter("edge_sharpness", 0.015)
 	shadow.material_override = mat
-	shadow.position.y = 0.02
+	shadow.position.y = 0.015
 	add_child(shadow)
 
 func _process(delta: float) -> void:
