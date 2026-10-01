@@ -25,11 +25,35 @@ var last_lead_angle: float = 0.0
 @onready var blade_ring: Line2D = get_node_or_null("BladeRing") as Line2D
 @onready var blade_core: Line2D = get_node_or_null("BladeCore") as Line2D
 
+const BLADE_SHADER: Shader = preload("res://core/shaders/dimensional_slash_blade.gdshader")
+const VORTEX_SHADER: Shader = preload("res://core/shaders/dimensional_vortex_core.gdshader")
 var impact_vfx_scene: PackedScene = preload("res://scenes/combat/weapons/dimensional_slash_impact_vfx.tscn")
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_init_edge_curves()
+	_init_shader_materials()
+
+func _init_shader_materials() -> void:
+	if not blade_poly1:
+		blade_poly1 = get_node_or_null("BladePoly1") as Polygon2D
+	if not blade_poly2:
+		blade_poly2 = get_node_or_null("BladePoly2") as Polygon2D
+	if not vortex_core:
+		vortex_core = get_node_or_null("VortexCore") as Polygon2D
+
+	if blade_poly1 and not blade_poly1.material:
+		var m1 := ShaderMaterial.new()
+		m1.shader = BLADE_SHADER
+		blade_poly1.material = m1
+	if blade_poly2 and not blade_poly2.material:
+		var m2 := ShaderMaterial.new()
+		m2.shader = BLADE_SHADER
+		blade_poly2.material = m2
+	if vortex_core and not vortex_core.material:
+		var mv := ShaderMaterial.new()
+		mv.shader = VORTEX_SHADER
+		vortex_core.material = mv
 
 func _init_edge_curves() -> void:
 	var curve := Curve.new()
@@ -207,12 +231,6 @@ func _build_blade_mesh(
 	if poly:
 		poly.polygon = blade_pts
 		poly.uv = blade_uvs
-		if not poly.material:
-			var blade_shader := load("res://core/shaders/dimensional_slash_blade.gdshader") as Shader
-			if blade_shader:
-				var mat := ShaderMaterial.new()
-				mat.shader = blade_shader
-				poly.material = mat
 
 	if core_poly:
 		core_poly.polygon = blade_core_pts
@@ -236,12 +254,6 @@ func _update_vortex_core(t: float, r: float, alpha: float) -> void:
 		uvs.append(p * 0.5 + Vector2(0.5, 0.5))
 	vortex_core.polygon = pts
 	vortex_core.uv = uvs
-	if not vortex_core.material:
-		var vortex_shader := load("res://core/shaders/dimensional_vortex_core.gdshader") as Shader
-		if vortex_shader:
-			var mat := ShaderMaterial.new()
-			mat.shader = vortex_shader
-			vortex_core.material = mat
 
 func _update_final_shockwave(t: float, alpha: float) -> void:
 	if not expansion_shockwave:

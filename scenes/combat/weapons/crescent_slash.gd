@@ -20,6 +20,7 @@ var reach: float = 165.0
 @onready var slash_edge_line: Line2D = get_node_or_null("SlashEdgeLine") as Line2D
 @onready var slash_line: Line2D = get_node_or_null("SlashLine") as Line2D
 
+const BLADE_SHADER: Shader = preload("res://core/shaders/dimensional_slash_blade.gdshader")
 var impact_vfx_scene: PackedScene = preload("res://scenes/combat/weapons/dimensional_slash_impact_vfx.tscn")
 
 func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_count: int = 1, p_size_mult: float = 1.0) -> void:
@@ -40,6 +41,12 @@ func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_count: int = 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if not slash_blade_poly:
+		slash_blade_poly = get_node_or_null("SlashBladePoly") as Polygon2D
+	if slash_blade_poly and not slash_blade_poly.material:
+		var mat := ShaderMaterial.new()
+		mat.shader = BLADE_SHADER
+		slash_blade_poly.material = mat
 
 func _process(delta: float) -> void:
 	if current_flurry < flurry_count:
@@ -150,12 +157,6 @@ func _build_crescent_blade_geometry() -> void:
 	if slash_blade_poly:
 		slash_blade_poly.polygon = full_poly_pts
 		slash_blade_poly.uv = full_poly_uvs
-		if not slash_blade_poly.material:
-			var blade_shader := load("res://core/shaders/dimensional_slash_blade.gdshader") as Shader
-			if blade_shader:
-				var mat := ShaderMaterial.new()
-				mat.shader = blade_shader
-				slash_blade_poly.material = mat
 
 	if slash_blade_core:
 		slash_blade_core.polygon = full_core_pts
