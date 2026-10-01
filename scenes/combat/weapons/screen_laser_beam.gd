@@ -87,17 +87,29 @@ func _activate_laser() -> void:
 	# 3. El haz visual termina exactamente en el punto de contacto
 	var end_local := solid_hit_pos - global_position
 
+	var plasma_tex := load("res://assets/sprites/effects/beam_plasma_core.png") as Texture2D
+	var plasma_shader := load("res://core/shaders/laser_plasma_beam.gdshader") as Shader
+
 	outer_line.clear_points()
 	outer_line.add_point(Vector2.ZERO)
 	outer_line.add_point(end_local)
-	outer_line.width = beam_width
-	outer_line.default_color = Color(0.2, 0.9, 1.0, 0.95)
+	outer_line.width = beam_width * 1.6
+	outer_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+	if plasma_tex:
+		outer_line.texture = plasma_tex
+	if plasma_shader and not (outer_line.material is ShaderMaterial):
+		var sm := ShaderMaterial.new()
+		sm.shader = plasma_shader
+		sm.set_shader_parameter("energy_tint", Color(0.15, 0.85, 1.0, 0.95))
+		sm.set_shader_parameter("core_intensity", 3.2)
+		outer_line.material = sm
 
 	core_line.clear_points()
 	core_line.add_point(Vector2.ZERO)
 	core_line.add_point(end_local)
-	core_line.width = beam_width * 0.35
+	core_line.width = beam_width * 0.45
 	core_line.default_color = Color(1.0, 1.0, 1.0, 1.0)
+	core_line.texture_mode = Line2D.LINE_TEXTURE_NONE
 
 	# 4. Chispas de impacto en la superficie del planeta
 	if has_solid_hit:

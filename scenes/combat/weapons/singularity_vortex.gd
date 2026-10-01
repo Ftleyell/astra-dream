@@ -10,8 +10,9 @@ var hit_context: HitContext
 var time_alive: float = 0.0
 var tick_timer: float = 0.0
 
-@onready var inner_circle: Polygon2D = $InnerCircle
-@onready var outer_ring: Line2D = $OuterRing
+@onready var accretion_disk: Sprite2D = get_node_or_null("AccretionDisk") as Sprite2D
+@onready var inner_circle: Polygon2D = get_node_or_null("InnerCircle") as Polygon2D
+@onready var outer_ring: Line2D = get_node_or_null("OuterRing") as Line2D
 
 func setup(p_pos: Vector2, p_ctx: HitContext, p_size_mult: float = 1.0) -> void:
 	global_position = p_pos
@@ -33,6 +34,7 @@ func _process(delta: float) -> void:
 		return
 
 	rotation += 6.0 * delta
+	queue_redraw()
 
 	# Atraer enemigos hacia el centro
 	var tree := get_tree()
@@ -88,3 +90,11 @@ func _implode_and_free() -> void:
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2.ZERO, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tw.tween_callback(queue_free)
+
+func _draw() -> void:
+	# Ondas gravitatorias circulares suaves que se contraen hacia el horizonte de sucesos
+	for i in range(3):
+		var wave_t := fmod((time_alive * 0.85) + float(i) * 0.333, 1.0)
+		var r := lerpf(pull_radius * 0.65, 24.0, wave_t)
+		var alpha := sin(wave_t * PI) * 0.45
+		draw_arc(Vector2.ZERO, r, 0.0, TAU, 48, Color(0.72, 0.38, 1.0, alpha), 2.0)

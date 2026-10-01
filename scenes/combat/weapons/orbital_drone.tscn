@@ -1,17 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://drone001"]
+[gd_scene load_steps=5 format=3 uid="uid://drone001"]
 
 [ext_resource type="Script" path="res://scenes/combat/weapons/orbital_drone.gd" id="1_drn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/orbital_drone.png" id="2_drone"]
+[ext_resource type="Texture2D" path="res://assets/sprites/effects/beam_plasma_core.png" id="3_plasma"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
 
 [node name="OrbitalDrone" type="Node2D"]
 script = ExtResource("1_drn")
 
-[node name="DroneBody" type="Polygon2D" parent="."]
-color = Color(0.95, 0.8, 0.2, 1)
-polygon = PackedVector2Array(-5, -4, 6, 0, -5, 4, -2, 0)
+[node name="DroneSprite" type="Sprite2D" parent="."]
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_drone")
 
 [node name="BeamLine" type="Line2D" parent="."]
 visible = false
-width = 2.0
-default_color = Color(1, 0.9, 0.3, 0.9)
+material = SubResource("CanvasItemMaterial_add")
+texture = ExtResource("3_plasma")
+texture_mode = 1
+width = 5.0
+default_color = Color(1, 0.9, 0.4, 0.95)
 begin_cap_mode = 2
 end_cap_mode = 2

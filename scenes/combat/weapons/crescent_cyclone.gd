@@ -22,22 +22,29 @@ func _ready() -> void:
 	if not blade_core:
 		blade_core = get_node_or_null("BladeCore") as Line2D
 
+	var plasma_tex: Texture2D = load("res://assets/sprites/effects/beam_plasma_core.png") as Texture2D
 	if blade_ring:
+		if plasma_tex:
+			blade_ring.texture = plasma_tex
+			blade_ring.texture_mode = Line2D.LINE_TEXTURE_STRETCH
 		var curve := Curve.new()
 		curve.add_point(Vector2(0.0, 0.02)) # Cola afilada que se pierde
 		curve.add_point(Vector2(0.60, 1.0))  # Cuerpo ancho del tajo
 		curve.add_point(Vector2(0.92, 0.85))
 		curve.add_point(Vector2(1.0, 0.25))  # Punta incisiva del filo
 		blade_ring.width_curve = curve
-		blade_ring.width = 20.0
+		blade_ring.width = 24.0
 
 	if blade_core:
+		if plasma_tex:
+			blade_core.texture = plasma_tex
+			blade_core.texture_mode = Line2D.LINE_TEXTURE_STRETCH
 		var core_curve := Curve.new()
 		core_curve.add_point(Vector2(0.0, 0.05))
 		core_curve.add_point(Vector2(0.75, 1.0))
 		core_curve.add_point(Vector2(1.0, 0.4))
 		blade_core.width_curve = core_curve
-		blade_core.width = 8.0
+		blade_core.width = 10.0
 
 func setup(p_origin: Vector2, p_ctx: HitContext, p_size_mult: float = 1.0, p_player: Player = null) -> void:
 	global_position = p_origin

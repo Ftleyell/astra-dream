@@ -1,13 +1,20 @@
-[gd_scene load_steps=2 format=3 uid="uid://tesla001"]
+[gd_scene load_steps=4 format=3 uid="uid://tesla001"]
 
 [ext_resource type="Script" path="res://scenes/combat/weapons/chain_lightning_effect.gd" id="1_chain"]
+[ext_resource type="Texture2D" path="res://assets/sprites/effects/lightning_bolt_core.png" id="2_lightning"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
 
 [node name="ChainLightningEffect" type="Node2D"]
 script = ExtResource("1_chain")
 
 [node name="BoltLine" type="Line2D" parent="."]
-width = 6.0
-default_color = Color(0.4, 0.9, 1, 0.95)
+material = SubResource("CanvasItemMaterial_add")
+texture = ExtResource("2_lightning")
+texture_mode = 2
+width = 14.0
+default_color = Color(0.65, 0.95, 1, 1)
 joint_mode = 1
 begin_cap_mode = 2
 end_cap_mode = 2

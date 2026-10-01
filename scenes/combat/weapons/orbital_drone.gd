@@ -11,8 +11,8 @@ var current_angle: float = 0.0
 var fire_timer: float = 0.0
 var hit_context: HitContext
 
-@onready var drone_body: Polygon2D = $DroneBody
-@onready var beam_line: Line2D = $BeamLine
+@onready var drone_sprite: Sprite2D = get_node_or_null("DroneSprite") as Sprite2D
+@onready var beam_line: Line2D = get_node_or_null("BeamLine") as Line2D
 
 func setup(p_player: Node2D, p_starting_angle: float, p_ctx: HitContext) -> void:
 	player = p_player

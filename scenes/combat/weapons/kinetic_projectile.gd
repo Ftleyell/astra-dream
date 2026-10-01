@@ -1,6 +1,9 @@
 class_name KineticProjectile
 extends Node2D
 
+const KineticImpactSparkVFXScript = preload("res://scenes/combat/weapons/kinetic_impact_vfx.gd")
+var spark_scene: PackedScene = preload("res://scenes/combat/weapons/kinetic_impact_vfx.tscn")
+
 @export var speed: float = 850.0
 @export var lifetime: float = 2.5
 @export var bounces_max: int = 0
@@ -19,11 +22,58 @@ var has_started_return: bool = false
 var hit_targets: Array[Node2D] = []
 
 @onready var trail_line: Line2D = get_node_or_null("TrailLine")
-@onready var visual_poly: Polygon2D = get_node_or_null("VisualPolygon")
+@onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
+var trail_positions: Array[Vector2] = []
+const MAX_TRAIL_PTS: int = 14
+
+var spark_color: Color = Color(0.3, 0.92, 1.0)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("player_projectiles")
+
+	if trail_line:
+		var trail_tex := load("res://assets/sprites/effects/beam_trail_gradient.png") as Texture2D
+		if trail_tex:
+			trail_line.texture = trail_tex
+			trail_line.texture_mode = Line2D.LINE_TEXTURE_STRETCH
+		trail_line.begin_cap_mode = Line2D.LINE_CAP_NONE
+		trail_line.end_cap_mode = Line2D.LINE_CAP_NONE
+		var curve := Curve.new()
+		curve.add_point(Vector2(0.0, 1.0))    # Cabeza ancha en el proyectil
+		curve.add_point(Vector2(0.18, 0.85))
+		curve.add_point(Vector2(0.45, 0.45))
+		curve.add_point(Vector2(0.75, 0.12))
+		curve.add_point(Vector2(1.0, 0.0))    # Punta cónica de aguja afilada
+		trail_line.width_curve = curve
+		trail_line.width = 9.0 * scale.x
+
+	if is_boomerang:
+		var blade_tex := load("res://assets/sprites/weapons/projectile_crescent_blade.png") as Texture2D
+		if blade_tex and sprite:
+			sprite.texture = blade_tex
+			sprite.scale = Vector2(0.55, 0.55)
+		spark_color = Color(0.95, 0.28, 1.0)
+		if trail_line:
+			trail_line.default_color = Color(0.95, 0.28, 1.0, 0.9)
+	elif pierces_max > 1 or speed >= 1000.0:
+		# Francotirador iónico de Valentina
+		var needle_tex := load("res://assets/sprites/weapons/projectile_ion_needle.png") as Texture2D
+		if needle_tex and sprite:
+			sprite.texture = needle_tex
+			sprite.scale = Vector2(0.38, 0.38)
+		spark_color = Color(0.3, 0.92, 1.0)
+		if trail_line:
+			trail_line.default_color = Color(0.3, 0.92, 1.0, 0.9)
+	else:
+		# Perdigón de escopeta / cinética de Roxy
+		var slug_tex := load("res://assets/sprites/weapons/projectile_kinetic_slug.png") as Texture2D
+		if slug_tex and sprite:
+			sprite.texture = slug_tex
+			sprite.scale = Vector2(0.32, 0.32)
+		spark_color = Color(1.0, 0.65, 0.15)
+		if trail_line:
+			trail_line.default_color = Color(1.0, 0.65, 0.15, 0.9)
 
 func setup(p_origin: Vector2, p_dir: Vector2, p_ctx: HitContext, p_player: Node2D = null, p_speed_mult: float = 1.0, p_size_mult: float = 1.0) -> void:
 	global_position = p_origin
@@ -58,6 +108,15 @@ func _process(delta: float) -> void:
 		rotation = velocity.angle()
 
 	global_position += velocity * delta
+
+	# Actualizar estela visual TrailLine
+	if trail_line:
+		trail_positions.push_front(global_position)
+		if trail_positions.size() > MAX_TRAIL_PTS:
+			trail_positions.pop_back()
+		trail_line.clear_points()
+		for p in trail_positions:
+			trail_line.add_point(to_local(p))
 
 	# Comprobación de impactos contra enemigos y destructibles
 	_check_collisions()
@@ -118,5 +177,13 @@ func _apply_hit(target: Node2D) -> void:
 	_spawn_spark_effect()
 
 func _spawn_spark_effect() -> void:
-	# Feedback visual breve al impactar
-	pass
+	if spark_scene:
+		var spark = spark_scene.instantiate()
+		if spark:
+			if spark.has_method("setup"):
+				spark.setup(global_position, spark_color, 16.0 * scale.x)
+			var parent_node := get_parent() if is_inside_tree() else null
+			if not parent_node and is_inside_tree():
+				parent_node = get_tree().current_scene
+			if parent_node:
+				parent_node.add_child(spark)

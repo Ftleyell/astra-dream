@@ -1,10 +1,25 @@
-[gd_scene load_steps=2 format=3 uid="uid://clst001"]
+[gd_scene load_steps=5 format=3 uid="uid://clst001"]
 
 [ext_resource type="Script" path="res://scenes/combat/weapons/cluster_grenade.gd" id="1_clst"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/cluster_canister.png" id="2_canister"]
+[ext_resource type="Texture2D" path="res://assets/sprites/effects/beam_trail_gradient.png" id="3_trail"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
 
 [node name="ClusterGrenade" type="Node2D"]
 script = ExtResource("1_clst")
 
-[node name="Body" type="Polygon2D" parent="."]
-color = Color(1, 0.3, 0.1, 1)
-polygon = PackedVector2Array(-9, -7, 0, -10, 9, -7, 11, 0, 9, 7, 0, 10, -9, 7, -11, 0)
+[node name="TrailLine" type="Line2D" parent="."]
+top_level = true
+material = SubResource("CanvasItemMaterial_add")
+texture = ExtResource("3_trail")
+texture_mode = 2
+width = 6.0
+default_color = Color(1, 0.5, 0.1, 0.75)
+begin_cap_mode = 0
+end_cap_mode = 0
+
+[node name="Body" type="Sprite2D" parent="."]
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("2_canister")

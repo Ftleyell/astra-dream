@@ -37,7 +37,7 @@ func _update_ring_visual(t: float) -> void:
 		var angle := float(i) * TAU / float(segs)
 		pts.append(Vector2(cos(angle), sin(angle)) * current_radius)
 	ring_line.points = pts
-	ring_line.width = lerpf(6.0, 1.0, t)
+	ring_line.width = lerpf(14.0, 2.0, t)
 	ring_line.default_color.a = 1.0 - t
 
 func _check_shockwave_hits() -> void:

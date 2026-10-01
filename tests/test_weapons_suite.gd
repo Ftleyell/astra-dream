@@ -1,6 +1,12 @@
 extends Node
 
 func _ready() -> void:
+	# Watchdog de seguridad (10 segundos)
+	get_tree().create_timer(10.0).timeout.connect(func():
+		print("[TEST WATCHDOG] Timeout alcanzado en test_weapons_suite, forzando salida...")
+		get_tree().quit(1)
+	)
+
 	print("\n==========================================")
 	print("[TEST] Testing 10 Weapons & 6-Slot System...")
 	print("==========================================")

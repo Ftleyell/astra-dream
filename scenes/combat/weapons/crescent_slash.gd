@@ -61,20 +61,25 @@ func _draw_crescent_visual() -> void:
 		return
 	slash_line.clear_points()
 	var half_arc := deg_to_rad(arc_angle_deg * 0.5)
-	var segs := 18
+	var segs := 24
 	for i in range(segs + 1):
 		var t := float(i) / float(segs)
 		var angle := lerpf(-half_arc, half_arc, t)
-		# Forma de arco en medialuna hacia delante
-		var r := reach * (0.85 + 0.15 * cos(angle * 1.5))
+		# Forma de arco en medialuna hacia delante con punta estirada
+		var r := reach * (0.82 + 0.18 * cos(angle * 1.3))
 		slash_line.add_point(Vector2(cos(angle), sin(angle)) * r)
 
-	slash_line.width = 12.0
-	slash_line.default_color = Color(0.95, 0.35, 1.0, 1.0)
+	var plasma_tex := load("res://assets/sprites/effects/beam_plasma_core.png") as Texture2D
+	if plasma_tex:
+		slash_line.texture = plasma_tex
+		slash_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+
+	slash_line.width = 18.0
+	slash_line.default_color = Color(1.0, 0.3, 0.95, 1.0) # Violeta Astral neón
 
 	var tw := create_tween()
-	tw.tween_property(slash_line, "width", 1.0, 0.12)
-	tw.parallel().tween_property(slash_line, "default_color:a", 0.0, 0.14)
+	tw.tween_property(slash_line, "width", 2.0, 0.14).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(slash_line, "default_color:a", 0.0, 0.15)
 
 func _check_slash_hits() -> void:
 	var tree := get_tree()

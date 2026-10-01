@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://kntspark001"]
+
+[ext_resource type="Script" path="res://scenes/combat/weapons/kinetic_impact_vfx.gd" id="1_spark"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="KineticImpactVFX" type="Node2D"]
+material = SubResource("CanvasItemMaterial_add")
+script = ExtResource("1_spark")

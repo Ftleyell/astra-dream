@@ -47,8 +47,24 @@ func _update_beam_visual() -> void:
 	var pts := PackedVector2Array([Vector2.ZERO, beam_dir * beam_length])
 	outer_line.points = pts
 	core_line.points = pts
-	outer_line.width = beam_width
+
+	var plasma_tex := load("res://assets/sprites/effects/beam_plasma_core.png") as Texture2D
+	var plasma_shader := load("res://core/shaders/laser_plasma_beam.gdshader") as Shader
+
+	outer_line.width = beam_width * 1.5
+	outer_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+	if plasma_tex:
+		outer_line.texture = plasma_tex
+	if plasma_shader and not (outer_line.material is ShaderMaterial):
+		var sm := ShaderMaterial.new()
+		sm.shader = plasma_shader
+		sm.set_shader_parameter("energy_tint", Color(1.0, 0.65, 0.1, 0.95)) # Dorado / Ámbar Solar
+		sm.set_shader_parameter("core_intensity", 3.5)
+		sm.set_shader_parameter("scroll_speed", 12.0)
+		outer_line.material = sm
+
 	core_line.width = beam_width * 0.4
+	core_line.default_color = Color(1.0, 0.95, 0.8, 1.0)
 
 func _apply_solar_tick() -> void:
 	var tree := get_tree()
