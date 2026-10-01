@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8yfqcxm812da"]
+
+[ext_resource type="Script" path="res://scenes/combat/bosses/cinematic_death_sequence.gd" id="1_seq"]
+[ext_resource type="Shader" path="res://shaders/screen_refraction_shockwave.gdshader" id="2_shockwave"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shockwave"]
+shader = ExtResource("2_shockwave")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/force = 0.06
+shader_parameter/size = 0.0
+shader_parameter/thickness = 0.08
+shader_parameter/chromatic_aberration = 0.008
+shader_parameter/screen_aspect = 1.777777
+
+[node name="CinematicDeathSequence" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_seq")
+
+[node name="OverlayLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 125
+
+[node name="ShockwaveRect" type="ColorRect" parent="OverlayLayer"]
+material = SubResource("ShaderMaterial_shockwave")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="FlashRect" type="ColorRect" parent="OverlayLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

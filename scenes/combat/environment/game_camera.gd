@@ -7,8 +7,10 @@ extends Camera2D
 @export var shake_decay: float = 3.0
 
 var trauma: float = 0.0
+var focus_override: Node2D = null
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("camera")
 	position_smoothing_enabled = false # Usamos nuestro propio suavizado frame-rate independent
 	if not target:
@@ -21,13 +23,15 @@ func _process(delta: float) -> void:
 	_update_shake(delta)
 
 func _update_follow(delta: float) -> void:
-	if not is_instance_valid(target):
-		target = get_tree().get_first_node_in_group("player") as Node2D
-		if not target:
+	var follow_target: Node2D = focus_override if is_instance_valid(focus_override) else target
+	if not is_instance_valid(follow_target):
+		follow_target = get_tree().get_first_node_in_group("player") as Node2D
+		target = follow_target
+		if not follow_target:
 			return
 
 	var factor: float = 1.0 - exp(-smooth_speed * delta)
-	global_position = global_position.lerp(target.global_position, factor)
+	global_position = global_position.lerp(follow_target.global_position, factor)
 
 func _update_shake(delta: float) -> void:
 	if trauma > 0.0:

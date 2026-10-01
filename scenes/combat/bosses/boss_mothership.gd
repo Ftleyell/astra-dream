@@ -238,27 +238,21 @@ func _transition_to_phase_2() -> void:
 
 	_play_boss_sfx("explosion", 1.4)
 
+const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
+
 func _die() -> void:
+	if is_dying:
+		return
 	is_dying = true
+	CinematicDeathSequenceScript.play_for_boss(self, _finish_death)
 
-	# 1. Limpieza total de balas en pantalla (Screen Wipe)
-	if bullet_server:
-		bullet_server.bomb_clear_all()
-
-	# 2. Sacudida cinematográfica de cámara
-	var cam := get_viewport().get_camera_2d() as GameCamera2D
-	if cam:
-		cam.add_trauma(0.85)
-
-	# 3. Efectos de sonido de destrucción
-	_play_boss_sfx("bomb", 1.0)
-
-	# 4. Otorgar recompensas: +100 Créditos al jugador
+func _finish_death() -> void:
+	# 1. Otorgar recompensas: +100 Créditos al jugador
 	_acquire_references()
 	if is_instance_valid(player):
 		player.add_credits(100)
 
-	# 5. Generar Orbe Colosal de EXP (+150 EXP) en la posición de muerte
+	# 2. Generar Orbe Colosal de EXP (+150 EXP) en la posición de muerte
 	var blob_scene: PackedScene = load("res://scenes/combat/pickups/exp_blob.tscn")
 	if blob_scene:
 		var blob := blob_scene.instantiate() as Node2D
@@ -268,7 +262,7 @@ func _die() -> void:
 		if spawn_parent:
 			spawn_parent.call_deferred("add_child", blob)
 
-	# 5b. Alta probabilidad (60%) de soltar consumible de campo (Bomba, Imán o Heal)
+	# 2b. Alta probabilidad (60%) de soltar consumible de campo (Bomba, Imán o Heal)
 	if randf() <= 0.60:
 		var consumable_scene := load("res://scenes/combat/pickups/field_consumable.tscn") as PackedScene
 		if consumable_scene:
@@ -282,12 +276,10 @@ func _die() -> void:
 					spawn_parent.call_deferred("add_child", consumable)
 					consumable.call_deferred("setup", c_type, global_position + Vector2(randf_range(-35, 35), randf_range(-35, 35)))
 
-	# 6. Activar Imán Global (Magnet): succiona toda la exp del mapa hacia el jugador
+	# 3. Activar Imán Global (Magnet): succiona toda la exp del mapa hacia el jugador
 	ExpBlob.trigger_global_magnet(get_tree())
 
-	# 7. Notificar derrota a los sistemas
-	
-	# Desbloqueo de Trofeo de Nodriza y dropeo de Materia Oscura (Fase 3)
+	# 4. Notificar derrota a los sistemas
 	SaveManager.unlock_or_upgrade_trophy(&"trophy_boss_aegis", 1)
 	var dm_scene: PackedScene = load("res://scenes/combat/pickups/dark_matter_orb.tscn")
 	if dm_scene:
@@ -304,12 +296,7 @@ func _die() -> void:
 	if bus and bus.has_signal("boss_defeated"):
 		bus.boss_defeated.emit(boss_id)
 
-	# 8. Secuencia visual de desintegración
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(self, "scale", scale * 1.4, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "modulate:a", 0.0, 0.38)
-	tw.chain().tween_callback(queue_free)
+	queue_free()
 
 func _play_boss_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

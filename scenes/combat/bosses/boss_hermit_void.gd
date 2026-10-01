@@ -281,14 +281,15 @@ func take_damage(arg) -> void:
 	if current_health <= 0.0:
 		_die()
 
+const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
+
 func _die() -> void:
 	if is_dying:
 		return
 	is_dying = true
+	CinematicDeathSequenceScript.play_for_boss(self, _finish_death)
 
-	if is_instance_valid(bullet_server):
-		bullet_server.clear_bullets_in_radius(global_position, 600.0)
-
+func _finish_death() -> void:
 	boss_defeated.emit(boss_id)
 
 	# Recompensas
@@ -296,10 +297,7 @@ func _die() -> void:
 		player.add_credits(250)
 		player.add_exp(300.0)
 
-	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.1, 0.1), 0.5).set_trans(Tween.TRANS_BACK)
-	tw.parallel().tween_property(self, "modulate:a", 0.0, 0.5)
-	tw.tween_callback(queue_free)
+	queue_free()
 
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

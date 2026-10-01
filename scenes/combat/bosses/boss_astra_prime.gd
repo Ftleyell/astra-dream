@@ -239,24 +239,18 @@ func _transition_phase_2() -> void:
 
 	_play_sfx("explosion", 1.2)
 
+const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
+
 func _die() -> void:
+	if is_dying:
+		return
 	is_dying = true
 	set_physics_process(false)
+	CinematicDeathSequenceScript.play_for_boss(self, _finish_death)
 
-	if is_instance_valid(bullet_server):
-		if bullet_server.has_method("bomb_clear_all"):
-			bullet_server.bomb_clear_all()
-		elif bullet_server.has_method("clear_all_bullets"):
-			bullet_server.clear_all_bullets()
-
+func _finish_death() -> void:
 	boss_defeated.emit(boss_id)
-
-	_play_sfx("explosion", 0.7)
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.8).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "modulate:a", 0.0, 0.8)
-	tw.chain().tween_callback(queue_free)
+	queue_free()
 
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

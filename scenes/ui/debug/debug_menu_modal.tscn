@@ -327,6 +327,13 @@ theme_override_font_sizes/font_size = 13
 text = "👑 ASTRA PRIME (OLA 11 / JEFE FINAL)
 Soberano Estelar Supremo — Corona cósmica y juicio estelar"
 
+[node name="TestDeathSequenceBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent"]
+custom_minimum_size = Vector2(960, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "💥 PROBAR MUERTE CINEMÁTICA (SUPERNOVA EN JEFE ACTIVO)"
+
 [node name="GachaTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 visible = false
 layout_mode = 2

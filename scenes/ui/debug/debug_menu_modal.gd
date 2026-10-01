@@ -30,6 +30,7 @@ signal closed()
 @onready var test_overflow_vortex_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestOverflowVortexBtn")
 @onready var test_mothership_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestMothershipBtn")
 @onready var test_astra_prime_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestAstraPrimeBtn")
+@onready var test_death_seq_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/TestDeathSequenceBtn")
 
 # Combat Tab Controls
 @onready var infinite_hp_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox/HpCheck")
@@ -118,6 +119,9 @@ func _ready() -> void:
 	if test_astra_prime_btn:
 		test_astra_prime_btn.pressed.connect(func(): _on_boss_test_pressed("boss_astra_prime"))
 		UIFocusHelper.apply_cyber_focus(test_astra_prime_btn)
+	if test_death_seq_btn:
+		test_death_seq_btn.pressed.connect(_on_test_death_sequence_pressed)
+		UIFocusHelper.apply_cyber_focus(test_death_seq_btn)
 
 	# Combat Tab Connects
 	if infinite_hp_check:
@@ -793,6 +797,35 @@ func _on_boss_test_pressed(boss_id: String) -> void:
 		if current_pilot_data and "character_id" in current_pilot_data:
 			SaveManager.set_selected_character(current_pilot_data.character_id)
 		DebugManager.set_pending_debug_boss(boss_id)
+		close_menu()
+		get_tree().paused = false
+		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+
+func _on_test_death_sequence_pressed() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.get("current_boss") != null and is_instance_valid(mg.current_boss):
+		close_menu()
+		mg.current_boss._die()
+	elif mg and mg.has_method("jump_to_boss"):
+		# Instanciar boss y detonar tras un instante
+		mg.jump_to_boss("boss_mothership")
+		close_menu()
+		var tw := mg.create_tween()
+		tw.tween_interval(0.25)
+		tw.tween_callback(func():
+			if mg.get("current_boss") != null and is_instance_valid(mg.current_boss):
+				mg.current_boss._die()
+		)
+	else:
+		# Fuera de combate (ej. Title Screen): Iniciar run con boss pendiente
+		if current_pilot_data and "character_id" in current_pilot_data:
+			SaveManager.set_selected_character(current_pilot_data.character_id)
+		DebugManager.set_pending_debug_boss("boss_mothership")
 		close_menu()
 		get_tree().paused = false
 		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):

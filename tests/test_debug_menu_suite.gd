@@ -115,6 +115,12 @@ func _ready() -> void:
 	assert(modal.test_overflow_vortex_btn != null, "test_overflow_vortex_btn debe existir")
 	assert(modal.test_mothership_btn != null, "test_mothership_btn debe existir")
 	assert(modal.test_astra_prime_btn != null, "test_astra_prime_btn debe existir")
+	assert(modal.test_death_seq_btn != null, "test_death_seq_btn debe existir")
+
+	# Probar botón de prueba rápida de muerte cinemática (Supernova)
+	modal._on_test_death_sequence_pressed()
+	assert(DebugManager.pending_debug_boss == "boss_mothership", "pending_debug_boss debe fijarse en boss_mothership al probar muerte desde TitleScreen")
+	DebugManager.consume_pending_debug_boss()
 
 	# Probar invocación de jefe pendiente con current_pilot_data asignado
 	var test_char: CharacterData = char_select.roster_dict.get(&"nova", null)
@@ -124,7 +130,7 @@ func _ready() -> void:
 	assert(DebugManager.pending_debug_boss == "boss_ash_clock", "pending_debug_boss debe ser boss_ash_clock tras _on_boss_test_pressed")
 	assert(DebugManager.consume_pending_debug_boss() == "boss_ash_clock", "consume_pending_debug_boss debe retornar boss_ash_clock")
 	assert(DebugManager.pending_debug_boss == "", "pending_debug_boss debe quedar vacío tras consumir")
-	print("  ✓ Pestaña de Jefes (1v1) verificada: los 6 botones y _on_boss_test_pressed validados sin errores de propiedad")
+	print("  ✓ Pestaña de Jefes (1v1) y botón de Muerte Cinemática verificados sin errores")
 
 	# 6.2. Validar Pestaña de Gacha y Cosméticos (índice 2)
 	modal._switch_tab(2)
