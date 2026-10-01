@@ -81,13 +81,15 @@ func _setup_visuals() -> void:
 		shards_container.add_child(shard)
 
 	# 2. Casco principal
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/boss_hermit_void.png"
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			hull_sprite = Sprite2D.new()
 			hull_sprite.texture = tex
-			hull_sprite.scale = Vector2(1.6, 1.6)
+			hull_sprite.scale = Vector2(0.12, 0.12)
 			hull_sprite.material = telegraph_material
 			add_child(hull_sprite)
 
@@ -190,19 +192,19 @@ func _start_telegraph(duration: float, callback: Callable) -> void:
 	is_telegraphing = true
 	# Telegrafiado: aberración cromática + contracción + flash previo
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.85, 0.85), duration * 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if telegraph_material:
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("chromatic_aberration", val), 0.0, 0.06, duration * 0.7)
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("flash_intensity", val), 0.0, 0.9, duration * 0.7)
 
 	tw.tween_callback(func():
-		scale = Vector2(1.15, 1.15)
+		scale = Vector2(2.2, 2.2)
 		if telegraph_material:
 			telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 			telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 		callback.call()
 		is_telegraphing = false
-		create_tween().tween_property(self, "scale", Vector2.ONE, 0.15)
+		create_tween().tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
 	)
 
 func _fire_rhodonea_star_ring() -> void:
@@ -229,8 +231,8 @@ func _transition_to_phase_2() -> void:
 		bullet_server.clear_bullets_in_radius(global_position, 450.0)
 
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.3, 1.3), 0.2)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2)
+	tw.tween_property(self, "scale", Vector2(2.3, 2.3), 0.2)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.2)
 
 	if shards_container:
 		for shard in shards_container.get_children():

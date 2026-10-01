@@ -1,26 +1,24 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8v24p17m6q9"]
+[gd_scene load_steps=5 format=3 uid="uid://b8v24p17m6q9"]
 
 [ext_resource type="Script" path="res://scenes/combat/enemies/enemy_drone.gd" id="1_drone"]
-[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="2_dmg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/enemy_drone.png" id="2_tex"]
+[ext_resource type="PackedScene" path="res://scenes/combat/enemies/damage_accumulator.tscn" id="3_dmg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
-radius = 14.0
+radius = 16.0
 
 [node name="EnemyDrone" type="CharacterBody2D"]
 collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_drone")
 
-[node name="Visual" type="Polygon2D" parent="."]
-color = Color(0.9, 0.25, 0.25, 1)
-polygon = PackedVector2Array(-10, -12, 14, 0, -10, 12, -4, 0)
-
-[node name="EyeCore" type="Polygon2D" parent="."]
-color = Color(1, 0.85, 0.2, 1)
-polygon = PackedVector2Array(-2, -3, 6, 0, -2, 3)
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("2_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_body")
 
-[node name="DamageAccumulator" parent="." instance=ExtResource("2_dmg")]
+[node name="DamageAccumulator" parent="." instance=ExtResource("3_dmg")]
+
 

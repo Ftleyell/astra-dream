@@ -80,14 +80,16 @@ func _setup_visuals() -> void:
 			shield_ring.add_child(poly)
 
 	# 2. Sprite principal de la nodriza (dreadnought)
-	var tank_tex_path := "res://assets/enemies/enemy_tank.png"
+	var tank_tex_path := "res://assets/sprites/enemies/boss_mothership.png"
+	if not ResourceLoader.exists(tank_tex_path):
+		tank_tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tank_tex_path):
 		var tex := load(tank_tex_path) as Texture2D
 		if tex:
 			sprite = Sprite2D.new()
 			sprite.name = "HullSprite"
 			sprite.texture = tex
-			sprite.scale = Vector2(1.7, 1.7)
+			sprite.scale = Vector2(0.15, 0.15)
 			add_child(sprite)
 
 	# 3. Núcleo de energía reactivo en el centro

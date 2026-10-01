@@ -12,21 +12,3 @@ func _init() -> void:
 	credits_reward = 1
 	contact_radius = 22.0
 
-func _ready_custom() -> void:
-	var visual: Node = get_node_or_null("Visual")
-	var eye_core: Node = get_node_or_null("EyeCore")
-	var drone_tex_path := "res://assets/sprites/enemies/enemy_drone.png"
-	if ResourceLoader.exists(drone_tex_path):
-		var tex := load(drone_tex_path) as Texture2D
-		if tex:
-			var spr := Sprite2D.new()
-			spr.name = "DroneSprite"
-			spr.texture = tex
-			spr.scale = Vector2(0.045, 0.045)
-			add_child(spr)
-			move_child(spr, 0)
-			sprite = spr
-			if visual:
-				visual.visible = false
-			if eye_core:
-				eye_core.visible = false

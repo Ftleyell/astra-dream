@@ -91,13 +91,15 @@ func _setup_visuals() -> void:
 		dial_ring.add_child(tick)
 
 	# 2. Casco / Engranaje central
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/boss_ash_clock.png"
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			gear_sprite = Sprite2D.new()
 			gear_sprite.texture = tex
-			gear_sprite.scale = Vector2(1.5, 1.5)
+			gear_sprite.scale = Vector2(0.13, 0.13)
 			gear_sprite.material = telegraph_material
 			add_child(gear_sprite)
 
@@ -247,19 +249,19 @@ func _trigger_temporal_dilation_pulse() -> void:
 func _start_telegraph(duration: float, callback: Callable) -> void:
 	is_telegraphing = true
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.88, 0.88), duration * 0.7).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("chromatic_aberration", val), 0.0, 0.07, duration * 0.7)
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("flash_intensity", val), 0.0, 0.95, duration * 0.7)
 
 	tw.tween_callback(func():
-		scale = Vector2(1.12, 1.12)
+		scale = Vector2(2.2, 2.2)
 		if telegraph_material:
 			telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 			telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 		callback.call()
 		is_telegraphing = false
-		create_tween().tween_property(self, "scale", Vector2.ONE, 0.15)
+		create_tween().tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
 	)
 
 func _transition_to_phase_2() -> void:
@@ -270,8 +272,8 @@ func _transition_to_phase_2() -> void:
 		bullet_server.clear_bullets_in_radius(global_position, 500.0)
 
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.35, 1.35), 0.25)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2)
+	tw.tween_property(self, "scale", Vector2(2.35, 2.35), 0.25)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.2)
 
 	# Cambiar tinte a oro ardiente
 	if telegraph_material:

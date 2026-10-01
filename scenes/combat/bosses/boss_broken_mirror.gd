@@ -79,13 +79,15 @@ func _setup_visuals() -> void:
 		crystal_ring.add_child(shard)
 
 	# 2. Casco prismático
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/boss_broken_mirror.png"
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			mirror_hull = Sprite2D.new()
 			mirror_hull.texture = tex
-			mirror_hull.scale = Vector2(1.55, 1.55)
+			mirror_hull.scale = Vector2(0.125, 0.125)
 			mirror_hull.material = telegraph_material
 			add_child(mirror_hull)
 
@@ -180,19 +182,19 @@ func _fire_expanded_gaze_sweep() -> void:
 func _start_telegraph(duration: float, callback: Callable) -> void:
 	is_telegraphing = true
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.82, 0.82), duration * 0.7).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("chromatic_aberration", val), 0.0, 0.08, duration * 0.7)
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("flash_intensity", val), 0.0, 1.0, duration * 0.7)
 
 	tw.tween_callback(func():
-		scale = Vector2(1.18, 1.18)
+		scale = Vector2(2.2, 2.2)
 		if telegraph_material:
 			telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 			telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 		callback.call()
 		is_telegraphing = false
-		create_tween().tween_property(self, "scale", Vector2.ONE, 0.15)
+		create_tween().tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
 	)
 
 func _transition_to_phase_2() -> void:
@@ -203,8 +205,8 @@ func _transition_to_phase_2() -> void:
 		bullet_server.clear_bullets_in_radius(global_position, 550.0)
 
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.4, 1.4), 0.25)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2)
+	tw.tween_property(self, "scale", Vector2(2.4, 2.4), 0.25)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.2)
 
 	# Cambiar tinte a cian sobrecargado
 	if telegraph_material:

@@ -91,14 +91,16 @@ func _setup_visuals() -> void:
 		crown_nodes.add_child(shard)
 
 	# Casco
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/boss_astra_prime.png"
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			hull_sprite = Sprite2D.new()
 			hull_sprite.name = "HullSprite"
 			hull_sprite.texture = tex
-			hull_sprite.scale = Vector2(2.1, 2.1)
+			hull_sprite.scale = Vector2(0.16, 0.16)
 			add_child(hull_sprite)
 
 	# Núcleo interior
@@ -224,8 +226,8 @@ func _transition_phase_2() -> void:
 		bullet_server.clear_bullets_in_radius(global_position, 500.0)
 
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.3, 1.3), 0.2)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2)
+	tw.tween_property(self, "scale", Vector2(2.3, 2.3), 0.2)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.2)
 
 	if crown_nodes:
 		for shard in crown_nodes.get_children():

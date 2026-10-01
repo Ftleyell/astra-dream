@@ -81,13 +81,15 @@ func _setup_visuals() -> void:
 		outer_ring.add_child(res_poly)
 
 	# 2. Casco principal
-	var tex_path := "res://assets/enemies/enemy_tank.png"
+	var tex_path := "res://assets/sprites/enemies/boss_overflow_vortex.png"
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://assets/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path):
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			vortex_hull = Sprite2D.new()
 			vortex_hull.texture = tex
-			vortex_hull.scale = Vector2(1.7, 1.7)
+			vortex_hull.scale = Vector2(0.13, 0.13)
 			vortex_hull.material = telegraph_material
 			add_child(vortex_hull)
 
@@ -213,19 +215,19 @@ func _fire_overload_double_nova() -> void:
 func _start_telegraph(duration: float, callback: Callable) -> void:
 	is_telegraphing = true
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.78, 0.78), duration * 0.7).set_trans(Tween.TRANS_BACK)
+	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("chromatic_aberration", val), 0.0, 0.09, duration * 0.7)
 		tw.parallel().tween_method(func(val: float): telegraph_material.set_shader_parameter("flash_intensity", val), 0.0, 1.0, duration * 0.7)
 
 	tw.tween_callback(func():
-		scale = Vector2(1.22, 1.22)
+		scale = Vector2(2.2, 2.2)
 		if telegraph_material:
 			telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 			telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 		callback.call()
 		is_telegraphing = false
-		create_tween().tween_property(self, "scale", Vector2.ONE, 0.15)
+		create_tween().tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
 	)
 
 func _transition_to_phase_2() -> void:
@@ -236,8 +238,8 @@ func _transition_to_phase_2() -> void:
 		bullet_server.clear_bullets_in_radius(global_position, 600.0)
 
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.45, 1.45), 0.3)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2)
+	tw.tween_property(self, "scale", Vector2(2.4, 2.4), 0.3)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.2)
 
 	if telegraph_material:
 		telegraph_material.set_shader_parameter("domain_tint", Color(1.0, 0.05, 0.1, 1.0))
