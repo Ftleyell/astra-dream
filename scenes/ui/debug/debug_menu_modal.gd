@@ -17,9 +17,19 @@ signal closed()
 
 # Tabs
 @onready var tab_combat_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/TabBarRow/TabCombatButton")
+@onready var tab_bosses_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/TabBarRow/TabBossesButton")
 @onready var tab_gacha_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/TabBarRow/TabGachaButton")
 @onready var combat_content: VBoxContainer = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent")
+@onready var bosses_content: VBoxContainer = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent")
 @onready var gacha_content: VBoxContainer = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/GachaTabContent")
+
+# Bosses Tab Controls
+@onready var test_hermit_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestHermitBtn")
+@onready var test_ash_clock_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestAshClockBtn")
+@onready var test_broken_mirror_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestBrokenMirrorBtn")
+@onready var test_overflow_vortex_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestOverflowVortexBtn")
+@onready var test_mothership_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestMothershipBtn")
+@onready var test_astra_prime_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid/TestAstraPrimeBtn")
 
 # Combat Tab Controls
 @onready var infinite_hp_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox/HpCheck")
@@ -82,9 +92,32 @@ func _ready() -> void:
 	if tab_combat_btn:
 		tab_combat_btn.pressed.connect(func(): _switch_tab(0))
 		UIFocusHelper.apply_cyber_focus(tab_combat_btn)
+	if tab_bosses_btn:
+		tab_bosses_btn.pressed.connect(func(): _switch_tab(1))
+		UIFocusHelper.apply_cyber_focus(tab_bosses_btn)
 	if tab_gacha_btn:
-		tab_gacha_btn.pressed.connect(func(): _switch_tab(1))
+		tab_gacha_btn.pressed.connect(func(): _switch_tab(2))
 		UIFocusHelper.apply_cyber_focus(tab_gacha_btn)
+
+	# Bosses Tab Connects
+	if test_hermit_btn:
+		test_hermit_btn.pressed.connect(func(): _on_boss_test_pressed("boss_hermit_void"))
+		UIFocusHelper.apply_cyber_focus(test_hermit_btn)
+	if test_ash_clock_btn:
+		test_ash_clock_btn.pressed.connect(func(): _on_boss_test_pressed("boss_ash_clock"))
+		UIFocusHelper.apply_cyber_focus(test_ash_clock_btn)
+	if test_broken_mirror_btn:
+		test_broken_mirror_btn.pressed.connect(func(): _on_boss_test_pressed("boss_broken_mirror"))
+		UIFocusHelper.apply_cyber_focus(test_broken_mirror_btn)
+	if test_overflow_vortex_btn:
+		test_overflow_vortex_btn.pressed.connect(func(): _on_boss_test_pressed("boss_overflow_vortex"))
+		UIFocusHelper.apply_cyber_focus(test_overflow_vortex_btn)
+	if test_mothership_btn:
+		test_mothership_btn.pressed.connect(func(): _on_boss_test_pressed("boss_mothership"))
+		UIFocusHelper.apply_cyber_focus(test_mothership_btn)
+	if test_astra_prime_btn:
+		test_astra_prime_btn.pressed.connect(func(): _on_boss_test_pressed("boss_astra_prime"))
+		UIFocusHelper.apply_cyber_focus(test_astra_prime_btn)
 
 	# Combat Tab Connects
 	if infinite_hp_check:
@@ -223,27 +256,51 @@ func _switch_tab(tab_idx: int) -> void:
 	if tab_idx == 0:
 		if combat_content:
 			combat_content.show()
+		if bosses_content:
+			bosses_content.hide()
 		if gacha_content:
 			gacha_content.hide()
 		if tab_combat_btn:
 			tab_combat_btn.modulate = Color(0.2, 1.0, 0.85, 1.0)
+		if tab_bosses_btn:
+			tab_bosses_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
 		if tab_gacha_btn:
 			tab_gacha_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
 		if subtitle_label:
 			subtitle_label.text = "PESTAÑA 1: PARÁMETROS, TRAMPAS Y ESTADÍSTICAS DE COMBATE"
 			subtitle_label.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 0.8))
+	elif tab_idx == 1:
+		if combat_content:
+			combat_content.hide()
+		if bosses_content:
+			bosses_content.show()
+		if gacha_content:
+			gacha_content.hide()
+		if tab_combat_btn:
+			tab_combat_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
+		if tab_bosses_btn:
+			tab_bosses_btn.modulate = Color(1.0, 0.35, 0.65, 1.0)
+		if tab_gacha_btn:
+			tab_gacha_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
+		if subtitle_label:
+			subtitle_label.text = "PESTAÑA 2: TESTEO DIRECTO 1v1 CONTRA JEFES DE DOMINIO Y SOBERANO ESTELAR"
+			subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.75, 1.0))
 	else:
 		if combat_content:
 			combat_content.hide()
+		if bosses_content:
+			bosses_content.hide()
 		if gacha_content:
 			gacha_content.show()
 		if tab_combat_btn:
 			tab_combat_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
+		if tab_bosses_btn:
+			tab_bosses_btn.modulate = Color(0.6, 0.6, 0.6, 1.0)
 		if tab_gacha_btn:
 			tab_gacha_btn.modulate = Color(1.0, 0.85, 0.2, 1.0)
 		_refresh_gacha_display()
 		if subtitle_label:
-			subtitle_label.text = "PESTAÑA 2: GACHA, FICHAS, POLVO ESTELAR Y PROGRESIÓN DE SKINS 3★"
+			subtitle_label.text = "PESTAÑA 3: GACHA, FICHAS, POLVO ESTELAR Y PROGRESIÓN DE SKINS 3★"
 			subtitle_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3, 1.0))
 
 func _refresh_gacha_display() -> void:
@@ -388,12 +445,37 @@ func _refresh_stats_display() -> void:
 		line_edit.text = cfg.format % current_val
 
 func _setup_focus_chain() -> void:
-	if tab_combat_btn and tab_gacha_btn:
-		tab_combat_btn.focus_neighbor_right = tab_gacha_btn.get_path()
-		tab_gacha_btn.focus_neighbor_left = tab_combat_btn.get_path()
+	if tab_combat_btn and tab_bosses_btn and tab_gacha_btn:
+		tab_combat_btn.focus_neighbor_right = tab_bosses_btn.get_path()
+		tab_bosses_btn.focus_neighbor_left = tab_combat_btn.get_path()
+		tab_bosses_btn.focus_neighbor_right = tab_gacha_btn.get_path()
+		tab_gacha_btn.focus_neighbor_left = tab_bosses_btn.get_path()
 		if infinite_hp_check:
 			tab_combat_btn.focus_neighbor_bottom = infinite_hp_check.get_path()
+			tab_bosses_btn.focus_neighbor_bottom = test_hermit_btn.get_path() if test_hermit_btn else infinite_hp_check.get_path()
 			tab_gacha_btn.focus_neighbor_bottom = infinite_hp_check.get_path()
+
+	if test_hermit_btn and test_ash_clock_btn and test_broken_mirror_btn and test_overflow_vortex_btn and test_mothership_btn and test_astra_prime_btn:
+		test_hermit_btn.focus_neighbor_top = tab_bosses_btn.get_path()
+		test_ash_clock_btn.focus_neighbor_top = tab_bosses_btn.get_path()
+		test_hermit_btn.focus_neighbor_right = test_ash_clock_btn.get_path()
+		test_ash_clock_btn.focus_neighbor_left = test_hermit_btn.get_path()
+		test_hermit_btn.focus_neighbor_bottom = test_broken_mirror_btn.get_path()
+		test_ash_clock_btn.focus_neighbor_bottom = test_overflow_vortex_btn.get_path()
+
+		test_broken_mirror_btn.focus_neighbor_top = test_hermit_btn.get_path()
+		test_overflow_vortex_btn.focus_neighbor_top = test_ash_clock_btn.get_path()
+		test_broken_mirror_btn.focus_neighbor_right = test_overflow_vortex_btn.get_path()
+		test_overflow_vortex_btn.focus_neighbor_left = test_broken_mirror_btn.get_path()
+		test_broken_mirror_btn.focus_neighbor_bottom = test_mothership_btn.get_path()
+		test_overflow_vortex_btn.focus_neighbor_bottom = test_astra_prime_btn.get_path()
+
+		test_mothership_btn.focus_neighbor_top = test_broken_mirror_btn.get_path()
+		test_astra_prime_btn.focus_neighbor_top = test_overflow_vortex_btn.get_path()
+		test_mothership_btn.focus_neighbor_right = test_astra_prime_btn.get_path()
+		test_astra_prime_btn.focus_neighbor_left = test_mothership_btn.get_path()
+		test_mothership_btn.focus_neighbor_bottom = close_button.get_path() if close_button else reset_button.get_path()
+		test_astra_prime_btn.focus_neighbor_bottom = close_button.get_path() if close_button else reset_button.get_path()
 
 	var stat_keys := DebugManager.STAT_CONFIGS.keys()
 	if stat_keys.is_empty() or _stat_controls.is_empty():
@@ -697,3 +779,21 @@ func _on_test_planets_pressed() -> void:
 	get_tree().paused = false
 	if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
 		get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")
+
+func _on_boss_test_pressed(boss_id: String) -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+
+	var mg = get_tree().get_first_node_in_group("main_game")
+	if mg and mg.has_method("jump_to_boss"):
+		mg.jump_to_boss(boss_id)
+		close_menu()
+	else:
+		if current_pilot_data:
+			SaveManager.set_selected_character(current_pilot_data.id)
+		DebugManager.set_pending_debug_boss(boss_id)
+		close_menu()
+		get_tree().paused = false
+		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):
+			get_tree().change_scene_to_file("res://scenes/combat/main_game.tscn")

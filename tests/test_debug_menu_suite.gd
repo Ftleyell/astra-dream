@@ -101,11 +101,34 @@ func _ready() -> void:
 	assert(DebugManager.is_enabled == true, "DebugManager.is_enabled debe ser true")
 	print("  ✓ Trampas activadas: Vida Infinita, Créditos Infinitos, Consumibles Infinitos")
 
-	# 6.1. Validar Pestaña de Gacha y Cosméticos
+	# 6.1. Validar Pestaña de Jefes (índice 1)
 	modal._switch_tab(1)
 	await get_tree().process_frame
-	assert(modal.active_tab_idx == 1, "Debe estar en la pestaña de Gacha (índice 1)")
+	assert(modal.active_tab_idx == 1, "Debe estar en la pestaña de Jefes (índice 1)")
 	assert(modal.combat_content.visible == false, "CombatTabContent debe estar oculto")
+	assert(modal.bosses_content.visible == true, "BossesTabContent debe estar visible")
+	assert(modal.gacha_content.visible == false, "GachaTabContent debe estar oculto")
+
+	assert(modal.test_hermit_btn != null, "test_hermit_btn debe existir")
+	assert(modal.test_ash_clock_btn != null, "test_ash_clock_btn debe existir")
+	assert(modal.test_broken_mirror_btn != null, "test_broken_mirror_btn debe existir")
+	assert(modal.test_overflow_vortex_btn != null, "test_overflow_vortex_btn debe existir")
+	assert(modal.test_mothership_btn != null, "test_mothership_btn debe existir")
+	assert(modal.test_astra_prime_btn != null, "test_astra_prime_btn debe existir")
+
+	# Probar invocación de jefe pendiente
+	DebugManager.set_pending_debug_boss("boss_ash_clock")
+	assert(DebugManager.pending_debug_boss == "boss_ash_clock", "pending_debug_boss debe ser boss_ash_clock")
+	assert(DebugManager.consume_pending_debug_boss() == "boss_ash_clock", "consume_pending_debug_boss debe retornar boss_ash_clock")
+	assert(DebugManager.pending_debug_boss == "", "pending_debug_boss debe quedar vacío tras consumir")
+	print("  ✓ Pestaña de Jefes (1v1) verificada: los 6 botones de prueba validados")
+
+	# 6.2. Validar Pestaña de Gacha y Cosméticos (índice 2)
+	modal._switch_tab(2)
+	await get_tree().process_frame
+	assert(modal.active_tab_idx == 2, "Debe estar en la pestaña de Gacha (índice 2)")
+	assert(modal.combat_content.visible == false, "CombatTabContent debe estar oculto")
+	assert(modal.bosses_content.visible == false, "BossesTabContent debe estar oculto")
 	assert(modal.gacha_content.visible == true, "GachaTabContent debe estar visible")
 
 	var tokens_before = SaveManager.get_gacha_tokens()
@@ -136,6 +159,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	assert(modal.active_tab_idx == 0, "Debe retornar a pestaña de combate (índice 0)")
 	assert(modal.combat_content.visible == true, "CombatTabContent debe volver a ser visible")
+	assert(modal.bosses_content.visible == false, "BossesTabContent debe estar oculto")
 
 
 	# 7. Cerrar modal
@@ -212,6 +236,22 @@ func _ready() -> void:
 	var dist_to_slot: float = player.global_position.distance_to(main_game.current_slot_machine.global_position)
 	assert(dist_to_slot <= 120.0, "La tragamonedas debe spawnear directamente sobre/junto al jugador (dist: %f)" % dist_to_slot)
 	print("  ✓ Test In-Run sobre tragamonedas validado con éxito: +25.000 coins y spawn inmediato")
+
+	# 8.7. Validar salto directo a combate de jefe (jump_to_boss)
+	main_game.jump_to_boss("boss_hermit_void")
+	await get_tree().process_frame
+	assert(main_game.current_boss != null, "current_boss debe estar instanciado tras jump_to_boss")
+	assert(is_instance_valid(main_game.current_boss), "current_boss debe ser válido")
+	assert(main_game.current_boss.get("boss_name") == "EREMITA DEL VACÍO", "El jefe instanciado debe ser el Eremita del Vacío")
+	assert(main_game.current_wave == 2, "La oleada debe ser 2 para el Eremita del Vacío")
+
+	main_game.jump_to_boss("boss_broken_mirror")
+	await get_tree().process_frame
+	assert(main_game.current_boss != null, "current_boss debe reemplazarse por el nuevo jefe")
+	assert(main_game.current_boss.get("boss_name") == "ESPEJO QUEBRADO", "El jefe instanciado debe ser el Espejo Quebrado")
+	assert(main_game.current_wave == 6, "La oleada debe ser 6 para el Espejo Quebrado")
+	print("  ✓ Función jump_to_boss validada en combate: instanciación 1v1 y cambio de jefe dinámico exitosos")
+
 	slot_dbg_modal.queue_free()
 
 	# 9. Limpieza

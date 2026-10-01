@@ -198,6 +198,17 @@ func _ready() -> void:
 	space_object_spawner.name = "SpaceObjectSpawner"
 	add_child(space_object_spawner)
 
+	# Chequeo de inicio debug directo contra un jefe específico
+	var debug_boss: String = DebugManager.consume_pending_debug_boss() if (DebugManager and DebugManager.has_method("consume_pending_debug_boss")) else ""
+	if debug_boss != "":
+		is_briefing_active = false
+		prologue_bonus_chosen = true
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+		jump_to_boss(debug_boss)
+		return
+
 	# Chequeo de inicio debug directo a Wave 11 (Rutas Pacifista, Genocida, Neutral)
 	var debug_route: String = DebugManager.consume_pending_debug_route() if (DebugManager and DebugManager.has_method("consume_pending_debug_route")) else ""
 	if debug_route != "":
@@ -1245,6 +1256,83 @@ func _on_final_boss_defeated(route: String) -> void:
 	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
 		_trigger_post_boss_victory_dialogue(route, victory_data)
 	)
+
+func jump_to_boss(boss_id: String) -> void:
+	is_pre_round = false
+	wave_timer = WAVE_DURATION
+	_wave_encounter_pending = false
+	if current_boss and is_instance_valid(current_boss):
+		current_boss.queue_free()
+		current_boss = null
+	if current_rival and is_instance_valid(current_rival):
+		current_rival.queue_free()
+		current_rival = null
+
+	# Si es Astra Prime, delegar a jump_to_wave_11 para inicializar su lógica completa de ruta final
+	if boss_id == "boss_astra_prime":
+		jump_to_wave_11("neutral")
+		return
+
+	var target_scene: PackedScene = boss_mothership_scene
+	var target_wave: int = 10
+	match boss_id:
+		"boss_hermit_void":
+			target_scene = boss_hermit_scene
+			target_wave = 2
+		"boss_ash_clock":
+			target_scene = boss_ash_clock_scene
+			target_wave = 4
+		"boss_broken_mirror":
+			target_scene = boss_broken_mirror_scene
+			target_wave = 6
+		"boss_overflow_vortex":
+			target_scene = boss_overflow_vortex_scene
+			target_wave = 8
+		_:
+			target_scene = boss_mothership_scene
+			target_wave = 10
+
+	current_wave = target_wave
+	_wave_encounter_checked_for_wave = target_wave
+
+	# Equipar nivel adecuado y créditos para testear cómodamente el jefe
+	if is_instance_valid(player):
+		if player.current_level < (target_wave * 2):
+			player.current_level = maxi(target_wave * 2, 6)
+			if hud:
+				hud.update_exp(0, 100, player.current_level)
+		player.run_credits = maxi(int(player.run_credits), 1200)
+		if hud:
+			hud.update_credits(player.run_credits)
+
+	if hud:
+		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+
+	# Pausar la generación de drones comunes para duelo 1v1
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+
+	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
+	var boss_pos := player.global_position + forward * 650.0
+
+	current_boss = target_scene.instantiate() as Node2D
+	current_boss.global_position = boss_pos
+	add_child(current_boss)
+
+	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
+	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
+	hud.show_boss(b_name, b_hp)
+	if current_boss.has_signal("health_changed"):
+		current_boss.connect("health_changed", hud.update_boss_health)
+	if current_boss.has_signal("phase_changed"):
+		current_boss.connect("phase_changed", hud.set_boss_phase)
+	if current_boss.has_signal("boss_defeated"):
+		current_boss.connect("boss_defeated", _on_boss_defeated)
+
+	if hud and hud.has_method("track_boss"):
+		hud.track_boss(current_boss, "JEFE")
+
+	_trigger_pet_boss_alert(b_name)
 
 func jump_to_wave_11(route: String = "neutral") -> void:
 	is_pre_round = false

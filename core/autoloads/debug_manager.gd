@@ -60,6 +60,16 @@ func clear_stat_override(stat: StringName) -> void:
 
 var pending_slot_machine_test: bool = false
 var pending_planet_test: bool = false
+var pending_debug_boss: String = ""
+
+func set_pending_debug_boss(boss_id: String) -> void:
+	pending_debug_boss = boss_id
+	is_enabled = true
+
+func consume_pending_debug_boss() -> String:
+	var b := pending_debug_boss
+	pending_debug_boss = ""
+	return b
 
 func set_pending_debug_route(route: String) -> void:
 	pending_debug_route = route
@@ -93,6 +103,7 @@ func reset_all() -> void:
 	infinite_credits = false
 	infinite_consumables = false
 	pending_debug_route = ""
+	pending_debug_boss = ""
 	pending_slot_machine_test = false
 	pending_planet_test = false
 	stat_overrides.clear()
