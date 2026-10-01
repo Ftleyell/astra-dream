@@ -5,9 +5,19 @@
 [node name="CrescentSlash" type="Node2D"]
 script = ExtResource("1_slash")
 
-[node name="SlashLine" type="Line2D" parent="."]
+[node name="SlashBladePoly" type="Polygon2D" parent="."]
+color = Color(0.9, 0.2, 0.95, 0.85)
+
+[node name="SlashBladeCorePoly" type="Polygon2D" parent="."]
+color = Color(1, 0.85, 1, 0.9)
+
+[node name="SlashEdgeLine" type="Line2D" parent="."]
 points = PackedVector2Array(0, 0)
-width = 12.0
-default_color = Color(0.95, 0.35, 1, 1)
-begin_cap_mode = 2
-end_cap_mode = 2
+width = 4.0
+default_color = Color(1, 0.95, 1, 1)
+
+[node name="SlashLine" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(0, 0)
+width = 1.0
+default_color = Color(0.95, 0.35, 1, 0)

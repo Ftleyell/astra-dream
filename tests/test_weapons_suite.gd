@@ -125,6 +125,18 @@ func _ready() -> void:
 	add_child(solar)
 	print("  ✓ SolarBeam instanciado")
 
+	var slash_scene: PackedScene = load("res://scenes/combat/weapons/crescent_slash.tscn")
+	var slash = slash_scene.instantiate() as CrescentSlash
+	slash.setup(Vector2.ZERO, Vector2.RIGHT, test_ctx, 2, 1.0)
+	add_child(slash)
+	print("  ✓ CrescentSlash instanciado")
+
+	var cyclone_scene: PackedScene = load("res://scenes/combat/weapons/crescent_cyclone.tscn")
+	var cyclone = cyclone_scene.instantiate() as CrescentCyclone
+	cyclone.setup(Vector2.ZERO, test_ctx, 1.0)
+	add_child(cyclone)
+	print("  ✓ CrescentCyclone instanciado")
+
 	# 5. Probar exclusividad de carga para el Láser y disparo instantáneo / tap para armas normales
 	print("\n[5/5] Testing Laser Charge Exclusivity & Non-Laser Instant Tap-Fire...")
 	var echo_controller := WeaponController.new()

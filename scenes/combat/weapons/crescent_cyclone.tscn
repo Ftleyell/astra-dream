@@ -5,16 +5,45 @@
 [node name="CrescentCyclone" type="Node2D"]
 script = ExtResource("1_cyclone")
 
-[node name="BladeRing" type="Line2D" parent="."]
+[node name="VortexCore" type="Polygon2D" parent="."]
+color = Color(0.18, 0.05, 0.25, 0.4)
+
+[node name="BladePoly1" type="Polygon2D" parent="."]
+color = Color(0.9, 0.2, 0.98, 0.8)
+
+[node name="BladeCorePoly1" type="Polygon2D" parent="."]
+color = Color(1, 0.92, 1, 0.95)
+
+[node name="BladeEdge1" type="Line2D" parent="."]
 points = PackedVector2Array(0, 0)
-width = 18.0
-default_color = Color(0.95, 0.25, 1, 1)
-begin_cap_mode = 2
-end_cap_mode = 2
+width = 4.0
+default_color = Color(1, 0.95, 1, 1)
+
+[node name="BladePoly2" type="Polygon2D" parent="."]
+color = Color(0.9, 0.2, 0.98, 0.8)
+
+[node name="BladeCorePoly2" type="Polygon2D" parent="."]
+color = Color(1, 0.92, 1, 0.95)
+
+[node name="BladeEdge2" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0)
+width = 4.0
+default_color = Color(1, 0.95, 1, 1)
+
+[node name="ExpansionShockwave" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(0, 0)
+width = 8.0
+default_color = Color(1, 0.4, 0.95, 1)
+
+[node name="BladeRing" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(0, 0)
+width = 1.0
+default_color = Color(0.95, 0.25, 1, 0)
 
 [node name="BladeCore" type="Line2D" parent="."]
+visible = false
 points = PackedVector2Array(0, 0)
-width = 7.0
-default_color = Color(1, 0.9, 1, 1)
-begin_cap_mode = 2
-end_cap_mode = 2
+width = 1.0
+default_color = Color(1, 0.9, 1, 0)
