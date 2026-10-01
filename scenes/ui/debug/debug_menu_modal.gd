@@ -811,6 +811,9 @@ func _on_test_death_sequence_pressed() -> void:
 	if mg and mg.get("current_boss") != null and is_instance_valid(mg.current_boss):
 		close_menu()
 		mg.current_boss._die()
+	elif mg and mg.get("current_rival") != null and is_instance_valid(mg.current_rival):
+		close_menu()
+		mg.current_rival._die()
 	elif mg and mg.has_method("jump_to_boss"):
 		# Instanciar boss y detonar tras un instante
 		mg.jump_to_boss("boss_mothership")

@@ -411,31 +411,43 @@ func take_damage(arg: Variant) -> void:
 	if current_health <= 0.0:
 		_die()
 
+const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
+
 func _die() -> void:
+	if current_state == State.DYING:
+		return
 	current_state = State.DYING
 	set_physics_process(false)
+	set_process(false)
 
-	# Emisión de muerte
+	# Limpiar indicadores y etiquetas de advertencia en pantalla
+	if warning_label and is_instance_valid(warning_label):
+		warning_label.visible = false
+	if shield_sprite and is_instance_valid(shield_sprite):
+		shield_sprite.visible = false
+	queue_redraw()
+
+	# Ejecutar secuencia cinematográfica estilizada con paleta de color propia de la piloto
+	CinematicDeathSequenceScript.play_for_boss(self, _finish_death)
+
+func _finish_death() -> void:
+	# Emisión de evento y recompensas
 	rival_defeated.emit(pilot_id, weapon_data)
 
 	# Spawning de la cápsula de armamento
 	if weapon_data:
 		_drop_weapon_pickup()
 
-	# Secuencia de explosión dramática
-	_play_sfx("explosion", 0.9)
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(self, "scale", Vector2(1.5, 1.5), 0.35)
-	tw.tween_property(self, "modulate:a", 0.0, 0.35)
-	tw.chain().tween_callback(queue_free)
+	queue_free()
 
 func _drop_weapon_pickup() -> void:
 	var pickup_scene := load("res://scenes/combat/pickups/rival_weapon_pickup.tscn") as PackedScene
 	if pickup_scene:
 		var pickup = pickup_scene.instantiate()
 		pickup.setup(global_position, weapon_data, pilot_name)
-		get_parent().add_child.call_deferred(pickup)
+		var spawn_parent: Node = get_parent() if get_parent() else get_tree().current_scene
+		if spawn_parent:
+			spawn_parent.call_deferred("add_child", pickup)
 
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

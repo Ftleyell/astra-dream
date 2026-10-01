@@ -21,6 +21,7 @@ var camera: GameCamera2D = null
 var original_camera_zoom: Vector2 = Vector2.ONE
 var boss_origin: Vector2 = Vector2.ZERO
 var boss_bounds: Rect2 = Rect2(-50.0, -50.0, 100.0, 100.0)
+var boss_energy_color: Color = Color(0.2, 0.95, 1.0, 1.0)
 
 const CinematicMicroExplosionScript = preload("res://scenes/combat/bosses/cinematic_micro_explosion.gd")
 const CinematicResidualDebrisScript = preload("res://scenes/combat/bosses/cinematic_residual_debris.gd")
@@ -94,8 +95,12 @@ func _setup_visual_shader() -> void:
 	if not is_instance_valid(target_boss):
 		return
 
-	# Buscar Sprite2D o Polygon2D en el jefe
-	if target_boss.has_node("Sprite2D"):
+	# Buscar Sprite2D o Polygon2D en el jefe/piloto
+	if target_boss.has_node("ShipSprite"):
+		target_sprite = target_boss.get_node("ShipSprite") as CanvasItem
+	elif target_boss.get("ship_sprite") != null and target_boss.get("ship_sprite") is CanvasItem:
+		target_sprite = target_boss.get("ship_sprite") as CanvasItem
+	elif target_boss.has_node("Sprite2D"):
 		target_sprite = target_boss.get_node("Sprite2D") as CanvasItem
 	elif target_boss.get("sprite") != null and target_boss.get("sprite") is CanvasItem:
 		target_sprite = target_boss.get("sprite") as CanvasItem
@@ -134,7 +139,14 @@ func _setup_visual_shader() -> void:
 			death_shader_mat.shader = shader_res
 			if noise_res:
 				death_shader_mat.set_shader_parameter("noise_tex", noise_res)
-			death_shader_mat.set_shader_parameter("energy_color", Color(0.2, 0.95, 1.0, 1.0))
+
+			boss_energy_color = Color(0.2, 0.95, 1.0, 1.0)
+			if target_boss.get("character_data") != null and target_boss.character_data.get("theme_color") != null:
+				boss_energy_color = target_boss.character_data.theme_color
+			elif target_boss.get("theme_color") != null and target_boss.get("theme_color") is Color:
+				boss_energy_color = target_boss.theme_color
+
+			death_shader_mat.set_shader_parameter("energy_color", boss_energy_color)
 			death_shader_mat.set_shader_parameter("energy_intensity", 3.2)
 			death_shader_mat.set_shader_parameter("u_whiteness", 0.0)
 			death_shader_mat.set_shader_parameter("u_fracture_progress", 0.0)
@@ -306,12 +318,12 @@ func _spawn_micro_explosion() -> void:
 	)
 	var spawn_pos := boss_origin + offset
 	var micro = CinematicMicroExplosionScript.new()
-	micro.setup(spawn_pos, randf_range(26.0, 48.0), Color(0.2, 0.95, 1.0, 1.0))
+	micro.setup(spawn_pos, randf_range(26.0, 48.0), boss_energy_color)
 	add_child(micro)
 
 func _spawn_residual_debris() -> void:
 	var debris = CinematicResidualDebrisScript.new()
-	debris.setup(boss_origin, 28, Color(0.25, 0.95, 1.0, 1.0))
+	debris.setup(boss_origin, 28, boss_energy_color)
 	var parent_node: Node = get_parent() if get_parent() else self
 	parent_node.add_child(debris)
 
