@@ -64,9 +64,10 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 
-	# 1. Esquirlas orbitales de distorsión espacial
+	# 1. Esquirlas orbitales de distorsión espacial (detrás del sprite)
 	shards_container = Node2D.new()
 	shards_container.name = "VoidShards"
+	shards_container.z_index = -1
 	add_child(shards_container)
 
 	for i in range(6):
@@ -80,7 +81,19 @@ func _setup_visuals() -> void:
 		shard.rotation = angle
 		shards_container.add_child(shard)
 
-	# 2. Casco principal
+	# 2. Núcleo de Horizonte de Eventos / Halo de Vacío (DETRÁS del sprite para no taparlo)
+	core_poly = Polygon2D.new()
+	core_poly.name = "CorePoly"
+	var pts := PackedVector2Array()
+	for i in range(16):
+		var a := (TAU / 16.0) * float(i)
+		pts.append(Vector2(cos(a), sin(a)) * 56.0)
+	core_poly.polygon = pts
+	core_poly.color = Color(0.2, 0.05, 0.45, 0.75) # Halo violeta abisal
+	core_poly.z_index = -1
+	add_child(core_poly)
+
+	# 3. Casco principal (AL FRENTE)
 	var tex_path := "res://assets/sprites/enemies/boss_hermit_void.png"
 	if not ResourceLoader.exists(tex_path):
 		tex_path = "res://assets/enemies/enemy_tank.png"
@@ -88,20 +101,12 @@ func _setup_visuals() -> void:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			hull_sprite = Sprite2D.new()
+			hull_sprite.name = "HullSprite"
 			hull_sprite.texture = tex
 			hull_sprite.scale = Vector2(0.12, 0.12)
 			hull_sprite.material = telegraph_material
+			hull_sprite.z_index = 1
 			add_child(hull_sprite)
-
-	# 3. Núcleo de Horizonte de Eventos
-	core_poly = Polygon2D.new()
-	var pts := PackedVector2Array()
-	for i in range(12):
-		var a := (TAU / 12.0) * float(i)
-		pts.append(Vector2(cos(a), sin(a)) * 26.0)
-	core_poly.polygon = pts
-	core_poly.color = Color(0.1, 0.0, 0.25, 0.98) # Negro abisal con halo violeta
-	add_child(core_poly)
 
 func _physics_process(delta: float) -> void:
 	if is_dying:

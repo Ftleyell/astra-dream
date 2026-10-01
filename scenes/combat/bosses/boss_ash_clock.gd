@@ -69,9 +69,10 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 
-	# 1. Anillo de dial cronológico (12 marcas horarias)
+	# 1. Anillo de dial cronológico (detrás del engranaje)
 	dial_ring = Node2D.new()
 	dial_ring.name = "ChronometerDial"
+	dial_ring.z_index = -1
 	add_child(dial_ring)
 
 	for i in range(12):
@@ -90,7 +91,18 @@ func _setup_visuals() -> void:
 		tick.rotation = angle
 		dial_ring.add_child(tick)
 
-	# 2. Casco / Engranaje central
+	# 2. Manecillas de aguja horarias (DETRÁS del engranaje principal)
+	for i in range(4):
+		var hand := Polygon2D.new()
+		hand.polygon = PackedVector2Array([
+			Vector2(0, -3), Vector2(58, 0), Vector2(0, 3), Vector2(-12, 0)
+		])
+		hand.color = Color(1.0, 0.9, 0.4, 0.85)
+		hand.z_index = -1
+		hand_nodes.append(hand)
+		add_child(hand)
+
+	# 3. Casco / Engranaje central (AL FRENTE)
 	var tex_path := "res://assets/sprites/enemies/boss_ash_clock.png"
 	if not ResourceLoader.exists(tex_path):
 		tex_path = "res://assets/enemies/enemy_tank.png"
@@ -98,20 +110,12 @@ func _setup_visuals() -> void:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			gear_sprite = Sprite2D.new()
+			gear_sprite.name = "GearSprite"
 			gear_sprite.texture = tex
 			gear_sprite.scale = Vector2(0.13, 0.13)
 			gear_sprite.material = telegraph_material
+			gear_sprite.z_index = 1
 			add_child(gear_sprite)
-
-	# 3. Manecillas de aguja horarias
-	for i in range(4):
-		var hand := Polygon2D.new()
-		hand.polygon = PackedVector2Array([
-			Vector2(0, -3), Vector2(48, 0), Vector2(0, 3), Vector2(-10, 0)
-		])
-		hand.color = Color(1.0, 0.9, 0.4, 0.85)
-		hand_nodes.append(hand)
-		add_child(hand)
 
 func _physics_process(delta: float) -> void:
 	if is_dying:

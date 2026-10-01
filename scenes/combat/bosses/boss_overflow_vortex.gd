@@ -64,9 +64,10 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 	telegraph_material.set_shader_parameter("glitch_jitter", 0.02)
 
-	# 1. Anillo exterior de resonadores caóticos
+	# 1. Anillo exterior de resonadores caóticos (detrás del casco)
 	outer_ring = Node2D.new()
 	outer_ring.name = "ResonatorRing"
+	outer_ring.z_index = -1
 	add_child(outer_ring)
 
 	for i in range(8):
@@ -80,7 +81,19 @@ func _setup_visuals() -> void:
 		res_poly.rotation = angle + PI / 2.0
 		outer_ring.add_child(res_poly)
 
-	# 2. Casco principal
+	# 2. Núcleo de sobrecarga caótica (DETRÁS del sprite para actuar como aura incandescente)
+	inner_core = Polygon2D.new()
+	inner_core.name = "InnerCore"
+	var pts := PackedVector2Array()
+	for i in range(16):
+		var a := (TAU / 16.0) * float(i)
+		pts.append(Vector2(cos(a), sin(a)) * 58.0)
+	inner_core.polygon = pts
+	inner_core.color = Color(1.0, 0.9, 0.2, 0.75)
+	inner_core.z_index = -1
+	add_child(inner_core)
+
+	# 3. Casco principal (AL FRENTE)
 	var tex_path := "res://assets/sprites/enemies/boss_overflow_vortex.png"
 	if not ResourceLoader.exists(tex_path):
 		tex_path = "res://assets/enemies/enemy_tank.png"
@@ -88,20 +101,12 @@ func _setup_visuals() -> void:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			vortex_hull = Sprite2D.new()
+			vortex_hull.name = "VortexHull"
 			vortex_hull.texture = tex
 			vortex_hull.scale = Vector2(0.13, 0.13)
 			vortex_hull.material = telegraph_material
+			vortex_hull.z_index = 1
 			add_child(vortex_hull)
-
-	# 3. Núcleo de sobrecarga caótica
-	inner_core = Polygon2D.new()
-	var pts := PackedVector2Array()
-	for i in range(16):
-		var a := (TAU / 16.0) * float(i)
-		pts.append(Vector2(cos(a), sin(a)) * 24.0)
-	inner_core.polygon = pts
-	inner_core.color = Color(1.0, 0.9, 0.2, 0.95)
-	add_child(inner_core)
 
 func _physics_process(delta: float) -> void:
 	if is_dying:

@@ -51,9 +51,10 @@ func _acquire_references() -> void:
 			bullet_server = get_parent().get_node_or_null("BulletServer") as BulletServer
 
 func _setup_visuals() -> void:
-	# 1. Contenedor de placas orbitales de energía
+	# 1. Contenedor de placas orbitales de energía (detrás de la nave)
 	shield_ring = Node2D.new()
 	shield_ring.name = "ShieldRing"
+	shield_ring.z_index = -1
 	add_child(shield_ring)
 
 	var plate_tex_path := "res://assets/enemies/shield_plate.png"
@@ -79,7 +80,19 @@ func _setup_visuals() -> void:
 			poly.color = Color(0.2, 0.8, 1.0, 0.8)
 			shield_ring.add_child(poly)
 
-	# 2. Sprite principal de la nodriza (dreadnought)
+	# 2. Núcleo de energía reactivo en el centro (DETRÁS del sprite para dar aura cósmica sin taparlo)
+	core_poly = Polygon2D.new()
+	core_poly.name = "ReactorCore"
+	var core_pts := PackedVector2Array()
+	for i in range(12):
+		var a := (TAU / 12.0) * float(i)
+		core_pts.append(Vector2(cos(a), sin(a)) * 54.0)
+	core_poly.polygon = core_pts
+	core_poly.color = Color(0.15, 0.85, 1.0, 0.75)
+	core_poly.z_index = -1
+	add_child(core_poly)
+
+	# 3. Sprite principal de la nodriza (AL FRENTE)
 	var tank_tex_path := "res://assets/sprites/enemies/boss_mothership.png"
 	if not ResourceLoader.exists(tank_tex_path):
 		tank_tex_path = "res://assets/enemies/enemy_tank.png"
@@ -90,18 +103,8 @@ func _setup_visuals() -> void:
 			sprite.name = "HullSprite"
 			sprite.texture = tex
 			sprite.scale = Vector2(0.15, 0.15)
+			sprite.z_index = 1
 			add_child(sprite)
-
-	# 3. Núcleo de energía reactivo en el centro
-	core_poly = Polygon2D.new()
-	core_poly.name = "ReactorCore"
-	var core_pts := PackedVector2Array()
-	for i in range(8):
-		var a := (TAU / 8.0) * float(i)
-		core_pts.append(Vector2(cos(a), sin(a)) * 22.0)
-	core_poly.polygon = core_pts
-	core_poly.color = Color(0.15, 0.85, 1.0, 0.95)
-	add_child(core_poly)
 
 	# 4. Colisionador circular robusto
 	var col := CollisionShape2D.new()

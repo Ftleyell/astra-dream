@@ -62,9 +62,10 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 	telegraph_material.set_shader_parameter("glitch_jitter", 0.01)
 
-	# 1. Fragmentos de cristal rotos flotantes
+	# 1. Fragmentos de cristal rotos flotantes (detrás del casco)
 	crystal_ring = Node2D.new()
 	crystal_ring.name = "PrismShards"
+	crystal_ring.z_index = -1
 	add_child(crystal_ring)
 
 	for i in range(8):
@@ -78,7 +79,7 @@ func _setup_visuals() -> void:
 		shard.rotation = angle + 0.4
 		crystal_ring.add_child(shard)
 
-	# 2. Casco prismático
+	# 2. Casco prismático (AL FRENTE)
 	var tex_path := "res://assets/sprites/enemies/boss_broken_mirror.png"
 	if not ResourceLoader.exists(tex_path):
 		tex_path = "res://assets/enemies/enemy_tank.png"
@@ -86,9 +87,11 @@ func _setup_visuals() -> void:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			mirror_hull = Sprite2D.new()
+			mirror_hull.name = "MirrorHull"
 			mirror_hull.texture = tex
 			mirror_hull.scale = Vector2(0.125, 0.125)
 			mirror_hull.material = telegraph_material
+			mirror_hull.z_index = 1
 			add_child(mirror_hull)
 
 func _physics_process(delta: float) -> void:

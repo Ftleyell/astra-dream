@@ -1054,7 +1054,7 @@ func _spawn_wave_boss() -> void:
 		enemy_spawner.set_spawning_paused(true)
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var boss_pos := player.global_position + forward * 650.0
+	var boss_pos := player.global_position + forward * 420.0
 
 	var target_scene: PackedScene = boss_hermit_scene
 	match current_wave:
@@ -1070,8 +1070,8 @@ func _spawn_wave_boss() -> void:
 			target_scene = boss_mothership_scene
 
 	current_boss = target_scene.instantiate() as Node2D
-	current_boss.global_position = boss_pos
 	add_child(current_boss)
+	current_boss.global_position = boss_pos
 
 	# Conexiones con HUD
 	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
@@ -1105,12 +1105,12 @@ func _spawn_final_boss() -> void:
 	_trigger_climax_dialogue(route)
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var boss_pos := player.global_position + forward * 420.0
+	var boss_pos := player.global_position + forward * 380.0
 
 	var prime = boss_astra_prime_scene.instantiate()
+	add_child(prime)
 	prime.global_position = boss_pos
 	prime.set_route(route)
-	add_child(prime)
 	current_boss = prime
 
 	hud.show_boss(prime.boss_name, prime.max_health)
@@ -1267,6 +1267,12 @@ func jump_to_boss(boss_id: String) -> void:
 	if current_rival and is_instance_valid(current_rival):
 		current_rival.queue_free()
 		current_rival = null
+	if current_satellite and is_instance_valid(current_satellite):
+		current_satellite.queue_free()
+		current_satellite = null
+	wave_satellites_spawned = MAX_SATELLITES_PER_WAVE
+	if hud and hud.has_method("clear_satellite"):
+		hud.clear_satellite()
 
 	# Si es Astra Prime, delegar a jump_to_wave_11 para inicializar su lógica completa de ruta final
 	if boss_id == "boss_astra_prime":
@@ -1297,6 +1303,7 @@ func jump_to_boss(boss_id: String) -> void:
 
 	# Equipar nivel adecuado y créditos para testear cómodamente el jefe
 	if is_instance_valid(player):
+		player.velocity = Vector2.ZERO
 		if player.current_level < (target_wave * 2):
 			player.current_level = maxi(target_wave * 2, 6)
 			if hud:
@@ -1312,12 +1319,16 @@ func jump_to_boss(boss_id: String) -> void:
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 
-	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var boss_pos := player.global_position + forward * 650.0
+	var p_pos: Vector2 = player.global_position if is_instance_valid(player) else Vector2(960.0, 750.0)
+	var boss_pos: Vector2 = p_pos + Vector2(0.0, -380.0)
 
 	current_boss = target_scene.instantiate() as Node2D
-	current_boss.global_position = boss_pos
 	add_child(current_boss)
+	current_boss.global_position = boss_pos
+
+	var cam := get_tree().get_first_node_in_group("camera") as Camera2D
+	if cam and is_instance_valid(player):
+		cam.global_position = player.global_position
 
 	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
 	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
@@ -1346,6 +1357,17 @@ func jump_to_wave_11(route: String = "neutral") -> void:
 	if current_rival and is_instance_valid(current_rival):
 		current_rival.queue_free()
 		current_rival = null
+	if current_satellite and is_instance_valid(current_satellite):
+		current_satellite.queue_free()
+		current_satellite = null
+	wave_satellites_spawned = MAX_SATELLITES_PER_WAVE
+	if hud and hud.has_method("clear_satellite"):
+		hud.clear_satellite()
+	if is_instance_valid(player):
+		player.velocity = Vector2.ZERO
+		var cam := get_tree().get_first_node_in_group("camera") as Camera2D
+		if cam:
+			cam.global_position = player.global_position
 
 	rivals_spared.clear()
 	rivals_killed.clear()

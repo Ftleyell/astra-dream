@@ -74,9 +74,10 @@ func _acquire_references() -> void:
 			bullet_server = get_parent().get_node_or_null("BulletServer") as BulletServer
 
 func _setup_visuals() -> void:
-	# Corona de orbes cósmicos orbitales
+	# 1. Corona de orbes cósmicos orbitales (detrás del sprite)
 	crown_nodes = Node2D.new()
 	crown_nodes.name = "CrownNodes"
+	crown_nodes.z_index = -1
 	add_child(crown_nodes)
 
 	for i in range(8):
@@ -90,7 +91,19 @@ func _setup_visuals() -> void:
 		shard.rotation = angle
 		crown_nodes.add_child(shard)
 
-	# Casco
+	# 2. Núcleo interior / Aura estelar pulsante (DETRÁS del sprite para no taparlo)
+	core_poly = Polygon2D.new()
+	core_poly.name = "CorePoly"
+	var pts := PackedVector2Array()
+	for i in range(16):
+		var a := (TAU / 16.0) * float(i)
+		pts.append(Vector2(cos(a), sin(a)) * 68.0)
+	core_poly.polygon = pts
+	core_poly.color = Color(0.2, 0.85, 1.0, 0.75)
+	core_poly.z_index = -1
+	add_child(core_poly)
+
+	# 3. Casco principal (AL FRENTE)
 	var tex_path := "res://assets/sprites/enemies/boss_astra_prime.png"
 	if not ResourceLoader.exists(tex_path):
 		tex_path = "res://assets/enemies/enemy_tank.png"
@@ -101,18 +114,8 @@ func _setup_visuals() -> void:
 			hull_sprite.name = "HullSprite"
 			hull_sprite.texture = tex
 			hull_sprite.scale = Vector2(0.16, 0.16)
+			hull_sprite.z_index = 1
 			add_child(hull_sprite)
-
-	# Núcleo interior
-	core_poly = Polygon2D.new()
-	core_poly.name = "CorePoly"
-	var pts := PackedVector2Array()
-	for i in range(12):
-		var a := (TAU / 12.0) * float(i)
-		pts.append(Vector2(cos(a), sin(a)) * 32.0)
-	core_poly.polygon = pts
-	core_poly.color = Color(0.2, 0.85, 1.0, 0.95)
-	add_child(core_poly)
 
 func _physics_process(delta: float) -> void:
 	if is_dying:
