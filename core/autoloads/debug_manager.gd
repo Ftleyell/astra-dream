@@ -61,15 +61,22 @@ func clear_stat_override(stat: StringName) -> void:
 var pending_slot_machine_test: bool = false
 var pending_planet_test: bool = false
 var pending_debug_boss: String = ""
+var pending_auto_trigger_death: bool = false
 
-func set_pending_debug_boss(boss_id: String) -> void:
+func set_pending_debug_boss(boss_id: String, auto_trigger_death: bool = false) -> void:
 	pending_debug_boss = boss_id
+	pending_auto_trigger_death = auto_trigger_death
 	is_enabled = true
 
 func consume_pending_debug_boss() -> String:
 	var b := pending_debug_boss
 	pending_debug_boss = ""
 	return b
+
+func consume_pending_auto_trigger_death() -> bool:
+	var res := pending_auto_trigger_death
+	pending_auto_trigger_death = false
+	return res
 
 func set_pending_debug_route(route: String) -> void:
 	pending_debug_route = route

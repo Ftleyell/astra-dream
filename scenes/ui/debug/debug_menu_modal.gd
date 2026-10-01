@@ -822,10 +822,10 @@ func _on_test_death_sequence_pressed() -> void:
 				mg.current_boss._die()
 		)
 	else:
-		# Fuera de combate (ej. Title Screen): Iniciar run con boss pendiente
+		# Fuera de combate (ej. Title Screen): Iniciar run con boss pendiente y auto-detonación
 		if current_pilot_data and "character_id" in current_pilot_data:
 			SaveManager.set_selected_character(current_pilot_data.character_id)
-		DebugManager.set_pending_debug_boss("boss_mothership")
+		DebugManager.set_pending_debug_boss("boss_mothership", true)
 		close_menu()
 		get_tree().paused = false
 		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):

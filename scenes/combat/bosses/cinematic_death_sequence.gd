@@ -226,7 +226,8 @@ func _run_choreography() -> void:
 		elapsed += delay
 		delay = maxf(0.045, delay * 0.83)
 
-	await tw_phase2.finished
+	if tw_phase2 and tw_phase2.is_running():
+		await tw_phase2.finished
 
 	# =========================================================================
 	# FASE 3: Implosión (El Vacío) (0.12s)

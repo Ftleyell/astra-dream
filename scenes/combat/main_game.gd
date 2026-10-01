@@ -200,6 +200,7 @@ func _ready() -> void:
 
 	# Chequeo de inicio debug directo contra un jefe específico
 	var debug_boss: String = DebugManager.consume_pending_debug_boss() if (DebugManager and DebugManager.has_method("consume_pending_debug_boss")) else ""
+	var auto_die: bool = DebugManager.consume_pending_auto_trigger_death() if (DebugManager and DebugManager.has_method("consume_pending_auto_trigger_death")) else false
 	if debug_boss != "":
 		is_briefing_active = false
 		prologue_bonus_chosen = true
@@ -207,6 +208,13 @@ func _ready() -> void:
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		jump_to_boss(debug_boss)
+		if auto_die:
+			var tw := create_tween()
+			tw.tween_interval(0.35)
+			tw.tween_callback(func():
+				if current_boss and is_instance_valid(current_boss):
+					current_boss._die()
+			)
 		return
 
 	# Chequeo de inicio debug directo a Wave 11 (Rutas Pacifista, Genocida, Neutral)
