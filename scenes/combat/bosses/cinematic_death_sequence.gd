@@ -95,20 +95,37 @@ func _setup_visual_shader() -> void:
 	if not is_instance_valid(target_boss):
 		return
 
-	# Buscar Sprite2D o Polygon2D en el jefe/piloto
-	if target_boss.has_node("ShipSprite"):
+	# Buscar Sprite2D o CanvasItem principal del jefe/piloto
+	if target_boss.has_node("HullSprite"):
+		target_sprite = target_boss.get_node("HullSprite") as CanvasItem
+	elif target_boss.get("hull_sprite") != null and target_boss.get("hull_sprite") is CanvasItem:
+		target_sprite = target_boss.get("hull_sprite") as CanvasItem
+	elif target_boss.has_node("ShipSprite"):
 		target_sprite = target_boss.get_node("ShipSprite") as CanvasItem
 	elif target_boss.get("ship_sprite") != null and target_boss.get("ship_sprite") is CanvasItem:
 		target_sprite = target_boss.get("ship_sprite") as CanvasItem
+	elif target_boss.has_node("VortexHull"):
+		target_sprite = target_boss.get_node("VortexHull") as CanvasItem
+	elif target_boss.has_node("GearSprite"):
+		target_sprite = target_boss.get_node("GearSprite") as CanvasItem
+	elif target_boss.has_node("MirrorHull"):
+		target_sprite = target_boss.get_node("MirrorHull") as CanvasItem
 	elif target_boss.has_node("Sprite2D"):
 		target_sprite = target_boss.get_node("Sprite2D") as CanvasItem
 	elif target_boss.get("sprite") != null and target_boss.get("sprite") is CanvasItem:
 		target_sprite = target_boss.get("sprite") as CanvasItem
 	else:
+		# Primero buscar si tiene algún Sprite2D entre sus hijos
 		for child in target_boss.get_children():
-			if child is Sprite2D or child is Polygon2D:
+			if child is Sprite2D:
 				target_sprite = child as CanvasItem
 				break
+		# Solo si no tiene Sprite2D, buscar Polygon2D
+		if not target_sprite:
+			for child in target_boss.get_children():
+				if child is Polygon2D:
+					target_sprite = child as CanvasItem
+					break
 
 	if is_instance_valid(target_sprite):
 		original_material = target_sprite.material
@@ -328,6 +345,9 @@ func _spawn_residual_debris() -> void:
 	parent_node.add_child(debris)
 
 func _finish_sequence() -> void:
+	# Asegurar que el audio esté desmuteado pase lo que pase
+	AudioServer.set_bus_mute(0, false)
+
 	if is_instance_valid(camera):
 		camera.focus_override = null
 		camera.zoom = original_camera_zoom

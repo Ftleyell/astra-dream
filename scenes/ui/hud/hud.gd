@@ -112,7 +112,8 @@ func _process(delta: float) -> void:
 	if target_reticle and is_instance_valid(player):
 		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 		if w_ctrl and target_reticle.has_method("set_target"):
-			target_reticle.call("set_target", w_ctrl.current_locked_target)
+			var lock_target: Node2D = w_ctrl.current_locked_target if is_instance_valid(w_ctrl.current_locked_target) else null
+			target_reticle.call("set_target", lock_target)
 		elif target_reticle.has_method("set_target"):
 			target_reticle.call("set_target", null)
 
