@@ -116,12 +116,15 @@ func _ready() -> void:
 	assert(modal.test_mothership_btn != null, "test_mothership_btn debe existir")
 	assert(modal.test_astra_prime_btn != null, "test_astra_prime_btn debe existir")
 
-	# Probar invocación de jefe pendiente
-	DebugManager.set_pending_debug_boss("boss_ash_clock")
-	assert(DebugManager.pending_debug_boss == "boss_ash_clock", "pending_debug_boss debe ser boss_ash_clock")
+	# Probar invocación de jefe pendiente con current_pilot_data asignado
+	var test_char: CharacterData = char_select.roster_dict.get(&"nova", null)
+	modal.current_pilot_data = test_char
+	modal._on_boss_test_pressed("boss_ash_clock")
+	assert(SaveManager.get_selected_character() == &"nova", "SaveManager debe guardar el personaje seleccionado")
+	assert(DebugManager.pending_debug_boss == "boss_ash_clock", "pending_debug_boss debe ser boss_ash_clock tras _on_boss_test_pressed")
 	assert(DebugManager.consume_pending_debug_boss() == "boss_ash_clock", "consume_pending_debug_boss debe retornar boss_ash_clock")
 	assert(DebugManager.pending_debug_boss == "", "pending_debug_boss debe quedar vacío tras consumir")
-	print("  ✓ Pestaña de Jefes (1v1) verificada: los 6 botones de prueba validados")
+	print("  ✓ Pestaña de Jefes (1v1) verificada: los 6 botones y _on_boss_test_pressed validados sin errores de propiedad")
 
 	# 6.2. Validar Pestaña de Gacha y Cosméticos (índice 2)
 	modal._switch_tab(2)

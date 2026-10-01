@@ -790,8 +790,8 @@ func _on_boss_test_pressed(boss_id: String) -> void:
 		mg.jump_to_boss(boss_id)
 		close_menu()
 	else:
-		if current_pilot_data:
-			SaveManager.set_selected_character(current_pilot_data.id)
+		if current_pilot_data and "character_id" in current_pilot_data:
+			SaveManager.set_selected_character(current_pilot_data.character_id)
 		DebugManager.set_pending_debug_boss(boss_id)
 		close_menu()
 		get_tree().paused = false
