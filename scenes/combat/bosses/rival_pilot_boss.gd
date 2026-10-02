@@ -164,11 +164,20 @@ func open_warp_portal(on_shockwave_ready: Callable = Callable()) -> void:
 		warning_label.modulate.a = 0.0
 
 	if on_shockwave_ready.is_valid():
-		portal.shockwave_completed.connect(on_shockwave_ready, CONNECT_ONE_SHOT)
+		var shockwave_dispatched := [false]
+		var safe_shockwave_cb := func() -> void:
+			if not shockwave_dispatched[0]:
+				shockwave_dispatched[0] = true
+				if on_shockwave_ready.is_valid():
+					on_shockwave_ready.call()
+		portal.shockwave_completed.connect(safe_shockwave_cb, CONNECT_ONE_SHOT)
+		get_tree().create_timer(1.2, true, false, true).timeout.connect(safe_shockwave_cb)
 
 func emerge_from_portal(callback: Callable = Callable()) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if not ship_sprite:
+		if is_instance_valid(_warp_portal):
+			_warp_portal.start_collapse()
 		if callback.is_valid():
 			callback.call()
 		return
@@ -185,14 +194,23 @@ func emerge_from_portal(callback: Callable = Callable()) -> void:
 	if combat_danger_ring:
 		tw.tween_property(combat_danger_ring, "modulate:a", 0.65, 0.5)
 
-	tw.chain().tween_callback(func() -> void:
-		if is_instance_valid(_warp_portal):
-			_warp_portal.start_collapse()
-		if callback.is_valid():
-			callback.call()
-	)
+	var emerge_done := [false]
+	var safe_emerge_cb := func() -> void:
+		if not emerge_done[0]:
+			emerge_done[0] = true
+			if is_instance_valid(_warp_portal):
+				_warp_portal.start_collapse()
+			if callback.is_valid():
+				callback.call()
+
+	tw.chain().tween_callback(safe_emerge_cb)
+	get_tree().create_timer(0.9, true, false, true).timeout.connect(safe_emerge_cb)
 
 func start_encounter() -> void:
+	if is_instance_valid(_warp_portal):
+		_warp_portal.start_collapse()
+	if _warp_target_pos != Vector2.ZERO:
+		global_position = _warp_target_pos
 	current_state = State.PEACEFUL_WARN
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	spared_timer = 0.0

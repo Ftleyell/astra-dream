@@ -638,9 +638,6 @@ func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dicti
 	}
 
 func _trigger_pet_rival_jump_warning(rival: Node2D, on_finished: Callable = Callable()) -> void:
-	if is_upgrade_or_shop_modal_active():
-		_pending_rival_for_dialogue = rival
-		return
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
 		if on_finished.is_valid():
@@ -672,12 +669,13 @@ func _trigger_pet_rival_jump_warning(rival: Node2D, on_finished: Callable = Call
 			layout.layer = 50
 		if "canvas_layer" in layout:
 			layout.canvas_layer = 50
-	_setup_dialogic_audio(layout)
+		_setup_dialogic_audio(layout)
+	else:
+		if on_finished.is_valid():
+			_on_dialogue_finished_callback = Callable()
+			on_finished.call()
 
 func _trigger_rival_face_to_face_dialogue(rival: Node2D) -> void:
-	if is_upgrade_or_shop_modal_active():
-		_pending_rival_for_dialogue = rival
-		return
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
 		_on_dialogic_timeline_ended()
@@ -709,7 +707,9 @@ func _trigger_rival_face_to_face_dialogue(rival: Node2D) -> void:
 			layout.layer = 50
 		if "canvas_layer" in layout:
 			layout.canvas_layer = 50
-	_setup_dialogic_audio(layout)
+		_setup_dialogic_audio(layout)
+	else:
+		_on_dialogic_timeline_ended()
 
 func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 	_trigger_rival_face_to_face_dialogue(rival)
@@ -1136,7 +1136,7 @@ func _check_wave_encounters() -> void:
 		_wave_encounter_pending = false
 		return
 
-	if is_any_combat_modal_active():
+	if is_any_combat_modal_active() or has_pending_upgrades():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
@@ -1256,7 +1256,7 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		_wave_encounter_pending = false
 		return
 
-	if is_any_combat_modal_active():
+	if is_any_combat_modal_active() or (override_id == &"" and has_pending_upgrades()):
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
@@ -1361,6 +1361,13 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 			_trigger_rival_face_to_face_dialogue(rival)
 	)
 
+	# Watchdog de seguridad absoluta para la secuencia cinemática de rival (18s máximo)
+	get_tree().create_timer(18.0, true, false, true).timeout.connect(func() -> void:
+		if is_rival_cinematic_active:
+			push_warning("[CINEMATIC WATCHDOG] Rival cinematic sequence timed out; recovering and starting encounter.")
+			_on_dialogue_skip_requested()
+	)
+
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
 		rivals_spared.append(p_id)
@@ -1408,7 +1415,7 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		_wave_encounter_pending = false
 		return
 
-	if target_scene_override == null and is_any_combat_modal_active():
+	if target_scene_override == null and (is_any_combat_modal_active() or has_pending_upgrades()):
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
@@ -2226,15 +2233,7 @@ func is_upgrade_or_shop_modal_active() -> bool:
 		return true
 	if is_level_up_modal_active():
 		return true
-	if level_up_modal and level_up_modal.has_pending_levels():
-		return true
 	if is_arcana_modal_active():
-		return true
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		return true
-	if _pending_arcana_picks > 0:
-		return true
-	if _pending_satellite_credits >= 0:
 		return true
 	if is_pause_menu_active():
 		return true
@@ -2245,6 +2244,17 @@ func is_upgrade_or_shop_modal_active() -> bool:
 	if slot_machine_modal and slot_machine_modal.visible:
 		return true
 	if slot_machine_reward_modal and slot_machine_reward_modal.visible:
+		return true
+	return false
+
+func has_pending_upgrades() -> bool:
+	if level_up_modal and level_up_modal.has_pending_levels():
+		return true
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		return true
+	if _pending_arcana_picks > 0:
+		return true
+	if _pending_satellite_credits >= 0:
 		return true
 	return false
 

@@ -29,9 +29,13 @@ func _ready() -> void:
 		panel.gui_input.connect(_on_panel_gui_input)
 
 func _process(delta: float) -> void:
-	var is_dialogue_active := false
+	var is_dialogue_active: bool = false
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+		is_dialogue_active = true
+
+	var parent_game = get_tree().get_first_node_in_group("main_game")
+	if parent_game and parent_game.has_method("is_cinematic_or_death_active") and parent_game.is_cinematic_or_death_active():
 		is_dialogue_active = true
 
 	if not is_dialogue_active:
@@ -65,10 +69,13 @@ func _process(delta: float) -> void:
 				progress_bar.value = clampf(current_hold / HOLD_DURATION, 0.0, 1.0)
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Consumir la tecla ESC durante el diálogo para que no abra el menú de pausa accidentalmente
+	# Consumir la tecla ESC durante el diálogo o cinemática para que no abra el menú de pausa accidentalmente
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		var dialogic = get_node_or_null("/root/Dialogic")
-		if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+		var is_dlg: bool = dialogic != null and "current_timeline" in dialogic and dialogic.current_timeline != null
+		var parent_game = get_tree().get_first_node_in_group("main_game")
+		var is_cine: bool = parent_game != null and parent_game.has_method("is_cinematic_or_death_active") and parent_game.is_cinematic_or_death_active()
+		if is_dlg or is_cine:
 			get_viewport().set_input_as_handled()
 
 func _on_panel_gui_input(event: InputEvent) -> void:
