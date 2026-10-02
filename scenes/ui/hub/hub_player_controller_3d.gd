@@ -401,15 +401,16 @@ func _update_camera(delta: float) -> void:
 
 	var target_cam_pos := global_position + Vector3(offset_x, cur_offset_y, offset_z)
 
-	# Limitar cámara dentro de la nave extendida (de Z = -6.5 hasta Z = 40.0)
-	target_cam_pos.z = clampf(target_cam_pos.z, -6.5, 40.0)
+	# Limitar cámara dentro de la nave extendida (de Z = -6.5 hasta Z = 40.0 en el ala sur, o Z = 13.0 en el hangar norte)
+	var max_z: float = 40.0 if _is_in_south_wing else 13.0
+	target_cam_pos.z = clampf(target_cam_pos.z, -6.5, max_z)
 	target_cam_pos.x = clampf(target_cam_pos.x, -9.0, 9.0)
 	target_cam_pos.y = clampf(target_cam_pos.y, 2.2, 4.8)
 
 	# Suavizado elástico en 3ª persona
 	var weight := clampf(7.5 * delta, 0.0, 1.0)
 	camera.global_position = camera.global_position.lerp(target_cam_pos, weight)
-	camera.global_position.z = clampf(camera.global_position.z, -6.5, 40.0)
+	camera.global_position.z = clampf(camera.global_position.z, -6.5, max_z)
 	camera.global_position.x = clampf(camera.global_position.x, -9.0, 9.0)
 	camera.global_position.y = clampf(camera.global_position.y, 2.2, 4.8)
 

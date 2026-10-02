@@ -821,6 +821,9 @@ shape = SubResource("BoxShape3D_craft_racer")
 [node name="GachaTerminal" type="Node3D" parent="Terminals" unique_id=1409202601]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.5)
 
+[node name="KenneyArcadeGacha" parent="Terminals/GachaTerminal" unique_id=1409202602 instance=ExtResource("32_arc_model")]
+transform = Transform3D(2.8, 0, 0, 0, 2.8, 0, 0, 0, 2.8, 0, 0, 0)
+
 [node name="GachaCapsuleHolo" type="MeshInstance3D" parent="Terminals/GachaTerminal" unique_id=1409202603]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4445617, 0.099999905)
 mesh = SubResource("SphereMesh_gacha_holo")

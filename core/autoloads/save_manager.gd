@@ -1,14 +1,18 @@
 extends Node
 
-const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const ProfileStorage = preload("res://core/systems/persistence/profile_storage.gd")
+const MetaProgressionState = preload("res://core/systems/persistence/meta_progression_state.gd")
+const ActiveRunStorage = preload("res://core/systems/persistence/active_run_storage.gd")
 const SaveSkinsModule = preload("res://core/autoloads/save_modules/save_skins_module.gd")
 const SaveRosterModule = preload("res://core/autoloads/save_modules/save_roster_module.gd")
-const SaveActiveRunModule = preload("res://core/autoloads/save_modules/save_active_run_module.gd")
 
 static var is_resuming_run: bool = false
+const SAVE_PATH: String = "user://profile_data.json"
+const SCHEMA_VERSION: int = 2
 
-const SAVE_PATH := "user://profile_data.json"
-const SCHEMA_VERSION := 2
+# ==============================================================================
+# PERFIL & DISCO I/O (DELEGACIÓN A PROFILE STORAGE)
+# ==============================================================================
 
 static func save_profile(
 	unlocked_items: Array[StringName],
@@ -32,736 +36,146 @@ static func save_profile(
 	p_equipped_skins: Variant = null,
 	p_gacha_pity: Variant = null
 ) -> Error:
-	var existing_prof: Dictionary = load_profile()
-
-
-	var current_speed: float = p_game_speed
-	if current_speed <= 0.0:
-		current_speed = float(existing_prof.get("game_speed", 1.0))
-	if current_speed <= 0.0:
-		current_speed = 1.0
-
-	var current_biomass: int = p_biomass
-	if current_biomass < 0:
-		current_biomass = get_biomass()
-
-	var current_antimatter: int = p_antimatter
-	if current_antimatter < 0:
-		current_antimatter = get_antimatter()
-
-	var current_dark_matter: int = p_dark_matter
-	if current_dark_matter < 0:
-		current_dark_matter = get_dark_matter()
-
-	var current_trophies: Dictionary
-	if p_trophies == null:
-		current_trophies = get_unlocked_trophies()
-	else:
-		current_trophies = p_trophies
-
-	var current_skills: Dictionary
-	if p_skills == null:
-		current_skills = existing_prof.get("character_skills", {})
-	else:
-		current_skills = p_skills
-
-	var current_char: StringName = p_selected_char
-	if current_char == &"":
-		current_char = StringName(str(existing_prof.get("selected_character", "nova")))
-
-	var bans_serializable: Dictionary = {}
-	for char_id: StringName in character_bans.keys():
-		var bans: Array = character_bans[char_id]
-		var str_list: Array[String] = []
-		for item_id in bans:
-			str_list.append(String(item_id))
-		bans_serializable[String(char_id)] = str_list
-
-	var str_unlocked_items: Array[String] = []
-	for item_id in unlocked_items:
-		str_unlocked_items.append(String(item_id))
-
-	var str_unlocked_chars: Array[String] = []
-	for char_id in unlocked_chars:
-		str_unlocked_chars.append(String(char_id))
-
-	var skills_serializable: Dictionary = {}
-	for cid in current_skills.keys():
-		var arr: Array = current_skills[cid]
-		var str_arr: Array[String] = []
-		for n in arr:
-			str_arr.append(str(n))
-		skills_serializable[String(cid)] = str_arr
-
-	var trophies_serializable: Dictionary = {}
-	for tid in current_trophies.keys():
-		trophies_serializable[str(tid)] = int(current_trophies[tid])
-
-	var current_career: Dictionary
-	if p_career_stats == null:
-		current_career = existing_prof.get("career_stats", _get_default_career_stats())
-	else:
-		current_career = p_career_stats
-
-	var current_pet: StringName = p_selected_pet
-	if current_pet == &"":
-		current_pet = StringName(str(existing_prof.get("selected_pet", "mochi")))
-
-	var str_unlocked_pets: Array[String] = []
-	if p_unlocked_pets != null:
-		for p in p_unlocked_pets:
-			str_unlocked_pets.append(String(p))
-	else:
-		var raw_pets: Array = existing_prof.get("unlocked_pets", ["mochi", "kuro", "luna", "pip"])
-		for p in raw_pets:
-			str_unlocked_pets.append(String(p))
-
-	var str_unlocked_endings: Array[String] = []
-	if p_unlocked_endings != null:
-		for e in p_unlocked_endings:
-			str_unlocked_endings.append(String(e))
-	else:
-		var raw_endings: Array = existing_prof.get("unlocked_endings", [])
-		for e in raw_endings:
-			str_unlocked_endings.append(String(e))
-
-	var current_nav: StringName = p_selected_navigator
-	if current_nav == &"":
-		current_nav = StringName(str(existing_prof.get("selected_navigator", "lyra")))
-
-	var str_unlocked_navs: Array[String] = []
-	if p_unlocked_navigators != null:
-		for n in p_unlocked_navigators:
-			str_unlocked_navs.append(String(n))
-	else:
-		var raw_navs: Array = existing_prof.get("unlocked_navigators", ["lyra", "vespera", "caelia", "zephyr"])
-		for n in raw_navs:
-			str_unlocked_navs.append(String(n))
-
-	var current_tokens: int = p_gacha_tokens
-	if current_tokens < 0:
-		current_tokens = int(existing_prof.get("gacha_tokens", 0))
-
-	var current_unlocked_skins: Dictionary
-	if p_unlocked_skins != null and p_unlocked_skins is Dictionary:
-		current_unlocked_skins = p_unlocked_skins
-	else:
-		current_unlocked_skins = existing_prof.get("unlocked_skins", {})
-
-	var current_equipped_skins: Dictionary
-	if p_equipped_skins != null and p_equipped_skins is Dictionary:
-		current_equipped_skins = p_equipped_skins
-	else:
-		current_equipped_skins = existing_prof.get("equipped_skins", {})
-
-	var current_gacha_pity: Dictionary
-	if p_gacha_pity != null and p_gacha_pity is Dictionary:
-		current_gacha_pity = p_gacha_pity
-	else:
-		current_gacha_pity = existing_prof.get("gacha_pity", {"general": 0, "ships": 0, "pilots": 0})
-
-	var payload := {
-		"version": SCHEMA_VERSION,
-		"unlocked_items": str_unlocked_items,
-		"unlocked_characters": str_unlocked_chars,
-		"character_banlists": bans_serializable,
-		"biomass": current_biomass,
-		"antimatter": current_antimatter,
-		"dark_matter": current_dark_matter,
-		"trophies_unlocked": trophies_serializable,
-		"character_skills": skills_serializable,
-		"selected_character": String(current_char),
-		"game_speed": current_speed,
-		"career_stats": current_career,
-		"selected_pet": String(current_pet),
-		"unlocked_pets": str_unlocked_pets,
-		"unlocked_endings": str_unlocked_endings,
-		"selected_navigator": String(current_nav),
-		"unlocked_navigators": str_unlocked_navs,
-		"gacha_tokens": current_tokens,
-		"unlocked_skins": current_unlocked_skins,
-		"equipped_skins": current_equipped_skins,
-		"gacha_pity": current_gacha_pity
-	}
-
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if not file:
-		return FileAccess.get_open_error()
-
-	var json_str := JSON.stringify(payload, "\t")
-	file.store_string(json_str)
-	file.close()
-	return OK
-
+	return ProfileStorage.save_profile(
+		unlocked_items, character_bans, unlocked_chars, p_biomass, p_antimatter,
+		p_skills, p_selected_char, p_dark_matter, p_trophies, p_game_speed,
+		p_career_stats, p_selected_pet, p_unlocked_pets, p_unlocked_endings,
+		p_selected_navigator, p_unlocked_navigators, p_gacha_tokens,
+		p_unlocked_skins, p_equipped_skins, p_gacha_pity
+	)
 
 static func load_profile() -> Dictionary:
-	if not FileAccess.file_exists(SAVE_PATH):
-		return _get_default_profile()
-
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if not file:
-		return _get_default_profile()
-
-	var json_str := file.get_as_text()
-	file.close()
-
-	if json_str.strip_edges().is_empty():
-		return _get_default_profile()
-
-	var parser := JSON.new()
-	var err := parser.parse(json_str)
-	if err != OK:
-		push_error("Error parsing save file: %s" % parser.get_error_message())
-		return _get_default_profile()
-
-	var data: Dictionary = parser.data
-	return _clean_and_validate_data(data)
-
+	return ProfileStorage.load_profile()
 
 static func _get_default_career_stats() -> Dictionary:
-	return {
-		"total_time_survived": 0.0,
-		"total_credits_collected": 0,
-		"total_biomass_collected": 0,
-		"total_enemies_killed": 0,
-		"total_bosses_killed": 0,
-		"total_satellites_activated": 0,
-		"total_runs_played": 0,
-		"total_runs_cleared": 0
-	}
-
+	return ProfileStorage.get_default_career_stats()
 
 static func _get_default_profile() -> Dictionary:
-	return {
-		"unlocked_items": [
-			&"botas", &"espada", &"escudo", &"corazon", &"manzana",
-			&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj"
-		] as Array[StringName],
-		"unlocked_characters": [
-			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
-		] as Array[StringName],
-		"character_banlists": {
-			&"nova": [&"escudo"] as Array[StringName],
-			&"valentina": [&"manzana"] as Array[StringName]
-		} as Dictionary,
-		"biomass": 0,
-		"antimatter": 0,
-		"dark_matter": 0,
-		"trophies_unlocked": {
-			"trophy_boss_aegis": 0,
-			"trophy_biosphere_core": 0,
-			"trophy_cryo_core": 0,
-			"trophy_volcanic_core": 0,
-			"trophy_monolith_master": 0
-		},
-		"character_skills": {} as Dictionary,
-		"selected_character": &"nova",
-		"game_speed": 1.0,
-		"career_stats": _get_default_career_stats(),
-		"selected_pet": &"mochi",
-		"unlocked_pets": [&"mochi", &"kuro", &"luna", &"pip"] as Array[StringName],
-		"unlocked_endings": [] as Array[String],
-		"selected_navigator": &"lyra",
-		"unlocked_navigators": [&"lyra", &"vespera", &"caelia", &"zephyr"] as Array[StringName],
-		"gacha_tokens": 0,
-		"unlocked_skins": {} as Dictionary,
-		"equipped_skins": {} as Dictionary,
-		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary
-	}
-
-
-static func _clean_and_validate_data(raw: Dictionary) -> Dictionary:
-	var default_trophies := {
-		"trophy_boss_aegis": 0,
-		"trophy_biosphere_core": 0,
-		"trophy_cryo_core": 0,
-		"trophy_volcanic_core": 0,
-		"trophy_monolith_master": 0
-	}
-	var trophies_clean: Dictionary = default_trophies.duplicate()
-	if raw.has("trophies_unlocked") and raw["trophies_unlocked"] is Dictionary:
-		for t_id in raw["trophies_unlocked"].keys():
-			trophies_clean[str(t_id)] = int(raw["trophies_unlocked"][t_id])
-
-	var career_clean := _get_default_career_stats()
-	if raw.has("career_stats") and raw["career_stats"] is Dictionary:
-		var raw_c: Dictionary = raw["career_stats"]
-		career_clean["total_time_survived"] = float(raw_c.get("total_time_survived", 0.0))
-		career_clean["total_credits_collected"] = int(raw_c.get("total_credits_collected", 0))
-		career_clean["total_biomass_collected"] = int(raw_c.get("total_biomass_collected", 0))
-		career_clean["total_enemies_killed"] = int(raw_c.get("total_enemies_killed", 0))
-		career_clean["total_bosses_killed"] = int(raw_c.get("total_bosses_killed", 0))
-		career_clean["total_satellites_activated"] = int(raw_c.get("total_satellites_activated", 0))
-		career_clean["total_runs_played"] = int(raw_c.get("total_runs_played", 0))
-		career_clean["total_runs_cleared"] = int(raw_c.get("total_runs_cleared", 0))
-
-	var cleaned := {
-		"unlocked_items": [] as Array[StringName],
-		"unlocked_characters": [] as Array[StringName],
-		"character_banlists": {} as Dictionary,
-		"biomass": int(raw.get("biomass", 0)),
-		"antimatter": int(raw.get("antimatter", 0)),
-		"dark_matter": int(raw.get("dark_matter", 0)),
-		"trophies_unlocked": trophies_clean,
-		"character_skills": {} as Dictionary,
-		"selected_character": StringName(str(raw.get("selected_character", "nova"))),
-		"game_speed": float(raw.get("game_speed", 1.0)),
-		"career_stats": career_clean,
-		"selected_pet": StringName(str(raw.get("selected_pet", "mochi"))),
-		"unlocked_pets": [] as Array[StringName],
-		"unlocked_endings": [] as Array[String],
-		"selected_navigator": StringName(str(raw.get("selected_navigator", "lyra"))),
-		"unlocked_navigators": [] as Array[StringName],
-		"gacha_tokens": int(raw.get("gacha_tokens", 0)),
-		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
-		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
-		"gacha_pity": {
-			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
-			"ships": int(raw.get("gacha_pity", {}).get("ships", 0)),
-			"pilots": int(raw.get("gacha_pity", {}).get("pilots", 0))
-		} as Dictionary
-	}
-
-	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
-		for e in raw["unlocked_endings"]:
-			cleaned["unlocked_endings"].append(String(e))
-
-	if cleaned["selected_pet"] == &"":
-		cleaned["selected_pet"] = &"mochi"
-
-	if raw.has("unlocked_pets") and (raw["unlocked_pets"] is Array) and not raw["unlocked_pets"].is_empty():
-		for p in raw["unlocked_pets"]:
-			cleaned["unlocked_pets"].append(StringName(p))
-	else:
-		cleaned["unlocked_pets"] = [&"mochi", &"kuro", &"luna", &"pip"]
-
-	# Garantizar que las 4 mascotas base nunca queden bloqueadas o ausentes por saves viejos
-	for default_pid in [&"mochi", &"kuro", &"luna", &"pip"]:
-		if not cleaned["unlocked_pets"].has(default_pid):
-			cleaned["unlocked_pets"].append(default_pid)
-
-	if cleaned["selected_navigator"] == &"":
-		cleaned["selected_navigator"] = &"lyra"
-
-	if raw.has("unlocked_navigators") and (raw["unlocked_navigators"] is Array) and not raw["unlocked_navigators"].is_empty():
-		for n in raw["unlocked_navigators"]:
-			cleaned["unlocked_navigators"].append(StringName(n))
-	else:
-		cleaned["unlocked_navigators"] = [&"lyra", &"vespera", &"caelia", &"zephyr"]
-
-	# Garantizar que las 4 navegantes base nunca queden bloqueadas o ausentes por saves viejos
-	for default_nid in [&"lyra", &"vespera", &"caelia", &"zephyr"]:
-		if not cleaned["unlocked_navigators"].has(default_nid):
-			cleaned["unlocked_navigators"].append(default_nid)
-
-	if raw.has("unlocked_items"):
-		for item in raw["unlocked_items"]:
-			cleaned["unlocked_items"].append(StringName(item))
-
-	if raw.has("unlocked_characters"):
-		for ch in raw["unlocked_characters"]:
-			cleaned["unlocked_characters"].append(StringName(ch))
-	else:
-		cleaned["unlocked_characters"] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
-
-	if raw.has("character_banlists"):
-		for char_id in raw["character_banlists"].keys():
-			var bans: Array[StringName] = []
-			for b in raw["character_banlists"][char_id]:
-				bans.append(StringName(b))
-			cleaned["character_banlists"][StringName(char_id)] = bans
-
-	if raw.has("character_skills") and raw["character_skills"] is Dictionary:
-		for cid in raw["character_skills"].keys():
-			var arr: Array = raw["character_skills"][cid]
-			var str_arr: Array[StringName] = []
-			for n in arr:
-				str_arr.append(StringName(str(n)))
-			cleaned["character_skills"][StringName(cid)] = str_arr
-
-	return cleaned
-
+	return ProfileStorage.get_default_profile()
 
 # ==============================================================================
-# ECONOMÍA: BIOMASA & ANTIMATERIA
+# ECONOMÍA Y META-PROGRESIÓN (DELEGACIÓN A META PROGRESSION STATE)
 # ==============================================================================
 
 static func get_biomass() -> int:
-	var profile := load_profile()
-	return int(profile.get("biomass", 0))
+	return MetaProgressionState.get_biomass()
 
 static func add_biomass(amount: int) -> int:
-	if amount <= 0:
-		return get_biomass()
-	var profile := load_profile()
-	var new_total: int = int(profile.get("biomass", 0)) + amount
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills, sel_char, dark_matter, trophies)
-	return new_total
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.add_biomass(amount, self_class)
 
 static func add_test_biomass(amount: int = 100) -> int:
 	return add_biomass(amount)
 
 static func set_biomass(amount: int) -> void:
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	save_profile(unlocked_items, bans, unlocked_chars, maxi(0, amount), antimatter, skills, sel_char, dark_matter, trophies)
-
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.set_biomass(amount, self_class)
 
 static func get_antimatter() -> int:
-	var profile := load_profile()
-	return int(profile.get("antimatter", 0))
+	return MetaProgressionState.get_antimatter()
 
 static func add_antimatter(amount: int) -> int:
-	if amount <= 0:
-		return get_antimatter()
-	var profile := load_profile()
-	var new_total: int = int(profile.get("antimatter", 0)) + amount
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills, sel_char, dark_matter, trophies)
-	return new_total
-
-
-# ==============================================================================
-# FASE 3: META-ECONOMÍA DE MATERIA OSCURA Y SALA DE TROFEOS
-# ==============================================================================
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.add_antimatter(amount, self_class)
 
 static func get_dark_matter() -> int:
-	var profile := load_profile()
-	return int(profile.get("dark_matter", 0))
+	return MetaProgressionState.get_dark_matter()
 
 static func add_dark_matter(amount: int) -> int:
-	if amount <= 0:
-		return get_dark_matter()
-	var profile := load_profile()
-	var new_total: int = int(profile.get("dark_matter", 0)) + amount
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_total, trophies)
-	return new_total
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.add_dark_matter(amount, self_class)
 
 static func get_unlocked_trophies() -> Dictionary:
-	var profile := load_profile()
-	return profile.get("trophies_unlocked", {}).duplicate()
+	return MetaProgressionState.get_unlocked_trophies()
 
 static func is_trophy_unlocked(trophy_id: StringName) -> bool:
-	var trophies := get_unlocked_trophies()
-	return int(trophies.get(str(trophy_id), 0)) > 0
+	return MetaProgressionState.is_trophy_unlocked(trophy_id)
 
 static func get_trophy_mastery(trophy_id: StringName) -> int:
-	var trophies := get_unlocked_trophies()
-	return int(trophies.get(str(trophy_id), 0))
+	return MetaProgressionState.get_trophy_mastery(trophy_id)
 
 static func unlock_or_upgrade_trophy(trophy_id: StringName, mastery_level: int = 1) -> bool:
-	var profile := load_profile()
-	var trophies: Dictionary = profile.get("trophies_unlocked", {}).duplicate()
-	var key := str(trophy_id)
-	var current: int = int(trophies.get(key, 0))
-	var new_level: int = maxi(current, mastery_level)
-	trophies[key] = new_level
-
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies)
-	return true
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.unlock_or_upgrade_trophy(trophy_id, mastery_level, self_class)
 
 static func upgrade_trophy_with_dark_matter(trophy_id: StringName, cost: int) -> bool:
-	var current_dm := get_dark_matter()
-	if current_dm < cost:
-		return false
-	var profile := load_profile()
-	var trophies: Dictionary = profile.get("trophies_unlocked", {}).duplicate()
-	var key := str(trophy_id)
-	var current: int = int(trophies.get(key, 0))
-	trophies[key] = current + 1
-
-	var new_dm := current_dm - cost
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_dm, trophies)
-	return true
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.upgrade_trophy_with_dark_matter(trophy_id, cost, self_class)
 
 static func get_trophy_passive_bonuses() -> Dictionary:
-	var trophies := get_unlocked_trophies()
-	var bonuses := {
-		"base_damage_pct": 0.0,
-		"max_health": 0.0,
-		"projectile_speed_pct": 0.0,
-		"cooldown_reduction": 0.0,
-		"crit_chance": 0.0,
-		"crit_damage": 0.0,
-		"pickup_radius_pct": 0.0
-	}
-
-	# 1. Nodriza Aegis: +10% Daño permanente (+5% por maestría)
-	var aegis_lvl: int = int(trophies.get("trophy_boss_aegis", 0))
-	if aegis_lvl > 0:
-		bonuses["base_damage_pct"] += 0.10 + float(aegis_lvl - 1) * 0.05
-
-	# 2. Núcleo Bioesfera: +15 HP Máximo permanente (+5 HP por maestría)
-	var bio_lvl: int = int(trophies.get("trophy_biosphere_core", 0))
-	if bio_lvl > 0:
-		bonuses["max_health"] += 15.0 + float(bio_lvl - 1) * 5.0
-
-	# 3. Núcleo Criogénico: +5% Vel. Proyectil y +5% Reducción enfriamiento (+2% por maestría)
-	var cryo_lvl: int = int(trophies.get("trophy_cryo_core", 0))
-	if cryo_lvl > 0:
-		bonuses["projectile_speed_pct"] += 0.05 + float(cryo_lvl - 1) * 0.02
-		bonuses["cooldown_reduction"] += 0.05 + float(cryo_lvl - 1) * 0.02
-
-	# 4. Núcleo Volcánico: +5% Prob. Crítica y +0.20x Daño Crítico (+2% / +0.05x por maestría)
-	var volc_lvl: int = int(trophies.get("trophy_volcanic_core", 0))
-	if volc_lvl > 0:
-		bonuses["crit_chance"] += 0.05 + float(volc_lvl - 1) * 0.02
-		bonuses["crit_damage"] += 0.20 + float(volc_lvl - 1) * 0.05
-
-	# 5. Reliquia del Monolito: +15% Rango de recogida / magnetismo (+5% por maestría)
-	var mono_lvl: int = int(trophies.get("trophy_monolith_master", 0))
-	if mono_lvl > 0:
-		bonuses["pickup_radius_pct"] += 0.15 + float(mono_lvl - 1) * 0.05
-
-	return bonuses
-
+	return MetaProgressionState.get_trophy_passive_bonuses()
 
 # ==============================================================================
 # HABILIDADES Y PILOTOS
 # ==============================================================================
 
 static func get_character_unlocked_nodes(char_id: StringName) -> Array[StringName]:
-	var profile := load_profile()
-	var skills: Dictionary = profile.get("character_skills", {})
-	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
-	var result: Array[StringName] = []
-	for n in list:
-		var s := StringName(str(n))
-		if not result.has(s):
-			result.append(s)
-	if not result.has(&"core"):
-		result.append(&"core")
-	return result
+	return MetaProgressionState.get_character_unlocked_nodes(char_id)
 
 static func is_character_node_unlocked(char_id: StringName, node_id: StringName) -> bool:
-	var unlocked := get_character_unlocked_nodes(char_id)
-	return unlocked.has(node_id)
+	return MetaProgressionState.is_character_node_unlocked(char_id, node_id)
 
 static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
-	var nodes := get_character_unlocked_nodes(char_id)
-	var count: int = 0
-	for n in nodes:
-		if n != &"core":
-			count += 1
-	return count
+	return MetaProgressionState.get_character_unlocked_nodes_count(char_id)
 
 static func unlock_character_skill_node(char_id: StringName, node_id: StringName, cost: int, req_node_id: StringName = &"") -> bool:
-	var current_bio := get_biomass()
-	if current_bio < cost:
-		return false
-
-	var profile := load_profile()
-	var skills: Dictionary = profile.get("character_skills", {})
-	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
-	var str_list: Array[StringName] = []
-	for n in list:
-		str_list.append(StringName(str(n)))
-	if not str_list.has(&"core"):
-		str_list.append(&"core")
-
-	if str_list.has(node_id):
-		return false
-
-	if req_node_id != &"" and not str_list.has(req_node_id):
-		return false
-
-	str_list.append(node_id)
-	skills[char_id] = str_list
-
-	var new_biomass := current_bio - cost
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-
-	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
-	return true
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.unlock_character_skill_node(char_id, node_id, cost, req_node_id, self_class)
 
 static func refund_character_skills(char_id: StringName, node_cost: int = 25) -> int:
-	var profile := load_profile()
-	var skills: Dictionary = profile.get("character_skills", {})
-	var list: Array = skills.get(char_id, skills.get(String(char_id), []))
-
-	var paid_nodes: int = 0
-	for n in list:
-		var s := StringName(str(n))
-		if s != &"core":
-			paid_nodes += 1
-
-	var refund_biomass := paid_nodes * node_cost
-	skills[char_id] = [&"core"] as Array[StringName]
-
-	var current_bio: int = int(profile.get("biomass", 0))
-	var new_biomass := current_bio + refund_biomass
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-
-	save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
-	return refund_biomass
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.refund_character_skills(char_id, node_cost, self_class)
 
 static func get_selected_character() -> StringName:
-	var profile := load_profile()
-	return StringName(str(profile.get("selected_character", "nova")))
+	return MetaProgressionState.get_selected_character()
 
 static func set_selected_character(char_id: StringName) -> void:
-	if char_id == &"":
-		return
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id, dark_matter, trophies)
-
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.set_selected_character(char_id, self_class)
 
 static func get_game_speed() -> float:
-	var profile := load_profile()
-	var spd: float = float(profile.get("game_speed", 1.0))
-	return spd if spd > 0.0 else 1.0
+	return MetaProgressionState.get_game_speed()
 
 static func set_game_speed(speed: float) -> void:
-	if speed <= 0.0:
-		speed = 1.0
-	Engine.time_scale = speed
-	var profile := load_profile()
-	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
-	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
-	var bans: Dictionary = profile.get("character_banlists", {})
-	var biomass: int = int(profile.get("biomass", 0))
-	var antimatter: int = int(profile.get("antimatter", 0))
-	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
-	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies, speed)
-
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.set_game_speed(speed, self_class)
 
 # ==============================================================================
 # ESTADÍSTICAS DE CARRERA Y DESBLOQUEO DE PERSONAJES
 # ==============================================================================
 
 static func get_career_stats() -> Dictionary:
-	var prof := load_profile()
-	var def := _get_default_career_stats()
-	var current: Dictionary = prof.get("career_stats", {})
-	for k in def.keys():
-		if not current.has(k):
-			current[k] = def[k]
-	return current
+	return MetaProgressionState.get_career_stats()
 
 static func is_character_unlocked(char_id: StringName) -> bool:
-	var prof := load_profile()
-	var chars: Array = prof.get("unlocked_characters", [])
-	return chars.has(char_id) or chars.has(String(char_id))
+	return MetaProgressionState.is_character_unlocked(char_id)
 
 static func unlock_character(char_id: StringName) -> bool:
-	var prof := load_profile()
-	var chars: Array[StringName] = []
-	for c in prof.get("unlocked_characters", []):
-		chars.append(StringName(str(c)))
-	if not chars.has(char_id):
-		chars.append(char_id)
-		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-		var bans: Dictionary = prof.get("character_banlists", {})
-		var bio: int = int(prof.get("biomass", 0))
-		var anti: int = int(prof.get("antimatter", 0))
-		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-		var dm: int = int(prof.get("dark_matter", 0))
-		var trophies: Dictionary = prof.get("trophies_unlocked", {})
-		var spd: float = float(prof.get("game_speed", 1.0))
-		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-		return true
-	return false
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.unlock_character(char_id, self_class)
 
 static func lock_character(char_id: StringName) -> bool:
-	var prof := load_profile()
-	var chars: Array[StringName] = []
-	var found: bool = false
-	for c in prof.get("unlocked_characters", []):
-		if StringName(str(c)) == char_id:
-			found = true
-		else:
-			chars.append(StringName(str(c)))
-	if found:
-		var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-		var bans: Dictionary = prof.get("character_banlists", {})
-		var bio: int = int(prof.get("biomass", 0))
-		var anti: int = int(prof.get("antimatter", 0))
-		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-		var dm: int = int(prof.get("dark_matter", 0))
-		var trophies: Dictionary = prof.get("trophies_unlocked", {})
-		var spd: float = float(prof.get("game_speed", 1.0))
-		var career: Dictionary = prof.get("career_stats", _get_default_career_stats())
-		save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-		return true
-	return false
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.lock_character(char_id, self_class)
 
+static func record_boss_kill() -> bool:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	return MetaProgressionState.record_boss_kill(self_class)
 
+static func record_career_run_end(stats_data: Dictionary) -> void:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.record_career_run_end(stats_data, self_class)
+
+static func reset_career_stats() -> void:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.reset_career_stats(self_class)
+
+static func set_career_bosses_killed(count: int) -> void:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	MetaProgressionState.set_career_bosses_killed(count, self_class)
 
 # ==============================================================================
-# PETS & COMPANIONS PERSISTENCE
+# PETS & COMPANIONS (DELEGACIÓN A SAVE ROSTER MODULE)
 # ==============================================================================
 
 static func get_selected_pet() -> StringName:
@@ -785,7 +199,6 @@ static func lock_pet(pet_id: StringName) -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	SaveRosterModule.lock_pet(pet_id, self_class)
 
-
 static func get_unlocked_endings() -> Array[String]:
 	return SaveRosterModule.get_unlocked_endings(load_profile())
 
@@ -795,7 +208,6 @@ static func has_unlocked_ending(ending_id: String) -> bool:
 static func record_ending(ending_id: String) -> bool:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	return SaveRosterModule.record_ending(ending_id, self_class)
-
 
 # ==============================================================================
 # NAVIGATORS PERSISTENCE (NAVEGANTES)
@@ -822,162 +234,40 @@ static func lock_navigator(nav_id: StringName) -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	SaveRosterModule.lock_navigator(nav_id, self_class)
 
-
-
-static func record_boss_kill() -> bool:
-	var prof := load_profile()
-	var career: Dictionary = get_career_stats()
-	career["total_bosses_killed"] = int(career.get("total_bosses_killed", 0)) + 1
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = []
-	for c in prof.get("unlocked_characters", []):
-		chars.append(StringName(str(c)))
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-
-	var newly_unlocked_nyx: bool = false
-	if int(career["total_bosses_killed"]) >= 10:
-		if not chars.has(&"nyx"):
-			chars.append(&"nyx")
-			newly_unlocked_nyx = true
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-	return newly_unlocked_nyx
-
-static func record_career_run_end(stats_data: Dictionary) -> void:
-	var prof := load_profile()
-	var career: Dictionary = get_career_stats()
-	career["total_time_survived"] = float(career.get("total_time_survived", 0.0)) + float(stats_data.get("time_survived", 0.0))
-	career["total_credits_collected"] = int(career.get("total_credits_collected", 0)) + int(stats_data.get("credits_earned", 0))
-	career["total_biomass_collected"] = int(career.get("total_biomass_collected", 0)) + int(stats_data.get("biomass_earned", 0))
-	career["total_enemies_killed"] = int(career.get("total_enemies_killed", 0)) + int(stats_data.get("enemies_killed", 0))
-	career["total_satellites_activated"] = int(career.get("total_satellites_activated", 0)) + int(stats_data.get("satellites_collected", 0))
-	career["total_runs_played"] = int(career.get("total_runs_played", 0)) + 1
-	if bool(stats_data.get("victory", false)):
-		career["total_runs_cleared"] = int(career.get("total_runs_cleared", 0)) + 1
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = []
-	for c in prof.get("unlocked_characters", []):
-		chars.append(StringName(str(c)))
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-
-	if int(career.get("total_bosses_killed", 0)) >= 10 and not chars.has(&"nyx"):
-		chars.append(&"nyx")
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-
-
-static func reset_career_stats() -> void:
-	var prof := load_profile()
-	var career := _get_default_career_stats()
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = []
-	for c in prof.get("unlocked_characters", []):
-		var s := StringName(str(c))
-		if s != &"nyx":
-			chars.append(s)
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	if sel_char == &"nyx":
-		sel_char = &"nova"
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-
-
-static func set_career_bosses_killed(count: int) -> void:
-	var prof := load_profile()
-	var career: Dictionary = get_career_stats()
-	career["total_bosses_killed"] = count
-
-	var unlocked_items: Array[StringName] = prof.get("unlocked_items", [])
-	var chars: Array[StringName] = []
-	for c in prof.get("unlocked_characters", []):
-		var s := StringName(str(c))
-		if count < 10 and s == &"nyx":
-			continue
-		chars.append(s)
-
-	if count >= 10 and not chars.has(&"nyx"):
-		chars.append(&"nyx")
-
-	var bans: Dictionary = prof.get("character_banlists", {})
-	var bio: int = int(prof.get("biomass", 0))
-	var anti: int = int(prof.get("antimatter", 0))
-	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	if count < 10 and sel_char == &"nyx":
-		sel_char = &"nova"
-	var dm: int = int(prof.get("dark_matter", 0))
-	var trophies: Dictionary = prof.get("trophies_unlocked", {})
-	var spd: float = float(prof.get("game_speed", 1.0))
-
-	save_profile(unlocked_items, bans, chars, bio, anti, skills, sel_char, dm, trophies, spd, career)
-
-
-
 # ==============================================================================
-# MID-RUN SAVE & RESUME
+# RUN EN CURSO & HIGHSCORES (DELEGACIÓN A ACTIVE RUN STORAGE)
 # ==============================================================================
 
-const ACTIVE_RUN_PATH := "user://active_run.json"
+const ACTIVE_RUN_PATH: String = "user://active_run.json"
+const HIGHSCORES_PATH: String = "user://highscores.json"
+const MAX_HIGHSCORES: int = 10
 
 static func save_active_run(run_data: Dictionary) -> Error:
-	return SaveActiveRunModule.save_active_run(run_data)
+	return ActiveRunStorage.save_active_run(run_data)
 
 static func has_active_run() -> bool:
-	return SaveActiveRunModule.has_active_run()
+	return ActiveRunStorage.has_active_run()
 
 static func load_active_run() -> Dictionary:
-	return SaveActiveRunModule.load_active_run()
+	return ActiveRunStorage.load_active_run()
 
 static func clear_active_run() -> void:
-	SaveActiveRunModule.clear_active_run()
-
-
-# ==============================================================================
-# HIGHSCORES & RUN HISTORY
-# ==============================================================================
-
-const HIGHSCORES_PATH := "user://highscores.json"
-const MAX_HIGHSCORES := 10
+	ActiveRunStorage.clear_active_run()
 
 static func record_run_score(result: Dictionary) -> int:
-	return SaveActiveRunModule.record_run_score(result)
+	return ActiveRunStorage.record_run_score(result)
 
 static func clear_highscores() -> void:
-	SaveActiveRunModule.clear_highscores()
+	ActiveRunStorage.clear_highscores()
 
 static func get_top_highscores() -> Array[Dictionary]:
-	return SaveActiveRunModule.get_top_highscores()
+	return ActiveRunStorage.get_top_highscores()
 
 static func _get_default_highscores() -> Array[Dictionary]:
-	return SaveActiveRunModule._get_default_highscores()
-
+	return ActiveRunStorage.get_default_highscores()
 
 # ==============================================================================
-# GACHA & COSMÉTICOS (SKINS & 3-STAR PROGRESSION)
+# GACHA & COSMÉTICOS (DELEGACIÓN A SAVE SKINS MODULE)
 # ==============================================================================
 
 static func get_gacha_tokens() -> int:
@@ -1040,4 +330,3 @@ static func increment_banner_pity(banner_id: String, amount: int) -> int:
 static func reset_banner_pity(banner_id: String) -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	SaveSkinsModule.reset_banner_pity(banner_id, self_class)
-

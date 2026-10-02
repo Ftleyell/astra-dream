@@ -1,6 +1,14 @@
 class_name MainGame
 extends Node2D
 
+const RunStateSerializer = preload("res://scenes/combat/systems/run_state_serializer.gd")
+const CombatModalCoordinator = preload("res://scenes/combat/ui/combat_modal_coordinator.gd")
+const CombatNarrativeDirector = preload("res://scenes/combat/directors/combat_narrative_director.gd")
+
+var modal_coordinator: CombatModalCoordinator = null
+var narrative_director: CombatNarrativeDirector = null
+
+
 @onready var player: Player = $Player
 @onready var bullet_server: BulletServer = $BulletServer
 @onready var hud: GameHUD = $HUD
@@ -116,6 +124,24 @@ func _ready() -> void:
 	_setup_rival_queue()
 	_spawn_companion_pet()
 	_spawn_navigator_controller()
+
+	modal_coordinator = CombatModalCoordinator.new()
+	modal_coordinator.name = "CombatModalCoordinator"
+	add_child(modal_coordinator)
+	modal_coordinator.setup(self, player)
+	modal_coordinator.level_up_modal = level_up_modal
+	modal_coordinator.satellite_shop = satellite_shop
+	modal_coordinator.pause_menu = pause_menu
+	modal_coordinator.game_over_modal = game_over_modal
+	modal_coordinator.character_stats_overlay = character_stats_overlay
+	modal_coordinator.resume_encounters_requested.connect(_resume_pending_encounters_after_modal)
+
+	narrative_director = CombatNarrativeDirector.new()
+	narrative_director.name = "CombatNarrativeDirector"
+	add_child(narrative_director)
+	narrative_director.setup(self, player, hud, skip_badge_layer, audio_duck_manager)
+	narrative_director.active_navigator_controller = active_navigator_controller
+	narrative_director.victory_screen_requested.connect(_show_game_over_screen)
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	if not player.credits_changed.is_connected(hud.update_credits):
@@ -347,81 +373,15 @@ func _get_dialogic() -> Node:
 	return get_node_or_null("/root/Dialogic")
 
 func _start_prologue_briefing() -> void:
-	is_briefing_active = true
-	get_tree().paused = true
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	# Bonificación inicial otorgada de forma silenciosa e inmediata (+50 Créditos)
-	if not prologue_bonus_chosen:
-		prologue_bonus_chosen = true
-		if is_instance_valid(player):
-			player.run_credits += 50
-			if hud:
-				hud.update_credits(player.run_credits)
-
-	var dialogic_node := _get_dialogic()
-	if dialogic_node and dialogic_node.has_method("start"):
-		var p_id: String = String(player.character_data.character_id).to_lower() if (player and player.character_data and player.character_data.character_id != &"") else "nova"
-		if not ["nova", "valentina", "kira", "selene", "roxy", "echo", "nyx"].has(p_id):
-			p_id = "nova"
-		var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-		if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-			pet_id = "mochi"
-		var nav_id: String = String(SaveManager.get_selected_navigator()).to_lower()
-		if not ["lyra", "vespera", "iris", "zephyr", "caelia"].has(nav_id):
-			nav_id = "lyra"
-
-		var pilot_label: String = p_id
-		var pet_label: String = pet_id
-
-		var dtl_text := """
-join %s (Flipped) left
-join %s (Flipped) right
-%s: Reactores presurizados y toberas calibradas al 100%%. ¿Telemetría lista, %s?
-%s: [wave amp=14.0 freq=3.0]¡Todo verificado! Transfiriendo enlace al canal táctico...[/wave]
-leave --All--
-""" % [pilot_label, pet_label, pilot_label, pet_label.capitalize(), pet_label]
-
-		var backdrop := get_node_or_null("DialogueBackdropLayer")
-		if backdrop and "hold_dimmer" in backdrop:
-			backdrop.hold_dimmer = true
-		if hud:
-			if hud.has_method("set_hud_visible"):
-				hud.set_hud_visible(false)
-			else:
-				hud.visible = false
-
-		if backdrop and backdrop.has_method("fade_in"):
-			backdrop.fade_in(0.2)
-			await get_tree().create_timer(0.2, true, false, true).timeout
-
-		var tl := DialogicTimeline.new()
-		tl.from_text(dtl_text)
-		var layout = dialogic_node.start(tl)
-		if layout:
-			layout.process_mode = Node.PROCESS_MODE_ALWAYS
-			if layout is CanvasLayer:
-				layout.layer = 50
-			if "canvas_layer" in layout:
-				layout.canvas_layer = 50
-		_setup_dialogic_audio(layout)
+	if narrative_director:
+		narrative_director.start_prologue_briefing()
 	else:
 		is_briefing_active = false
 		get_tree().paused = false
 
 func _setup_dialogic_audio(layout: Node) -> void:
-	if not layout:
-		return
-	var type_sound := layout.find_child("DialogicNode_TypeSounds", true, false) as DialogicNode_TypeSounds
-	if type_sound:
-		type_sound.sounds = [
-			preload("res://addons/dialogic/Example Assets/sound-effects/typing1.wav"),
-			preload("res://addons/dialogic/Example Assets/sound-effects/typing4.wav")
-		]
-		type_sound.play_every_character = 1
-		type_sound.pitch_variance = 0.2
-		type_sound.volume_variance = 0.5
+	if narrative_director:
+		narrative_director._setup_dialogic_audio(layout)
 
 func _on_dialogic_signal(arg: Variant) -> void:
 	match str(arg):
@@ -439,180 +399,22 @@ func _on_dialogic_signal(arg: Variant) -> void:
 			player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
 
 func _on_dialogic_timeline_started() -> void:
-	if skip_badge_layer:
-		skip_badge_layer.show()
-	if audio_duck_manager:
-		audio_duck_manager.duck_music(true)
+	if narrative_director:
+		narrative_director.on_timeline_started()
 
 func _on_dialogue_skip_requested() -> void:
-	if _on_dialogue_finished_callback.is_valid():
-		var cb := _on_dialogue_finished_callback
-		_on_dialogue_finished_callback = Callable()
-		var dialogic_node := _get_dialogic()
-		if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
-			if dialogic_node.has_method("end_timeline"):
-				dialogic_node.end_timeline(true)
-		cb.call()
-		return
-
-	if is_victory_dialogue_active:
-		is_victory_dialogue_active = false
-		var v_data := _pending_victory_data.duplicate()
-		_pending_victory_data.clear()
-		var dialogic_node := _get_dialogic()
-		if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
-			if dialogic_node.has_method("end_timeline"):
-				dialogic_node.end_timeline(true)
-		if not v_data.is_empty():
-			_show_game_over_screen(v_data)
-		return
-
-	if is_briefing_active and not prologue_bonus_chosen:
-		prologue_bonus_chosen = true
-		player.run_credits += 50
-		if hud:
-			hud.update_credits(player.run_credits)
-
-	is_briefing_active = false
-	is_cockpit_active = false
-	is_boss_transmission_active = false
-	if is_rival_cinematic_active:
-		is_rival_cinematic_active = false
-		if is_instance_valid(current_rival):
-			if current_rival.has_method("start_encounter"):
-				current_rival.start_encounter()
-			else:
-				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-		if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-			enemy_spawner.set_spawning_paused(false)
-
-	notify_menu_closed(0.4)
-
-	var dialogic_node := _get_dialogic()
-	if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
-		if dialogic_node.has_method("end_timeline"):
-			dialogic_node.end_timeline(true)
-
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("clear_cinematic_focus"):
-		cam.clear_cinematic_focus()
-
-	if is_instance_valid(player) and player.has_method("resume_movement_control"):
-		player.resume_movement_control()
-
-	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		if "hold_dimmer" in backdrop:
-			backdrop.hold_dimmer = false
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.2)
-
-	if hud:
-		hud.visible = true
-
-	if level_up_modal and level_up_modal.has_pending_levels():
-		level_up_modal.show_next_level_up()
-	elif not is_any_combat_modal_active():
-		get_tree().paused = false
+	if narrative_director:
+		narrative_director.skip_dialogue()
 
 func _on_dialogic_timeline_ended() -> void:
-	if skip_badge_layer:
-		skip_badge_layer.hide()
-	if audio_duck_manager:
-		audio_duck_manager.duck_music(false)
-
-	if _on_dialogue_finished_callback.is_valid():
-		var cb := _on_dialogue_finished_callback
-		_on_dialogue_finished_callback = Callable()
-		cb.call()
-		return
-
-	if is_victory_dialogue_active:
-		is_victory_dialogue_active = false
-		var v_data := _pending_victory_data.duplicate()
-		_pending_victory_data.clear()
-		if not v_data.is_empty():
-			_show_game_over_screen(v_data)
-		return
-
-	if is_briefing_active:
-		if not prologue_bonus_chosen:
-			prologue_bonus_chosen = true
-			player.run_credits += 50
-			if hud:
-				hud.update_credits(player.run_credits)
-
-		# Mostrar la notificación lateral habitual de la Navegadora mientras el fondo sigue oscurecido, esperando input
-		if active_navigator_controller and active_navigator_controller.has_method("show_prologue_transmission"):
-			active_navigator_controller.show_prologue_transmission(
-				"Enlace táctico verificado, comandante. Estaré en este canal lateral guiándote hacia balizas y objetivos prioritarios en el sector. ¡Despegue autorizado!",
-				func() -> void:
-					_finish_prologue_and_start_run()
-			)
-			return
-		else:
-			_finish_prologue_and_start_run()
-			return
-
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("clear_cinematic_focus"):
-		cam.clear_cinematic_focus()
-
-	if is_instance_valid(player) and player.has_method("resume_movement_control"):
-		player.resume_movement_control()
-
-	if is_cockpit_active:
-		is_cockpit_active = false
-		notify_menu_closed(0.4)
-
-	if is_boss_transmission_active:
-		is_boss_transmission_active = false
-		notify_menu_closed(0.4)
-
-	if is_rival_cinematic_active:
-		is_rival_cinematic_active = false
-		if is_instance_valid(current_rival):
-			if current_rival.has_method("start_encounter"):
-				current_rival.start_encounter()
-			else:
-				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-		if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-			enemy_spawner.set_spawning_paused(false)
-
-	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop and not is_briefing_active:
-		if "hold_dimmer" in backdrop:
-			backdrop.hold_dimmer = false
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.2)
-
-	if hud:
-		hud.visible = true
-
-	if level_up_modal and level_up_modal.has_pending_levels():
-		level_up_modal.show_next_level_up()
-	elif not is_any_combat_modal_active():
-		get_tree().paused = false
+	if narrative_director:
+		narrative_director.on_timeline_ended()
 
 func _finish_prologue_and_start_run() -> void:
-	is_briefing_active = false
-	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		backdrop.hold_dimmer = false
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.25)
-
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("clear_cinematic_focus"):
-		cam.clear_cinematic_focus()
-
-	if hud:
-		if hud.has_method("set_hud_visible"):
-			hud.call("set_hud_visible", true)
-		else:
-			hud.visible = true
-
-	if not is_any_combat_modal_active():
+	if narrative_director:
+		narrative_director._finish_prologue_and_start_run()
+	else:
+		is_briefing_active = false
 		get_tree().paused = false
 
 func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
@@ -2106,82 +1908,33 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
-	if is_satellite_shop_active() or is_dialogue_active() or is_arcana_modal_active() or is_cinematic_or_death_active():
-		level_up_modal.queue_level_up(level)
-	else:
-		level_up_modal.show_level_up(level)
-	save_current_run_state()
+	if modal_coordinator:
+		modal_coordinator.on_level_up_requested(level)
 
 func _on_satellite_shop_closed() -> void:
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		arcana_modal.show_next_arcana()
-	elif _pending_arcana_picks > 0:
-		_pending_arcana_picks -= 1
-		_open_next_pending_arcana()
-	elif level_up_modal and level_up_modal.has_pending_levels():
-		level_up_modal.show_next_level_up()
-	elif not is_any_combat_modal_active():
-		get_tree().paused = false
-		_resume_pending_encounters_after_modal()
+	if modal_coordinator:
+		modal_coordinator.on_satellite_shop_closed()
 
 func is_pause_menu_active() -> bool:
-	return pause_menu != null and pause_menu.visible
+	return modal_coordinator.is_pause_menu_active() if modal_coordinator else (pause_menu != null and pause_menu.visible)
 
 func is_satellite_shop_active() -> bool:
-	return satellite_shop != null and satellite_shop.visible
-
+	return modal_coordinator.is_satellite_shop_active() if modal_coordinator else (satellite_shop != null and satellite_shop.visible)
 
 func is_arcana_modal_active() -> bool:
-	return arcana_modal != null and (arcana_modal.visible or arcana_modal.is_active)
+	return modal_coordinator.is_arcana_modal_active() if modal_coordinator else false
 
-func _on_arcana_orb_collected(_orb: Node2D) -> void:
-	if arcana_modal:
-		if is_any_combat_modal_active() and not is_arcana_modal_active():
-			if arcana_modal.has_method("queue_arcana"):
-				arcana_modal.queue_arcana()
-			else:
-				_pending_arcana_picks += 1
-		elif is_arcana_modal_active():
-			if arcana_modal.has_method("queue_arcana"):
-				arcana_modal.queue_arcana()
-			else:
-				_pending_arcana_picks += 1
-		else:
-			arcana_modal.show_arcana_selection(player)
+func _on_arcana_orb_collected(orb: Node2D) -> void:
+	if modal_coordinator:
+		modal_coordinator.on_arcana_orb_collected(orb)
 
 func _on_arcana_modal_closed() -> void:
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		arcana_modal.show_next_arcana()
-	elif _pending_arcana_picks > 0:
-		_pending_arcana_picks -= 1
-		_open_next_pending_arcana()
-	elif level_up_modal and level_up_modal.has_pending_levels():
-		level_up_modal.show_next_level_up()
-	elif _pending_satellite_credits >= 0:
-		var creds = _pending_satellite_credits
-		var _idx = _pending_satellite_index
-		_pending_satellite_credits = -1
-		_pending_satellite_index = -1
-		satellite_shop.open_shop(creds)
-	elif not is_any_combat_modal_active():
-		get_tree().paused = false
-		_resume_pending_encounters_after_modal()
+	if modal_coordinator:
+		modal_coordinator.on_arcana_modal_closed()
 
 func _on_level_up_modal_closed() -> void:
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		arcana_modal.show_next_arcana()
-	elif _pending_arcana_picks > 0:
-		_pending_arcana_picks -= 1
-		_open_next_pending_arcana()
-	elif _pending_satellite_credits >= 0:
-		var creds = _pending_satellite_credits
-		var _idx = _pending_satellite_index
-		_pending_satellite_credits = -1
-		_pending_satellite_index = -1
-		satellite_shop.open_shop(creds)
-	elif not is_any_combat_modal_active():
-		get_tree().paused = false
-		_resume_pending_encounters_after_modal()
+	if modal_coordinator:
+		modal_coordinator.on_level_up_modal_closed()
 
 func _resume_pending_encounters_after_modal() -> void:
 	if _pending_rival_for_dialogue != null and is_instance_valid(_pending_rival_for_dialogue):
@@ -2196,18 +1949,14 @@ func _resume_pending_encounters_after_modal() -> void:
 	elif _wave_encounter_pending:
 		_wave_encounter_timer = 0.5
 
-func _open_next_pending_arcana() -> void:
-	if arcana_modal and is_instance_valid(player):
-		arcana_modal.show_arcana_selection(player)
-
 func is_level_up_modal_active() -> bool:
-	return level_up_modal != null and level_up_modal.visible
+	return modal_coordinator.is_level_up_modal_active() if modal_coordinator else (level_up_modal != null and level_up_modal.visible)
 
 func is_character_stats_active() -> bool:
-	return character_stats_overlay != null and (character_stats_overlay.is_open or character_stats_overlay.visible)
+	return modal_coordinator.is_character_stats_active() if modal_coordinator else false
 
 func is_game_over_active() -> bool:
-	return game_over_modal != null and (game_over_modal.visible or game_over_modal.is_active)
+	return modal_coordinator.is_game_over_active() if modal_coordinator else false
 
 func is_cinematic_or_death_active() -> bool:
 	if CinematicDeathSequence.is_sequence_active:
@@ -2222,103 +1971,37 @@ func is_cinematic_or_death_active() -> bool:
 		return true
 	return false
 
-func _resume_pending_systems_after_cinematics() -> void:
-	if is_cinematic_or_death_active():
-		return
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		arcana_modal.show_next_arcana()
-	elif _pending_arcana_picks > 0:
-		_pending_arcana_picks -= 1
-		_open_next_pending_arcana()
-	elif level_up_modal and level_up_modal.has_pending_levels():
-		level_up_modal.show_next_level_up()
-	elif _pending_satellite_credits >= 0:
-		var creds = _pending_satellite_credits
-		var _idx = _pending_satellite_index
-		_pending_satellite_credits = -1
-		_pending_satellite_index = -1
-		satellite_shop.open_shop(creds)
-
 func is_dialogue_active() -> bool:
-	if is_cinematic_or_death_active():
-		return true
-	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
-		return true
-	var dialogic = get_node_or_null("/root/Dialogic")
-	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
-		if dialogic.has_method("get_subsystem"):
-			var styles = dialogic.get_subsystem("Styles")
-			if styles and styles.has_method("has_active_layout_node") and styles.has_active_layout_node():
-				var l_node = styles.get_layout_node()
-				if is_instance_valid(l_node) and l_node.is_inside_tree():
-					if "visible" in l_node:
-						return bool(l_node.visible)
-					elif l_node.has_method("is_visible_in_tree"):
-						return l_node.is_visible_in_tree()
-					return true
-				return false
-		return false
+	if narrative_director:
+		return narrative_director.is_dialogue_active()
 	return false
 
 func is_upgrade_or_shop_modal_active() -> bool:
-	if is_satellite_shop_active():
-		return true
-	if is_level_up_modal_active():
-		return true
-	if is_arcana_modal_active():
-		return true
-	if is_pause_menu_active():
-		return true
-	if is_game_over_active():
-		return true
-	if is_character_stats_active():
-		return true
-	if slot_machine_modal and slot_machine_modal.visible:
-		return true
-	if slot_machine_reward_modal and slot_machine_reward_modal.visible:
-		return true
-	return false
+	return modal_coordinator.is_upgrade_or_shop_modal_active() if modal_coordinator else false
 
 func has_pending_upgrades() -> bool:
-	if level_up_modal and level_up_modal.has_pending_levels():
-		return true
-	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-		return true
-	if _pending_arcana_picks > 0:
-		return true
-	if _pending_satellite_credits >= 0:
-		return true
-	return false
+	return modal_coordinator.has_pending_upgrades() if modal_coordinator else false
 
 func is_any_combat_modal_active() -> bool:
-	if is_dialogue_active():
-		return true
-	if is_upgrade_or_shop_modal_active():
-		return true
-	var reset_overlay = get_node_or_null("HoldToResetOverlay") as HoldToResetOverlay
-	if reset_overlay and (reset_overlay.visible or reset_overlay.current_hold > 0.0):
-		return true
-	var vp := get_viewport()
-	if vp:
-		var focused := vp.gui_get_focus_owner()
-		if focused and focused.is_visible_in_tree():
-			return true
-	return false
+	return modal_coordinator.is_any_combat_modal_active() if modal_coordinator else false
 
 func notify_menu_closed(duration: float = 0.35) -> void:
-	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
+	if modal_coordinator:
+		modal_coordinator.notify_menu_closed(duration)
+	elif is_instance_valid(player) and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(duration)
 
-
 func restore_combat_modal_focus() -> void:
-	if is_pause_menu_active() and pause_menu.has_method("restore_focus"):
-		pause_menu.restore_focus()
-	elif is_arcana_modal_active() and arcana_modal.has_method("restore_focus"):
-		arcana_modal.restore_focus()
-	elif is_level_up_modal_active() and level_up_modal.has_method("restore_focus"):
-		level_up_modal.restore_focus()
-	elif is_satellite_shop_active() and satellite_shop.has_method("restore_focus"):
-		satellite_shop.restore_focus()
+	if modal_coordinator:
+		modal_coordinator.restore_combat_modal_focus()
+
+func _open_next_pending_arcana() -> void:
+	if modal_coordinator:
+		modal_coordinator.open_next_pending_arcana()
+
+func _resume_pending_systems_after_cinematics() -> void:
+	if modal_coordinator:
+		modal_coordinator._step_next_modal()
 
 func _on_player_bomb_used(_remaining: int) -> void:
 	if camera:
@@ -2461,199 +2144,13 @@ func _on_game_over_hub() -> void:
 # ==============================================================================
 
 func get_current_run_state() -> Dictionary:
-	if not is_instance_valid(player) or player.current_health <= 0.0:
-		return {}
-
-	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
-	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
-
-	# Armas equipadas
-	var weapons_data: Array[Dictionary] = []
-	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl:
-		for inst in w_ctrl.equipped_weapons:
-			if inst.weapon_data:
-				weapons_data.append({
-					"id": String(inst.weapon_data.weapon_id),
-					"level": inst.level
-				})
-
-	# Ítems de inventario
-	var items_data: Array[Dictionary] = []
-	if player.inventory:
-		for it_entry in player.inventory.get_all_items():
-			var it_res: ItemData = it_entry.get("data")
-			if it_res:
-				items_data.append({
-					"id": String(it_res.item_id),
-					"count": int(it_entry.get("count", 1))
-				})
-
-	# Cartas de nivel (Brotato)
-	var cards_data: Array[String] = []
-	for card in player.chosen_stat_cards:
-		cards_data.append(String(card.card_id))
-
-	return {
-		"version": 1,
-		"timestamp": Time.get_unix_time_from_system(),
-		"pilot_id": pilot_id,
-		"pilot_name": pilot_name,
-		"current_wave": current_wave,
-		"wave_timer": wave_timer,
-		"wave_satellites_spawned": wave_satellites_spawned,
-		"satellites_collected_total": satellites_collected_total,
-		"current_satellite_idx": current_satellite_idx,
-		"run_time_elapsed": run_time_elapsed,
-		"enemies_killed_count": enemies_killed_count,
-		"bosses_defeated_count": bosses_defeated_count,
-		"prologue_bonus_chosen": prologue_bonus_chosen,
-		"player_health": player.current_health,
-		"player_level": player.current_level,
-		"player_exp": player.current_exp,
-		"player_exp_to_next": player.exp_to_next,
-		"run_credits": player.run_credits,
-		"run_biomass": player.run_biomass,
-		"run_dark_matter": player.run_dark_matter if "run_dark_matter" in player else 0,
-		"active_arcanas": player.get_arcana_ids() if player.has_method("get_arcana_ids") else [],
-		"bomb_count": player.bomb_count,
-		"equipped_weapons": weapons_data,
-		"equipped_items": items_data,
-		"chosen_stat_cards": cards_data,
-		"rivals_spared": rivals_spared.duplicate(),
-		"rivals_killed": rivals_killed.duplicate(),
-		"rival_queue": rival_queue.duplicate(),
-		"_wave_encounter_checked_for_wave": _wave_encounter_checked_for_wave,
-		"_wave_encounter_spawned_for_wave": _wave_encounter_spawned_for_wave,
-		"_slot_machine_pity_chance": _slot_machine_pity_chance
-	}
+	return RunStateSerializer.get_run_state(self)
 
 func save_current_run_state() -> void:
-	if not is_instance_valid(player) or player.current_health <= 0.0:
-		return
-	var state := get_current_run_state()
-	if not state.is_empty():
-		SaveManager.save_active_run(state)
+	RunStateSerializer.save_run_state(self)
 
 func restore_run_state(run_data: Dictionary) -> void:
-	# 1. Variables de oleada y progresión global
-	current_wave = int(run_data.get("current_wave", 1))
-	wave_timer = float(run_data.get("wave_timer", WAVE_DURATION))
-	wave_satellites_spawned = int(run_data.get("wave_satellites_spawned", 0))
-	satellites_collected_total = int(run_data.get("satellites_collected_total", 0))
-	current_satellite_idx = int(run_data.get("current_satellite_idx", 1))
-	run_time_elapsed = float(run_data.get("run_time_elapsed", 0.0))
-	enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
-	bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
-	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
-	_wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", current_wave))
-	_wave_encounter_spawned_for_wave = int(run_data.get("_wave_encounter_spawned_for_wave", current_wave))
-	_slot_machine_pity_chance = float(run_data.get("_slot_machine_pity_chance", 0.25))
-	_wave_encounter_pending = false
-
-	if run_data.has("rivals_spared"):
-		rivals_spared.clear()
-		for s in run_data["rivals_spared"]:
-			rivals_spared.append(StringName(s))
-	if run_data.has("rivals_killed"):
-		rivals_killed.clear()
-		for k in run_data["rivals_killed"]:
-			rivals_killed.append(StringName(k))
-	if run_data.has("rival_queue"):
-		rival_queue.clear()
-		for q in run_data["rival_queue"]:
-			rival_queue.append(StringName(q))
-
-	is_briefing_active = false
-	get_tree().paused = false
-	if skip_badge_layer:
-		skip_badge_layer.hide()
-
-	if enemy_spawner and enemy_spawner.has_method("set_wave"):
-		enemy_spawner.set_wave(current_wave)
-
-	# 2. Restaurar estadísticas básicas del jugador
-	player.current_level = int(run_data.get("player_level", 1))
-	player.current_exp = float(run_data.get("player_exp", 0.0))
-	player.exp_to_next = float(run_data.get("player_exp_to_next", 40.0))
-	player.run_credits = int(run_data.get("run_credits", 0))
-	player.run_biomass = int(run_data.get("run_biomass", 0))
-	player.run_dark_matter = int(run_data.get("run_dark_matter", 0))
-	player.bomb_count = int(run_data.get("bomb_count", 2))
-
-	# Restaurar arcanas activas (Fase 2)
-	player.active_arcanas.clear()
-	var saved_arcanas: Array = run_data.get("active_arcanas", [])
-	for arc_id in saved_arcanas:
-		var arc: ArcanaData = ArcanaData.get_arcana(String(arc_id))
-		if arc:
-			player.apply_arcana(arc)
-
-	# 3. Restaurar cartas de nivel elegidas (Brotato)
-	player.chosen_stat_cards.clear()
-	var saved_cards: Array = run_data.get("chosen_stat_cards", [])
-	var card_map: Dictionary = {}
-	for card in stat_deck_manager.all_stat_cards:
-		card_map[String(card.card_id)] = card
-
-	for cid in saved_cards:
-		var s_cid := String(cid)
-		if card_map.has(s_cid):
-			var card_res: StatCardData = card_map[s_cid]
-			player.chosen_stat_cards.append(card_res)
-			stat_deck_manager.apply_card_to_stats(card_res, player.stats)
-
-	# 4. Restaurar ítems adquiridos en inventario
-	if player.inventory:
-		player.inventory.clear_items()
-		var saved_items: Array = run_data.get("equipped_items", [])
-		var item_map: Dictionary = {}
-		for it in ItemPoolManager.create_canonical_stat_items():
-			item_map[String(it.item_id)] = it
-
-		for it_entry in saved_items:
-			var i_id: String = String(it_entry.get("id", ""))
-			var i_count: int = int(it_entry.get("count", 1))
-			if item_map.has(i_id):
-				player.inventory.add_item(item_map[i_id], i_count)
-
-	# 5. Restaurar armas equipadas y sus niveles
-	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-	var saved_weapons: Array = run_data.get("equipped_weapons", [])
-	if w_ctrl and not saved_weapons.is_empty():
-		w_ctrl.clear_equipped_weapons()
-		var weapon_catalog: Dictionary = {
-			"rail_launcher": "res://data/weapons/roster/rail_launcher.tres",
-			"hive_cannon": "res://data/weapons/roster/hive_cannon.tres",
-			"singularity_pulsar": "res://data/weapons/roster/singularity_pulsar.tres",
-			"sniper_rifle": "res://data/weapons/roster/sniper_rifle.tres",
-			"tesla_arc": "res://data/weapons/roster/tesla_arc.tres",
-			"titan_shotgun": "res://data/weapons/roster/titan_shotgun.tres",
-			"cluster_submunition": "res://data/weapons/shop/cluster_submunition.tres",
-			"dimensional_blade": "res://data/weapons/shop/dimensional_blade.tres",
-			"nova_flak": "res://data/weapons/shop/nova_flak.tres",
-			"solar_beam": "res://data/weapons/shop/solar_beam.tres",
-		}
-		for w_entry in saved_weapons:
-			var w_id: String = str(w_entry.get("id", ""))
-			var w_lvl: int = int(w_entry.get("level", 1))
-			if weapon_catalog.has(w_id) and ResourceLoader.exists(weapon_catalog[w_id]):
-				var w_res = load(weapon_catalog[w_id]) as WeaponData
-				if w_res:
-					w_ctrl.add_weapon(w_res)
-					for _l in range(2, w_lvl + 1):
-						w_ctrl.upgrade_weapon(StringName(w_id))
-
-	# 6. Restaurar salud
-	player.current_health = minf(float(run_data.get("player_health", 100.0)), player.stats.get_stat(&"max_health"))
-	_last_player_hp = player.current_health
-
-	# 7. Actualizar todo el HUD
-	hud.update_credits(player.run_credits)
-	hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
-	hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
-	player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
-	player.bomb_used.emit(player.bomb_count)
+	RunStateSerializer.restore_run_state(self, run_data)
 
 func _spawn_companion_pet() -> void:
 	var pet_scene: PackedScene = preload("res://scenes/combat/pets/companion_pet.tscn")
