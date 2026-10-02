@@ -8,6 +8,10 @@ Roguelite de acción híbrido desarrollado en **Godot 4.7+ (GDScript)** que comb
 
 Toda la arquitectura matemática, diseño de combate y especificaciones técnicas están centralizadas en:
 
+* **[Kit Maestro Zero-Context: Arquitectura Integral (`ARCHITECTURE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/ARCHITECTURE.md):** Mapa visual de sistemas 3D/2D, contratos `HitContext`/`take_damage` y servidores zero-allocation.
+* **[Guía de Extensión para Desarrolladores (`EXTENDING_THE_GAME.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/EXTENDING_THE_GAME.md):** Recetas paso a paso para añadir heroínas, armas, jefes y suites de pruebas.
+* **[Guía Rápida de Balanceo (`docs/balance/QUICK_BALANCE_GUIDE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/QUICK_BALANCE_GUIDE.md):** Balanceo de valores en 1 clic modificando recursos `.tres` sin tocar código GDScript.
+* **[Pipeline de Arte y Chromas (`docs/art/asset_generation_and_chromas.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/asset_generation_and_chromas.md):** Prompting cenital 90° con IA y recoloreo masivo en Python con preservación de piel y ojos.
 * **[Hub de Balance del Juego (`docs/balance/`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance):**
   * [Arsenal de Armas y Progresión Lv1-Lv5](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/weapons.md)
   * [Ítems Pasivos, Satélite y Arcanas](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/items_and_passives.md)
@@ -42,9 +46,15 @@ Si prefieres descargarlo manualmente a través de tu navegador:
 
 ---
 
-## 📝 Notas del Parche / Registro de Actualizaciones (v0.4.1 - Master)
+## 📝 Notas del Parche / Registro de Actualizaciones (v0.5.0 - Master)
 
 ### 🚀 Últimas Novedades y Sistemas Implementados
+
+#### 🏛️ Arquitectura Modular Radical & Zero-Context Kit
+* **Desmantelamiento de God-Objects:** `MainGame` y `HubWorld` han sido desacoplados en sub-componentes independientes de responsabilidad única (`CombatModalCoordinator`, `CombatNarrativeDirector`, `RunStateSerializer`, `HubHangarBuilder3D`, `HubTerminalManager`).
+* **Fachada de Persistencia Segura:** `SaveManager` ahora opera como una fachada estática ligera delegando en `ProfileStorage`, `MetaProgressionState` y `ActiveRunStorage`, garantizando tipado estricto y cero regresiones.
+* **Pipeline de Generación de Sprites & Chromas:** Herramientas automatizadas en Python (`chroma_remover.py` y `generate_chromas.py`) para recorte con despill en fondos chroma key de IA y recoloreo masivo de skins protegiendo la piel y los ojos.
+* **Documentación Integral para Colaboradores:** Creación de `ARCHITECTURE.md`, `EXTENDING_THE_GAME.md` y `docs/balance/QUICK_BALANCE_GUIDE.md` para trabajo autónomo con cero contexto.
 
 #### 🎯 Armamento Balístico Autónomo (Capa Pasiva Rediseñada)
 * **Trayectoria Balística Directa:** Los misiles de apoyo ya no corrigen su curso artificialmente en el aire; ahora vuelan en línea recta estricta a alta velocidad, pudiendo impactar a enemigos en su paso o errar si el objetivo maniobra con rapidez.

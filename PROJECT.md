@@ -27,7 +27,17 @@ Astra Dream es un juego modular roguelite danmaku en Godot 4.7.2. Tras el rework
 | **M3** | Danmaku Esférico, Shaders & Escalado | BulletServer esférico 1:1, shaders aditivos modulados, escalado adaptativo de colosos | **DONE** |
 | **M4** | Suite Headless Automatizada | Batería de tests headless con exit code 0 validando requerimientos | **DONE** |
 | **M5** | Limpieza, Documentación de Balance y Arte | Purga a backup externo, fichas técnicas compactas y hub `docs/balance/` | **DONE** |
-| **M6** | EncounterDirector Data-Driven | Desacople de oleadas, jefes y satélites de `main_game.gd` en recurso `EncounterTimelineConfig.tres` | **IN PROGRESS** |
+| **M6** | Modularización Radical & Zero-Context Kit | Desacople de `main_game.gd`, `hub_world.gd` y `save_manager.gd`, arquitectura data-driven, kit Zero-Context (`ARCHITECTURE.md`, `EXTENDING_THE_GAME.md`) y pipeline de arte/chromas | **DONE** |
+| **M7** | Balance Fino de Combate & Feedback | Calibración de las 8 armas en `.tres`, curvas de oleadas 1-16, colosos adaptativos, economía de biomasa y feedback de impacto/SFX | **IN PROGRESS** |
+
+---
+
+## 📖 Kit Maestro de Documentación Zero-Context
+
+- **[Arquitectura Integral del Sistema (`ARCHITECTURE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/ARCHITECTURE.md):** Mapa visual 3D/2D, ciclo de vida de runs, contratos `HitContext`/`take_damage` y servidores zero-allocation.
+- **[Guía de Extensión para Desarrolladores (`EXTENDING_THE_GAME.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/EXTENDING_THE_GAME.md):** Recetas paso a paso para añadir heroínas, armas, jefes danmaku y tests unitarios.
+- **[Guía Rápida de Balanceo (`docs/balance/QUICK_BALANCE_GUIDE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/QUICK_BALANCE_GUIDE.md):** Ajuste de daño, salud, oleadas y tiendas puramente mediante recursos `.tres`.
+- **[Pipeline de Arte y Chromas (`docs/art/asset_generation_and_chromas.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/asset_generation_and_chromas.md):** Generación cenital 90° con IA y recoloreo en masa con protección de piel y ojos.
 
 ---
 
