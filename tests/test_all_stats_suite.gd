@@ -105,7 +105,7 @@ func _ready() -> void:
 	var test_dist: float = effective_base + 50.0
 	blob.global_position = Vector2(test_dist, 0)
 	blob._handle_player_magnet(0.016)
-	assert(blob.global_position.x == test_dist, "Fuera del radio base el orbe NO debe moverse")
+	assert(is_equal_approx(blob.global_position.x, test_dist), "Fuera del radio base el orbe NO debe moverse")
 	print("  ✓ Fuera de rango (%0.0f px vs %0.0f px efectivo): orbe permanece en su sitio" % [test_dist, effective_base])
 
 	# Ampliar radio de imán con +80 px

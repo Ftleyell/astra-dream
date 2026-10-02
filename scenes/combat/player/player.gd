@@ -63,6 +63,7 @@ var run_dark_matter: int = 0
 
 # Kinematics & Flight Shader State
 var current_facing_angle: float = -PI / 2.0 # Inicialmente mirando hacia arriba
+var last_facing_direction: Vector2 = Vector2.UP
 var current_bank_tilt: float = 0.0
 var idle_bob_timer: float = 0.0
 var hit_flash_timer: float = 0.0
@@ -410,6 +411,7 @@ func _physics_process(delta: float) -> void:
 	if not is_omega_spinning:
 		if is_moving:
 			var move_angle := velocity.angle()
+			last_facing_direction = velocity.normalized()
 			var angle_diff := wrapf(move_angle - current_facing_angle, -PI, PI)
 			current_facing_angle = lerp_angle(current_facing_angle, move_angle, ROTATION_SMOOTH_SPEED * delta)
 			target_bank = clampf(angle_diff * 1.8, -1.0, 1.0)

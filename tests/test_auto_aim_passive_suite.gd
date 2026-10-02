@@ -57,20 +57,17 @@ func _ready() -> void:
 	assert(wc.is_manual_aim == false, "toggle_aim_mode debe volver a is_manual_aim = false")
 	assert(signal_data["received"] and signal_data["val"] == false, "Debe emitirse aim_mode_changed(false)")
 
-	# Verificar indicador visual debajo del personaje (AimModeIndicator)
-	var indicator := player.get_node_or_null("AimModeIndicator")
+	# Verificar indicador visual holográfico integrado (AimModeIndicator)
+	var indicator := player.get_node_or_null("AimModeIndicator") as AimModeIndicator
 	assert(indicator != null, "AimModeIndicator debe existir como hijo de Player")
-	assert(indicator.position.y >= 20.0, "AimModeIndicator debe estar posicionado debajo del personaje (y >= 20)")
-	var ind_label := indicator.get_node_or_null("PanelContainer/Label") as Label
-	assert(ind_label != null, "AimModeIndicator debe tener un Label interno")
-	assert(ind_label.text == "AUTOAIM: ON", "En modo Auto, el indicador debajo del personaje debe decir 'AUTOAIM: ON'")
+	assert(indicator.is_manual_mode == false, "En modo Auto, is_manual_mode debe ser false")
 
 	wc.toggle_aim_mode()
-	assert(ind_label.text == "AUTOAIM: OFF", "En modo Manual, el indicador debajo del personaje debe decir 'AUTOAIM: OFF'")
+	assert(indicator.is_manual_mode == true, "En modo Manual, is_manual_mode debe ser true")
 	wc.toggle_aim_mode()
-	assert(ind_label.text == "AUTOAIM: ON", "Al regresar a Auto, el indicador debajo del personaje debe decir 'AUTOAIM: ON'")
+	assert(indicator.is_manual_mode == false, "Al regresar a Auto, is_manual_mode debe ser false")
 
-	print("  ✓ WeaponController & AimModeIndicator: alternancia Auto/Manual e indicador 'AUTOAIM: ON/OFF' debajo del personaje verificados")
+	print("  ✓ WeaponController & AimModeIndicator: alternancia Auto/Manual e indicador holográfico verificados")
 
 
 
@@ -82,36 +79,36 @@ func _ready() -> void:
 	player.character_data.pickup_radius = 100.0
 	player.stats.initialize(player.character_data)
 
-	assert(is_equal_approx(wc.get_autoaim_range(), 200.0), "El rango inicial de autoaim debe ser el doble de la base (2 * 100 = 200px)")
+	assert(is_equal_approx(wc.get_autoaim_range(), 850.0), "El rango inicial de autoaim debe ser la base de pantalla completa (850px)")
 
-	# Enemigo A a 150px (dentro del rango de 200px)
-	var enemy_a := _create_test_enemy(Vector2(150, 0))
+	# Enemigo A a 400px (dentro del rango de 850px)
+	var enemy_a := _create_test_enemy(Vector2(400, 0))
 	add_child(enemy_a)
 
-	# Enemigo B a 230px (fuera del rango inicial de 200px)
-	var enemy_b := _create_test_enemy(Vector2(230, 0))
+	# Enemigo B a 880px (fuera del rango inicial de 850px)
+	var enemy_b := _create_test_enemy(Vector2(880, 0))
 	add_child(enemy_b)
 
 	wc.is_manual_aim = false
 	wc._update_locked_target()
-	assert(wc.current_locked_target == enemy_a, "current_locked_target debe ser el enemigo A (150px < 200px)")
+	assert(wc.current_locked_target == enemy_a, "current_locked_target debe ser el enemigo A (400px < 850px)")
 
 	# Ahora aumentamos el pickup en +40px con un modificador (simulando carta Imán)
 	player.stats.add_modifier(&"pickup_radius", CharacterStats.StatModifier.new(&"iman_card", 40.0, false, null))
 	assert(is_equal_approx(player.stats.get_stat(&"pickup_radius"), 140.0), "El pickup radius actual debe ser 140px")
-	# El autoaim debe escalar 1 a 1: 200 + 40 = 240px
-	assert(is_equal_approx(wc.get_autoaim_range(), 240.0), "El autoaim debe escalar 1 a 1: 200 + 40 = 240px")
+	# El autoaim debe escalar con el bono de imán: 850 + 40 * 1.5 = 910px
+	assert(is_equal_approx(wc.get_autoaim_range(), 910.0), "El autoaim debe escalar: 850 + 40 * 1.5 = 910px")
 
-	# Con 240px de rango, el Enemigo B (a 230px) ahora sí entra en rango si eliminamos a A
+	# Con 910px de rango, el Enemigo B (a 880px) ahora sí entra en rango si eliminamos a A
 	enemy_a.queue_free()
 	await get_tree().process_frame
 
 	wc._update_locked_target()
-	assert(wc.current_locked_target == enemy_b, "Con el bono de 40px (rango 240px), el enemigo B (230px) ahora es fijado")
+	assert(wc.current_locked_target == enemy_b, "Con el bono de 40px (rango 910px), el enemigo B (880px) ahora es fijado")
 
 	enemy_b.queue_free()
 	await get_tree().process_frame
-	print("  ✓ Rango de autoaim: base = 2x pickup (200px) y escalado exacto 1:1 (+40px -> 240px) verificado")
+	print("  ✓ Rango de autoaim: base pantalla (850px) y escalado con imán (+40px -> 910px) verificado")
 
 
 
@@ -125,6 +122,8 @@ func _ready() -> void:
 
 	# Nave desplazándose hacia abajo
 	player.velocity = Vector2(0, 300)
+	player.last_facing_direction = Vector2.DOWN
+	wc.last_known_target_dir = Vector2.ZERO
 	var fallback_info := wc._get_passive_aim_info()
 	assert(fallback_info.target == null, "No debe haber target en fallback")
 	assert(fallback_info.direction.is_equal_approx(Vector2.DOWN), "La dirección debe ser la del movimiento de la nave (Vector2.DOWN)")

@@ -104,9 +104,15 @@ func _setup_multimesh() -> void:
 
 	var shader_material := ShaderMaterial.new()
 	shader_material.shader = preload("res://core/shaders/danmaku_bullet.gdshader")
-	var atlas_tex: Texture2D = load("res://assets/sprites/bullets/alien_bullet_atlas.png") as Texture2D
-	if atlas_tex:
-		shader_material.set_shader_parameter("bullet_atlas", atlas_tex)
+	var atlas_path := "res://assets/sprites/bullets/alien_bullet_atlas.png"
+	var atlas_tex: Texture2D = null
+	if ResourceLoader.exists(atlas_path):
+		atlas_tex = load(atlas_path) as Texture2D
+	if not atlas_tex:
+		var fb_img: Image = Image.create(96, 32, false, Image.FORMAT_RGBA8)
+		fb_img.fill(Color(1.0, 0.4, 0.1, 1.0))
+		atlas_tex = ImageTexture.create_from_image(fb_img)
+	shader_material.set_shader_parameter("bullet_atlas", atlas_tex)
 	self.material = shader_material
 
 func spawn_bullet(px: float, py: float, vx: float, vy: float, 
