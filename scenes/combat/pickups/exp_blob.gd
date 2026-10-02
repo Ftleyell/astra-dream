@@ -18,6 +18,29 @@ static func trigger_global_magnet(tree: SceneTree) -> void:
 		if is_instance_valid(node) and node is ExpBlob:
 			(node as ExpBlob).is_force_magnetized = true
 
+static func batch_distant_blobs_if_needed(tree: SceneTree, player_pos: Vector2) -> void:
+	if not tree:
+		return
+	var blobs := tree.get_nodes_in_group("exp_blobs")
+	if blobs.size() <= 60:
+		return
+
+	# Compactar cristales lejanos (> 950 px del jugador) en un Mega-Cristal
+	var distant_blobs: Array[ExpBlob] = []
+	for b in blobs:
+		var blob := b as ExpBlob
+		if is_instance_valid(blob) and not blob.is_being_absorbed and not blob.is_collected:
+			if blob.global_position.distance_squared_to(player_pos) > 950.0 * 950.0:
+				distant_blobs.append(blob)
+
+	if distant_blobs.size() >= 4:
+		var target_blob := distant_blobs[0]
+		for i in range(1, distant_blobs.size()):
+			var src := distant_blobs[i]
+			target_blob.exp_value += src.exp_value
+			src.queue_free()
+		target_blob._update_visuals()
+
 const MERGE_RADIUS_SQ: float = 52.0 * 52.0
 const PICKUP_RADIUS_SQ: float = 140.0 * 140.0
 const COLLECT_RADIUS_SQ: float = 44.0 * 44.0
@@ -59,10 +82,19 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector2.ZERO, 160.0 * delta)
 		global_position += velocity * delta
 
+	# Cull de física si está muy lejos del jugador (> 1350 px)
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+
+	if is_instance_valid(player) and not is_force_magnetized:
+		var dist_to_player_sq := global_position.distance_squared_to(player.global_position)
+		if dist_to_player_sq > 1350.0 * 1350.0:
+			return
+
 	# 1. Comprobación periódica de fusión (merging) con otros blobs cercanos
 	merge_check_timer -= delta
 	if merge_check_timer <= 0.0:
-		merge_check_timer = randf_range(0.12, 0.22)
+		merge_check_timer = randf_range(0.15, 0.28)
 		_check_merging()
 
 	# 2. Atracción magnética hacia el jugador

@@ -88,12 +88,28 @@ func _unhandled_input(event: InputEvent) -> void:
 				resume_game()
 			get_viewport().set_input_as_handled()
 		else:
-			# Si la tienda de satélite o el briefing están activos, ellos consumen ESC prioritariamente
+			# Si la tienda de satélite, briefing, diálogos o cinemáticas están activos, consumen o bloquean ESC prioritariamente
 			var parent_game = get_parent()
-			if parent_game and parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active():
+			if parent_game:
+				if parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active():
+					return
+				if "is_briefing_active" in parent_game and parent_game.is_briefing_active:
+					return
+				if "is_cockpit_active" in parent_game and parent_game.is_cockpit_active:
+					return
+				if "is_rival_cinematic_active" in parent_game and parent_game.is_rival_cinematic_active:
+					return
+				if "is_boss_transmission_active" in parent_game and parent_game.is_boss_transmission_active:
+					return
+				if "is_victory_dialogue_active" in parent_game and parent_game.is_victory_dialogue_active:
+					return
+				if parent_game.has_method("is_any_cutscene_active") and parent_game.is_any_cutscene_active():
+					return
+
+			var dialogic = get_node_or_null("/root/Dialogic")
+			if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
 				return
-			if parent_game and "is_briefing_active" in parent_game and parent_game.is_briefing_active:
-				return
+
 			open_pause_menu()
 			get_viewport().set_input_as_handled()
 		return

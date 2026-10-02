@@ -22,7 +22,6 @@ enum State {
 
 const WARNING_RADIUS: float = 650.0
 const COMBAT_TRIGGER_RADIUS: float = 480.0
-const PROXIMITY_SHIELD_RADIUS: float = 480.0
 const ESCAPE_RADIUS: float = 1450.0
 const SPARED_REQUIRED_TIME: float = 5.0
 const CHALLENGE_REQUIRED_TIME: float = 2.0
@@ -48,7 +47,7 @@ var dash_velocity: Vector2 = Vector2.ZERO
 
 # Componentes visuales
 var ship_sprite: Sprite2D = null
-var shield_sprite: Sprite2D = null
+var combat_danger_ring: Sprite2D = null
 var engine_trail: Line2D = null
 var warning_ring_color: Color = Color(1.0, 0.8, 0.1, 0.5)
 var warning_ring_pulse: float = 0.0
@@ -127,8 +126,8 @@ func prepare_warp_in(target_rest_pos: Vector2 = Vector2.ZERO) -> void:
 	if ship_sprite:
 		ship_sprite.scale = Vector2(0.01, 0.01)
 		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
-	if shield_sprite:
-		shield_sprite.modulate.a = 0.0
+	if combat_danger_ring:
+		combat_danger_ring.modulate.a = 0.0
 	if warning_label:
 		warning_label.modulate.a = 0.0
 	queue_redraw()
@@ -159,8 +158,8 @@ func open_warp_portal(on_shockwave_ready: Callable = Callable()) -> void:
 	if ship_sprite:
 		ship_sprite.scale = Vector2(0.01, 0.01)
 		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
-	if shield_sprite:
-		shield_sprite.modulate.a = 0.0
+	if combat_danger_ring:
+		combat_danger_ring.modulate.a = 0.0
 	if warning_label:
 		warning_label.modulate.a = 0.0
 
@@ -183,8 +182,8 @@ func emerge_from_portal(callback: Callable = Callable()) -> void:
 	t_anim.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.5)
 
-	if shield_sprite:
-		tw.tween_property(shield_sprite, "modulate:a", 0.85, 0.5)
+	if combat_danger_ring:
+		tw.tween_property(combat_danger_ring, "modulate:a", 0.65, 0.5)
 
 	tw.chain().tween_callback(func() -> void:
 		if is_instance_valid(_warp_portal):
@@ -198,6 +197,11 @@ func start_encounter() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	spared_timer = 0.0
 	challenge_timer = 0.0
+	if ship_sprite:
+		ship_sprite.scale = Vector2(0.42, 0.42)
+		ship_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if combat_danger_ring:
+		combat_danger_ring.modulate.a = 0.65
 	if warning_label:
 		warning_label.modulate.a = 1.0
 	_update_warning_label()
@@ -260,35 +264,32 @@ func _setup_visuals() -> void:
 	warning_label.add_theme_font_size_override("font_size", 13)
 	add_child(warning_label)
 
-	# Escudo de proximidad pacífico (~480px de radio = 960px diámetro)
-	if not shield_sprite:
-		shield_sprite = Sprite2D.new()
-		shield_sprite.name = "ProximityShieldSprite"
-		var shield_tex_path := "res://assets/sprites/effects/energy_dome_shield.png"
-		var shield_tex: Texture2D = null
-		if ResourceLoader.exists(shield_tex_path):
-			var res = load(shield_tex_path)
-			if res is Texture2D:
-				shield_tex = res
-		if not shield_tex:
-			var global_path := ProjectSettings.globalize_path(shield_tex_path)
+	# Proyección holográfica de suelo DANGER estilo Mega Man X5 (radio 480px)
+	if not combat_danger_ring:
+		combat_danger_ring = Sprite2D.new()
+		combat_danger_ring.name = "CombatDangerRing"
+		var ring_path := "res://assets/sprites/effects/rival_danger_projection.png"
+		var ring_tex: Texture2D = null
+		if ResourceLoader.exists(ring_path):
+			ring_tex = load(ring_path) as Texture2D
+		if not ring_tex:
+			var global_path := ProjectSettings.globalize_path(ring_path)
 			if FileAccess.file_exists(global_path):
 				var img := Image.new()
 				if img.load(global_path) == OK:
-					shield_tex = ImageTexture.create_from_image(img)
-		shield_sprite.texture = shield_tex
+					ring_tex = ImageTexture.create_from_image(img)
+		combat_danger_ring.texture = ring_tex
 
-		# Material con mezcla aditiva para resplandor holográfico vibrante
+		# Material con mezcla aditiva para resplandor holográfico neón
 		var mat := CanvasItemMaterial.new()
 		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-		shield_sprite.material = mat
+		combat_danger_ring.material = mat
 
-		# El sprite original es 1024x1024. Para abarcar 480px de radio (960px diámetro):
-		var target_scale: float = (PROXIMITY_SHIELD_RADIUS * 2.0) / (1024.0 * scale.x)
-		shield_sprite.scale = Vector2(target_scale, target_scale)
-		shield_sprite.modulate = Color(0.3, 0.85, 1.0, 0.85)
-		shield_sprite.z_index = 1
-		add_child(shield_sprite)
+		var target_scale: float = (COMBAT_TRIGGER_RADIUS * 2.0) / (906.0 * scale.x)
+		combat_danger_ring.scale = Vector2(target_scale, target_scale)
+		combat_danger_ring.modulate = Color(1.0, 0.25, 0.3, 0.65)
+		combat_danger_ring.z_index = -2
+		add_child(combat_danger_ring)
 
 	_update_warning_label()
 
@@ -298,15 +299,15 @@ func _update_warning_label() -> void:
 	if current_state == State.PEACEFUL_WARN:
 		if challenge_timer > 0.0:
 			var remaining := maxf(0.0, CHALLENGE_REQUIRED_TIME - challenge_timer)
-			warning_label.text = "⚠️ RETANDO A %s (%.1fs)...\n[ Permanece cerca para iniciar combate ]" % [pilot_name.to_upper(), remaining]
+			warning_label.text = "⚔️ RETANDO A %s (%.1fs)...\n[ Permanece en el anillo para iniciar combate ]" % [pilot_name.to_upper(), remaining]
 			warning_label.modulate = Color(1.0, 0.45, 0.2, 0.95)
 		elif spared_timer > 0.0:
 			var remaining := maxf(0.0, SPARED_REQUIRED_TIME - spared_timer)
 			warning_label.text = "⚠️ %s: RETIRÁNDOSE (%.1fs)...\n(Mantén distancia para perdonar)" % [pilot_name.to_upper(), remaining]
 			warning_label.modulate = Color(0.3, 1.0, 0.5, 0.95)
 		else:
-			warning_label.text = "🛡️ ESCUDO IMPENETRABLE — %s\n[ Aléjate para perdonar | Permanece cerca para retar ]" % pilot_name.to_upper()
-			warning_label.modulate = Color(0.2, 0.85, 1.0, 0.95)
+			warning_label.text = "⚠️ PERÍMETRO DE COMBATE — %s\n[ Entra al anillo para retar | Aléjate para perdonar ]" % pilot_name.to_upper()
+			warning_label.modulate = Color(1.0, 0.75, 0.2, 0.95)
 	elif current_state == State.DOGFIGHT:
 		warning_label.text = "⚔️ EN DUELO: PILOTO %s" % pilot_name.to_upper()
 		warning_label.modulate = Color(1.0, 0.2, 0.2, 0.95)
@@ -316,15 +317,37 @@ func _update_warning_label() -> void:
 func _process(delta: float) -> void:
 	elapsed_time += delta
 	warning_ring_pulse += delta * 3.5
-	if shield_sprite and is_instance_valid(shield_sprite):
+	if combat_danger_ring and is_instance_valid(combat_danger_ring):
 		if current_state == State.PEACEFUL_WARN:
-			var base_scale: float = (PROXIMITY_SHIELD_RADIUS * 2.0) / (1024.0 * scale.x)
-			var pulse := 1.0 + sin(elapsed_time * 3.0) * 0.03
-			shield_sprite.scale = Vector2(base_scale * pulse, base_scale * pulse)
-			shield_sprite.modulate.a = 0.8 + sin(elapsed_time * 4.0) * 0.15
-			shield_sprite.rotation += delta * 0.3
-		elif shield_sprite.visible:
-			shield_sprite.visible = false
+			combat_danger_ring.visible = true
+			var base_scale: float = (COMBAT_TRIGGER_RADIUS * 2.0) / (906.0 * scale.x)
+			var pulse := 1.0 + sin(elapsed_time * 2.2) * 0.015
+			combat_danger_ring.scale = Vector2(base_scale * pulse, base_scale * pulse)
+
+			# Giro lento continuo:
+			combat_danger_ring.rotation += delta * 0.12
+
+			# Titileo entre su color base y uno más brillante (estilo alerta Mega Man X5)
+			var osc: float = sin(elapsed_time * 3.8) * 0.5 + 0.5
+			var micro_flicker: float = sin(elapsed_time * 18.0) * 0.08
+			var intensity: float = clampf(osc + micro_flicker, 0.0, 1.0)
+
+			var col_base := Color(1.0, 0.25, 0.3, 0.65)
+			var col_bright := Color(1.85, 0.65, 0.7, 0.98)
+			var active_color := col_base.lerp(col_bright, intensity)
+
+			if challenge_timer > 0.0:
+				var c_ratio := clampf(challenge_timer / CHALLENGE_REQUIRED_TIME, 0.0, 1.0)
+				var fast_flicker: float = sin(elapsed_time * (18.0 + c_ratio * 16.0)) * 0.15
+				var intense_intensity: float = clampf(intensity + c_ratio * 0.45 + fast_flicker, 0.0, 1.0)
+				active_color = col_base.lerp(Color(2.5, 0.9, 0.9, 1.0), intense_intensity)
+			elif spared_timer > 0.0:
+				var s_ratio := clampf(spared_timer / SPARED_REQUIRED_TIME, 0.0, 1.0)
+				active_color.a *= maxf(0.15, 1.0 - s_ratio * 0.7)
+
+			combat_danger_ring.modulate = active_color
+		elif combat_danger_ring.visible:
+			combat_danger_ring.visible = false
 	queue_redraw()
 
 func _draw() -> void:
@@ -334,9 +357,6 @@ func _draw() -> void:
 		var col := Color(1.0, 0.8, 0.15, alpha)
 		# Anillo de advertencia exterior
 		draw_arc(Vector2.ZERO, WARNING_RADIUS / sx, 0, TAU, 64, col, 2.5, true)
-		# Anillo de peligro / detonador de combate interior
-		var combat_col := Color(1.0, 0.25, 0.15, alpha * 0.9)
-		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS / sx, 0, TAU, 48, combat_col, 2.5, true)
 	elif current_state == State.DOGFIGHT:
 		var alpha := 0.5 + sin(warning_ring_pulse * 1.5) * 0.25
 		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS / sx, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
@@ -395,14 +415,12 @@ func engage_combat() -> void:
 	current_state = State.DOGFIGHT
 	_update_warning_label()
 
-	# Disipar escudo de energía con efecto de colapso
-	if shield_sprite and is_instance_valid(shield_sprite):
-		var tw_shield := create_tween()
-		tw_shield.set_parallel(true)
-		tw_shield.tween_property(shield_sprite, "scale", shield_sprite.scale * 1.35, 0.25)
-		tw_shield.tween_property(shield_sprite, "modulate:a", 0.0, 0.25)
-		tw_shield.chain().tween_callback(shield_sprite.queue_free)
-		shield_sprite = null
+	# Disipar proyección holográfica de combate con desvanecimiento limpio
+	if combat_danger_ring and is_instance_valid(combat_danger_ring):
+		var tw_ring := create_tween()
+		tw_ring.tween_property(combat_danger_ring, "modulate:a", 0.0, 0.3)
+		tw_ring.chain().tween_callback(combat_danger_ring.queue_free)
+		combat_danger_ring = null
 
 	# Alarma sonora y feedback
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -416,6 +434,12 @@ func _warp_out_peacefully() -> void:
 	if warning_label:
 		warning_label.text = "✓ %s: HIPERSALTO INICIADO. CONTACTO PACÍFICO." % pilot_name.to_upper()
 		warning_label.modulate = Color(0.2, 1.0, 0.6, 1.0)
+
+	if combat_danger_ring and is_instance_valid(combat_danger_ring):
+		var tw_ring := create_tween()
+		tw_ring.tween_property(combat_danger_ring, "modulate:a", 0.0, 0.4)
+		tw_ring.chain().tween_callback(combat_danger_ring.queue_free)
+		combat_danger_ring = null
 
 	rival_spared.emit(pilot_id)
 
@@ -502,9 +526,9 @@ func take_damage(arg: Variant) -> void:
 	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
 		return
 
-	# Si está en fase pacífica, atacar a la rival rompe el perímetro pacífico y desata el combate:
+	# Si está en fase pacífica, la rival es invulnerable y no se activa por fuego cruzado accidental
+	# (solo se reta permaneciendo dentro de su perímetro de combate):
 	if current_state == State.PEACEFUL_WARN:
-		engage_combat()
 		return
 
 	var dmg: float = 0.0
@@ -545,8 +569,8 @@ func _die() -> void:
 	# Limpiar indicadores y etiquetas de advertencia en pantalla
 	if warning_label and is_instance_valid(warning_label):
 		warning_label.visible = false
-	if shield_sprite and is_instance_valid(shield_sprite):
-		shield_sprite.visible = false
+	if combat_danger_ring and is_instance_valid(combat_danger_ring):
+		combat_danger_ring.visible = false
 	queue_redraw()
 
 	# Ejecutar secuencia cinematográfica estilizada con paleta de color propia de la piloto

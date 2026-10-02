@@ -22,8 +22,8 @@ var _pending_satellite_index: int = -1
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
 var bosses_defeated_count: int = 0
 
-const WAVE_DURATION: float = 60.0
-const MAX_SATELLITES_PER_WAVE: int = 3
+const WAVE_DURATION: float = 30.0
+const MAX_SATELLITES_PER_WAVE: int = 1
 const BASE_SPAWN_DISTANCE: float = 600.0
 const DISTANCE_INCREMENT_PER_SAT: float = 250.0
 const SPAWN_AHEAD_DISTANCE: float = 1100.0
@@ -50,6 +50,7 @@ var current_genocide_escort: Node2D = null
 var crisis_manager: Node2D = null
 var crisis_banner: CanvasLayer = null
 var _last_player_hp: float = 100.0
+var _exp_batch_timer: float = 0.0
 
 var current_wave: int = 1
 var is_pre_round: bool = true
@@ -463,6 +464,7 @@ func _on_dialogue_skip_requested() -> void:
 		if hud:
 			hud.update_credits(player.run_credits)
 
+	is_briefing_active = false
 	is_cockpit_active = false
 	is_boss_transmission_active = false
 	if is_rival_cinematic_active:
@@ -1001,6 +1003,13 @@ func _process(delta: float) -> void:
 		_auto_save_timer = 0.0
 		save_current_run_state()
 
+	# Compactación periódica de cristales de EXP lejanos en Mega-Cristales (Optimización)
+	_exp_batch_timer -= delta
+	if _exp_batch_timer <= 0.0:
+		_exp_batch_timer = 2.5
+		if is_instance_valid(player):
+			ExpBlob.batch_distant_blobs_if_needed(get_tree(), player.global_position)
+
 	# Lógica de Pre-Ronda (Fase de Despliegue de 30s) o Temporizador de Oleada regular
 	if is_pre_round:
 		pre_round_timer -= delta
@@ -1017,20 +1026,30 @@ func _process(delta: float) -> void:
 			_spawn_next_satellite_for_wave()
 			save_current_run_state()
 	else:
-		wave_timer -= delta
-		if wave_timer <= 0.0:
-			current_wave += 1
-			wave_timer = WAVE_DURATION
-			wave_satellites_spawned = 0
-			if enemy_spawner and enemy_spawner.has_method("set_wave"):
-				enemy_spawner.set_wave(current_wave)
-			_wave_encounter_checked_for_wave = current_wave
-			_wave_encounter_pending = true
-			_wave_encounter_timer = 2.0
-			save_current_run_state()
-			_spawn_next_satellite_for_wave()
-			if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
-				space_object_spawner.force_spawn_monolith()
+		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en dogfight)
+		var is_boss_active: bool = current_boss != null and is_instance_valid(current_boss)
+		var is_rival_fighting: bool = false
+		if current_rival != null and is_instance_valid(current_rival):
+			var r_state: Variant = current_rival.get("current_state")
+			if r_state == 2: # State.DOGFIGHT
+				is_rival_fighting = true
+		var is_major_combat_active: bool = is_boss_active or is_rival_fighting
+
+		if not is_major_combat_active:
+			wave_timer -= delta
+			if wave_timer <= 0.0:
+				current_wave += 1
+				wave_timer = WAVE_DURATION
+				wave_satellites_spawned = 0
+				if enemy_spawner and enemy_spawner.has_method("set_wave"):
+					enemy_spawner.set_wave(current_wave)
+				_wave_encounter_checked_for_wave = current_wave
+				_wave_encounter_pending = true
+				_wave_encounter_timer = 2.0
+				save_current_run_state()
+				_spawn_next_satellite_for_wave()
+				if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
+					space_object_spawner.force_spawn_monolith()
 
 		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
@@ -1090,18 +1109,36 @@ func _check_wave_encounters() -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if current_wave == 11:
+	if current_wave >= 16 or current_wave == 11:
+		# Oleada climática final: Enfrentamiento contra Astra Prime (o ruta debug)
 		_spawn_final_boss()
-	elif current_wave % 2 == 1:
-		# Oleadas impares (1, 3, 5, 7, 9): Encuentro de Piloto Rival
-		if current_wave <= 9:
-			_spawn_rival_pilot()
-	else:
-		# Oleadas pares (2, 4, 6, 8, 10): Jefes de Dominio
-		_spawn_wave_boss()
+	elif current_wave == 2:
+		# Oleada 2: Jefe de Dominio 1 (Eremita del Vacío)
+		_spawn_wave_boss(boss_hermit_scene)
+	elif current_wave == 4:
+		# Oleada 4: Piloto Rival 1
+		_spawn_rival_pilot()
+	elif current_wave == 6:
+		# Oleada 6: Jefe de Dominio 2 (Espejo Quebrado)
+		_spawn_wave_boss(boss_broken_mirror_scene)
+	elif current_wave == 8:
+		# Oleada 8: Piloto Rival 2
+		_spawn_rival_pilot()
+	elif current_wave == 10:
+		# Oleada 10: Jefe de Dominio 3 (Reloj de Ceniza)
+		_spawn_wave_boss(boss_ash_clock_scene)
+	elif current_wave == 12:
+		# Oleada 12: Piloto Rival 3
+		_spawn_rival_pilot()
+	elif current_wave == 14:
+		# Oleada 14: Jefe de Dominio 4 (Vórtice de Desbordamiento)
+		_spawn_wave_boss(boss_overflow_vortex_scene)
+	elif current_wave == 15:
+		# Oleada 15: Piloto Rival 4
+		_spawn_rival_pilot()
 
-	# Aparición de la Máquina Tragamonedas en las oleadas 3 y 7
-	if current_wave == 3 or current_wave == 7:
+	# Aparición de la Máquina Tragamonedas en las oleadas de descanso 3 y 9
+	if current_wave == 3 or current_wave == 9:
 		_spawn_slot_machine()
 
 func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
@@ -1324,11 +1361,13 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		match current_wave:
 			2:
 				target_scene = boss_hermit_scene
-			4:
-				target_scene = boss_ash_clock_scene
 			6:
 				target_scene = boss_broken_mirror_scene
-			8:
+			10:
+				target_scene = boss_mothership_scene
+			13:
+				target_scene = boss_ash_clock_scene
+			15:
 				target_scene = boss_overflow_vortex_scene
 			_:
 				target_scene = boss_mothership_scene
@@ -1362,6 +1401,8 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	current_boss.global_position = boss_target_pos
 	current_boss.rotation = PI
 	current_boss.process_mode = Node.PROCESS_MODE_ALWAYS
+	current_boss.set("is_invulnerable", true)
+	current_boss.set_meta("_is_emerging", true)
 	if current_boss.has_method("prepare_emergence"):
 		current_boss.prepare_emergence(boss_target_pos)
 	else:
@@ -1400,6 +1441,9 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 							tear.queue_free()
 						return
 					var on_emerge_finished := func() -> void:
+						if is_instance_valid(current_boss):
+							current_boss.set("is_invulnerable", false)
+							current_boss.set_meta("_is_emerging", false)
 						if is_instance_valid(tear):
 							tear.start_collapse()
 						hud.show_boss(b_name, b_hp)
@@ -1468,6 +1512,8 @@ func _spawn_final_boss() -> void:
 	prime.rotation = PI
 	prime.process_mode = Node.PROCESS_MODE_ALWAYS
 	prime.set_route(route)
+	prime.set("is_invulnerable", true)
+	prime.set_meta("_is_emerging", true)
 	if prime.has_method("prepare_emergence"):
 		prime.prepare_emergence(boss_target_pos)
 	else:
@@ -1497,6 +1543,9 @@ func _spawn_final_boss() -> void:
 							tear.queue_free()
 						return
 					var on_emerge_finished := func() -> void:
+						if is_instance_valid(prime):
+							prime.set("is_invulnerable", false)
+							prime.set_meta("_is_emerging", false)
 						if is_instance_valid(tear):
 							tear.start_collapse()
 						hud.show_boss(prime.boss_name, prime.max_health)
@@ -1684,15 +1733,18 @@ func jump_to_boss(boss_id: String) -> void:
 		"boss_hermit_void":
 			target_scene = boss_hermit_scene
 			target_wave = 2
-		"boss_ash_clock":
-			target_scene = boss_ash_clock_scene
-			target_wave = 4
 		"boss_broken_mirror":
 			target_scene = boss_broken_mirror_scene
 			target_wave = 6
+		"boss_mothership":
+			target_scene = boss_mothership_scene
+			target_wave = 10
+		"boss_ash_clock":
+			target_scene = boss_ash_clock_scene
+			target_wave = 13
 		"boss_overflow_vortex":
 			target_scene = boss_overflow_vortex_scene
-			target_wave = 8
+			target_wave = 15
 		_:
 			target_scene = boss_mothership_scene
 			target_wave = 10
@@ -1785,11 +1837,10 @@ func spawn_next_rival_pilot() -> void:
 	_spawn_rival_pilot()
 
 func _input(event: InputEvent) -> void:
-	# Atajo para saltar el briefing o secuencias de diálogo cinematográfico con ESC o acción dialogue_skip
+	# Durante secuencias cinemáticas o diálogos, consumir ESC para evitar desincronizar pausa
 	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
-		if event.is_action_pressed("dialogue_skip") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 			get_viewport().set_input_as_handled()
-			_on_dialogue_skip_requested()
 			return
 
 	if event is InputEventKey and event.pressed and not event.echo:

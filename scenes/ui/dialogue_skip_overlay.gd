@@ -21,6 +21,8 @@ func _ready() -> void:
 	hide()
 	if progress_bar:
 		progress_bar.value = 0.0
+	if prompt_label:
+		prompt_label.text = "Mantén [ESPACIO] para saltar"
 
 	# Permitir clic directo con el ratón como vía accesible adicional
 	if panel:
@@ -63,12 +65,11 @@ func _process(delta: float) -> void:
 				progress_bar.value = clampf(current_hold / HOLD_DURATION, 0.0, 1.0)
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Atajo secundario de escape para saltar instantáneamente si hay diálogo activo
+	# Consumir la tecla ESC durante el diálogo para que no abra el menú de pausa accidentalmente
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		var dialogic = get_node_or_null("/root/Dialogic")
 		if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
 			get_viewport().set_input_as_handled()
-			_execute_skip()
 
 func _on_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

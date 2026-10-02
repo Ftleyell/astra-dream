@@ -13,6 +13,8 @@ static func prepare_boss(boss: Node2D, target_pos: Vector2) -> void:
 	boss.process_mode = Node.PROCESS_MODE_ALWAYS
 	boss.scale = Vector2(0.01, 0.01)
 	boss.modulate = Color(2.5, 2.5, 3.5, 0.0)
+	boss.set("is_invulnerable", true)
+	boss.set_meta("_is_emerging", true)
 
 	# Preservar capas de colisión y suspenderlas durante el spawn cinemático
 	if boss is CollisionObject2D:
@@ -30,6 +32,8 @@ static func emerge_boss(boss: Node2D, tear: Node2D = null, callback: Callable = 
 		return
 
 	boss.process_mode = Node.PROCESS_MODE_ALWAYS
+	boss.set("is_invulnerable", true)
+	boss.set_meta("_is_emerging", true)
 
 	# Sonido colosal de manifestación titánica
 	var audio_mgr := boss.get_node_or_null("/root/AudioManager")
@@ -53,12 +57,14 @@ static func emerge_boss(boss: Node2D, tear: Node2D = null, callback: Callable = 
 				callback.call()
 			return
 
-		# Restaurar capas de colisión del jefe
+		# Restaurar capas de colisión y levantar invulnerabilidad del jefe
 		if boss is CollisionObject2D and boss.has_meta("_cinematic_saved_layer"):
 			var c_obj := boss as CollisionObject2D
 			c_obj.collision_layer = int(boss.get_meta("_cinematic_saved_layer", 2))
 			c_obj.collision_mask = int(boss.get_meta("_cinematic_saved_mask", 1))
 
+		boss.set("is_invulnerable", false)
+		boss.set_meta("_is_emerging", false)
 		boss.process_mode = Node.PROCESS_MODE_PAUSABLE
 
 		if is_instance_valid(tear) and tear.has_method("start_collapse"):

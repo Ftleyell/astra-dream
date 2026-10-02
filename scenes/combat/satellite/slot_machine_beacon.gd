@@ -201,8 +201,8 @@ func handle_player_bump(player: Player) -> void:
 
 	# 2. Deformación elástica de impacto en la máquina (Squash & Stretch)
 	var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	scale = Vector2(1.28, 0.76)
-	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.24)
+	scale = Vector2(2.56, 1.52)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.24)
 
 	# 3. Sonido de impacto
 	var audio_mgr := get_node_or_null("/root/AudioManager")

@@ -128,28 +128,24 @@ func set_wave(wave_num: int) -> void:
 	swarm_event_timer = SWARM_EVENT_INTERVAL
 	champion_spawn_timer = randf_range(18.0, 26.0)
 
-	# Escalado de tope de enemigos: 80 en Wave 1, 120 en Wave 2, 160 en Wave 3, 200 en Wave 4, 250+ en Wave 5+
+	# Escalado de tope de enemigos: Tope máximo estricto de 80 enemigos activos para máximo rendimiento
 	match wave_num:
 		1:
-			max_enemies = 80
+			max_enemies = 50
 			base_spawn_interval = 1.2
-			min_spawn_interval = 0.45
+			min_spawn_interval = 0.50
 		2:
-			max_enemies = 120
+			max_enemies = 65
 			base_spawn_interval = 1.0
-			min_spawn_interval = 0.38
+			min_spawn_interval = 0.42
 		3:
-			max_enemies = 160
+			max_enemies = 75
 			base_spawn_interval = 0.85
-			min_spawn_interval = 0.32
-		4:
-			max_enemies = 200
-			base_spawn_interval = 0.75
-			min_spawn_interval = 0.28
+			min_spawn_interval = 0.35
 		_:
-			max_enemies = mini(320, 250 + (wave_num - 5) * 25)
-			base_spawn_interval = maxf(0.5, 0.7 - float(wave_num - 5) * 0.05)
-			min_spawn_interval = 0.25
+			max_enemies = 80
+			base_spawn_interval = 0.70
+			min_spawn_interval = 0.28
 
 func _acquire_player() -> void:
 	if not is_instance_valid(player):

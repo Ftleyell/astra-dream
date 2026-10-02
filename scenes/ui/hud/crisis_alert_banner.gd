@@ -14,7 +14,7 @@ signal alert_finished(crisis_id: String)
 @onready var panel: Panel = $RootContainer/Panel
 
 var current_crisis_id: String = ""
-var countdown_timer: float = 3.0
+var countdown_timer: float = 5.0
 var is_active: bool = false
 
 func _ready() -> void:
@@ -23,9 +23,9 @@ func _ready() -> void:
 	if root_container:
 		root_container.modulate.a = 0.0
 
-func show_crisis_alert(crisis_id: String, title: String, subtitle: String, tint_color: Color = Color(1.0, 0.35, 0.1)) -> void:
+func show_crisis_alert(crisis_id: String, title: String, subtitle: String, tint_color: Color = Color(1.0, 0.35, 0.1), duration: float = 5.0) -> void:
 	current_crisis_id = crisis_id
-	countdown_timer = 3.0
+	countdown_timer = duration
 	is_active = true
 	visible = true
 
@@ -35,7 +35,7 @@ func show_crisis_alert(crisis_id: String, title: String, subtitle: String, tint_
 	if subtitle_label:
 		subtitle_label.text = subtitle
 	if countdown_label:
-		countdown_label.text = "IMPACTO INMINENTE EN: 3"
+		countdown_label.text = "IMPACTO INMINENTE EN: %d" % int(ceilf(countdown_timer))
 		countdown_label.modulate = Color(1.0, 0.95, 0.4)
 
 	# Animación de entrada
@@ -62,7 +62,7 @@ func _process(delta: float) -> void:
 			var pulse := create_tween()
 			pulse.tween_property(countdown_label, "scale", Vector2(1.2, 1.2), 0.1)
 			pulse.tween_property(countdown_label, "scale", Vector2.ONE, 0.15)
-		_play_alarm_sound(1.0 + (3.0 - current_second) * 0.2)
+		_play_alarm_sound(1.0 + (maxf(0.0, 5.0 - float(current_second))) * 0.12)
 
 	if countdown_timer <= 0.0:
 		_complete_alert()

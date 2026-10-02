@@ -1151,10 +1151,9 @@ func apply_arcana(arcana: ArcanaData) -> void:
 		var mod_id := StringName("arcana_" + arcana.id + "_" + s_key)
 		stats.add_modifier(stat_name, CharacterStats.StatModifier.new(mod_id, val, is_pct, arcana))
 
-	var max_hp := stats.get_stat(&"max_health")
-	if current_health > max_hp:
-		current_health = max_hp
-		health_changed.emit(current_health, max_hp)
+	var max_hp := maxf(1.0, stats.get_stat(&"max_health"))
+	current_health = clampf(current_health, 1.0, max_hp)
+	health_changed.emit(current_health, max_hp)
 
 	arcana_applied.emit(arcana)
 

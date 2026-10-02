@@ -28,6 +28,7 @@ var aimed_orbs_timer: float = 0.0
 var spiral_timer: float = 0.0
 var spiral_tick: int = 0
 var is_telegraphing: bool = false
+var is_invulnerable: bool = false
 
 # Componentes visuales
 var hull_sprite: Sprite2D = null
@@ -259,7 +260,7 @@ func _transition_to_phase_2() -> void:
 	_play_sfx("missile", 1.2)
 
 func take_damage(arg) -> void:
-	if is_dying:
+	if is_dying or is_invulnerable:
 		return
 
 	var dmg: float = 0.0

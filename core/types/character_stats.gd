@@ -110,5 +110,7 @@ func _recalculate_stat(stat_name: StringName) -> void:
 	var final_val: float = (base_val + flat_sum) * maxf(0.0, 1.0 + percent_sum)
 	if stat_name == &"projectile_count":
 		final_val = maxf(1.0, round(final_val))
+	elif stat_name == &"max_health":
+		final_val = maxf(1.0, final_val)
 	_cached_values[stat_name] = final_val
 	_is_dirty[stat_name] = false

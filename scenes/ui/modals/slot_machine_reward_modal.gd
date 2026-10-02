@@ -8,10 +8,15 @@ signal modal_closed()
 var current_chest: Node2D = null
 var current_player: Player = null
 var current_item: ItemData = null
+var current_weapon: WeaponData = null
+var current_pilot_name: String = ""
 
 const RECYCLE_CREDITS: int = 100
+const RECYCLE_WEAPON_CREDITS: int = 250
 
 var _panel: PanelContainer
+var _title_label: Label
+var _subtitle_label: Label
 var _item_name_label: Label
 var _item_desc_label: Label
 var _item_icon: TextureRect
@@ -22,6 +27,7 @@ var _reject_button: Button
 func _ready() -> void:
 	layer = 125
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("slot_machine_reward_modal")
 	_build_ui()
 	hide()
 
@@ -55,19 +61,19 @@ func _build_ui() -> void:
 	_panel.add_child(vbox)
 
 	# Title
-	var title := Label.new()
-	title.text = "🎁 RECOMPENSA DEL COFRE MISTERIOSO"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.2, 1.0))
-	vbox.add_child(title)
+	_title_label = Label.new()
+	_title_label.text = "🎁 RECOMPENSA DEL COFRE MISTERIOSO"
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", 20)
+	_title_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.2, 1.0))
+	vbox.add_child(_title_label)
 
-	var subtitle := Label.new()
-	subtitle.text = "La máquina tragamonedas detonó dejando este ítem de alta tecnología."
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 13)
-	subtitle.add_theme_color_override("font_color", Color(0.75, 0.75, 0.85, 1.0))
-	vbox.add_child(subtitle)
+	_subtitle_label = Label.new()
+	_subtitle_label.text = "La máquina tragamonedas detonó dejando este ítem de alta tecnología."
+	_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_subtitle_label.add_theme_font_size_override("font_size", 13)
+	_subtitle_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.85, 1.0))
+	vbox.add_child(_subtitle_label)
 
 	# Item Card Frame
 	var card_frame := PanelContainer.new()
@@ -147,12 +153,14 @@ func setup(item: ItemData, p_player: Player) -> void:
 func show_reward(chest: Node2D, player: Player) -> void:
 	current_chest = chest
 	current_player = player
-	
+	current_weapon = null
+	current_pilot_name = ""
+
 	# Pick random item from canonical catalog
 	var catalog := ItemPoolManager.create_canonical_stat_items()
 	if not catalog.is_empty():
 		current_item = catalog[randi() % catalog.size()]
-	
+
 	if not _panel:
 		_build_ui()
 	_populate_item_ui()
@@ -161,9 +169,59 @@ func show_reward(chest: Node2D, player: Player) -> void:
 	if _take_button:
 		_take_button.grab_focus()
 
+func show_weapon_reward(pickup: Node2D, player: Player, weapon: WeaponData, pilot_name: String) -> void:
+	current_chest = pickup
+	current_player = player
+	current_weapon = weapon
+	current_item = null
+	current_pilot_name = pilot_name
+
+	if not _panel:
+		_build_ui()
+	_populate_weapon_ui()
+	show()
+	get_tree().paused = true
+	if _take_button:
+		_take_button.grab_focus()
+
+func _populate_weapon_ui() -> void:
+	if not current_weapon:
+		return
+	if _title_label:
+		var p_name := current_pilot_name.to_upper() if not current_pilot_name.is_empty() else "RIVAL"
+		_title_label.text = "🎁 BOTÍN DE COMBATE: PILOTO %s" % p_name
+	if _subtitle_label:
+		_subtitle_label.text = "Cápsula de armamento insignia recuperada tras el combate."
+	if _item_name_label:
+		_item_name_label.text = current_weapon.name.to_upper() if "name" in current_weapon and not current_weapon.name.is_empty() else str(current_weapon.weapon_id).to_upper()
+	if _item_desc_label:
+		_item_desc_label.text = current_weapon.description if "description" in current_weapon else "Arma insignia de tecnología avanzada."
+	if _item_icon:
+		if current_weapon.icon:
+			_item_icon.texture = current_weapon.icon
+			_item_icon.show()
+		else:
+			_item_icon.hide()
+	if _rarity_label:
+		_rarity_label.text = "INSIGNIA MILITAR"
+		_rarity_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0, 1.0))
+	if _take_button:
+		_take_button.text = "✨ EQUIPAR / MEJORAR"
+	if _reject_button:
+		_reject_button.text = "♻️ RECICLAR (+%d Créditos)" % RECYCLE_WEAPON_CREDITS
+
 func _populate_item_ui() -> void:
 	if not current_item:
 		return
+	if _title_label:
+		_title_label.text = "🎁 RECOMPENSA DEL COFRE MISTERIOSO"
+	if _subtitle_label:
+		_subtitle_label.text = "La máquina tragamonedas detonó dejando este ítem de alta tecnología."
+	if _take_button:
+		_take_button.text = "✨ TOMAR ÍTEM"
+	if _reject_button:
+		_reject_button.text = "♻️ RECHAZAR (+%d Créditos)" % RECYCLE_CREDITS
+
 	if _item_name_label:
 		_item_name_label.text = current_item.item_name
 	if _item_desc_label:
@@ -174,7 +232,7 @@ func _populate_item_ui() -> void:
 			_item_icon.show()
 		else:
 			_item_icon.hide()
-		
+
 	var r_text := "COMÚN"
 	var r_color := Color(0.7, 0.7, 0.7, 1.0)
 	match current_item.rarity:
@@ -190,30 +248,44 @@ func _populate_item_ui() -> void:
 		Enums.Rarity.LEGENDARY:
 			r_text = "LEGENDARIO"
 			r_color = Color(1.0, 0.8, 0.1, 1.0)
-			
+
 	_rarity_label.text = r_text
 	_rarity_label.add_theme_color_override("font_color", r_color)
 
 func _on_take_pressed() -> void:
-	if current_item and current_player:
+	if current_weapon and current_player:
+		var w_ctrl := current_player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl:
+			w_ctrl.add_weapon(current_weapon)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx(&"upgrade_obtained")
+	elif current_item and current_player:
 		if current_player.inventory:
 			current_player.inventory.add_item(current_item, 1)
 		if current_player.stats and current_item.has_method("apply_to_stats"):
 			current_item.apply_to_stats(current_player.stats)
 		item_claimed.emit(current_item)
-		
+
 	_close_and_cleanup()
 
 func _on_reject_pressed() -> void:
 	if current_player:
-		current_player.run_credits += RECYCLE_CREDITS
-		item_rejected.emit(RECYCLE_CREDITS)
-		
+		var credits: int = RECYCLE_WEAPON_CREDITS if current_weapon else RECYCLE_CREDITS
+		current_player.run_credits += credits
+		item_rejected.emit(credits)
+		var hud := get_tree().get_first_node_in_group("hud")
+		if hud and hud.has_method("update_credits"):
+			hud.update_credits(current_player.run_credits)
+
 	_close_and_cleanup()
 
 func _close_and_cleanup() -> void:
-	if current_chest and is_instance_valid(current_chest) and current_chest.has_method("open_and_destroy"):
-		current_chest.open_and_destroy()
+	if current_chest and is_instance_valid(current_chest):
+		if current_chest.has_method("open_and_destroy"):
+			current_chest.open_and_destroy()
+		else:
+			current_chest.queue_free()
 	hide()
 	var tree := get_tree()
 	if tree:

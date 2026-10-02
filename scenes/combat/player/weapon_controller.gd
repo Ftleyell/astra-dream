@@ -641,7 +641,7 @@ func _get_candidates_in_range(radius: float) -> Array[Node2D]:
 		return candidates
 
 	for node in tree.get_nodes_in_group("enemies") + tree.get_nodes_in_group("emitters"):
-		if is_instance_valid(node) and node is Node2D and not node.get("is_dying"):
+		if is_instance_valid(node) and node is Node2D and not node.get("is_dying") and not node.get("is_invulnerable") and not node.get_meta("_is_emerging", false):
 			if global_position.distance_squared_to(node.global_position) <= r_sq:
 				candidates.append(node as Node2D)
 	candidates.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))

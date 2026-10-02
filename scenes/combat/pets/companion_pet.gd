@@ -37,6 +37,7 @@ var _is_doing_flip: bool = false
 @onready var laser_beam: Line2D = get_node_or_null("LaserBeam")
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	z_index = 25
 	if not pet_data:
 		var pid := SaveManager.get_selected_pet()

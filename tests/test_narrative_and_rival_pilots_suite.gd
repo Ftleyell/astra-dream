@@ -67,10 +67,11 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 	assert(rival.is_in_group("rival_pilots"), "RivalPilotBoss debe pertenecer al grupo 'rival_pilots'")
 	assert(rival.is_in_group("enemies"), "RivalPilotBoss debe pertenecer al grupo 'enemies'")
 	assert(rival.WARNING_RADIUS == 650.0, "El radio de advertencia debe ser 650 px")
-	assert(rival.COMBAT_TRIGGER_RADIUS == 480.0, "El radio de detonación de combate debe ser 480 px (escudo de proximidad)")
-	assert(rival.ESCAPE_RADIUS == 950.0, "El radio de escape debe ser 950 px")
+	assert(rival.COMBAT_TRIGGER_RADIUS == 480.0, "El radio de detonación de combate debe ser 480 px (perímetro de combate)")
+	assert(rival.ESCAPE_RADIUS == 1450.0, "El radio de escape debe ser 1450 px")
 
-	# Probar cambio a combate al entrar en perímetro o ser atacada
+	# Probar cambio a combate al entrar en perímetro o retar
+	rival.start_encounter()
 	var engaged_signal := [false]
 	rival.rival_engaged.connect(func(_pid): engaged_signal[0] = true)
 	rival.engage_combat()
@@ -82,15 +83,16 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 	rival.take_damage(100.0)
 	assert(rival.current_health == initial_hp - 100.0, "take_damage debe reducir la salud")
 
-	# Probar absorción e inmunidad del escudo en PEACEFUL_WARN
+	# Probar absorción e inmunidad en PEACEFUL_WARN
 	var rival_peace: RivalPilotBoss = rival_scene.instantiate() as RivalPilotBoss
 	add_child(rival_peace)
 	rival_peace.setup_pilot(&"nova", 1)
+	rival_peace.start_encounter()
 	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN)
 	var hp_before: float = rival_peace.current_health
 	rival_peace.take_damage(200.0)
-	assert(rival_peace.current_health == hp_before, "El escudo de proximidad debe absorber los ataques durante PEACEFUL_WARN sin perder HP")
-	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Atacar el escudo en PEACEFUL_WARN no debe provocar combate")
+	assert(rival_peace.current_health == hp_before, "La rival debe ser invulnerable durante PEACEFUL_WARN sin perder HP")
+	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Atacar a la rival en PEACEFUL_WARN no debe provocar combate")
 	rival_peace.queue_free()
 
 	rival.queue_free()
@@ -232,6 +234,7 @@ func _test_7_wave_1_encounter_trigger_and_visibility() -> void:
 	var rival = rival_scene.instantiate()
 	add_child(rival)
 	rival.setup_pilot(&"valentina", 1)
+	rival.start_encounter()
 
 	# 1. Verificar visibilidad en viewport: spawn lateral a 650 px está en rango visual pero fuera de trayectoria directa
 	var spawn_dist := 650.0
@@ -246,22 +249,23 @@ func _test_7_wave_1_encounter_trigger_and_visibility() -> void:
 	assert(rival.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Un paso fugaz por la zona no debe detonar DOGFIGHT instantáneamente")
 	assert(rival.challenge_timer > 0.0, "El temporizador de reto debe comenzar a acumularse")
 
-	# Permanecer en la zona hasta completar CHALLENGE_REQUIRED_TIME (2.5s)
+	# Permanecer en la zona hasta completar CHALLENGE_REQUIRED_TIME (2.0s)
 	for i in range(26):
 		rival._process_peaceful_warn(0.1, 400.0)
-	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "Permanecer en la zona de reto por 2.5s debe detonar DOGFIGHT")
+	assert(rival.current_state == RivalPilotBossScript.State.DOGFIGHT, "Permanecer en la zona de reto por 2s debe detonar DOGFIGHT")
 
-	# 4. Probar reinicio y escape pacífico por alejamiento (> ESCAPE_RADIUS = 950.0)
+	# 4. Probar reinicio y escape pacífico por alejamiento (> ESCAPE_RADIUS = 1450.0)
 	var rival2 = rival_scene.instantiate()
 	add_child(rival2)
 	rival2.setup_pilot(&"selene", 1)
+	rival2.start_encounter()
 	assert(rival2.current_state == RivalPilotBossScript.State.PEACEFUL_WARN)
 
-	# Simular alejamiento durante 4 segundos
-	for i in range(41):
-		rival2._process_peaceful_warn(0.1, 1000.0)
+	# Simular alejamiento durante 5.5 segundos (> SPARED_REQUIRED_TIME = 5.0)
+	for i in range(56):
+		rival2._process_peaceful_warn(0.1, 1500.0)
 
-	assert(rival2.current_state == RivalPilotBossScript.State.WARPING_OUT, "Alejarse >950 px por 4s debe iniciar WARPING_OUT pacífico")
+	assert(rival2.current_state == RivalPilotBossScript.State.WARPING_OUT, "Alejarse >1450 px por 5s debe iniciar WARPING_OUT pacífico")
 
 	rival.queue_free()
 	rival2.queue_free()
@@ -384,6 +388,7 @@ func _test_10_nyx_genocide_escort_and_dialogues() -> void:
 	var rival = rival_scene.instantiate()
 	add_child(rival)
 	rival.setup_pilot(&"nova", 1)
+	rival.start_encounter()
 	assert(rival.ship_sprite.scale == Vector2(0.42, 0.42), "RivalPilotBoss debe tener escala 0.42 igual al jugador")
 	var rival_col := rival.get_node_or_null("CollisionShape2D") as CollisionShape2D
 	assert(rival_col != null and (rival_col.shape as CircleShape2D).radius == 18.0, "La hitbox de la rival debe ser la nave entera con radio 18.0 px")

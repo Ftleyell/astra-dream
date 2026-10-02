@@ -149,6 +149,7 @@ func _apply_export_overrides() -> void:
 ## Applies all text box settings to the scene.
 ## Except the box animations.
 func _apply_box_settings() -> void:
+	set("z_index", 25)
 	var dialog_text_panel: PanelContainer = %DialogTextPanel
 	if ResourceLoader.exists(box_panel):
 		dialog_text_panel.add_theme_stylebox_override(&'panel', load(box_panel) as StyleBox)
@@ -184,6 +185,10 @@ func _apply_name_label_settings() -> void:
 		name_label.add_theme_font_override(&'font', load(get_global_setting(&'font', '') as String) as Font)
 	elif not name_label_font.is_empty():
 		name_label.add_theme_font_override(&'font', load(name_label_font) as Font)
+	else:
+		var sys_mono := SystemFont.new()
+		sys_mono.font_names = PackedStringArray(["Consolas", "Cascadia Code", "Courier New", "monospace"])
+		name_label.add_theme_font_override(&'font', sys_mono)
 
 	if name_label_use_global_color:
 		name_label.add_theme_color_override(&"font_color", get_global_setting(&'font_color', name_label_custom_color) as Color)
@@ -233,6 +238,10 @@ func _apply_text_settings() -> void:
 		dialog_text.add_theme_font_override(&"normal_font", load(get_global_setting(&'font', '') as String) as Font)
 	elif !normal_font.is_empty():
 		dialog_text.add_theme_font_override(&"normal_font", load(normal_font) as Font)
+	else:
+		var sys_mono := SystemFont.new()
+		sys_mono.font_names = PackedStringArray(["Consolas", "Cascadia Code", "Courier New", "monospace"])
+		dialog_text.add_theme_font_override(&"normal_font", sys_mono)
 	if !bold_font.is_empty():
 		dialog_text.add_theme_font_override(&"bold_font", load(bold_font) as Font)
 	if !italics_font.is_empty():

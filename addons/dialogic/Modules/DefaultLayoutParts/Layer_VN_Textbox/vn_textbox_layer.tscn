@@ -203,6 +203,7 @@ _data = {
 [sub_resource type="FontVariation" id="FontVariation_v8y64"]
 
 [node name="VN_TextboxLayer" type="Control"]
+z_index = 25
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -214,7 +215,7 @@ script = ExtResource("1_bpydr")
 box_panel = "res://addons/dialogic/Modules/DefaultLayoutParts/Layer_VN_Textbox/vn_textbox_default_panel.tres"
 box_size = Vector2(550, 150)
 name_label_box_panel = "res://addons/dialogic/Modules/DefaultLayoutParts/Layer_VN_Textbox/vn_textbox_name_label_panel.tres"
-name_label_box_modulate = Color(0, 0, 0, 1)
+name_label_box_modulate = Color(1, 1, 1, 1)
 
 [node name="Animations" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
@@ -262,7 +263,7 @@ mouse_filter = 2
 
 [node name="DialogTextPanel" type="PanelContainer" parent="Anchor/AnimationParent/Sizer"]
 unique_name_in_owner = true
-self_modulate = Color(0.00784314, 0.00784314, 0.00784314, 0.843137)
+self_modulate = Color(1, 1, 1, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -321,7 +322,7 @@ mouse_filter = 2
 
 [node name="NameLabelPanel" type="PanelContainer" parent="Anchor/AnimationParent/Sizer/DialogTextPanel/NameLabelHolder"]
 unique_name_in_owner = true
-self_modulate = Color(0.00784314, 0.00784314, 0.00784314, 0.843137)
+self_modulate = Color(1, 1, 1, 1)
 layout_mode = 1
 offset_top = -50.0
 offset_right = 9.0

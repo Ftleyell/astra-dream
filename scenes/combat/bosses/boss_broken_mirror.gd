@@ -27,6 +27,7 @@ var gaze_sweep_timer: float = 0.0
 var mirror_clone_timer: float = 0.0
 var prism_fan_timer: float = 0.0
 var is_telegraphing: bool = false
+var is_invulnerable: bool = false
 
 # Visuales
 var mirror_hull: Sprite2D = null
@@ -231,7 +232,7 @@ func _transition_to_phase_2() -> void:
 	_play_sfx("missile", 1.4)
 
 func take_damage(arg) -> void:
-	if is_dying:
+	if is_dying or is_invulnerable:
 		return
 
 	var dmg: float = 0.0

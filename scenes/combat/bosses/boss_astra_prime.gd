@@ -20,6 +20,7 @@ var current_health: float = 3800.0
 var current_phase: int = 1
 var is_dying: bool = false
 var route: String = "neutral"
+var is_invulnerable: bool = false
 
 var player: Player = null
 var bullet_server: BulletServer = null
@@ -195,7 +196,7 @@ func _fire_aimed_burst() -> void:
 	_play_sfx("missile", 1.0)
 
 func take_damage(arg: Variant) -> void:
-	if is_dying:
+	if is_dying or is_invulnerable:
 		return
 
 	var dmg: float = 0.0

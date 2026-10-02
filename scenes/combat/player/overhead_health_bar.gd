@@ -19,6 +19,7 @@ var displayed_ratio: float = 1.0
 
 var flash_timer: float = 0.0
 var pulse_time: float = 0.0
+var hp_numeric_label: Label = null
 
 func _ready() -> void:
 	z_index = -1
@@ -31,6 +32,8 @@ func _ready() -> void:
 	if percent_label:
 		percent_label.visible = false
 
+	_setup_hp_numeric_label()
+
 	if not player and get_parent() is Player:
 		player = get_parent() as Player
 
@@ -40,6 +43,24 @@ func _ready() -> void:
 			_update_display(player.current_health, player.stats.get_stat(&"max_health"))
 		else:
 			_update_display(player.current_health, 100.0)
+
+func _setup_hp_numeric_label() -> void:
+	if not hp_numeric_label:
+		hp_numeric_label = Label.new()
+		hp_numeric_label.name = "HPNumericLabel"
+		hp_numeric_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hp_numeric_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		# Color CRT retro verde consola
+		hp_numeric_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4, 0.95))
+		hp_numeric_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.15, 0.05, 0.9))
+		hp_numeric_label.add_theme_constant_override("shadow_offset_x", 1)
+		hp_numeric_label.add_theme_constant_override("shadow_offset_y", 1)
+		hp_numeric_label.add_theme_font_size_override("font_size", 12)
+		hp_numeric_label.custom_minimum_size = Vector2(120, 20)
+		hp_numeric_label.size = Vector2(120, 20)
+		hp_numeric_label.pivot_offset = Vector2(60, 10)
+		hp_numeric_label.position = Vector2(-60, 52)
+		add_child(hp_numeric_label)
 
 func _process(delta: float) -> void:
 	pulse_time += delta
@@ -63,6 +84,14 @@ func _update_display(current: float, max_val: float) -> void:
 	current_health = current
 	max_health = maxf(1.0, max_val)
 	target_ratio = clampf(current_health / max_health, 0.0, 1.0)
+	if hp_numeric_label:
+		hp_numeric_label.text = "%d / %d" % [int(ceil(current_health)), int(ceil(max_health))]
+		if displayed_ratio <= 0.25:
+			hp_numeric_label.modulate = Color(1.0, 0.3, 0.35, 1.0)
+		elif displayed_ratio <= 0.5:
+			hp_numeric_label.modulate = Color(1.0, 0.85, 0.25, 1.0)
+		else:
+			hp_numeric_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	queue_redraw()
 
 func _draw() -> void:

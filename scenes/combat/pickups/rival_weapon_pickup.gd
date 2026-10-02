@@ -134,21 +134,37 @@ func _collect() -> void:
 		return
 	is_collected = true
 
-	if is_instance_valid(player) and weapon_data:
-		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-		if w_ctrl:
-			w_ctrl.add_weapon(weapon_data)
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
 
-		# Sonido de recolección
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("menu_open", 1.2, 1.1)
+	var reward_modal: SlotMachineRewardModal = null
+	var tree := get_tree()
+	if tree:
+		reward_modal = tree.get_first_node_in_group("slot_machine_reward_modal") as SlotMachineRewardModal
+		if not reward_modal and tree.current_scene and "slot_machine_reward_modal" in tree.current_scene:
+			reward_modal = tree.current_scene.slot_machine_reward_modal as SlotMachineRewardModal
 
-		# Feedback flotante
-		_spawn_pickup_floater()
+	if reward_modal and is_instance_valid(player) and weapon_data:
+		reward_modal.show_weapon_reward(self, player, weapon_data, pilot_name)
+		collected.emit(weapon_data)
+	else:
+		if is_instance_valid(player) and weapon_data:
+			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+			if w_ctrl:
+				w_ctrl.add_weapon(weapon_data)
 
-	collected.emit(weapon_data)
+			# Sonido de recolección
+			var audio_mgr := get_node_or_null("/root/AudioManager")
+			if audio_mgr and audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("menu_open", 1.2, 1.1)
 
+			# Feedback flotante
+			_spawn_pickup_floater()
+
+		collected.emit(weapon_data)
+		open_and_destroy()
+
+func open_and_destroy() -> void:
 	var tw := create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(self, "scale", Vector2(1.8, 1.8), 0.15).set_ease(Tween.EASE_OUT)

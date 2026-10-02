@@ -29,6 +29,7 @@ var dilation_cycle_timer: float = 0.0
 var is_in_dilation: bool = false
 var clock_hand_angle: float = 0.0
 var is_telegraphing: bool = false
+var is_invulnerable: bool = false
 
 # Historial para "Eco del Arrepentimiento"
 var past_player_positions: Array[Vector2] = []
@@ -298,7 +299,7 @@ func _transition_to_phase_2() -> void:
 	_play_sfx("missile", 1.3)
 
 func take_damage(arg) -> void:
-	if is_dying:
+	if is_dying or is_invulnerable:
 		return
 
 	var dmg: float = 0.0

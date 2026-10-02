@@ -46,6 +46,7 @@ func _ready() -> void:
 
 	# 3. Probar BossHealthBar en el HUD
 	print("\n[2/4] Verifying BossHealthBar in HUD...")
+	hud.show_boss(boss.boss_name, boss.max_health)
 	var bar = hud.boss_health_bar
 	assert(bar != null, "BossHealthBar debe existir en HUD")
 	assert(bar.is_active == true, "BossHealthBar debe estar activa al spawnear el jefe")
@@ -54,6 +55,7 @@ func _ready() -> void:
 
 	# 4. Probar daño y transición a Fase 2 (< 50% HP)
 	print("\n[3/4] Testing Damage & Phase 2 Transition (<50% HP)...")
+	boss.is_invulnerable = false
 	var hit := HitContext.new()
 	hit.raw_damage = 650.0
 	hit.final_damage = 650.0

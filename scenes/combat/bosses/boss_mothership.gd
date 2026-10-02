@@ -22,6 +22,7 @@ var aimed_timer: float = 0.0
 var spiral_timer: float = 0.0
 var spiral_tick: int = 0
 var nova_timer: float = 0.0
+var is_invulnerable: bool = false
 
 # Nodos visuales
 var sprite: Sprite2D = null
@@ -181,7 +182,7 @@ func _process_phase_2(delta: float) -> void:
 			_play_boss_sfx("missile", 1.2)
 
 func take_damage(arg) -> void:
-	if is_dying:
+	if is_dying or is_invulnerable:
 		return
 
 	var dmg: float = 0.0

@@ -167,8 +167,15 @@ func play_sfx(sfx_name: String, pitch_scale: float = 1.0, volume_db: float = 0.0
 
 	# 2. Control de polifonía máxima por sonido
 	var max_poly: int = profile.get("max_polyphony", 4)
-	var current_poly: int = _active_counts.get(sfx_name, 0)
-	if current_poly >= max_poly:
+	var active_count: int = 0
+	for p in _sfx_pool:
+		if p.playing and _active_sfx_map.get(p) == sfx_name:
+			active_count += 1
+		elif not p.playing and _active_sfx_map.has(p):
+			_release_player_voice(p)
+
+	_active_counts[sfx_name] = active_count
+	if active_count >= max_poly:
 		return null
 
 	# 3. Modulación Dinámica Anti-Fatiga
@@ -207,13 +214,14 @@ func play_sfx(sfx_name: String, pitch_scale: float = 1.0, volume_db: float = 0.0
 	player.pitch_scale = clampf(final_pitch, 0.2, 3.5)
 	player.volume_db = final_volume
 	_active_sfx_map[player] = sfx_name
-	_active_counts[sfx_name] = current_poly + 1
+	_active_counts[sfx_name] = active_count + 1
 	player.play()
 	return player
 
 func _get_available_player() -> AudioStreamPlayer:
 	for p in _sfx_pool:
 		if not p.playing:
+			_release_player_voice(p)
 			return p
 	# Si las 24 voces están en uso, robar la voz más antigua
 	var oldest_player: AudioStreamPlayer = _sfx_pool[0]
@@ -224,6 +232,7 @@ func _get_available_player() -> AudioStreamPlayer:
 			max_pos = pos
 			oldest_player = p
 	_release_player_voice(oldest_player)
+	oldest_player.stop()
 	return oldest_player
 
 func _on_player_finished(player: AudioStreamPlayer) -> void:
