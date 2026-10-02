@@ -90,6 +90,7 @@ const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emer
 var current_slot_machine: Node2D = null
 var slot_machine_modal: CanvasLayer = null
 var slot_machine_reward_modal: CanvasLayer = null
+var _slot_machine_pity_chance: float = 0.25
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_spawned_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
@@ -233,7 +234,7 @@ func _ready() -> void:
 			)
 		return
 
-	# Chequeo de inicio debug directo a Wave 11 (Rutas Pacifista, Genocida, Neutral)
+	# Chequeo de inicio debug directo a Wave Final (Rutas Pacifista, Genocida, Neutral)
 	var debug_route: String = DebugManager.consume_pending_debug_route() if (DebugManager and DebugManager.has_method("consume_pending_debug_route")) else ""
 	if debug_route != "":
 		is_briefing_active = false
@@ -241,7 +242,7 @@ func _ready() -> void:
 		get_tree().paused = false
 		if skip_badge_layer:
 			skip_badge_layer.hide()
-		jump_to_wave_11(debug_route)
+		jump_to_wave_16(debug_route)
 		return
 
 	# Chequeo de inicio debug directo para encuentro de Piloto Rival
@@ -1047,8 +1048,8 @@ func _process(delta: float) -> void:
 			save_current_run_state()
 	else:
 		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en cualquier estado)
-		var is_boss_active: bool = current_boss != null and is_instance_valid(current_boss)
-		var is_rival_active: bool = current_rival != null and is_instance_valid(current_rival)
+		var is_boss_active: bool = (current_boss != null and is_instance_valid(current_boss)) or get_tree().get_nodes_in_group("bosses").size() > 0
+		var is_rival_active: bool = (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("rival_pilots").size() > 0
 		var is_major_combat_active: bool = is_boss_active or is_rival_active
 
 		if not is_major_combat_active:
@@ -1130,42 +1131,54 @@ func _check_wave_encounters() -> void:
 		return
 
 	# Si ya hay un jefe, un rival o cinemática activa, posponer el encuentro para evitar solapamientos
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or is_cinematic_or_death_active():
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or is_cinematic_or_death_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 1.0
 		return
 
-	if current_wave >= 16 or current_wave == 11:
-		# Oleada climática final: Enfrentamiento contra Astra Prime (o ruta debug)
+	if current_wave >= 16:
+		# Oleada climática final: Enfrentamiento contra Astra Prime
 		_spawn_final_boss()
-	elif current_wave == 2:
-		# Oleada 2: Jefe de Dominio 1 (Eremita del Vacío)
-		_spawn_wave_boss(boss_hermit_scene)
-	elif current_wave == 4:
-		# Oleada 4: Piloto Rival 1
+	elif current_wave in [1, 4, 7, 10, 13]:
+		# Oleadas de Piloto Rival (Triada: Rival -> Jefe -> Descanso)
 		_spawn_rival_pilot()
-	elif current_wave == 6:
-		# Oleada 6: Jefe de Dominio 2 (Espejo Quebrado)
+	elif current_wave == 2:
+		# Jefe de Dominio 1: Eremita del Vacío (Cangrejo)
+		_spawn_wave_boss(boss_hermit_scene)
+	elif current_wave == 5:
+		# Jefe de Dominio 2: Espejo Quebrado
 		_spawn_wave_boss(boss_broken_mirror_scene)
 	elif current_wave == 8:
-		# Oleada 8: Piloto Rival 2
-		_spawn_rival_pilot()
-	elif current_wave == 10:
-		# Oleada 10: Jefe de Dominio 3 (Reloj de Ceniza)
+		# Jefe de Dominio 3: Reloj de Ceniza
 		_spawn_wave_boss(boss_ash_clock_scene)
-	elif current_wave == 12:
-		# Oleada 12: Piloto Rival 3
-		_spawn_rival_pilot()
-	elif current_wave == 14:
-		# Oleada 14: Jefe de Dominio 4 (Vórtice de Desbordamiento)
+	elif current_wave == 11:
+		# Jefe de Dominio 4: Vórtice de Desbordamiento
 		_spawn_wave_boss(boss_overflow_vortex_scene)
-	elif current_wave == 15:
-		# Oleada 15: Piloto Rival 4
-		_spawn_rival_pilot()
+	elif current_wave == 14:
+		# Jefe de Dominio 5: Nave Nodriza Aegis
+		_spawn_wave_boss(boss_mothership_scene)
+	elif current_wave in [3, 6, 9, 12, 15]:
+		# Oleadas de descanso: Evaluación de aparición con piedad dinámica para la máquina tragamonedas
+		_evaluate_slot_machine_spawn()
 
-	# Aparición de la Máquina Tragamonedas en las oleadas de descanso 3 y 9
-	if current_wave == 3 or current_wave == 9:
+func _evaluate_slot_machine_spawn() -> void:
+	if _wave_encounter_spawned_for_wave == current_wave:
+		_wave_encounter_pending = false
+		return
+
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or is_cinematic_or_death_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 1.0
+		return
+
+	var roll: float = randf()
+	if roll < _slot_machine_pity_chance:
+		_slot_machine_pity_chance = 0.20
 		_spawn_slot_machine()
+	else:
+		_slot_machine_pity_chance = minf(1.0, _slot_machine_pity_chance + 0.25)
+		_wave_encounter_spawned_for_wave = current_wave
+		_wave_encounter_pending = false
 
 func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
 	if current_slot_machine != null and is_instance_valid(current_slot_machine):
@@ -1237,7 +1250,7 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if (current_rival != null and is_instance_valid(current_rival)) or (current_boss != null and is_instance_valid(current_boss)):
+	if (current_rival != null and is_instance_valid(current_rival)) or (current_boss != null and is_instance_valid(current_boss)) or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or get_tree().get_nodes_in_group("bosses").size() > 0:
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1389,7 +1402,7 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0:
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1412,14 +1425,14 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		match current_wave:
 			2:
 				target_scene = boss_hermit_scene
-			6:
+			5:
 				target_scene = boss_broken_mirror_scene
-			10:
-				target_scene = boss_mothership_scene
-			13:
+			8:
 				target_scene = boss_ash_clock_scene
-			15:
+			11:
 				target_scene = boss_overflow_vortex_scene
+			14:
+				target_scene = boss_mothership_scene
 			_:
 				target_scene = boss_mothership_scene
 
@@ -1525,7 +1538,7 @@ func _spawn_final_boss() -> void:
 		_wave_encounter_pending = false
 		return
 
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0:
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1790,32 +1803,32 @@ func jump_to_boss(boss_id: String) -> void:
 	if hud and hud.has_method("clear_satellite"):
 		hud.clear_satellite()
 
-	# Si es Astra Prime, delegar a jump_to_wave_11 para inicializar su lógica completa de ruta final
+	# Si es Astra Prime, delegar a jump_to_wave_16 para inicializar su lógica completa de ruta final
 	if boss_id == "boss_astra_prime":
-		jump_to_wave_11("neutral")
+		jump_to_wave_16("neutral")
 		return
 
 	var target_scene: PackedScene = boss_mothership_scene
-	var target_wave: int = 10
+	var target_wave: int = 14
 	match boss_id:
 		"boss_hermit_void":
 			target_scene = boss_hermit_scene
 			target_wave = 2
 		"boss_broken_mirror":
 			target_scene = boss_broken_mirror_scene
-			target_wave = 6
-		"boss_mothership":
-			target_scene = boss_mothership_scene
-			target_wave = 10
+			target_wave = 5
 		"boss_ash_clock":
 			target_scene = boss_ash_clock_scene
-			target_wave = 13
+			target_wave = 8
 		"boss_overflow_vortex":
 			target_scene = boss_overflow_vortex_scene
-			target_wave = 15
+			target_wave = 11
+		"boss_mothership":
+			target_scene = boss_mothership_scene
+			target_wave = 14
 		_:
 			target_scene = boss_mothership_scene
-			target_wave = 10
+			target_wave = 14
 
 	current_wave = target_wave
 	_wave_encounter_checked_for_wave = target_wave
@@ -1840,11 +1853,14 @@ func jump_to_boss(boss_id: String) -> void:
 
 
 func jump_to_wave_11(route: String = "neutral") -> void:
+	jump_to_wave_16(route)
+
+func jump_to_wave_16(route: String = "neutral") -> void:
 	is_pre_round = false
-	current_wave = 11
+	current_wave = 16
 	wave_timer = WAVE_DURATION
-	_wave_encounter_checked_for_wave = 11
-	_wave_encounter_spawned_for_wave = 11
+	_wave_encounter_checked_for_wave = 16
+	_wave_encounter_spawned_for_wave = 16
 	_wave_encounter_pending = false
 	if current_boss and is_instance_valid(current_boss):
 		current_boss.queue_free()
@@ -1878,7 +1894,7 @@ func jump_to_wave_11(route: String = "neutral") -> void:
 	if is_instance_valid(player):
 		if player.current_level < 15:
 			player.current_level = 15
-			player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"debug_w11_hull", 100.0, false, self))
+			player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"debug_w16_hull", 100.0, false, self))
 			player.current_health = player.stats.get_stat(&"max_health")
 			if hud:
 				hud.update_exp(0, 100, player.current_level)
@@ -1922,15 +1938,15 @@ func _input(event: InputEvent) -> void:
 		# Tecla R para invocar o testear a la siguiente piloto rival
 		elif event.keycode == KEY_R:
 			spawn_next_rival_pilot()
-		# Tecla P para saltar a la Oleada 11 en Ruta Pacifista (5 perdonadas)
+		# Tecla P para saltar a la Oleada Final en Ruta Pacifista (5 perdonadas)
 		elif event.keycode == KEY_P:
-			jump_to_wave_11("pacifist")
-		# Tecla K para saltar a la Oleada 11 en Ruta Exterminadora / Slayer (5 eliminadas)
+			jump_to_wave_16("pacifist")
+		# Tecla K para saltar a la Oleada Final en Ruta Exterminadora / Slayer (5 eliminadas)
 		elif event.keycode == KEY_K:
-			jump_to_wave_11("slayer")
-		# Tecla N para saltar a la Oleada 11 en Ruta Neutral
+			jump_to_wave_16("slayer")
+		# Tecla N para saltar a la Oleada Final en Ruta Neutral
 		elif event.keycode == KEY_N:
-			jump_to_wave_11("neutral")
+			jump_to_wave_16("neutral")
 		# Tecla T para testear transmisión
 		elif event.keycode == KEY_T:
 			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
@@ -2415,7 +2431,8 @@ func get_current_run_state() -> Dictionary:
 		"rivals_killed": rivals_killed.duplicate(),
 		"rival_queue": rival_queue.duplicate(),
 		"_wave_encounter_checked_for_wave": _wave_encounter_checked_for_wave,
-		"_wave_encounter_spawned_for_wave": _wave_encounter_spawned_for_wave
+		"_wave_encounter_spawned_for_wave": _wave_encounter_spawned_for_wave,
+		"_slot_machine_pity_chance": _slot_machine_pity_chance
 	}
 
 func save_current_run_state() -> void:
@@ -2438,6 +2455,7 @@ func restore_run_state(run_data: Dictionary) -> void:
 	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
 	_wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", current_wave))
 	_wave_encounter_spawned_for_wave = int(run_data.get("_wave_encounter_spawned_for_wave", current_wave))
+	_slot_machine_pity_chance = float(run_data.get("_slot_machine_pity_chance", 0.25))
 	_wave_encounter_pending = false
 
 	if run_data.has("rivals_spared"):
