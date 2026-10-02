@@ -1045,14 +1045,10 @@ func _process(delta: float) -> void:
 			_spawn_next_satellite_for_wave()
 			save_current_run_state()
 	else:
-		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en dogfight)
+		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en cualquier estado)
 		var is_boss_active: bool = current_boss != null and is_instance_valid(current_boss)
-		var is_rival_fighting: bool = false
-		if current_rival != null and is_instance_valid(current_rival):
-			var r_state: Variant = current_rival.get("current_state")
-			if r_state == 2: # State.DOGFIGHT
-				is_rival_fighting = true
-		var is_major_combat_active: bool = is_boss_active or is_rival_fighting
+		var is_rival_active: bool = current_rival != null and is_instance_valid(current_rival)
+		var is_major_combat_active: bool = is_boss_active or is_rival_active
 
 		if not is_major_combat_active:
 			wave_timer -= delta
@@ -1126,6 +1122,12 @@ func _check_wave_encounters() -> void:
 	if is_any_combat_modal_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
+		return
+
+	# Si ya hay un jefe, un rival o cinemática activa, posponer el encuentro para evitar solapamientos
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or is_cinematic_or_death_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 1.0
 		return
 
 	if current_wave >= 16 or current_wave == 11:
@@ -1224,7 +1226,12 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if current_rival != null or current_boss != null or not is_instance_valid(player):
+	if (current_rival != null and is_instance_valid(current_rival)) or (current_boss != null and is_instance_valid(current_boss)):
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 1.0
+		return
+
+	if not is_instance_valid(player):
 		return
 
 	var next_pid := override_id
@@ -1364,7 +1371,12 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if current_boss != null or not is_instance_valid(player):
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 1.0
+		return
+
+	if not is_instance_valid(player):
 		return
 
 	# Pausar la generación de drones comunes para duelo 1v1
@@ -1488,7 +1500,12 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	)
 
 func _spawn_final_boss() -> void:
-	if current_boss != null or not is_instance_valid(player):
+	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 1.0
+		return
+
+	if not is_instance_valid(player):
 		return
 
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
