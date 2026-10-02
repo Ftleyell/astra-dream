@@ -94,6 +94,10 @@ func _ready() -> void:
 			player.biomass_changed.connect(update_biomass)
 		update_biomass(player.run_biomass, SaveManager.get_biomass())
 
+		if player.has_signal("credits_changed"):
+			player.credits_changed.connect(update_credits)
+		update_credits(player.run_credits)
+
 		var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 		if weapon_ctrl:
 			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
@@ -123,6 +127,8 @@ func _process(delta: float) -> void:
 			target_reticle.call("set_target", lock_target)
 		elif target_reticle.has_method("set_target"):
 			target_reticle.call("set_target", null)
+
+	_update_weapon_cooldown_sweeps()
 
 
 	run_time += delta
@@ -203,56 +209,144 @@ func update_weapon_slots(weapons: Array) -> void:
 	if not weapon_slots_row:
 		return
 	for child in weapon_slots_row.get_children():
+		weapon_slots_row.remove_child(child)
 		child.queue_free()
 
-	for inst in weapons:
-		if not inst or not ("weapon_data" in inst):
+	const TOTAL_SLOTS: int = 4
+	for slot_idx in range(TOTAL_SLOTS):
+		if slot_idx < weapons.size() and weapons[slot_idx] != null:
+			var inst: WeaponInstanceData = weapons[slot_idx]
+			var wdata: WeaponData = inst.weapon_data
+			var w_level: int = inst.level
+
+			var chip := PanelContainer.new()
+			chip.name = "WeaponSlot_%d" % slot_idx
+			chip.custom_minimum_size = Vector2(44, 44)
+			chip.clip_contents = true
+
+			var eff_dmg: float = inst.get_effective_damage(player.stats if is_instance_valid(player) else null)
+			var eff_cd: float = inst.get_effective_cooldown(player.stats if is_instance_valid(player) else null)
+			chip.tooltip_text = "[Ranura %d] %s (★%d)\nDaño: %.1f | Enfriamiento: %.2fs\n%s" % [
+				slot_idx + 1,
+				wdata.weapon_name,
+				w_level,
+				eff_dmg,
+				eff_cd,
+				wdata.description
+			]
+
+			var rarity_color := _get_rarity_color(wdata.rarity)
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(0.04, 0.06, 0.12, 0.95)
+			style.set_border_width_all(2)
+			style.border_color = rarity_color
+			style.set_corner_radius_all(6)
+			chip.add_theme_stylebox_override("panel", style)
+
+			var inner := Control.new()
+			inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+			inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			chip.add_child(inner)
+
+			var icon_rect := TextureRect.new()
+			icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			if wdata.icon:
+				icon_rect.texture = wdata.icon
+				icon_rect.modulate = rarity_color
+			inner.add_child(icon_rect)
+
+			var cd_overlay := ColorRect.new()
+			cd_overlay.name = "CDOverlay"
+			cd_overlay.color = Color(0.01, 0.02, 0.05, 0.75)
+			cd_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+			cd_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			cd_overlay.visible = false
+			inner.add_child(cd_overlay)
+
+			var slot_lbl := Label.new()
+			slot_lbl.text = str(slot_idx + 1)
+			slot_lbl.add_theme_font_size_override("font_size", 9)
+			slot_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.9, 0.5))
+			slot_lbl.position = Vector2(4, 28)
+			slot_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			inner.add_child(slot_lbl)
+
+			var lvl_lbl := Label.new()
+			lvl_lbl.text = "★%d" % w_level
+			lvl_lbl.add_theme_font_size_override("font_size", 10)
+			lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+			lvl_lbl.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.9))
+			lvl_lbl.add_theme_constant_override("shadow_offset_x", 1)
+			lvl_lbl.add_theme_constant_override("shadow_offset_y", 1)
+			lvl_lbl.position = Vector2(24, 2)
+			lvl_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			inner.add_child(lvl_lbl)
+
+			weapon_slots_row.add_child(chip)
+		else:
+			var empty_chip := PanelContainer.new()
+			empty_chip.name = "WeaponSlot_Empty_%d" % slot_idx
+			empty_chip.custom_minimum_size = Vector2(44, 44)
+			empty_chip.tooltip_text = "Ranura #%d [Vacía]\n(Espacio disponible para nuevas armas)" % [slot_idx + 1]
+
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(0.02, 0.04, 0.08, 0.45)
+			style.border_color = Color(0.2, 0.35, 0.5, 0.35)
+			style.set_border_width_all(1)
+			style.set_corner_radius_all(6)
+			empty_chip.add_theme_stylebox_override("panel", style)
+
+			var inner := Control.new()
+			inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+			inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			empty_chip.add_child(inner)
+
+			var plus_lbl := Label.new()
+			plus_lbl.text = "+"
+			plus_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			plus_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			plus_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+			plus_lbl.add_theme_font_size_override("font_size", 18)
+			plus_lbl.add_theme_color_override("font_color", Color(0.3, 0.45, 0.6, 0.4))
+			plus_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			inner.add_child(plus_lbl)
+
+			var slot_lbl := Label.new()
+			slot_lbl.text = str(slot_idx + 1)
+			slot_lbl.add_theme_font_size_override("font_size", 9)
+			slot_lbl.add_theme_color_override("font_color", Color(0.3, 0.4, 0.5, 0.35))
+			slot_lbl.position = Vector2(4, 28)
+			slot_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			inner.add_child(slot_lbl)
+
+			weapon_slots_row.add_child(empty_chip)
+
+func _update_weapon_cooldown_sweeps() -> void:
+	if not is_instance_valid(player) or not weapon_slots_row:
+		return
+	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	if not w_ctrl:
+		return
+	var slots := weapon_slots_row.get_children()
+	var count: int = mini(slots.size(), w_ctrl.equipped_weapons.size())
+	for i in range(count):
+		var inst: WeaponInstanceData = w_ctrl.equipped_weapons[i]
+		if not inst:
 			continue
-		var wdata: WeaponData = inst.weapon_data
-		var w_level: int = inst.level
-
-		var chip := PanelContainer.new()
-		chip.custom_minimum_size = Vector2(36, 36)
-		chip.tooltip_text = "%s (Nivel %d)\n%s" % [wdata.weapon_name, w_level, wdata.description]
-
-		var rarity_color := _get_rarity_color(wdata.rarity)
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.04, 0.06, 0.12, 0.95)
-		style.set_border_width_all(2)
-		style.border_color = rarity_color
-		style.set_corner_radius_all(6)
-		chip.add_theme_stylebox_override("panel", style)
-		chip.modulate.a = 0.85
-
-		var icon_rect := TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(24, 24)
-		icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		if wdata.icon:
-			icon_rect.texture = wdata.icon
-			icon_rect.modulate = rarity_color
-
-		var margin := MarginContainer.new()
-		margin.set("theme_override_constants/margin_left", 2)
-		margin.set("theme_override_constants/margin_right", 2)
-		margin.set("theme_override_constants/margin_top", 2)
-		margin.set("theme_override_constants/margin_bottom", 2)
-
-		var lvl_lbl := Label.new()
-		lvl_lbl.text = str(w_level)
-		lvl_lbl.add_theme_font_size_override("font_size", 11)
-		lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-		lvl_lbl.add_theme_color_override("font_shadow_color", Color.BLACK)
-		lvl_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
-		lvl_lbl.size_flags_vertical = Control.SIZE_SHRINK_END
-
-		chip.add_child(icon_rect)
-		margin.add_child(lvl_lbl)
-		chip.add_child(margin)
-
-		weapon_slots_row.add_child(chip)
+		var slot_card: Node = slots[i]
+		var cd_overlay := slot_card.find_child("CDOverlay", true, false) as ColorRect
+		if not cd_overlay:
+			continue
+		var max_cd: float = inst.get_effective_cooldown(player.stats if player else null)
+		if inst.active_cooldown > 0.02 and max_cd > 0.0:
+			cd_overlay.visible = true
+			var ratio: float = clampf(inst.active_cooldown / max_cd, 0.0, 1.0)
+			cd_overlay.anchor_top = 1.0 - ratio
+		else:
+			cd_overlay.visible = false
 
 func set_active_satellite(pos: Vector2, index: int) -> void:
 	active_satellite_pos = pos

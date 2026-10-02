@@ -934,12 +934,17 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 	get_tree().root.add_child(swap_modal)
 	swap_modal.prompt_swap(player, w_data,
 		func(_idx, _new_w):
-			current_credits -= cost
-			_update_credits_display()
 			if is_instance_valid(player):
-				player.run_credits = current_credits
+				player.run_credits = maxi(0, player.run_credits - cost)
+				current_credits = player.run_credits
 				if player.has_signal("credits_changed"):
 					player.credits_changed.emit(player.run_credits)
+			else:
+				current_credits = maxi(0, current_credits - cost)
+			var hud := get_tree().get_first_node_in_group("hud")
+			if hud and hud.has_method("update_credits"):
+				hud.update_credits(current_credits)
+			_update_credits_display()
 			if is_instance_valid(buy_btn):
 				buy_btn.disabled = true
 				buy_btn.text = "¡Adquirido!"

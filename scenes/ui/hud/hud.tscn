@@ -211,10 +211,6 @@ offset_right = 200.0
 offset_bottom = 80.0
 theme_override_constants/separation = 4
 
-[node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/InventoryContainer/EquipmentVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
 [node name="InventoryRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar/InventoryContainer/EquipmentVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
@@ -249,6 +245,12 @@ vertical_alignment = 1
 [node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 12
+alignment = 1
 
 [node name="TacticalAbilitiesRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

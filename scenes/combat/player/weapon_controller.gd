@@ -114,10 +114,22 @@ func add_weapon(data: WeaponData) -> bool:
 func is_full() -> bool:
 	return equipped_weapons.size() >= MAX_WEAPON_SLOTS
 
-func replace_weapon(slot_index: int, new_weapon_data: WeaponData) -> bool:
+static func calculate_recycle_credits(weapon_level: int) -> int:
+	return 35 + maxi(0, weapon_level - 1) * 15
+
+func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level: bool = true) -> bool:
 	if not new_weapon_data or slot_index < 0 or slot_index >= equipped_weapons.size():
 		return false
-	var new_inst := WeaponInstanceData.new(new_weapon_data, 1)
+	var old_inst: WeaponInstanceData = equipped_weapons[slot_index]
+	var old_level: int = old_inst.level if old_inst else 1
+	var target_level: int = maxi(old_level, 1) if preserve_level else 1
+
+	# Bonificación por reciclaje del arma anterior
+	var recycle_credits: int = calculate_recycle_credits(old_level)
+	if is_instance_valid(player) and player.has_method("add_credits"):
+		player.add_credits(recycle_credits)
+
+	var new_inst := WeaponInstanceData.new(new_weapon_data, target_level)
 	equipped_weapons[slot_index] = new_inst
 	weapons_updated.emit(equipped_weapons)
 	weapon_replaced.emit(slot_index, new_inst)

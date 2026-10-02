@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cwpswaphud01"]
+
+[ext_resource type="Script" path="res://tests/test_weapon_swap_and_hud_suite.gd" id="1_wpswaphud_script"]
+
+[node name="TestWeaponSwapAndHudRunner" type="Node"]
+script = ExtResource("1_wpswaphud_script")
