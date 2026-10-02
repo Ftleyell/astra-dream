@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://csatitems01"]
+
+[ext_resource type="Script" path="res://tests/test_satellite_items_suite.gd" id="1_sat_items_script"]
+
+[node name="TestSatelliteItemsRunner" type="Node"]
+script = ExtResource("1_sat_items_script")

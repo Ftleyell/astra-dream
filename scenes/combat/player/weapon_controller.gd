@@ -389,6 +389,13 @@ func _handle_active_fire(delta: float) -> void:
 			has_charge_memory = false
 			laser_charge_ended.emit()
 
+func trigger_instant_salvo() -> void:
+	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
+	for inst in equipped_weapons:
+		_dispatch_weapon_active_fire(inst, aim_dir, false, 0.0)
+
 func _fire_all_active_weapons(is_focused: bool, charge_amount: float) -> void:
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
 	if aim_dir.length_squared() < 0.001:
@@ -420,6 +427,7 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 	var count := wdata.active_burst_count
 	if wdata.scales_with_projectile_count and wdata.active_scales_with_projectiles and player:
 		count += maxi(0, int(player.stats.get_stat(&"projectile_count")) - 1)
+	count += maxi(0, inst.level - 1)
 
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 
@@ -546,7 +554,9 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 
 	var count := 1
 	if wdata.scales_with_projectile_count and wdata.passive_scales_with_projectiles and player:
-		count = maxi(1, int(player.stats.get_stat(&"projectile_count")))
+		count = maxi(1, int(player.stats.get_stat(&"projectile_count"))) + maxi(0, inst.level - 1)
+	else:
+		count += maxi(0, inst.level - 1)
 
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 

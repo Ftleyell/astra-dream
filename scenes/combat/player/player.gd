@@ -9,6 +9,7 @@ const SandevistanFlightVFX = preload("res://scenes/combat/player/sandevistan_fli
 
 var stats: CharacterStats = CharacterStats.new()
 var inventory: InventoryComponent = InventoryComponent.new()
+var _static_charge: float = 0.0
 
 # Dash & Mobility State (Unique per Character)
 var is_dashing: bool = false
@@ -70,9 +71,8 @@ var hit_flash_timer: float = 0.0
 const ROTATION_SMOOTH_SPEED: float = 14.0
 const BANK_SMOOTH_SPEED: float = 8.0
 
-# Core Hitbox Node
-@onready var hitbox_core: Node2D = $HitboxCore
-@onready var weapon_controller: Node2D = $WeaponController
+@onready var hitbox_core: Node2D = get_node_or_null("HitboxCore")
+@onready var weapon_controller: Node2D = get_node_or_null("WeaponController")
 
 signal health_changed(current: float, max_val: float)
 signal bomb_used(remaining: int)
@@ -203,6 +203,7 @@ func _ready() -> void:
 	)
 
 	inventory.character_stats = stats
+	inventory.item_added.connect(func(_it: ItemData, _cnt: int) -> void: _update_conversion_core_stats())
 	add_child(inventory)
 
 	if bullet_server:
@@ -405,6 +406,14 @@ func _physics_process(delta: float) -> void:
 		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
 
 	var is_moving: bool = velocity.length_squared() > 10.0
+	if is_moving and inventory and inventory.get_item_count(&"static_cell") > 0:
+		_static_charge += velocity.length() * delta * 0.25
+		if _static_charge >= 100.0:
+			_static_charge = 0.0
+			has_guaranteed_crit = true
+			var audio_mgr := get_node_or_null("/root/AudioManager")
+			if audio_mgr and audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("laser", 1.8, 2.5)
 	var target_bank: float = 0.0
 
 	# Durante el Omega Spin de Nova, la rotación la conduce sincronizadamente el rayo láser
@@ -996,6 +1005,7 @@ func heal(amount: float) -> void:
 	var max_hp: float = stats.get_stat(&"max_health") if stats else 100.0
 	current_health = minf(max_hp, current_health + amount)
 	health_changed.emit(current_health, max_hp)
+	_update_conversion_core_stats()
 
 func add_credits(amount: int) -> void:
 	var mult: float = stats.get_stat(&"credits_multiplier") if stats else 1.0
@@ -1015,6 +1025,9 @@ func add_biomass(amount: int) -> void:
 func add_exp(amount: float) -> void:
 	var exp_mult: float = stats.get_stat(&"exp_multiplier") if stats else 1.0
 	var effective_amount: float = amount * maxf(0.1, exp_mult)
+	if inventory and inventory.get_item_count(&"alchemical_converter") > 0:
+		var cred_gain: int = maxi(1, int(round(effective_amount * 0.15)))
+		add_credits(cred_gain)
 	current_exp += effective_amount
 	while current_exp >= exp_to_next:
 		current_exp -= exp_to_next
@@ -1061,11 +1074,28 @@ func take_damage(amount: float) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
+	_update_conversion_core_stats()
 
 	if inventory:
 		inventory.process_take_damage_procs(mitigated_dmg, self)
 
 	if current_health <= 0.0 and not is_dead:
+		if inventory and inventory.get_item_count(&"stellar_scrap") > 0 and not has_meta("stellar_scrap_used") and run_credits >= 100:
+			set_meta("stellar_scrap_used", true)
+			run_credits -= 100
+			credits_changed.emit(run_credits)
+			var max_hp: float = stats.get_stat(&"max_health") if stats else 100.0
+			current_health = max_hp * 0.3
+			health_changed.emit(current_health, max_hp)
+			_update_conversion_core_stats()
+			var tw := create_tween()
+			if tw:
+				tw.tween_property(self, "modulate", Color(2.5, 2.0, 0.5, 1.0), 0.15)
+				tw.tween_property(self, "modulate", Color.WHITE, 0.3)
+			var audio_mgr2 := get_node_or_null("/root/AudioManager")
+			if audio_mgr2 and audio_mgr2.has_method("play_sfx"):
+				audio_mgr2.play_sfx("upgrade_obtained", 1.5, 1.5)
+			return
 		_trigger_death_sequence()
 
 func _trigger_death_sequence() -> void:
@@ -1132,6 +1162,8 @@ func _spawn_player_explosion_vfx() -> void:
 func _handle_health_regen(delta: float) -> void:
 	if not stats:
 		return
+	if inventory and inventory.get_item_count(&"overdrain_module") > 0:
+		return
 	var max_hp := stats.get_stat(&"max_health")
 	if current_health < max_hp and current_health > 0.0:
 		var regen := stats.get_stat(&"health_regen")
@@ -1140,6 +1172,40 @@ func _handle_health_regen(delta: float) -> void:
 			current_health = minf(max_hp, current_health + regen * delta)
 			if int(old_val * 2.0) != int(current_health * 2.0) or current_health >= max_hp:
 				health_changed.emit(current_health, max_hp)
+
+func _update_conversion_core_stats() -> void:
+	if not stats or not inventory:
+		return
+
+	# Célula Hemodinámica
+	if inventory.get_item_count(&"hemodynamic_cell") > 0:
+		var max_hp: float = maxf(1.0, stats.get_stat(&"max_health"))
+		var missing_pct: float = clampf(1.0 - (current_health / max_hp), 0.0, 1.0)
+		var missing_tens: float = floorf(missing_pct * 10.0)
+		var dmg_bonus: float = minf(0.25, missing_tens * 0.03)
+		var atk_spd_bonus: float = minf(0.25, missing_tens * 0.02)
+		stats.set_or_replace_modifier(&"base_damage", CharacterStats.StatModifier.new(&"hemodynamic_dmg", dmg_bonus, true, &"hemodynamic_cell"))
+		stats.set_or_replace_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"hemodynamic_spd", atk_spd_bonus, true, &"hemodynamic_cell"))
+	else:
+		stats.remove_modifier(&"base_damage", &"hemodynamic_dmg")
+		stats.remove_modifier(&"attack_speed", &"hemodynamic_spd")
+
+	# Conversor Cinético
+	if inventory.get_item_count(&"kinetic_converter") > 0:
+		var p_speed: float = stats.get_stat(&"projectile_speed")
+		var p_bonus: float = maxf(0.0, p_speed - 1.0)
+		var dmg_bonus: float = p_bonus * 0.25
+		stats.set_or_replace_modifier(&"base_damage", CharacterStats.StatModifier.new(&"kinetic_converter_dmg", dmg_bonus, true, &"kinetic_converter"))
+	else:
+		stats.remove_modifier(&"base_damage", &"kinetic_converter_dmg")
+
+	# Resonador Gravitatorio
+	if inventory.get_item_count(&"gravitational_resonator") > 0:
+		var radius: float = stats.get_stat(&"pickup_radius")
+		var armor_bonus: float = floorf(radius / 25.0)
+		stats.set_or_replace_modifier(&"armor", CharacterStats.StatModifier.new(&"gravitational_resonator_armor", armor_bonus, false, &"gravitational_resonator"))
+	else:
+		stats.remove_modifier(&"armor", &"gravitational_resonator_armor")
 
 func _on_bullet_hit() -> void:
 	take_damage(10.0)

@@ -106,7 +106,7 @@ func _ensure_player() -> void:
 
 
 func _generate_default_shop_items() -> void:
-	var items: Array[ItemData] = ItemPoolManager.create_canonical_stat_items()
+	var items: Array[ItemData] = ItemPoolManager.create_satellite_shop_items()
 	for it in items:
 		available_items_pool.append(it)
 
@@ -591,12 +591,52 @@ func _roll_shop_items() -> void:
 	current_offered_items.clear()
 	buy_buttons.clear()
 
-	var pool_copy := available_items_pool.duplicate()
-	pool_copy.shuffle()
+	_ensure_player()
+	var w_ctrl: WeaponController = null
+	if is_instance_valid(player):
+		w_ctrl = player.get_node_or_null("WeaponController") as WeaponController
 
-	var count := mini(3, pool_copy.size())
-	for i in range(count):
-		var entry: Resource = pool_copy[i]
+	# Slot 0: Ranura obligatoria de Arma o Mejora de Arma equipada
+	var weapon_candidates: Array[Resource] = []
+	for res in available_items_pool:
+		if res is WeaponData:
+			if not w_ctrl or not w_ctrl.get_weapon_instance(res.weapon_id):
+				weapon_candidates.append(res)
+
+	if w_ctrl:
+		for inst in w_ctrl.equipped_weapons:
+			if inst.level < 5 and inst.weapon_data:
+				weapon_candidates.append(inst.weapon_data)
+
+	var chosen_weapon: Resource = null
+	if not weapon_candidates.is_empty():
+		weapon_candidates.shuffle()
+		chosen_weapon = weapon_candidates[0]
+
+	# Slots 1 y 2: Ítems del Satélite filtrados por max_stacks
+	var eligible_items: Array[ItemData] = []
+	for res in available_items_pool:
+		if res is ItemData:
+			var it: ItemData = res as ItemData
+			var count: int = 0
+			if is_instance_valid(player) and player.inventory:
+				count = player.inventory.get_item_count(it.item_id)
+			if count < it.max_stacks:
+				eligible_items.append(it)
+
+	eligible_items.shuffle()
+
+	var final_offers: Array[Resource] = []
+	if chosen_weapon:
+		final_offers.append(chosen_weapon)
+	elif not eligible_items.is_empty():
+		final_offers.append(eligible_items.pop_front())
+
+	while final_offers.size() < 3 and not eligible_items.is_empty():
+		final_offers.append(eligible_items.pop_front())
+
+	for i in range(final_offers.size()):
+		var entry: Resource = final_offers[i]
 		current_offered_items.append(entry)
 		_create_item_card_ui(entry, i)
 
@@ -606,6 +646,17 @@ func _roll_shop_items() -> void:
 func _create_item_card_ui(entry: Resource, index: int) -> void:
 	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
 	var rarity_color := _get_rarity_color(entry_rarity)
+
+	_ensure_player()
+	var is_weapon_upgrade := false
+	var current_wp_lvl := 1
+	if entry is WeaponData and is_instance_valid(player):
+		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl:
+			var inst := w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id)
+			if inst:
+				is_weapon_upgrade = true
+				current_wp_lvl = inst.level
 
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(235, 330)
@@ -631,10 +682,15 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 
 	# 2. Título del ítem / arma
 	var display_title: String = ""
-	if entry is WeaponData:
-		display_title = "[ARMA] " + (entry as WeaponData).weapon_name
+	if is_weapon_upgrade:
+		display_title = "[MEJORA] " + (entry as WeaponData).get_display_name() + " (Nv. %d)" % (current_wp_lvl + 1)
+	elif entry is WeaponData:
+		display_title = "[ARMA] " + (entry as WeaponData).get_display_name()
 	elif "item_name" in entry:
 		display_title = entry.item_name
+		if is_instance_valid(player) and player.inventory and entry.get("max_stacks") != null and entry.max_stacks > 1:
+			var cur_s: int = player.inventory.get_item_count(entry.item_id)
+			display_title += " (%d/%d)" % [cur_s, entry.max_stacks]
 	else:
 		display_title = "Mejora Espacial"
 
@@ -643,7 +699,7 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_lbl.add_theme_color_override("font_color", rarity_color)
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_font_size_override("font_size", 13)
 
 	# 3. Marco contenedor del icono de 56x56 px centrado
 	var icon_panel := PanelContainer.new()
@@ -676,44 +732,57 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 
 	var stat_badge_lbl := Label.new()
 	stat_badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stat_badge_lbl.add_theme_font_size_override("font_size", 11)
+	stat_badge_lbl.add_theme_font_size_override("font_size", 10)
 
 	var target_stat_for_hover := StringName("")
 	var stat_delta_for_hover: float = 0.0
 	var is_pct_for_hover: bool = false
 
-	if entry is ItemData:
-		var it: ItemData = entry as ItemData
-		if it.stat_name != &"":
-			target_stat_for_hover = it.stat_name
-			stat_delta_for_hover = it.stat_value
-			is_pct_for_hover = it.is_percentage
-
-			var stat_display_name: String = str(it.stat_name)
-			for cfg in RUN_STATS_CONFIG:
-				if cfg["key"] == it.stat_name:
-					stat_display_name = cfg["name"]
-					break
-
-			var sign_s := "+" if it.stat_value > 0 else ""
-			var val_s := ("%s%.0f%%" % [sign_s, it.stat_value * 100.0]) if it.is_percentage else ("%s%.0f" % [sign_s, it.stat_value])
-			var col_badge := Color("#00FF9D") if it.stat_value >= 0 else Color("#FF4466")
-
-			stat_badge_sb.bg_color = Color(col_badge.r, col_badge.g, col_badge.b, 0.12)
-			stat_badge_sb.border_color = col_badge
-			stat_badge_lbl.text = "▲ %s  %s" % [val_s, stat_display_name]
-			stat_badge_lbl.add_theme_color_override("font_color", col_badge)
-		else:
-			stat_badge_sb.bg_color = Color(0.1, 0.5, 0.8, 0.15)
-			stat_badge_sb.border_color = Color(0.2, 0.7, 1.0, 0.7)
-			stat_badge_lbl.text = "⚡ EFECTO REACTIVO / PROC"
-			stat_badge_lbl.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
+	if is_weapon_upgrade:
+		stat_badge_sb.bg_color = Color(1.0, 0.7, 0.1, 0.18)
+		stat_badge_sb.border_color = Color(1.0, 0.8, 0.2, 0.9)
+		stat_badge_lbl.text = "★ NV. %d (+1 PROYECTIL)" % [current_wp_lvl + 1]
+		stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	elif entry is WeaponData:
 		var wp: WeaponData = entry as WeaponData
 		stat_badge_sb.bg_color = Color(1.0, 0.8, 0.2, 0.12)
 		stat_badge_sb.border_color = Color(1.0, 0.8, 0.2, 0.8)
 		stat_badge_lbl.text = "⚔ %.0f DMG  |  ⏱ %.2fs CD" % [wp.base_damage, wp.base_cooldown]
 		stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	elif entry is ItemData:
+		var it: ItemData = entry as ItemData
+		if it.stat_name != &"":
+			target_stat_for_hover = it.stat_name
+			stat_delta_for_hover = it.stat_value
+			is_pct_for_hover = it.is_percentage
+
+			var sign_s := "+" if it.stat_value > 0 else ""
+			var val_s := ("%s%.0f%%" % [sign_s, it.stat_value * 100.0]) if it.is_percentage else ("%s%.0f" % [sign_s, it.stat_value])
+
+			if it.secondary_stat_name != &"":
+				var sec_sign := "+" if it.secondary_stat_value > 0 else ""
+				var sec_val_s := ("%s%.0f%%" % [sec_sign, it.secondary_stat_value * 100.0]) if it.secondary_is_percentage else ("%s%.0f" % [sec_sign, it.secondary_stat_value])
+				stat_badge_sb.bg_color = Color(1.0, 0.45, 0.1, 0.18)
+				stat_badge_sb.border_color = Color(1.0, 0.55, 0.2, 0.8)
+				stat_badge_lbl.text = "⚖ %s / %s" % [val_s, sec_val_s]
+				stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.4))
+			else:
+				var col_badge := Color("#00FF9D") if it.stat_value >= 0 else Color("#FF4466")
+				stat_badge_sb.bg_color = Color(col_badge.r, col_badge.g, col_badge.b, 0.12)
+				stat_badge_sb.border_color = col_badge
+				stat_badge_lbl.text = "▲ %s  %s" % [val_s, str(it.stat_name)]
+				stat_badge_lbl.add_theme_color_override("font_color", col_badge)
+		else:
+			if it.tags.has(&"conversion"):
+				stat_badge_sb.bg_color = Color(0.7, 0.1, 0.9, 0.18)
+				stat_badge_sb.border_color = Color(0.85, 0.3, 1.0, 0.85)
+				stat_badge_lbl.text = "⚛ NÚCLEO DE CONVERSIÓN"
+				stat_badge_lbl.add_theme_color_override("font_color", Color(0.9, 0.55, 1.0))
+			else:
+				stat_badge_sb.bg_color = Color(0.1, 0.5, 0.8, 0.15)
+				stat_badge_sb.border_color = Color(0.2, 0.7, 1.0, 0.7)
+				stat_badge_lbl.text = "⚡ ARTEFACTO PROC"
+				stat_badge_lbl.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
 
 	stat_badge_panel.add_theme_stylebox_override("panel", stat_badge_sb)
 	var b_margin := MarginContainer.new()
@@ -726,7 +795,10 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 
 	# 5. Descripción del ítem
 	var desc_lbl := Label.new()
-	desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
+	if is_weapon_upgrade:
+		desc_lbl.text = "+1 Proyectil Adicional en todas las salvas activas y pasivas (+25% daño base)."
+	else:
+		desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
 	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -734,7 +806,7 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 
 	# 6. Botón de Compra
-	var cost: int = entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50
+	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
 	UIFocusHelper.apply_cyber_focus(buy_btn)
