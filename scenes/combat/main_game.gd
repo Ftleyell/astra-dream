@@ -1048,9 +1048,7 @@ func _process(delta: float) -> void:
 			save_current_run_state()
 	else:
 		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en cualquier estado)
-		var is_boss_active: bool = (current_boss != null and is_instance_valid(current_boss)) or get_tree().get_nodes_in_group("bosses").size() > 0
-		var is_rival_active: bool = (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("rival_pilots").size() > 0
-		var is_major_combat_active: bool = is_boss_active or is_rival_active
+		var is_major_combat_active: bool = _has_active_boss_or_rival()
 
 		if not is_major_combat_active:
 			wave_timer -= delta
@@ -1120,6 +1118,19 @@ func _spawn_next_satellite_for_wave() -> void:
 	wave_satellites_spawned += 1
 	_spawn_next_satellite(spawn_pos)
 
+func _has_active_boss_or_rival() -> bool:
+	if current_boss != null and is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
+		return true
+	if current_rival != null and is_instance_valid(current_rival) and not current_rival.is_queued_for_deletion():
+		return true
+	for b in get_tree().get_nodes_in_group("bosses"):
+		if is_instance_valid(b) and not b.is_queued_for_deletion():
+			return true
+	for r in get_tree().get_nodes_in_group("rival_pilots"):
+		if is_instance_valid(r) and not r.is_queued_for_deletion():
+			return true
+	return false
+
 func _check_wave_encounters() -> void:
 	if _wave_encounter_spawned_for_wave == current_wave:
 		_wave_encounter_pending = false
@@ -1131,7 +1142,7 @@ func _check_wave_encounters() -> void:
 		return
 
 	# Si ya hay un jefe, un rival o cinemática activa, posponer el encuentro para evitar solapamientos
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or is_cinematic_or_death_active():
+	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 1.0
 		return
@@ -1166,7 +1177,7 @@ func _evaluate_slot_machine_spawn() -> void:
 		_wave_encounter_pending = false
 		return
 
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or is_cinematic_or_death_active():
+	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 1.0
 		return
@@ -1250,7 +1261,7 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		_wave_encounter_timer = 0.5
 		return
 
-	if (current_rival != null and is_instance_valid(current_rival)) or (current_boss != null and is_instance_valid(current_boss)) or get_tree().get_nodes_in_group("rival_pilots").size() > 0 or get_tree().get_nodes_in_group("bosses").size() > 0:
+	if override_id == &"" and _has_active_boss_or_rival():
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1397,12 +1408,12 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		_wave_encounter_pending = false
 		return
 
-	if is_any_combat_modal_active():
+	if target_scene_override == null and is_any_combat_modal_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
 
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0:
+	if target_scene_override == null and _has_active_boss_or_rival():
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1533,12 +1544,17 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		, CONNECT_ONE_SHOT)
 	)
 
-func _spawn_final_boss() -> void:
-	if _wave_encounter_spawned_for_wave == current_wave:
+func _spawn_final_boss(force_spawn: bool = false) -> void:
+	if not force_spawn and _wave_encounter_spawned_for_wave == current_wave:
 		_wave_encounter_pending = false
 		return
 
-	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)) or get_tree().get_nodes_in_group("bosses").size() > 0 or get_tree().get_nodes_in_group("rival_pilots").size() > 0:
+	if not force_spawn and is_any_combat_modal_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 0.5
+		return
+
+	if not force_spawn and _has_active_boss_or_rival():
 		if _wave_encounter_spawned_for_wave != current_wave:
 			_wave_encounter_pending = true
 			_wave_encounter_timer = 1.0
@@ -1788,6 +1804,17 @@ func _on_final_boss_defeated(route: String) -> void:
 
 func jump_to_boss(boss_id: String) -> void:
 	is_pre_round = false
+	is_briefing_active = false
+	is_cockpit_active = false
+	is_boss_transmission_active = false
+	is_victory_dialogue_active = false
+	is_rival_cinematic_active = false
+	prologue_bonus_chosen = true
+	var backdrop := get_node_or_null("DialogueBackdropLayer")
+	if backdrop and backdrop.has_method("fade_out"):
+		backdrop.fade_out(0.0)
+	if skip_badge_layer:
+		skip_badge_layer.hide()
 	wave_timer = WAVE_DURATION
 	_wave_encounter_pending = false
 	if current_boss and is_instance_valid(current_boss):
@@ -1832,7 +1859,7 @@ func jump_to_boss(boss_id: String) -> void:
 
 	current_wave = target_wave
 	_wave_encounter_checked_for_wave = target_wave
-	_wave_encounter_spawned_for_wave = target_wave
+	_wave_encounter_spawned_for_wave = 0
 	_wave_encounter_pending = false
 
 	# Equipar nivel adecuado y créditos para testear cómodamente el jefe
@@ -1857,10 +1884,21 @@ func jump_to_wave_11(route: String = "neutral") -> void:
 
 func jump_to_wave_16(route: String = "neutral") -> void:
 	is_pre_round = false
+	is_briefing_active = false
+	is_cockpit_active = false
+	is_boss_transmission_active = false
+	is_victory_dialogue_active = false
+	is_rival_cinematic_active = false
+	prologue_bonus_chosen = true
+	var backdrop := get_node_or_null("DialogueBackdropLayer")
+	if backdrop and backdrop.has_method("fade_out"):
+		backdrop.fade_out(0.0)
+	if skip_badge_layer:
+		skip_badge_layer.hide()
 	current_wave = 16
 	wave_timer = WAVE_DURATION
 	_wave_encounter_checked_for_wave = 16
-	_wave_encounter_spawned_for_wave = 16
+	_wave_encounter_spawned_for_wave = 0
 	_wave_encounter_pending = false
 	if current_boss and is_instance_valid(current_boss):
 		current_boss.queue_free()
@@ -1915,7 +1953,7 @@ func jump_to_wave_16(route: String = "neutral") -> void:
 	if hud:
 		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
-	_spawn_final_boss()
+	_spawn_final_boss(true)
 
 func spawn_next_rival_pilot() -> void:
 	if current_rival and is_instance_valid(current_rival):
