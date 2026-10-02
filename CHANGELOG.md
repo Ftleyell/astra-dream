@@ -3,6 +3,40 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.5.0] - 2026-10-02 — Balística Alienígena Danmaku, Telegrafiado Holográfico y Campeones Élite
+
+### Añadido
+* **Nuevo Sistema de Balística Alienígena Zero-Allocation (`BulletServer` & `danmaku_bullet.gdshader`):**
+  * Diseñados e integrados 3 proyectiles de geometría circular con efectos energéticos diferenciados:
+    * **Tipo 4 — Dardo Cónico Ámbar (Delta Dart):** Proyectil directivo de alta penetración y velocidad para ráfagas apuntadas y barridos focales.
+    * **Tipo 5 — Anillo Radiante de Cobalto (Radial Star):** Anillo concéntrico pulsante para erupciones radiales, ecos temporales y flores de Rhodonea.
+    * **Tipo 6 — Onda Púrpura Abisal (Lissajous Wave):** Diamante oscilatorio de fase para trenzas helicoidales, ondas serpenteantes y espirales de Fermat.
+  * Atlas balístico unificado (`alien_bullet_atlas.png`) procesado mediante chroma-key verde puro (`#00FF00`) y pipeline de despill en Python.
+  * Escalado dinámico en `BulletServer` ajustando quads de `MultiMeshInstance2D` proporcionalmente al radio de colisión (`radius / 5.0`).
+* **Componente Desacoplado `TelegraphIndicator` (`scenes/combat/enemies/components/telegraph_indicator.gd`):**
+  * Sistema modular de anticipación visual con 3 tipos de avisos holográficos: `CONE` (abanico directivo), `RING` (anillo expansivo) y `WAVE` (carril oscilatorio).
+  * Renderizado `top_level = true` con seguimiento de posición en tiempo real para evitar rotaciones o distorsiones de escala anómalas heredadas del CharacterBody2D del emisor.
+  * Transición fluida con shaders de resplandor, crecimiento progresivo (0.0 a 1.0) y fade-out instantáneo en el momento exacto del disparo.
+* **Integración en Jefes de Dominio y Heraldos de Oleada:**
+  * **Ermitaño del Vacío (`BossHermitVoid`):** Ráfagas serpenteantes con Dardos Ámbar (Tipo 4), Rosas de Rhodonea con Anillos Cobalto (Tipo 5) y Espirales de Fermat con Ondas Púrpura (Tipo 6).
+  * **Reloj de Cenizas (`BossAshClock`):** Manecillas cardinales rotatorias con Tipo 4 en Fase 1 y Tipo 6 en Fase 2; detonaciones de Eco del Arrepentimiento telegiadas con Anillos Cobalto (Tipo 5).
+  * **Espejo Quebrado (`BossBrokenMirror`):** Mirada disociativa cónica telegrafiada con Dardos Ámbar (Tipo 4), trenzas de Lissajous con Ondas Púrpura (Tipo 6) y novas rotatorias entrelazadas (Tipos 5 y 6).
+  * **Vórtice del Desborde (`BossOverflowVortex`):** Espirales respiratorias de Fermat continuas con Ondas Púrpura (Tipo 6), novas telegiadas de alta energía con Anillos Cobalto (Tipo 5) y ráfagas apuntadas con Tipo 4.
+  * **Heraldo de Dominio (`EliteHeraldBoss`):** Mini-jefe de oleadas 3, 5 y 7 adaptado con telegrafiado específico (Cono para Tiempo, Onda para Espejo, Anillo para Vórtice) y balística alienígena homologada.
+  * **Desaceleración de Combate:** Reducción de velocidad al 45% durante el telegrafiado (wind-up) en todos los jefes para otorgar ventanas de lectura táctica y maniobrabilidad al jugador.
+* **Nuevos Enemigos Campeones Élite:**
+  * `EnemyAssaultCone` (Asaltante Cónico Élite), `EnemyVanguardRing` (Vanguardia Radial Élite) y `EnemySpecterWave` (Espectro Ondulatorio Élite) integrados en el spawn de oleadas de `EnemySpawner`.
+* **Suites de Pruebas Automatizadas en Godot Headless:**
+  * `test_alien_champions_and_bullets_runner.tscn`: Valida integridad de assets, pooling SoA de `BulletServer` e instanciación de campeones.
+  * `test_boss_telegraphs_and_bullets_runner.tscn`: Valida instanciación, posesión de `TelegraphIndicator` y ciclo de telegrafiado en los 5 jefes.
+
+### Corregido
+* **Fallo Crítico de Renderizado de Balas MultiMesh (`danmaku_bullet.gdshader`):**
+  * Removido el comando prematuro `return;` dentro de la función `fragment()`, el cual provocaba fallo de compilación en el pipeline gráfico de Godot 4 y hacía que todos los proyectiles del `BulletServer` se mostraran como quads blancos sin textura ni transparencia.
+  * Implementado redondeo seguro `int(round(v_custom.r))` en el shader para prevenir truncamiento por precisión flotante en GPUs móviles o Vulkan.
+
+---
+
 ## [0.4.3] - 2026-09-27 — Optimización Radical de Contexto y Arquitectura Modular
 
 ### Añadido

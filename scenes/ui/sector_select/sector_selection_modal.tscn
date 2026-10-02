@@ -1,0 +1,607 @@
+[gd_scene load_steps=10 format=3 uid="uid://sector_sel_modal_01"]
+
+[ext_resource type="Script" path="res://scenes/ui/sector_select/sector_selection_modal.gd" id="1_modal_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/deep_fold_space/layer0_space_nebula.png" id="2_default_nebula"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_satellite.svg" id="3_chest_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main"]
+bg_color = Color(0.04, 0.04, 0.06, 0.98)
+border_width_left = 6
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.941176, 1, 1)
+shadow_color = Color(0, 0.941176, 1, 0.25)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_center_frame"]
+bg_color = Color(0.02, 0.02, 0.04, 1)
+border_width_left = 4
+border_width_top = 2
+border_width_right = 4
+border_width_bottom = 2
+border_color = Color(0, 0.941176, 1, 1)
+shadow_color = Color(0, 0.941176, 1, 0.3)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_side"]
+bg_color = Color(0.06, 0.06, 0.09, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.25, 0.35, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dossier_card"]
+bg_color = Color(0.06, 0.06, 0.09, 0.9)
+border_width_left = 4
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.7, 0.9, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_select_btn"]
+bg_color = Color(0.08, 0.08, 0.12, 1)
+border_width_left = 4
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.941176, 1, 1)
+shadow_color = Color(0, 0.941176, 1, 0.35)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.08, 0.08, 0.12, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.0784314, 0.576471, 0.8)
+
+[node name="SectorSelectionModal" type="CanvasLayer"]
+process_mode = 3
+layer = 127
+visible = false
+script = ExtResource("1_modal_script")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.02, 0.04, 0.92)
+
+[node name="CenterContainer" type="CenterContainer" parent="DimOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="DimOverlay/CenterContainer"]
+custom_minimum_size = Vector2(1200, 720)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_main")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="RootVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ModalHeader" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ModalTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🌌 CARTOGRAFÍA ESTELAR // ASIGNACIÓN DE SECTOR Y RUTA DE VUELO"
+
+[node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IndexBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
+theme_override_font_sizes/font_size = 14
+text = "[ SECTOR 01 / 04 ]"
+
+[node name="CloseHeaderBtn" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
+theme_override_font_sizes/font_size = 16
+text = "✕"
+
+[node name="HSeparator" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+
+[node name="CarouselSection" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CarouselRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="PrevButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow"]
+custom_minimum_size = Vector2(60, 120)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_card_side")
+text = "◀\n[A]"
+
+[node name="LeftSectorCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow"]
+custom_minimum_size = Vector2(210, 270)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_card_side")
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/LeftSectorCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="LeftThumbnail" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/LeftSectorCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("2_default_nebula")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="LeftLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/LeftSectorCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "◀ SECTOR ANTERIOR"
+horizontal_alignment = 1
+
+[node name="CenterSectorFrame" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow"]
+custom_minimum_size = Vector2(440, 290)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_center_frame")
+
+[node name="ViewportContainer" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame"]
+clip_contents = true
+layout_mode = 2
+
+[node name="NebulaTexture" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/ViewportContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_default_nebula")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ThreatBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/ViewportContainer"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = 34.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
+theme_override_font_sizes/font_size = 12
+text = "[ AMENAZA: NORMAL ]"
+horizontal_alignment = 2
+
+[node name="LockedOverlay" type="Control" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame"]
+visible = false
+layout_mode = 2
+
+[node name="LockDim" type="ColorRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/LockedOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.88)
+
+[node name="LockCenter" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/LockedOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -40.0
+offset_right = 140.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="LockIcon" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🔒"
+horizontal_alignment = 1
+
+[node name="LockTitle" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "SECTOR NO AUTORIZADO"
+horizontal_alignment = 1
+
+[node name="LockDesc" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/CenterSectorFrame/LockedOverlay/LockCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Completa expediciones para desbloquear"
+horizontal_alignment = 1
+
+[node name="RightSectorCard" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow"]
+custom_minimum_size = Vector2(210, 270)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_card_side")
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/RightSectorCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="RightThumbnail" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/RightSectorCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("2_default_nebula")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="RightLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow/RightSectorCard/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "SECTOR SIGUIENTE ▶"
+horizontal_alignment = 1
+
+[node name="NextButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection/CarouselRow"]
+custom_minimum_size = Vector2(60, 120)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_card_side")
+text = "▶\n[D]"
+
+[node name="DotsContainer" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CarouselSection"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+
+[node name="DossierSection" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DossierHeader" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="CategoryLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "REGISTRO TELEMÉTRICO DEL SECTOR"
+
+[node name="NameRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SectorNameLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "PERIFERIA NEBULAR"
+
+[node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader/NameRow"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
+theme_override_font_sizes/font_size = 12
+text = "[✓ RUTA ACTIVA]"
+
+[node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DossierHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "SECTOR DE PATRULLA INICIAL"
+
+[node name="DescCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier_card")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DescCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="DescLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/LeftCol/DescCard/Margin"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "Borde exterior de la galaxia. Densidad controlada de cazas y condiciones estables para pruebas de combate."
+autowrap_mode = 2
+
+[node name="CenterCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ModifiersCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier_card")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ModifiersHeader" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚙ MODIFICADORES DE COMBATE & BOTÍN"
+
+[node name="ModifiersGrid" type="GridContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="DensityRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/DensityRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Densidad Enemiga: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/DensityRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "x1.00"
+
+[node name="BiomassRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/BiomassRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Botín BioMasa: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/BiomassRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0.615686, 1)
+theme_override_font_sizes/font_size = 11
+text = "Estándar"
+
+[node name="DarkMatterRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/DarkMatterRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Materia Oscura: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/DarkMatterRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74902, 0, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "Estándar"
+
+[node name="CreditsRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/CreditsRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Créditos: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/CreditsRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.717647, 0, 1)
+theme_override_font_sizes/font_size = 11
+text = "Estándar"
+
+[node name="ArcanaRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/ArcanaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Prob. Arcanas: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/ArcanaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "Normal"
+
+[node name="HazardRow" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid"]
+layout_mode = 2
+
+[node name="Lbl" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/HazardRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Condición Peligro: "
+
+[node name="Val" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox/ModifiersGrid/HazardRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.4, 1)
+theme_override_font_sizes/font_size = 11
+text = "Alerta Rival Nv. 1"
+
+[node name="HazardWarningLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/CenterCol/ModifiersCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "Firma enemiga interceptada patrullando el perímetro de este sector."
+autowrap_mode = 2
+
+[node name="RightCol" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="RivalCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier_card")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="HBox" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RivalPortrait" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin/HBox"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RivalVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="HeaderLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin/HBox/RivalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
+theme_override_font_sizes/font_size = 11
+text = "PILOTO RIVAL INTERCEPTOR"
+
+[node name="RivalName" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin/HBox/RivalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "NOVA"
+
+[node name="WaveAlertLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RivalCard/Margin/HBox/RivalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "Intercepción programada: Oleada 1"
+
+[node name="RewardsCard" type="PanelContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier_card")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="HBox" type="HBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChestIcon" type="TextureRect" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard/Margin/HBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("3_chest_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CurrenciesVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard/Margin/HBox/CurrenciesVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.717647, 0, 1)
+theme_override_font_sizes/font_size = 11
+text = "COFRE ESTELAR // RECOMPENSAS"
+
+[node name="CurrenciesLabel" type="Label" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/RewardsCard/Margin/HBox/CurrenciesVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "+50 BioMasa | +20 Mat. Oscura | +10 Antimateria"
+
+[node name="ActionsVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="SelectButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/ActionsVBox"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.941176, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_select_btn")
+text = "⚡ ESTABLECER RUTA DE VUELO [ESPACIO]"
+
+[node name="CloseButton" type="Button" parent="DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/DossierSection/RightCol/ActionsVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.0784314, 0.576471, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "VOLVER [ESC]"

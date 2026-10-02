@@ -26,11 +26,13 @@ var is_dying: bool = false
 var elapsed_time: float = 0.0
 var fire_timer: float = 0.0
 var pattern_angle: float = 0.0
+var is_telegraphing: bool = false
+var telegraph_indicator: TelegraphIndicator = null
 
 var player: Node2D = null
 var bullet_server: BulletServer = null
 
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
 @onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_frame: Polygon2D = get_node_or_null("VisualFrame")
@@ -40,6 +42,11 @@ func _ready() -> void:
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
+
+	telegraph_indicator = TelegraphIndicator.new()
+	telegraph_indicator.name = "TelegraphIndicator"
+	telegraph_indicator.indicator_scale = Vector2(1.3, 1.3)
+	add_child(telegraph_indicator)
 
 	_configure_by_wave()
 	current_health = max_health
@@ -114,111 +121,135 @@ func _physics_process(delta: float) -> void:
 	elif dist < desired_dist - 50.0:
 		move_dir -= to_player.normalized() * 0.4
 
-	velocity = velocity.lerp(move_dir * 130.0, delta * 4.0)
+	velocity = velocity.lerp(move_dir * (130.0 * (0.45 if is_telegraphing else 1.0)), delta * 4.0)
 	move_and_slide()
 
 	# Rotación visual
 	rotation += delta * 1.5
 
-	# Ataques específicos según heraldo
-	match herald_type:
-		HeraldType.TIME:
-			_process_time_herald(delta)
-		HeraldType.MIRROR:
-			_process_mirror_herald(delta)
-		HeraldType.VORTEX:
-			_process_vortex_herald(delta)
+	# Ataques específicos según heraldo si no está en telegrafiado
+	if not is_telegraphing:
+		match herald_type:
+			HeraldType.TIME:
+				_process_time_herald(delta)
+			HeraldType.MIRROR:
+				_process_mirror_herald(delta)
+			HeraldType.VORTEX:
+				_process_vortex_herald(delta)
+
+func _start_herald_telegraph(p_type: TelegraphIndicator.TelegraphType, duration: float, callback: Callable) -> void:
+	is_telegraphing = true
+	if is_instance_valid(telegraph_indicator):
+		var to_p: Vector2 = (player.global_position - global_position).normalized() if is_instance_valid(player) else Vector2.RIGHT
+		telegraph_indicator.start_telegraph(p_type, duration, to_p)
+
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2(1.7, 1.7), duration * 0.7).set_trans(Tween.TRANS_BACK)
+	tw.tween_callback(func() -> void:
+		callback.call()
+		is_telegraphing = false
+		create_tween().tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
+	)
 
 func _process_time_herald(_delta: float) -> void:
-	# Péndulo senoidal de manecillas: dispara cada 0.9s en un arco oscilante
-	if fire_timer >= 0.9:
+	# Péndulo senoidal de manecillas telegrafiado cada 1.2s
+	if fire_timer >= 1.2:
 		fire_timer = 0.0
-		if not is_instance_valid(bullet_server):
-			return
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.CONE, 0.45, Callable(self, "_fire_time_burst"))
 
-		var swing_offset := sin(elapsed_time * 2.8) * 0.85
-		var base_angle := (player.global_position - global_position).angle() + swing_offset
-		var bullet_count: int = 5
-		var arc: float = 0.5
+func _fire_time_burst() -> void:
+	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
+		return
 
-		for i in range(bullet_count):
-			var a := base_angle - (arc * 0.5) + (arc / float(bullet_count - 1)) * float(i)
-			var dir := Vector2(cos(a), sin(a))
-			var spd := 150.0 + (float(i) * 10.0)
-			bullet_server.spawn_bullet(
-				global_position.x + dir.x * 30.0,
-				global_position.y + dir.y * 30.0,
-				dir.x * spd,
-				dir.y * spd,
-				1, # bullet_type = 1
-				4.5,
-				8.0,
-				sin(float(i)) * 12.0, # Ligera ondulación
-				3.5
-			)
+	var swing_offset := sin(elapsed_time * 2.8) * 0.85
+	var base_angle := (player.global_position - global_position).angle() + swing_offset
+	var bullet_count: int = 5
+	var arc: float = 0.5
 
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("laser", 0.95)
+	for i in range(bullet_count):
+		var a := base_angle - (arc * 0.5) + (arc / float(bullet_count - 1)) * float(i)
+		var dir := Vector2(cos(a), sin(a))
+		var spd := 150.0 + (float(i) * 10.0)
+		bullet_server.spawn_bullet(
+			global_position.x + dir.x * 30.0,
+			global_position.y + dir.y * 30.0,
+			dir.x * spd,
+			dir.y * spd,
+			4, # bullet_type = 4 (Dardo Ámbar)
+			4.5,
+			8.0,
+			sin(float(i)) * 12.0, # Ligera ondulación
+			3.5
+		)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("laser", 0.95)
 
 func _process_mirror_herald(_delta: float) -> void:
-	# Tijeras trenzadas de Lissajous: dispara cada 1.1s dos corrientes reflejadas
-	if fire_timer >= 1.1:
+	# Tijeras trenzadas de Lissajous telegiadas cada 1.3s
+	if fire_timer >= 1.3:
 		fire_timer = 0.0
-		if not is_instance_valid(bullet_server):
-			return
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.WAVE, 0.45, Callable(self, "_fire_mirror_burst"))
 
-		var to_player_angle := (player.global_position - global_position).angle()
-		var lissajous_spread := absf(sin(elapsed_time * 2.2)) * 0.75 + 0.15
+func _fire_mirror_burst() -> void:
+	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
+		return
 
-		# Dos proyectiles curvos opuestos que cruzan sus trayectorias
-		for branch: float in [-1.0, 1.0]:
-			var dir_angle: float = to_player_angle + (lissajous_spread * branch)
-			var dir := Vector2(cos(dir_angle), sin(dir_angle))
-			bullet_server.spawn_bullet(
-				global_position.x + dir.x * 32.0,
-				global_position.y + dir.y * 32.0,
-				dir.x * 165.0,
-				dir.y * 165.0,
-				2, # bullet_type = 2
-				4.5,
-				8.0,
-				-branch * 18.0, # Curvatura opuesta para cruzar (shear)
-				3.8
-			)
+	var to_player_angle := (player.global_position - global_position).angle()
+	var lissajous_spread := absf(sin(elapsed_time * 2.2)) * 0.75 + 0.15
 
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("laser", 1.1)
+	# Dos proyectiles curvos opuestos que cruzan sus trayectorias (Onda Púrpura tipo 6)
+	for branch: float in [-1.0, 1.0]:
+		var dir_angle: float = to_player_angle + (lissajous_spread * branch)
+		var dir := Vector2(cos(dir_angle), sin(dir_angle))
+		bullet_server.spawn_bullet(
+			global_position.x + dir.x * 32.0,
+			global_position.y + dir.y * 32.0,
+			dir.x * 165.0,
+			dir.y * 165.0,
+			6, # bullet_type = 6 (Onda Púrpura)
+			4.5,
+			8.0,
+			-branch * 18.0, # Curvatura opuesta para cruzar (shear)
+			3.8
+		)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("laser", 1.1)
 
 func _process_vortex_herald(_delta: float) -> void:
-	# Espiral de Fermat con modulación armónica respiratoria cada 0.7s
-	if fire_timer >= 0.7:
+	# Espiral de Fermat con modulación armónica respiratoria telegrafiada cada 1.0s
+	if fire_timer >= 1.0:
 		fire_timer = 0.0
-		if not is_instance_valid(bullet_server):
-			return
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.RING, 0.45, Callable(self, "_fire_vortex_burst"))
 
-		var breathing := 1.0 + 0.3 * sin(elapsed_time * 4.0)
-		pattern_angle += 0.45 * breathing
-		var arms: int = 3
-		for a in range(arms):
-			var ang := pattern_angle + (TAU / float(arms)) * float(a)
-			var dir := Vector2(cos(ang), sin(ang))
-			bullet_server.spawn_bullet(
-				global_position.x + dir.x * 28.0,
-				global_position.y + dir.y * 28.0,
-				dir.x * (140.0 * breathing),
-				dir.y * (140.0 * breathing),
-				3, # bullet_type = 3
-				5.0,
-				7.5,
-				0.0,
-				4.0
-			)
+func _fire_vortex_burst() -> void:
+	if not is_instance_valid(bullet_server):
+		return
 
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("laser", 1.25)
+	var breathing := 1.0 + 0.3 * sin(elapsed_time * 4.0)
+	pattern_angle += 0.45 * breathing
+	var arms: int = 3
+	for a in range(arms):
+		var ang := pattern_angle + (TAU / float(arms)) * float(a)
+		var dir := Vector2(cos(ang), sin(ang))
+		bullet_server.spawn_bullet(
+			global_position.x + dir.x * 28.0,
+			global_position.y + dir.y * 28.0,
+			dir.x * (140.0 * breathing),
+			dir.y * (140.0 * breathing),
+			5, # bullet_type = 5 (Anillo Cobalto)
+			5.0,
+			7.5,
+			0.0,
+			4.0
+		)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("laser", 1.25)
 
 func take_damage(arg) -> void:
 	if is_dying:

@@ -2442,6 +2442,3 @@ func _spawn_debug_test_planets() -> void:
 		planet.disable_defenders = true # Sin defensores molestos en la pseudo-run de prueba de planetas
 		planet.global_position = player.global_position + cfg["offset"]
 		add_child(planet)
-
-
-

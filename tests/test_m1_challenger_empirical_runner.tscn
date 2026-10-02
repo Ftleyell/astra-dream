@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d3x8y7w6v5u4t"]
+
+[ext_resource type="Script" path="res://tests/test_m1_challenger_empirical.gd" id="1_m1_challenger"]
+
+[node name="TestM1ChallengerEmpiricalRunner" type="Node"]
+script = ExtResource("1_m1_challenger")

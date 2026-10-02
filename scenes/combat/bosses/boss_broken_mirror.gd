@@ -33,6 +33,7 @@ var mirror_hull: Sprite2D = null
 var crystal_ring: Node2D = null
 var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
+var telegraph_indicator: TelegraphIndicator = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -61,6 +62,12 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 	telegraph_material.set_shader_parameter("glitch_jitter", 0.01)
+
+	# Indicador holográfico de advertencia
+	telegraph_indicator = TelegraphIndicator.new()
+	telegraph_indicator.name = "TelegraphIndicator"
+	telegraph_indicator.indicator_scale = Vector2(1.6, 1.6)
+	add_child(telegraph_indicator)
 
 	# 1. Fragmentos de cristal rotos flotantes (detrás del casco)
 	crystal_ring = Node2D.new()
@@ -120,7 +127,8 @@ func _physics_process(delta: float) -> void:
 	elif dist < desired_dist - 60.0:
 		center_pull = -to_player.normalized() * 110.0
 
-	velocity = velocity.lerp(mirror_vel + center_pull, delta * 3.5)
+	var spd_mult: float = 0.45 if is_telegraphing else 1.0
+	velocity = velocity.lerp((mirror_vel + center_pull) * spd_mult, delta * 3.5)
 	move_and_slide()
 
 	# Rotación
@@ -139,51 +147,56 @@ func _process_phase_1(delta: float) -> void:
 	gaze_sweep_timer += delta
 	prism_fan_timer += delta
 
-	# Mirada disociativa telegrafiada cada 3.0s (esquirlas serpenteantes de alta vibración)
+	# Mirada disociativa telegrafiada cada 3.0s (esquirlas cónicas ámbar tipo 4)
 	if gaze_sweep_timer >= 3.0:
 		gaze_sweep_timer = 0.0
-		_start_telegraph(0.42, Callable(self, "_fire_dissociative_gaze_sweep"))
+		_start_telegraph(0.65, Callable(self, "_fire_dissociative_gaze_sweep"), TelegraphIndicator.TelegraphType.CONE)
 
-	# Trenza de Lissajous / ADN reflectante cada 1.8s
+	# Trenza de Lissajous / ADN reflectante cada 1.8s (Ondas Púrpura tipo 6)
 	if prism_fan_timer >= 1.8:
 		prism_fan_timer = 0.0
 		if is_instance_valid(bullet_server):
 			# Dispara 3 pares entrelazados en contrafase (+cos y -cos)
-			bullet_server.fire_braided_lissajous(global_position, player.global_position, 3, 210.0, 22.0, 5.0, 2)
+			bullet_server.fire_braided_lissajous(global_position, player.global_position, 3, 210.0, 22.0, 5.0, 6)
 			_play_sfx("laser", 1.1)
 
 func _process_phase_2(delta: float) -> void:
 	gaze_sweep_timer += delta
 	prism_fan_timer += delta
 
-	# Mirada disociativa ampliada cada 2.2s
+	# Mirada disociativa ampliada telegrafiada cada 2.2s
 	if gaze_sweep_timer >= 2.2:
 		gaze_sweep_timer = 0.0
-		_start_telegraph(0.35, Callable(self, "_fire_expanded_gaze_sweep"))
+		_start_telegraph(0.60, Callable(self, "_fire_expanded_gaze_sweep"), TelegraphIndicator.TelegraphType.CONE)
 
-	# Anillos en flor de diamante de 4 ejes en contrarrotación cada 1.6s
+	# Anillos en flor de diamante de 4 ejes en contrarrotación cada 1.6s (Cobalto 5 y Púrpura 6)
 	if prism_fan_timer >= 1.6:
 		prism_fan_timer = 0.0
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_rhodonea_flower(global_position, 24, 160.0, 4, 0.38, rotation, 2)
-			bullet_server.fire_rhodonea_flower(global_position, 24, 130.0, 4, 0.38, -rotation, 3)
+			bullet_server.fire_rhodonea_flower(global_position, 24, 160.0, 4, 0.38, rotation, 5)
+			bullet_server.fire_rhodonea_flower(global_position, 24, 130.0, 4, 0.38, -rotation, 6)
 			_play_sfx("missile", 1.2)
 
 func _fire_dissociative_gaze_sweep() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
 		return
-	# Salva de 7 esquirlas con serpenteo senoidal de alta frecuencia
-	bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 45.0, 220.0, 16.0, 5.5, 2)
+	# Salva de 7 esquirlas con serpenteo senoidal de alta frecuencia (Ámbar tipo 4)
+	bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 45.0, 220.0, 16.0, 5.5, 4)
 	_play_sfx("laser", 1.2)
 
 func _fire_expanded_gaze_sweep() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
 		return
-	bullet_server.fire_serpentine_spread(global_position, player.global_position, 9, 60.0, 240.0, 20.0, 6.0, 2)
+	# Salva de 9 esquirlas ampliada (Ámbar tipo 4)
+	bullet_server.fire_serpentine_spread(global_position, player.global_position, 9, 60.0, 240.0, 20.0, 6.0, 4)
 	_play_sfx("laser", 1.3)
 
-func _start_telegraph(duration: float, callback: Callable) -> void:
+func _start_telegraph(duration: float, callback: Callable, p_type: TelegraphIndicator.TelegraphType = TelegraphIndicator.TelegraphType.CONE) -> void:
 	is_telegraphing = true
+	if is_instance_valid(telegraph_indicator):
+		var to_p: Vector2 = player.global_position - global_position if is_instance_valid(player) else Vector2.RIGHT
+		telegraph_indicator.start_telegraph(p_type, duration, to_p.normalized())
+
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:

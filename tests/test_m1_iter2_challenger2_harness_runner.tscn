@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b7v8xax0y102a"]
+
+[ext_resource type="Script" path="res://tests/test_m1_iter2_challenger2_harness.gd" id="1_m1_ch2_harness"]
+
+[node name="TestM1Iter2Challenger2Runner" type="Node"]
+script = ExtResource("1_m1_ch2_harness")

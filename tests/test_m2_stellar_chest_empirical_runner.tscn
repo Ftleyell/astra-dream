@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://m2_chest_empirical_001"]
+
+[ext_resource type="Script" path="res://tests/test_m2_stellar_chest_empirical.gd" id="1_m2_empirical"]
+
+[node name="TestM2StellarChestEmpiricalRunner" type="Node"]
+script = ExtResource("1_m2_empirical")

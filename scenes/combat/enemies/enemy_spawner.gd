@@ -13,6 +13,9 @@ extends Node2D
 @export var rainbow_scene: PackedScene = preload("res://scenes/combat/enemies/rainbow_enemy.tscn")
 @export var micro_flock_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_micro_flock.tscn")
 @export var splitter_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_splitter.tscn")
+@export var assault_cone_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_assault_cone.tscn")
+@export var vanguard_ring_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_vanguard_ring.tscn")
+@export var specter_wave_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_specter_wave.tscn")
 
 @export var max_enemies: int = 80
 @export var base_spawn_interval: float = 1.2
@@ -26,6 +29,7 @@ var elapsed_time: float = 0.0
 var is_spawning_paused: bool = false
 var current_wave: int = 1
 var rainbow_spawn_timer: float = 45.0
+var champion_spawn_timer: float = 22.0
 
 # Evento periódico de oleada masiva repentina (Swarm Rush)
 var swarm_event_timer: float = 40.0
@@ -76,6 +80,34 @@ func _process(delta: float) -> void:
 		rainbow_spawn_timer = randf_range(50.0, 75.0)
 		_try_spawn_rainbow_enemy()
 
+	# Disparador de Campeones Élite (Rotación variada cada 25-35s desde Oleada 1)
+	champion_spawn_timer -= delta
+	if champion_spawn_timer <= 0.0:
+		champion_spawn_timer = randf_range(25.0, 35.0)
+		_try_spawn_alien_champion()
+
+func _try_spawn_alien_champion() -> void:
+	if is_spawning_paused:
+		return
+	_acquire_player()
+	var center := player.global_position if is_instance_valid(player) else global_position
+	var scenes: Array[PackedScene] = []
+	if assault_cone_scene:
+		scenes.append(assault_cone_scene)
+	if vanguard_ring_scene:
+		scenes.append(vanguard_ring_scene)
+	if specter_wave_scene:
+		scenes.append(specter_wave_scene)
+
+	if scenes.is_empty():
+		return
+
+	var chosen_scene: PackedScene = scenes[randi() % scenes.size()]
+	var spawn_dist: float = randf_range(650.0, 800.0)
+	var angle: float = randf() * TAU
+	var spawn_pos: Vector2 = center + Vector2(cos(angle), sin(angle)) * spawn_dist
+	_spawn_enemy_at(chosen_scene, spawn_pos)
+
 func _try_spawn_rainbow_enemy() -> void:
 	if is_spawning_paused or not rainbow_scene:
 		return
@@ -94,6 +126,7 @@ func set_wave(wave_num: int) -> void:
 	elapsed_time = 0.0
 	spawn_timer = 0.5
 	swarm_event_timer = SWARM_EVENT_INTERVAL
+	champion_spawn_timer = randf_range(18.0, 26.0)
 
 	# Escalado de tope de enemigos: 80 en Wave 1, 120 en Wave 2, 160 en Wave 3, 200 en Wave 4, 250+ en Wave 5+
 	match wave_num:
