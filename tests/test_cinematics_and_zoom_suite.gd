@@ -13,6 +13,8 @@ func _ready() -> void:
 	_test_hyperspace_portal_shockwave_and_clearance()
 	_test_navigator_prologue_transmission()
 	_test_debug_modal_quick_rival_spawn_button()
+	_test_cosmic_reality_tear_vfx_and_clearance()
+	_test_boss_emergence_helper_and_contracts()
 
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE CINEMÁTICAS, DIÁLOGOS Y ZOOM PASARON EXITOSAMENTE!")
@@ -184,3 +186,79 @@ func _test_debug_modal_quick_rival_spawn_button() -> void:
 
 	debug_modal.queue_free()
 	print("  ✓ QuickRivalSpawnButton verificado en Pestaña de Combate de depuración.")
+
+func _test_cosmic_reality_tear_vfx_and_clearance() -> void:
+	print("[9/10] Verificando CosmicRealityTear (Ruptura Cósmica y Onda Expansiva)...")
+	var tear_script = preload("res://scenes/combat/bosses/cosmic_reality_tear.gd")
+	var tear = tear_script.new()
+	var test_col: Color = tear_script.get_boss_domain_color("boss_hermit_void")
+	assert(test_col == Color(0.68, 0.15, 0.95, 1.0), "Color de dominio del Eremita debe ser violeta abisal")
+	var prime_col: Color = tear_script.get_boss_domain_color("boss_astra_prime")
+	assert(prime_col == Color(1.0, 0.86, 0.28, 1.0), "Color de dominio de Astra Prime debe ser oro radiante")
+
+	tear.setup(Vector2(600.0, 600.0), test_col, 240.0, 750.0)
+	add_child(tear)
+
+	# Instanciar obstáculo de prueba dentro del radio de despeje
+	var ast_scene := preload("res://scenes/combat/environment/asteroid.tscn")
+	var ast = ast_scene.instantiate()
+	ast.global_position = Vector2(720.0, 600.0) # A 120px, dentro de 750px
+	add_child(ast)
+
+	assert(ast.is_in_group("destructibles"), "El obstáculo debe estar en destructibles")
+
+	# Detonar shockwave de despeje
+	tear._detonate_clearance_shockwave()
+	assert(ast.is_dying == true, "La ruptura cósmica debe desintegrar obstáculos en su radio de despeje")
+
+	tear.queue_free()
+	ast.queue_free()
+	print("  ✓ CosmicRealityTear genera colores de dominio correctos y desintegra obstáculos con su shockwave.")
+
+func _test_boss_emergence_helper_and_contracts() -> void:
+	print("[10/10] Verificando BossEmergenceHelper y contratos de emergencia en Jefes de Dominio...")
+	var helper_script = preload("res://scenes/combat/bosses/boss_emergence_helper.gd")
+	# 1. Probar BossEmergenceHelper en un nodo de prueba
+	var dummy_boss := CharacterBody2D.new()
+	dummy_boss.collision_layer = 2
+	dummy_boss.collision_mask = 1
+	add_child(dummy_boss)
+
+	helper_script.prepare_boss(dummy_boss, Vector2(400.0, 400.0))
+	assert(dummy_boss.global_position == Vector2(400.0, 400.0), "Posición debe asignarse al objetivo")
+	assert(dummy_boss.scale == Vector2(0.01, 0.01), "Escala debe ocultarse a 0.01")
+	assert(dummy_boss.modulate.a == 0.0, "Alfa debe ser 0 para evitar parpadeo pre-spawn")
+	assert(dummy_boss.collision_layer == 0, "Colisión debe suspenderse durante preparación")
+	assert(dummy_boss.process_mode == Node.PROCESS_MODE_ALWAYS, "Process mode debe ser ALWAYS")
+
+	var callback_called := false
+	helper_script.emerge_boss(dummy_boss, null, func():
+		callback_called = true
+	)
+
+
+	# Simular avance de tween
+	dummy_boss.scale = Vector2(2.0, 2.0)
+	dummy_boss.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	dummy_boss.collision_layer = 2
+	dummy_boss.process_mode = Node.PROCESS_MODE_PAUSABLE
+
+	dummy_boss.queue_free()
+
+	# 2. Verificar que los 6 jefes implementan los contratos de emergencia cinemática
+	var bosses_to_test := [
+		preload("res://scenes/combat/bosses/boss_hermit_void.gd"),
+		preload("res://scenes/combat/bosses/boss_ash_clock.gd"),
+		preload("res://scenes/combat/bosses/boss_broken_mirror.gd"),
+		preload("res://scenes/combat/bosses/boss_overflow_vortex.gd"),
+		preload("res://scenes/combat/bosses/boss_mothership.gd"),
+		preload("res://scenes/combat/bosses/boss_astra_prime.gd")
+	]
+
+	for b_script in bosses_to_test:
+		var b_inst = b_script.new()
+		assert(b_inst.has_method("prepare_emergence"), "El jefe debe tener prepare_emergence")
+		assert(b_inst.has_method("emerge_from_tear"), "El jefe debe tener emerge_from_tear")
+		b_inst.free()
+
+	print("  ✓ Todos los 6 Jefes de Dominio y Finales cumplen el contrato de emergencia cinemática.")
