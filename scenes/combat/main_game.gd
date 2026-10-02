@@ -91,6 +91,7 @@ var current_slot_machine: Node2D = null
 var slot_machine_modal: CanvasLayer = null
 var slot_machine_reward_modal: CanvasLayer = null
 var _wave_encounter_checked_for_wave: int = 0
+var _wave_encounter_spawned_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
 var _wave_encounter_pending: bool = false
 var _pending_rival_for_dialogue: Node2D = null
@@ -1119,6 +1120,10 @@ func _spawn_next_satellite_for_wave() -> void:
 	_spawn_next_satellite(spawn_pos)
 
 func _check_wave_encounters() -> void:
+	if _wave_encounter_spawned_for_wave == current_wave:
+		_wave_encounter_pending = false
+		return
+
 	if is_any_combat_modal_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
@@ -1178,6 +1183,8 @@ func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
 	beacon.exploded.connect(_on_slot_machine_exploded)
 	current_slot_machine = beacon
 	add_child(beacon)
+	_wave_encounter_spawned_for_wave = current_wave
+	_wave_encounter_pending = false
 
 func _on_slot_machine_interacted(_beacon: Node2D) -> void:
 	# La máquina tragamonedas in-run es un bumper arcade 100% in-game:
@@ -1221,14 +1228,19 @@ func _spawn_elite_herald() -> void:
 		herald.connect("boss_defeated", _on_boss_defeated)
 
 func _spawn_rival_pilot(override_id: StringName = &"") -> void:
+	if _wave_encounter_spawned_for_wave == current_wave and override_id == &"":
+		_wave_encounter_pending = false
+		return
+
 	if is_any_combat_modal_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
 
 	if (current_rival != null and is_instance_valid(current_rival)) or (current_boss != null and is_instance_valid(current_boss)):
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 1.0
+		if _wave_encounter_spawned_for_wave != current_wave:
+			_wave_encounter_pending = true
+			_wave_encounter_timer = 1.0
 		return
 
 	if not is_instance_valid(player):
@@ -1292,6 +1304,8 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		rival.prepare_warp_in(rival_target_pos)
 	add_child(rival)
 	current_rival = rival
+	_wave_encounter_spawned_for_wave = current_wave
+	_wave_encounter_pending = false
 
 	rival.rival_spared.connect(_on_rival_spared)
 	rival.rival_engaged.connect(_on_rival_engaged)
@@ -1366,14 +1380,19 @@ func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	_resume_pending_systems_after_cinematics()
 
 func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
+	if _wave_encounter_spawned_for_wave == current_wave and target_scene_override == null:
+		_wave_encounter_pending = false
+		return
+
 	if is_any_combat_modal_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
 
 	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 1.0
+		if _wave_encounter_spawned_for_wave != current_wave:
+			_wave_encounter_pending = true
+			_wave_encounter_timer = 1.0
 		return
 
 	if not is_instance_valid(player):
@@ -1440,6 +1459,8 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	else:
 		BossEmergenceHelperScript.prepare_boss(current_boss, boss_target_pos)
 	add_child(current_boss)
+	_wave_encounter_spawned_for_wave = current_wave
+	_wave_encounter_pending = false
 
 	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
 	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
@@ -1500,9 +1521,14 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	)
 
 func _spawn_final_boss() -> void:
+	if _wave_encounter_spawned_for_wave == current_wave:
+		_wave_encounter_pending = false
+		return
+
 	if (current_boss != null and is_instance_valid(current_boss)) or (current_rival != null and is_instance_valid(current_rival)):
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 1.0
+		if _wave_encounter_spawned_for_wave != current_wave:
+			_wave_encounter_pending = true
+			_wave_encounter_timer = 1.0
 		return
 
 	if not is_instance_valid(player):
@@ -1558,6 +1584,8 @@ func _spawn_final_boss() -> void:
 		BossEmergenceHelperScript.prepare_boss(prime, boss_target_pos)
 	add_child(prime)
 	current_boss = prime
+	_wave_encounter_spawned_for_wave = current_wave
+	_wave_encounter_pending = false
 
 	prime.health_changed.connect(hud.update_boss_health)
 	prime.phase_changed.connect(hud.set_boss_phase)
@@ -1791,6 +1819,8 @@ func jump_to_boss(boss_id: String) -> void:
 
 	current_wave = target_wave
 	_wave_encounter_checked_for_wave = target_wave
+	_wave_encounter_spawned_for_wave = target_wave
+	_wave_encounter_pending = false
 
 	# Equipar nivel adecuado y créditos para testear cómodamente el jefe
 	if is_instance_valid(player):
@@ -1814,6 +1844,7 @@ func jump_to_wave_11(route: String = "neutral") -> void:
 	current_wave = 11
 	wave_timer = WAVE_DURATION
 	_wave_encounter_checked_for_wave = 11
+	_wave_encounter_spawned_for_wave = 11
 	_wave_encounter_pending = false
 	if current_boss and is_instance_valid(current_boss):
 		current_boss.queue_free()
@@ -2383,7 +2414,8 @@ func get_current_run_state() -> Dictionary:
 		"rivals_spared": rivals_spared.duplicate(),
 		"rivals_killed": rivals_killed.duplicate(),
 		"rival_queue": rival_queue.duplicate(),
-		"_wave_encounter_checked_for_wave": _wave_encounter_checked_for_wave
+		"_wave_encounter_checked_for_wave": _wave_encounter_checked_for_wave,
+		"_wave_encounter_spawned_for_wave": _wave_encounter_spawned_for_wave
 	}
 
 func save_current_run_state() -> void:
@@ -2405,6 +2437,7 @@ func restore_run_state(run_data: Dictionary) -> void:
 	bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
 	prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
 	_wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", current_wave))
+	_wave_encounter_spawned_for_wave = int(run_data.get("_wave_encounter_spawned_for_wave", current_wave))
 	_wave_encounter_pending = false
 
 	if run_data.has("rivals_spared"):
