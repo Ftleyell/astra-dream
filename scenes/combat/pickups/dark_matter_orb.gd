@@ -18,6 +18,7 @@ var magnet_speed: float = 0.0
 
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_aura: Polygon2D = get_node_or_null("VisualAura")
+@onready var orb_sprite: Sprite2D = get_node_or_null("Sprite2D")
 
 
 func _ready() -> void:
@@ -40,7 +41,10 @@ func _process(delta: float) -> void:
 
 	var t := Time.get_ticks_msec() * 0.004
 	var s: float = 1.0 + sin(t * 1.8) * 0.22
-	if visual_core:
+	if orb_sprite:
+		orb_sprite.scale = Vector2(0.12, 0.12) * s
+		orb_sprite.rotation += delta * 1.2
+	elif visual_core:
 		visual_core.scale = Vector2(s, s)
 		visual_core.rotation += delta * 2.0
 	if visual_aura:

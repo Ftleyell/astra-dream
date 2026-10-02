@@ -17,6 +17,7 @@ const COLLECT_RADIUS_SQ: float = 48.0 * 48.0
 
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_aura: Polygon2D = get_node_or_null("VisualAura")
+@onready var orb_sprite: Sprite2D = get_node_or_null("Sprite2D")
 
 
 func _ready() -> void:
@@ -39,7 +40,9 @@ func _process(delta: float) -> void:
 	# Pulso orgánico bioluminiscente
 	var t := Time.get_ticks_msec() * 0.005
 	var s: float = 1.0 + sin(t) * 0.18
-	if visual_core:
+	if orb_sprite:
+		orb_sprite.scale = Vector2(0.08, 0.08) * s
+	elif visual_core:
 		visual_core.scale = Vector2(s, s)
 	if visual_aura:
 		visual_aura.rotation += delta * 1.8

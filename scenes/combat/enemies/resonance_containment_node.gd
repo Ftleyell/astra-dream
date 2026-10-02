@@ -24,6 +24,7 @@ var contact_cooldown: float = 0.0
 @onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
+@onready var pylon_sprite: Sprite2D = get_node_or_null("PylonSprite")
 
 var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.tscn")
 
@@ -36,8 +37,16 @@ func _ready() -> void:
 	_acquire_player()
 	
 	tether_line = Line2D.new()
-	tether_line.width = 3.0
-	tether_line.default_color = Color(0.1, 0.8, 1.0, 0.6)
+	var beam_tex := load("res://assets/sprites/vfx/electric_fence_beam.png") as Texture2D
+	if beam_tex:
+		tether_line.texture = beam_tex
+		tether_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+		tether_line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		tether_line.width = 28.0
+		tether_line.default_color = Color(1.0, 1.0, 1.0, 0.95)
+	else:
+		tether_line.width = 3.0
+		tether_line.default_color = Color(0.1, 0.8, 1.0, 0.6)
 	tether_line.top_level = true
 	add_child(tether_line)
 
@@ -78,15 +87,21 @@ func _update_tether() -> void:
 		tether_line.clear_points()
 		tether_line.add_point(global_position)
 		tether_line.add_point(neighbor_node.global_position)
-		var alpha: float = 0.4 + 0.3 * sin(Time.get_ticks_msec() * 0.008)
-		tether_line.default_color = Color(0.2, 0.9, 1.0, alpha)
+		var pulse: float = 0.8 + 0.2 * sin(Time.get_ticks_msec() * 0.012)
+		if tether_line.texture:
+			tether_line.default_color = Color(1.0, 1.0, 1.0, pulse)
+		else:
+			tether_line.default_color = Color(0.2, 0.9, 1.0, pulse)
 	else:
 		tether_line.visible = false
 
 func _update_pulsing(_delta: float) -> void:
-	if visual_core:
-		var s := 1.0 + 0.15 * sin(Time.get_ticks_msec() * 0.01)
-		visual_core.scale = Vector2(s, s)
+	var s: float = 0.09 * (1.0 + 0.04 * sin(Time.get_ticks_msec() * 0.008))
+	if pylon_sprite:
+		pylon_sprite.scale = Vector2(s, s)
+	elif visual_core:
+		var vs := 1.0 + 0.15 * sin(Time.get_ticks_msec() * 0.01)
+		visual_core.scale = Vector2(vs, vs)
 
 func take_damage(arg) -> void:
 	if is_dying:
