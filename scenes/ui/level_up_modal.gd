@@ -621,7 +621,8 @@ func _select_card(card: StatCardData) -> void:
 		get_tree().paused = true
 		if parent_game.has_method("restore_combat_modal_focus"):
 			parent_game.restore_combat_modal_focus()
-		if parent_game.has_method("_on_level_up_modal_closed"):
-			parent_game._on_level_up_modal_closed()
 	else:
 		get_tree().paused = false
+
+	if parent_game and parent_game.has_method("_on_level_up_modal_closed"):
+		parent_game._on_level_up_modal_closed()

@@ -101,6 +101,7 @@ func play_warp_in_cinematic(callback: Callable = Callable()) -> void:
 	_play_sfx("dash", 0.65)
 
 	var tw := create_tween().set_parallel(false)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	var t_anim := tw.tween_property(ship_sprite, "scale", Vector2(0.42, 0.42), 0.35)
 	t_anim.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.35)

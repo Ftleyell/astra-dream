@@ -88,6 +88,7 @@ var slot_machine_reward_modal: CanvasLayer = null
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
 var _wave_encounter_pending: bool = false
+var _pending_rival_for_dialogue: Node2D = null
 
 const AUTO_SAVE_INTERVAL: float = 5.0
 const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
@@ -566,6 +567,9 @@ func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dicti
 	}
 
 func _trigger_pet_rival_encounter(rival: Node2D) -> void:
+	if is_any_combat_modal_active():
+		_pending_rival_for_dialogue = rival
+		return
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
 		return
@@ -976,6 +980,11 @@ func _spawn_next_satellite_for_wave() -> void:
 	_spawn_next_satellite(spawn_pos)
 
 func _check_wave_encounters() -> void:
+	if is_any_combat_modal_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 0.5
+		return
+
 	if current_wave == 11:
 		_spawn_final_boss()
 	elif current_wave % 2 == 1:
@@ -1049,6 +1058,11 @@ func _spawn_elite_herald() -> void:
 		herald.connect("boss_defeated", _on_boss_defeated)
 
 func _spawn_rival_pilot(override_id: StringName = &"") -> void:
+	if is_any_combat_modal_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 0.5
+		return
+
 	if current_rival != null or current_boss != null or not is_instance_valid(player):
 		return
 
@@ -1091,10 +1105,16 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	# Reproducir animación cinemática de warp-in antes de iniciar el diálogo
 	if rival.has_method("play_warp_in_cinematic"):
 		rival.play_warp_in_cinematic(func() -> void:
-			_trigger_pet_rival_encounter(rival)
+			if is_any_combat_modal_active():
+				_pending_rival_for_dialogue = rival
+			else:
+				_trigger_pet_rival_encounter(rival)
 		)
 	else:
-		_trigger_pet_rival_encounter(rival)
+		if is_any_combat_modal_active():
+			_pending_rival_for_dialogue = rival
+		else:
+			_trigger_pet_rival_encounter(rival)
 
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
@@ -1138,6 +1158,11 @@ func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	save_current_run_state()
 
 func _spawn_wave_boss() -> void:
+	if is_any_combat_modal_active():
+		_wave_encounter_pending = true
+		_wave_encounter_timer = 0.5
+		return
+
 	if current_boss != null or not is_instance_valid(player):
 		return
 
@@ -1558,8 +1583,6 @@ func _on_satellite_planted(index: int, _pos: Vector2) -> void:
 		_pending_satellite_index = index
 	else:
 		satellite_shop.open_shop(player.run_credits)
-		if index == 2:
-			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
 
 func _on_satellite_exited(_index: int) -> void:
 	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
@@ -1616,6 +1639,7 @@ func _on_satellite_shop_closed() -> void:
 		level_up_modal.show_next_level_up()
 	elif not is_any_combat_modal_active():
 		get_tree().paused = false
+		_resume_pending_encounters_after_modal()
 
 func is_pause_menu_active() -> bool:
 	return pause_menu != null and pause_menu.visible
@@ -1652,14 +1676,13 @@ func _on_arcana_modal_closed() -> void:
 		level_up_modal.show_next_level_up()
 	elif _pending_satellite_credits >= 0:
 		var creds = _pending_satellite_credits
-		var idx = _pending_satellite_index
+		var _idx = _pending_satellite_index
 		_pending_satellite_credits = -1
 		_pending_satellite_index = -1
 		satellite_shop.open_shop(creds)
-		if idx == 2:
-			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
 	elif not is_any_combat_modal_active():
 		get_tree().paused = false
+		_resume_pending_encounters_after_modal()
 
 func _on_level_up_modal_closed() -> void:
 	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
@@ -1669,14 +1692,26 @@ func _on_level_up_modal_closed() -> void:
 		_open_next_pending_arcana()
 	elif _pending_satellite_credits >= 0:
 		var creds = _pending_satellite_credits
-		var idx = _pending_satellite_index
+		var _idx = _pending_satellite_index
 		_pending_satellite_credits = -1
 		_pending_satellite_index = -1
 		satellite_shop.open_shop(creds)
-		if idx == 2:
-			trigger_boss_transmission("CENTINELA TITÁN (FASE 1)", "Intruso localizado en la baliza orbital. Desplegando enjambre de proyectiles.")
 	elif not is_any_combat_modal_active():
 		get_tree().paused = false
+		_resume_pending_encounters_after_modal()
+
+func _resume_pending_encounters_after_modal() -> void:
+	if _pending_rival_for_dialogue != null and is_instance_valid(_pending_rival_for_dialogue):
+		var target_rival: Node2D = _pending_rival_for_dialogue
+		_pending_rival_for_dialogue = null
+		get_tree().create_timer(0.5, false).timeout.connect(func() -> void:
+			if is_instance_valid(target_rival) and not is_any_combat_modal_active():
+				_trigger_pet_rival_encounter(target_rival)
+			elif is_instance_valid(target_rival):
+				_pending_rival_for_dialogue = target_rival
+		)
+	elif _wave_encounter_pending:
+		_wave_encounter_timer = 0.5
 
 func _open_next_pending_arcana() -> void:
 	if arcana_modal and is_instance_valid(player):
