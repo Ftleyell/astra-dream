@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cspawnrunner01"]
+
+[ext_resource type="Script" path="res://tests/test_enemy_spawner_data_driven_suite.gd" id="1_spawner_suite_script"]
+
+[node name="TestEnemySpawnerDataDrivenRunner" type="Node"]
+script = ExtResource("1_spawner_suite_script")

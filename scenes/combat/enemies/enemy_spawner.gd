@@ -16,12 +16,15 @@ extends Node2D
 @export var assault_cone_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_assault_cone.tscn")
 @export var vanguard_ring_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_vanguard_ring.tscn")
 @export var specter_wave_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_specter_wave.tscn")
+@export var wave_schedule: WaveScheduleConfig = preload("res://data/balance/default_wave_schedule.tres")
 
 @export var max_enemies: int = 80
 @export var base_spawn_interval: float = 1.2
 @export var min_spawn_interval: float = 0.3
 @export var spawn_radius_min: float = 750.0
 @export var spawn_radius_max: float = 950.0
+
+var current_wave_config: WaveSpawnConfig = null
 
 var player: Player = null
 var spawn_timer: float = 0.0
@@ -128,24 +131,34 @@ func set_wave(wave_num: int) -> void:
 	swarm_event_timer = SWARM_EVENT_INTERVAL
 	champion_spawn_timer = randf_range(18.0, 26.0)
 
-	# Escalado de tope de enemigos: Tope máximo estricto de 80 enemigos activos para máximo rendimiento
-	match wave_num:
-		1:
-			max_enemies = 50
-			base_spawn_interval = 1.2
-			min_spawn_interval = 0.50
-		2:
-			max_enemies = 65
-			base_spawn_interval = 1.0
-			min_spawn_interval = 0.42
-		3:
-			max_enemies = 75
-			base_spawn_interval = 0.85
-			min_spawn_interval = 0.35
-		_:
-			max_enemies = 80
-			base_spawn_interval = 0.70
-			min_spawn_interval = 0.28
+	if wave_schedule:
+		current_wave_config = wave_schedule.get_config_for_wave(wave_num)
+	else:
+		current_wave_config = null
+
+	if current_wave_config:
+		max_enemies = current_wave_config.max_enemies
+		base_spawn_interval = current_wave_config.base_spawn_interval
+		min_spawn_interval = current_wave_config.min_spawn_interval
+	else:
+		# Fallback legacy si no hay recurso asignado
+		match wave_num:
+			1:
+				max_enemies = 50
+				base_spawn_interval = 1.2
+				min_spawn_interval = 0.50
+			2:
+				max_enemies = 65
+				base_spawn_interval = 1.0
+				min_spawn_interval = 0.42
+			3:
+				max_enemies = 75
+				base_spawn_interval = 0.85
+				min_spawn_interval = 0.35
+			_:
+				max_enemies = 80
+				base_spawn_interval = 0.70
+				min_spawn_interval = 0.28
 
 func _acquire_player() -> void:
 	if not is_instance_valid(player):
@@ -158,8 +171,8 @@ func _try_spawn_cluster() -> void:
 		return
 
 	var available_slots := max_enemies - active_count
-	var min_cluster := 3 if current_wave <= 2 else 4
-	var max_cluster := 6 if current_wave <= 2 else 8
+	var min_cluster := current_wave_config.cluster_min if current_wave_config else (3 if current_wave <= 2 else 4)
+	var max_cluster := current_wave_config.cluster_max if current_wave_config else (6 if current_wave <= 2 else 8)
 	var cluster_size := mini(available_slots, randi_range(min_cluster, max_cluster))
 
 	_acquire_player()
@@ -194,6 +207,20 @@ func _try_spawn_cluster() -> void:
 		_spawn_enemy_at(scene_to_spawn, spawn_pos)
 
 func _select_enemy_scene() -> PackedScene:
+	if current_wave_config:
+		var etype := current_wave_config.pick_enemy_type()
+		match etype:
+			&"drone": return drone_scene
+			&"kamikaze": return kamikaze_scene
+			&"micro_flock": return micro_flock_scene
+			&"shooter": return shooter_scene
+			&"tank": return tank_scene
+			&"splitter": return splitter_scene
+			&"assault_cone": return assault_cone_scene
+			&"vanguard_ring": return vanguard_ring_scene
+			&"specter_wave": return specter_wave_scene
+			_: return drone_scene
+
 	var roll := randf()
 	if current_wave <= 1:
 		# Oleada 1: 75% Drones, 15% Kamikazes, 10% Micro-Flocks
