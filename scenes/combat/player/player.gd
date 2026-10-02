@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SandevistanFlightVFX = preload("res://scenes/combat/player/sandevistan_flight_vfx.gd")
+const PlayerDashController = preload("res://scenes/combat/player/player_dash_controller.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -11,39 +12,72 @@ var stats: CharacterStats = CharacterStats.new()
 var inventory: InventoryComponent = InventoryComponent.new()
 var _static_charge: float = 0.0
 
-# Dash & Mobility State (Unique per Character)
-var is_dashing: bool = false
-var dash_timer: float = 0.0
-var dash_direction: Vector2 = Vector2.RIGHT
-var dash_charges: int = 1
-var max_dash_charges: int = 1
-var dash_recharge_timer: float = 0.0
-var dash_recharge_max: float = 1.6
-var dash_internal_cd: float = 0.2
-var _internal_cd_timer: float = 0.0
+# Dash Controller Component & Mobility State
+var dash_controller: PlayerDashController = PlayerDashController.new()
 
-# Nova: Omega Spin (Láser giratorio 360° continuo en dash)
-var is_omega_spinning: bool = false
-var omega_spin_angle: float = 0.0
+var is_dashing: bool:
+	get: return dash_controller.is_dashing if dash_controller else false
+	set(val):
+		if dash_controller: dash_controller.is_dashing = val
 
-# Valentina: Sobre-Enfoque (Bullet-Time Focus & Guaranteed Crit)
+var dash_direction: Vector2:
+	get: return dash_controller.dash_direction if dash_controller else Vector2.RIGHT
+	set(val):
+		if dash_controller: dash_controller.dash_direction = val
 
-var is_focus_active: bool = false
-var focus_timer: float = 0.0
-var has_guaranteed_crit: bool = false
+var dash_charges: int:
+	get: return dash_controller.dash_charges if dash_controller else 1
+	set(val):
+		if dash_controller: dash_controller.dash_charges = val
 
-# Roxy: Embestida Sísmica (Contact Damage flag)
-var roxy_ram_hit_enemies: Array[Node2D] = []
+var max_dash_charges: int:
+	get: return dash_controller.max_dash_charges if dash_controller else 1
+	set(val):
+		if dash_controller: dash_controller.max_dash_charges = val
 
-# Dash VFX Scenes
-var fire_trail_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/fire_trail_hazard.tscn")
-var decoy_mine_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/decoy_drone_mine.tscn")
-var vacuum_pulse_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/vacuum_phase_pulse.tscn")
-var chain_scene: PackedScene = preload("res://scenes/combat/weapons/chain_lightning_effect.tscn")
-var nova_spin_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/nova_spin_360_laser.tscn")
+var dash_recharge_max: float:
+	get: return dash_controller.dash_recharge_max if dash_controller else 1.6
+	set(val):
+		if dash_controller: dash_controller.dash_recharge_max = val
+
+var dash_internal_cd: float:
+	get: return dash_controller.dash_internal_cd if dash_controller else 0.2
+	set(val):
+		if dash_controller: dash_controller.dash_internal_cd = val
+
+var is_omega_spinning: bool:
+	get: return dash_controller.is_omega_spinning if dash_controller else false
+	set(val):
+		if dash_controller: dash_controller.is_omega_spinning = val
+
+var omega_spin_angle: float:
+	get: return dash_controller.omega_spin_angle if dash_controller else 0.0
+	set(val):
+		if dash_controller: dash_controller.omega_spin_angle = val
+
+var is_focus_active: bool:
+	get: return dash_controller.is_focus_active if dash_controller else false
+	set(val):
+		if dash_controller: dash_controller.is_focus_active = val
+
+var has_guaranteed_crit: bool:
+	get: return dash_controller.has_guaranteed_crit if dash_controller else false
+	set(val):
+		if dash_controller: dash_controller.has_guaranteed_crit = val
+
+var dash_timer: float:
+	get: return dash_controller.dash_timer if dash_controller else 0.0
+	set(val):
+		if dash_controller: dash_controller.dash_timer = val
+
+var roxy_ram_hit_enemies: Array[Node2D]:
+	get: return dash_controller.roxy_ram_hit_enemies if dash_controller else []
+	set(val):
+		if dash_controller: dash_controller.roxy_ram_hit_enemies = val
+
+# Combat VFX Scenes
 var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
 var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
-var cut_line_scene: PackedScene = preload("res://scenes/combat/player/dash_effects/dimensional_cut_line.tscn")
 
 var is_dead: bool = false
 
@@ -103,6 +137,10 @@ func _ready() -> void:
 			character_data = CharacterData.new()
 
 	_apply_visual_theme()
+	if not dash_controller.is_inside_tree():
+		add_child(dash_controller)
+	if not dash_controller.dash_updated.is_connected(_on_dash_controller_updated):
+		dash_controller.dash_updated.connect(_on_dash_controller_updated)
 	_setup_character_dash()
 	stats.initialize(character_data)
 
@@ -537,194 +575,27 @@ func set_cinematic_duel_facing() -> void:
 func resume_movement_control() -> void:
 	is_movement_suppressed = false
 
+func _on_dash_controller_updated(c: int, m: int, p: float, f: bool) -> void:
+	dash_updated.emit(c, m, p, f)
+
 func _setup_character_dash() -> void:
-	var cid := String(character_data.character_id) if character_data else "nova"
-	match cid:
-		"nova":
-			max_dash_charges = 2
-			dash_charges = 2
-			dash_recharge_max = 1.0
-			dash_internal_cd = 0.15
-		"valentina":
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.8
-			dash_internal_cd = 0.25
-		"kira":
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.4
-			dash_internal_cd = 0.2
-		"selene":
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.6
-			dash_internal_cd = 0.2
-		"roxy":
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.8
-			dash_internal_cd = 0.25
-		"echo":
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.2
-			dash_internal_cd = 0.2
-		"nyx":
-			max_dash_charges = 2
-			dash_charges = 2
-			dash_recharge_max = 1.3
-			dash_internal_cd = 0.15
-		_:
-			max_dash_charges = 1
-			dash_charges = 1
-			dash_recharge_max = 1.6
-			dash_internal_cd = 0.2
-	dash_recharge_timer = 0.0
+	if not dash_controller:
+		dash_controller = PlayerDashController.new()
+	var cid: StringName = character_data.character_id if character_data else &"nova"
+	dash_controller.setup_for_character(self, cid)
 
 func _handle_dash(delta: float) -> void:
-	# Ajuste de delta cuando está activo el Bullet-Time de Valentina
-	var unscaled_delta: float = delta / maxf(0.1, Engine.time_scale)
-
-	# 1. Temporizador de enfriamiento interno entre cargas consecutivas
-	if _internal_cd_timer > 0.0:
-		_internal_cd_timer -= unscaled_delta
-
-	# 2. Recarga pasiva de cargas de dash
-	if dash_charges < max_dash_charges:
-		dash_recharge_timer += unscaled_delta
-		if dash_recharge_timer >= dash_recharge_max:
-			dash_recharge_timer = 0.0
-			dash_charges = mini(max_dash_charges, dash_charges + 1)
-			dash_updated.emit(dash_charges, max_dash_charges, 1.0, is_focus_active)
-		else:
-			dash_updated.emit(dash_charges, max_dash_charges, dash_recharge_timer / dash_recharge_max, is_focus_active)
-	else:
-		dash_recharge_timer = 0.0
-
-	# 3. Temporizador de Sobre-Enfoque (Valentina)
-	if is_focus_active:
-		focus_timer -= unscaled_delta
-		if focus_timer <= 0.0:
-			is_focus_active = false
-			Engine.time_scale = SaveManager.get_game_speed() if SaveManager else 1.0
-			dash_updated.emit(dash_charges, max_dash_charges, 1.0 if dash_charges >= max_dash_charges else (dash_recharge_timer / dash_recharge_max), false)
-
-	# 4. Estado activo de Dash e invulnerabilidad
-	if is_dashing:
-		dash_timer -= delta
-		if character_data and character_data.character_id == &"roxy":
-			_process_roxy_ram_collision()
-
-		if dash_timer <= 0.0:
-			is_dashing = false
-			is_omega_spinning = false
-
-	# 5. Entrada del jugador para ejecutar Dash
-	if Input.is_action_just_pressed("dash") and not is_dashing and _internal_cd_timer <= 0.0 and dash_charges > 0:
-		dash_charges -= 1
-		_internal_cd_timer = dash_internal_cd
-		_execute_character_dash()
-		dash_updated.emit(dash_charges, max_dash_charges, dash_recharge_timer / dash_recharge_max, is_focus_active)
+	if dash_controller:
+		dash_controller.handle_dash_process(delta)
 
 func _execute_character_dash() -> void:
-	if inventory:
-		inventory.process_dash_procs(self)
-
-	var cid := String(character_data.character_id) if character_data else "nova"
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.RIGHT
-
-	dash_direction = aim_dir
-
-	match cid:
-		"nova":
-			_execute_nova_dash()
-		"valentina":
-			_execute_valentina_dash()
-		"kira":
-			_execute_kira_dash()
-		"selene":
-			_execute_selene_dash()
-		"roxy":
-			_execute_roxy_dash()
-		"echo":
-			_execute_echo_dash()
-		"nyx":
-			_execute_nyx_dash()
-		_:
-			_execute_nova_dash()
-
-func _execute_nova_dash() -> void:
-	# ── Omega Spin: se activa cuando el láser está a carga máxima ──
-	# Usamos get_node_or_null en lugar del @onready para que funcione
-	# tanto en instancias de escena como en Player.new() de los tests.
-	var wc := get_node_or_null("WeaponController") as WeaponController
-	if wc and wc.is_laser_fully_charged():
-		_execute_nova_omega_spin(wc)
-		return
-
-	# ── Dash normal: rastro de fuego ──
-	is_dashing = true
-	dash_timer = 0.25
-	var hazard := fire_trail_scene.instantiate()
-	if hazard and hazard.has_method("setup"):
-		hazard.setup(global_position, dash_direction, self)
-		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-		if spawn_parent:
-			spawn_parent.add_child(hazard)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.2, 0.0)
-
-## Omega Spin: dash + giro 360° + láser en todas direcciones.
-## Se activa solo cuando el láser de Nova tiene carga máxima.
-func _execute_nova_omega_spin(wc: WeaponController) -> void:
-	# 1. Dash estándar (0.35s para que la vuelta 360° sea completa)
-	is_dashing = true
-	dash_timer = 0.35
-	is_omega_spinning = true
-	omega_spin_angle = dash_direction.angle()
-	update_omega_spin_rotation(omega_spin_angle)
-
-	# 2. Consumir la carga del láser antes de disparar
-	wc.consume_laser_charge()
-
-	# 3. Construir HitContext a partir de las stats actuales del jugador
-	var base_dmg := stats.get_stat(&"base_damage")
-	var crit_chance: float = stats.get_stat(&"crit_chance")
-	var is_crit := randf() <= crit_chance
-	var crit_mult: float = stats.get_stat(&"crit_damage")
-	var final_dmg := base_dmg * (crit_mult if is_crit else 1.0)
-
-	var ctx := HitContext.new()
-	ctx.attacker = self
-	ctx.raw_damage = base_dmg
-	ctx.final_damage = final_dmg
-	ctx.is_crit = is_crit
-	ctx.proc_coefficient = 0.35
-	ctx.hit_position = global_position
-
-	# 4. Instanciar y lanzar NovaSpin360Laser (el haz barre desde la dirección del dash)
-	var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-	if spawn_parent and nova_spin_scene:
-		var spin: Node2D = nova_spin_scene.instantiate() as Node2D
-		if spin:
-			spawn_parent.add_child(spin)
-			if spin.has_method("setup"):
-				# Pasar: jugador (para seguir su posición y sincronizar giro), ctx de daño, ángulo inicial = dirección del dash
-				spin.call("setup", self, ctx, dash_direction.angle())
-
-	# 5. SFX especial (pitch alto para comunicar la potencia)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser", 1.6, 2.0)
-		audio_mgr.play_sfx("dash", 1.4, 3.0)
+	if dash_controller:
+		dash_controller.execute_character_dash()
 
 ## Sincroniza la rotación visual de la nave, armadura y cañón con el rayo láser en tiempo real
 func update_omega_spin_rotation(angle: float) -> void:
-	omega_spin_angle = angle
+	if dash_controller:
+		dash_controller.omega_spin_angle = angle
 	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
 	if ship_spr and ship_spr.visible:
 		ship_spr.rotation = angle + PI / 2.0
@@ -738,159 +609,18 @@ func update_omega_spin_rotation(angle: float) -> void:
 	if w_ctrl:
 		w_ctrl.rotation = angle
 
-
-
-
-func _execute_valentina_dash() -> void:
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.RIGHT
-	dash_direction = -aim_dir
-	is_dashing = true
-	dash_timer = 0.22
-	is_focus_active = true
-	focus_timer = 1.5
-	has_guaranteed_crit = true
-	var base_spd: float = SaveManager.get_game_speed() if SaveManager else 1.0
-	Engine.time_scale = base_spd * 0.55
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.6, 2.0)
-
-func _execute_kira_dash() -> void:
-	is_dashing = true
-	dash_timer = 0.25
-	var mine := decoy_mine_scene.instantiate()
-	if mine and mine.has_method("setup"):
-		mine.setup(global_position, self)
-		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-		if spawn_parent:
-			spawn_parent.add_child(mine)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.4, -2.0)
-
-func _execute_selene_dash() -> void:
-	is_dashing = true
-	dash_timer = 0.15
-	var teleport_dist := 240.0
-	global_position += dash_direction * teleport_dist
-
-	var pulse := vacuum_pulse_scene.instantiate()
-	if pulse and pulse.has_method("setup"):
-		pulse.setup(global_position, self)
-		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-		if spawn_parent:
-			spawn_parent.add_child(pulse)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser", 0.7, 1.0)
+func consume_guaranteed_crit() -> bool:
+	if dash_controller:
+		return dash_controller.consume_guaranteed_crit()
+	return false
 
 func _execute_roxy_dash() -> void:
-	is_dashing = true
-	dash_timer = 0.32
-	roxy_ram_hit_enemies.clear()
-
-	if bullet_server and bullet_server.has_method("clear_bullets_in_arc"):
-		bullet_server.clear_bullets_in_arc(global_position, dash_direction, 120.0, 180.0)
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("explosion", 1.6, 2.0)
+	if dash_controller:
+		dash_controller._execute_roxy_dash()
 
 func _process_roxy_ram_collision() -> void:
-	var tree := get_tree()
-	if not tree:
-		return
-	var ram_radius_sq := 48.0 * 48.0
-	for enemy in tree.get_nodes_in_group("enemies"):
-		if is_instance_valid(enemy) and enemy is Node2D and not roxy_ram_hit_enemies.has(enemy):
-			if global_position.distance_squared_to(enemy.global_position) <= ram_radius_sq:
-				roxy_ram_hit_enemies.append(enemy)
-				if enemy.has_method("take_damage"):
-					var ctx := HitContext.new()
-					ctx.attacker = self
-					ctx.raw_damage = 35.0
-					ctx.final_damage = 35.0
-					ctx.hit_position = global_position
-					enemy.take_damage(ctx)
-				if "velocity" in enemy:
-					enemy.velocity += dash_direction * 300.0
-
-func _execute_echo_dash() -> void:
-	is_dashing = true
-	dash_timer = 0.15
-	var teleport_dist := 200.0
-	global_position += dash_direction * teleport_dist
-
-	var nearest_enemy: Node2D = null
-	var min_d_sq := 400.0 * 400.0
-	var tree := get_tree()
-	if tree:
-		for enemy in tree.get_nodes_in_group("enemies"):
-			if is_instance_valid(enemy) and enemy is Node2D:
-				var d_sq := global_position.distance_squared_to(enemy.global_position)
-				if d_sq < min_d_sq:
-					min_d_sq = d_sq
-					nearest_enemy = enemy
-
-	if nearest_enemy:
-		var chain := chain_scene.instantiate()
-		if chain and chain.has_method("setup"):
-			var ctx := HitContext.new()
-			ctx.attacker = self
-			ctx.raw_damage = 40.0
-			ctx.final_damage = 40.0
-			ctx.hit_position = global_position
-			chain.setup(global_position, nearest_enemy.global_position, ctx, 5)
-			var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-			if spawn_parent:
-				spawn_parent.add_child(chain)
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.8, 1.0)
-
-func _execute_nyx_dash() -> void:
-	is_dashing = true
-	dash_timer = 0.18
-	var start_pos := global_position
-	var teleport_dist := 260.0
-	var target_pos := start_pos + dash_direction * teleport_dist
-	global_position = target_pos
-
-	var base_dmg := stats.get_stat(&"base_damage") if stats else 48.0
-	var crit_chance: float = stats.get_stat(&"crit_chance") if stats else 0.15
-	var is_crit := (randf() <= crit_chance) or consume_guaranteed_crit()
-	var crit_mult: float = stats.get_stat(&"crit_damage") if stats else 1.8
-	var final_dmg := base_dmg * 1.5 * (crit_mult if is_crit else 1.0)
-
-	var ctx := HitContext.new()
-	ctx.attacker = self
-	ctx.raw_damage = base_dmg * 1.5
-	ctx.final_damage = final_dmg
-	ctx.is_crit = is_crit
-	ctx.proc_coefficient = 1.0
-	ctx.hit_position = (start_pos + target_pos) * 0.5
-
-	if cut_line_scene:
-		var cut: Node2D = cut_line_scene.instantiate() as Node2D
-		if cut and cut.has_method("setup"):
-			var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-			if spawn_parent:
-				spawn_parent.add_child(cut)
-			cut.setup(start_pos, target_pos, self, ctx)
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.8, 1.5)
-
-func consume_guaranteed_crit() -> bool:
-	if has_guaranteed_crit:
-		has_guaranteed_crit = false
-		return true
-	return false
+	if dash_controller:
+		dash_controller._process_roxy_ram_collision()
 
 
 func suppress_bomb_input(duration: float = 0.35) -> void:
