@@ -1,6 +1,8 @@
 class_name SlotMachineRewardModal
 extends CanvasLayer
 
+const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
+
 signal item_claimed(item: ItemData)
 signal item_rejected(compensation_credits: int)
 signal modal_closed()
@@ -256,6 +258,9 @@ func _on_take_pressed() -> void:
 	if current_weapon and current_player:
 		var w_ctrl := current_player.get_node_or_null("WeaponController") as WeaponController
 		if w_ctrl:
+			if w_ctrl.has_method("is_full") and w_ctrl.is_full() and not w_ctrl.get_weapon_instance(current_weapon.weapon_id):
+				_open_weapon_swap_modal(w_ctrl, current_weapon)
+				return
 			w_ctrl.add_weapon(current_weapon)
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
@@ -268,6 +273,19 @@ func _on_take_pressed() -> void:
 		item_claimed.emit(current_item)
 
 	_close_and_cleanup()
+
+func _open_weapon_swap_modal(w_ctrl: WeaponController, w_data: WeaponData) -> void:
+	var swap_modal := WeaponSwapModalClass.new()
+	get_tree().root.add_child(swap_modal)
+	swap_modal.prompt_swap(current_player, w_data,
+		func(_idx, _new_w):
+			_close_and_cleanup()
+			swap_modal.queue_free(),
+		func(_discarded_w):
+			_close_and_cleanup()
+			swap_modal.queue_free()
+	)
+	hide()
 
 func _on_reject_pressed() -> void:
 	if current_player:

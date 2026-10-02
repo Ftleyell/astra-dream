@@ -23,9 +23,27 @@ func add_item(item: ItemData, count: int = 1) -> void:
 		var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, item.is_percentage, item.item_id)
 		character_stats.set_or_replace_modifier(item.stat_name, mod)
 
+	# Aplicar modificador secundario / de penalización (anti-sinergia)
+	if character_stats and item.secondary_stat_name != &"":
+		var total_penalty: float = item.secondary_stat_value * float(new_count)
+		var p_mod := CharacterStats.StatModifier.new(
+			StringName(str(item.item_id) + "_penalty"),
+			total_penalty,
+			item.secondary_is_percentage,
+			item.item_id
+		)
+		character_stats.set_or_replace_modifier(item.secondary_stat_name, p_mod)
+
 	item_added.emit(item, new_count)
 
 func clear_items() -> void:
+	if character_stats:
+		for id: StringName in _items.keys():
+			var item: ItemData = _items[id]["data"]
+			if item.stat_name != &"":
+				character_stats.remove_modifier(item.stat_name, item.item_id)
+			if item.secondary_stat_name != &"":
+				character_stats.remove_modifier(item.secondary_stat_name, StringName(str(item.item_id) + "_penalty"))
 	_items.clear()
 
 func get_item_count(item_id: StringName) -> int:
@@ -59,6 +77,77 @@ func process_hit_procs(context: HitContext, source_entity: Node) -> void:
 
 			if randf() <= effective_chance:
 				effect.execute(context, stacks, source_entity)
+
+func process_dash_procs(source_entity: Node) -> void:
+	var context := HitContext.new()
+	context.attacker = source_entity
+	if source_entity is Node2D:
+		context.hit_position = (source_entity as Node2D).global_position
+	context.proc_coefficient = 1.0
+
+	for id: StringName in _items.keys():
+		if not context.can_proc(id):
+			continue
+
+		var entry: Dictionary = _items[id]
+		var data: ItemData = entry["data"]
+		var stacks: int = entry["count"]
+
+		for effect: ItemEffect in data.effects:
+			if effect.trigger != Enums.TriggerType.ON_DASH:
+				continue
+
+			var effective_chance: float = _calculate_chance(effect.base_chance, data.stack_type, stacks, data.hyperbolic_factor)
+			if randf() <= effective_chance:
+				effect.execute(context, stacks, source_entity)
+
+func process_take_damage_procs(incoming_damage: float, source_entity: Node) -> void:
+	var context := HitContext.new()
+	context.victim = source_entity
+	context.raw_damage = incoming_damage
+	context.final_damage = incoming_damage
+	if source_entity is Node2D:
+		context.hit_position = (source_entity as Node2D).global_position
+	context.proc_coefficient = 1.0
+
+	for id: StringName in _items.keys():
+		if not context.can_proc(id):
+			continue
+
+		var entry: Dictionary = _items[id]
+		var data: ItemData = entry["data"]
+		var stacks: int = entry["count"]
+
+		for effect: ItemEffect in data.effects:
+			if effect.trigger != Enums.TriggerType.ON_TAKE_DAMAGE:
+				continue
+
+			var effective_chance: float = _calculate_chance(effect.base_chance, data.stack_type, stacks, data.hyperbolic_factor)
+			if randf() <= effective_chance:
+				effect.execute(context, stacks, source_entity)
+
+func process_kill_procs(target_entity: Node) -> void:
+	var context := HitContext.new()
+	context.victim = target_entity
+	if target_entity is Node2D:
+		context.hit_position = (target_entity as Node2D).global_position
+	context.proc_coefficient = 1.0
+
+	for id: StringName in _items.keys():
+		if not context.can_proc(id):
+			continue
+
+		var entry: Dictionary = _items[id]
+		var data: ItemData = entry["data"]
+		var stacks: int = entry["count"]
+
+		for effect: ItemEffect in data.effects:
+			if effect.trigger != Enums.TriggerType.ON_KILL:
+				continue
+
+			var effective_chance: float = _calculate_chance(effect.base_chance, data.stack_type, stacks, data.hyperbolic_factor)
+			if randf() <= effective_chance:
+				effect.execute(context, stacks, target_entity)
 
 func _calculate_chance(base: float, stack_type: Enums.StackType, stacks: int, factor: float) -> float:
 	match stack_type:

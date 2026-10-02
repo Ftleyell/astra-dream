@@ -148,7 +148,119 @@ func _ready() -> void:
 	assert(not arcana_modal.visible, "ArcanaSelectionModal debe cerrarse tras pactar")
 	print("  ✓ Pacto de arcana procesado y modal cerrado.")
 
+	# =========================================================================
+	# PARTE 6: Milestone 1 — Mazo de Subida de Nivel (R1)
+	# =========================================================================
+	print("\n[6/7] Testing Milestone 1: 3-Card Offer, No Proj Cards & +25-30% Impact...")
+	var deck_mgr: StatDeckManager = main_game.stat_deck_manager
+	assert(deck_mgr != null, "StatDeckManager debe existir")
+
+	# 6.1. Verificar ausencia de cartas de proyectil en el mazo común
+	for card in deck_mgr.all_stat_cards:
+		assert(card.target_stat != &"projectile_count", "El mazo común NO debe contener cartas de proyectil adicional (encontrado: %s)" % card.card_id)
+		assert(card.card_id != &"card_proj_up_1" and card.card_id != &"card_proj_up_2", "card_proj_up_1/2 deben eliminarse del mazo común")
+	print("  ✓ Ausencia de cartas de proyectil plano universal verificada en el mazo común.")
+
+	# 6.2. Verificar valores matemáticos de alto impacto (+25-30% Daño, +20% Cadencia, etc.)
+	var found_dmg_1 := false
+	var found_atk_spd := false
+	var found_armor_1 := false
+	var found_crit_chance := false
+	var found_speed := false
+	for card in deck_mgr.all_stat_cards:
+		if card.card_id == &"card_dmg_1":
+			found_dmg_1 = true
+			assert(card.modifier_value >= 0.25, "card_dmg_1 debe otorgar al menos +25%% de daño (actual: %f)" % card.modifier_value)
+		elif card.card_id == &"card_atk_spd":
+			found_atk_spd = true
+			assert(card.modifier_value >= 0.20, "card_atk_spd debe otorgar al menos +20%% de cadencia (actual: %f)" % card.modifier_value)
+		elif card.card_id == &"card_armor_1":
+			found_armor_1 = true
+			assert(card.modifier_value >= 5.0, "card_armor_1 debe otorgar al menos +5.0 de armadura (actual: %f)" % card.modifier_value)
+		elif card.card_id == &"card_crit_chance":
+			found_crit_chance = true
+			assert(card.modifier_value >= 0.12, "card_crit_chance debe otorgar al menos +12%% crítico (actual: %f)" % card.modifier_value)
+		elif card.card_id == &"card_speed_up":
+			found_speed = true
+			assert(card.modifier_value >= 0.18, "card_speed_up debe otorgar al menos +18%% velocidad (actual: %f)" % card.modifier_value)
+	assert(found_dmg_1 and found_atk_spd and found_armor_1 and found_crit_chance and found_speed, "Todas las cartas clave de Tier 1 deben existir y estar calibradas")
+	print("  ✓ Valores de alto impacto Tier 1 verificados (+25% daño, +20% cadencia, +5 armadura, etc.).")
+
+	# 6.3. Verificar oferta de exactamente 3 cartas en LevelUpModal
+	level_modal.show_level_up(3)
+	assert(level_modal.current_offered_cards.size() == 3, "Deben ofrecerse exactamente 3 cartas (actual: %d)" % level_modal.current_offered_cards.size())
+	assert(level_modal.cards_container.get_child_count() == 3, "CardsContainer debe contener exactamente 3 nodos de cartas")
+
+	# 6.4. Verificar UI de cartas limpia e instantánea (Hero Badge 26pt, sin duplicados)
+	for card_panel in level_modal.card_panels:
+		var hero_badge: Label = card_panel.find_child("HeroValueBadge", true, false) as Label
+		assert(hero_badge != null, "Cada carta debe incluir un HeroValueBadge para lectura instantánea")
+		assert(hero_badge.get_theme_font_size("font_size") >= 24, "HeroValueBadge debe tener tipografía destacada (>= 24pt)")
+		assert(hero_badge.text.begins_with("+") or hero_badge.text.begins_with("-"), "HeroValueBadge debe mostrar el valor numérico con signo")
+		var stat_lbl: Label = card_panel.find_child("StatNameLabel", true, false) as Label
+		assert(stat_lbl != null, "Cada carta debe tener una etiqueta de atributo concisa")
+	print("  ✓ Formato visual limpio con exactamente 3 cartas y badges heroicos verificado.")
+	level_modal._select_card_by_index(0)
+
+	# =========================================================================
+	# PARTE 7: Milestone 1 — Tienda Satelital y Economía (R2)
+	# =========================================================================
+	print("\n[7/7] Testing Milestone 1: 1 Re-roll Limit, Credit Sync & Price Calibration...")
+	# 7.1. Abrir tienda y verificar re-roll inicial disponible
+	var shop_test_credits: int = 150
+	player.run_credits = shop_test_credits
+	shop.open_shop(player.run_credits)
+	assert(shop.can_reroll() == true, "can_reroll() debe ser true al abrir la tienda")
+	assert(shop.reroll_btn.disabled == false, "El botón de re-roll debe estar habilitado inicialmente")
+	assert(shop.rerolls_used_this_visit == 0, "rerolls_used_this_visit debe ser 0")
+
+	# 7.2. Ejecutar 1 Re-roll
+	var pre_reroll_cost := shop.reroll_cost
+	shop._on_reroll_pressed()
+	assert(shop.rerolls_used_this_visit == 1, "Debe registrarse 1 reroll utilizado")
+	assert(shop.current_credits == shop_test_credits - pre_reroll_cost, "Créditos locales deben descontar el coste")
+	assert(player.run_credits == shop.current_credits, "player.run_credits DEBE estar sincronizado con el gasto de re-roll")
+	assert(shop.can_reroll() == false, "can_reroll() debe ser false tras agotar el cupo")
+	assert(shop.reroll_btn.disabled == true, "El botón de re-roll DEBE deshabilitarse tras 1 uso")
+	assert(shop.reroll_btn.text.contains("AGOTADO"), "El texto del botón debe indicar [AGOTADO (1/1)]")
+	print("  ✓ Límite de 1 re-roll por visita y sincronización de créditos con Player verificados.")
+
+	# 7.3. Intentar un segundo re-roll (debe ser ignorado)
+	var credits_after_first := shop.current_credits
+	shop._on_reroll_pressed()
+	assert(shop.rerolls_used_this_visit == 1, "No debe permitir segundo reroll")
+	assert(shop.current_credits == credits_after_first, "Créditos no deben variar al reintentar reroll agotado")
+	print("  ✓ Segundo intento de re-roll bloqueado exitosamente.")
+
+	# 7.4. Cerrar tienda y reabrir (simulando visita a nuevo satélite)
+	shop.close_shop()
+	shop.open_shop(player.run_credits)
+	assert(shop.rerolls_used_this_visit == 0, "El cupo de re-roll debe reiniciarse en una nueva visita al satélite")
+	assert(shop.can_reroll() == true, "can_reroll() debe volver a ser true en nueva visita si hay fondos")
+	assert(shop.reroll_btn.disabled == false, "El botón de re-roll debe volver a habilitarse en nueva visita")
+	shop.close_shop()
+	print("  ✓ Restablecimiento del cupo de re-roll al visitar un nuevo satélite verificado.")
+
+	# 7.5. Calibración de precios de armas e ítems
+	var shop_weapons := [
+		load("res://data/weapons/shop/nova_flak.tres") as WeaponData,
+		load("res://data/weapons/shop/dimensional_blade.tres") as WeaponData,
+		load("res://data/weapons/shop/cluster_submunition.tres") as WeaponData,
+		load("res://data/weapons/shop/solar_beam.tres") as WeaponData,
+	]
+	for w in shop_weapons:
+		assert(w != null and w.cost >= 120 and w.cost <= 150, "Arma %s debe costar entre 120 y 150 créditos (actual: %d)" % [w.weapon_name, w.cost])
+	print("  ✓ Precios de armas calibrados a 120-150 créditos.")
+
+	var canonical_items := ItemPoolManager.create_canonical_stat_items()
+	for it in canonical_items:
+		if it.rarity == Enums.Rarity.COMMON:
+			assert(it.cost >= 40 and it.cost <= 50, "Ítem pasivo común %s debe costar 40-50 créditos (actual: %d)" % [it.item_name, it.cost])
+		elif it.rarity == Enums.Rarity.UNCOMMON:
+			assert(it.cost >= 55 and it.cost <= 65, "Ítem pasivo poco común %s debe costar 55-65 créditos (actual: %d)" % [it.item_name, it.cost])
+	print("  ✓ Precios de ítems pasivos calibrados (comunes 40-50C, poco comunes 55-65C).")
+
 	print("\n==========================================")
-	print("[PASS] ALL DECISION MENUS STATS TESTS PASSED (100%)!")
+	print("[PASS] ALL DECISION MENUS & M1 STATS TESTS PASSED (100%)!")
 	print("==========================================\n")
 	get_tree().quit(0)

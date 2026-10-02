@@ -144,7 +144,7 @@ func _present_level(level: int) -> void:
 	show()
 
 	if stat_deck_manager and player:
-		stat_deck_manager.offer_cards(player.stats, level, 4)
+		stat_deck_manager.offer_cards(player.stats, level, 3)
 
 	# Período de gracia contra spam de clicks de mouse involuntarios al abrir o cambiar de nivel
 	get_tree().create_timer(0.3, true, false, true).timeout.connect(func():
@@ -333,10 +333,6 @@ func _input(event: InputEvent) -> void:
 				_select_card_by_index(2)
 				get_viewport().set_input_as_handled()
 				return
-			KEY_4, KEY_KP_4:
-				_select_card_by_index(3)
-				get_viewport().set_input_as_handled()
-				return
 
 			# Navegación con ASDW y Flechas Direccionales
 			KEY_A, KEY_LEFT, KEY_W, KEY_UP:
@@ -413,6 +409,7 @@ func _on_cards_offered(cards: Array[StatCardData], _cost: int) -> void:
 
 	if cards_container:
 		for child in cards_container.get_children():
+			cards_container.remove_child(child)
 			child.queue_free()
 
 		for i in range(cards.size()):
@@ -431,7 +428,7 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	var tier_color: Color = tier_info["color"]
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(210, 310)
+	card_panel.custom_minimum_size = Vector2(240, 320)
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
@@ -467,14 +464,6 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	tier_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tier_lbl.add_theme_font_size_override("font_size", 12)
 
-	# Título de la carta
-	var title_lbl := Label.new()
-	title_lbl.text = card.title
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	title_lbl.add_theme_color_override("font_color", tier_color)
-	title_lbl.add_theme_font_size_override("font_size", 15)
-
 	# Marco contenedor del icono de 64x64 px centrado
 	var icon_panel := PanelContainer.new()
 	icon_panel.custom_minimum_size = Vector2(64, 64)
@@ -498,7 +487,7 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 		icon_rect.modulate = tier_color
 	icon_panel.add_child(icon_rect)
 
-	# Descripción de mejora con valor exacto y nombre de estadística
+	# Formato de valor y nombre para lectura instantánea
 	var stat_name_display: String = str(card.target_stat)
 	for cfg in RUN_STATS_CONFIG:
 		if cfg["key"] == card.target_stat:
@@ -509,16 +498,28 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 	var mod_text := ""
 	if card.is_percentage:
 		mod_text = "%s%.0f%%" % [mod_sign, card.modifier_value * 100.0]
+	elif card.target_stat == &"health_regen":
+		mod_text = "%s%.1f/s" % [mod_sign, card.modifier_value]
 	else:
 		mod_text = "%s%.0f" % [mod_sign, card.modifier_value]
 
-	var desc_lbl := Label.new()
-	desc_lbl.text = "%s %s" % [mod_text, stat_name_display]
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	desc_lbl.add_theme_font_size_override("font_size", 13)
-	desc_lbl.add_theme_color_override("font_color", Color("#00FF9D") if card.modifier_value >= 0 else Color("#FF4466"))
+	# Hero badge: Valor numérico destacado (26pt)
+	var hero_val_lbl := Label.new()
+	hero_val_lbl.name = "HeroValueBadge"
+	hero_val_lbl.text = mod_text
+	hero_val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hero_val_lbl.add_theme_font_size_override("font_size", 26)
+	hero_val_lbl.add_theme_color_override("font_color", Color("#00FF9D") if card.modifier_value >= 0 else Color("#FF4466"))
+
+	# Etiqueta de Atributo concisa
+	var stat_lbl := Label.new()
+	stat_lbl.name = "StatNameLabel"
+	stat_lbl.text = stat_name_display
+	stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stat_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	stat_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	stat_lbl.add_theme_font_size_override("font_size", 13)
+	stat_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
 
 	# Botón de selección interactivo compacto (evita miss-clicks involuntarios por spam de disparo)
 	var select_btn := Button.new()
@@ -565,9 +566,9 @@ func _create_stat_card_ui(card: StatCardData, index: int) -> void:
 
 	vbox.add_child(hotkey_lbl)
 	vbox.add_child(tier_lbl)
-	vbox.add_child(title_lbl)
 	vbox.add_child(icon_panel)
-	vbox.add_child(desc_lbl)
+	vbox.add_child(hero_val_lbl)
+	vbox.add_child(stat_lbl)
 	vbox.add_child(select_btn)
 	card_panel.add_child(vbox)
 

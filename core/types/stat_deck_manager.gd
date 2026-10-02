@@ -24,24 +24,22 @@ func _ready() -> void:
 
 func _generate_default_cards() -> void:
 	var stats_to_create = [
-		{"id": &"card_dmg_1", "title": "+15% Daño", "stat": &"base_damage", "val": 0.15, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_dmg_2", "title": "+35% Daño", "stat": &"base_damage", "val": 0.35, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_atk_spd", "title": "+12% Cadencia de Fuego", "stat": &"attack_speed", "val": 0.12, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_crit_chance", "title": "+7% Prob. Crítica", "stat": &"crit_chance", "val": 0.07, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_crit_dmg", "title": "+40% Daño Crítico", "stat": &"crit_damage", "val": 0.40, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_hp_up", "title": "+25 Vida Máxima", "stat": &"max_health", "val": 25.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_speed_up", "title": "+10% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.10, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_proj_up_1", "title": "+1 Proyectil Adicional", "stat": &"projectile_count", "val": 1.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_proj_up_2", "title": "+2 Proyectiles Adicionales", "stat": &"projectile_count", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_3},
-		{"id": &"card_armor_1", "title": "+3 Armadura", "stat": &"armor", "val": 3.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_armor_2", "title": "+7 Armadura", "stat": &"armor", "val": 7.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_regen_1", "title": "+0.8 Regen/s", "stat": &"health_regen", "val": 0.8, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_regen_2", "title": "+2.0 Regen/s", "stat": &"health_regen", "val": 2.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_magnet_1", "title": "+40 px Imán", "stat": &"pickup_radius", "val": 40.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_magnet_2", "title": "+90 px Imán", "stat": &"pickup_radius", "val": 90.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_exp_1", "title": "+15% EXP Ganada", "stat": &"exp_multiplier", "val": 0.15, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_exp_2", "title": "+35% EXP Ganada", "stat": &"exp_multiplier", "val": 0.35, "pct": true, "tier": Enums.Tier.TIER_2}
+		{"id": &"card_dmg_1", "title": "+25% Daño Base", "stat": &"base_damage", "val": 0.25, "pct": true, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_dmg_2", "title": "+50% Daño Base", "stat": &"base_damage", "val": 0.50, "pct": true, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_atk_spd", "title": "+20% Cadencia de Fuego", "stat": &"attack_speed", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_crit_chance", "title": "+12% Prob. Crítica", "stat": &"crit_chance", "val": 0.12, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_crit_dmg", "title": "+60% Daño Crítico", "stat": &"crit_damage", "val": 0.60, "pct": true, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_hp_up", "title": "+40 Vida Máxima", "stat": &"max_health", "val": 40.0, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_speed_up", "title": "+18% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.18, "pct": true, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_luck_up", "title": "+25% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.25, "pct": true, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_armor_1", "title": "+5 Armadura", "stat": &"armor", "val": 5.0, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_armor_2", "title": "+10 Armadura", "stat": &"armor", "val": 10.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_regen_1", "title": "+1.5 Regen/s", "stat": &"health_regen", "val": 1.5, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_regen_2", "title": "+3.5 Regen/s", "stat": &"health_regen", "val": 3.5, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_magnet_1", "title": "+50 px Imán", "stat": &"pickup_radius", "val": 50.0, "pct": false, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_magnet_2", "title": "+100 px Imán", "stat": &"pickup_radius", "val": 100.0, "pct": false, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_exp_1", "title": "+20% EXP Ganada", "stat": &"exp_multiplier", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_exp_2", "title": "+40% EXP Ganada", "stat": &"exp_multiplier", "val": 0.40, "pct": true, "tier": Enums.Tier.TIER_2}
 	]
 	var stat_icon_map := {
 		&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -72,7 +70,7 @@ func _generate_default_cards() -> void:
 			c.icon = load(stat_icon_map[stat_key]) as Texture2D
 		all_stat_cards.append(c)
 
-func offer_cards(char_stats: CharacterStats, level: int, count: int = 4) -> void:
+func offer_cards(char_stats: CharacterStats, level: int, count: int = 3) -> void:
 	_current_level = level
 	_rerolls_this_session = 0
 	_generate_hand(char_stats, count)
@@ -82,7 +80,7 @@ func reroll(char_stats: CharacterStats, current_credits: int) -> bool:
 	if current_credits < cost:
 		return false
 	_rerolls_this_session += 1
-	_generate_hand(char_stats, 4)
+	_generate_hand(char_stats, 3)
 	return true
 
 func get_reroll_cost() -> int:

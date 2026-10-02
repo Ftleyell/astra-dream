@@ -51,24 +51,24 @@ func _ready() -> void:
 		assert(cdata.starting_weapon != null, "El piloto %s no tiene starting_weapon asignada" % pid)
 		print("  ✓ Piloto %s -> Arma inicial: %s" % [cdata.display_name, cdata.starting_weapon.weapon_name])
 
-	# 3. Probar WeaponController con 6 slots simultáneos
-	print("\n[3/4] Testing WeaponController multi-weapon (6 slots) & duplicates...")
+	# 3. Probar WeaponController con 4 slots simultáneos (Rework 4 slots cap)
+	print("\n[3/4] Testing WeaponController multi-weapon (4 slots) & duplicates...")
 	var controller := WeaponController.new()
 	add_child(controller)
 
-	# Limpiar default y agregar 6 armas diferentes
+	# Limpiar default y agregar 4 armas diferentes
 	controller.equipped_weapons.clear()
-	for i in range(6):
+	for i in range(4):
 		var ok := controller.add_weapon(loaded_weapons[i])
 		assert(ok, "Error al equipar arma %d" % i)
 
-	assert(controller.equipped_weapons.size() == 6, "Deben estar equipados exactamente 6 slots")
-	print("  ✓ 6 slots equipados con éxito")
+	assert(controller.equipped_weapons.size() == 4, "Deben estar equipados exactamente 4 slots")
+	print("  ✓ 4 slots equipados con éxito")
 
-	# Intentar equipar una 7ma arma (debe rechazarse por cupo lleno)
-	var extra_ok := controller.add_weapon(loaded_weapons[6])
-	assert(not extra_ok, "No debe permitir equipar una 7ma arma sin cupo")
-	print("  ✓ Límite de 6 slots respetado estrictamente")
+	# Intentar equipar una 5ta arma (debe rechazarse por cupo lleno)
+	var extra_ok := controller.add_weapon(loaded_weapons[4])
+	assert(not extra_ok, "No debe permitir equipar una 5ta arma sin cupo")
+	print("  ✓ Límite de 4 slots respetado estrictamente")
 
 	# Probar fusión por duplicado: agregar nuevamente la primera arma
 	var initial_lvl := controller.equipped_weapons[0].level
@@ -77,7 +77,7 @@ func _ready() -> void:
 	assert(dup_ok, "Comprar duplicado debe retornar true")
 	assert(controller.equipped_weapons[0].level == initial_lvl + 1, "El arma debe subir a Nivel 2")
 	assert(controller.equipped_weapons[0].get_effective_damage() > initial_dmg, "El daño debe incrementarse con el nivel")
-	assert(controller.equipped_weapons.size() == 6, "El número de slots debe permanecer en 6")
+	assert(controller.equipped_weapons.size() == 4, "El número de slots debe permanecer en 4")
 	print("  ✓ Fusión por duplicado verificada: Nivel %d -> Daño %s" % [
 		controller.equipped_weapons[0].level,
 		controller.equipped_weapons[0].get_effective_damage()

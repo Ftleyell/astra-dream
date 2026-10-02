@@ -15,6 +15,11 @@ extends Resource
 @export var stat_value: float = 0.0
 @export var is_percentage: bool = false
 
+@export_group("Secondary / Penalty Stat")
+@export var secondary_stat_name: StringName = &""
+@export var secondary_stat_value: float = 0.0
+@export var secondary_is_percentage: bool = false
+
 @export_group("Stacking")
 @export var max_stacks: int = 99
 @export var stack_type: Enums.StackType = Enums.StackType.LINEAR

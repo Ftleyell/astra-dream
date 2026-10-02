@@ -1,6 +1,8 @@
 class_name SatelliteShop
 extends CanvasLayer
 
+const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
+
 signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
 
@@ -8,10 +10,16 @@ signal shop_closed()
 @export var player: Player
 
 var current_credits: int = 100
-var reroll_cost: int = 15
+@export var base_reroll_cost: int = 30
+@export var max_rerolls_per_satellite: int = 1
+var reroll_cost: int = 30
+var rerolls_used_this_visit: int = 0
 var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
 var stat_ui_entries: Dictionary = {}
+
+func can_reroll() -> bool:
+	return rerolls_used_this_visit < max_rerolls_per_satellite and current_credits >= reroll_cost
 
 @onready var panel: Panel = $ShopPanel
 @onready var items_container: HBoxContainer = find_child("ItemsContainer", true, false) as HBoxContainer
@@ -118,6 +126,8 @@ func _generate_default_shop_items() -> void:
 
 func open_shop(credits: int) -> void:
 	current_credits = credits
+	rerolls_used_this_visit = 0
+	reroll_cost = base_reroll_cost
 	_ensure_player()
 	_update_credits_display()
 	_roll_shop_items()
@@ -558,7 +568,15 @@ func _update_credits_display() -> void:
 	if credits_label:
 		credits_label.text = "Créditos: %d" % current_credits
 	if reroll_btn:
-		reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+		if rerolls_used_this_visit >= max_rerolls_per_satellite:
+			reroll_btn.disabled = true
+			reroll_btn.text = "Re-roll [AGOTADO (%d/%d)]" % [rerolls_used_this_visit, max_rerolls_per_satellite]
+		elif current_credits < reroll_cost:
+			reroll_btn.disabled = true
+			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+		else:
+			reroll_btn.disabled = false
+			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
 	if close_btn:
 		close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
 
@@ -723,6 +741,13 @@ func _create_item_card_ui(entry: Resource, index: int) -> void:
 
 	buy_btn.pressed.connect(func():
 		if current_credits >= cost:
+			if entry is WeaponData:
+				_ensure_player()
+				if is_instance_valid(player):
+					var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+					if w_ctrl and w_ctrl.has_method("is_full") and w_ctrl.is_full() and not w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id):
+						_open_shop_weapon_swap(entry as WeaponData, cost, buy_btn)
+						return
 			current_credits -= cost
 			_update_credits_display()
 			buy_btn.disabled = true
@@ -816,8 +841,42 @@ func _focus_next_available_buy_button() -> void:
 
 
 func _on_reroll_pressed() -> void:
-	if current_credits >= reroll_cost:
-		current_credits -= reroll_cost
-		reroll_cost += 10
-		_update_credits_display()
-		_roll_shop_items()
+	if not can_reroll():
+		return
+	current_credits -= reroll_cost
+	rerolls_used_this_visit += 1
+	_ensure_player()
+	if is_instance_valid(player):
+		player.run_credits = current_credits
+		if player.has_signal("credits_changed"):
+			player.credits_changed.emit(player.run_credits)
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud and hud.has_method("update_credits"):
+		hud.update_credits(current_credits)
+	_update_credits_display()
+	_roll_shop_items()
+
+
+func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> void:
+	var swap_modal := WeaponSwapModalClass.new()
+	get_tree().root.add_child(swap_modal)
+	swap_modal.prompt_swap(player, w_data,
+		func(_idx, _new_w):
+			current_credits -= cost
+			_update_credits_display()
+			if is_instance_valid(player):
+				player.run_credits = current_credits
+				if player.has_signal("credits_changed"):
+					player.credits_changed.emit(player.run_credits)
+			if is_instance_valid(buy_btn):
+				buy_btn.disabled = true
+				buy_btn.text = "¡Adquirido!"
+			item_purchased.emit(w_data, cost)
+			call_deferred("_refresh_inventory_display")
+			call_deferred("_refresh_stats_display")
+			_clear_stat_highlights()
+			_focus_next_available_buy_button()
+			swap_modal.queue_free(),
+		func(_discarded_w):
+			swap_modal.queue_free()
+	)

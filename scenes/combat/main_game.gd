@@ -345,11 +345,11 @@ func _start_prologue_briefing() -> void:
 	if skip_badge_layer:
 		skip_badge_layer.show()
 
-	# Bonificación inicial otorgada de forma silenciosa e inmediata (+100 Créditos)
+	# Bonificación inicial otorgada de forma silenciosa e inmediata (+50 Créditos)
 	if not prologue_bonus_chosen:
 		prologue_bonus_chosen = true
 		if is_instance_valid(player):
-			player.run_credits += 100
+			player.run_credits += 50
 			if hud:
 				hud.update_credits(player.run_credits)
 
@@ -420,7 +420,7 @@ func _on_dialogic_signal(arg: Variant) -> void:
 	match str(arg):
 		"briefing_credits":
 			prologue_bonus_chosen = true
-			player.run_credits += 100
+			player.run_credits += 50
 			hud.update_credits(player.run_credits)
 		"briefing_speed":
 			prologue_bonus_chosen = true
@@ -462,7 +462,7 @@ func _on_dialogue_skip_requested() -> void:
 
 	if is_briefing_active and not prologue_bonus_chosen:
 		prologue_bonus_chosen = true
-		player.run_credits += 100
+		player.run_credits += 50
 		if hud:
 			hud.update_credits(player.run_credits)
 
@@ -524,7 +524,7 @@ func _on_dialogic_timeline_ended() -> void:
 	if is_briefing_active:
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
-			player.run_credits += 100
+			player.run_credits += 50
 			if hud:
 				hud.update_credits(player.run_credits)
 
@@ -1485,6 +1485,19 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	add_child(current_boss)
 	_wave_encounter_spawned_for_wave = current_wave
 	_wave_encounter_pending = false
+
+	# Escalamiento adaptativo de vida del jefe según oleada y potencia del jugador
+	if "max_health" in current_boss:
+		var wave_factor: float = 1.0 + float(current_wave) * 0.08
+		var p_dps_factor: float = 1.0
+		if is_instance_valid(player) and player.stats:
+			var dmg_val: float = player.stats.get_stat(&"base_damage")
+			var spd_val: float = player.stats.get_stat(&"attack_speed")
+			p_dps_factor = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
+		var base_hp: float = current_boss.get("max_health")
+		var adaptive_hp: float = base_hp * wave_factor * p_dps_factor
+		current_boss.set("max_health", adaptive_hp)
+		current_boss.set("current_health", adaptive_hp)
 
 	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
 	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0

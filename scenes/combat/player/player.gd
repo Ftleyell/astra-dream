@@ -47,7 +47,7 @@ var cut_line_scene: PackedScene = preload("res://scenes/combat/player/dash_effec
 var is_dead: bool = false
 
 var bomb_count: int = 2
-var run_credits: int = 120
+var run_credits: int = 40
 var run_biomass: int = 0
 var _menu_close_suppress_timer: float = 0.0
 var _was_bomb_pressed_during_menu: bool = false
@@ -619,6 +619,9 @@ func _handle_dash(delta: float) -> void:
 		dash_updated.emit(dash_charges, max_dash_charges, dash_recharge_timer / dash_recharge_max, is_focus_active)
 
 func _execute_character_dash() -> void:
+	if inventory:
+		inventory.process_dash_procs(self)
+
 	var cid := String(character_data.character_id) if character_data else "nova"
 	var aim_dir := (get_global_mouse_position() - global_position).normalized()
 	if aim_dir.length_squared() < 0.001:
@@ -1035,6 +1038,16 @@ func take_damage(amount: float) -> void:
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
 			audio_mgr.play_sfx("ui_click", 0.0, 1.8)
 		return
+	if has_meta("phase_inverter_shield"):
+		remove_meta("phase_inverter_shield")
+		var tw := create_tween()
+		if tw:
+			tw.tween_property(self, "modulate", Color(0.3, 1.5, 2.0, 1.0), 0.1)
+			tw.tween_property(self, "modulate", Color.WHITE, 0.2)
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click", 0.0, 2.2)
+		return
 	var armor_val: float = stats.get_stat(&"armor") if stats else 0.0
 	var mitigated_dmg: float = amount
 	if armor_val >= 0.0:
@@ -1048,6 +1061,10 @@ func take_damage(amount: float) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")
 	health_changed.emit(current_health, stats.get_stat(&"max_health"))
+
+	if inventory:
+		inventory.process_take_damage_procs(mitigated_dmg, self)
+
 	if current_health <= 0.0 and not is_dead:
 		_trigger_death_sequence()
 

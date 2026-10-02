@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://integral_rework_runner_01"]
+
+[ext_resource type="Script" path="res://tests/test_integral_rework_suite.gd" id="1_test_suite"]
+
+[node name="TestIntegralReworkRunner" type="Node"]
+script = ExtResource("1_test_suite")

@@ -141,7 +141,17 @@ func _die() -> void:
 		audio_mgr.play_sfx("explosion", randf_range(0.92, 1.08))
 
 	if is_instance_valid(player):
-		player.add_credits(credits_reward)
+		if player.inventory:
+			player.inventory.process_kill_procs(self)
+		var drop_creds: int = credits_reward
+		if credits_reward == 1:
+			# Swarms/drones have a 30% drop chance to curb hyperinflation
+			drop_creds = 1 if randf() < 0.30 else 0
+		elif credits_reward == 2:
+			# Minor assault units drop 1 credit 50% of the time
+			drop_creds = 1 if randf() < 0.50 else 0
+		if drop_creds > 0:
+			player.add_credits(drop_creds)
 
 	# Soltar gema/blob de EXP en el campo
 	if exp_blob_scene:

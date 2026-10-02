@@ -11,57 +11,42 @@ void vertex() {
 
 void fragment() {
 	int b_type = int(round(v_custom.r));
-	if (b_type >= 4) {
-		int frame_idx = clamp(b_type - 4, 0, 2);
-		float u_offset = float(frame_idx) / 3.0;
-		vec2 atlas_uv = vec2(u_offset + UV.x / 3.0, UV.y);
-		vec4 tex_color = texture(bullet_atlas, atlas_uv);
-		if (tex_color.a < 0.05) {
-			discard;
-		}
-		COLOR = vec4(tex_color.rgb * 1.6, tex_color.a);
-	} else {
-		// Coordenadas centradas en el quad: [-1.0, 1.0]
-		// p.x está alineado con la dirección del vector velocidad
-		vec2 p = (UV - vec2(0.5)) * 2.0;
 
-		// Silueta de dardo / aguja de energía hostil (teardrop direccional):
-		// Afilado hacia el frente (+X) y estela de eyección estilizada en (-X)
-		float shape_dist;
-		if (p.x > 0.0) {
-			// Punta afilada hacia delante
-			shape_dist = p.x * 0.85 + abs(p.y) * 1.75;
-		} else {
-			// Cuerpo y estela trasera
-			shape_dist = abs(p.x) * 0.75 + abs(p.y) * 1.35;
-		}
+	// Coordenadas normalizadas centradas en el quad: [-1.0, 1.0]
+	vec2 p = (UV - vec2(0.5)) * 2.0;
+	float dist = length(p);
 
-		if (shape_dist > 1.0) {
-			discard;
-		}
-
-		// Paleta de Peligro Hostil (Cero confusión con gemas/EXP)
-		vec3 base_color = vec3(1.0, 0.08, 0.15); // Tipo 0: Carmesí Sangre de Impacto
-
-		if (b_type == 1) {
-			base_color = vec3(1.0, 0.38, 0.02); // Tipo 1: Plasma Naranja Fuego
-		} else if (b_type == 2) {
-			base_color = vec3(1.0, 0.05, 0.60); // Tipo 2: Fucsia Neón Letal
-		} else if (b_type == 3) {
-			base_color = vec3(0.65, 0.08, 1.0); // Tipo 3: Vacío Abisal Púrpura
-		}
-
-		// Núcleo blanco incandescente en el centro de masa del proyectil
-		vec2 core_pos = p - vec2(0.15, 0.0);
-		float core_dist = length(core_pos * vec2(1.4, 2.4));
-		float core = smoothstep(0.42, 0.04, core_dist);
-
-		// Borde de emisión de energía
-		float edge = smoothstep(1.0, 0.35, shape_dist);
-
-		vec3 final_color = mix(base_color, vec3(1.0, 0.98, 0.92), core);
-
-		// Salida con emisión luminosa (bloom) intensa
-		COLOR = vec4(final_color * 2.1, edge);
+	// Descartar píxeles fuera de la esfera perfecta
+	if (dist > 1.0) {
+		discard;
 	}
+
+	// Paleta de Peligro Danmaku (Orbes esféricos puros de alta legibilidad)
+	vec3 base_color = vec3(1.0, 0.08, 0.15); // Tipo 0: Carmesí Sangre
+	if (b_type == 1) {
+		base_color = vec3(1.0, 0.44, 0.02); // Tipo 1: Plasma Naranja Fuego
+	} else if (b_type == 2) {
+		base_color = vec3(1.0, 0.06, 0.68); // Tipo 2: Fucsia Neón Letal
+	} else if (b_type == 3) {
+		base_color = vec3(0.65, 0.12, 1.0);  // Tipo 3: Vacío Abisal Púrpura
+	} else if (b_type == 4) {
+		base_color = vec3(1.0, 0.82, 0.12); // Tipo 4: Ámbar Solar
+	} else if (b_type == 5) {
+		base_color = vec3(0.08, 0.78, 1.0);  // Tipo 5: Cobalto Cuántico
+	} else if (b_type >= 6) {
+		base_color = vec3(0.88, 0.22, 1.0); // Tipo 6+: Amatista Espectral
+	}
+
+	// 1. Núcleo incandescente ultra-blanco/caliente en el centro geométrico (dist < 0.38)
+	float core = smoothstep(0.38, 0.0, dist);
+
+	// 2. Anillo de densidad energética y halo de contraste exterior
+	float ring = smoothstep(0.92, 0.65, dist) * smoothstep(0.40, 0.60, dist);
+	float edge = smoothstep(1.0, 0.88, dist);
+
+	vec3 final_color = mix(base_color, vec3(1.0, 1.0, 1.0), core * 0.95);
+	final_color += base_color * ring * 0.65;
+
+	// Salida con emisión luminosa y recorte circular perfecto
+	COLOR = vec4(final_color * 1.85, edge);
 }

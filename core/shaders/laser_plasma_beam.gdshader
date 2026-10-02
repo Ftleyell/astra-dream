@@ -27,5 +27,8 @@ void fragment() {
     vec3 final_color = mix(energy_tint.rgb, vec3(1.0, 1.0, 1.0), core_boost * 0.85);
     final_color *= core_intensity * pulse;
 
-    COLOR = vec4(final_color, tex.a * energy_tint.a);
+    // Compresión suave anti-blowout para superposición de múltiples rayos
+    final_color = final_color / (1.0 + final_color * 0.12);
+
+    COLOR = vec4(final_color, tex.a * energy_tint.a) * COLOR;
 }

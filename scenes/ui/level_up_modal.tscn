@@ -95,5 +95,5 @@ alignment = 1
 [node name="ControlsHint" type="Label" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "[ 1, 2, 3, 4 ] Selección rápida  |  [ A / D ] Navegar  |  [ Espacio / Enter ] Confirmar"
+text = "[ 1, 2, 3 ] Selección rápida  |  [ A / D ] Navegar  |  [ Espacio / Enter ] Confirmar"
 horizontal_alignment = 1

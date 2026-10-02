@@ -1,6 +1,8 @@
 class_name RivalWeaponPickup
 extends Node2D
 
+const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
+
 ## Cofre de Armamento de Piloto Rival
 ## Aparece cuando una piloto rival es derrotada en combate dogfight.
 ## Se presenta como un cofre dorado interactivo idéntico al de la máquina tragamonedas.
@@ -151,6 +153,19 @@ func _collect() -> void:
 		if is_instance_valid(player) and weapon_data:
 			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 			if w_ctrl:
+				if w_ctrl.has_method("is_full") and w_ctrl.is_full() and not w_ctrl.get_weapon_instance(weapon_data.weapon_id):
+					var swap_modal := WeaponSwapModalClass.new()
+					get_tree().root.add_child(swap_modal)
+					swap_modal.prompt_swap(player, weapon_data,
+						func(_idx, _new_w):
+							collected.emit(weapon_data)
+							open_and_destroy()
+							swap_modal.queue_free(),
+						func(_discarded_w):
+							open_and_destroy()
+							swap_modal.queue_free()
+					)
+					return
 				w_ctrl.add_weapon(weapon_data)
 
 			# Sonido de recolección

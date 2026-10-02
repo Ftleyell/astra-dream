@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1m1c2stress001"]
+
+[ext_resource type="Script" path="res://tests/test_challenger_m1_2_stress_suite.gd" id="1_test_suite"]
+
+[node name="TestChallengerM12StressRunner" type="Node"]
+script = ExtResource("1_test_suite")

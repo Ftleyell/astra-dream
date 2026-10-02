@@ -269,7 +269,7 @@ func _physics_process(delta: float) -> void:
 			c = vx * inv_spd
 			s = vy * inv_spd
 
-		var b_scale: float = clampf(radius[i] / 5.0, 0.75, 3.2)
+		var b_scale: float = maxf(0.45, (radius[i] * 1.30) / 16.0)
 		render_buffer[base + 0] = c * b_scale
 		render_buffer[base + 1] = -s * b_scale
 		render_buffer[base + 2] = 0.0

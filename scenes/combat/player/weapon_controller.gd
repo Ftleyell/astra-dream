@@ -6,11 +6,13 @@ signal laser_charge_updated(current: float, max_val: float, is_full: bool, is_me
 signal laser_charge_ended()
 signal weapons_updated(weapons: Array)
 signal aim_mode_changed(is_manual: bool)
+signal weapon_replaced(slot_index: int, new_inst: WeaponInstanceData)
+signal swap_requested(incoming_weapon: WeaponData, on_replaced: Callable, on_cancelled: Callable)
 
 @export var weapon_data: WeaponData
 @export var player: Player
 
-const MAX_WEAPON_SLOTS: int = 6
+const MAX_WEAPON_SLOTS: int = 4
 
 var equipped_weapons: Array[WeaponInstanceData] = []
 
@@ -100,7 +102,7 @@ func add_weapon(data: WeaponData) -> bool:
 		if inst.weapon_data.weapon_id == data.weapon_id:
 			return upgrade_weapon(data.weapon_id)
 
-	# 2. Si no existe y hay cupo libre (< 6)
+	# 2. Si no existe y hay cupo libre (< MAX_WEAPON_SLOTS)
 	if equipped_weapons.size() < MAX_WEAPON_SLOTS:
 		var new_inst := WeaponInstanceData.new(data, 1)
 		equipped_weapons.append(new_inst)
@@ -108,6 +110,21 @@ func add_weapon(data: WeaponData) -> bool:
 		return true
 
 	return false
+
+func is_full() -> bool:
+	return equipped_weapons.size() >= MAX_WEAPON_SLOTS
+
+func replace_weapon(slot_index: int, new_weapon_data: WeaponData) -> bool:
+	if not new_weapon_data or slot_index < 0 or slot_index >= equipped_weapons.size():
+		return false
+	var new_inst := WeaponInstanceData.new(new_weapon_data, 1)
+	equipped_weapons[slot_index] = new_inst
+	weapons_updated.emit(equipped_weapons)
+	weapon_replaced.emit(slot_index, new_inst)
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("upgrade_obtained", 1.0, 1.2)
+	return true
 
 func upgrade_weapon(weapon_id: StringName) -> bool:
 	for inst in equipped_weapons:

@@ -46,5 +46,8 @@ void fragment() {
     col *= energy_intensity * (0.85 + 0.15 * plasma_noise);
     float alpha = edge_falloff * tip_falloff * blade_color.a * slash_progress;
 
-    COLOR = vec4(col, clamp(alpha, 0.0, 1.0));
+    // Compresión suave anti-blowout
+    col = col / (1.0 + col * 0.12);
+
+    COLOR = vec4(col, clamp(alpha, 0.0, 1.0)) * COLOR;
 }
