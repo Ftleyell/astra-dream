@@ -28,7 +28,7 @@ var active_buff_duration: float = 0.0
 var is_buff_active: bool = false
 var caelia_shield_active: bool = false
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_PAUSABLE
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func setup(p_main_game: Node2D, p_player: Player, p_hud: GameHUD) -> void:
 	main_game = p_main_game
@@ -48,7 +48,20 @@ func _create_comms_widget() -> void:
 		comms_widget = widget_scene.instantiate()
 		add_child(comms_widget)
 
+func play_tutorial_callout() -> void:
+	if is_instance_valid(comms_widget) and comms_widget.has_method("show_transmission") and navigator_data:
+		comms_widget.show_transmission(navigator_data, "Canal táctico en línea. Guía de balizas activa.", "Canal Táctico Sincronizado")
+
+func show_prologue_transmission(message: String, on_continue: Callable) -> void:
+	if is_instance_valid(comms_widget) and comms_widget.has_method("show_prologue_transmission") and navigator_data:
+		comms_widget.show_prologue_transmission(navigator_data, message, on_continue)
+	else:
+		if on_continue.is_valid():
+			on_continue.call()
+
 func _process(delta: float) -> void:
+	if get_tree().paused:
+		return
 	if not is_instance_valid(player) or player.is_dead:
 		return
 

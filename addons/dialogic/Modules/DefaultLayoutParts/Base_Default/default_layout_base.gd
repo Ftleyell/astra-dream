@@ -3,7 +3,7 @@ extends DialogicLayoutBase
 
 ## The default layout base scene.
 
-@export var canvas_layer: int = 1
+@export var canvas_layer: int = 50
 @export var follow_viewport: bool = false
 
 @export_subgroup("Global")

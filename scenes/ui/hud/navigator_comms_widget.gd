@@ -18,6 +18,8 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 var _current_tween: Tween = null
 var _hide_timer: float = 0.0
 var _is_showing: bool = false
+var _waiting_for_input: bool = false
+var _on_prologue_continue: Callable = Callable()
 
 const SLIDE_DURATION: float = 0.35
 const VISIBLE_DURATION: float = 5.8
@@ -25,7 +27,8 @@ const HIDDEN_OFFSET_X: float = -460.0
 const SHOWN_OFFSET_X: float = 24.0
 
 func _ready() -> void:
-	layer = 15
+	layer = 55 # Por encima del dimmer (15) y Dialogic (50)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if anim_container:
 		anim_container.position.x = HIDDEN_OFFSET_X
 		anim_container.modulate.a = 0.0
@@ -33,12 +36,82 @@ func _ready() -> void:
 		portrait_rect.pivot_offset = Vector2(40.0, 40.0)
 	visible = true
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not _waiting_for_input:
+		return
+
+	var is_trigger: bool = false
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("dialogue_skip"):
+		is_trigger = true
+	elif event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_SPACE or event.physical_keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+			is_trigger = true
+	elif event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		is_trigger = true
+
+	if is_trigger:
+		_waiting_for_input = false
+		if get_viewport():
+			get_viewport().set_input_as_handled()
+		slide_out()
+		if _on_prologue_continue.is_valid():
+			_on_prologue_continue.call()
+
 func _process(delta: float) -> void:
-	if _is_showing:
+	if _is_showing and not _waiting_for_input:
 		_hide_timer -= delta
 		if _hide_timer <= 0.0:
 			_is_showing = false
 			slide_out()
+
+func show_prologue_transmission(nav_data: Resource, message_text: String, on_continue: Callable = Callable()) -> void:
+	if not nav_data:
+		if on_continue.is_valid():
+			on_continue.call()
+		return
+
+	_waiting_for_input = true
+	_on_prologue_continue = on_continue
+
+	if portrait_rect:
+		var nav_id_str: String = String(nav_data.nav_id) if "nav_id" in nav_data else ""
+		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
+		if not equipped_nav_skin.is_empty():
+			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
+			CosmeticsManager.apply_skin_to_canvas_item(portrait_rect, equipped_nav_skin, stars)
+		else:
+			portrait_rect.texture = nav_data.get_portrait_texture()
+			portrait_rect.material = null
+	if name_label:
+		name_label.text = "%s // OFICIAL TÁCTICA" % nav_data.display_name.to_upper()
+		name_label.modulate = nav_data.theme_color
+	if badge_label:
+		badge_label.text = "[CANAL TÁCTICO EN LÍNEA]"
+		badge_label.modulate = Color(0.2, 0.9, 1.0)
+	if message_label:
+		message_label.text = message_text
+	if buff_hint_label:
+		buff_hint_label.text = "✦ Pulsa [ESPACIO] o [CLICK] para despegar"
+		buff_hint_label.modulate = Color(1.0, 0.88, 0.2)
+
+	_apply_cyber_style(nav_data.theme_color)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx(&"ui_click", 0.0, 1.3)
+
+	_is_showing = true
+	_hide_timer = 99999.0
+
+	if _current_tween and _current_tween.is_valid():
+		_current_tween.kill()
+
+	_current_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_current_tween.tween_property(anim_container, "position:x", SHOWN_OFFSET_X, SLIDE_DURATION)
+	_current_tween.tween_property(anim_container, "modulate:a", 1.0, 0.2)
+	if portrait_rect:
+		portrait_rect.scale = Vector2(0.85, 0.85)
+		_current_tween.tween_property(portrait_rect, "scale", Vector2.ONE, SLIDE_DURATION)
 
 func show_transmission(nav_data: Resource, message_text: String, target_hint: String = "") -> void:
 	if not nav_data:

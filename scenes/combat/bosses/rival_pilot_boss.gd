@@ -86,6 +86,33 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 	_update_warning_label()
 	queue_redraw()
 
+func play_warp_in_cinematic(callback: Callable = Callable()) -> void:
+	if not ship_sprite:
+		if callback.is_valid():
+			callback.call()
+		return
+
+	# La nave inicia comprimida en un vector de hiperespacio con resplandor
+	ship_sprite.scale = Vector2(0.05, 2.8)
+	ship_sprite.modulate = Color(2.5, 2.5, 3.5, 1.0)
+	if shield_sprite:
+		shield_sprite.modulate.a = 0.0
+
+	_play_sfx("dash", 0.65)
+
+	var tw := create_tween().set_parallel(false)
+	var t_anim := tw.tween_property(ship_sprite, "scale", Vector2(0.42, 0.42), 0.35)
+	t_anim.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.35)
+
+	if shield_sprite:
+		tw.parallel().tween_property(shield_sprite, "modulate:a", 0.85, 0.35)
+
+	tw.chain().tween_callback(func() -> void:
+		if callback.is_valid():
+			callback.call()
+	)
+
 func _acquire_references() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player

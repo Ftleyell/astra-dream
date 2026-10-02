@@ -36,11 +36,14 @@ Dialogic="*uid://ds2q0uclmolvu"
 [dialogic]
 
 directories/dch_directory={
+"caelia": "res://narrative/characters/caelia.dch",
 "cosmo": "res://narrative/characters/cosmo.dch",
 "echo": "res://narrative/characters/echo.dch",
+"iris": "res://narrative/characters/iris.dch",
 "kira": "res://narrative/characters/kira.dch",
 "kuro": "res://narrative/characters/kuro.dch",
 "luna": "res://narrative/characters/luna.dch",
+"lyra": "res://narrative/characters/lyra.dch",
 "mochi": "res://narrative/characters/mochi.dch",
 "nova": "res://narrative/characters/nova.dch",
 "nyx": "res://narrative/characters/nyx.dch",
@@ -48,7 +51,9 @@ directories/dch_directory={
 "roxy": "res://narrative/characters/roxy.dch",
 "selene": "res://narrative/characters/selene.dch",
 "sombra_nyx": "res://narrative/characters/sombra_nyx.dch",
-"valentina": "res://narrative/characters/valentina.dch"
+"valentina": "res://narrative/characters/valentina.dch",
+"vespera": "res://narrative/characters/vespera.dch",
+"zephyr": "res://narrative/characters/zephyr.dch"
 }
 directories/dtl_directory={
 "boss_titan_alert": "res://narrative/timelines/boss_titan_alert.dtl",

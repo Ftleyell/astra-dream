@@ -59,6 +59,7 @@ var pre_round_time_left: float = 30.0
 var _inventory_chips: Dictionary[StringName, PanelContainer] = {}
 
 func _ready() -> void:
+	add_to_group("hud")
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
 	if satellite_tracker and is_instance_valid(player):
@@ -107,6 +108,12 @@ func _ready() -> void:
 		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
 		if spawn_parent:
 			spawn_parent.add_child.call_deferred(target_reticle)
+
+func set_hud_visible(p_visible: bool) -> void:
+	visible = p_visible
+	var tracker_layer := get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
+	if tracker_layer:
+		tracker_layer.visible = p_visible
 
 func _process(delta: float) -> void:
 	if target_reticle and is_instance_valid(player):

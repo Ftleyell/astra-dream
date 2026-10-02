@@ -175,6 +175,15 @@ func _ready() -> void:
 		if dialogic_node.has_signal("timeline_started"):
 			dialogic_node.timeline_started.connect(_on_dialogic_timeline_started)
 
+	# Instanciar capa cinematográfica de fondo y efectos para diálogos
+	var backdrop_scene := preload("res://scenes/ui/dialogue/dialogue_backdrop_layer.tscn")
+	if backdrop_scene:
+		var backdrop := backdrop_scene.instantiate()
+		backdrop.name = "DialogueBackdropLayer"
+		if backdrop.has_method("set_hud_reference") and hud:
+			backdrop.set_hud_reference(hud)
+		add_child(backdrop)
+
 	if skip_badge_layer and skip_badge_layer.has_signal("skip_requested"):
 		skip_badge_layer.skip_requested.connect(_on_dialogue_skip_requested)
 
@@ -314,6 +323,14 @@ func _start_prologue_briefing() -> void:
 	if skip_badge_layer:
 		skip_badge_layer.show()
 
+	# Bonificación inicial otorgada de forma silenciosa e inmediata (+100 Créditos)
+	if not prologue_bonus_chosen:
+		prologue_bonus_chosen = true
+		if is_instance_valid(player):
+			player.run_credits += 100
+			if hud:
+				hud.update_credits(player.run_credits)
+
 	var dialogic_node := _get_dialogic()
 	if dialogic_node and dialogic_node.has_method("start"):
 		var p_id: String = String(player.character_data.character_id).to_lower() if (player and player.character_data and player.character_data.character_id != &"") else "nova"
@@ -322,38 +339,39 @@ func _start_prologue_briefing() -> void:
 		var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
 		if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
 			pet_id = "mochi"
+		var nav_id: String = String(SaveManager.get_selected_navigator()).to_lower()
+		if not ["lyra", "vespera", "iris", "zephyr", "caelia"].has(nav_id):
+			nav_id = "lyra"
 
 		var pilot_label: String = p_id
 		var pet_label: String = pet_id
 
 		var dtl_text := """
 join %s left
-join %s right
-%s: Cabina presurizada y reactores listos. ¿Cómo están los sensores de navegación, %s?
-%s: [wave amp=16.0 freq=3.0]¡Todo calibrado! Radar y telemetría de sector en línea.[/wave]
-%s: Contamos con excedente en los capacitores de despegue. ¿En qué sistema canalizamos la energía inicial?
-- [color=#ffd700]Financiamiento Táctico[/color] (+100 Créditos)
-	%s: Transfiere los fondos. Requeriremos suministros en las balizas del satélite.
-	[signal arg="briefing_credits"]
-	%s: ¡Entendido! +100 créditos orbitales transferidos al terminal táctico.
-- [color=#00e5ff]Sobrecarga de Reactores[/color] (+15%% Velocidad)
-	%s: Potencia total a las toberas. Necesitamos maniobrabilidad máxima.
-	[signal arg="briefing_speed"]
-	%s: Limitadores de inercia retirados. Vector de aceleración optimizado.
-- [color=#00ff88]Blindaje Refractario[/color] (+25 HP Máx)
-	%s: Refuerza la integridad del casco con placas refractarias de carburo.
-	[signal arg="briefing_hull"]
-	%s: Casco blindado y sellos de presurización estabilizados al máximo.
-%s: [shake rate=15.0 level=4]¡Detectando firmas hostiles en la órbita! Iniciando despliegue.[/shake]
-%s: ¡Sistemas de combate online! ¡Vamos allá!
+join %s (Flipped) right
+%s: Reactores presurizados y toberas calibradas al 100%%. ¿Telemetría lista, %s?
+%s: [wave amp=14.0 freq=3.0]¡Todo verificado! Transfiriendo enlace al canal táctico...[/wave]
 leave --All--
-""" % [pilot_label, pet_label, pilot_label, pet_label.capitalize(), pet_label, pet_label, pilot_label, pet_label, pilot_label, pet_label, pilot_label, pet_label, pet_label, pilot_label]
+""" % [pilot_label, pet_label, pilot_label, pet_label.capitalize(), pet_label]
+
+		var backdrop := get_node_or_null("DialogueBackdropLayer")
+		if backdrop and "hold_dimmer" in backdrop:
+			backdrop.hold_dimmer = true
+		if hud:
+			if hud.has_method("set_hud_visible"):
+				hud.set_hud_visible(false)
+			else:
+				hud.visible = false
 
 		var tl := DialogicTimeline.new()
 		tl.from_text(dtl_text)
 		var layout = dialogic_node.start(tl)
 		if layout:
 			layout.process_mode = Node.PROCESS_MODE_ALWAYS
+			if layout is CanvasLayer:
+				layout.layer = 50
+			if "canvas_layer" in layout:
+				layout.canvas_layer = 50
 		_setup_dialogic_audio(layout)
 	else:
 		is_briefing_active = false
@@ -441,12 +459,27 @@ func _on_dialogic_timeline_ended() -> void:
 		return
 
 	if is_briefing_active:
-		is_briefing_active = false
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
 			player.run_credits += 100
 			if hud:
 				hud.update_credits(player.run_credits)
+
+		# Mostrar la notificación lateral habitual de la Navegadora mientras el fondo sigue oscurecido, esperando input
+		if active_navigator_controller and active_navigator_controller.has_method("show_prologue_transmission"):
+			active_navigator_controller.show_prologue_transmission(
+				"Enlace táctico verificado, comandante. Estaré en este canal lateral guiándote hacia balizas y objetivos prioritarios en el sector. ¡Despegue autorizado!",
+				func() -> void:
+					_finish_prologue_and_start_run()
+			)
+			return
+		else:
+			_finish_prologue_and_start_run()
+			return
+
+	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+	if cam and cam.has_method("clear_cinematic_focus"):
+		cam.clear_cinematic_focus()
 
 	if is_cockpit_active:
 		is_cockpit_active = false
@@ -456,9 +489,33 @@ func _on_dialogic_timeline_ended() -> void:
 		is_boss_transmission_active = false
 		notify_menu_closed(0.4)
 
+	if hud:
+		hud.visible = true
+
 	if level_up_modal and level_up_modal.has_pending_levels():
 		level_up_modal.show_next_level_up()
 	elif not is_any_combat_modal_active():
+		get_tree().paused = false
+
+func _finish_prologue_and_start_run() -> void:
+	is_briefing_active = false
+	var backdrop := get_node_or_null("DialogueBackdropLayer")
+	if backdrop:
+		backdrop.hold_dimmer = false
+		if backdrop.has_method("fade_out"):
+			backdrop.fade_out(0.25)
+
+	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+	if cam and cam.has_method("clear_cinematic_focus"):
+		cam.clear_cinematic_focus()
+
+	if hud:
+		if hud.has_method("set_hud_visible"):
+			hud.call("set_hud_visible", true)
+		else:
+			hud.visible = true
+
+	if not is_any_combat_modal_active():
 		get_tree().paused = false
 
 func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
@@ -523,7 +580,7 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 
 	var lines := _get_rival_dialogue(r_pid, p_pid)
 
-	var text := "join " + pet_id + " right\n"
+	var text := "join " + pet_id + " (Flipped) right\n"
 	text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]\n"
 	text += pet_id + ": La nave de " + r_name + " ha entrado al sector proyectando un perímetro de advertencia.\n"
 	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
@@ -540,6 +597,10 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 	var layout = dialogic_node.start(tl)
 	if layout:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		if layout is CanvasLayer:
+			layout.layer = 50
+		if "canvas_layer" in layout:
+			layout.canvas_layer = 50
 	_setup_dialogic_audio(layout)
 
 func _trigger_cockpit_interlude() -> void:
@@ -574,6 +635,10 @@ leave --All--
 	var layout = dialogic_node.start(tl)
 	if layout:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		if layout is CanvasLayer:
+			layout.layer = 50
+		if "canvas_layer" in layout:
+			layout.canvas_layer = 50
 	_setup_dialogic_audio(layout)
 
 func _trigger_pet_boss_alert(boss_name: String) -> void:
@@ -590,7 +655,7 @@ func _trigger_pet_boss_alert(boss_name: String) -> void:
 		pet_id = "mochi"
 
 	var text := """
-join %s right
+join %s (Flipped) right
 %s: [shake rate=20.0 level=6][color=#ff3333]¡ALERTA DE DISTORSIÓN CRÍTICA EN EL RADAR![/color][/shake]
 %s: La firma titánica de %s se ha manifestado en el sector.
 %s: [wave amp=15.0 freq=4.0]¡Detectores fijados en el coloso! ¡Prepara los propulsores para esquivar sus proyectiles![/wave]
@@ -602,6 +667,10 @@ leave --All--
 	var layout = dialogic_node.start(tl)
 	if layout:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		if layout is CanvasLayer:
+			layout.layer = 50
+		if "canvas_layer" in layout:
+			layout.canvas_layer = 50
 	_setup_dialogic_audio(layout)
 
 func _trigger_climax_dialogue(route: String) -> void:
@@ -692,6 +761,10 @@ func _trigger_climax_dialogue(route: String) -> void:
 	var layout = dialogic_node.start(tl)
 	if layout:
 		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		if layout is CanvasLayer:
+			layout.layer = 50
+		if "canvas_layer" in layout:
+			layout.canvas_layer = 50
 	_setup_dialogic_audio(layout)
 
 func _trigger_pet_climax_alert(route: String) -> void:
@@ -986,12 +1059,11 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 		next_pid = unencountered[0]
 
 	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	# Spawn lateral (60° a 75° de desviación respecto al avance) a 650px de distancia
-	# Nunca en trayectoria directa para garantizar la posibilidad de ruta pacifista y evasión
+	# Posición fija frontal-lateral a 520px del jugador para visibilidad cinemática óptima
 	var lateral_sign: float = -1.0 if randf() < 0.5 else 1.0
-	var spawn_angle: float = deg_to_rad(randf_range(60.0, 75.0) * lateral_sign)
+	var spawn_angle: float = deg_to_rad(40.0 * lateral_sign)
 	var spawn_dir := forward.rotated(spawn_angle).normalized()
-	var spawn_pos := player.global_position + spawn_dir * 650.0
+	var spawn_pos := player.global_position + spawn_dir * 520.0
 
 	var rival = rival_pilot_scene.instantiate()
 	rival.global_position = spawn_pos
@@ -1006,11 +1078,19 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if hud and hud.has_method("track_boss"):
 		hud.track_boss(rival, "RIVAL")
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 0.0, 0.7)
+	# Paneo cinemático de cámara hacia el punto medio entre Jugador y Rival
+	var midpoint: Vector2 = (player.global_position + spawn_pos) * 0.5
+	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+	if cam and cam.has_method("set_cinematic_focus"):
+		cam.set_cinematic_focus(midpoint, 1.25)
 
-	_trigger_pet_rival_encounter(rival)
+	# Reproducir animación cinemática de warp-in antes de iniciar el diálogo
+	if rival.has_method("play_warp_in_cinematic"):
+		rival.play_warp_in_cinematic(func() -> void:
+			_trigger_pet_rival_encounter(rival)
+		)
+	else:
+		_trigger_pet_rival_encounter(rival)
 
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
@@ -1262,7 +1342,7 @@ func _on_final_boss_defeated(route: String) -> void:
 	}
 
 	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
-		_trigger_post_boss_victory_dialogue(route, victory_data)
+		_show_game_over_screen(victory_data)
 	)
 
 func jump_to_boss(boss_id: String) -> void:

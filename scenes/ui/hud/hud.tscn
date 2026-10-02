@@ -169,11 +169,11 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="GameHUD" type="CanvasLayer"]
-layer = 10
+layer = 5
 script = ExtResource("1_hud")
 
 [node name="SatelliteTrackerLayer" type="CanvasLayer" parent="."]
-layer = 8
+layer = 4
 
 [node name="SatelliteEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("7_satedge")]
 

@@ -19,6 +19,15 @@
 			"offset": Vector2(0, 0),
 			"scale": 1.0,
 			"scene": ""
+		},
+		"Flipped": {
+			"export_overrides": {
+				"image": "\"res://assets/pets/pet_pip.png\""
+			},
+			"mirror": true,
+			"offset": Vector2(0, 0),
+			"scale": 1.0,
+			"scene": ""
 		}
 	},
 &"scale": 1.0
