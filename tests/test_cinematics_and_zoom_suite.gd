@@ -79,7 +79,9 @@ func _test_pet_portraits_flipped() -> void:
 		var dch = load(path)
 		assert(dch != null and dch.portraits.has("Flipped"), "Mascota %s debe tener retrato Flipped" % p_id)
 		assert(dch.portraits["Flipped"]["mirror"] == true, "Mascota %s debe tener mirror = true en Flipped" % p_id)
-	print("  ✓ Todas las mascotas cuentan con orientación Flipped (mirror=true).")
+		assert(not dch.display_name.contains("[Copiloto]"), "Mascota %s no debe contener [Copiloto] en su nombre" % p_id)
+		assert(is_equal_approx(dch.scale, 0.65), "Mascota %s debe tener escala 0.65 (actual: %s)" % [p_id, dch.scale])
+	print("  ✓ Todas las mascotas cuentan con orientación Flipped (mirror=true), escala 0.65 y nombre sin [Copiloto].")
 
 func _test_navigator_portraits_dch() -> void:
 	print("[4/5] Verificando Recursos Dialogic de Navegantes (.dch)...")

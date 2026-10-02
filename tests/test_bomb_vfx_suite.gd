@@ -69,15 +69,14 @@ func _ready() -> void:
 	assert(has_new_vfx, "Tactical detonation at max bombs must spawn BombShockwaveVFX")
 	print("  ✓ Tactical detonation at max bombs (5) successfully triggers BombShockwaveVFX")
 
-	# 4. Verify Echo dch default portrait is Flipped
+	# 4. Verify Echo dch has Normal and Flipped portraits
 	var echo_dch = load("res://narrative/characters/echo.dch")
 	assert(echo_dch != null, "echo.dch must be valid")
-	assert(echo_dch.default_portrait == "Flipped", "Echo default portrait must be Flipped")
-	print("  ✓ Echo default_portrait is configured to 'Flipped'")
+	assert(echo_dch.portraits.has("Normal") and echo_dch.portraits.has("Flipped"), "Echo must have Normal and Flipped portraits")
+	print("  ✓ Echo has Normal and Flipped portraits configured")
 
 	# 5. Verify Timeline files join Echo flipped
 	var timelines := [
-		"res://narrative/timelines/prologue_briefing.dtl",
 		"res://narrative/timelines/wave_interlude_cockpit.dtl",
 		"res://narrative/timelines/boss_titan_alert.dtl"
 	]

@@ -80,6 +80,7 @@ func _on_timeline_started() -> void:
 	_acquire_hud()
 	_elevate_dialogic_layout()
 	fade_in()
+	call_deferred("_on_speaker_updated", null)
 
 func _on_timeline_ended() -> void:
 	_is_dialogue_active = false
@@ -98,6 +99,8 @@ func fade_in(duration: float = 0.22) -> void:
 			_hud_layer.visible = false
 
 	backdrop_rect.visible = true
+	if backdrop_rect.modulate.a >= 0.99:
+		return
 	if _fade_tween and _fade_tween.is_valid():
 		_fade_tween.kill()
 	_fade_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

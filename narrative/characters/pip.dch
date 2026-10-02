@@ -6,7 +6,7 @@
 &"custom_info": {},
 &"default_portrait": "Normal",
 &"description": "Copiloto Cibernético y Gestor de Créditos.",
-&"display_name": "Pip [Copiloto]",
+&"display_name": "Pip",
 &"mirror": false,
 &"nicknames": [],
 &"offset": Vector2(0, 0),
@@ -17,7 +17,7 @@
 			},
 			"mirror": false,
 			"offset": Vector2(0, 0),
-			"scale": 1.0,
+			"scale": 0.65,
 			"scene": ""
 		},
 		"Flipped": {
@@ -26,9 +26,9 @@
 			},
 			"mirror": true,
 			"offset": Vector2(0, 0),
-			"scale": 1.0,
+			"scale": 0.65,
 			"scene": ""
 		}
 	},
-&"scale": 1.0
+&"scale": 0.65
 }

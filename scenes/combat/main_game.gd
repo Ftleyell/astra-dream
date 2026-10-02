@@ -347,7 +347,7 @@ func _start_prologue_briefing() -> void:
 		var pet_label: String = pet_id
 
 		var dtl_text := """
-join %s left
+join %s (Flipped) left
 join %s (Flipped) right
 %s: Reactores presurizados y toberas calibradas al 100%%. ¿Telemetría lista, %s?
 %s: [wave amp=14.0 freq=3.0]¡Todo verificado! Transfiriendo enlace al canal táctico...[/wave]
@@ -362,6 +362,10 @@ leave --All--
 				hud.set_hud_visible(false)
 			else:
 				hud.visible = false
+
+		if backdrop and backdrop.has_method("fade_in"):
+			backdrop.fade_in(0.2)
+			await get_tree().create_timer(0.2, true, false, true).timeout
 
 		var tl := DialogicTimeline.new()
 		tl.from_text(dtl_text)
@@ -585,8 +589,8 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 	text += pet_id + ": La nave de " + r_name + " ha entrado al sector proyectando un perímetro de advertencia.\n"
 	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
 	text += "leave " + pet_id + "\n"
-	text += "join " + String(r_pid) + " (Flipped) right\n"
-	text += "join " + String(p_pid) + " left\n"
+	text += "join " + String(r_pid) + " right\n"
+	text += "join " + String(p_pid) + " (Flipped) left\n"
 	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
 	text += String(p_pid) + ": " + lines["player_line"] + "\n"
 	text += String(r_pid) + ": " + lines["rival_closing"] + "\n"
@@ -707,13 +711,13 @@ func _trigger_climax_dialogue(route: String) -> void:
 
 		for pid in rivals_spared:
 			var line: String = fleet_lines.get(pid, "¡A tu lado hasta la victoria estelar!")
-			text += "join " + String(pid) + " (Flipped) right\n"
+			text += "join " + String(pid) + " right\n"
 			text += String(pid) + ": " + line + "\n"
 			text += "leave " + String(pid) + "\n"
 
-		text += "join " + String(p_pid) + " left\n"
+		text += "join " + String(p_pid) + " (Flipped) left\n"
 		text += String(p_pid) + ": ¡Flota de la Esperanza unida! ¡Iniciemos las maniobras para liberar el Núcleo Astra!\n"
-		text += "join " + pet_id + " right\n"
+		text += "join " + pet_id + " (Flipped) right\n"
 		text += pet_id + ": [wave amp=16.0 freq=3.5]¡Todos los reactores al 100%! ¡Por la victoria estelar![/wave]\n"
 		text += "leave --All--\n"
 
@@ -738,8 +742,8 @@ func _trigger_climax_dialogue(route: String) -> void:
 			var escort_str := String(escort_pid)
 			var roster := CharacterData.load_roster()
 			var e_name := roster[escort_pid].display_name if roster.has(escort_pid) else escort_str.capitalize()
-			text += "join " + escort_str + " (Flipped) right\n"
-			text += "join nyx left\n"
+			text += "join " + escort_str + " right\n"
+			text += "join nyx (Flipped) left\n"
 			text += escort_str + ": [shake rate=18.0 level=5][color=#ff1744]¡Nyx! ¿Cómo pudiste traicionar a la Flota?[/color][/shake]\n"
 			text += escort_str + ": Asesinaste a mis 5 compañeras sin piedad... ¡escuché sus últimas transmisiones apagarse en el vacío!\n"
 			text += escort_str + ": Soy la última que queda en pie. ¡Astra Prime y yo acabaremos con tu demencia aquí y ahora!\n"
@@ -748,8 +752,8 @@ func _trigger_climax_dialogue(route: String) -> void:
 			text += "leave --All--\n"
 
 	else: # neutral
-		text += "join " + pet_id + " right\n"
-		text += "join " + String(p_pid) + " left\n"
+		text += "join " + pet_id + " (Flipped) right\n"
+		text += "join " + String(p_pid) + " (Flipped) left\n"
 		text += pet_id + ": Hemos llegado al epicentro del universo... pero el costo ha sido inmenso.\n"
 		text += String(p_pid) + ": Hicimos lo necesario para llegar con vida. Ni santos ni monstruos... solo supervivientes.\n"
 		text += pet_id + ": El Núcleo Supremo Astra Prime inicia su escaneo estelar. ¿Cuál será su veredicto?\n"
