@@ -692,4 +692,3 @@ func _on_aim_mode_changed(is_manual: bool) -> void:
 	else:
 		aim_mode_label.text = "[E] AIM: AUTO"
 		aim_mode_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 1.0))
-

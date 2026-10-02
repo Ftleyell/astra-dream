@@ -35,6 +35,7 @@ var inner_core: Polygon2D = null
 var outer_ring: Node2D = null
 var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
+var telegraph_indicator: TelegraphIndicator = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -63,6 +64,12 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
 	telegraph_material.set_shader_parameter("glitch_jitter", 0.02)
+
+	# Indicador holográfico de advertencia
+	telegraph_indicator = TelegraphIndicator.new()
+	telegraph_indicator.name = "TelegraphIndicator"
+	telegraph_indicator.indicator_scale = Vector2(1.6, 1.6)
+	add_child(telegraph_indicator)
 
 	# 1. Anillo exterior de resonadores caóticos (detrás del casco)
 	outer_ring = Node2D.new()
@@ -135,7 +142,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		move_dir = to_player.normalized().orthogonal() * 0.5
 
-	var spd := 115.0 if current_phase == 1 else 160.0
+	var spd: float = (115.0 if current_phase == 1 else 160.0) * (0.45 if is_telegraphing else 1.0)
 	velocity = velocity.lerp(move_dir * spd, delta * 3.0)
 	move_and_slide()
 
@@ -161,64 +168,68 @@ func _process_phase_1(delta: float) -> void:
 	nova_timer += delta
 	aimed_timer += delta
 
-	# Espiral de Fermat con respiración radial continua (V_k modulado por seno)
+	# Espiral de Fermat con respiración radial continua (Ondas Púrpura tipo 6)
 	if spiral_timer >= 0.045:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 175.0, rotation, 0.18, 0.35, 0)
+			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 175.0, rotation, 0.18, 0.35, 6)
 
 	# Erupción de rosa polar de 6 puntas telegrafiada cada 3.2s
 	if nova_timer >= 3.2:
 		nova_timer = 0.0
-		_start_telegraph(0.48, Callable(self, "_fire_overload_nova_ring"))
+		_start_telegraph(0.65, Callable(self, "_fire_overload_nova_ring"), TelegraphIndicator.TelegraphType.RING)
 
-	# Ráfagas serpenteantes dirigidas de plasma cada 2.4s
+	# Ráfagas serpenteantes dirigidas de plasma cada 2.4s (Dardos Ámbar tipo 4)
 	if aimed_timer >= 2.4:
 		aimed_timer = 0.0
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_serpentine_spread(global_position, player.global_position, 5, 36.0, 215.0, 22.0, 4.2, 1)
+			bullet_server.fire_serpentine_spread(global_position, player.global_position, 5, 36.0, 215.0, 22.0, 4.2, 4)
 
 func _process_phase_2(delta: float) -> void:
 	spiral_timer += delta
 	nova_timer += delta
 	aimed_timer += delta
 
-	# Doble espiral de Fermat con respiración radial cruzada (Sobrecarga de singularidad)
+	# Doble espiral de Fermat con respiración radial cruzada (Sobrecarga de singularidad: Púrpura 6 y Cobalto 5)
 	if spiral_timer >= 0.038:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 185.0, rotation, 0.20, 0.38, 0)
-			bullet_server.fire_breathing_fermat_spiral_tick(global_position, -spiral_tick, 185.0, -rotation, 0.20, 0.38, 2)
+			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 185.0, rotation, 0.20, 0.38, 6)
+			bullet_server.fire_breathing_fermat_spiral_tick(global_position, -spiral_tick, 185.0, -rotation, 0.20, 0.38, 5)
 
 	# Doble nova de 12 lóbulos armónicos telegrafiada cada 2.5s
 	if nova_timer >= 2.5:
 		nova_timer = 0.0
-		_start_telegraph(0.38, Callable(self, "_fire_overload_double_nova"))
+		_start_telegraph(0.60, Callable(self, "_fire_overload_double_nova"), TelegraphIndicator.TelegraphType.RING)
 
 	if aimed_timer >= 1.8:
 		aimed_timer = 0.0
 		if is_instance_valid(bullet_server):
-			bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 48.0, 240.0, 26.0, 5.0, 1)
+			bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 48.0, 240.0, 26.0, 5.0, 4)
 
 func _fire_overload_nova_ring() -> void:
 	if not is_instance_valid(bullet_server):
 		return
-	# Rosa de Rhodonea de 6 puntas: V(θ) = V_0 * (1 + 0.38 * cos(6 * θ))
-	bullet_server.fire_rhodonea_flower(global_position, 24, 160.0, 6, 0.38, rotation, 0)
+	# Rosa de Rhodonea de 6 puntas: V(θ) = V_0 * (1 + 0.38 * cos(6 * θ)) (Cobalto tipo 5)
+	bullet_server.fire_rhodonea_flower(global_position, 24, 160.0, 6, 0.38, rotation, 5)
 	_play_sfx("laser", 1.0)
 
 func _fire_overload_double_nova() -> void:
 	if not is_instance_valid(bullet_server):
 		return
-	# Doble rosa de 12 puntas entrelazada con modulación de alta frecuencia
-	bullet_server.fire_rhodonea_flower(global_position, 28, 175.0, 6, 0.40, rotation, 0)
-	bullet_server.fire_rhodonea_flower(global_position, 28, 140.0, 12, 0.32, rotation + (PI / 12.0), 2)
+	# Doble rosa de 12 puntas entrelazada con modulación de alta frecuencia (Cobalto 5 y Púrpura 6)
+	bullet_server.fire_rhodonea_flower(global_position, 28, 175.0, 6, 0.40, rotation, 5)
+	bullet_server.fire_rhodonea_flower(global_position, 28, 140.0, 12, 0.32, rotation + (PI / 12.0), 6)
 	_play_sfx("missile", 1.3)
 
-func _start_telegraph(duration: float, callback: Callable) -> void:
+func _start_telegraph(duration: float, callback: Callable, p_type: TelegraphIndicator.TelegraphType = TelegraphIndicator.TelegraphType.RING) -> void:
 	is_telegraphing = true
+	if is_instance_valid(telegraph_indicator):
+		var to_p: Vector2 = player.global_position - global_position if is_instance_valid(player) else Vector2.RIGHT
+		telegraph_indicator.start_telegraph(p_type, duration, to_p.normalized())
+
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:

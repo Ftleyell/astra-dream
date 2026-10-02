@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c8m2rivalemp01"]
+
+[ext_resource type="Script" path="res://tests/test_m2_rival_queue_empirical.gd" id="1_m2_emp_script"]
+
+[node name="TestM2RivalQueueEmpiricalRunner" type="Node"]
+script = ExtResource("1_m2_emp_script")

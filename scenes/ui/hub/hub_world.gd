@@ -1704,4 +1704,3 @@ func _ensure_static_cylinder_collider(parent: Node3D, radius: float, height: flo
 		cshape.position = center_pos
 		existing.add_child(cshape)
 		parent.add_child(existing)
-

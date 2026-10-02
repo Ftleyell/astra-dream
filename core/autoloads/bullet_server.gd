@@ -95,7 +95,7 @@ func _setup_multimesh() -> void:
 	mm.custom_aabb = AABB(Vector3(-100000.0, -100000.0, -100.0), Vector3(200000.0, 200000.0, 200.0))
 
 	var quad: QuadMesh = QuadMesh.new()
-	quad.size = Vector2(24.0, 24.0)
+	quad.size = Vector2(32.0, 32.0)
 	mm.mesh = quad
 
 	self.multimesh = mm
@@ -104,6 +104,9 @@ func _setup_multimesh() -> void:
 
 	var shader_material := ShaderMaterial.new()
 	shader_material.shader = preload("res://core/shaders/danmaku_bullet.gdshader")
+	var atlas_tex: Texture2D = load("res://assets/sprites/bullets/alien_bullet_atlas.png") as Texture2D
+	if atlas_tex:
+		shader_material.set_shader_parameter("bullet_atlas", atlas_tex)
 	self.material = shader_material
 
 func spawn_bullet(px: float, py: float, vx: float, vy: float, 
@@ -260,12 +263,13 @@ func _physics_process(delta: float) -> void:
 			c = vx * inv_spd
 			s = vy * inv_spd
 
-		render_buffer[base + 0] = c
-		render_buffer[base + 1] = -s
+		var b_scale: float = clampf(radius[i] / 5.0, 0.75, 3.2)
+		render_buffer[base + 0] = c * b_scale
+		render_buffer[base + 1] = -s * b_scale
 		render_buffer[base + 2] = 0.0
 		render_buffer[base + 3] = cur_x
-		render_buffer[base + 4] = s
-		render_buffer[base + 5] = c
+		render_buffer[base + 4] = s * b_scale
+		render_buffer[base + 5] = c * b_scale
 		render_buffer[base + 6] = 0.0
 		render_buffer[base + 7] = cur_y
 		render_buffer[base + 8] = bullet_type[i]
@@ -335,6 +339,65 @@ func fire_common_aimed_bullet(origin: Vector2, target: Vector2, speed: float = 1
 	active_count += 1
 	active_common_bullets += 1
 	return true
+
+## DISPAROS DIDÁCTICOS DE CAMPEONES DE ÉLITE (PALETA ALIENÍGENA HOLOGRÁFICA)
+func fire_alien_cone_spread(origin: Vector2, target: Vector2, count: int = 5, spread_angle_deg: float = 40.0, speed: float = 230.0) -> int:
+	if active_count + count >= MAX_BULLETS:
+		return 0
+
+	var to_target: Vector2 = target - origin
+	var base_ang: float = to_target.angle() if to_target.length_squared() > 1.0 else 0.0
+	var total_spread_rad: float = deg_to_rad(spread_angle_deg)
+	var start_ang: float = base_ang - (total_spread_rad * 0.5)
+	var step: float = total_spread_rad / float(maxi(1, count - 1)) if count > 1 else 0.0
+	var spawned: int = 0
+
+	for idx in range(count):
+		var ang: float = start_ang + (step * float(idx))
+		var vx: float = cos(ang) * speed
+		var vy: float = sin(ang) * speed
+		var ok: bool = spawn_bullet(origin.x, origin.y, vx, vy, 4, 12.0, 7.5, 0.0, 0.0)
+		if ok:
+			spawned += 1
+	return spawned
+
+func fire_alien_ring_burst(origin: Vector2, count: int = 12, speed: float = 175.0, start_angle: float = 0.0) -> int:
+	if active_count + count >= MAX_BULLETS:
+		return 0
+
+	var step: float = TAU / float(count)
+	var spawned: int = 0
+
+	for idx in range(count):
+		var ang: float = start_angle + (step * float(idx))
+		var vx: float = cos(ang) * speed
+		var vy: float = sin(ang) * speed
+		var ok: bool = spawn_bullet(origin.x, origin.y, vx, vy, 5, 11.5, 8.0, 0.0, 0.0)
+		if ok:
+			spawned += 1
+	return spawned
+
+func fire_alien_wave_lane(origin: Vector2, target: Vector2, pair_count: int = 2, speed: float = 210.0, amp: float = 65.0, freq: float = 5.0) -> int:
+	if active_count + (pair_count * 2) >= MAX_BULLETS:
+		return 0
+
+	var to_target: Vector2 = target - origin
+	var base_ang: float = to_target.angle() if to_target.length_squared() > 1.0 else 0.0
+	var fwd_x: float = cos(base_ang) * speed
+	var fwd_y: float = sin(base_ang) * speed
+	var spawned: int = 0
+
+	for p in range(pair_count):
+		# Ligero desfase espacial en el origen para crear cadencia de tren de ondas
+		var delay_offset: Vector2 = Vector2(cos(base_ang), sin(base_ang)) * (float(p) * 28.0)
+		var spawn_pos: Vector2 = origin + delay_offset
+		# Onda cresta (+amp)
+		if spawn_bullet(spawn_pos.x, spawn_pos.y, fwd_x, fwd_y, 6, 12.0, 7.0, amp, freq):
+			spawned += 1
+		# Onda valle (-amp) entrelazada
+		if spawn_bullet(spawn_pos.x, spawn_pos.y, fwd_x, fwd_y, 6, 12.0, 7.0, -amp, freq):
+			spawned += 1
+	return spawned
 
 func bomb_clear_shockwave(center: Vector2, shockwave_radius: float) -> void:
 	var r_sq: float = shockwave_radius * shockwave_radius

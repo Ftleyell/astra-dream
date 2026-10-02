@@ -40,6 +40,7 @@ var dial_ring: Node2D = null
 var hand_nodes: Array[Polygon2D] = []
 var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
+var telegraph_indicator: TelegraphIndicator = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -68,6 +69,12 @@ func _setup_visuals() -> void:
 	telegraph_material.set_shader_parameter("domain_tint", Color(1.0, 0.78, 0.25, 1.0)) # Tinte Oro Ceniza
 	telegraph_material.set_shader_parameter("chromatic_aberration", 0.0)
 	telegraph_material.set_shader_parameter("flash_intensity", 0.0)
+
+	# Indicador holográfico de advertencia
+	telegraph_indicator = TelegraphIndicator.new()
+	telegraph_indicator.name = "TelegraphIndicator"
+	telegraph_indicator.indicator_scale = Vector2(1.6, 1.6)
+	add_child(telegraph_indicator)
 
 	# 1. Anillo de dial cronológico (detrás del engranaje)
 	dial_ring = Node2D.new()
@@ -155,7 +162,7 @@ func _physics_process(delta: float) -> void:
 	elif dist < desired_dist - 40.0:
 		move_dir -= to_player.normalized() * 0.4
 
-	var move_spd := 100.0 if current_phase == 1 else 145.0
+	var move_spd := (100.0 if current_phase == 1 else 145.0) * (0.45 if is_telegraphing else 1.0)
 	velocity = velocity.lerp(move_dir * move_spd, delta * 3.0)
 	move_and_slide()
 
@@ -182,29 +189,29 @@ func _process_phase_1(delta: float) -> void:
 	clock_hands_timer += delta
 	echo_timer += delta
 
-	# Disparo de manecillas rotatorias con ondulación senoidal cada 0.8s
+	# Disparo de manecillas rotatorias con ondulación senoidal cada 0.8s (Dardos Ámbar tipo 4)
 	if clock_hands_timer >= 0.8:
 		clock_hands_timer = 0.0
-		_fire_clock_hand_spokes(4, 160.0, 1)
+		_fire_clock_hand_spokes(4, 160.0, 4)
 
-	# Eco del arrepentimiento cada 3.5s
+	# Eco del arrepentimiento telegrafiado cada 3.5s
 	if echo_timer >= 3.5:
 		echo_timer = 0.0
-		_start_telegraph(0.45, Callable(self, "_detonate_past_echoes"))
+		_start_telegraph(0.65, Callable(self, "_detonate_past_echoes"), TelegraphIndicator.TelegraphType.RING)
 
 func _process_phase_2(delta: float) -> void:
 	clock_hands_timer += delta
 	echo_timer += delta
 
-	# Manecillas aceleradas en cruz de 8 vías con alta frecuencia senoidal cada 0.6s
+	# Manecillas aceleradas en cruz de 8 vías con alta frecuencia senoidal cada 0.6s (Ondas Púrpura tipo 6)
 	if clock_hands_timer >= 0.6:
 		clock_hands_timer = 0.0
-		_fire_clock_hand_spokes(8, 185.0, 2)
+		_fire_clock_hand_spokes(8, 185.0, 6)
 
-	# Detonaciones de eco dobles cada 2.8s
+	# Detonaciones de eco dobles telegrafiadas cada 2.8s
 	if echo_timer >= 2.8:
 		echo_timer = 0.0
-		_start_telegraph(0.4, Callable(self, "_detonate_past_echoes_phase_2"))
+		_start_telegraph(0.60, Callable(self, "_detonate_past_echoes_phase_2"), TelegraphIndicator.TelegraphType.RING)
 
 func _fire_clock_hand_spokes(count: int, speed: float, bullet_type: int) -> void:
 	if not is_instance_valid(bullet_server):
@@ -229,9 +236,9 @@ func _fire_clock_hand_spokes(count: int, speed: float, bullet_type: int) -> void
 func _detonate_past_echoes() -> void:
 	if not is_instance_valid(bullet_server) or past_player_positions.is_empty():
 		return
-	# Detonar un pulso de rosa polar de 4 cuadrantes en la posición del eco
+	# Detonar un pulso de rosa polar de 4 cuadrantes en la posición del eco (Cobalto tipo 5)
 	var target_echo := past_player_positions[0]
-	bullet_server.fire_rhodonea_flower(target_echo, 12, 135.0, 4, 0.35, 0.0, 1)
+	bullet_server.fire_rhodonea_flower(target_echo, 12, 135.0, 4, 0.35, 0.0, 5)
 	_play_sfx("missile", 1.1)
 
 func _detonate_past_echoes_phase_2() -> void:
@@ -239,8 +246,9 @@ func _detonate_past_echoes_phase_2() -> void:
 		return
 	var pos1 := past_player_positions[0]
 	var pos2 := past_player_positions[past_player_positions.size() / 2]
-	bullet_server.fire_rhodonea_flower(pos1, 16, 145.0, 4, 0.35, 0.0, 1)
-	bullet_server.fire_rhodonea_flower(pos2, 16, 145.0, 4, 0.35, PI / 8.0, 2)
+	# Pulso dual con Cobalto tipo 5 y Púrpura tipo 6
+	bullet_server.fire_rhodonea_flower(pos1, 16, 145.0, 4, 0.35, 0.0, 5)
+	bullet_server.fire_rhodonea_flower(pos2, 16, 145.0, 4, 0.35, PI / 8.0, 6)
 	_play_sfx("missile", 1.2)
 
 func _trigger_temporal_dilation_pulse() -> void:
@@ -250,8 +258,12 @@ func _trigger_temporal_dilation_pulse() -> void:
 		tw.tween_method(func(v: float): telegraph_material.set_shader_parameter("chromatic_aberration", v), 0.0, 0.05, 0.3)
 		tw.tween_method(func(v: float): telegraph_material.set_shader_parameter("chromatic_aberration", v), 0.05, 0.0, 0.4)
 
-func _start_telegraph(duration: float, callback: Callable) -> void:
+func _start_telegraph(duration: float, callback: Callable, p_type: TelegraphIndicator.TelegraphType = TelegraphIndicator.TelegraphType.RING) -> void:
 	is_telegraphing = true
+	if is_instance_valid(telegraph_indicator):
+		var to_p: Vector2 = player.global_position - global_position if is_instance_valid(player) else Vector2.RIGHT
+		telegraph_indicator.start_telegraph(p_type, duration, to_p.normalized())
+
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.8, 1.8), duration * 0.7).set_trans(Tween.TRANS_BACK)
 	if telegraph_material:
