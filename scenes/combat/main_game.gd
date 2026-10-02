@@ -112,7 +112,8 @@ func _ready() -> void:
 	_spawn_navigator_controller()
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
-	player.credits_changed.connect(hud.update_credits)
+	if not player.credits_changed.is_connected(hud.update_credits):
+		player.credits_changed.connect(hud.update_credits)
 	if not player.biomass_changed.is_connected(hud.update_biomass):
 		player.biomass_changed.connect(hud.update_biomass)
 	player.level_up_requested.connect(_on_level_up_requested)
@@ -493,6 +494,13 @@ func _on_dialogue_skip_requested() -> void:
 	if is_instance_valid(player) and player.has_method("resume_movement_control"):
 		player.resume_movement_control()
 
+	var backdrop := get_node_or_null("DialogueBackdropLayer")
+	if backdrop:
+		if "hold_dimmer" in backdrop:
+			backdrop.hold_dimmer = false
+		if backdrop.has_method("fade_out"):
+			backdrop.fade_out(0.2)
+
 	if hud:
 		hud.visible = true
 
@@ -564,6 +572,13 @@ func _on_dialogic_timeline_ended() -> void:
 				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 		if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 			enemy_spawner.set_spawning_paused(false)
+
+	var backdrop := get_node_or_null("DialogueBackdropLayer")
+	if backdrop and not is_briefing_active:
+		if "hold_dimmer" in backdrop:
+			backdrop.hold_dimmer = false
+		if backdrop.has_method("fade_out"):
+			backdrop.fade_out(0.2)
 
 	if hud:
 		hud.visible = true
@@ -1831,8 +1846,11 @@ func jump_to_boss(boss_id: String) -> void:
 	is_rival_cinematic_active = false
 	prologue_bonus_chosen = true
 	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop and backdrop.has_method("fade_out"):
-		backdrop.fade_out(0.0)
+	if backdrop:
+		if "hold_dimmer" in backdrop:
+			backdrop.hold_dimmer = false
+		if backdrop.has_method("fade_out"):
+			backdrop.fade_out(0.0)
 	if skip_badge_layer:
 		skip_badge_layer.hide()
 	wave_timer = WAVE_DURATION
@@ -1911,8 +1929,11 @@ func jump_to_wave_16(route: String = "neutral") -> void:
 	is_rival_cinematic_active = false
 	prologue_bonus_chosen = true
 	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop and backdrop.has_method("fade_out"):
-		backdrop.fade_out(0.0)
+	if backdrop:
+		if "hold_dimmer" in backdrop:
+			backdrop.hold_dimmer = false
+		if backdrop.has_method("fade_out"):
+			backdrop.fade_out(0.0)
 	if skip_badge_layer:
 		skip_badge_layer.hide()
 	current_wave = 16

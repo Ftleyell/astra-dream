@@ -95,7 +95,8 @@ func _ready() -> void:
 		update_biomass(player.run_biomass, SaveManager.get_biomass())
 
 		if player.has_signal("credits_changed"):
-			player.credits_changed.connect(update_credits)
+			if not player.credits_changed.is_connected(update_credits):
+				player.credits_changed.connect(update_credits)
 		update_credits(player.run_credits)
 
 		var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController

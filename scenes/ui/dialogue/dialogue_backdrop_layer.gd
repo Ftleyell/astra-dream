@@ -13,7 +13,11 @@ var _active_pet_node: Node = null
 var _is_dialogue_active: bool = false
 var _pet_wiggle_active: bool = false
 var _wiggle_time: float = 0.0
-var hold_dimmer: bool = false
+var hold_dimmer: bool = false:
+	set(val):
+		hold_dimmer = val
+		if not hold_dimmer and not _is_dialogue_active:
+			fade_out(0.2)
 
 const PET_IDS: Array[String] = ["mochi", "kuro", "luna", "pip", "cosmo"]
 const WIGGLE_ANGLE_MAX: float = 4.0
@@ -36,6 +40,16 @@ func _process(delta: float) -> void:
 		var angle: float = sin(_wiggle_time) * WIGGLE_ANGLE_MAX
 		if "rotation_degrees" in _active_pet_node:
 			_active_pet_node.rotation_degrees = angle
+
+	# Failsafe: Si no hay diálogo activo ni hold_dimmer pero el fondo sigue visible, desvanecer
+	if not hold_dimmer and backdrop_rect and backdrop_rect.visible:
+		var dialogic: Node = get_node_or_null("/root/Dialogic")
+		var is_dlg_running: bool = false
+		if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+			is_dlg_running = true
+		if not is_dlg_running and not _is_dialogue_active:
+			if _fade_tween == null or not _fade_tween.is_running():
+				fade_out(0.18)
 
 func _connect_dialogic_signals() -> void:
 	var dialogic: Node = get_node_or_null("/root/Dialogic")
@@ -103,7 +117,12 @@ func fade_in(duration: float = 0.22) -> void:
 		return
 	if _fade_tween and _fade_tween.is_valid():
 		_fade_tween.kill()
-	_fade_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+	if duration <= 0.01:
+		backdrop_rect.modulate.a = 1.0
+		return
+
+	_fade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_fade_tween.tween_property(backdrop_rect, "modulate:a", 1.0, duration)
 
 func fade_out(duration: float = 0.22) -> void:
@@ -111,7 +130,18 @@ func fade_out(duration: float = 0.22) -> void:
 		return
 	if _fade_tween and _fade_tween.is_valid():
 		_fade_tween.kill()
-	_fade_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+	if duration <= 0.01:
+		backdrop_rect.modulate.a = 0.0
+		backdrop_rect.visible = false
+		if is_instance_valid(_hud_layer):
+			if _hud_layer.has_method("set_hud_visible"):
+				_hud_layer.call("set_hud_visible", true)
+			else:
+				_hud_layer.visible = true
+		return
+
+	_fade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_fade_tween.tween_property(backdrop_rect, "modulate:a", 0.0, duration)
 	_fade_tween.chain().tween_callback(func() -> void:
 		if backdrop_rect:
