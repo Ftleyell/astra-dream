@@ -973,8 +973,27 @@ func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary
 	_setup_dialogic_audio(layout)
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
+	if get_tree().paused or is_cinematic_or_death_active():
 		return
+
+	if not is_any_combat_modal_active():
+		if level_up_modal and level_up_modal.has_pending_levels():
+			level_up_modal.show_next_level_up()
+			return
+		elif arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+			arcana_modal.show_next_arcana()
+			return
+		elif _pending_arcana_picks > 0:
+			_pending_arcana_picks -= 1
+			_open_next_pending_arcana()
+			return
+		elif _pending_satellite_credits >= 0:
+			var creds: int = _pending_satellite_credits
+			var _idx: int = _pending_satellite_index
+			_pending_satellite_credits = -1
+			_pending_satellite_index = -1
+			satellite_shop.open_shop(creds)
+			return
 
 	# Cronómetro de tiempo total de la run
 	run_time_elapsed += delta
@@ -1337,6 +1356,7 @@ func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
 	save_current_run_state()
+	_resume_pending_systems_after_cinematics()
 
 func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	if is_any_combat_modal_active():
@@ -1456,6 +1476,7 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 						is_boss_transmission_active = false
 						get_tree().paused = false
 						notify_menu_closed(0.4)
+						_resume_pending_systems_after_cinematics()
 
 					if current_boss.has_method("emerge_from_tear"):
 						current_boss.emerge_from_tear(on_emerge_finished)
@@ -1558,6 +1579,7 @@ func _spawn_final_boss() -> void:
 						is_boss_transmission_active = false
 						get_tree().paused = false
 						notify_menu_closed(0.4)
+						_resume_pending_systems_after_cinematics()
 
 						if route == "pacifist":
 							_spawn_allied_wingmen()
@@ -1602,6 +1624,7 @@ func _on_boss_defeated(_boss_id: String) -> void:
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
 	save_current_run_state()
+	_resume_pending_systems_after_cinematics()
 
 func _on_final_boss_defeated(route: String) -> void:
 	bosses_defeated_count += 1
@@ -1929,7 +1952,7 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
-	if is_satellite_shop_active() or is_dialogue_active() or is_arcana_modal_active():
+	if is_satellite_shop_active() or is_dialogue_active() or is_arcana_modal_active() or is_cinematic_or_death_active():
 		level_up_modal.queue_level_up(level)
 	else:
 		level_up_modal.show_level_up(level)
@@ -2032,7 +2055,39 @@ func is_character_stats_active() -> bool:
 func is_game_over_active() -> bool:
 	return game_over_modal != null and (game_over_modal.visible or game_over_modal.is_active)
 
+func is_cinematic_or_death_active() -> bool:
+	if CinematicDeathSequence.is_sequence_active:
+		return true
+	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
+		return true
+	if current_boss and is_instance_valid(current_boss) and current_boss.get("is_dying") == true:
+		return true
+	if current_rival and is_instance_valid(current_rival) and current_rival.get("is_dying") == true:
+		return true
+	if current_boss and is_instance_valid(current_boss) and current_boss.get("is_invulnerable") == true and current_boss.get_meta("_is_emerging", false) == true:
+		return true
+	return false
+
+func _resume_pending_systems_after_cinematics() -> void:
+	if is_cinematic_or_death_active():
+		return
+	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
+		arcana_modal.show_next_arcana()
+	elif _pending_arcana_picks > 0:
+		_pending_arcana_picks -= 1
+		_open_next_pending_arcana()
+	elif level_up_modal and level_up_modal.has_pending_levels():
+		level_up_modal.show_next_level_up()
+	elif _pending_satellite_credits >= 0:
+		var creds = _pending_satellite_credits
+		var _idx = _pending_satellite_index
+		_pending_satellite_credits = -1
+		_pending_satellite_index = -1
+		satellite_shop.open_shop(creds)
+
 func is_dialogue_active() -> bool:
+	if is_cinematic_or_death_active():
+		return true
 	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		return true
 	var dialogic = get_node_or_null("/root/Dialogic")

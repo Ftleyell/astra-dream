@@ -88,8 +88,10 @@ func show_level_up(level: int) -> void:
 	var diag_active: bool = (parent_game and parent_game.has_method("is_dialogue_active") and parent_game.is_dialogue_active())
 	var arcana_active: bool = (parent_game and parent_game.has_method("is_arcana_modal_active") and parent_game.is_arcana_modal_active())
 	var pause_active: bool = (parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active())
+	var anim_active: bool = (parent_game and parent_game.has_method("is_cinematic_or_death_active") and parent_game.is_cinematic_or_death_active())
+	var death_seq_active: bool = bool(CinematicDeathSequence.is_sequence_active)
 
-	if is_presenting_level or visible or shop_active or diag_active or arcana_active or pause_active:
+	if is_presenting_level or visible or shop_active or diag_active or arcana_active or pause_active or anim_active or death_seq_active:
 		if not pending_levels_queue.has(level) and level != current_level_shown:
 			pending_levels_queue.append(level)
 		_update_header_title()
@@ -107,6 +109,11 @@ func has_pending_levels() -> bool:
 
 func show_next_level_up() -> void:
 	if is_presenting_level and visible:
+		return
+	var parent_game = get_parent()
+	if parent_game and parent_game.has_method("is_cinematic_or_death_active") and parent_game.is_cinematic_or_death_active():
+		return
+	if CinematicDeathSequence.is_sequence_active:
 		return
 	if not pending_levels_queue.is_empty():
 		var next_level: int = pending_levels_queue.pop_front()

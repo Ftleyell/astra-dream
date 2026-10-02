@@ -28,15 +28,19 @@ var _sfx_player_index: int = 0
 const CinematicMicroExplosionScript = preload("res://scenes/combat/bosses/cinematic_micro_explosion.gd")
 const CinematicResidualDebrisScript = preload("res://scenes/combat/bosses/cinematic_residual_debris.gd")
 
+static var is_sequence_active: bool = false
+
 ## Método estático para disparar la secuencia cinemática sobre cualquier jefe de manera desacoplada
 static func play_for_boss(boss: Node2D, on_completed: Callable, instant: bool = false) -> void:
 	if not is_instance_valid(boss):
+		is_sequence_active = false
 		if on_completed.is_valid():
 			on_completed.call()
 		return
 
 	# Si se ejecuta en modo headless o se solicita explícitamente instantáneo, completar de inmediato
 	if instant or DisplayServer.get_name() == "headless":
+		is_sequence_active = false
 		var bullet_server := boss.get_node_or_null("/root/BulletServer") as BulletServer
 		if not bullet_server and boss.get_parent():
 			bullet_server = boss.get_parent().get_node_or_null("BulletServer") as BulletServer
@@ -50,6 +54,7 @@ static func play_for_boss(boss: Node2D, on_completed: Callable, instant: bool = 
 	if seq_scene:
 		var seq := seq_scene.instantiate() as CinematicDeathSequence
 		if seq:
+			is_sequence_active = true
 			var parent_node: Node = boss.get_parent() if boss.get_parent() else boss.get_tree().current_scene
 			parent_node.add_child(seq)
 			if on_completed.is_valid():
@@ -57,6 +62,7 @@ static func play_for_boss(boss: Node2D, on_completed: Callable, instant: bool = 
 			seq.start_sequence(boss)
 			return
 
+	is_sequence_active = false
 	if on_completed.is_valid():
 		on_completed.call()
 
@@ -380,6 +386,7 @@ func _spawn_residual_debris() -> void:
 	parent_node.add_child(debris)
 
 func _finish_sequence() -> void:
+	is_sequence_active = false
 	# Asegurar que el audio esté desmuteado pase lo que pase
 	AudioServer.set_bus_mute(0, false)
 
@@ -390,3 +397,7 @@ func _finish_sequence() -> void:
 	get_tree().paused = false
 	sequence_completed.emit()
 	queue_free()
+
+func _exit_tree() -> void:
+	is_sequence_active = false
+	AudioServer.set_bus_mute(0, false)
