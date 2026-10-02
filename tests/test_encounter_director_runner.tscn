@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cencdirector01"]
+
+[ext_resource type="Script" path="res://tests/test_encounter_director_suite.gd" id="1_enc_dir_script"]
+
+[node name="TestEncounterDirectorRunner" type="Node"]
+script = ExtResource("1_enc_dir_script")

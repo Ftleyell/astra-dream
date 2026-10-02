@@ -96,6 +96,7 @@ var _wave_encounter_spawned_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
 var _wave_encounter_pending: bool = false
 var _pending_rival_for_dialogue: Node2D = null
+var encounter_director: EncounterDirector = null
 
 const AUTO_SAVE_INTERVAL: float = 5.0
 const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
@@ -107,6 +108,11 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
+	encounter_director = get_node_or_null("EncounterDirector") as EncounterDirector
+	if not encounter_director:
+		encounter_director = EncounterDirector.new()
+		encounter_director.name = "EncounterDirector"
+		add_child(encounter_director)
 	_setup_rival_queue()
 	_spawn_companion_pet()
 	_spawn_navigator_controller()
@@ -1510,14 +1516,19 @@ func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 
 	# Escalamiento adaptativo de vida del jefe según oleada y potencia del jugador
 	if "max_health" in current_boss:
-		var wave_factor: float = 1.0 + float(current_wave) * 0.08
-		var p_dps_factor: float = 1.0
-		if is_instance_valid(player) and player.stats:
-			var dmg_val: float = player.stats.get_stat(&"base_damage")
-			var spd_val: float = player.stats.get_stat(&"attack_speed")
-			p_dps_factor = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
 		var base_hp: float = current_boss.get("max_health")
-		var adaptive_hp: float = base_hp * wave_factor * p_dps_factor
+		var dmg_val: float = 20.0
+		var spd_val: float = 1.0
+		if is_instance_valid(player) and player.stats:
+			dmg_val = player.stats.get_stat(&"base_damage")
+			spd_val = player.stats.get_stat(&"attack_speed")
+		var adaptive_hp: float = base_hp
+		if encounter_director and encounter_director.boss_rival_director:
+			adaptive_hp = encounter_director.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val)
+		else:
+			var wave_factor: float = 1.0 + float(current_wave) * 0.08
+			var p_dps_factor: float = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
+			adaptive_hp = base_hp * wave_factor * p_dps_factor
 		current_boss.set("max_health", adaptive_hp)
 		current_boss.set("current_health", adaptive_hp)
 

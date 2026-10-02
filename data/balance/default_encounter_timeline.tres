@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EncounterTimelineConfig" load_steps=2 format=3 uid="uid://dm8c0nfe1v8ty"]
+
+[ext_resource type="Script" path="res://core/types/encounter_timeline_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+wave_duration = 30.0
+pre_round_duration = 30.0
+total_waves = 16
+boss_wave_scenes = {
+2: "res://scenes/combat/bosses/boss_hermit_void.tscn",
+5: "res://scenes/combat/bosses/boss_broken_mirror.tscn",
+8: "res://scenes/combat/bosses/boss_ash_clock.tscn",
+11: "res://scenes/combat/bosses/boss_overflow_vortex.tscn",
+14: "res://scenes/combat/bosses/boss_mothership.tscn",
+16: "res://scenes/combat/bosses/boss_astra_prime.tscn"
+}
+rival_wave_milestones = Array[int]([4, 7, 10, 13])
+satellite_interval_seconds = 60.0
+max_satellites_per_wave = 1
+slot_machine_chance_per_wave = 0.35
+base_boss_hp_multiplier = 1.0
+wave_scaling_hp_step = 0.08
+adaptive_dps_floor = 0.85
+adaptive_dps_ceiling = 2.5
+burst_compression_threshold_pct = 0.12

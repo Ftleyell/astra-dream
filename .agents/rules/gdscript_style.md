@@ -16,3 +16,6 @@ description: "Estándares de tipado estricto, nomenclatura, señales y ciclo de 
    - Usar `_physics_process(delta)` exclusivamente para físicas y movimiento de entidades deterministas.
    - Usar `_process(delta)` para interpolaciones visuales, HUD y lógica desacoplada de cuadros fijos.
 5. **Autoloads vs Componentes:** Restringir autoloads a servicios de infraestructura puros (`SaveManager`, `AudioManager`, `EventBus`, `BulletServer`). Lógica de entidades debe ser modular mediante nodos hijos.
+6. **Vinculación con Recursos (.tres) y Nomenclatura:**
+   - Identificadores de armas, ítems y skins en código deben usar `StringName` idénticos a los nombres de sus recursos base (ej. `&"rail_launcher"`, `&"tesla_coil"`, `&"nova_base"`).
+   - Constantes de configuración deben agruparse en estructuras tipadas o en recursos exportados para no ensuciar el espacio de nombres de la clase.

@@ -1,6 +1,24 @@
-# Astra Dream (Pre-Alpha v0.4.1)
+# Astra Dream (Pre-Alpha v0.5.0)
 
 Roguelite de acción híbrido desarrollado en **Godot 4.7+ (GDScript)** que combina combate Danmaku 360°, acumulación sinérgica de artefactos espaciales, mazo dinámico de mejoras de atributos in-run, filtrado estratégico de suministros en el Hangar y narrativa reactiva con modulación acústica dinámica (*Dialogic 2.0*).
+
+---
+
+## 📚 Documentación Oficial y Hub de Balance
+
+Toda la arquitectura matemática, diseño de combate y especificaciones técnicas están centralizadas en:
+
+* **[Hub de Balance del Juego (`docs/balance/`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance):**
+  * [Arsenal de Armas y Progresión Lv1-Lv5](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/weapons.md)
+  * [Ítems Pasivos, Satélite y Arcanas](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/items_and_passives.md)
+  * [Heroínas, Dashes y Árboles de Talentos](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/pilots_and_talents.md)
+  * [Oleadas 1-16, Jefes y Escalado Adaptativo](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/waves_and_bosses.md)
+  * [Economía, Deflación y Precios de Tienda](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/economy.md)
+* **[Guías Técnicas de Arte (`docs/art/`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art):**
+  * [Lienzos, Resoluciones y Anclas](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/canvas_and_anchors.md)
+  * [Personajes, Skins y Armas](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/characters_and_skins.md)
+  * [Enemigos, Jefes y Telegraphs](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/enemies_and_bosses.md)
+  * [Entornos, Destructibles y VFX](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/environments_and_vfx.md)
 
 ---
 
