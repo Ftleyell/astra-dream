@@ -163,6 +163,50 @@ func _on_sector_damaged(layer_i: int, sector_i: int, damage_ratio: float) -> voi
 		mantle_damage[sector_i] = damage_ratio
 
 
+func disintegrate(shockwave_color: Color = Color.WHITE) -> void:
+	# 1. Desactivar nido de defensores y limpiar drones activos
+	disable_defenders = true
+	for d in active_defenders:
+		if is_instance_valid(d):
+			d.queue_free()
+	active_defenders.clear()
+
+	# 2. Desactivar colisiones físicas y monitoreo de sectores
+	if crust_sectors_container:
+		for s in crust_sectors_container.get_children():
+			if s is PlanetSector:
+				s.set_deferred("collision_layer", 0)
+				s.set_deferred("collision_mask", 0)
+				if s.collision_poly:
+					s.collision_poly.set_deferred("disabled", true)
+				if s.hurtbox_poly:
+					s.hurtbox_poly.set_deferred("disabled", true)
+	if mantle_sectors_container:
+		for s in mantle_sectors_container.get_children():
+			if s is PlanetSector:
+				s.set_deferred("collision_layer", 0)
+				s.set_deferred("collision_mask", 0)
+				if s.collision_poly:
+					s.collision_poly.set_deferred("disabled", true)
+				if s.hurtbox_poly:
+					s.hurtbox_poly.set_deferred("disabled", true)
+
+	remove_from_group("planets")
+
+	# 3. Vaporización estelar con destello cromático
+	var tw := create_tween().set_parallel(true)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	var flash_col := Color(
+		lerpf(shockwave_color.r, 2.5, 0.7),
+		lerpf(shockwave_color.g, 2.5, 0.7),
+		lerpf(shockwave_color.b, 3.5, 0.7),
+		0.0
+	)
+	tw.tween_property(self, "modulate", flash_col, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", scale * 1.15, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_callback(queue_free)
+
+
 func _process(delta: float) -> void:
 	# Rotación celestial sincrónica unificada (0.005 rad/s)
 	var rot_step: float = delta * 0.005

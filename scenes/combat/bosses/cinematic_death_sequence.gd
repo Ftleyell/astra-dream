@@ -22,6 +22,8 @@ var original_camera_zoom: Vector2 = Vector2.ONE
 var boss_origin: Vector2 = Vector2.ZERO
 var boss_bounds: Rect2 = Rect2(-50.0, -50.0, 100.0, 100.0)
 var boss_energy_color: Color = Color(0.2, 0.95, 1.0, 1.0)
+var _sfx_players: Array[AudioStreamPlayer] = []
+var _sfx_player_index: int = 0
 
 const CinematicMicroExplosionScript = preload("res://scenes/combat/bosses/cinematic_micro_explosion.gd")
 const CinematicResidualDebrisScript = preload("res://scenes/combat/bosses/cinematic_residual_debris.gd")
@@ -60,6 +62,15 @@ static func play_for_boss(boss: Node2D, on_completed: Callable, instant: bool = 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Pool dedicado de 4 reproductores de audio para micro-explosiones (evita throttle de AudioManager)
+	var exp_stream := load("res://assets/audio/sfx/explosion.wav") as AudioStream
+	for i in range(4):
+		var p := AudioStreamPlayer.new()
+		p.bus = &"SFX"
+		p.process_mode = Node.PROCESS_MODE_ALWAYS
+		p.stream = exp_stream
+		add_child(p)
+		_sfx_players.append(p)
 
 ## Inicia la secuencia completa sobre la entidad del jefe
 func start_sequence(boss: Node2D) -> void:
@@ -134,8 +145,11 @@ func _setup_visual_shader() -> void:
 		if target_sprite is Sprite2D:
 			var s2d := target_sprite as Sprite2D
 			if s2d.texture:
-				var sz := s2d.texture.get_size() * s2d.scale.abs()
-				boss_bounds = Rect2(-sz.x * 0.42, -sz.y * 0.42, sz.x * 0.84, sz.y * 0.84)
+				var g_scale: Vector2 = s2d.global_scale.abs()
+				var sz: Vector2 = s2d.texture.get_size() * g_scale
+				sz.x = maxf(sz.x, 180.0)
+				sz.y = maxf(sz.y, 180.0)
+				boss_bounds = Rect2(-sz.x * 0.45, -sz.y * 0.45, sz.x * 0.9, sz.y * 0.9)
 		elif target_sprite is Polygon2D:
 			var p2d := target_sprite as Polygon2D
 			var poly := p2d.polygon
@@ -145,7 +159,10 @@ func _setup_visual_shader() -> void:
 				for pt in poly:
 					min_p = min_p.min(pt)
 					max_p = max_p.max(pt)
-				var sz := (max_p - min_p) * p2d.scale.abs()
+				var g_scale: Vector2 = p2d.global_scale.abs()
+				var sz: Vector2 = (max_p - min_p) * g_scale
+				sz.x = maxf(sz.x, 180.0)
+				sz.y = maxf(sz.y, 180.0)
 				boss_bounds = Rect2(-sz.x * 0.45, -sz.y * 0.45, sz.x * 0.9, sz.y * 0.9)
 
 		# Asignar shader de muerte
@@ -162,6 +179,14 @@ func _setup_visual_shader() -> void:
 				boss_energy_color = target_boss.character_data.theme_color
 			elif target_boss.get("theme_color") != null and target_boss.get("theme_color") is Color:
 				boss_energy_color = target_boss.theme_color
+			elif target_boss.get("boss_id") != null and target_boss.boss_id == "boss_hermit_void":
+				boss_energy_color = Color(0.65, 0.2, 1.0, 1.0)
+			elif target_boss.get("boss_id") != null and target_boss.boss_id == "boss_ash_clock":
+				boss_energy_color = Color(1.0, 0.65, 0.1, 1.0)
+			elif target_boss.get("boss_id") != null and target_boss.boss_id == "boss_broken_mirror":
+				boss_energy_color = Color(0.1, 0.9, 0.85, 1.0)
+			elif target_boss.get("boss_id") != null and target_boss.boss_id == "boss_overflow_vortex":
+				boss_energy_color = Color(0.95, 0.1, 0.3, 1.0)
 
 			death_shader_mat.set_shader_parameter("energy_color", boss_energy_color)
 			death_shader_mat.set_shader_parameter("energy_intensity", 3.2)
@@ -208,7 +233,9 @@ func _run_choreography() -> void:
 			0.0, 3.5, 0.45
 		)
 
+	print("[CinematicDeathSequence] Iniciando Fase 1: Stun & Fractura...")
 	await tw_phase1.finished
+	print("[CinematicDeathSequence] Fase 1 completada. Iniciando Fase 2: Aceleración Crítica...")
 
 	# =========================================================================
 	# FASE 2: Aceleración Crítica (1.9s)
@@ -237,16 +264,22 @@ func _run_choreography() -> void:
 	# Bucle asíncrono exponencial de micro-explosiones
 	var elapsed: float = 0.0
 	var delay: float = 0.28
-	var pitch: float = 1.4
+	var pitch: float = 0.85
+	var count: int = 0
 
 	while elapsed < 1.9:
+		count += 1
 		_spawn_micro_explosion()
-		if AudioManager:
-			AudioManager.play_sfx("explosion", pitch, -4.0)
+		if not _sfx_players.is_empty():
+			var p := _sfx_players[_sfx_player_index]
+			_sfx_player_index = (_sfx_player_index + 1) % _sfx_players.size()
+			p.pitch_scale = clampf(pitch * randf_range(0.96, 1.04), 0.7, 1.5)
+			p.volume_db = randf_range(1.5, 3.5)
+			p.play()
 		if is_instance_valid(camera):
-			camera.add_trauma(0.14)
+			camera.add_trauma(0.18)
 
-		pitch = minf(2.4, pitch + 0.06)
+		pitch = minf(1.30, pitch + 0.035)
 		var step_wait := create_tween()
 		step_wait.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		step_wait.tween_interval(delay)
@@ -255,8 +288,10 @@ func _run_choreography() -> void:
 		elapsed += delay
 		delay = maxf(0.045, delay * 0.83)
 
+	print("[CinematicDeathSequence] Fin bucle micro-explosiones (total: %d)" % count)
 	if tw_phase2 and tw_phase2.is_running():
 		await tw_phase2.finished
+	print("[CinematicDeathSequence] Fase 2 completada.")
 
 	# =========================================================================
 	# FASE 3: Implosión (El Vacío) (0.12s)
@@ -335,8 +370,8 @@ func _spawn_micro_explosion() -> void:
 	)
 	var spawn_pos := boss_origin + offset
 	var micro = CinematicMicroExplosionScript.new()
-	micro.setup(spawn_pos, randf_range(26.0, 48.0), boss_energy_color)
 	add_child(micro)
+	micro.setup(spawn_pos, randf_range(65.0, 115.0), boss_energy_color)
 
 func _spawn_residual_debris() -> void:
 	var debris = CinematicResidualDebrisScript.new()

@@ -131,6 +131,18 @@ theme_override_colors/font_color = Color(0, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "CONSUMIBLES (BOMBAS MAX)"
 
+[node name="QuickCombatActions" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="QuickRivalSpawnButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/QuickCombatActions"]
+custom_minimum_size = Vector2(520, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚡ TESTEAR SPAWN RIVAL (CINEMÁTICA + SHOCKWAVE)"
+
 [node name="HSeparator2" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
 layout_mode = 2
 

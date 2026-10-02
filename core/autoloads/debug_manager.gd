@@ -62,6 +62,16 @@ var pending_slot_machine_test: bool = false
 var pending_planet_test: bool = false
 var pending_debug_boss: String = ""
 var pending_auto_trigger_death: bool = false
+var pending_rival_spawn: bool = false
+
+func set_pending_rival_spawn(val: bool = true) -> void:
+	pending_rival_spawn = val
+	is_enabled = true
+
+func consume_pending_rival_spawn() -> bool:
+	var res := pending_rival_spawn
+	pending_rival_spawn = false
+	return res
 
 func set_pending_debug_boss(boss_id: String, auto_trigger_death: bool = false) -> void:
 	pending_debug_boss = boss_id
@@ -113,6 +123,7 @@ func reset_all() -> void:
 	pending_debug_boss = ""
 	pending_slot_machine_test = false
 	pending_planet_test = false
+	pending_rival_spawn = false
 	stat_overrides.clear()
 	is_enabled = false
 

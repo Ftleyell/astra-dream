@@ -51,6 +51,7 @@ var run_credits: int = 120
 var run_biomass: int = 0
 var _menu_close_suppress_timer: float = 0.0
 var _was_bomb_pressed_during_menu: bool = false
+var is_movement_suppressed: bool = false
 
 # EXP & Leveling
 var current_level: int = 1
@@ -489,6 +490,11 @@ func _update_pilot_shader(_delta: float, is_moving: bool) -> void:
 		vfx_comp.update_flight(_delta, velocity, is_dashing)
 
 func _handle_movement(delta: float) -> void:
+	if is_movement_suppressed:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
 	if is_dashing:
 		velocity = dash_direction * (stats.get_stat(&"move_speed") * 2.5)
 		move_and_slide()
@@ -502,6 +508,23 @@ func _handle_movement(delta: float) -> void:
 	var speed: float = stats.get_stat(&"move_speed")
 	velocity = velocity.move_toward(input_vector * speed, speed * 8.0 * delta)
 	move_and_slide()
+
+func set_cinematic_duel_facing() -> void:
+	is_movement_suppressed = true
+	velocity = Vector2.ZERO
+	current_facing_angle = 0.0
+	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
+	if ship_spr:
+		ship_spr.rotation = PI / 2.0
+	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.rotation = PI / 2.0
+	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
+	if placeholder:
+		placeholder.rotation = 0.0
+
+func resume_movement_control() -> void:
+	is_movement_suppressed = false
 
 func _setup_character_dash() -> void:
 	var cid := String(character_data.character_id) if character_data else "nova"

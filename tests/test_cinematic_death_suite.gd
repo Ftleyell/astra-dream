@@ -57,6 +57,7 @@ func _ready() -> void:
 	add_child(micro)
 	assert(micro.process_mode == Node.PROCESS_MODE_ALWAYS, "Micro-explosión debe tener process_mode ALWAYS")
 	assert(micro.max_radius == 40.0, "Radio configurado correctamente")
+	assert(micro.z_index == 120, "Micro-explosión debe tener z_index = 120")
 	micro.queue_free()
 
 	var debris = CinematicResidualDebrisScript.new()

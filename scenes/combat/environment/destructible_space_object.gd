@@ -128,6 +128,31 @@ func _die() -> void:
 	queue_free()
 
 
+func disintegrate(shockwave_color: Color = Color.WHITE) -> void:
+	if is_dying:
+		return
+	is_dying = true
+	remove_from_group("destructibles")
+	_disable_collisions()
+	_unregister_from_bullet_server()
+
+	var shard_script = preload("res://scenes/combat/environment/shrapnel_shard.gd")
+	if shard_script:
+		shard_script.spawn_shattered_burst(self, global_position, tier, -1, shockwave_color)
+
+	var tw := create_tween().set_parallel(true)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	var flash_col := Color(
+		lerpf(shockwave_color.r, 2.5, 0.7),
+		lerpf(shockwave_color.g, 2.5, 0.7),
+		lerpf(shockwave_color.b, 3.5, 0.7),
+		0.0
+	)
+	tw.tween_property(self, "modulate", flash_col, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", scale * 1.25, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_callback(queue_free)
+
+
 func _register_with_bullet_server() -> void:
 	if not is_inside_tree():
 		return

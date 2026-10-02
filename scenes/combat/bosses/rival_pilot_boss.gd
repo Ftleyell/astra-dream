@@ -13,6 +13,7 @@ signal rival_defeated(pilot_id: StringName, weapon: WeaponData)
 signal health_changed(current: float, max_val: float)
 
 enum State {
+	WARPING_IN,
 	PEACEFUL_WARN,
 	DOGFIGHT,
 	WARPING_OUT,
@@ -22,16 +23,16 @@ enum State {
 const WARNING_RADIUS: float = 650.0
 const COMBAT_TRIGGER_RADIUS: float = 480.0
 const PROXIMITY_SHIELD_RADIUS: float = 480.0
-const ESCAPE_RADIUS: float = 950.0
-const SPARED_REQUIRED_TIME: float = 4.0
-const CHALLENGE_REQUIRED_TIME: float = 2.5
+const ESCAPE_RADIUS: float = 1450.0
+const SPARED_REQUIRED_TIME: float = 5.0
+const CHALLENGE_REQUIRED_TIME: float = 2.0
 
 @export var pilot_id: StringName = &"nova"
 @export var pilot_name: String = "Nova"
 @export var max_health: float = 950.0
 
 var current_health: float = 950.0
-var current_state: State = State.PEACEFUL_WARN
+var current_state: State = State.WARPING_IN
 var character_data: CharacterData = null
 var weapon_data: WeaponData = null
 
@@ -66,6 +67,29 @@ func _ready() -> void:
 	_setup_visuals()
 	health_changed.emit(current_health, max_health)
 
+	if current_state == State.WARPING_IN:
+		prepare_warp_in()
+
+const PILOT_THEME_COLORS: Dictionary = {
+	&"nova": Color(0.0, 0.9, 1.0),
+	&"valentina": Color(1.0, 0.84, 0.0),
+	&"kira": Color(1.0, 0.55, 0.0),
+	&"selene": Color(0.0, 0.9, 0.45),
+	&"roxy": Color(1.0, 0.1, 0.25),
+	&"echo": Color(0.5, 0.3, 1.0),
+	&"nyx": Color(0.85, 0.0, 0.95),
+}
+
+const HyperspacePortalScript := preload("res://scenes/combat/bosses/hyperspace_portal.gd")
+
+var _warp_portal: Node2D = null
+var _warp_target_pos: Vector2 = Vector2.ZERO
+
+func _exit_tree() -> void:
+	if _warp_portal and is_instance_valid(_warp_portal):
+		_warp_portal.queue_free()
+		_warp_portal = null
+
 func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 	pilot_id = p_id
 	var roster := CharacterData.load_roster()
@@ -73,6 +97,10 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 		character_data = roster[p_id]
 		pilot_name = character_data.display_name
 		weapon_data = character_data.starting_weapon
+
+	# Color temático del anillo de advertencia según la piloto
+	var theme_col: Color = PILOT_THEME_COLORS.get(p_id, Color(0.0, 0.9, 1.0))
+	warning_ring_color = Color(theme_col.r, theme_col.g, theme_col.b, 0.5)
 
 	# Escalamiento por oleada
 	max_health = 750.0 + float(p_wave) * 160.0
@@ -86,32 +114,102 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 	_update_warning_label()
 	queue_redraw()
 
-func play_warp_in_cinematic(callback: Callable = Callable()) -> void:
+func prepare_warp_in(target_rest_pos: Vector2 = Vector2.ZERO) -> void:
+	current_state = State.WARPING_IN
+	rotation = -PI / 2.0
+	if target_rest_pos != Vector2.ZERO:
+		_warp_target_pos = target_rest_pos
+		global_position = _warp_target_pos + Vector2(90.0, 0.0)
+	elif _warp_target_pos == Vector2.ZERO:
+		_warp_target_pos = global_position
+		global_position = _warp_target_pos + Vector2(90.0, 0.0)
+
+	if ship_sprite:
+		ship_sprite.scale = Vector2(0.01, 0.01)
+		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
+	if shield_sprite:
+		shield_sprite.modulate.a = 0.0
+	if warning_label:
+		warning_label.modulate.a = 0.0
+	queue_redraw()
+
+func open_warp_portal(on_shockwave_ready: Callable = Callable()) -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	rotation = -PI / 2.0
+
+	if _warp_target_pos == Vector2.ZERO:
+		_warp_target_pos = global_position
+	var portal_pos: Vector2 = _warp_target_pos + Vector2(90.0, 0.0)
+	var theme_col: Color = PILOT_THEME_COLORS.get(pilot_id, Color(0.0, 0.9, 1.0))
+
+	# Instanciar el vórtice hiperespacial temático
+	var portal = HyperspacePortalScript.new()
+	portal.setup(portal_pos, theme_col, 68.0, 680.0)
+	portal.auto_collapse = false
+	portal.process_mode = Node.PROCESS_MODE_ALWAYS
+	_warp_portal = portal
+	var parent_node := get_parent()
+	if parent_node:
+		parent_node.add_child(portal)
+	else:
+		add_child(portal)
+
+	# La nave permanece dentro del portal totalmente oculta
+	global_position = portal_pos
+	if ship_sprite:
+		ship_sprite.scale = Vector2(0.01, 0.01)
+		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
+	if shield_sprite:
+		shield_sprite.modulate.a = 0.0
+	if warning_label:
+		warning_label.modulate.a = 0.0
+
+	if on_shockwave_ready.is_valid():
+		portal.shockwave_completed.connect(on_shockwave_ready, CONNECT_ONE_SHOT)
+
+func emerge_from_portal(callback: Callable = Callable()) -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if not ship_sprite:
 		if callback.is_valid():
 			callback.call()
 		return
 
-	# La nave inicia comprimida en un vector de hiperespacio con resplandor
-	ship_sprite.scale = Vector2(0.05, 2.8)
-	ship_sprite.modulate = Color(2.5, 2.5, 3.5, 1.0)
-	if shield_sprite:
-		shield_sprite.modulate.a = 0.0
-
 	_play_sfx("dash", 0.65)
+	var tw := create_tween().set_parallel(true)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
-	var tw := create_tween().set_parallel(false)
-	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	var t_anim := tw.tween_property(ship_sprite, "scale", Vector2(0.42, 0.42), 0.35)
+	tw.tween_property(self, "global_position", _warp_target_pos, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var t_anim := tw.tween_property(ship_sprite, "scale", Vector2(0.42, 0.42), 0.5)
 	t_anim.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.parallel().tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.35)
+	tw.tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.5)
 
 	if shield_sprite:
-		tw.parallel().tween_property(shield_sprite, "modulate:a", 0.85, 0.35)
+		tw.tween_property(shield_sprite, "modulate:a", 0.85, 0.5)
 
 	tw.chain().tween_callback(func() -> void:
+		if is_instance_valid(_warp_portal):
+			_warp_portal.start_collapse()
 		if callback.is_valid():
 			callback.call()
+	)
+
+func start_encounter() -> void:
+	current_state = State.PEACEFUL_WARN
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	spared_timer = 0.0
+	challenge_timer = 0.0
+	if warning_label:
+		warning_label.modulate.a = 1.0
+	_update_warning_label()
+	queue_redraw()
+
+func play_warp_in_cinematic(callback: Callable = Callable()) -> void:
+	open_warp_portal(func() -> void:
+		emerge_from_portal(func() -> void:
+			start_encounter()
+			if callback.is_valid():
+				callback.call()
+		)
 	)
 
 func _acquire_references() -> void:
@@ -244,7 +342,7 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS / sx, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
 
 func _physics_process(delta: float) -> void:
-	if current_state == State.DYING or current_state == State.WARPING_OUT:
+	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
 		return
 
 	if not is_instance_valid(player):
@@ -401,16 +499,12 @@ func _execute_signature_attack() -> void:
 			bullet_server.fire_aimed_spread(global_position, target_pos, 4, 25.0, 260.0, 1)
 
 func take_damage(arg: Variant) -> void:
-	if current_state == State.DYING or current_state == State.WARPING_OUT:
+	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
 		return
 
-	# Si está en fase pacífica, el escudo de energía es completamente impenetrable:
-	# absorbe todo impacto sin recibir daño y SIN provocar el combate.
+	# Si está en fase pacífica, atacar a la rival rompe el perímetro pacífico y desata el combate:
 	if current_state == State.PEACEFUL_WARN:
-		if shield_sprite and is_instance_valid(shield_sprite):
-			var tw_shield := create_tween()
-			tw_shield.tween_property(shield_sprite, "modulate", Color(1.5, 1.8, 2.5, 1.0), 0.05)
-			tw_shield.tween_property(shield_sprite, "modulate", Color(0.3, 0.85, 1.0, 0.85), 0.15)
+		engage_combat()
 		return
 
 	var dmg: float = 0.0

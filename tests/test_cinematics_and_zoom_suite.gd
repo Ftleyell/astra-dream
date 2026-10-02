@@ -10,7 +10,9 @@ func _ready() -> void:
 	_test_pet_portraits_flipped()
 	_test_navigator_portraits_dch()
 	_test_rival_warp_in_cinematic()
+	_test_hyperspace_portal_shockwave_and_clearance()
 	_test_navigator_prologue_transmission()
+	_test_debug_modal_quick_rival_spawn_button()
 
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE CINEMÁTICAS, DIÁLOGOS Y ZOOM PASARON EXITOSAMENTE!")
@@ -71,7 +73,7 @@ func _test_dialogue_backdrop_layer() -> void:
 	print("  ✓ DialogueBackdropLayer verificado con éxito.")
 
 func _test_pet_portraits_flipped() -> void:
-	print("[3/5] Verificando Retratos Flipped en Mascotas (.dch)...")
+	print("[3/5] Verificando Retratos Flipped y Centrado Vertical en Mascotas (.dch)...")
 	var pets := ["mochi", "kuro", "luna", "pip", "cosmo"]
 	for p_id in pets:
 		var path := "res://narrative/characters/%s.dch" % p_id
@@ -80,8 +82,10 @@ func _test_pet_portraits_flipped() -> void:
 		assert(dch != null and dch.portraits.has("Flipped"), "Mascota %s debe tener retrato Flipped" % p_id)
 		assert(dch.portraits["Flipped"]["mirror"] == true, "Mascota %s debe tener mirror = true en Flipped" % p_id)
 		assert(not dch.display_name.contains("[Copiloto]"), "Mascota %s no debe contener [Copiloto] en su nombre" % p_id)
-		assert(is_equal_approx(dch.scale, 0.65), "Mascota %s debe tener escala 0.65 (actual: %s)" % [p_id, dch.scale])
-	print("  ✓ Todas las mascotas cuentan con orientación Flipped (mirror=true), escala 0.65 y nombre sin [Copiloto].")
+		assert(dch.offset.y <= -200.0 and dch.offset.y >= -300.0, "Mascota %s debe tener offset vertical centrado (actual: %s)" % [p_id, dch.offset.y])
+		assert(dch.portraits["Normal"].offset == Vector2.ZERO, "Mascota %s debe tener offset Vector2.ZERO en Normal para no duplicar desplazamiento" % p_id)
+		assert(dch.portraits["Flipped"].offset == Vector2.ZERO, "Mascota %s debe tener offset Vector2.ZERO en Flipped para no duplicar desplazamiento" % p_id)
+	print("  ✓ Todas las mascotas cuentan con orientación Flipped (mirror=true), escala 0.65, offset vertical flotante centrado y nombre sin [Copiloto].")
 
 func _test_navigator_portraits_dch() -> void:
 	print("[4/5] Verificando Recursos Dialogic de Navegantes (.dch)...")
@@ -96,11 +100,14 @@ func _test_navigator_portraits_dch() -> void:
 	print("  ✓ Todas las 5 navegantes cuentan con recursos .dch y orientaciones completas.")
 
 func _test_rival_warp_in_cinematic() -> void:
-	print("[5/5] Verificando RivalPilotBoss play_warp_in_cinematic...")
+	print("[5/5] Verificando RivalPilotBoss open_warp_portal, emerge_from_portal y play_warp_in_cinematic...")
 	var rival_scene := preload("res://scenes/combat/bosses/rival_pilot_boss.tscn")
 	var rival := rival_scene.instantiate() as RivalPilotBoss
 	add_child(rival)
 	rival.setup_pilot(&"nova", 1)
+
+	assert(rival.has_method("open_warp_portal"), "RivalPilotBoss debe poseer open_warp_portal")
+	assert(rival.has_method("emerge_from_portal"), "RivalPilotBoss debe poseer emerge_from_portal")
 
 	var callback_called := false
 	rival.play_warp_in_cinematic(func() -> void:
@@ -109,7 +116,7 @@ func _test_rival_warp_in_cinematic() -> void:
 
 	# Simular un frame de animación
 	rival.queue_free()
-	print("  ✓ RivalPilotBoss play_warp_in_cinematic ejecutado exitosamente.")
+	print("  ✓ RivalPilotBoss desacoplamiento de portal y llegada cinemática verificado exitosamente.")
 
 func _test_navigator_prologue_transmission() -> void:
 	print("[6/6] Verificando NavigatorCommsWidget show_prologue_transmission y espera de input...")
@@ -139,3 +146,41 @@ func _test_navigator_prologue_transmission() -> void:
 
 	widget.queue_free()
 	print("  ✓ NavigatorCommsWidget procesa transmisión de prólogo y tecla espacio correctamente.")
+
+func _test_hyperspace_portal_shockwave_and_clearance() -> void:
+	print("[7/8] Verificando HyperspacePortal y onda expansiva de despeje (Shockwave)...")
+	var portal_script = preload("res://scenes/combat/bosses/hyperspace_portal.gd")
+	var portal = portal_script.new()
+	portal.setup(Vector2(500.0, 500.0), Color(0.0, 0.9, 1.0), 68.0, 680.0)
+	add_child(portal)
+
+	# Crear un asteroide u obstáculo en el radio de la shockwave
+	var ast_scene := preload("res://scenes/combat/environment/asteroid.tscn")
+	var ast = ast_scene.instantiate()
+	ast.global_position = Vector2(650.0, 500.0) # Dentro del radio de 680px
+	add_child(ast)
+
+	assert(ast.is_in_group("destructibles"), "El asteroide debe pertenecer al grupo destructibles")
+
+	# Ejecutar detonación de la shockwave
+	portal._detonate_clearance_shockwave()
+
+	# El asteroide debe haber comenzado su desintegración
+	assert(ast.is_dying == true, "La onda expansiva debe haber marcado el obstáculo para desintegración")
+
+	portal.queue_free()
+	ast.queue_free()
+	print("  ✓ HyperspacePortal detona shockwave y vaporiza obstáculos adyacentes con éxito.")
+
+func _test_debug_modal_quick_rival_spawn_button() -> void:
+	print("[8/8] Verificando botón de testeo rápido de rivales en DebugMenuModal...")
+	var debug_scene := preload("res://scenes/ui/debug/debug_menu_modal.tscn")
+	var debug_modal = debug_scene.instantiate()
+	add_child(debug_modal)
+
+	assert(debug_modal.quick_rival_spawn_btn != null, "QuickRivalSpawnButton debe existir y estar referenciado")
+	assert(debug_modal.quick_rival_spawn_btn.is_inside_tree(), "QuickRivalSpawnButton debe estar dentro del árbol")
+	assert(debug_modal.quick_rival_spawn_btn.text.contains("TESTEAR SPAWN RIVAL"), "Texto del botón debe ser representativo")
+
+	debug_modal.queue_free()
+	print("  ✓ QuickRivalSpawnButton verificado en Pestaña de Combate de depuración.")

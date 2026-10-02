@@ -36,6 +36,7 @@ signal closed()
 @onready var infinite_hp_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox/HpCheck")
 @onready var infinite_credits_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox/CreditsCheck")
 @onready var infinite_consumables_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox/ConsumablesCheck")
+@onready var quick_rival_spawn_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/QuickCombatActions/QuickRivalSpawnButton")
 @onready var stats_container: VBoxContainer = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/StatsScroll/StatsList")
 
 @onready var reset_career_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CareerDebugRow/ResetCareerButton")
@@ -175,6 +176,10 @@ func _ready() -> void:
 	if spawn_rival_btn:
 		spawn_rival_btn.pressed.connect(_on_spawn_rival_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_rival_btn)
+
+	if quick_rival_spawn_btn:
+		quick_rival_spawn_btn.pressed.connect(_on_spawn_rival_pressed)
+		UIFocusHelper.apply_cyber_focus(quick_rival_spawn_btn)
 
 	if test_planets_btn:
 		test_planets_btn.pressed.connect(_on_test_planets_pressed)
@@ -765,9 +770,12 @@ func _on_spawn_rival_pressed() -> void:
 
 	var mg = get_tree().get_first_node_in_group("main_game")
 	if mg and mg.has_method("spawn_next_rival_pilot"):
-		mg.spawn_next_rival_pilot()
 		close_menu()
+		mg.spawn_next_rival_pilot()
 	else:
+		if current_pilot_data and "character_id" in current_pilot_data:
+			SaveManager.set_selected_character(current_pilot_data.character_id)
+		DebugManager.set_pending_rival_spawn(true)
 		close_menu()
 		get_tree().paused = false
 		if not (get_tree().current_scene and "Test" in get_tree().current_scene.name):

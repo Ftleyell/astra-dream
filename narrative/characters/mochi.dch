@@ -9,7 +9,7 @@
 &"display_name": "Mochi",
 &"mirror": false,
 &"nicknames": [],
-&"offset": Vector2(0, 0),
+&"offset": Vector2(0, -260),
 &"portraits": {
 		"Normal": {
 			"export_overrides": {

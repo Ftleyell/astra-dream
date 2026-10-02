@@ -69,7 +69,9 @@ var is_briefing_active: bool = true
 var is_cockpit_active: bool = false
 var is_boss_transmission_active: bool = false
 var is_victory_dialogue_active: bool = false
+var is_rival_cinematic_active: bool = false
 var _pending_victory_data: Dictionary = {}
+var _on_dialogue_finished_callback: Callable = Callable()
 var prologue_bonus_chosen: bool = false
 var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
@@ -236,6 +238,20 @@ func _ready() -> void:
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		jump_to_wave_11(debug_route)
+		return
+
+	# Chequeo de inicio debug directo para encuentro de Piloto Rival
+	var debug_rival: bool = DebugManager.consume_pending_rival_spawn() if (DebugManager and DebugManager.has_method("consume_pending_rival_spawn")) else false
+	if debug_rival:
+		is_briefing_active = false
+		prologue_bonus_chosen = true
+		is_pre_round = false
+		get_tree().paused = false
+		if skip_badge_layer:
+			skip_badge_layer.hide()
+		get_tree().create_timer(0.5, false).timeout.connect(func() -> void:
+			spawn_next_rival_pilot()
+		)
 		return
 
 	# Chequeo de reanudación de partida activa (Mid-Run Resume)
@@ -417,6 +433,16 @@ func _on_dialogic_timeline_started() -> void:
 		audio_duck_manager.duck_music(true)
 
 func _on_dialogue_skip_requested() -> void:
+	if _on_dialogue_finished_callback.is_valid():
+		var cb := _on_dialogue_finished_callback
+		_on_dialogue_finished_callback = Callable()
+		var dialogic_node := _get_dialogic()
+		if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
+			if dialogic_node.has_method("end_timeline"):
+				dialogic_node.end_timeline(true)
+		cb.call()
+		return
+
 	if is_victory_dialogue_active:
 		is_victory_dialogue_active = false
 		var v_data := _pending_victory_data.duplicate()
@@ -437,12 +463,32 @@ func _on_dialogue_skip_requested() -> void:
 
 	is_cockpit_active = false
 	is_boss_transmission_active = false
+	if is_rival_cinematic_active:
+		is_rival_cinematic_active = false
+		if is_instance_valid(current_rival):
+			if current_rival.has_method("start_encounter"):
+				current_rival.start_encounter()
+			else:
+				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
+		if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+			enemy_spawner.set_spawning_paused(false)
+
 	notify_menu_closed(0.4)
 
 	var dialogic_node := _get_dialogic()
 	if dialogic_node and "current_timeline" in dialogic_node and dialogic_node.current_timeline != null:
 		if dialogic_node.has_method("end_timeline"):
 			dialogic_node.end_timeline(true)
+
+	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+	if cam and cam.has_method("clear_cinematic_focus"):
+		cam.clear_cinematic_focus()
+
+	if is_instance_valid(player) and player.has_method("resume_movement_control"):
+		player.resume_movement_control()
+
+	if hud:
+		hud.visible = true
 
 	if level_up_modal and level_up_modal.has_pending_levels():
 		level_up_modal.show_next_level_up()
@@ -454,6 +500,12 @@ func _on_dialogic_timeline_ended() -> void:
 		skip_badge_layer.hide()
 	if audio_duck_manager:
 		audio_duck_manager.duck_music(false)
+
+	if _on_dialogue_finished_callback.is_valid():
+		var cb := _on_dialogue_finished_callback
+		_on_dialogue_finished_callback = Callable()
+		cb.call()
+		return
 
 	if is_victory_dialogue_active:
 		is_victory_dialogue_active = false
@@ -486,6 +538,9 @@ func _on_dialogic_timeline_ended() -> void:
 	if cam and cam.has_method("clear_cinematic_focus"):
 		cam.clear_cinematic_focus()
 
+	if is_instance_valid(player) and player.has_method("resume_movement_control"):
+		player.resume_movement_control()
+
 	if is_cockpit_active:
 		is_cockpit_active = false
 		notify_menu_closed(0.4)
@@ -493,6 +548,16 @@ func _on_dialogic_timeline_ended() -> void:
 	if is_boss_transmission_active:
 		is_boss_transmission_active = false
 		notify_menu_closed(0.4)
+
+	if is_rival_cinematic_active:
+		is_rival_cinematic_active = false
+		if is_instance_valid(current_rival):
+			if current_rival.has_method("start_encounter"):
+				current_rival.start_encounter()
+			else:
+				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
+		if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+			enemy_spawner.set_spawning_paused(false)
 
 	if hud:
 		hud.visible = true
@@ -566,15 +631,19 @@ func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dicti
 		"rival_closing": r_close
 	}
 
-func _trigger_pet_rival_encounter(rival: Node2D) -> void:
-	if is_any_combat_modal_active():
+func _trigger_pet_rival_jump_warning(rival: Node2D, on_finished: Callable = Callable()) -> void:
+	if is_upgrade_or_shop_modal_active():
 		_pending_rival_for_dialogue = rival
 		return
 	var dialogic_node := _get_dialogic()
 	if not dialogic_node or not dialogic_node.has_method("start"):
+		if on_finished.is_valid():
+			on_finished.call()
 		return
+
 	is_cockpit_active = true
 	get_tree().paused = true
+	_on_dialogue_finished_callback = on_finished
 	if skip_badge_layer:
 		skip_badge_layer.show()
 
@@ -582,18 +651,43 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
 		pet_id = "mochi"
 
-	var r_name: String = rival.pilot_name if "pilot_name" in rival else "Piloto Rival"
-	var r_pid: StringName = rival.pilot_id if "pilot_id" in rival else &"nova"
-	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-
-	var lines := _get_rival_dialogue(r_pid, p_pid)
-
 	var text := "join " + pet_id + " (Flipped) right\n"
 	text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]\n"
-	text += pet_id + ": La nave de " + r_name + " ha entrado al sector proyectando un perímetro de advertencia.\n"
+	text += pet_id + ": Una nave de combate de alta potencia emerge desde el hiperespacio.\n"
 	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
-	text += "leave " + pet_id + "\n"
-	text += "join " + String(r_pid) + " right\n"
+	text += "leave --All--\n"
+
+	var tl := DialogicTimeline.new()
+	tl.from_text(text)
+	var layout = dialogic_node.start(tl)
+	if layout:
+		layout.process_mode = Node.PROCESS_MODE_ALWAYS
+		if layout is CanvasLayer:
+			layout.layer = 50
+		if "canvas_layer" in layout:
+			layout.canvas_layer = 50
+	_setup_dialogic_audio(layout)
+
+func _trigger_rival_face_to_face_dialogue(rival: Node2D) -> void:
+	if is_upgrade_or_shop_modal_active():
+		_pending_rival_for_dialogue = rival
+		return
+	var dialogic_node := _get_dialogic()
+	if not dialogic_node or not dialogic_node.has_method("start"):
+		_on_dialogic_timeline_ended()
+		return
+
+	is_cockpit_active = true
+	get_tree().paused = true
+	_on_dialogue_finished_callback = Callable()
+	if skip_badge_layer:
+		skip_badge_layer.show()
+
+	var r_pid: StringName = rival.pilot_id if "pilot_id" in rival else &"nova"
+	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
+	var lines := _get_rival_dialogue(r_pid, p_pid)
+
+	var text := "join " + String(r_pid) + " right\n"
 	text += "join " + String(p_pid) + " (Flipped) left\n"
 	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
 	text += String(p_pid) + ": " + lines["player_line"] + "\n"
@@ -610,6 +704,9 @@ func _trigger_pet_rival_encounter(rival: Node2D) -> void:
 		if "canvas_layer" in layout:
 			layout.canvas_layer = 50
 	_setup_dialogic_audio(layout)
+
+func _trigger_pet_rival_encounter(rival: Node2D) -> void:
+	_trigger_rival_face_to_face_dialogue(rival)
 
 func _trigger_cockpit_interlude() -> void:
 	_trigger_pet_rival_alert("Piloto Desconocida")
@@ -866,7 +963,7 @@ func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary
 	_setup_dialogic_audio(layout)
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
+	if get_tree().paused or is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		return
 
 	# Cronómetro de tiempo total de la run
@@ -1076,16 +1173,52 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 			return
 		next_pid = unencountered[0]
 
-	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	# Posición fija frontal-lateral a 520px del jugador para visibilidad cinemática óptima
-	var lateral_sign: float = -1.0 if randf() < 0.5 else 1.0
-	var spawn_angle: float = deg_to_rad(40.0 * lateral_sign)
-	var spawn_dir := forward.rotated(spawn_angle).normalized()
-	var spawn_pos := player.global_position + spawn_dir * 520.0
+	# Activar cerrojo protector de secuencia cinemática de rival
+	is_rival_cinematic_active = true
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+	var bullet_srv := get_node_or_null("/root/BulletServer") as BulletServer
+	if not bullet_srv and get_parent():
+		bullet_srv = get_parent().get_node_or_null("BulletServer") as BulletServer
+	if bullet_srv:
+		bullet_srv.bomb_clear_all()
 
+	# Encuadre cinematográfico horizontal en mitades de pantalla (1920x1080):
+	# Zoom 1.0 para fidelidad exacta de 960px por mitad (centros en -480px y +480px)
+	var cin_zoom: float = 1.0
+	var half_width_world: float = 480.0 / cin_zoom
+	var separation_world: float = 960.0 / cin_zoom
+
+	# 1. Desacelerar nave del jugador y orientarla mirando al Este (0 rad, apuntando a la rival)
+	if is_instance_valid(player):
+		if player.has_method("set_cinematic_duel_facing"):
+			player.set_cinematic_duel_facing()
+		else:
+			player.velocity = Vector2.ZERO
+			if "current_facing_angle" in player:
+				player.current_facing_angle = 0.0
+		if player.has_method("suppress_bomb_input"):
+			player.suppress_bomb_input(999.0)
+
+	var p_pos: Vector2 = player.global_position
+	# Posición de cámara para encuadrar al jugador en el centro exacto de la mitad izquierda
+	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
+	# Posición de destino de la rival en el centro exacto de la mitad derecha
+	var rival_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
+
+	# Primero ajustar la cámara hacia el encuadre
+	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+	if cam and cam.has_method("set_cinematic_focus"):
+		cam.set_cinematic_focus(cam_pos, cin_zoom)
+
+	# 2. Instanciar a la rival en el centro de la mitad derecha con PROCESS_MODE_ALWAYS para operar en pausa
 	var rival = rival_pilot_scene.instantiate()
-	rival.global_position = spawn_pos
+	rival.global_position = rival_target_pos
+	rival.rotation = -PI / 2.0
+	rival.process_mode = Node.PROCESS_MODE_ALWAYS
 	rival.setup_pilot(next_pid, current_wave)
+	if rival.has_method("prepare_warp_in"):
+		rival.prepare_warp_in(rival_target_pos)
 	add_child(rival)
 	current_rival = rival
 
@@ -1096,25 +1229,28 @@ func _spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if hud and hud.has_method("track_boss"):
 		hud.track_boss(rival, "RIVAL")
 
-	# Paneo cinemático de cámara hacia el punto medio entre Jugador y Rival
-	var midpoint: Vector2 = (player.global_position + spawn_pos) * 0.5
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(midpoint, 1.25)
-
-	# Reproducir animación cinemática de warp-in antes de iniciar el diálogo
-	if rival.has_method("play_warp_in_cinematic"):
-		rival.play_warp_in_cinematic(func() -> void:
-			if is_any_combat_modal_active():
-				_pending_rival_for_dialogue = rival
-			else:
-				_trigger_pet_rival_encounter(rival)
-		)
-	else:
-		if is_any_combat_modal_active():
-			_pending_rival_for_dialogue = rival
+	# 3. Esperar 0.45s a que la cámara ajuste al jugador en su punto antes de abrir el portal
+	get_tree().create_timer(0.45, true, false, true).timeout.connect(func() -> void:
+		if not is_instance_valid(rival):
+			return
+		if rival.has_method("open_warp_portal"):
+			rival.open_warp_portal(func() -> void:
+				# Shockwave despejó el radio y el portal queda activo en escena
+				_trigger_pet_rival_jump_warning(rival, func() -> void:
+					# Mascota advirtió del salto. Pausa dramática de 0.3s antes de que emerja la rival
+					get_tree().create_timer(0.3, true, false, true).timeout.connect(func() -> void:
+						if not is_instance_valid(rival):
+							return
+						rival.emerge_from_portal(func() -> void:
+							# La rival llega a escena y el portal colapsa: comienza la charla con la rival
+							_trigger_rival_face_to_face_dialogue(rival)
+						)
+					)
+				)
+			)
 		else:
-			_trigger_pet_rival_encounter(rival)
+			_trigger_rival_face_to_face_dialogue(rival)
+	)
 
 func _on_rival_spared(p_id: StringName) -> void:
 	if not rivals_spared.has(p_id):
@@ -1531,7 +1667,7 @@ func spawn_next_rival_pilot() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Atajo para saltar el briefing o secuencias de diálogo cinematográfico con ESC o acción dialogue_skip
-	if is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
+	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		if event.is_action_pressed("dialogue_skip") or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
 			get_viewport().set_input_as_handled()
 			_on_dialogue_skip_requested()
@@ -1704,8 +1840,8 @@ func _resume_pending_encounters_after_modal() -> void:
 	if _pending_rival_for_dialogue != null and is_instance_valid(_pending_rival_for_dialogue):
 		var target_rival: Node2D = _pending_rival_for_dialogue
 		_pending_rival_for_dialogue = null
-		get_tree().create_timer(0.5, false).timeout.connect(func() -> void:
-			if is_instance_valid(target_rival) and not is_any_combat_modal_active():
+		get_tree().create_timer(0.5, true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(target_rival) and not is_upgrade_or_shop_modal_active():
 				_trigger_pet_rival_encounter(target_rival)
 			elif is_instance_valid(target_rival):
 				_pending_rival_for_dialogue = target_rival
@@ -1727,7 +1863,7 @@ func is_game_over_active() -> bool:
 	return game_over_modal != null and (game_over_modal.visible or game_over_modal.is_active)
 
 func is_dialogue_active() -> bool:
-	if is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
+	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
 		return true
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
@@ -1745,9 +1881,7 @@ func is_dialogue_active() -> bool:
 		return false
 	return false
 
-func is_any_combat_modal_active() -> bool:
-	if is_dialogue_active():
-		return true
+func is_upgrade_or_shop_modal_active() -> bool:
 	if is_satellite_shop_active():
 		return true
 	if is_level_up_modal_active():
@@ -1771,6 +1905,13 @@ func is_any_combat_modal_active() -> bool:
 	if slot_machine_modal and slot_machine_modal.visible:
 		return true
 	if slot_machine_reward_modal and slot_machine_reward_modal.visible:
+		return true
+	return false
+
+func is_any_combat_modal_active() -> bool:
+	if is_dialogue_active():
+		return true
+	if is_upgrade_or_shop_modal_active():
 		return true
 	var reset_overlay = get_node_or_null("HoldToResetOverlay") as HoldToResetOverlay
 	if reset_overlay and (reset_overlay.visible or reset_overlay.current_hold > 0.0):
