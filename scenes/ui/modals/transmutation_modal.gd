@@ -61,7 +61,7 @@ func _build_ui() -> void:
 	_title_label = Label.new()
 	_title_label.text = "FORJA CUÁNTICA DE TRANSMUTACIÓN"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.theme_override_font_sizes/font_size = 16
+	_title_label.add_theme_font_size_override("font_size", 16)
 	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
 	vbox.add_child(_title_label)
 
@@ -69,19 +69,19 @@ func _build_ui() -> void:
 	desc.text = "Selecciona un ítem para clonar (+1 copia). Coste: %dc. Consume 1 ítem al azar de la misma rareza como sacrificio molecular." % transmutation_cost
 	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc.theme_override_font_sizes/font_size = 11
+	desc.add_theme_font_size_override("font_size", 11)
 	desc.modulate = Color(0.75, 0.75, 0.85, 0.8)
 	vbox.add_child(desc)
 
 	_uses_label = Label.new()
 	_uses_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_uses_label.theme_override_font_sizes/font_size = 13
+	_uses_label.add_theme_font_size_override("font_size", 13)
 	_uses_label.modulate = Color(1.0, 0.85, 0.3, 1.0)
 	vbox.add_child(_uses_label)
 
 	_feedback_label = Label.new()
 	_feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_feedback_label.theme_override_font_sizes/font_size = 12
+	_feedback_label.add_theme_font_size_override("font_size", 12)
 	_feedback_label.modulate = Color(0.4, 1.0, 0.6, 1.0)
 	vbox.add_child(_feedback_label)
 

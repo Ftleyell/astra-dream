@@ -65,14 +65,14 @@ func _build_ui() -> void:
 	_title_label = Label.new()
 	_title_label.text = "RECOMPENSA DE COFRE ESPACIAL"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.theme_override_font_sizes/font_size = 13
+	_title_label.add_theme_font_size_override("font_size", 13)
 	_title_label.modulate = Color(0.6, 0.8, 1.0, 0.8)
 	vbox.add_child(_title_label)
 
 	_free_badge_label = Label.new()
 	_free_badge_label.text = "★ ¡APERTURA CUÁNTICA GRATUITA! (Llave Activada) ★"
 	_free_badge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_free_badge_label.theme_override_font_sizes/font_size = 12
+	_free_badge_label.add_theme_font_size_override("font_size", 12)
 	_free_badge_label.modulate = Color(0.3, 1.0, 0.5, 1.0)
 	_free_badge_label.hide()
 	vbox.add_child(_free_badge_label)
@@ -91,12 +91,12 @@ func _build_ui() -> void:
 	# Nombre y Rareza
 	_item_name_label = Label.new()
 	_item_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_item_name_label.theme_override_font_sizes/font_size = 18
+	_item_name_label.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(_item_name_label)
 
 	_rarity_label = Label.new()
 	_rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_rarity_label.theme_override_font_sizes/font_size = 11
+	_rarity_label.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(_rarity_label)
 
 	# Descripción
@@ -104,14 +104,14 @@ func _build_ui() -> void:
 	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc_label.custom_minimum_size = Vector2(360, 48)
-	_desc_label.theme_override_font_sizes/font_size = 13
+	_desc_label.add_theme_font_size_override("font_size", 13)
 	_desc_label.modulate = Color(0.85, 0.9, 0.95, 0.9)
 	vbox.add_child(_desc_label)
 
 	# Cantidad acumulada
 	_stacks_label = Label.new()
 	_stacks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_stacks_label.theme_override_font_sizes/font_size = 12
+	_stacks_label.add_theme_font_size_override("font_size", 12)
 	_stacks_label.modulate = Color(0.7, 0.85, 1.0, 0.7)
 	vbox.add_child(_stacks_label)
 
