@@ -69,11 +69,42 @@ var rivals_spared: Array[StringName] = []
 var rivals_killed: Array[StringName] = []
 var is_wave_11_cleared: bool = false
 
-var is_briefing_active: bool = true
-var is_cockpit_active: bool = false
-var is_boss_transmission_active: bool = false
-var is_victory_dialogue_active: bool = false
-var is_rival_cinematic_active: bool = false
+var _fallback_briefing_active: bool = true
+var is_briefing_active: bool:
+	get:
+		return narrative_director.is_briefing_active if narrative_director else _fallback_briefing_active
+	set(val):
+		_fallback_briefing_active = val
+		if narrative_director:
+			narrative_director.is_briefing_active = val
+
+var is_cockpit_active: bool:
+	get:
+		return narrative_director.is_cockpit_active if narrative_director else false
+	set(val):
+		if narrative_director:
+			narrative_director.is_cockpit_active = val
+
+var is_boss_transmission_active: bool:
+	get:
+		return narrative_director.is_boss_transmission_active if narrative_director else false
+	set(val):
+		if narrative_director:
+			narrative_director.is_boss_transmission_active = val
+
+var is_victory_dialogue_active: bool:
+	get:
+		return narrative_director.is_victory_dialogue_active if narrative_director else false
+	set(val):
+		if narrative_director:
+			narrative_director.is_victory_dialogue_active = val
+
+var is_rival_cinematic_active: bool:
+	get:
+		return narrative_director.is_rival_cinematic_active if narrative_director else false
+	set(val):
+		if narrative_director:
+			narrative_director.is_rival_cinematic_active = val
 var _pending_victory_data: Dictionary = {}
 var _on_dialogue_finished_callback: Callable = Callable()
 var prologue_bonus_chosen: bool = false

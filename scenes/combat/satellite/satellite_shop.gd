@@ -1,7 +1,16 @@
 class_name SatelliteShop
 extends CanvasLayer
 
+## SatelliteShop.gd
+## Orquestador desacoplado de la Tienda de Satélites:
+## - Panel de compras interactivo con soporte completo de teclado, mando y ratón.
+## - Panel lateral de inventario y estadísticas coordinado por SatelliteShopInventoryPanel.
+## - Construcción modular de cartas de ítems mediante SatelliteShopCardBuilder.
+## - Modal de reemplazo de armas (WeaponSwapModal) al alcanzar el tope de 6 armas.
+
 const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
+const SatelliteShopInventoryPanelClass = preload("res://scenes/combat/satellite/components/satellite_shop_inventory_panel.gd")
+const SatelliteShopCardBuilderClass = preload("res://scenes/combat/satellite/components/satellite_shop_card_builder.gd")
 
 signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
@@ -16,11 +25,11 @@ var reroll_cost: int = 30
 var rerolls_used_this_visit: int = 0
 var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
-var stat_ui_entries: Dictionary = {}
 
-func can_reroll() -> bool:
-	return rerolls_used_this_visit < max_rerolls_per_satellite and current_credits >= reroll_cost
+# Sub-Controllers
+var _inventory_panel: RefCounted
 
+# Node References
 @onready var panel: Panel = $ShopPanel
 @onready var items_container: HBoxContainer = find_child("ItemsContainer", true, false) as HBoxContainer
 @onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
@@ -33,41 +42,22 @@ func can_reroll() -> bool:
 @onready var weapons_list: VBoxContainer = find_child("WeaponsList", true, false) as VBoxContainer
 @onready var items_list: VBoxContainer = find_child("ItemsList", true, false) as VBoxContainer
 
-const STAT_ICON_MAP = {
-	&"base_damage": "res://assets/icons/items/icon_sword.svg",
-	&"attack_speed": "res://assets/icons/items/icon_gauntlet.svg",
-	&"crit_chance": "res://assets/icons/items/icon_glasses.svg",
-	&"crit_damage": "res://assets/icons/items/icon_lens.svg",
-	&"max_health": "res://assets/icons/items/icon_heart.svg",
-	&"move_speed": "res://assets/icons/items/icon_boots.svg",
-	&"luck": "res://assets/icons/items/icon_clover.svg",
-	&"projectile_count": "res://assets/icons/items/icon_quiver.svg",
-	&"armor": "res://assets/icons/items/icon_shield.svg",
-	&"health_regen": "res://assets/icons/items/icon_apple.svg",
-	&"pickup_radius": "res://assets/icons/items/icon_magnet.svg",
-}
+# Backwards Compatibility Facade for test suite
+var stat_ui_entries: Dictionary:
+	get:
+		return _inventory_panel.stat_ui_entries if _inventory_panel else {}
 
-const RUN_STATS_CONFIG: Array[Dictionary] = [
-	{"name": "DAÑO", "key": &"base_damage", "fmt": "%.1f", "suffix": ""},
-	{"name": "VEL. ATAQUE", "key": &"attack_speed", "fmt": "%.2f", "suffix": "x"},
-	{"name": "PROB. CRÍTICA", "key": &"crit_chance", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
-	{"name": "DAÑO CRÍTICO", "key": &"crit_damage", "fmt": "%.2f", "suffix": "x"},
-	{"name": "PROYECTILES", "key": &"projectile_count", "fmt": "%.0f", "suffix": ""},
-	{"name": "VEL. PROYECTIL", "key": &"projectile_speed", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
-	{"name": "VEL. MOVIMIENTO", "key": &"move_speed", "fmt": "%.0f", "suffix": " px/s"},
-	{"name": "ENFRIAMIENTO", "key": &"cooldown_reduction", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
-	{"name": "VIDA MÁXIMA", "key": &"max_health", "fmt": "%.0f", "suffix": " HP"},
-	{"name": "REGEN. VIDA", "key": &"health_regen", "fmt": "%.1f", "suffix": "/s"},
-	{"name": "ARMADURA", "key": &"armor", "fmt": "%.0f", "suffix": ""},
-	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
-	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
-	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
-]
+func can_reroll() -> bool:
+	return rerolls_used_this_visit < max_rerolls_per_satellite and current_credits >= reroll_cost
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
+
+	# Sub-controller setup
+	_inventory_panel = SatelliteShopInventoryPanelClass.new()
+	_inventory_panel.setup(stats_list, weapons_list, items_list, inventory_summary_label)
 
 	# Estilos translúcidos de alta tecnología
 	var shop_style := StyleBoxFlat.new()
@@ -88,11 +78,11 @@ func _ready() -> void:
 		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
 
 	if close_btn:
-		UIFocusHelper.apply_cyber_focus(close_btn)
 		close_btn.pressed.connect(close_shop)
+		UIFocusHelper.apply_cyber_focus(close_btn)
 	if reroll_btn:
-		UIFocusHelper.apply_cyber_focus(reroll_btn)
 		reroll_btn.pressed.connect(_on_reroll_pressed)
+		UIFocusHelper.apply_cyber_focus(reroll_btn)
 
 	if available_items_pool.is_empty():
 		_generate_default_shop_items()
@@ -101,13 +91,12 @@ func _ready() -> void:
 func _ensure_player() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
-	if not is_instance_valid(player) and get_parent():
-		player = get_parent().get_node_or_null("Player") as Player
 
 
 func _generate_default_shop_items() -> void:
+	available_items_pool.clear()
 	var items: Array[ItemData] = ItemPoolManager.create_satellite_shop_items()
-	for it in items:
+	for it: ItemData in items:
 		available_items_pool.append(it)
 
 	# Añadir las 4 armas exclusivas de la tienda
@@ -117,451 +106,140 @@ func _generate_default_shop_items() -> void:
 		"res://data/weapons/shop/solar_beam.tres",
 		"res://data/weapons/shop/cluster_submunition.tres"
 	]
-	for p in shop_weapon_paths:
+	for p: String in shop_weapon_paths:
 		if ResourceLoader.exists(p):
-			var w = load(p)
+			var w: Resource = load(p)
 			if w:
 				available_items_pool.append(w)
 
 
 func open_shop(credits: int) -> void:
 	current_credits = credits
-	rerolls_used_this_visit = 0
 	reroll_cost = base_reroll_cost
+	rerolls_used_this_visit = 0
 	_ensure_player()
+
 	_update_credits_display()
 	_roll_shop_items()
 	_refresh_stats_display()
 	_refresh_inventory_display()
-	get_tree().paused = true
+
 	show()
-	call_deferred("_setup_focus_and_grab")
-
-
-func restore_focus() -> void:
+	get_tree().paused = true
 	_setup_focus_and_grab()
 
 
+func restore_focus() -> void:
+	_focus_next_available_buy_button()
+
+
 func close_shop() -> void:
-	_ensure_player()
-	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
-		player.suppress_bomb_input(0.4)
 	hide()
-	var parent_game = get_parent()
-	if parent_game and parent_game.has_method("notify_menu_closed"):
-		parent_game.notify_menu_closed(0.4)
-	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
-		get_tree().paused = true
-		if parent_game.has_method("restore_combat_modal_focus"):
-			parent_game.restore_combat_modal_focus()
-	else:
-		get_tree().paused = false
+	get_tree().paused = false
+	_clear_stat_highlights()
 	shop_closed.emit()
 
 
 func _refresh_stats_display() -> void:
 	_ensure_player()
-	if not is_instance_valid(player) or not stats_list:
-		return
-
-	for child in stats_list.get_children():
-		child.queue_free()
-	stat_ui_entries.clear()
-
-	var data: CharacterData = player.character_data
-	var stats: CharacterStats = player.stats
-	if not stats:
-		return
-
-	var theme_col: Color = data.color if data else Color("#00F0FF")
-
-	for cfg in RUN_STATS_CONFIG:
-		var key: StringName = cfg["key"]
-		var current_val: float = stats.get_stat(key)
-		var base_val: float = data.get(key) if (data and key in data) else current_val
-		var mult: float = cfg.get("mult", 1.0)
-		var fmt: String = cfg["fmt"]
-		var suffix: String = cfg["suffix"]
-
-		var displayed_val := (fmt % (current_val * mult)) + suffix
-		var is_buffed := (current_val > base_val + 0.001)
-
-		var item_panel := PanelContainer.new()
-		item_panel.custom_minimum_size = Vector2(0, 22)
-
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
-		sb.border_color = (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5))
-		sb.set_border_width_all(1)
-		sb.border_width_left = 3
-		sb.set_corner_radius_all(3)
-		item_panel.add_theme_stylebox_override("panel", sb)
-
-		var margin := MarginContainer.new()
-		margin.add_theme_constant_override("margin_left", 6)
-		margin.add_theme_constant_override("margin_right", 6)
-		margin.add_theme_constant_override("margin_top", 1)
-		margin.add_theme_constant_override("margin_bottom", 1)
-		item_panel.add_child(margin)
-
-		var hbox := HBoxContainer.new()
-		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-		margin.add_child(hbox)
-
-		var lbl_name := Label.new()
-		lbl_name.text = cfg["name"]
-		lbl_name.add_theme_font_size_override("font_size", 10)
-		lbl_name.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
-		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		hbox.add_child(lbl_name)
-
-		var lbl_val := Label.new()
-		lbl_val.text = displayed_val
-		lbl_val.add_theme_font_size_override("font_size", 10)
-		lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if is_buffed else Color.WHITE)
-		hbox.add_child(lbl_val)
-
-		if is_buffed:
-			var lbl_base := Label.new()
-			var base_disp := (fmt % (base_val * mult)) + suffix
-			lbl_base.text = " (%s)" % base_disp
-			lbl_base.add_theme_font_size_override("font_size", 9)
-			lbl_base.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7, 0.7))
-			hbox.add_child(lbl_base)
-
-		stats_list.add_child(item_panel)
-		stat_ui_entries[key] = {
-			"panel": item_panel,
-			"is_buffed": is_buffed,
-			"base_style": sb,
-			"theme_col": theme_col,
-			"current_val": current_val,
-			"mult": mult,
-			"fmt": fmt,
-			"suffix": suffix,
-			"displayed_val": displayed_val,
-			"lbl_val": lbl_val
-		}
+	if _inventory_panel:
+		_inventory_panel.refresh_stats_display(player)
 
 
 func _highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void:
-	for key in stat_ui_entries.keys():
-		var entry: Dictionary = stat_ui_entries[key]
-		var p: PanelContainer = entry["panel"]
-		if not is_instance_valid(p):
-			continue
-		var lbl_val: Label = entry.get("lbl_val")
-		var displayed_val: String = entry.get("displayed_val", "")
-		var is_buffed: bool = entry.get("is_buffed", false)
-
-		if key == stat_key:
-			var high_style := StyleBoxFlat.new()
-			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
-			high_style.border_color = Color("#FFE600")
-			high_style.set_border_width_all(2)
-			high_style.border_width_left = 5
-			high_style.set_corner_radius_all(4)
-			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
-			high_style.shadow_size = 4
-			p.add_theme_stylebox_override("panel", high_style)
-
-			if is_instance_valid(lbl_val):
-				var cur_v: float = entry.get("current_val", 0.0)
-				var mult: float = entry.get("mult", 1.0)
-				var fmt: String = entry.get("fmt", "%.1f")
-				var suffix: String = entry.get("suffix", "")
-				var projected_v := cur_v * (1.0 + delta_val) if is_pct else (cur_v + delta_val)
-				var proj_str := (fmt % (projected_v * mult)) + suffix
-				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
-				lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if delta_val >= 0 else Color("#FF4466"))
-		else:
-			p.add_theme_stylebox_override("panel", entry["base_style"])
-			if is_instance_valid(lbl_val):
-				lbl_val.text = displayed_val
-				if is_buffed:
-					lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
-				else:
-					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+	if _inventory_panel:
+		_inventory_panel.highlight_preview_stat(stat_key, delta_val, is_pct)
 
 
 func _clear_stat_highlights() -> void:
-	for key in stat_ui_entries.keys():
-		var entry: Dictionary = stat_ui_entries[key]
-		var p: PanelContainer = entry["panel"]
-		if not is_instance_valid(p):
-			continue
-		var lbl_val: Label = entry.get("lbl_val")
-		var displayed_val: String = entry.get("displayed_val", "")
-		var is_buffed: bool = entry.get("is_buffed", false)
-
-		p.add_theme_stylebox_override("panel", entry["base_style"])
-		if is_instance_valid(lbl_val):
-			lbl_val.text = displayed_val
-			if is_buffed:
-				lbl_val.add_theme_color_override("font_color", Color("#00FF9D"))
-			else:
-				lbl_val.add_theme_color_override("font_color", Color.WHITE)
+	if _inventory_panel:
+		_inventory_panel.clear_stat_highlights()
 
 
 func _refresh_inventory_display() -> void:
 	_ensure_player()
-	if not is_instance_valid(player):
-		return
-
-	# 1. Armas Equipadas
-	var weapons_count: int = 0
-	if weapons_list:
-		for child in weapons_list.get_children():
-			child.queue_free()
-
-		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-		if w_ctrl and not w_ctrl.equipped_weapons.is_empty():
-			weapons_count = w_ctrl.equipped_weapons.size()
-			for w_inst in w_ctrl.equipped_weapons:
-				var w_data: WeaponData = w_inst.weapon_data if ("weapon_data" in w_inst) else (w_inst.get("data") as WeaponData)
-				if not w_data:
-					continue
-				var w_lvl: int = w_inst.level if ("level" in w_inst) else 1
-				var w_card := _create_inventory_weapon_card(w_data, w_lvl)
-				weapons_list.add_child(w_card)
-		else:
-			var default_lbl := Label.new()
-			default_lbl.text = "• Sistema de Armas Básico"
-			default_lbl.add_theme_font_size_override("font_size", 11)
-			default_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
-			weapons_list.add_child(default_lbl)
-			weapons_count = 1
-
-	# 2. Ítems Pasivos
-	var items_count: int = 0
-	if items_list:
-		for child in items_list.get_children():
-			child.queue_free()
-
-		var all_items: Array[Dictionary] = []
-		if player.inventory:
-			all_items = player.inventory.get_all_items()
-
-		items_count = all_items.size()
-		if all_items.is_empty():
-			var empty_lbl := Label.new()
-			empty_lbl.text = "Sin ítems adquiridos en esta misión."
-			empty_lbl.add_theme_font_size_override("font_size", 11)
-			empty_lbl.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65))
-			empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-			items_list.add_child(empty_lbl)
-		else:
-			for entry in all_items:
-				var it_data: ItemData = entry.get("data")
-				var it_count: int = entry.get("count", 1)
-				if not it_data:
-					continue
-				var it_card := _create_inventory_item_card(it_data, it_count)
-				items_list.add_child(it_card)
-
-	# 3. Resumen
-	if inventory_summary_label:
-		inventory_summary_label.text = "Armas: %d/6  |  Ítems Pasivos: %d" % [weapons_count, items_count]
+	if _inventory_panel:
+		_inventory_panel.refresh_inventory_display(player)
 
 
-func _create_inventory_weapon_card(w_data: WeaponData, w_level: int = 1) -> PanelContainer:
-	var panel_item := PanelContainer.new()
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.06, 0.08, 0.12, 0.9)
-	sb.border_color = Color(1.0, 0.8, 0.2, 0.7)
-	sb.set_border_width_all(1)
-	sb.border_width_left = 3
-	sb.set_corner_radius_all(4)
-	panel_item.add_theme_stylebox_override("panel", sb)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	panel_item.add_child(margin)
-
-	var hbox := HBoxContainer.new()
-	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-	margin.add_child(hbox)
-
-	var tex_rect := TextureRect.new()
-	tex_rect.custom_minimum_size = Vector2(24, 24)
-	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var icon_tex: Texture2D = w_data.icon
-	if not icon_tex and ResourceLoader.exists("res://assets/icons/items/icon_sword.svg"):
-		icon_tex = load("res://assets/icons/items/icon_sword.svg") as Texture2D
-	tex_rect.texture = icon_tex
-	tex_rect.modulate = Color(1.0, 0.85, 0.3)
-	hbox.add_child(tex_rect)
-
-	var lbl := Label.new()
-	lbl.text = "%s [Nv. %d]" % [w_data.weapon_name, w_level] if w_level > 1 else w_data.weapon_name
-	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7))
-	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(lbl)
-
-	var dmg_lbl := Label.new()
-	dmg_lbl.text = "%.0f Dmg" % w_data.base_damage
-	dmg_lbl.add_theme_font_size_override("font_size", 10)
-	dmg_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 0.8))
-	hbox.add_child(dmg_lbl)
-
-	return panel_item
+func highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void:
+	_highlight_preview_stat(stat_key, delta_val, is_pct)
 
 
-func _create_inventory_item_card(it_data: ItemData, count: int) -> PanelContainer:
-	var rarity_col := _get_rarity_color(it_data.rarity)
-	var panel_item := PanelContainer.new()
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
-	sb.border_color = rarity_col * Color(1.0, 1.0, 1.0, 0.6)
-	sb.set_border_width_all(1)
-	sb.border_width_left = 3
-	sb.set_corner_radius_all(4)
-	panel_item.add_theme_stylebox_override("panel", sb)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	panel_item.add_child(margin)
-
-	var hbox := HBoxContainer.new()
-	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-	margin.add_child(hbox)
-
-	var tex_rect := TextureRect.new()
-	tex_rect.custom_minimum_size = Vector2(24, 24)
-	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var icon_tex: Texture2D = it_data.icon
-	if not icon_tex and STAT_ICON_MAP.has(it_data.stat_name) and ResourceLoader.exists(STAT_ICON_MAP[it_data.stat_name]):
-		icon_tex = load(STAT_ICON_MAP[it_data.stat_name]) as Texture2D
-	if not icon_tex and ResourceLoader.exists("res://assets/icons/items/icon_heart.svg"):
-		icon_tex = load("res://assets/icons/items/icon_heart.svg") as Texture2D
-	tex_rect.texture = icon_tex
-	tex_rect.modulate = rarity_col
-	hbox.add_child(tex_rect)
-
-	var lbl := Label.new()
-	lbl.text = it_data.item_name
-	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", Color.WHITE)
-	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(lbl)
-
-	var stack_lbl := Label.new()
-	stack_lbl.text = "x%d" % count
-	stack_lbl.add_theme_font_size_override("font_size", 11)
-	stack_lbl.add_theme_color_override("font_color", Color("#00FF9D"))
-	hbox.add_child(stack_lbl)
-
-	return panel_item
+func clear_stat_highlights() -> void:
+	_clear_stat_highlights()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
 
-	# Si la pausa está activa por encima, ignorar cualquier entrada
-	var parent_game = get_parent()
-	if parent_game and parent_game.has_method("is_pause_menu_active") and parent_game.is_pause_menu_active():
-		return
-	var root_pm = get_tree().root.find_child("PauseMenu", true, false)
-	if root_pm and root_pm.visible:
-		return
-
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
 		close_shop()
 		get_viewport().set_input_as_handled()
 		return
 
-	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+	if event.is_action_pressed("ui_select") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE):
+		var focus_owner: Control = get_viewport().gui_get_focus_owner()
+		if focus_owner is Button and not focus_owner.disabled:
+			focus_owner.emit_signal("pressed")
+			get_viewport().set_input_as_handled()
+			return
+		_focus_next_available_buy_button()
+		var new_focus: Control = get_viewport().gui_get_focus_owner()
+		if new_focus is Button and not new_focus.disabled:
+			new_focus.emit_signal("pressed")
+		else:
+			close_shop()
+		get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			# Atajos directos de compra (1, 2, 3 y Numpad)
-			KEY_1, KEY_KP_1:
+			KEY_1:
 				_buy_item_by_index(0)
 				get_viewport().set_input_as_handled()
-				return
-			KEY_2, KEY_KP_2:
+			KEY_2:
 				_buy_item_by_index(1)
 				get_viewport().set_input_as_handled()
-				return
-			KEY_3, KEY_KP_3:
+			KEY_3:
 				_buy_item_by_index(2)
 				get_viewport().set_input_as_handled()
-				return
-			# Atajo de Re-roll (R)
 			KEY_R:
-				_on_reroll_pressed()
-				get_viewport().set_input_as_handled()
-				return
-			# Salir de la tienda (Escape o Tab)
-			KEY_ESCAPE, KEY_TAB:
-				close_shop()
-				get_viewport().set_input_as_handled()
-				return
-			# Navegación con WASD
-			KEY_W:
-				_navigate_focus(SIDE_TOP)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_S:
-				_navigate_focus(SIDE_BOTTOM)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_A:
-				_navigate_focus(SIDE_LEFT)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_D:
-				_navigate_focus(SIDE_RIGHT)
-				get_viewport().set_input_as_handled()
-				return
-			# Activación / Click con Barra Espaciadora
-			KEY_SPACE:
-				_ensure_player()
-				if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
-					player.suppress_bomb_input(0.4)
-				var focused := get_viewport().gui_get_focus_owner() as Button
-				if focused and is_instance_valid(focused) and not focused.disabled:
-					focused.pressed.emit()
-				elif not focused and not buy_buttons.is_empty():
-					_buy_item_by_index(0)
-				get_viewport().set_input_as_handled()
-				return
+				if can_reroll():
+					_on_reroll_pressed()
+					get_viewport().set_input_as_handled()
+
+	if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+		_navigate_focus(SIDE_LEFT)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+		_navigate_focus(SIDE_RIGHT)
+		get_viewport().set_input_as_handled()
 
 
 func _navigate_focus(side: Side) -> void:
-	var focused := get_viewport().gui_get_focus_owner() as Control
-	if not focused or not is_instance_valid(focused):
-		if not buy_buttons.is_empty() and not buy_buttons[0].disabled:
-			buy_buttons[0].grab_focus()
-		elif close_btn and is_instance_valid(close_btn):
-			close_btn.grab_focus()
-		return
+	var focus_owner: Control = get_viewport().gui_get_focus_owner()
+	var current_idx: int = buy_buttons.find(focus_owner as Button)
 
-	var neighbor_path := focused.get_focus_neighbor(side)
-	if neighbor_path:
-		var neighbor := focused.get_node_or_null(neighbor_path) as Control
-		if neighbor and is_instance_valid(neighbor) and neighbor is Button and not (neighbor as Button).disabled:
-			neighbor.grab_focus()
-			return
-
-	var next := focused.find_valid_focus_neighbor(side)
-	if next and is_instance_valid(next):
-		next.grab_focus()
+	if current_idx != -1:
+		var n: int = buy_buttons.size()
+		var step: int = -1 if side == SIDE_LEFT else 1
+		for offset: int in range(1, n + 1):
+			var target_idx: int = (current_idx + step * offset + n) % n
+			var target_btn: Button = buy_buttons[target_idx]
+			if is_instance_valid(target_btn) and not target_btn.disabled:
+				target_btn.grab_focus()
+				return
+	else:
+		_focus_next_available_buy_button()
 
 
 func _buy_item_by_index(index: int) -> void:
 	if index >= 0 and index < buy_buttons.size():
-		var btn := buy_buttons[index]
+		var btn: Button = buy_buttons[index]
 		if is_instance_valid(btn) and not btn.disabled:
-			btn.pressed.emit()
+			btn.emit_signal("pressed")
 
 
 func _update_credits_display() -> void:
@@ -571,12 +249,15 @@ func _update_credits_display() -> void:
 		if rerolls_used_this_visit >= max_rerolls_per_satellite:
 			reroll_btn.disabled = true
 			reroll_btn.text = "Re-roll [AGOTADO (%d/%d)]" % [rerolls_used_this_visit, max_rerolls_per_satellite]
+			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
 		elif current_credits < reroll_cost:
 			reroll_btn.disabled = true
 			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
 		else:
 			reroll_btn.disabled = false
 			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+			reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	if close_btn:
 		close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
 
@@ -585,326 +266,101 @@ func _roll_shop_items() -> void:
 	if not items_container:
 		return
 
-	for child in items_container.get_children():
+	for child: Node in items_container.get_children():
 		child.queue_free()
-
-	current_offered_items.clear()
 	buy_buttons.clear()
+	current_offered_items.clear()
 
+	if available_items_pool.is_empty():
+		_generate_default_shop_items()
+
+	var selected_items: Array[Resource] = []
+	var pool_copy: Array[Resource] = available_items_pool.duplicate()
+	pool_copy.shuffle()
+
+	# Prioridad de armas si el jugador tiene hueco
 	_ensure_player()
-	var w_ctrl: WeaponController = null
-	if is_instance_valid(player):
-		w_ctrl = player.get_node_or_null("WeaponController") as WeaponController
+	var w_ctrl: WeaponController = player.get_node_or_null("WeaponController") as WeaponController if is_instance_valid(player) else null
+	var needs_weapons: bool = w_ctrl != null and not w_ctrl.is_full()
+	if needs_weapons:
+		for res: Resource in pool_copy:
+			if res is WeaponData and not selected_items.has(res):
+				selected_items.append(res)
+				break
 
-	# Slot 0: Ranura obligatoria de Arma o Mejora de Arma equipada
-	var weapon_candidates: Array[Resource] = []
-	for res in available_items_pool:
-		if res is WeaponData:
-			if not w_ctrl or not w_ctrl.get_weapon_instance(res.weapon_id):
-				weapon_candidates.append(res)
+	for res: Resource in pool_copy:
+		if selected_items.size() >= 3:
+			break
+		if not selected_items.has(res):
+			selected_items.append(res)
 
-	if w_ctrl:
-		for inst in w_ctrl.equipped_weapons:
-			if inst.level < 5 and inst.weapon_data:
-				weapon_candidates.append(inst.weapon_data)
+	# Fallback si el pool es menor que 3
+	while selected_items.size() < 3 and not pool_copy.is_empty():
+		selected_items.append(pool_copy[randi() % pool_copy.size()])
 
-	var chosen_weapon: Resource = null
-	if not weapon_candidates.is_empty():
-		weapon_candidates.shuffle()
-		chosen_weapon = weapon_candidates[0]
+	current_offered_items = selected_items
 
-	# Slots 1 y 2: Ítems del Satélite filtrados por max_stacks
-	var eligible_items: Array[ItemData] = []
-	for res in available_items_pool:
-		if res is ItemData:
-			var it: ItemData = res as ItemData
-			var count: int = 0
-			if is_instance_valid(player) and player.inventory:
-				count = player.inventory.get_item_count(it.item_id)
-			if count < it.max_stacks:
-				eligible_items.append(it)
-
-	eligible_items.shuffle()
-
-	var final_offers: Array[Resource] = []
-	if chosen_weapon:
-		final_offers.append(chosen_weapon)
-	elif not eligible_items.is_empty():
-		final_offers.append(eligible_items.pop_front())
-
-	while final_offers.size() < 3 and not eligible_items.is_empty():
-		final_offers.append(eligible_items.pop_front())
-
-	for i in range(final_offers.size()):
-		var entry: Resource = final_offers[i]
-		current_offered_items.append(entry)
-		_create_item_card_ui(entry, i)
+	for i: int in range(selected_items.size()):
+		SatelliteShopCardBuilderClass.create_item_card_ui(selected_items[i], i, self)
 
 	_setup_focus_and_grab()
 
 
-func _create_item_card_ui(entry: Resource, index: int) -> void:
-	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
-	var rarity_color := _get_rarity_color(entry_rarity)
+func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
+	if current_credits < cost:
+		return
 
-	_ensure_player()
-	var is_weapon_upgrade := false
-	var current_wp_lvl := 1
-	if entry is WeaponData and is_instance_valid(player):
-		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-		if w_ctrl:
-			var inst := w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id)
-			if inst:
-				is_weapon_upgrade = true
-				current_wp_lvl = inst.level
+	if entry is WeaponData:
+		_ensure_player()
+		if is_instance_valid(player):
+			var w_ctrl: WeaponController = player.get_node_or_null("WeaponController") as WeaponController
+			if w_ctrl and w_ctrl.has_method("is_full") and w_ctrl.is_full() and not w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id):
+				_open_shop_weapon_swap(entry as WeaponData, cost, buy_btn)
+				return
 
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(235, 330)
-	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	current_credits -= cost
+	_update_credits_display()
+	buy_btn.disabled = true
+	buy_btn.text = "¡Adquirido!"
+	item_purchased.emit(entry, cost)
 
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
-	card_style.set_border_width_all(2)
-	card_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
-	card_style.set_corner_radius_all(8)
-	card_style.set_content_margin_all(10.0)
-	card.add_theme_stylebox_override("panel", card_style)
-
-	var vbox := VBoxContainer.new()
-	vbox.set("theme_override_constants/separation", 6)
-
-	# 1. Indicador de atajo de teclado
-	var hotkey_lbl := Label.new()
-	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
-	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
-	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hotkey_lbl.add_theme_font_size_override("font_size", 11)
-
-	# 2. Título del ítem / arma
-	var display_title: String = ""
-	if is_weapon_upgrade:
-		display_title = "[MEJORA] " + (entry as WeaponData).get_display_name() + " (Nv. %d)" % (current_wp_lvl + 1)
-	elif entry is WeaponData:
-		display_title = "[ARMA] " + (entry as WeaponData).get_display_name()
-	elif "item_name" in entry:
-		display_title = entry.item_name
-		if is_instance_valid(player) and player.inventory and entry.get("max_stacks") != null and entry.max_stacks > 1:
-			var cur_s: int = player.inventory.get_item_count(entry.item_id)
-			display_title += " (%d/%d)" % [cur_s, entry.max_stacks]
-	else:
-		display_title = "Mejora Espacial"
-
-	var name_lbl := Label.new()
-	name_lbl.text = display_title
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	name_lbl.add_theme_color_override("font_color", rarity_color)
-	name_lbl.add_theme_font_size_override("font_size", 13)
-
-	# 3. Marco contenedor del icono de 56x56 px centrado
-	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(56, 56)
-	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-
-	var icon_style := StyleBoxFlat.new()
-	icon_style.bg_color = Color(0.03, 0.04, 0.07, 0.95)
-	icon_style.set_border_width_all(2)
-	icon_style.border_color = rarity_color
-	icon_style.set_corner_radius_all(6)
-	icon_panel.add_theme_stylebox_override("panel", icon_style)
-
-	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(44, 44)
-	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	if entry.get("icon"):
-		icon_rect.texture = entry.get("icon")
-		icon_rect.modulate = rarity_color
-	icon_panel.add_child(icon_rect)
-
-	# 4. CHIPS DE ESTADÍSTICAS EXACTAS
-	var stat_badge_panel := PanelContainer.new()
-	var stat_badge_sb := StyleBoxFlat.new()
-	stat_badge_sb.set_corner_radius_all(3)
-	stat_badge_sb.set_border_width_all(1)
-
-	var stat_badge_lbl := Label.new()
-	stat_badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stat_badge_lbl.add_theme_font_size_override("font_size", 10)
-
-	var target_stat_for_hover := StringName("")
-	var stat_delta_for_hover: float = 0.0
-	var is_pct_for_hover: bool = false
-
-	if is_weapon_upgrade:
-		stat_badge_sb.bg_color = Color(1.0, 0.7, 0.1, 0.18)
-		stat_badge_sb.border_color = Color(1.0, 0.8, 0.2, 0.9)
-		stat_badge_lbl.text = "★ NV. %d (+1 PROYECTIL)" % [current_wp_lvl + 1]
-		stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	elif entry is WeaponData:
-		var wp: WeaponData = entry as WeaponData
-		stat_badge_sb.bg_color = Color(1.0, 0.8, 0.2, 0.12)
-		stat_badge_sb.border_color = Color(1.0, 0.8, 0.2, 0.8)
-		stat_badge_lbl.text = "⚔ %.0f DMG  |  ⏱ %.2fs CD" % [wp.base_damage, wp.base_cooldown]
-		stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	elif entry is ItemData:
-		var it: ItemData = entry as ItemData
-		if it.stat_name != &"":
-			target_stat_for_hover = it.stat_name
-			stat_delta_for_hover = it.stat_value
-			is_pct_for_hover = it.is_percentage
-
-			var sign_s := "+" if it.stat_value > 0 else ""
-			var val_s := ("%s%.0f%%" % [sign_s, it.stat_value * 100.0]) if it.is_percentage else ("%s%.0f" % [sign_s, it.stat_value])
-
-			if it.secondary_stat_name != &"":
-				var sec_sign := "+" if it.secondary_stat_value > 0 else ""
-				var sec_val_s := ("%s%.0f%%" % [sec_sign, it.secondary_stat_value * 100.0]) if it.secondary_is_percentage else ("%s%.0f" % [sec_sign, it.secondary_stat_value])
-				stat_badge_sb.bg_color = Color(1.0, 0.45, 0.1, 0.18)
-				stat_badge_sb.border_color = Color(1.0, 0.55, 0.2, 0.8)
-				stat_badge_lbl.text = "⚖ %s / %s" % [val_s, sec_val_s]
-				stat_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.4))
-			else:
-				var col_badge := Color("#00FF9D") if it.stat_value >= 0 else Color("#FF4466")
-				stat_badge_sb.bg_color = Color(col_badge.r, col_badge.g, col_badge.b, 0.12)
-				stat_badge_sb.border_color = col_badge
-				stat_badge_lbl.text = "▲ %s  %s" % [val_s, str(it.stat_name)]
-				stat_badge_lbl.add_theme_color_override("font_color", col_badge)
-		else:
-			if it.tags.has(&"conversion"):
-				stat_badge_sb.bg_color = Color(0.7, 0.1, 0.9, 0.18)
-				stat_badge_sb.border_color = Color(0.85, 0.3, 1.0, 0.85)
-				stat_badge_lbl.text = "⚛ NÚCLEO DE CONVERSIÓN"
-				stat_badge_lbl.add_theme_color_override("font_color", Color(0.9, 0.55, 1.0))
-			else:
-				stat_badge_sb.bg_color = Color(0.1, 0.5, 0.8, 0.15)
-				stat_badge_sb.border_color = Color(0.2, 0.7, 1.0, 0.7)
-				stat_badge_lbl.text = "⚡ ARTEFACTO PROC"
-				stat_badge_lbl.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
-
-	stat_badge_panel.add_theme_stylebox_override("panel", stat_badge_sb)
-	var b_margin := MarginContainer.new()
-	b_margin.add_theme_constant_override("margin_left", 6)
-	b_margin.add_theme_constant_override("margin_right", 6)
-	b_margin.add_theme_constant_override("margin_top", 3)
-	b_margin.add_theme_constant_override("margin_bottom", 3)
-	b_margin.add_child(stat_badge_lbl)
-	stat_badge_panel.add_child(b_margin)
-
-	# 5. Descripción del ítem
-	var desc_lbl := Label.new()
-	if is_weapon_upgrade:
-		desc_lbl.text = "+1 Proyectil Adicional en todas las salvas activas y pasivas (+25% daño base)."
-	else:
-		desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
-
-	# 6. Botón de Compra
-	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
-	var buy_btn := Button.new()
-	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
-	UIFocusHelper.apply_cyber_focus(buy_btn)
-
-	buy_btn.pressed.connect(func():
-		if current_credits >= cost:
-			if entry is WeaponData:
-				_ensure_player()
-				if is_instance_valid(player):
-					var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-					if w_ctrl and w_ctrl.has_method("is_full") and w_ctrl.is_full() and not w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id):
-						_open_shop_weapon_swap(entry as WeaponData, cost, buy_btn)
-						return
-			current_credits -= cost
-			_update_credits_display()
-			buy_btn.disabled = true
-			buy_btn.text = "¡Adquirido!"
-			item_purchased.emit(entry, cost)
-			# Actualizar inventario y estadísticas en tiempo real
-			call_deferred("_refresh_inventory_display")
-			call_deferred("_refresh_stats_display")
-			_clear_stat_highlights()
-			# Si aún hay créditos y otros botones, enfocar el siguiente disponible
-			_focus_next_available_buy_button()
-	)
-
-	# Conexión de previsualización numérica en el panel de estadísticas al hover / focus
-	if target_stat_for_hover != &"":
-		card.mouse_entered.connect(func():
-			_highlight_preview_stat(target_stat_for_hover, stat_delta_for_hover, is_pct_for_hover)
-		)
-		card.mouse_exited.connect(func():
-			_clear_stat_highlights()
-		)
-		buy_btn.focus_entered.connect(func():
-			_highlight_preview_stat(target_stat_for_hover, stat_delta_for_hover, is_pct_for_hover)
-		)
-		buy_btn.focus_exited.connect(func():
-			_clear_stat_highlights()
-		)
-
-	vbox.add_child(hotkey_lbl)
-	vbox.add_child(name_lbl)
-	vbox.add_child(icon_panel)
-	vbox.add_child(stat_badge_panel)
-	vbox.add_child(desc_lbl)
-	vbox.add_child(buy_btn)
-	card.add_child(vbox)
-	items_container.add_child(card)
-
-	buy_buttons.append(buy_btn)
-
-
-func _get_rarity_color(rarity: Enums.Rarity) -> Color:
-	match rarity:
-		Enums.Rarity.COMMON:
-			return Color(0.5, 0.8, 1.0, 0.95)
-		Enums.Rarity.UNCOMMON:
-			return Color(0.2, 0.95, 0.4, 0.95)
-		Enums.Rarity.RARE:
-			return Color(1.0, 0.8, 0.15, 1.0)
-		Enums.Rarity.LEGENDARY:
-			return Color(0.9, 0.3, 1.0, 1.0)
-		_:
-			return Color.WHITE
+	call_deferred("_refresh_inventory_display")
+	call_deferred("_refresh_stats_display")
+	_clear_stat_highlights()
+	_focus_next_available_buy_button()
 
 
 func _setup_focus_and_grab() -> void:
 	if buy_buttons.is_empty():
 		return
 
-	# Configurar vecinos de foco explícitos para navegación WASD y mando
-	var n_items := buy_buttons.size()
-	for i in range(n_items):
-		var btn := buy_buttons[i]
-		var left_btn := buy_buttons[(i - 1 + n_items) % n_items]
-		var right_btn := buy_buttons[(i + 1) % n_items]
+	var n_items: int = buy_buttons.size()
+	for i: int in range(n_items):
+		var btn: Button = buy_buttons[i]
+		var left_btn: Button = buy_buttons[(i - 1 + n_items) % n_items]
+		var right_btn: Button = buy_buttons[(i + 1) % n_items]
 
 		btn.focus_neighbor_left = left_btn.get_path()
 		btn.focus_neighbor_right = right_btn.get_path()
 		btn.focus_neighbor_bottom = reroll_btn.get_path() if i < 2 else close_btn.get_path()
 		btn.focus_neighbor_top = close_btn.get_path()
 
-	reroll_btn.focus_neighbor_left = close_btn.get_path()
-	reroll_btn.focus_neighbor_right = close_btn.get_path()
-	reroll_btn.focus_neighbor_top = buy_buttons[0].get_path()
-	reroll_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
+	if reroll_btn and close_btn:
+		reroll_btn.focus_neighbor_left = close_btn.get_path()
+		reroll_btn.focus_neighbor_right = close_btn.get_path()
+		reroll_btn.focus_neighbor_top = buy_buttons[0].get_path()
+		reroll_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
 
-	close_btn.focus_neighbor_left = reroll_btn.get_path()
-	close_btn.focus_neighbor_right = reroll_btn.get_path()
-	close_btn.focus_neighbor_top = buy_buttons[mini(2, n_items - 1)].get_path()
-	close_btn.focus_neighbor_bottom = buy_buttons[mini(2, n_items - 1)].get_path()
+		close_btn.focus_neighbor_left = reroll_btn.get_path()
+		close_btn.focus_neighbor_right = reroll_btn.get_path()
+		close_btn.focus_neighbor_top = buy_buttons[mini(2, n_items - 1)].get_path()
+		close_btn.focus_neighbor_bottom = buy_buttons[mini(2, n_items - 1)].get_path()
 
 	_focus_next_available_buy_button()
 
 
 func _focus_next_available_buy_button() -> void:
-	for btn in buy_buttons:
+	for btn: Button in buy_buttons:
 		if is_instance_valid(btn) and not btn.disabled:
 			btn.grab_focus()
 			return
@@ -922,7 +378,7 @@ func _on_reroll_pressed() -> void:
 		player.run_credits = current_credits
 		if player.has_signal("credits_changed"):
 			player.credits_changed.emit(player.run_credits)
-	var hud := get_tree().get_first_node_in_group("hud")
+	var hud: Node = get_tree().get_first_node_in_group("hud")
 	if hud and hud.has_method("update_credits"):
 		hud.update_credits(current_credits)
 	_update_credits_display()
@@ -930,10 +386,10 @@ func _on_reroll_pressed() -> void:
 
 
 func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> void:
-	var swap_modal := WeaponSwapModalClass.new()
+	var swap_modal: Node = WeaponSwapModalClass.new()
 	get_tree().root.add_child(swap_modal)
 	swap_modal.prompt_swap(player, w_data,
-		func(_idx, _new_w):
+		func(_idx: int, _new_w: WeaponData) -> void:
 			if is_instance_valid(player):
 				player.run_credits = maxi(0, player.run_credits - cost)
 				current_credits = player.run_credits
@@ -941,7 +397,7 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 					player.credits_changed.emit(player.run_credits)
 			else:
 				current_credits = maxi(0, current_credits - cost)
-			var hud := get_tree().get_first_node_in_group("hud")
+			var hud: Node = get_tree().get_first_node_in_group("hud")
 			if hud and hud.has_method("update_credits"):
 				hud.update_credits(current_credits)
 			_update_credits_display()
@@ -954,6 +410,6 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 			_clear_stat_highlights()
 			_focus_next_available_buy_button()
 			swap_modal.queue_free(),
-		func(_discarded_w):
+		func(_discarded_w: WeaponData) -> void:
 			swap_modal.queue_free()
 	)
