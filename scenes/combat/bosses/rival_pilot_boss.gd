@@ -123,7 +123,8 @@ func open_warp_portal(on_shockwave_ready: Callable = Callable()) -> void:
 	_warp_portal = RivalWarpPresenterScript.open_warp_portal(self, _warp_target_pos, theme_col, on_shockwave_ready)
 
 func emerge_from_portal(callback: Callable = Callable()) -> void:
-	RivalWarpPresenterScript.emerge_from_portal(self, _warp_portal, _warp_target_pos, callback)
+	var portal_ref: Variant = _warp_portal if is_instance_valid(_warp_portal) else null
+	RivalWarpPresenterScript.emerge_from_portal(self, portal_ref, _warp_target_pos, callback)
 
 func start_encounter() -> void:
 	if is_instance_valid(_warp_portal):

@@ -47,10 +47,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 
 func _handle_slot_hotkey(slot_idx: int) -> void:
+	if slot_idx <= 0:
+		return
 	if not is_instance_valid(current_player):
 		return
 	var w_ctrl := current_player.get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl and slot_idx >= 0 and slot_idx < w_ctrl.equipped_weapons.size():
+	if w_ctrl and slot_idx < w_ctrl.equipped_weapons.size():
 		_on_replace_slot_pressed(slot_idx)
 
 func _build_ui() -> void:
@@ -228,11 +230,13 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	card_vbox.add_theme_constant_override("separation", 6)
 	pc.add_child(card_vbox)
 
+	var is_base_weapon: bool = (slot_idx == 0)
+
 	var slot_title := Label.new()
-	slot_title.text = "[Tecla %d] RANURA #%d" % [slot_idx + 1, slot_idx + 1]
+	slot_title.text = "🔒 RANURA #1 — ARMA INSIGNIA" if is_base_weapon else ("[Tecla %d] RANURA #%d" % [slot_idx + 1, slot_idx + 1])
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	slot_title.add_theme_font_size_override("font_size", 12)
-	slot_title.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0))
+	slot_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2) if is_base_weapon else Color(0.2, 0.9, 1.0))
 	card_vbox.add_child(slot_title)
 
 	var icon_center := CenterContainer.new()
@@ -263,18 +267,18 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	card_vbox.add_child(level_lbl)
 
 	var inherit_lbl := Label.new()
-	inherit_lbl.text = "➔ Heredará Nivel: ★%d" % inst.level
+	inherit_lbl.text = "◈ ARMA BASE FIJA ◈" if is_base_weapon else ("➔ Heredará Nivel: ★%d" % inst.level)
 	inherit_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inherit_lbl.add_theme_font_size_override("font_size", 11)
-	inherit_lbl.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
+	inherit_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2) if is_base_weapon else Color(0.2, 1.0, 0.6))
 	card_vbox.add_child(inherit_lbl)
 
 	var recycle_credits: int = WeaponController.calculate_recycle_credits(inst.level)
 	var recycle_lbl := Label.new()
-	recycle_lbl.text = "Reciclaje: +%d 🪙" % recycle_credits
+	recycle_lbl.text = "No sustituible" if is_base_weapon else ("Reciclaje: +%d 🪙" % recycle_credits)
 	recycle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	recycle_lbl.add_theme_font_size_override("font_size", 11)
-	recycle_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.15))
+	recycle_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6) if is_base_weapon else Color(1.0, 0.75, 0.15))
 	card_vbox.add_child(recycle_lbl)
 
 	var spacer := Control.new()
@@ -283,10 +287,14 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 
 	var rep_btn := Button.new()
 	rep_btn.name = "ReplaceBtn"
-	rep_btn.text = "Sustituir [%d]" % [slot_idx + 1]
+	rep_btn.text = "BLOQUEADA" if is_base_weapon else ("Sustituir [%d]" % [slot_idx + 1])
 	rep_btn.custom_minimum_size = Vector2(0, 32)
-	UIFocusHelper.apply_cyber_focus(rep_btn)
-	rep_btn.pressed.connect(func(): _on_replace_slot_pressed(slot_idx))
+	rep_btn.disabled = is_base_weapon
+	if is_base_weapon:
+		rep_btn.modulate = Color(0.6, 0.6, 0.6, 0.7)
+	else:
+		UIFocusHelper.apply_cyber_focus(rep_btn)
+		rep_btn.pressed.connect(func(): _on_replace_slot_pressed(slot_idx))
 	card_vbox.add_child(rep_btn)
 
 	return pc
@@ -305,6 +313,8 @@ func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 			return Color(0.6, 0.7, 0.8, 0.95)
 
 func _on_replace_slot_pressed(slot_idx: int) -> void:
+	if slot_idx <= 0:
+		return
 	if is_instance_valid(current_player) and incoming_weapon:
 		var w_ctrl := current_player.get_node_or_null("WeaponController") as WeaponController
 		if w_ctrl:

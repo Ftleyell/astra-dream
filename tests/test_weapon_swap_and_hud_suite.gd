@@ -109,8 +109,8 @@ func _test_weapon_swap_modal_ui_and_hotkeys() -> int:
 		var w := _create_dummy_weapon(StringName("wp_%d" % i), "W %d" % i)
 		w_ctrl.add_weapon(w)
 
-	w_ctrl.upgrade_weapon(&"wp_0") # wp_0 is Lv 2
-	w_ctrl.upgrade_weapon(&"wp_0") # wp_0 is Lv 3
+	w_ctrl.upgrade_weapon(&"wp_1") # wp_1 is Lv 2
+	w_ctrl.upgrade_weapon(&"wp_1") # wp_1 is Lv 3
 
 	var incoming := _create_dummy_weapon(&"wp_new", "Super Laser")
 
@@ -129,17 +129,22 @@ func _test_weapon_swap_modal_ui_and_hotkeys() -> int:
 	assert(container != null, "HBoxContainer for slots must exist")
 	assert(container.get_child_count() == 4, "Modal must contain 4 horizontal cards")
 
-	# Test hotkey swap on slot 0 (which was Lv 3)
+	# Test 3a: Intento de reemplazar Ranura 0 (Arma Base) debe ser ignorado y bloqueado
 	modal._handle_slot_hotkey(0)
+	assert(callback_data["called"] == false, "Ranura 0 está bloqueada; no debe detonar el callback de reemplazo")
+	assert(w_ctrl.equipped_weapons[0].weapon_data.weapon_id == &"wp_0", "Ranura 0 debe permanecer inalterada")
 
-	assert(callback_data["called"] == true, "Replacement callback must be triggered")
-	assert(callback_data["slot"] == 0, "Callback slot must be 0")
-	assert(w_ctrl.equipped_weapons[0].weapon_data.weapon_id == &"wp_new", "Slot 0 must be replaced")
-	assert(w_ctrl.equipped_weapons[0].level == 3, "New weapon in slot 0 must inherit Lv 3")
+	# Test 3b: Reemplazo válido en Ranura 1 (wp_1 a Lv 3) mediante hotkey [2]
+	modal._handle_slot_hotkey(1)
+
+	assert(callback_data["called"] == true, "Replacement callback must be triggered on slot 1")
+	assert(callback_data["slot"] == 1, "Callback slot must be 1")
+	assert(w_ctrl.equipped_weapons[1].weapon_data.weapon_id == &"wp_new", "Slot 1 must be replaced")
+	assert(w_ctrl.equipped_weapons[1].level == 3, "New weapon in slot 1 must inherit Lv 3")
 	assert(player.run_credits == 50 + 65, "Player credits must receive 65 credits (50 + 65 = 115), got %d" % player.run_credits)
 	assert(modal.visible == false, "Modal must close after swap")
 
-	print("  ✓ T3: WeaponSwapModal horizontal cards, hotkey execution and level preservation verified")
+	print("  ✓ T3: WeaponSwapModal horizontal cards, slot 0 lock and slot 1 hotkey execution verified")
 
 	modal.queue_free()
 	w_ctrl.queue_free()

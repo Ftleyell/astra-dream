@@ -75,7 +75,7 @@ static func open_warp_portal(rival: CharacterBody2D, warp_target_pos: Vector2, t
 
 	return portal
 
-static func emerge_from_portal(rival: CharacterBody2D, warp_portal: Node2D, target_pos: Vector2, callback: Callable = Callable()) -> void:
+static func emerge_from_portal(rival: CharacterBody2D, warp_portal: Variant, target_pos: Vector2, callback: Callable = Callable()) -> void:
 	rival.process_mode = Node.PROCESS_MODE_ALWAYS
 	var sprite: Sprite2D = rival.get("ship_sprite") as Sprite2D
 	if not sprite:

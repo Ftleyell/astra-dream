@@ -118,7 +118,7 @@ static func calculate_recycle_credits(weapon_level: int) -> int:
 
 
 func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level: bool = true) -> bool:
-	if not new_weapon_data or slot_index < 0 or slot_index >= equipped_weapons.size():
+	if not new_weapon_data or slot_index <= 0 or slot_index >= equipped_weapons.size():
 		return false
 	var old_inst: WeaponInstanceData = equipped_weapons[slot_index]
 	var old_level: int = old_inst.level if old_inst else 1

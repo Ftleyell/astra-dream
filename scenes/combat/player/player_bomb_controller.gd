@@ -23,6 +23,8 @@ func suppress_bomb_input(duration: float = 0.35) -> void:
 func update_suppression(delta: float) -> void:
 	if menu_close_suppress_timer > 0.0:
 		menu_close_suppress_timer = maxf(0.0, menu_close_suppress_timer - delta)
+		if menu_close_suppress_timer <= 0.0:
+			was_bomb_pressed_during_menu = false
 
 func is_any_menu_or_modal_active(player: Node2D) -> bool:
 	if not player or not player.is_inside_tree():
@@ -43,16 +45,17 @@ func is_any_menu_or_modal_active(player: Node2D) -> bool:
 			return true
 
 	var tree: SceneTree = player.get_tree()
-	if tree and tree.root:
-		var dialogic: Node = tree.root.get_node_or_null("Dialogic")
-		if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
-			return true
-
-	var vp: Viewport = player.get_viewport()
-	if vp:
-		var focused: Control = vp.gui_get_focus_owner()
-		if focused and focused.is_visible_in_tree():
-			return true
+	if tree:
+		for arc_modal in tree.get_nodes_in_group("arcana_selection_modal"):
+			if is_instance_valid(arc_modal) and arc_modal is CanvasItem and (arc_modal as CanvasItem).visible:
+				return true
+		for swap_modal in tree.get_nodes_in_group("weapon_swap_modal"):
+			if is_instance_valid(swap_modal) and swap_modal is CanvasItem and (swap_modal as CanvasItem).visible:
+				return true
+		if tree.root:
+			var dialogic: Node = tree.root.get_node_or_null("Dialogic")
+			if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
+				return true
 
 	return false
 
