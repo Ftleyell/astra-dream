@@ -939,6 +939,7 @@ func _filter_wardrobe(category_id: String) -> void:
 		return
 
 	for child in _wardrobe_grid.get_children():
+		_wardrobe_grid.remove_child(child)
 		child.queue_free()
 
 	var all_skins := CosmeticsManager.get_all_skins()

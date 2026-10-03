@@ -4,9 +4,13 @@ extends Node2D
 const RunStateSerializer = preload("res://scenes/combat/systems/run_state_serializer.gd")
 const CombatModalCoordinator = preload("res://scenes/combat/ui/combat_modal_coordinator.gd")
 const CombatNarrativeDirector = preload("res://scenes/combat/directors/combat_narrative_director.gd")
+const CombatBossCoordinator = preload("res://scenes/combat/directors/combat_boss_coordinator.gd")
+const CombatTelemetryRecorder = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
+const PlanetSpawnerHelper = preload("res://scenes/combat/environment/planet_spawner_helper.gd")
 
 var modal_coordinator: CombatModalCoordinator = null
 var narrative_director: CombatNarrativeDirector = null
+var boss_coordinator: CombatBossCoordinator = null
 
 
 @onready var player: Player = $Player
@@ -39,16 +43,7 @@ const SPAWN_AHEAD_DISTANCE: float = 1100.0
 var current_satellite_idx: int = 1
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
 var current_satellite: SatelliteBeacon = null
-var boss_mothership_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
-var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_hermit_void.tscn")
-var boss_ash_clock_scene: PackedScene = preload("res://scenes/combat/bosses/boss_ash_clock.tscn")
-var boss_broken_mirror_scene: PackedScene = preload("res://scenes/combat/bosses/boss_broken_mirror.tscn")
-var boss_overflow_vortex_scene: PackedScene = preload("res://scenes/combat/bosses/boss_overflow_vortex.tscn")
-var boss_astra_prime_scene: PackedScene = preload("res://scenes/combat/bosses/boss_astra_prime.tscn")
-var rival_pilot_scene: PackedScene = preload("res://scenes/combat/bosses/rival_pilot_boss.tscn")
-var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/allied_wingman.tscn")
-var nyx_boss_escort_scene: PackedScene = preload("res://scenes/combat/bosses/nyx_boss_escort.tscn")
-var elite_herald_scene: PackedScene = preload("res://scenes/combat/bosses/elite_herald_boss.tscn")
+
 var crisis_event_manager_scene: PackedScene = preload("res://scenes/combat/events/crisis_event_manager.tscn")
 var crisis_alert_banner_scene: PackedScene = preload("res://scenes/ui/hud/crisis_alert_banner.tscn")
 
@@ -88,17 +83,20 @@ var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
 var active_navigator_controller = null
-const InRunSlotMachineModalScript := preload("res://scenes/ui/modals/in_run_slot_machine_modal.gd")
-const SlotMachineRewardModalScript := preload("res://scenes/ui/modals/slot_machine_reward_modal.gd")
-const SlotMachineBeaconScript := preload("res://scenes/combat/satellite/slot_machine_beacon.gd")
-const SlotMachineChestScript := preload("res://scenes/combat/satellite/slot_machine_chest.gd")
+const CombatLootCoordinator = preload("res://scenes/combat/systems/combat_loot_coordinator.gd")
 const CosmicRealityTearScript := preload("res://scenes/combat/bosses/cosmic_reality_tear.gd")
 const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emergence_helper.gd")
 
-var current_slot_machine: Node2D = null
-var slot_machine_modal: CanvasLayer = null
-var slot_machine_reward_modal: CanvasLayer = null
-var _slot_machine_pity_chance: float = 0.25
+var loot_coordinator: CombatLootCoordinator = null
+var current_slot_machine: Node2D:
+	get:
+		return loot_coordinator.current_slot_machine if loot_coordinator else null
+var slot_machine_modal: CanvasLayer:
+	get:
+		return loot_coordinator.slot_machine_modal if loot_coordinator else null
+var slot_machine_reward_modal: CanvasLayer:
+	get:
+		return loot_coordinator.slot_machine_reward_modal if loot_coordinator else null
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_spawned_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
@@ -142,6 +140,11 @@ func _ready() -> void:
 	narrative_director.setup(self, player, hud, skip_badge_layer, audio_duck_manager)
 	narrative_director.active_navigator_controller = active_navigator_controller
 	narrative_director.victory_screen_requested.connect(_show_game_over_screen)
+
+	boss_coordinator = CombatBossCoordinator.new()
+	boss_coordinator.name = "CombatBossCoordinator"
+	add_child(boss_coordinator)
+	boss_coordinator.setup(self)
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)
 	if not player.credits_changed.is_connected(hud.update_credits):
@@ -170,12 +173,11 @@ func _ready() -> void:
 	if arcana_modal:
 		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
 
-	# Instanciar modales de la máquina tragamonedas in-run y cofre de recompensa
-	slot_machine_modal = InRunSlotMachineModalScript.new()
-	add_child(slot_machine_modal)
-
-	slot_machine_reward_modal = SlotMachineRewardModalScript.new()
-	add_child(slot_machine_reward_modal)
+	# Inicializar coordinador de botín (máquina tragamonedas in-run y cofres)
+	loot_coordinator = CombatLootCoordinator.new()
+	loot_coordinator.name = "CombatLootCoordinator"
+	add_child(loot_coordinator)
+	loot_coordinator.initialize(self, player, camera)
 
 	# Inicializar sistema de eventos de crisis dinámicas y banners
 	if not crisis_banner and crisis_alert_banner_scene:
@@ -206,7 +208,7 @@ func _ready() -> void:
 
 	# Asegurar que MainGame y Dialogic procesen durante la pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	var dialogic_node := _get_dialogic()
+	var dialogic_node: Node = narrative_director.get_dialogic() if narrative_director else null
 	if dialogic_node:
 		dialogic_node.process_mode = Node.PROCESS_MODE_ALWAYS
 		if dialogic_node.has_signal("signal_event"):
@@ -366,11 +368,6 @@ func _get_genocide_escort_pilot_id() -> StringName:
 		return &"nova"
 	return &"nyx"
 
-func _get_dialogic() -> Node:
-	if not is_inside_tree():
-		var tree := Engine.get_main_loop() as SceneTree
-		return tree.root.get_node_or_null("Dialogic") if tree and tree.root else null
-	return get_node_or_null("/root/Dialogic")
 
 func _start_prologue_briefing() -> void:
 	if narrative_director:
@@ -418,384 +415,35 @@ func _finish_prologue_and_start_run() -> void:
 		get_tree().paused = false
 
 func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
-	var r_line := "¡Piloto en mi vector! Detecto armas cargadas. Si no buscas pelea, apaga los motores y déjame pasar."
-	var p_line := "Te recibo fuerte y claro. No busco un conflicto innecesario, pero me defenderé si atacas."
-	var r_close := "La decisión es tuya: mantén distancia y nos retiraremos... o cruza el perímetro."
-
-	match rival_pid:
-		&"nova":
-			r_line = "¡Piloto en mi vector! Detecto armas cargadas. Si no buscas pelea, apaga motores y déjame pasar."
-		&"valentina":
-			r_line = "Aquí Valentina. Mi cuadrante está bajo custodia estricta. Mantén distancia o deberé neutralizarte."
-		&"kira":
-			r_line = "¡Vaya, vaya! ¿Un intruso en mi sector? Mejor da media vuelta si no quieres terminar como chatarra."
-		&"selene":
-			r_line = "Cálculos balísticos completados. No tengo hostilidad primaria, pero cruzar activará fuego reactivo."
-		&"roxy":
-			r_line = "¿Te crees con suerte? Este sector es territorio de caza. Una sola provocación y te pulverizo."
-		&"echo":
-			r_line = "Frecuencia captada... ecos de batalla en tu estela. Retírate antes de que nuestros destinos colisionen."
-		&"nyx":
-			r_line = "Las sombras cósmicas no toleran intrusos. Si avanzas un metro más, el Vacío consumirá tu luz."
-
-	match player_pid:
-		&"nova":
-			p_line = "Te recibo fuerte y claro. Evaluaré la situación... no desates algo de lo que te arrepientas."
-		&"valentina":
-			p_line = "Aquí el puesto de mando. No buscamos conflicto, pero responderemos con fuerza ante una agresión."
-		&"kira":
-			p_line = "Relaja los cañones. Si quieres pelea la tendrás, pero si te calmas ambos saldremos ilesos."
-		&"selene":
-			p_line = "Parámetros registrados. Tomaré la decisión óptima para la preservación de ambas naves."
-		&"roxy":
-			p_line = "Mucho hablar y poco vuelo. Veremos quién sobrevive si decides cruzar mi camino."
-		&"echo":
-			p_line = "Entendido... mantendré mis sensores alertas ante cualquier alteración de tu curso."
-		&"nyx":
-			p_line = "No me intimidan tus amenazas. Conozco la oscuridad mejor que nadie."
-
-	return {
-		"rival_line": r_line,
-		"player_line": p_line,
-		"rival_closing": r_close
-	}
+	return narrative_director.get_rival_dialogue(rival_pid, player_pid)
 
 func _trigger_pet_rival_jump_warning(rival: Node2D, on_finished: Callable = Callable()) -> void:
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		if on_finished.is_valid():
-			on_finished.call()
-		return
-
-	is_cockpit_active = true
-	get_tree().paused = true
-	_on_dialogue_finished_callback = on_finished
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-		pet_id = "mochi"
-
-	var text := "join " + pet_id + " (Flipped) right\n"
-	text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]\n"
-	text += pet_id + ": Una nave de combate de alta potencia emerge desde el hiperespacio.\n"
-	text += pet_id + ": [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]\n"
-	text += "leave --All--\n"
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		if layout is CanvasLayer:
-			layout.layer = 50
-		if "canvas_layer" in layout:
-			layout.canvas_layer = 50
-		_setup_dialogic_audio(layout)
-	else:
-		if on_finished.is_valid():
-			_on_dialogue_finished_callback = Callable()
-			on_finished.call()
+	narrative_director.trigger_pet_rival_jump_warning(rival, on_finished)
 
 func _trigger_rival_face_to_face_dialogue(rival: Node2D) -> void:
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		_on_dialogic_timeline_ended()
-		return
-
-	is_cockpit_active = true
-	get_tree().paused = true
-	_on_dialogue_finished_callback = Callable()
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var r_pid: StringName = rival.pilot_id if "pilot_id" in rival else &"nova"
-	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	var lines := _get_rival_dialogue(r_pid, p_pid)
-
-	var text := "join " + String(r_pid) + " right\n"
-	text += "join " + String(p_pid) + " (Flipped) left\n"
-	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
-	text += String(p_pid) + ": " + lines["player_line"] + "\n"
-	text += String(r_pid) + ": " + lines["rival_closing"] + "\n"
-	text += "leave --All--\n"
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		if layout is CanvasLayer:
-			layout.layer = 50
-		if "canvas_layer" in layout:
-			layout.canvas_layer = 50
-		_setup_dialogic_audio(layout)
-	else:
-		_on_dialogic_timeline_ended()
+	narrative_director.trigger_rival_face_to_face_dialogue(rival)
 
 func _trigger_pet_rival_encounter(rival: Node2D) -> void:
-	_trigger_rival_face_to_face_dialogue(rival)
+	narrative_director.trigger_pet_rival_encounter(rival)
 
 func _trigger_cockpit_interlude() -> void:
-	_trigger_pet_rival_alert("Piloto Desconocida")
+	narrative_director.trigger_cockpit_interlude()
 
 func _trigger_pet_rival_alert(pilot_name: String) -> void:
-	if current_rival != null:
-		_trigger_pet_rival_encounter(current_rival)
-		return
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		return
-	is_cockpit_active = true
-	get_tree().paused = true
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-		pet_id = "mochi"
-
-	var text := """
-join %s right
-%s: [shake rate=15.0 level=4][color=#ffd700]¡DETECCIÓN DE SALTO HIPERESPACIAL EN NUESTRAS COORDENADAS![/color][/shake]
-%s: La nave de %s ha entrado al sector proyectando un perímetro de advertencia.
-%s: [wave amp=12.0 freq=3.0]Si retrocedemos y mantenemos distancia, se irá pacíficamente... pero si nos acercamos o disparamos, comenzará el combate.[/wave]
-leave --All--
-""" % [pet_id, pet_id, pet_id, pilot_name, pet_id]
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		if layout is CanvasLayer:
-			layout.layer = 50
-		if "canvas_layer" in layout:
-			layout.canvas_layer = 50
-	_setup_dialogic_audio(layout)
+	narrative_director.trigger_pet_rival_alert(pilot_name)
 
 func _trigger_pet_boss_alert(boss_name: String, on_finished: Callable = Callable()) -> void:
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		if on_finished.is_valid():
-			on_finished.call()
-		return
-	is_boss_transmission_active = true
-	get_tree().paused = true
-	_on_dialogue_finished_callback = on_finished
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-		pet_id = "mochi"
-
-	var text := """
-join %s (Flipped) right
-%s: [shake rate=20.0 level=6][color=#ff3333]¡ALERTA DE DISTORSIÓN CRÍTICA EN EL RADAR![/color][/shake]
-%s: La firma titánica de %s se ha manifestado en el sector.
-%s: [wave amp=15.0 freq=4.0]¡Detectores fijados en el coloso! ¡Prepara los propulsores para esquivar sus proyectiles![/wave]
-leave --All--
-""" % [pet_id, pet_id, pet_id, boss_name, pet_id]
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		if layout is CanvasLayer:
-			layout.layer = 50
-		if "canvas_layer" in layout:
-			layout.canvas_layer = 50
-	_setup_dialogic_audio(layout)
+	narrative_director.trigger_pet_boss_alert(boss_name, on_finished)
 
 func _trigger_climax_dialogue(route: String, on_finished: Callable = Callable()) -> void:
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		if on_finished.is_valid():
-			on_finished.call()
-		return
-	is_boss_transmission_active = true
-	get_tree().paused = true
-	_on_dialogue_finished_callback = on_finished
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-		pet_id = "mochi"
-
-	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	var text := ""
-
-	if route == "pacifist":
-		var fleet_lines := {
-			&"nova": "¡Estamos contigo, comandante! La Flota de la Esperanza cubre tu retaguardia.",
-			&"valentina": "Formación de combate establecida. No permitiremos que caigas ante el Núcleo.",
-			&"kira": "¡Armas al máximo! ¡Vamos a romper ese coloso en mil pedazos juntas!",
-			&"selene": "Vectores balísticos sincronizados. La probabilidad de victoria es del 100% con nosotras.",
-			&"roxy": "Más vale que me dejes el tiro de gracia. ¡Hagamos pedazos a Astra Prime!",
-			&"echo": "El destino resuena con luz... volaremos a tu lado hasta el final del cosmos.",
-			&"nyx": "La oscuridad del Vacío no prevalecerá hoy. Mis guadañas te protegen."
-		}
-
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [shake rate=20.0 level=6][color=#00e5ff]¡ALERTA CÓSMICA: LLEGADA AL NÚCLEO SUPREMO ASTRA PRIME![/color][/shake]\n"
-		text += pet_id + ": ¡Increíble! ¡Las señales de las 5 pilotos que perdonaste emergen del hiperespacio!\n"
-		text += "leave " + pet_id + "\n"
-
-		for pid in rivals_spared:
-			var line: String = fleet_lines.get(pid, "¡A tu lado hasta la victoria estelar!")
-			text += "join " + String(pid) + " right\n"
-			text += String(pid) + ": " + line + "\n"
-			text += "leave " + String(pid) + "\n"
-
-		text += "join " + String(p_pid) + " (Flipped) left\n"
-		text += String(p_pid) + ": ¡Flota de la Esperanza unida! ¡Iniciemos las maniobras para liberar el Núcleo Astra!\n"
-		text += "join " + pet_id + " (Flipped) right\n"
-		text += pet_id + ": [wave amp=16.0 freq=3.5]¡Todos los reactores al 100%! ¡Por la victoria estelar![/wave]\n"
-		text += "leave --All--\n"
-
-	elif route == "slayer":
-		var is_player_nyx := (p_pid == &"nyx")
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [shake rate=25.0 level=8][color=#ff0044]¡COLAPSO ESPACIO-TEMPORAL CRÍTICO![/color][/shake]\n"
-		text += pet_id + ": ¡Toda la galaxia tiembla por la masacre de las 5 pilotos...! ¡Y una nave de combate apoya al Núcleo Astra Prime!\n"
-		text += "leave " + pet_id + "\n"
-
-		if not is_player_nyx:
-			text += "join nyx (Flipped) right\n"
-			text += "join " + String(p_pid) + " left\n"
-			text += "nyx: [shake rate=18.0 level=5][color=#ff1744]¿Creíste que tu carnicería cósmica quedaría impune?[/color][/shake]\n"
-			text += "nyx: Has erradicado a cada una de mis compañeras. Sentí sus almas apagarse en el tejido estelar...\n"
-			text += "nyx: Astra Prime y yo seremos tus verdugos. ¡El Vacío te devorará por completo!\n"
-			text += String(p_pid) + ": Eran obstáculos en mi ascenso estelar. Si te interpones, compartirás su mismo destino.\n"
-			text += "nyx: ¡No saldrás con vida de este sector!\n"
-			text += "leave --All--\n"
-		else:
-			var escort_pid := _get_genocide_escort_pilot_id()
-			var escort_str := String(escort_pid)
-			var roster := CharacterData.load_roster()
-			var e_name := roster[escort_pid].display_name if roster.has(escort_pid) else escort_str.capitalize()
-			text += "join " + escort_str + " right\n"
-			text += "join nyx (Flipped) left\n"
-			text += escort_str + ": [shake rate=18.0 level=5][color=#ff1744]¡Nyx! ¿Cómo pudiste traicionar a la Flota?[/color][/shake]\n"
-			text += escort_str + ": Asesinaste a mis 5 compañeras sin piedad... ¡escuché sus últimas transmisiones apagarse en el vacío!\n"
-			text += escort_str + ": Soy la última que queda en pie. ¡Astra Prime y yo acabaremos con tu demencia aquí y ahora!\n"
-			text += "nyx: Eran débiles... se interpusieron en el camino del Vacío. Tú serás la última en extinguirte.\n"
-			text += escort_str + ": ¡Por la memoria de la Flota Astra, jamás te permitiré tocar el Núcleo!\n"
-			text += "leave --All--\n"
-
-	else: # neutral
-		text += "join " + pet_id + " (Flipped) right\n"
-		text += "join " + String(p_pid) + " (Flipped) left\n"
-		text += pet_id + ": Hemos llegado al epicentro del universo... pero el costo ha sido inmenso.\n"
-		text += String(p_pid) + ": Hicimos lo necesario para llegar con vida. Ni santos ni monstruos... solo supervivientes.\n"
-		text += pet_id + ": El Núcleo Supremo Astra Prime inicia su escaneo estelar. ¿Cuál será su veredicto?\n"
-		text += String(p_pid) + ": Solo hay un veredicto posible para nosotros: salir victoriosos cueste lo que cueste.\n"
-		text += "leave --All--\n"
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-		if layout is CanvasLayer:
-			layout.layer = 50
-		if "canvas_layer" in layout:
-			layout.canvas_layer = 50
-	_setup_dialogic_audio(layout)
+	narrative_director.trigger_climax_dialogue(route, on_finished)
 
 func _trigger_pet_climax_alert(route: String) -> void:
-	_trigger_climax_dialogue(route)
+	narrative_director.trigger_pet_climax_alert(route)
 
 func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary) -> void:
-	var dialogic_node := _get_dialogic()
-	if not dialogic_node or not dialogic_node.has_method("start"):
-		_show_game_over_screen(victory_data)
-		return
+	narrative_director.trigger_post_boss_victory_dialogue(route, victory_data)
 
-	is_victory_dialogue_active = true
-	_pending_victory_data = victory_data
-	get_tree().paused = true
-	if skip_badge_layer:
-		skip_badge_layer.show()
-
-	var pet_id: String = String(SaveManager.get_selected_pet()).to_lower()
-	if not ["mochi", "kuro", "luna", "pip", "cosmo"].has(pet_id):
-		pet_id = "mochi"
-
-	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	var text := ""
-
-	if route == "pacifist":
-		var victory_fleet_lines := {
-			&"nova": "¡Lo conseguiste, comandante! El Núcleo Astra vuelve a palpitar en armonía.",
-			&"valentina": "Firmas térmicas del Núcleo estabilizadas. Ha sido un honor cubrir tus flancos.",
-			&"kira": "¡SIII! ¡Hicimos pedazos a esa monstruosidad! ¡El cosmos nos recordará por esto!",
-			&"selene": "Cálculos post-combate finalizados: probabilidad de un nuevo amanecer al 100%. Misión perfecta.",
-			&"roxy": "Admito que tienes talento de verdad. Buen vuelo, heroína espacial.",
-			&"echo": "Las frecuencias de todas las almas estelares vibran en paz... La Flota de la Esperanza triunfó.",
-			&"nyx": "El equilibrio entre luz y oscuridad se preserva. Demostraste el poder de la unión."
-		}
-
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [shake rate=20.0 level=5][color=#00e5ff]¡LO LOGRAMOS! ¡EL NÚCLEO ASTRA SE HA LIBERADO SIN COLAPSO![/color][/shake]\n"
-		text += pet_id + ": ¡Los escudos se calman y todas las balizas orbitales resplandecen en señal de paz!\n"
-		text += "leave " + pet_id + "\n"
-
-		for pid in rivals_spared:
-			var line: String = victory_fleet_lines.get(pid, "¡Misión cumplida! El orden cósmico ha sido restaurado.")
-			text += "join " + String(pid) + " (Flipped) right\n"
-			text += String(pid) + ": " + line + "\n"
-			text += "leave " + String(pid) + "\n"
-
-		text += "join " + String(p_pid) + " left\n"
-		text += String(p_pid) + ": ¡Gracias a todas por creer en este camino! Unidas demostramos que la galaxia puede salvarse sin exterminio.\n"
-		text += "leave " + String(p_pid) + "\n"
-
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [wave amp=16.0 freq=3.5]¡Coordenadas de regreso al Hub establecidas! ¡Iniciando salto de victoria estelar![/wave]\n"
-		text += "leave --All--\n"
-
-	elif route == "slayer":
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [shake rate=20.0 level=6][color=#ff0044]El Núcleo Astra Prime... ha colapsado en un silencio sepulcral.[/color][/shake]\n"
-		text += pet_id + ": No detecto más señales de vida en el radar. Todas las pilotos rivales han perecido en tu cacería...\n"
-		text += "leave " + pet_id + "\n"
-
-		text += "join " + String(p_pid) + " left\n"
-		if p_pid == &"nyx":
-			text += "nyx: El Vacío finalmente lo ha consumido todo. No quedan rivales ni ataduras... solo mi reino en las sombras.\n"
-		else:
-			text += String(p_pid) + ": Nadie pudo detener mi ascenso. Absorbí cada fragmento de su poder... ahora gobierno el vacío estelar.\n"
-		text += "leave " + String(p_pid) + "\n"
-
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [color=#888888]El trono del cosmos es tuyo, soberano solitario... Iniciando retorno.[/color]\n"
-		text += "leave --All--\n"
-
-	else: # neutral
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [shake rate=15.0 level=4][color=#ffd700]¡Astra Prime ha caído![/color][/shake]\n"
-		text += pet_id + ": Las lecturas del sector vuelven a niveles seguros. Hemos sobrevivido al coloso.\n"
-		text += "leave " + pet_id + "\n"
-
-		text += "join " + String(p_pid) + " left\n"
-		text += String(p_pid) + ": Fue una travesía brutal... Tomamos decisiones difíciles en cada sector, pero estamos con vida.\n"
-		text += "leave " + String(p_pid) + "\n"
-
-		text += "join " + pet_id + " right\n"
-		text += pet_id + ": [wave amp=12.0 freq=3.0]Calculando vector de salida hacia el Hub orbital. ¡Excelente pilotaje, comandante![/wave]\n"
-		text += "leave --All--\n"
-
-	var tl := DialogicTimeline.new()
-	tl.from_text(text)
-	var layout = dialogic_node.start(tl)
-	if layout:
-		layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	_setup_dialogic_audio(layout)
 
 func _process(delta: float) -> void:
 	if get_tree().paused or is_cinematic_or_death_active():
@@ -905,21 +553,16 @@ func _process(delta: float) -> void:
 		_spawn_next_satellite_for_wave()
 
 func _check_satellite_despawn() -> void:
-	if current_satellite == null or not is_instance_valid(current_satellite):
-		return
-	if not is_instance_valid(player):
-		return
-	var dist: float = player.global_position.distance_to(current_satellite.global_position)
-	if dist >= SATELLITE_DESPAWN_DISTANCE:
-		_despawn_current_satellite()
+	if is_instance_valid(current_satellite) and is_instance_valid(player):
+		if player.global_position.distance_to(current_satellite.global_position) >= SATELLITE_DESPAWN_DISTANCE:
+			_despawn_current_satellite()
 
 func _despawn_current_satellite() -> void:
-	if current_satellite and is_instance_valid(current_satellite):
+	if is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 		current_satellite = null
-	if hud and is_instance_valid(hud):
+	if is_instance_valid(hud):
 		hud.clear_satellite()
-	# Permitir que el satélite vuelva a generarse adelante en la nueva trayectoria del jugador
 	wave_satellites_spawned = maxi(0, wave_satellites_spawned - 1)
 
 func _spawn_next_satellite_for_wave() -> void:
@@ -932,7 +575,6 @@ func _spawn_next_satellite_for_wave() -> void:
 
 	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
 	var spawn_dist: float = maxf(SPAWN_AHEAD_DISTANCE, req_dist)
-
 	var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
 	if move_dir.length_squared() < 0.001:
 		move_dir = Vector2.UP
@@ -942,9 +584,9 @@ func _spawn_next_satellite_for_wave() -> void:
 	_spawn_next_satellite(spawn_pos)
 
 func _has_active_boss_or_rival() -> bool:
-	if current_boss != null and is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
+	if is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
 		return true
-	if current_rival != null and is_instance_valid(current_rival) and not current_rival.is_queued_for_deletion():
+	if is_instance_valid(current_rival) and not current_rival.is_queued_for_deletion():
 		return true
 	for b in get_tree().get_nodes_in_group("bosses"):
 		if is_instance_valid(b) and not b.is_queued_for_deletion():
@@ -958,595 +600,78 @@ func _check_wave_encounters() -> void:
 	if _wave_encounter_spawned_for_wave == current_wave:
 		_wave_encounter_pending = false
 		return
-
 	if is_any_combat_modal_active() or has_pending_upgrades():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 0.5
 		return
-
-	# Si ya hay un jefe, un rival o cinemática activa, posponer el encuentro para evitar solapamientos
 	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 1.0
 		return
 
 	if current_wave >= 16:
-		# Oleada climática final: Enfrentamiento contra Astra Prime
 		_spawn_final_boss()
 	elif current_wave in [1, 4, 7, 10, 13]:
-		# Oleadas de Piloto Rival (Triada: Rival -> Jefe -> Descanso)
 		_spawn_rival_pilot()
-	elif current_wave == 2:
-		# Jefe de Dominio 1: Eremita del Vacío (Cangrejo)
-		_spawn_wave_boss(boss_hermit_scene)
-	elif current_wave == 5:
-		# Jefe de Dominio 2: Espejo Quebrado
-		_spawn_wave_boss(boss_broken_mirror_scene)
-	elif current_wave == 8:
-		# Jefe de Dominio 3: Reloj de Ceniza
-		_spawn_wave_boss(boss_ash_clock_scene)
-	elif current_wave == 11:
-		# Jefe de Dominio 4: Vórtice de Desbordamiento
-		_spawn_wave_boss(boss_overflow_vortex_scene)
-	elif current_wave == 14:
-		# Jefe de Dominio 5: Nave Nodriza Aegis
-		_spawn_wave_boss(boss_mothership_scene)
+	elif current_wave in [2, 5, 8, 11, 14]:
+		_spawn_wave_boss()
 	elif current_wave in [3, 6, 9, 12, 15]:
-		# Oleadas de descanso: Evaluación de aparición con piedad dinámica para la máquina tragamonedas
 		_evaluate_slot_machine_spawn()
 
 func _evaluate_slot_machine_spawn() -> void:
 	if _wave_encounter_spawned_for_wave == current_wave:
 		_wave_encounter_pending = false
 		return
-
 	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
 		_wave_encounter_pending = true
 		_wave_encounter_timer = 1.0
 		return
-
-	var roll: float = randf()
-	if roll < _slot_machine_pity_chance:
-		_slot_machine_pity_chance = 0.20
-		_spawn_slot_machine()
-	else:
-		_slot_machine_pity_chance = minf(1.0, _slot_machine_pity_chance + 0.25)
+	if loot_coordinator:
+		loot_coordinator.evaluate_slot_machine_spawn(true)
 		_wave_encounter_spawned_for_wave = current_wave
 		_wave_encounter_pending = false
 
 func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
-	if current_slot_machine != null and is_instance_valid(current_slot_machine):
-		return
-	if not is_instance_valid(player):
-		return
-
-	if spawn_pos == Vector2.INF:
-		var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
-		spawn_pos = player.global_position + move_dir * 750.0
-
-	var beacon = SlotMachineBeaconScript.new()
-	beacon.global_position = spawn_pos
-	beacon.interacted.connect(_on_slot_machine_interacted)
-	beacon.exploded.connect(_on_slot_machine_exploded)
-	current_slot_machine = beacon
-	add_child(beacon)
-	_wave_encounter_spawned_for_wave = current_wave
-	_wave_encounter_pending = false
-
-func _on_slot_machine_interacted(_beacon: Node2D) -> void:
-	# La máquina tragamonedas in-run es un bumper arcade 100% in-game:
-	# Rebota al jugador físicamente, gira los rodillos sobre la máquina y entrega
-	# premios en tiempo real sin pausar la partida ni abrir ventanas modales.
-	pass
-
-func _on_slot_machine_exploded(pos: Vector2) -> void:
-	if camera:
-		camera.add_trauma(0.65)
-	current_slot_machine = null
-
-	var chest = SlotMachineChestScript.new()
-	chest.global_position = pos
-	chest.chest_opened.connect(_on_slot_machine_chest_opened)
-	add_child(chest)
-
-func _on_slot_machine_chest_opened(chest: Node2D) -> void:
-	if slot_machine_reward_modal and is_instance_valid(player):
-		slot_machine_reward_modal.show_reward(chest, player)
+	if loot_coordinator:
+		loot_coordinator.spawn_slot_machine(spawn_pos)
+		_wave_encounter_spawned_for_wave = current_wave
+		_wave_encounter_pending = false
 
 func _spawn_elite_herald() -> void:
-	if current_boss != null or not is_instance_valid(player) or not elite_herald_scene:
-		return
-
-	var forward := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP
-	var elite_pos := player.global_position + forward * 580.0
-
-	var herald: Node2D = elite_herald_scene.instantiate() as Node2D
-	herald.global_position = elite_pos
-	herald.setup_type(current_wave)
-	current_boss = herald
-	add_child(herald)
-
-	var b_name: String = herald.boss_name
-	var b_hp: float = herald.max_health
-	hud.show_boss(b_name, b_hp)
-	if herald.has_signal("health_changed"):
-		herald.connect("health_changed", hud.update_boss_health)
-	if herald.has_signal("boss_defeated"):
-		herald.connect("boss_defeated", _on_boss_defeated)
+	if boss_coordinator:
+		boss_coordinator.spawn_elite_herald()
 
 func _spawn_rival_pilot(override_id: StringName = &"") -> void:
-	if _wave_encounter_spawned_for_wave == current_wave and override_id == &"":
-		_wave_encounter_pending = false
-		return
-
-	if is_any_combat_modal_active() or (override_id == &"" and has_pending_upgrades()):
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 0.5
-		return
-
-	if override_id == &"" and _has_active_boss_or_rival():
-		if _wave_encounter_spawned_for_wave != current_wave:
-			_wave_encounter_pending = true
-			_wave_encounter_timer = 1.0
-		return
-
-	if not is_instance_valid(player):
-		return
-
-	var next_pid := override_id
-	if next_pid == &"":
-		var unencountered: Array[StringName] = []
-		for pid in rival_queue:
-			if not rivals_spared.has(pid) and not rivals_killed.has(pid):
-				unencountered.append(pid)
-		if unencountered.is_empty():
-			return
-		next_pid = unencountered[0]
-
-	# Activar cerrojo protector de secuencia cinemática de rival
-	is_rival_cinematic_active = true
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(true)
-	var bullet_srv := get_node_or_null("/root/BulletServer") as BulletServer
-	if not bullet_srv and get_parent():
-		bullet_srv = get_parent().get_node_or_null("BulletServer") as BulletServer
-	if bullet_srv:
-		bullet_srv.bomb_clear_all()
-
-	# Encuadre cinematográfico horizontal en mitades de pantalla (1920x1080):
-	# Zoom 1.0 para fidelidad exacta de 960px por mitad (centros en -480px y +480px)
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	# 1. Desacelerar nave del jugador y orientarla mirando al Este (0 rad, apuntando a la rival)
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.velocity = Vector2.ZERO
-			if "current_facing_angle" in player:
-				player.current_facing_angle = 0.0
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	# Posición de cámara para encuadrar al jugador en el centro exacto de la mitad izquierda
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	# Posición de destino de la rival en el centro exacto de la mitad derecha
-	var rival_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	# Primero ajustar la cámara hacia el encuadre
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
-
-	# 2. Instanciar a la rival en el centro de la mitad derecha con PROCESS_MODE_ALWAYS para operar en pausa
-	var rival = rival_pilot_scene.instantiate()
-	rival.global_position = rival_target_pos
-	rival.rotation = -PI / 2.0
-	rival.process_mode = Node.PROCESS_MODE_ALWAYS
-	rival.setup_pilot(next_pid, current_wave)
-	if rival.has_method("prepare_warp_in"):
-		rival.prepare_warp_in(rival_target_pos)
-	add_child(rival)
-	current_rival = rival
-	_wave_encounter_spawned_for_wave = current_wave
-	_wave_encounter_pending = false
-
-	rival.rival_spared.connect(_on_rival_spared)
-	rival.rival_engaged.connect(_on_rival_engaged)
-	rival.rival_defeated.connect(_on_rival_defeated)
-
-	if hud and hud.has_method("track_boss"):
-		hud.track_boss(rival, "RIVAL")
-
-	# 3. Esperar 0.45s a que la cámara ajuste al jugador en su punto antes de abrir el portal
-	get_tree().create_timer(0.45, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(rival):
-			return
-		if rival.has_method("open_warp_portal"):
-			rival.open_warp_portal(func() -> void:
-				# Shockwave despejó el radio y el portal queda activo en escena
-				_trigger_pet_rival_jump_warning(rival, func() -> void:
-					# Mascota advirtió del salto. Pausa dramática de 0.3s antes de que emerja la rival
-					get_tree().create_timer(0.3, true, false, true).timeout.connect(func() -> void:
-						if not is_instance_valid(rival):
-							return
-						rival.emerge_from_portal(func() -> void:
-							# La rival llega a escena y el portal colapsa: comienza la charla con la rival
-							_trigger_rival_face_to_face_dialogue(rival)
-						)
-					)
-				)
-			)
-		else:
-			_trigger_rival_face_to_face_dialogue(rival)
-	)
-
-	# Watchdog de seguridad absoluta para la secuencia cinemática de rival (18s máximo)
-	get_tree().create_timer(18.0, true, false, true).timeout.connect(func() -> void:
-		if is_rival_cinematic_active:
-			push_warning("[CINEMATIC WATCHDOG] Rival cinematic sequence timed out; recovering and starting encounter.")
-			_on_dialogue_skip_requested()
-	)
+	if boss_coordinator:
+		boss_coordinator.spawn_rival_pilot(override_id)
 
 func _on_rival_spared(p_id: StringName) -> void:
-	if not rivals_spared.has(p_id):
-		rivals_spared.append(p_id)
-	var r_name := String(p_id).capitalize()
-	if current_rival and "pilot_name" in current_rival:
-		r_name = current_rival.pilot_name
-	current_rival = null
-	if hud and hud.has_method("hide_boss"):
-		hud.hide_boss()
-	if hud and hud.has_method("show_character_unlock_banner"):
-		hud.show_character_unlock_banner(p_id, "PILOTO RESPETADA: " + r_name.to_upper(), "Has permitido que la piloto escape pacíficamente. Decisión registrada.")
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(false)
-	save_current_run_state()
+	if boss_coordinator:
+		boss_coordinator.on_rival_spared(p_id)
 
 func _on_rival_engaged(p_id: StringName) -> void:
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(true)
-	if current_rival:
-		var r_name: String = "DUELO: " + (current_rival.pilot_name if "pilot_name" in current_rival else String(p_id).to_upper())
-		var r_hp: float = current_rival.max_health if "max_health" in current_rival else 950.0
-		hud.show_boss(r_name, r_hp)
-		if current_rival.has_signal("health_changed"):
-			current_rival.connect("health_changed", hud.update_boss_health)
+	if boss_coordinator:
+		boss_coordinator.on_rival_engaged(p_id)
 
 func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
-	if not rivals_killed.has(p_id):
-		rivals_killed.append(p_id)
-	var r_name := String(p_id).capitalize()
-	if current_rival and "pilot_name" in current_rival:
-		r_name = current_rival.pilot_name
-	current_rival = null
-	if hud and hud.has_method("hide_boss"):
-		hud.hide_boss()
-	if hud and hud.has_method("show_character_unlock_banner"):
-		var w_name := weapon.weapon_name if weapon else "Arma Insignia"
-		hud.show_character_unlock_banner(p_id, "RIVAL ELIMINADA: " + r_name.to_upper(), "Has abatido a " + r_name + ". ¡Arma insignia " + w_name + " obtenida!")
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(false)
-	save_current_run_state()
-	_resume_pending_systems_after_cinematics()
+	if boss_coordinator:
+		boss_coordinator.on_rival_defeated(p_id, weapon)
 
 func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
-	if _wave_encounter_spawned_for_wave == current_wave and target_scene_override == null:
-		_wave_encounter_pending = false
-		return
-
-	if target_scene_override == null and (is_any_combat_modal_active() or has_pending_upgrades()):
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 0.5
-		return
-
-	if target_scene_override == null and _has_active_boss_or_rival():
-		if _wave_encounter_spawned_for_wave != current_wave:
-			_wave_encounter_pending = true
-			_wave_encounter_timer = 1.0
-		return
-
-	if not is_instance_valid(player):
-		return
-
-	# Pausar la generación de drones comunes para duelo 1v1
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(true)
-	var bullet_srv := get_node_or_null("/root/BulletServer") as BulletServer
-	if not bullet_srv and get_parent():
-		bullet_srv = get_parent().get_node_or_null("BulletServer") as BulletServer
-	if bullet_srv:
-		bullet_srv.bomb_clear_all()
-
-	var target_scene: PackedScene = target_scene_override
-	if not target_scene:
-		match current_wave:
-			2:
-				target_scene = boss_hermit_scene
-			5:
-				target_scene = boss_broken_mirror_scene
-			8:
-				target_scene = boss_ash_clock_scene
-			11:
-				target_scene = boss_overflow_vortex_scene
-			14:
-				target_scene = boss_mothership_scene
-			_:
-				target_scene = boss_mothership_scene
-
-	# Encuadre cinematográfico horizontal en mitades de pantalla (1920x1080):
-	# Zoom 1.0 para fidelidad exacta de 960px por mitad (centros en -480px y +480px)
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	# Desacelerar nave del jugador y orientarla hacia el Este (apuntando al coloso)
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.velocity = Vector2.ZERO
-			if "current_facing_angle" in player:
-				player.current_facing_angle = 0.0
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	var boss_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
-
-	current_boss = target_scene.instantiate() as Node2D
-	current_boss.global_position = boss_target_pos
-	current_boss.rotation = PI
-	current_boss.process_mode = Node.PROCESS_MODE_ALWAYS
-	current_boss.set("is_invulnerable", true)
-	current_boss.set_meta("_is_emerging", true)
-	if current_boss.has_method("prepare_emergence"):
-		current_boss.prepare_emergence(boss_target_pos)
-	else:
-		BossEmergenceHelperScript.prepare_boss(current_boss, boss_target_pos)
-	add_child(current_boss)
-	_wave_encounter_spawned_for_wave = current_wave
-	_wave_encounter_pending = false
-
-	# Escalamiento adaptativo de vida del jefe según oleada y potencia del jugador
-	if "max_health" in current_boss:
-		var base_hp: float = current_boss.get("max_health")
-		var dmg_val: float = 20.0
-		var spd_val: float = 1.0
-		if is_instance_valid(player) and player.stats:
-			dmg_val = player.stats.get_stat(&"base_damage")
-			spd_val = player.stats.get_stat(&"attack_speed")
-		var adaptive_hp: float = base_hp
-		if encounter_director and encounter_director.boss_rival_director:
-			adaptive_hp = encounter_director.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val)
-		else:
-			var wave_factor: float = 1.0 + float(current_wave) * 0.08
-			var p_dps_factor: float = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
-			adaptive_hp = base_hp * wave_factor * p_dps_factor
-		current_boss.set("max_health", adaptive_hp)
-		current_boss.set("current_health", adaptive_hp)
-
-	var b_name: String = current_boss.get("boss_name") if "boss_name" in current_boss else "JEFE DE DOMINIO"
-	var b_hp: float = current_boss.get("max_health") if "max_health" in current_boss else 1500.0
-	var b_id: String = current_boss.get("boss_id") if "boss_id" in current_boss else "boss_wave"
-
-	if current_boss.has_signal("health_changed"):
-		current_boss.connect("health_changed", hud.update_boss_health)
-	if current_boss.has_signal("phase_changed"):
-		current_boss.connect("phase_changed", hud.set_boss_phase)
-	if current_boss.has_signal("boss_defeated"):
-		current_boss.connect("boss_defeated", _on_boss_defeated)
-
-	# Instanciar Ruptura Cósmica / Fractura de Realidad
-	var domain_col: Color = CosmicRealityTearScript.get_boss_domain_color(b_id)
-	var tear = CosmicRealityTearScript.new()
-	tear.setup(boss_target_pos, domain_col, 250.0, 750.0)
-	tear.auto_collapse = false
-	tear.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(tear)
-
-	# Ajustar cámara -> detonar onda expansiva de despeje -> alerta de mascota -> emergencia del coloso
-	get_tree().create_timer(0.40, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(current_boss):
-			return
-		tear.shockwave_completed.connect(func() -> void:
-			_trigger_pet_boss_alert(b_name, func() -> void:
-				# Pausa dramática de 0.25s tras cerrar el diálogo antes de que emerja el coloso
-				get_tree().create_timer(0.25, true, false, true).timeout.connect(func() -> void:
-					if not is_instance_valid(current_boss):
-						if is_instance_valid(tear):
-							tear.queue_free()
-						return
-					var on_emerge_finished := func() -> void:
-						if is_instance_valid(current_boss):
-							current_boss.set("is_invulnerable", false)
-							current_boss.set_meta("_is_emerging", false)
-						if is_instance_valid(tear):
-							tear.start_collapse()
-						hud.show_boss(b_name, b_hp)
-						if hud and hud.has_method("track_boss"):
-							hud.track_boss(current_boss, "JEFE")
-						if cam and cam.has_method("clear_cinematic_focus"):
-							cam.clear_cinematic_focus()
-						if is_instance_valid(player) and player.has_method("resume_movement_control"):
-							player.resume_movement_control()
-						is_boss_transmission_active = false
-						get_tree().paused = false
-						notify_menu_closed(0.4)
-						_resume_pending_systems_after_cinematics()
-
-					if current_boss.has_method("emerge_from_tear"):
-						current_boss.emerge_from_tear(on_emerge_finished)
-					else:
-						BossEmergenceHelperScript.emerge_boss(current_boss, tear, on_emerge_finished)
-				)
-			)
-		, CONNECT_ONE_SHOT)
-	)
+	if boss_coordinator:
+		boss_coordinator.spawn_wave_boss(target_scene_override)
 
 func _spawn_final_boss(force_spawn: bool = false) -> void:
-	if not force_spawn and _wave_encounter_spawned_for_wave == current_wave:
-		_wave_encounter_pending = false
-		return
-
-	if not force_spawn and is_any_combat_modal_active():
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 0.5
-		return
-
-	if not force_spawn and _has_active_boss_or_rival():
-		if _wave_encounter_spawned_for_wave != current_wave:
-			_wave_encounter_pending = true
-			_wave_encounter_timer = 1.0
-		return
-
-	if not is_instance_valid(player):
-		return
-
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(true)
-	var bullet_srv := get_node_or_null("/root/BulletServer") as BulletServer
-	if not bullet_srv and get_parent():
-		bullet_srv = get_parent().get_node_or_null("BulletServer") as BulletServer
-	if bullet_srv:
-		bullet_srv.bomb_clear_all()
-
-	var route := "neutral"
-	if rivals_spared.size() >= 5:
-		route = "pacifist"
-	elif rivals_killed.size() >= 5:
-		route = "slayer"
-
-	# Encuadre cinematográfico horizontal en mitades de pantalla (1920x1080):
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.velocity = Vector2.ZERO
-			if "current_facing_angle" in player:
-				player.current_facing_angle = 0.0
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	var boss_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
-
-	var prime = boss_astra_prime_scene.instantiate()
-	prime.global_position = boss_target_pos
-	prime.rotation = PI
-	prime.process_mode = Node.PROCESS_MODE_ALWAYS
-	prime.set_route(route)
-	prime.set("is_invulnerable", true)
-	prime.set_meta("_is_emerging", true)
-	if prime.has_method("prepare_emergence"):
-		prime.prepare_emergence(boss_target_pos)
-	else:
-		BossEmergenceHelperScript.prepare_boss(prime, boss_target_pos)
-	add_child(prime)
-	current_boss = prime
-	_wave_encounter_spawned_for_wave = current_wave
-	_wave_encounter_pending = false
-
-	prime.health_changed.connect(hud.update_boss_health)
-	prime.phase_changed.connect(hud.set_boss_phase)
-	prime.boss_defeated.connect(func(_b_id): _on_final_boss_defeated(route))
-
-	var domain_col: Color = Color(1.0, 0.15, 0.25, 1.0) if route == "slayer" else CosmicRealityTearScript.get_boss_domain_color("boss_astra_prime")
-	var tear = CosmicRealityTearScript.new()
-	tear.setup(boss_target_pos, domain_col, 280.0, 850.0)
-	tear.auto_collapse = false
-	tear.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(tear)
-
-	get_tree().create_timer(0.40, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(prime):
-			return
-		tear.shockwave_completed.connect(func() -> void:
-			_trigger_climax_dialogue(route, func() -> void:
-				get_tree().create_timer(0.25, true, false, true).timeout.connect(func() -> void:
-					if not is_instance_valid(prime):
-						if is_instance_valid(tear):
-							tear.queue_free()
-						return
-					var on_emerge_finished := func() -> void:
-						if is_instance_valid(prime):
-							prime.set("is_invulnerable", false)
-							prime.set_meta("_is_emerging", false)
-						if is_instance_valid(tear):
-							tear.start_collapse()
-						hud.show_boss(prime.boss_name, prime.max_health)
-						if hud and hud.has_method("track_boss"):
-							hud.track_boss(prime, "JEFE FINAL")
-						if cam and cam.has_method("clear_cinematic_focus"):
-							cam.clear_cinematic_focus()
-						if is_instance_valid(player) and player.has_method("resume_movement_control"):
-							player.resume_movement_control()
-						is_boss_transmission_active = false
-						get_tree().paused = false
-						notify_menu_closed(0.4)
-						_resume_pending_systems_after_cinematics()
-
-						if route == "pacifist":
-							_spawn_allied_wingmen()
-						elif route == "slayer":
-							player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, self))
-							var escort = nyx_boss_escort_scene.instantiate()
-							var escort_pid := _get_genocide_escort_pilot_id()
-							escort.global_position = boss_target_pos + Vector2(0.0, 110.0)
-							escort.setup(escort_pid, prime)
-							add_child(escort)
-							current_genocide_escort = escort
-
-					if prime.has_method("emerge_from_tear"):
-						prime.emerge_from_tear(on_emerge_finished)
-					else:
-						BossEmergenceHelperScript.emerge_boss(prime, tear, on_emerge_finished)
-				)
-			)
-		, CONNECT_ONE_SHOT)
-	)
-
-
+	if boss_coordinator:
+		boss_coordinator.spawn_final_boss(force_spawn)
 
 func _spawn_allied_wingmen() -> void:
-	for i in range(rivals_spared.size()):
-		var pid := rivals_spared[i]
-		var wingman = allied_wingman_scene.instantiate()
-		wingman.global_position = player.global_position + Vector2(cos((TAU / 5.0) * float(i)), sin((TAU / 5.0) * float(i))) * 230.0
-		wingman.setup(pid, (TAU / 5.0) * float(i))
-		add_child(wingman)
+	if boss_coordinator:
+		boss_coordinator.spawn_allied_wingmen()
 
-func _on_boss_defeated(_boss_id: String) -> void:
-	bosses_defeated_count += 1
-	current_boss = null
-	hud.hide_boss()
-
-	var just_unlocked_nyx: bool = SaveManager.record_boss_kill()
-	if just_unlocked_nyx and hud and hud.has_method("show_character_unlock_banner"):
-		hud.show_character_unlock_banner(&"nyx", "¡NUEVO PILOTO DESBLOQUEADO: NYX!", "Has derrotado a 10 Jefes Titanes en tu Carrera espacial.")
-
-	# Reanudar la generación de drones comunes
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(false)
-	save_current_run_state()
-	_resume_pending_systems_after_cinematics()
+func _on_boss_defeated(boss_id: String) -> void:
+	if boss_coordinator:
+		boss_coordinator.on_boss_defeated(boss_id)
 
 func _on_final_boss_defeated(route: String) -> void:
 	bosses_defeated_count += 1
@@ -1557,263 +682,26 @@ func _on_final_boss_defeated(route: String) -> void:
 	hud.hide_boss()
 	is_wave_11_cleared = true
 
-	SaveManager.record_ending(route)
-
-	# Fichas de Gacha: +3 por Pacifista o Genocida/Exterminador, +1 por victoria regular
-	var tokens_awarded := 3 if (route == "pacifist" or route == "slayer") else 1
-	SaveManager.add_gacha_tokens(tokens_awarded)
-
-	var ending_title := "FINAL NEUTRAL: EQUILIBRIO FRAGMENTADO"
-	var epilogue := "Sobreviviste tomando decisiones pragmáticas. El orden cósmico permanece en una frágil calma."
-	if route == "pacifist":
-		ending_title = "FINAL PACIFISTA: FLOTA DE LA ESPERANZA"
-		epilogue = "Las 5 pilotos perdonadas se unieron a tu vuelo, liberando el Núcleo Astra y salvando la galaxia."
-	elif route == "slayer":
-		ending_title = "FINAL EXTERMINADOR: EL LOBO SOLITARIO"
-		epilogue = "Erradicaste a todas las rivales y absorbiste sus armas. Ahora reinas como el soberano absoluto del vacío."
-
-	var minutes := int(run_time_elapsed) / 60
-	var seconds := int(run_time_elapsed) % 60
-	var time_str := "%02d:%02d" % [minutes, seconds]
-	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
-	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
-
-	var final_score := int((enemies_killed_count * 50) + (current_wave * 1500) + (bosses_defeated_count * 8000) + (player.run_credits * 15) + int(run_time_elapsed * 25))
-
-	var rank := SaveManager.record_run_score({
-		"pilot_id": pilot_id,
-		"pilot_name": pilot_name,
-		"wave_reached": current_wave,
-		"time_survived_seconds": run_time_elapsed,
-		"time_survived_formatted": time_str,
-		"enemies_killed": enemies_killed_count,
-		"credits_earned": player.run_credits,
-		"victory": true,
-		"score": final_score
-	})
-
-	SaveManager.record_career_run_end({
-		"time_survived": run_time_elapsed,
-		"credits_earned": player.run_credits,
-		"biomass_earned": player.run_biomass,
-		"enemies_killed": enemies_killed_count,
-		"satellites_collected": satellites_collected_total,
-		"victory": true
-	})
-
-	SaveManager.clear_active_run()
-
-	var weapons_summary: Array = []
-	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl:
-		for inst in w_ctrl.equipped_weapons:
-			if inst and inst.weapon_data:
-				var w_dname := ""
-				if inst.weapon_data.has_method("get_display_name"):
-					w_dname = inst.weapon_data.get_display_name()
-				elif "weapon_name" in inst.weapon_data and not inst.weapon_data.weapon_name.is_empty():
-					w_dname = inst.weapon_data.weapon_name
-				else:
-					w_dname = WeaponData.get_stylized_name_for_id(str(inst.weapon_data.weapon_id))
-
-				weapons_summary.append({
-					"name": w_dname,
-					"id": str(inst.weapon_data.weapon_id),
-					"level": inst.level,
-					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
-				})
-
-	var victory_data := {
-		"score": final_score,
-		"is_new_highscore": (rank == 1),
-		"rank": rank,
-		"pilot_name": pilot_name,
-		"pilot_id": pilot_id,
-		"waves_survived": current_wave,
-		"time_survived_seconds": run_time_elapsed,
-		"time_formatted": time_str,
-		"bosses_defeated": bosses_defeated_count,
-		"enemies_killed": enemies_killed_count,
-		"biomass_collected": player.run_biomass,
-		"dark_matter_collected": player.run_dark_matter,
-		"credits_collected": player.run_credits,
-		"arcanas": player.active_arcanas.duplicate(),
-		"items": player.inventory.get_all_items() if player.inventory else [],
-		"weapons": weapons_summary,
-		"victory": true,
-		"ending_type": route,
-		"ending_title": ending_title,
-		"epilogue_text": epilogue
-	}
-
+	var victory_data: Dictionary = CombatTelemetryRecorder.build_end_of_run_data(self, true, route)
 	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
 		_show_game_over_screen(victory_data)
 	)
 
 func jump_to_boss(boss_id: String) -> void:
-	is_pre_round = false
-	is_briefing_active = false
-	is_cockpit_active = false
-	is_boss_transmission_active = false
-	is_victory_dialogue_active = false
-	is_rival_cinematic_active = false
-	prologue_bonus_chosen = true
-	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		if "hold_dimmer" in backdrop:
-			backdrop.hold_dimmer = false
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.0)
-	if skip_badge_layer:
-		skip_badge_layer.hide()
-	wave_timer = WAVE_DURATION
-	_wave_encounter_pending = false
-	if current_boss and is_instance_valid(current_boss):
-		current_boss.queue_free()
-		current_boss = null
-	if current_rival and is_instance_valid(current_rival):
-		current_rival.queue_free()
-		current_rival = null
-	if current_satellite and is_instance_valid(current_satellite):
-		current_satellite.queue_free()
-		current_satellite = null
-	wave_satellites_spawned = MAX_SATELLITES_PER_WAVE
-	if hud and hud.has_method("clear_satellite"):
-		hud.clear_satellite()
-
-	# Si es Astra Prime, delegar a jump_to_wave_16 para inicializar su lógica completa de ruta final
-	if boss_id == "boss_astra_prime":
-		jump_to_wave_16("neutral")
-		return
-
-	var target_scene: PackedScene = boss_mothership_scene
-	var target_wave: int = 14
-	match boss_id:
-		"boss_hermit_void":
-			target_scene = boss_hermit_scene
-			target_wave = 2
-		"boss_broken_mirror":
-			target_scene = boss_broken_mirror_scene
-			target_wave = 5
-		"boss_ash_clock":
-			target_scene = boss_ash_clock_scene
-			target_wave = 8
-		"boss_overflow_vortex":
-			target_scene = boss_overflow_vortex_scene
-			target_wave = 11
-		"boss_mothership":
-			target_scene = boss_mothership_scene
-			target_wave = 14
-		_:
-			target_scene = boss_mothership_scene
-			target_wave = 14
-
-	current_wave = target_wave
-	_wave_encounter_checked_for_wave = target_wave
-	_wave_encounter_spawned_for_wave = 0
-	_wave_encounter_pending = false
-
-	# Equipar nivel adecuado y créditos para testear cómodamente el jefe
-	if is_instance_valid(player):
-		player.velocity = Vector2.ZERO
-		if player.current_level < (target_wave * 2):
-			player.current_level = maxi(target_wave * 2, 6)
-			if hud:
-				hud.update_exp(0, 100, player.current_level)
-		player.run_credits = maxi(int(player.run_credits), 1200)
-		if hud:
-			hud.update_credits(player.run_credits)
-
-	if hud:
-		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
-
-	_spawn_wave_boss(target_scene)
-
+	if boss_coordinator:
+		boss_coordinator.jump_to_boss(boss_id)
 
 func jump_to_wave_11(route: String = "neutral") -> void:
-	jump_to_wave_16(route)
+	if boss_coordinator:
+		boss_coordinator.jump_to_wave_16(route)
 
 func jump_to_wave_16(route: String = "neutral") -> void:
-	is_pre_round = false
-	is_briefing_active = false
-	is_cockpit_active = false
-	is_boss_transmission_active = false
-	is_victory_dialogue_active = false
-	is_rival_cinematic_active = false
-	prologue_bonus_chosen = true
-	var backdrop := get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		if "hold_dimmer" in backdrop:
-			backdrop.hold_dimmer = false
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.0)
-	if skip_badge_layer:
-		skip_badge_layer.hide()
-	current_wave = 16
-	wave_timer = WAVE_DURATION
-	_wave_encounter_checked_for_wave = 16
-	_wave_encounter_spawned_for_wave = 0
-	_wave_encounter_pending = false
-	if current_boss and is_instance_valid(current_boss):
-		current_boss.queue_free()
-		current_boss = null
-	if current_rival and is_instance_valid(current_rival):
-		current_rival.queue_free()
-		current_rival = null
-	if current_satellite and is_instance_valid(current_satellite):
-		current_satellite.queue_free()
-		current_satellite = null
-	wave_satellites_spawned = MAX_SATELLITES_PER_WAVE
-	if hud and hud.has_method("clear_satellite"):
-		hud.clear_satellite()
-	if is_instance_valid(player):
-		player.velocity = Vector2.ZERO
-		var cam := get_tree().get_first_node_in_group("camera") as Camera2D
-		if cam:
-			cam.global_position = player.global_position
-
-	rivals_spared.clear()
-	rivals_killed.clear()
-	if route == "pacifist":
-		rivals_spared = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
-	elif route == "slayer" or route == "genocida":
-		rivals_killed = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
-	else:
-		rivals_spared = [&"nova", &"valentina"]
-		rivals_killed = [&"kira", &"selene"]
-
-	# Equipar armamento y estadísticas acordes a la oleada final para testeo balanceado
-	if is_instance_valid(player):
-		if player.current_level < 15:
-			player.current_level = 15
-			player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"debug_w16_hull", 100.0, false, self))
-			player.current_health = player.stats.get_stat(&"max_health")
-			if hud:
-				hud.update_exp(0, 100, player.current_level)
-		if route == "slayer" or route == "genocida":
-			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-			if w_ctrl:
-				var rival_weapons := [
-					"res://data/weapons/roster/crescent_blade.tres",
-					"res://data/weapons/roster/sonic_burst.tres",
-					"res://data/weapons/roster/plasma_spear.tres"
-				]
-				for w_path in rival_weapons:
-					if ResourceLoader.exists(w_path):
-						var w_res := load(w_path) as WeaponData
-						if w_res:
-							w_ctrl.add_weapon(w_res)
-
-	if hud:
-		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
-
-	_spawn_final_boss(true)
+	if boss_coordinator:
+		boss_coordinator.jump_to_wave_16(route)
 
 func spawn_next_rival_pilot() -> void:
-	if current_rival and is_instance_valid(current_rival):
-		current_rival.queue_free()
-		current_rival = null
-	_spawn_rival_pilot()
+	if boss_coordinator:
+		boss_coordinator.spawn_rival_pilot()
 
 func _input(event: InputEvent) -> void:
 	# Durante secuencias cinemáticas o diálogos, consumir ESC para evitar desincronizar pausa
@@ -2029,82 +917,7 @@ func _on_player_died() -> void:
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 
-	# 1. Eliminar partida en curso (Permadeath)
-	SaveManager.clear_active_run()
-
-	# 2. Registrar resultado en la tabla de Highscores y calcular Puntuación
-	var minutes := int(run_time_elapsed) / 60
-	var seconds := int(run_time_elapsed) % 60
-	var time_str := "%02d:%02d" % [minutes, seconds]
-	var pilot_id: String = String(player.character_data.character_id) if player.character_data and player.character_data.character_id else "nova"
-	var pilot_name: String = player.character_data.display_name if player.character_data and player.character_data.display_name != "" else "Piloto Estelar"
-
-	var final_score := int((enemies_killed_count * 50) + (current_wave * 1000) + (bosses_defeated_count * 5000) + (player.run_credits * 10) + int(run_time_elapsed * 20))
-
-	var rank := SaveManager.record_run_score({
-		"pilot_id": pilot_id,
-		"pilot_name": pilot_name,
-		"wave_reached": current_wave,
-		"time_survived_seconds": run_time_elapsed,
-		"time_survived_formatted": time_str,
-		"enemies_killed": enemies_killed_count,
-		"credits_earned": player.run_credits,
-		"victory": false,
-		"score": final_score
-	})
-	var is_new_record: bool = (rank == 1)
-
-	SaveManager.record_career_run_end({
-		"time_survived": run_time_elapsed,
-		"credits_earned": player.run_credits,
-		"biomass_earned": player.run_biomass,
-		"enemies_killed": enemies_killed_count,
-		"satellites_collected": satellites_collected_total,
-		"victory": false
-	})
-
-	# 3. Recopilar armamento equipado
-	var weapons_summary: Array = []
-	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl:
-		for inst in w_ctrl.equipped_weapons:
-			if inst and inst.weapon_data:
-				var w_dname := ""
-				if inst.weapon_data.has_method("get_display_name"):
-					w_dname = inst.weapon_data.get_display_name()
-				elif "weapon_name" in inst.weapon_data and not inst.weapon_data.weapon_name.is_empty():
-					w_dname = inst.weapon_data.weapon_name
-				else:
-					w_dname = WeaponData.get_stylized_name_for_id(str(inst.weapon_data.weapon_id))
-
-				weapons_summary.append({
-					"name": w_dname,
-					"id": str(inst.weapon_data.weapon_id),
-					"level": inst.level,
-					"icon": inst.weapon_data.icon if "icon" in inst.weapon_data else null
-				})
-
-	# 4. Empaquetar telemetría para la pantalla de Game Over
-	var game_over_data := {
-		"score": final_score,
-		"is_new_highscore": is_new_record,
-		"rank": rank,
-		"pilot_name": pilot_name,
-		"pilot_id": pilot_id,
-		"waves_survived": current_wave,
-		"time_survived_seconds": run_time_elapsed,
-		"time_formatted": time_str,
-		"bosses_defeated": bosses_defeated_count,
-		"enemies_killed": enemies_killed_count,
-		"biomass_collected": player.run_biomass,
-		"dark_matter_collected": player.run_dark_matter,
-		"credits_collected": player.run_credits,
-		"arcanas": player.active_arcanas.duplicate(),
-		"items": player.inventory.get_all_items() if player.inventory else [],
-		"weapons": weapons_summary
-	}
-
-	# 5. Pausa dramática (~1.0s) mientras explota la nave con VFX y SFX antes de desplegar el modal
+	var game_over_data: Dictionary = CombatTelemetryRecorder.build_end_of_run_data(self, false)
 	get_tree().create_timer(1.0, true, false, true).timeout.connect(func():
 		_show_game_over_screen(game_over_data)
 	)
@@ -2173,36 +986,4 @@ func _spawn_navigator_controller() -> void:
 	active_navigator_controller.setup(self, player, hud)
 
 func _spawn_debug_test_planets() -> void:
-	if not is_instance_valid(player):
-		return
-
-	var planet_scene := load("res://scenes/combat/environment/planet.tscn") as PackedScene
-	if not planet_scene:
-		return
-
-	var configs: Array[Dictionary] = [
-		{
-			"res": "res://data/planets/verdant_planet.tres",
-			"offset": Vector2(650.0, -250.0) # Arriba a la derecha
-		},
-		{
-			"res": "res://data/planets/volcanic_planet.tres",
-			"offset": Vector2(-750.0, 300.0) # Abajo a la izquierda
-		},
-		{
-			"res": "res://data/planets/cryo_planet.tres",
-			"offset": Vector2(850.0, 600.0) # Abajo a la derecha
-		}
-	]
-
-	for cfg in configs:
-		var p_res := load(cfg["res"]) as PlanetData
-		if not p_res:
-			continue
-		var planet := planet_scene.instantiate() as Planet
-		if not planet:
-			continue
-		planet.planet_data = p_res
-		planet.disable_defenders = true # Sin defensores molestos en la pseudo-run de prueba de planetas
-		planet.global_position = player.global_position + cfg["offset"]
-		add_child(planet)
+	PlanetSpawnerHelper.spawn_debug_planets(self, player)

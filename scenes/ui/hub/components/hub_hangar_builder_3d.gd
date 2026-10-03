@@ -279,3 +279,45 @@ func ensure_static_cylinder_collider(parent: Node3D, radius: float, height: floa
 		cshape.position = center_pos
 		existing.add_child(cshape)
 		parent.add_child(existing)
+
+func update_parallax(cam_pos: Vector3) -> void:
+	if not is_instance_valid(hub):
+		return
+	var approach: float = clampf((-cam_pos.z) / 7.5, 0.0, 1.0)
+	var parallax_near: MeshInstance3D = hub.get_node_or_null("SpaceParallax/Layer2_Near")
+	var parallax_mid: MeshInstance3D = hub.get_node_or_null("SpaceParallax/Layer1_Mid")
+	var parallax_deep: MeshInstance3D = hub.get_node_or_null("SpaceParallax/Layer0_Deep")
+
+	if parallax_near and is_instance_valid(parallax_near):
+		parallax_near.position.x = cam_pos.x * 0.35
+		parallax_near.position.y = 4.0 + (cam_pos.y - 3.2) * 0.25
+		var s_near: float = 1.0 + approach * 0.12
+		parallax_near.scale = Vector3(s_near, s_near, 1.0)
+	if parallax_mid and is_instance_valid(parallax_mid):
+		parallax_mid.position.x = cam_pos.x * 0.14
+		parallax_mid.position.y = 6.0 + (cam_pos.y - 3.2) * 0.12
+		var s_mid: float = 1.0 + approach * 0.06
+		parallax_mid.scale = Vector3(s_mid, s_mid, 1.0)
+	if parallax_deep and is_instance_valid(parallax_deep):
+		parallax_deep.position.x = cam_pos.x * 0.04
+		parallax_deep.position.y = 10.0 + (cam_pos.y - 3.2) * 0.04
+
+	var approach_south: float = clampf((cam_pos.z - 33.5) / 7.5, 0.0, 1.0)
+	var parallax_south_near: MeshInstance3D = hub.get_node_or_null("SpaceParallax_South/Layer2_Near_South")
+	var parallax_south_mid: MeshInstance3D = hub.get_node_or_null("SpaceParallax_South/Layer1_Mid_South")
+	var parallax_south_deep: MeshInstance3D = hub.get_node_or_null("SpaceParallax_South/Layer0_Deep_South")
+
+	if parallax_south_near and is_instance_valid(parallax_south_near):
+		parallax_south_near.position.x = -cam_pos.x * 0.35
+		parallax_south_near.position.y = 4.0 + (cam_pos.y - 3.2) * 0.25
+		var s_snear: float = 1.0 + approach_south * 0.12
+		parallax_south_near.scale = Vector3(s_snear, s_snear, 1.0)
+	if parallax_south_mid and is_instance_valid(parallax_south_mid):
+		parallax_south_mid.position.x = -cam_pos.x * 0.14
+		parallax_south_mid.position.y = 6.0 + (cam_pos.y - 3.2) * 0.12
+		var s_smid: float = 1.0 + approach_south * 0.06
+		parallax_south_mid.scale = Vector3(s_smid, s_smid, 1.0)
+	if parallax_south_deep and is_instance_valid(parallax_south_deep):
+		parallax_south_deep.position.x = -cam_pos.x * 0.04
+		parallax_south_deep.position.y = 10.0 + (cam_pos.y - 3.2) * 0.04
+

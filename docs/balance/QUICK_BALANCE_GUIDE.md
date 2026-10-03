@@ -6,9 +6,11 @@
 
 ---
 
-## 1. Armas y Proyectiles (`resources/weapons/`)
+## 1. Armas y Proyectiles (`data/weapons/`)
 
-Ubicación: `resources/weapons/` (ej. `weapon_rail_launcher.tres`, `weapon_tesla_coil.tres`, `weapon_laser_pulse.tres`).
+Ubicación: 
+- `data/weapons/roster/` (ej. `rail_launcher.tres`, `crescent_blade.tres`, `tesla_arc.tres`, `singularity_pulsar.tres`).
+- `data/weapons/shop/` (ej. `solar_beam.tres`, `nova_flak.tres`, `dimensional_blade.tres`).
 
 | Propiedad en el `.tres` | Tipo | Impacto en Juego | Consejo de Balance |
 | :--- | :--- | :--- | :--- |
@@ -21,11 +23,11 @@ Ubicación: `resources/weapons/` (ej. `weapon_rail_launcher.tres`, `weapon_tesla
 
 ---
 
-## 2. Enemigos, Jefes y Colosos (`resources/enemies/`)
+## 2. Enemigos, Jefes y Colosos (`entities/enemies/`, `entities/bosses/`)
 
-Ubicación: `resources/enemies/` (ej. `enemy_swarmer.tres`, `enemy_kamikaze.tres`, `boss_aegis.tres`).
+Ubicación: `entities/enemies/` y `entities/bosses/`.
 
-| Propiedad en el `.tres` | Tipo | Impacto en Juego |
+| Propiedad / Variable | Tipo | Impacto en Juego |
 | :--- | :--- | :--- |
 | `max_health` | `float` | Vida del enemigo base. |
 | `movement_speed` | `float` | Velocidad de persecución en píxeles/segundo. |
@@ -36,33 +38,35 @@ Ubicación: `resources/enemies/` (ej. `enemy_swarmer.tres`, `enemy_kamikaze.tres
 
 ---
 
-## 3. Composición de Oleadas y Pautas (`resources/encounters/`)
+## 3. Composición de Oleadas y Pautas (`data/balance/`)
 
-Ubicación: `resources/encounters/timeline_config.tres`.
+Ubicación: `data/balance/default_encounter_timeline.tres`.
 
-- **`wave_duration_seconds`:** Duración de cada oleada regular (por defecto: 60.0s).
-- **`boss_wave_interval`:** Cada cuántas oleadas aparece un Coloso (por defecto: cada 5 oleadas).
-- **`spawn_rate_curve`:** Curva de cadencia de spawn exponencial a medida que transcurre el tiempo.
-- **`enemy_pool_by_sector`:** Listas de tipos de enemigos habilitados por sector galáctico.
+- **`wave_duration`:** Duración de cada oleada regular (por defecto: 30.0s).
+- **`total_waves`:** Cantidad de oleadas por expedición (16).
+- **`boss_wave_milestones`:** Diccionario de hitos de Colosos (Oleadas 2, 5, 8, 11, 14, 16).
+- **`rival_wave_milestones`:** Array de oleadas con emergencia de rivales (`[4, 7, 10, 13]`).
+- **`adaptive_dps_floor` / `adaptive_dps_ceiling`:** Multiplicadores de salud adaptativa de colosos (`0.85` a `2.5`).
 
 ---
 
-## 4. Satélites, Tienda y Economía (`resources/satellites/`, `resources/items/`)
+## 4. Sectores, Satélites y Economía (`data/sectors/`, `data/items/`)
+
+### Sectores Galácticos
+Ubicación: `data/sectors/` (ej. `sector_nebula_outskirts.tres`, `sector_plasma_storm.tres`, `sector_void_abyss.tres`, `sector_singularity_core.tres`).
+- Permiten ajustar multiplicadores de créditos, densidad de enemigos y rival asignado por sector.
 
 ### Recompensas de Satélites
-Ubicación: `resources/satellites/` y `core/systems/satellite_reward_manager.gd`.
-- Para ajustar el tiempo de carga del satélite, modifica `capture_duration_seconds` en `satellite_config.tres` (por defecto: 10.0s).
+Ubicación: `core/systems/satellite_reward_manager.gd` y `data/weapons/shop/`.
 - Precios de reciclaje de armas: fórmula global `recycle_value = 20 + level * 15` (Lv1: 35c, Lv2: 50c, Lv3: 65c, Lv4: 80c, Lv5: 95c).
 
-### Ítems Pasivos
-Ubicación: `resources/items/` (ej. `item_espada.tres`, `item_botas.tres`, `item_trebol.tres`).
-- **`stat_modifiers`:** Diccionario de estadísticas afectadas (`damage_pct`, `speed_pct`, `crit_rate`, `pickup_radius`).
-- **`rarity`:** `COMMON` (blanco), `UNCOMMON` (verde), `RARE` (azul), `LEGENDARY` (dorado).
-- **`stack_limit`:** Límite máximo de copias del mismo ítem en una run.
+### Ítems Pasivos y Reactivos
+Ubicación: `data/items/` y `data/items/effects/`.
+- 6 ítems reactivos y 3 ítems con tradeoff (`Glass Reactor`, `Heavy Capacitor`, `Tachyon Piercer`).
 
 ---
 
-## 5. Heroínas y Pilotos (`resources/characters/`)
+## 5. Heroínas y Pilotos (`scenes/combat/player/`, `data/weapons/roster/`)
 
 Ubicación: `resources/characters/` (ej. `char_nova.tres`, `char_valentina.tres`, `char_nyx.tres`, `char_estele.tres`).
 
