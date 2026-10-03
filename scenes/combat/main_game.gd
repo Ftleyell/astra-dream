@@ -203,6 +203,8 @@ func _ready() -> void:
 			add_child(arcana_modal)
 	if arcana_modal:
 		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
+		if modal_coordinator:
+			modal_coordinator.arcana_modal = arcana_modal
 
 	# Inicializar coordinador de botín (máquina tragamonedas in-run y cofres)
 	loot_coordinator = CombatLootCoordinator.new()

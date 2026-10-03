@@ -85,7 +85,15 @@ func is_any_combat_modal_active() -> bool:
 	if vp:
 		var focused := vp.gui_get_focus_owner()
 		if focused and focused.is_visible_in_tree():
-			return true
+			var p: Node = focused.get_parent()
+			var in_hidden_layer: bool = false
+			while p:
+				if p is CanvasLayer and not (p as CanvasLayer).visible:
+					in_hidden_layer = true
+					break
+				p = p.get_parent()
+			if not in_hidden_layer:
+				return true
 	return false
 
 func notify_menu_closed(duration: float = 0.35) -> void:

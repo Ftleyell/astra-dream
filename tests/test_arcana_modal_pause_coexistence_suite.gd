@@ -17,6 +17,8 @@ func _ready() -> void:
 	var main_game: MainGame = main_game_scene.instantiate() as MainGame
 	add_child(main_game)
 
+	await get_tree().process_frame
+	await get_tree().process_frame
 	# Limpiar timeline o briefing inicial
 	if Dialogic.has_subsystem("Styles") and Dialogic.Styles.has_active_layout_node():
 		var l_node = Dialogic.Styles.get_layout_node()
