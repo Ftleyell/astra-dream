@@ -50,4 +50,5 @@ Astra Dream es un juego modular roguelite danmaku en Godot 4.7.2. Tras el rework
 ### WeaponController ↔ Player & HUD
 * Límite estricto de 4 ranuras (`MAX_WEAPON_SLOTS = 4`).
 * Emisión reactiva de `weapon_slots_changed(weapons)` para actualización en HUD sobre la fila de habilidades.
-* Reemplazo de arma con herencia de nivel y otorgamiento de créditos de reciclaje (`35c` a `95c`).
+* Bloqueo inmutable del arma insignia: el slot 0 no puede ser reemplazado ni descartado.
+* Reemplazo de armas secundarias (slots 1 a 3) con herencia de nivel y otorgamiento de créditos de reciclaje (`35c` a `95c`).

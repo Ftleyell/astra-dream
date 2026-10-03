@@ -131,3 +131,16 @@ El 100% del balance numérico reside en archivos `.tres` derivados de las siguie
 - `ItemData`: Estadísticas pasivas, rareza, modificadores acumulativos.
 - `SectorData`: Dificultad, multiplicadores de loot, paleta de fondo, rival asignado.
 - `EncounterTimelineConfig`: Pautas de tiempo de oleadas y aparición de colosos.
+
+---
+
+## 7. Sistema de Depuración Desacoplado (Producción Zero-Cost)
+
+El testing del juego se divide limpiamente en dos capas:
+1. **Depuración Pre-Game (`scenes/ui/debug/debug_menu_modal.gd`):** Integrado en el Hangar/Selección de Personaje. Gestiona economía meta, tokens de gacha, biomasa/stardust, desbloqueo y estrellas de skins (1★/3★), compañeros (Cosmo/Iris) y reseteo de progreso.
+2. **Depuración In-Game (`scenes/ui/debug/ingame_debug_modal.gd`):** Activado con **`F1`** en combate (`layer 125`, pausa activa). Cuatro pestañas modulares:
+   - *Spawns & Entidades:* Monolito Arcano frente al jugador a ~200px, Colosos y Rivales (con toggle de intro), balizas y limpieza masiva.
+   - *Cheats & Stats:* God Mode, créditos infinitos, bombas fijas, velocidad y 15 sliders de atributos en tiempo real.
+   - *Arsenal & Items:* Inyección de armas respetando el bloqueo permanente de la ranura 0, upgrades de nivel y selector de arcanas.
+   - *Oleadas & Crisis:* Salto de oleada, disparo de Tormenta Solar y control temporal.
+3. **Poda en Producción:** `DebugManager.is_debug_enabled()` destruye los botones interactivos con `queue_free()` e inhabilita atajos en builds de exportación sin reservar memoria ni generar sobrecoste.

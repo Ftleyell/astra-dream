@@ -7,7 +7,8 @@ Este documento es la **fuente autoritativa** de balance para el arsenal de **Ast
 ## 1. Reglas Globales del Sistema de Armas
 
 * **Capacidad Máxima de Ranuras:** **4 armas activas simultáneas** (`MAX_WEAPON_SLOTS = 4`).
-* **Sustitución y Swap:** Al adquirir una 5ª arma (por Tienda Satelital o cápsula de Rival derrotada), se abre el modal de reemplazo permitiendo al jugador seleccionar qué arma sustituir.
+* **Bloqueo Inmutable del Arma Base (Slot 0):** El arma insignia inicial de la heroína ocupa de forma fija la primera ranura (`slot 0`) y **no puede ser reemplazada, vendida ni descartada**. Esto garantiza la identidad del arquetipo durante toda la run.
+* **Sustitución y Swap (Slots 1 a 3):** Al adquirir un arma cuando el inventario está lleno (por Tienda Satelital o cápsula de Rival derrotada), se abre el modal de reemplazo permitiendo al jugador seleccionar exclusivamente qué arma secundaria (ranuras 1 a 3) sustituir.
 * **Conservación de Nivel:** El arma entrante **conserva el nivel del arma reemplazada**, y el jugador recibe una bonificación de reciclaje en créditos según el nivel:
   $$\text{Créditos Reciclaje} = 20 + (\text{Nivel} \times 15) \quad \longrightarrow \quad \text{Lv1: 35c, Lv2: 50c, Lv3: 65c, Lv4: 80c, Lv5: 95c}$$
 * **Escalado Universal de Proyectiles:** Toda arma gana proyectiles extra según su nivel actual:

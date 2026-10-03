@@ -145,7 +145,17 @@ astra_dream/
 │   │   │   ├── field_consumable.gd        # Consumibles de campo (Curación, Imán, Bomba)
 │   │   │   └── rival_weapon_pickup.gd     # Cápsula de arma insignia otorgada por rivales
 │   │   │
-│   │   ├── environment/                   # Entorno espacial y planetas
+│   │   ├── events/                        # Eventos de crisis y peligros ambientales
+│   │   │   └── crisis_event_manager.gd    # Orquestador de crisis (Tormentas Solares, enjambres, desacople en bosses)
+│   │   │
+│   │   ├── environment/                   # Entorno espacial, macro-objetos y monolitos
+│   │   │   ├── arcane_monolith.gd / .tscn # Monolito Arcano vertical, drift inercial y ruptura reactiva
+│   │   │   ├── destructible_space_object.gd# Clase base de macro-estructuras destructibles con hit-flash
+│   │   │   ├── space_object_spawner.gd    # Spawner periférico con control de cuotas y monolitos por oleada
+│   │   │   ├── astral_geode.gd / .tscn    # Geoda astral de recursos
+│   │   │   ├── bio_cocoon.gd / .tscn      # Capullo biológico contenedor
+│   │   │   ├── supply_pod.gd / .tscn      # Cápsula de suministros tácticos
+│   │   │   ├── asteroid.gd / asteroid_spawner.gd # Cinturón de asteroides y fragmentación
 │   │   │   ├── game_camera_2d.gd          # Cámara dinámica con trauma shake y zoom cinemático
 │   │   │   ├── planet_segment.gd          # Renderizado de planetas procedurales
 │   │   │   └── planet_spawner_helper.gd   # Distribución de fondos cósmicos
@@ -154,6 +164,12 @@ astra_dream/
 │   │       ├── combat_hud.gd / .tscn      # HUD (barras de vida, minimapa, armas, jefes)
 │   │       ├── combat_modal_coordinator.gd# Coordinador de modales que pausan el combate
 │   │       ├── boss_edge_indicator.gd     # Indicador de colosos fuera de pantalla
+│   │       ├── arcana/                    # Modal de Pactos Arcanos
+│   │       │   ├── arcana_selection_modal.gd# Despliegue de bendiciones y sacrificios contrastados
+│   │       │   └── components/            # arcana_card_builder.gd y arcana_stats_inspector.gd
+│   │       ├── modals/                    # Modales interactivos de combate
+│   │       │   ├── weapon_swap_modal.gd   # Reemplazo de armas respetando bloqueo de ranura 0
+│   │       │   └── slot_machine_reward_modal.gd# Recompensas de la baliza de azar
 │   │       └── level_up/                  # Modal de subida de nivel
 │   │           ├── level_up_modal.gd      # Presentación del deck de subida de nivel
 │   │           ├── card_builder.gd        # Constructor visual de cartas de opción
@@ -293,6 +309,20 @@ func take_damage(arg: Variant) -> void:
 - `"bosses"`: Colosos principales de oleada (activan barras de vida y pausan spawners comunes).
 - `"rival_pilots"`: Pilotos en duelo 1v1.
 - `"exp_blobs"`: Gemas de experiencia (succionadas por `trigger_global_magnet`).
+
+### 4.3 Contrato de Bloqueo Inmutable del Arma Base (Slot 0)
+- En [`WeaponController`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/player/weapon_controller.gd), la ranura inicial (`slot 0`) está permanentemente reservada para el arma insignia del piloto seleccionado.
+- Toda lógica de swap e inventario en tiendas orbitales y recompensas (`weapon_swap_modal.gd`, `satellite_shop.gd`) prohíbe explícitamente seleccionar o descartar el slot 0, restringiendo el intercambio a los slots secundarios (1 a 3).
+
+### 4.4 Contrato de Peligros Ambientales y Desacoplamiento en Jefes
+- [`CrisisEventManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/events/crisis_event_manager.gd) gobierna eventos periódicos de cuadrante (Tormenta Solar, enjambres masivos).
+- **Desactivación Inmediata ante Jefes/Rivales:** Al invocarse un Coloso o Piloto Rival, cualquier peligro ambiental activo es purgado instantáneamente para preservar la equidad del duelo.
+- **Sincronización Cinemática e Inmunidad:** Durante las presentaciones de radio o animaciones de entrada, el árbol de enemigos comunes se congela sincronizadamente y la nave del jugador cuenta con invulnerabilidad total (*iframes*).
+
+### 4.5 Arquitectura de Depuración de Dos Niveles (Producción Zero-Cost)
+1. **Nivel Metajuego (Pregame):** [`DebugMenuModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/debug_menu_modal.gd) en `CharacterSelectUI`. Administra gacha, biomasa, desbloqueo de skins (1★/3★), compañeros (Cosmo/Iris) y reseteo de estadísticas.
+2. **Nivel Combate (In-Game):** [`IngameDebugModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/ingame_debug_modal.gd) accesible con **`F1`** (layer 125, pausa activa). Organizado en 4 pestañas: Spawns (Monolitos directos frente al jugador a ~200px, Jefes, Rivales, Cofres), Cheats & Stats (God Mode, 999k créditos, 5 bombas, 15 sliders en vivo), Arsenal (inyección de armas respetando slot 0, subida de niveles) y Oleadas/Crisis.
+3. **Poda Automática en Producción:** Gobernado centralmente por [`DebugManager.is_debug_enabled()`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/debug_manager.gd). En builds de exportación, destruye los botones interactivos con `queue_free()` e ignora pulsaciones de teclas sin coste alguno de CPU ni memoria.
 
 ---
 

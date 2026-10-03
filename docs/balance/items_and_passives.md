@@ -110,3 +110,21 @@ Las Arcanas confieren una bendición de grado mayor (**Boon**) a cambio de un sa
 | **Astral Aegis** | Ascendente | `Escudo absorbe 1 impacto cada 20s` | `-15% Daño Crítico` |
 | **Graviton Core** | Umbral | `Aplastamiento gravitatorio a cercanos`| `-25 Velocidad de Movimiento` |
 | **Eclipse Blade** | Abismo | `Golpes críticos ejecutan enemigos al 10%`| `-20% Probabilidad Crítica Base` |
+
+---
+
+## 5. Dinámica y Balance de Monolitos Arcanos (`ArcaneMonolith`)
+
+* **Morfología y Físicas Espaciales:**
+  * **Silueta Erguida:** El monolito se presenta erguido verticalmente, a gran escala (~200px de altura), diferenciándose claramente de los meteoritos y satélites.
+  * **Deriva Inercial (Drift):** Flota libremente por el cuadrante con velocidad residual lenta y rotación inercial continua.
+* **Mecánica de Destrucción y Feedback Táctil:**
+  * No se activa por mero contacto; requiere **impactos directos de armas** para romperse (`health = 600.0`).
+  * **Feedback Visual:** Al recibir daño emite un *hit-flash* blanco de shader, sacudida física (*wobble*) y expulsión de esquirlas de energía arcana.
+  * Al destruirse, libera un destello de resonancia y despliega el modal de pacto arcano (`ArcanaSelectionModal`).
+* **Cadencia y Límites por Partida (Pacing):**
+  * **Límite Fijo:** Máximo de **4 monolitos por run completa**, programados rítmicamente en los hitos de oleada **[3, 6, 9, 12]**.
+  * **Bonus Tardío:** Probabilidad reducida del 10% de un único monolito adicional a partir de la oleada 14.
+  * **Cuota Concurrente:** Solo puede haber **1 monolito activo** en el cuadrante al mismo tiempo; si el jugador no destruye el anterior, no se generará uno nuevo en el siguiente hito.
+* **Claridad en la Selección de Arcanas:**
+  * Las cartas del modal presentan tipografías contrastadas con separación explícita de Bendición (`Boon`, cian brillante) y Sacrificio (`Curse`, ámbar/carmesí), evitando ambigüedades en combate.
