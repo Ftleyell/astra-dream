@@ -34,6 +34,7 @@ Astra Dream es un juego modular roguelite danmaku en Godot 4.7.2. Tras el rework
 
 ## 📖 Kit Maestro de Documentación Zero-Context
 
+- **[Guía y Árbol Maestro Zero-Context (`docs/architecture/zero_context_architecture_and_file_tree.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/architecture/zero_context_architecture_and_file_tree.md):** Árbol exhaustivo de archivos, mapa de responsabilidades, flujos Zero-Allocation y diagramas de subsistemas.
 - **[Arquitectura Integral del Sistema (`ARCHITECTURE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/ARCHITECTURE.md):** Mapa visual 3D/2D, ciclo de vida de runs, contratos `HitContext`/`take_damage` y servidores zero-allocation.
 - **[Guía de Extensión para Desarrolladores (`EXTENDING_THE_GAME.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/EXTENDING_THE_GAME.md):** Recetas paso a paso para añadir heroínas, armas, jefes danmaku y tests unitarios.
 - **[Guía Rápida de Balanceo (`docs/balance/QUICK_BALANCE_GUIDE.md`)](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/balance/QUICK_BALANCE_GUIDE.md):** Ajuste de daño, salud, oleadas y tiendas puramente mediante recursos `.tres`.

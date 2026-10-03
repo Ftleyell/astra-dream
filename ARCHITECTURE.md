@@ -2,6 +2,8 @@
 
 > Documento maestro de arquitectura técnica y contratos del sistema.
 > Orientado a desarrolladores y agentes de IA para operar con **Zero Context**.
+> 
+> 📄 **Árbol maestro y mapa de archivos completo:** Consulta [Guía y Árbol Maestro Zero-Context](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/architecture/zero_context_architecture_and_file_tree.md).
 
 ---
 
@@ -21,14 +23,16 @@ graph TD
 1. **Hangar Espacial 3D (`scenes/ui/hub/`):**
    - Espacio 3D en tercera persona con movimiento en tiempo real del piloto.
    - Geometría modular procedural construida por [`HubHangarBuilder3D`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hub/components/hub_hangar_builder_3d.gd).
-   - Terminales interactivos gestionados por [`HubTerminalManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hub/components/hub_terminal_manager.gd) (Despliegue, Máquina Gacha, Récords, Sala de Trofeos).
-   - Mascotas acompañantes 3D flotantes con billboard shader (`HubPetRoamer`).
+   - Terminales interactivos gestionados por [`HubTerminalManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hub/components/hub_terminal_manager.gd).
+   - Despacho de modales mediante `HubInteractionsCoordinator` y pasarela de iluminación con `HubPilotShowcaseController`.
 
 2. **Núcleo de Combate 2D (`scenes/combat/`):**
-   - Escena principal [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd) con arquitectura modular.
+   - Escena principal [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd) actuando como director orquestador modular.
    - Coordinación de modales desacoplada mediante [`CombatModalCoordinator`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/ui/combat_modal_coordinator.gd).
-   - Narrativa y cinemáticas de radio mediante [`CombatNarrativeDirector`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_narrative_director.gd).
-   - Serialización de estado a mitad de partida vía [`RunStateSerializer`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/systems/run_state_serializer.gd).
+   - Narrativa y cinemáticas de radio mediante [`CombatNarrativeDirector`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_narrative_director.gd) y [`CombatRadioFeedController`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_radio_feed_controller.gd).
+   - Encuentros con colosos y saltos de oleada mediante [`CombatBossCoordinator`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_boss_coordinator.gd), [`BossCinematicPresenter`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/bosses/boss_cinematic_presenter.gd) y [`CombatBossDebugJumper`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_boss_debug_jumper.gd).
+   - Ciclo de vida y tiendas de satélites mediante [`CombatSatelliteCoordinator`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/systems/combat_satellite_coordinator.gd).
+   - Spawning masivo y reciclaje Zero-Allocation con [`EnemySpawner`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/enemies/enemy_spawner.gd) y [`EnemyNodePool`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/enemies/enemy_node_pool.gd).
    - Servidor masivo de balas Zero-Allocation: [`BulletServer`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/bullet_server.gd).
 
 ---
