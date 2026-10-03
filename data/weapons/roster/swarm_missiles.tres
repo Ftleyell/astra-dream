@@ -1,30 +1,30 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_kira_03"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_swarm_missiles"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
 [ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")
-weapon_id = &"hive_cannon"
-weapon_name = "Cañón de Enjambre 'Colmena-9'"
-description = "Dispersión cónica de agujas cinéticas de alta penetración junto con nanodrones autónomos que orbitan la nave."
+weapon_id = &"swarm_missiles"
+weapon_name = "Lanzador de Micro-Misiles Enjambre"
+description = "Micro-cohetes teledirigidos en abanico con viraje continuo y bahías de drones."
 icon = ExtResource("2_ico")
 rarity = 1
-tags = [&"swarm", &"drone", &"kinetic"]
+tags = [&"swarm", &"missile", &"kinetic"]
 cost = 60
-base_damage = 32.0
-base_cooldown = 0.8
+base_damage = 14.0
+base_cooldown = 0.65
 proc_coefficient = 0.4
-damage_growth_per_level = 0.22
+damage_growth_per_level = 0.20
 cooldown_reduction_per_level = 0.08
 passive_interval_reduction_per_level = 0.08
-active_burst_count = 5
+active_burst_count = 4
 active_spread_deg = 24.0
 active_behavior_type = &"projectile"
 passive_interval = 2.0
-passive_search_radius = 480.0
+passive_search_radius = 520.0
 passive_target_mode = 0
-passive_behavior_type = &"orbital"
+passive_behavior_type = &"missile"
 scales_with_projectile_count = true
 active_scales_with_projectiles = true
 passive_scales_with_projectiles = true

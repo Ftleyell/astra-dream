@@ -7,6 +7,8 @@ extends RefCounted
 ## resucitación por chatarra estelar, regeneración de salud y conversión de núcleos de stats.
 
 var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
+var current_shield: float = 0.0
+var max_shield: float = 0.0
 
 
 func take_damage(
@@ -54,7 +56,16 @@ func take_damage(
 	else:
 		mitigated_dmg = amount * (2.0 - (100.0 / (100.0 - armor_val)))
 
-	player.current_health -= mitigated_dmg
+	var remaining_dmg: float = mitigated_dmg
+	if current_shield > 0.0:
+		if current_shield >= remaining_dmg:
+			current_shield -= remaining_dmg
+			remaining_dmg = 0.0
+		else:
+			remaining_dmg -= current_shield
+			current_shield = 0.0
+
+	player.current_health -= remaining_dmg
 	player.hit_flash_timer = 0.22
 
 	var audio_mgr := player.get_node_or_null("/root/AudioManager")
@@ -69,6 +80,10 @@ func take_damage(
 		inventory.process_take_damage_procs(mitigated_dmg, player)
 
 	# Lógica Letal y Resucitación por Chatarra Estelar
+	if player.has_meta(&"osp_active_frame"):
+		player.current_health = maxf(1.0, player.current_health)
+		return
+
 	if player.current_health <= 0.0 and not player.is_dead:
 		if inventory and inventory.has_method("get_item_count") and inventory.get_item_count(&"stellar_scrap") > 0 and not player.has_meta("stellar_scrap_used") and player.run_credits >= 100:
 			player.set_meta("stellar_scrap_used", true)

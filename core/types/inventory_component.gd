@@ -6,6 +6,18 @@ var character_stats: CharacterStats
 # Almacena: item_id -> { "data": ItemData, "count": int }
 var _items: Dictionary[StringName, Dictionary] = {}
 
+# Internal Cooldowns dinámicos para mitigar procs en armas de alta frecuencia
+var _proc_cooldowns: Dictionary[StringName, float] = {}
+
+const HIGH_FREQ_WEAPON_ICDS: Dictionary[StringName, float] = {
+	&"hive_cannon": 0.10,
+	&"swarm_missiles": 0.10,
+	&"singularity_pulsar": 0.25,
+	&"void_siphon": 0.25,
+	&"tachyon_beam": 0.15,
+	&"solar_beam": 0.15
+}
+
 signal item_added(item: ItemData, new_total: int)
 
 func add_item(item: ItemData, count: int = 1) -> void:
@@ -59,9 +71,37 @@ func get_all_items() -> Array[Dictionary]:
 		list.append(_items[key])
 	return list
 
+func _physics_process(delta: float) -> void:
+	tick_proc_cooldowns(delta)
+
+func tick_proc_cooldowns(delta: float) -> void:
+	if _proc_cooldowns.is_empty():
+		return
+	var to_erase: Array[StringName] = []
+	for k: StringName in _proc_cooldowns:
+		_proc_cooldowns[k] -= delta
+		if _proc_cooldowns[k] <= 0.0:
+			to_erase.append(k)
+	for k: StringName in to_erase:
+		_proc_cooldowns.erase(k)
+
+func get_proc_cooldown(id: StringName) -> float:
+	return _proc_cooldowns.get(id, 0.0)
+
+func set_proc_cooldown(id: StringName, cd: float) -> void:
+	if cd <= 0.0:
+		_proc_cooldowns.erase(id)
+	else:
+		_proc_cooldowns[id] = cd
+
+func is_proc_on_cooldown(id: StringName) -> bool:
+	return _proc_cooldowns.get(id, 0.0) > 0.0
+
 func process_hit_procs(context: HitContext, source_entity: Node) -> void:
 	for id: StringName in _items.keys():
 		if not context.can_proc(id):
+			continue
+		if _proc_cooldowns.get(id, 0.0) > 0.0:
 			continue
 
 		var entry: Dictionary = _items[id]
@@ -79,6 +119,11 @@ func process_hit_procs(context: HitContext, source_entity: Node) -> void:
 
 			if randf() <= effective_chance:
 				effect.execute(context, stacks, source_entity)
+				var effect_icd: float = effect.internal_cooldown if ("internal_cooldown" in effect and effect.internal_cooldown > 0.0) else 0.0
+				var weapon_icd: float = HIGH_FREQ_WEAPON_ICDS.get(context.source_weapon_id, 0.0)
+				var icd: float = maxf(effect_icd, weapon_icd)
+				if icd > 0.0:
+					_proc_cooldowns[id] = icd
 
 func process_dash_procs(source_entity: Node) -> void:
 	var context := HitContext.new()

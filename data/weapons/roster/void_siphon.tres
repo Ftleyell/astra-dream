@@ -1,21 +1,21 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_sel_04"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_void_siphon"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
 [ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")
-weapon_id = &"singularity_pulsar"
-weapon_name = "Pulsar 'Vórtice Singularity'"
-description = "Despliega una singularidad gravitacional que absorbe y tritura enemigos, acompañada de ondas de choque de rechazo perimetral."
+weapon_id = &"void_siphon"
+weapon_name = "Sifón del Vacío 'Void Siphon'"
+description = "Vórtice gravitatorio de atracción masiva que desgarra la materia espacial circundante."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"void", &"gravity", &"aoe"]
 cost = 75
-base_damage = 38.0
-base_cooldown = 1.6
+base_damage = 45.0
+base_cooldown = 1.8
 proc_coefficient = 0.15
-damage_growth_per_level = 0.28
+damage_growth_per_level = 0.30
 cooldown_reduction_per_level = 0.08
 passive_interval_reduction_per_level = 0.08
 active_burst_count = 1

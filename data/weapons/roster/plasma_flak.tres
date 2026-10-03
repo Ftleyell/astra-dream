@@ -1,24 +1,24 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_rox_05"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_plasma_flak"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
 [ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")
-weapon_id = &"titan_shotgun"
-weapon_name = "Escopeta Sísmica 'Ruptura Titán'"
-description = "Devastador abanico de perdigones pesados con empuje violento a corta distancia y morteros sísmicos pasivos de área."
+weapon_id = &"plasma_flak"
+weapon_name = "Cañón Flak de Plasma"
+description = "Dispersión pesada de plasma concentrado con violento empuje cinético y metralla secundaria."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"heavy", &"shotgun", &"kinetic"]
 cost = 60
-base_damage = 45.0
-base_cooldown = 1.1
+base_damage = 16.0
+base_cooldown = 0.9
 proc_coefficient = 0.35
 damage_growth_per_level = 0.25
 cooldown_reduction_per_level = 0.08
 passive_interval_reduction_per_level = 0.08
-active_burst_count = 2
+active_burst_count = 6
 active_spread_deg = 32.0
 active_behavior_type = &"shotgun"
 passive_interval = 2.5

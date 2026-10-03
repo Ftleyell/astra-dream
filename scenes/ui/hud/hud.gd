@@ -139,6 +139,9 @@ func _ready() -> void:
 		if player.inventory:
 			player.inventory.item_added.connect(_on_inventory_item_added)
 
+		if player.has_signal("osp_triggered"):
+			player.osp_triggered.connect(_on_osp_triggered)
+
 		if player.has_signal("biomass_changed"):
 			player.biomass_changed.connect(update_biomass)
 		update_biomass(player.run_biomass, SaveManager.get_biomass())
@@ -380,3 +383,16 @@ func _on_dash_updated(current_charges: int, max_charges: int, recharge_ratio: fl
 func _on_aim_mode_changed(is_manual: bool) -> void:
 	if _abilities_ctrl:
 		_abilities_ctrl.update_aim_mode(is_manual)
+
+func _on_osp_triggered(_remaining_hp: float) -> void:
+	var flash := ColorRect.new()
+	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.color = Color(0.2, 0.9, 1.0, 0.45)
+	add_child(flash)
+	var tw := create_tween()
+	if tw:
+		tw.tween_property(flash, "color:a", 0.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_callback(flash.queue_free)
+	else:
+		flash.queue_free()

@@ -162,6 +162,7 @@ signal exp_changed(current: float, max_val: float, level: int)
 signal level_up_requested(level: int)
 signal dash_updated(current_charges: int, max_charges: int, recharge_ratio: float, is_focus: bool)
 signal player_died()
+signal osp_triggered(remaining_hp: float)
 
 
 func _ready() -> void:
@@ -492,11 +493,51 @@ func add_exp(amount: float) -> void:
 	exp_changed.emit(current_exp, exp_to_next, current_level)
 
 
-func take_damage(amount: float) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_invulnerable:
 		return
+	var ctx: HitContext
+	if arg is HitContext:
+		ctx = arg as HitContext
+	elif arg is float or arg is int:
+		ctx = HitContext.create_direct_hit(float(arg))
+	else:
+		return
+
+	var current_shield_val: float = float(shield_controller.current_shield) if (shield_controller and "current_shield" in shield_controller) else 0.0
+	var max_shield_val: float = float(shield_controller.max_shield) if (shield_controller and "max_shield" in shield_controller) else 0.0
+	var current_combined: float = current_health + current_shield_val
+	var max_hp_val: float = stats.get_stat(&"max_health") if stats else 100.0
+	var max_combined: float = max_hp_val + max_shield_val
+
+	var osp_threshold: float = 0.90
+	if (stats and stats.has_method("has_modifier") and stats.has_modifier(&"max_health", &"glass_cannon")) or has_meta("glass_cannon"):
+		osp_threshold = 0.95
+
+	var osp_did_trigger := false
+	if not ctx.bypass_osp and current_combined >= (max_combined * osp_threshold):
+		if ctx.final_damage >= current_combined:
+			ctx.final_damage = maxf(0.0, current_combined - 1.0)
+			osp_did_trigger = true
+
+	if osp_did_trigger:
+		set_meta(&"osp_active_frame", true)
+
 	if shield_controller:
-		shield_controller.take_damage(self, amount, stats, inventory)
+		shield_controller.take_damage(self, ctx.final_damage, stats, inventory)
+
+	if osp_did_trigger:
+		if has_meta(&"osp_active_frame"):
+			remove_meta(&"osp_active_frame")
+		current_health = maxf(1.0, current_health)
+		is_invulnerable = true
+		var tree := get_tree()
+		if tree:
+			tree.create_timer(0.5, false, false, true).timeout.connect(func() -> void:
+				if is_instance_valid(self):
+					is_invulnerable = false
+			)
+		osp_triggered.emit(current_health)
 
 
 func _trigger_death_sequence() -> void:

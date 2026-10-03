@@ -4,6 +4,7 @@ extends Resource
 @export var trigger: Enums.TriggerType = Enums.TriggerType.ON_HIT
 @export_range(0.0, 1.0, 0.01) var base_chance: float = 1.0
 @export_range(0.0, 1.0, 0.05) var proc_coefficient: float = 1.0
+@export var internal_cooldown: float = 0.0
 
 func execute(_context: HitContext, _stack_count: int, _source_entity: Node) -> void:
 	pass

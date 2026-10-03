@@ -14,7 +14,14 @@ const STYLIZED_WEAPON_NAMES: Dictionary = {
 	"cluster_submunition": "Lanzador de Racimo 'Clúster'",
 	"dimensional_blade": "Cuchilla Dimensional Astra",
 	"nova_flak": "Batería Antiaérea 'Nova-Flak'",
-	"solar_beam": "Haz Solar Orbital 'Helios'"
+	"solar_beam": "Haz Solar Orbital 'Helios'",
+	"scatter_laser": "Láser Dispersor 'Scatter Laser'",
+	"swarm_missiles": "Lanzador de Micro-Misiles Enjambre",
+	"void_siphon": "Sifón del Vacío 'Void Siphon'",
+	"plasma_flak": "Cañón Flak de Plasma",
+	"tachyon_beam": "Emisor de Haz Taquiónico",
+	"singularity_cannon": "Cañón de Singularidad",
+	"solar_flare": "Eruptor Solar Orbital"
 }
 
 static func get_stylized_name_for_id(id_or_name: String) -> String:
@@ -49,7 +56,7 @@ var name: String:
 @export_group("Base Combat Stats")
 @export var base_damage: float = 20.0
 @export var base_cooldown: float = 0.5
-@export var proc_coefficient: float = 1.0
+@export_range(0.0, 1.0, 0.01) var proc_coefficient: float = 1.0
 
 @export_group("Upgrade Progression (Per Level)")
 @export var damage_growth_per_level: float = 0.25 # +25% de daño por nivel

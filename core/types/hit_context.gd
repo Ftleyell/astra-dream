@@ -6,19 +6,23 @@ var victim: Node = null
 var raw_damage: float = 0.0
 var final_damage: float = 0.0
 var is_crit: bool = false
+var bypass_osp: bool = false
 var proc_coefficient: float = 1.0
 var depth: int = 0
 var hit_position: Vector2 = Vector2.ZERO
 var proc_chain: Array[StringName] = []
+var source_weapon_id: StringName = &""
+var weapon_level: int = 1
 
 const MAX_DEPTH: int = 4
 
-static func create_direct_hit(dmg: float, crit: bool = false, proc_coeff: float = 1.0) -> HitContext:
+static func create_direct_hit(dmg: float, crit: bool = false, proc_coeff: float = 1.0, p_bypass_osp: bool = false) -> HitContext:
 	var ctx := HitContext.new()
 	ctx.raw_damage = dmg
 	ctx.final_damage = dmg
 	ctx.is_crit = crit
 	ctx.proc_coefficient = proc_coeff
+	ctx.bypass_osp = p_bypass_osp
 	return ctx
 
 func fork_child_hit(new_damage: float, new_proc_coeff: float, triggered_by: StringName) -> HitContext:
@@ -28,9 +32,12 @@ func fork_child_hit(new_damage: float, new_proc_coeff: float, triggered_by: Stri
 	child.raw_damage = new_damage
 	child.final_damage = new_damage
 	child.is_crit = false
+	child.bypass_osp = bypass_osp
 	child.proc_coefficient = new_proc_coeff
 	child.depth = depth + 1
 	child.proc_chain = proc_chain.duplicate()
+	child.source_weapon_id = source_weapon_id
+	child.weapon_level = weapon_level
 	if not child.proc_chain.has(triggered_by):
 		child.proc_chain.append(triggered_by)
 	return child

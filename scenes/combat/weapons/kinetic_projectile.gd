@@ -164,17 +164,50 @@ func _check_collisions() -> void:
 				return
 
 func _apply_hit(target: Node2D) -> void:
+	var hp_before: float = float(target.get("current_health")) if "current_health" in target else 0.0
+	var max_hp: float = float(target.get("max_health")) if ("max_health" in target and float(target.get("max_health")) > 0.0) else (hp_before if hp_before > 0.0 else 1.0)
+	var hp_pct: float = hp_before / max_hp
+
+	var ctx := hit_context
+	if not ctx:
+		ctx = HitContext.new()
+		ctx.final_damage = 25.0
+		ctx.raw_damage = 25.0
+	ctx.hit_position = global_position
+
 	if target.has_method("take_damage"):
-		var ctx := hit_context
-		if not ctx:
-			ctx = HitContext.new()
-			ctx.final_damage = 25.0
-			ctx.raw_damage = 25.0
-		ctx.hit_position = global_position
 		target.take_damage(ctx)
+
+	var is_scatter := (ctx.source_weapon_id == &"scatter_laser" or ctx.source_weapon_id == &"sniper_rifle")
+	var is_dead := (not is_instance_valid(target)) or bool(target.get("is_dying")) or (target.get("current_health") != null and float(target.get("current_health")) <= 0.0)
+	if is_scatter and ctx.weapon_level <= 2 and hp_pct < 0.20 and is_dead and not has_meta("is_scatter_fragment"):
+		_spawn_scatter_fragments(global_position, ctx)
 
 	pierces_left -= 1
 	_spawn_spark_effect()
+
+func _spawn_scatter_fragments(pos: Vector2, parent_ctx: HitContext) -> void:
+	var tree := get_tree()
+	if not tree:
+		return
+	var spawn_parent: Node = tree.current_scene if tree.current_scene else tree.root
+	var frag_dmg: float = parent_ctx.final_damage * 0.25
+	var base_angle: float = randf() * TAU
+	for i in range(4):
+		var dir := Vector2.from_angle(base_angle + float(i) * (TAU / 4.0))
+		var frag_ctx := parent_ctx.fork_child_hit(frag_dmg, 0.0, &"scatter_fragmentation")
+		var frag: KineticProjectile = duplicate() as KineticProjectile
+		if not frag:
+			continue
+		frag.set_meta("is_scatter_fragment", true)
+		frag.hit_targets.clear()
+		frag.pierces_left = 1
+		frag.pierces_max = 1
+		frag.speed = 900.0
+		frag.lifetime = 0.5
+		frag.setup(pos, dir, frag_ctx, player, 1.0, 0.6)
+		frag.modulate = Color(2.0, 0.4, 1.5, 1.0)
+		spawn_parent.add_child(frag)
 
 func _spawn_spark_effect() -> void:
 	if spark_scene:

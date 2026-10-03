@@ -37,7 +37,7 @@ func execute(context: HitContext, stack_count: int, source_entity: Node) -> void
 			dir = origin.direction_to(target_enemy.global_position).rotated(randf_range(-0.3, 0.3))
 
 		var proj: KineticProjectile = _kinetic_scene.instantiate() as KineticProjectile
-		var child_ctx := context.fork_child_hit(shard_damage, 0.5, &"pyroclastic_battery")
+		var child_ctx := context.fork_child_hit(shard_damage, 0.0, &"pyroclastic_battery")
 		proj.setup(origin, dir, child_ctx, source_entity as Node2D, 0.65, 0.8)
 		proj.modulate = Color(1.8, 0.6, 0.1, 1.0)
 		spawn_parent.add_child(proj)

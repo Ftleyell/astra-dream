@@ -52,6 +52,11 @@ func dispatch_active_fire(
 	ctx.is_crit = is_crit
 	ctx.proc_coefficient = wdata.proc_coefficient
 	ctx.hit_position = origin
+	ctx.source_weapon_id = wdata.weapon_id
+	ctx.weapon_level = inst.level
+
+	if wdata.base_cooldown > 1.1:
+		check_and_trigger_point_blank_pulse(origin, base_dmg, player, spawn_parent)
 
 	var count := wdata.active_burst_count
 	if wdata.scales_with_projectile_count and wdata.active_scales_with_projectiles and player and "stats" in player:
@@ -172,6 +177,8 @@ func dispatch_passive_fire(
 	ctx.is_crit = is_crit
 	ctx.proc_coefficient = wdata.proc_coefficient * 0.6
 	ctx.hit_position = origin
+	ctx.source_weapon_id = wdata.weapon_id
+	ctx.weapon_level = inst.level
 
 	var count := 1
 	if wdata.scales_with_projectile_count and wdata.passive_scales_with_projectiles and player and "stats" in player:
@@ -287,3 +294,50 @@ func _play_fire_sfx(weapon_id: StringName) -> void:
 			audio_mgr.play_sfx("dash", 1.5, -2.0)
 		else:
 			audio_mgr.play_sfx("laser", 1.0, 0.0)
+
+
+func check_and_trigger_point_blank_pulse(origin: Vector2, base_dmg: float, player: CharacterBody2D, spawn_parent: Node) -> bool:
+	var tree := Engine.get_main_loop() as SceneTree
+	if not tree:
+		return false
+	var enemies := tree.get_nodes_in_group("enemies")
+	var nearby_enemies: Array[Node2D] = []
+	for node in enemies:
+		if is_instance_valid(node) and (node is Node2D):
+			var enemy := node as Node2D
+			if origin.distance_to(enemy.global_position) < 80.0:
+				nearby_enemies.append(enemy)
+
+	if nearby_enemies.is_empty():
+		return false
+
+	var pulse_ctx := HitContext.create_direct_hit(base_dmg * 0.30, false, 0.0)
+	pulse_ctx.attacker = player
+	pulse_ctx.hit_position = origin
+	pulse_ctx.source_weapon_id = &"point_blank_pulse"
+
+	for enemy in nearby_enemies:
+		if enemy.has_method("take_damage"):
+			var hit := HitContext.create_direct_hit(base_dmg * 0.30, false, 0.0)
+			hit.attacker = player
+			hit.hit_position = enemy.global_position
+			hit.source_weapon_id = &"point_blank_pulse"
+			enemy.take_damage(hit)
+
+		var push_dir := (enemy.global_position - origin).normalized()
+		if push_dir.length_squared() < 0.001:
+			push_dir = Vector2.RIGHT
+		if "velocity" in enemy:
+			enemy.velocity += push_dir * 250.0
+		else:
+			enemy.global_position += push_dir * (250.0 * 0.1)
+
+	var shock: ShockwaveArea = shockwave_scene.instantiate() as ShockwaveArea
+	if shock:
+		shock.setup(origin, pulse_ctx, 80.0 / 220.0)
+		shock.push_force = 250.0
+		for enemy in nearby_enemies:
+			shock.damaged_nodes.append(enemy)
+		spawn_parent.add_child(shock)
+
+	return true

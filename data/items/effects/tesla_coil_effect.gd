@@ -36,7 +36,7 @@ func execute(context: HitContext, stack_count: int, source_entity: Node) -> void
 
 	if target_enemy:
 		var dmg: float = maxf(15.0, context.final_damage * damage_factor * float(stack_count))
-		var child_ctx := context.fork_child_hit(dmg, 0.5, &"tesla_coil")
+		var child_ctx := context.fork_child_hit(dmg, 0.0, &"tesla_coil")
 		var chain := _chain_scene.instantiate() as ChainLightningEffect
 		chain.setup(origin, target_enemy.global_position, child_ctx, mini(4 + stack_count, 8))
 		var spawn_parent: Node = tree.current_scene if tree.current_scene else tree.root

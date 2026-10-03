@@ -26,7 +26,7 @@ func execute(context: HitContext, stack_count: int, source_entity: Node) -> void
 	if spawn_pos == Vector2.ZERO and source_entity is Node2D:
 		spawn_pos = (source_entity as Node2D).global_position
 
-	var child_ctx := context.fork_child_hit(base_damage * float(stack_count), 0.3, &"entropy_catalyst")
+	var child_ctx := context.fork_child_hit(base_damage * float(stack_count), 0.0, &"entropy_catalyst")
 	var vortex := _vortex_scene.instantiate() as SingularityVortex
 	vortex.setup(spawn_pos, child_ctx, 0.75 + 0.15 * float(stack_count - 1))
 	var spawn_parent: Node = tree.current_scene if tree.current_scene else tree.root

@@ -45,6 +45,7 @@ var memory_grace_timer: float = 0.0
 const MEMORY_GRACE_MAX: float = 6.0
 
 var last_known_target_dir: Vector2 = Vector2.UP
+var _stutter_slowed_enemies: Array[Node2D] = []
 
 var active_drones: Array[Node2D]:
 	get: return projectile_factory.active_drones if projectile_factory else []
@@ -176,6 +177,7 @@ func _process(delta: float) -> void:
 	_handle_aim(delta)
 	_handle_active_fire(delta)
 	_handle_passive_fire(delta)
+	_handle_stutter_field(delta)
 
 
 func _handle_toggle_input() -> void:
@@ -412,3 +414,63 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 		self,
 		spawn_parent
 	)
+
+
+func _exit_tree() -> void:
+	_clear_stutter_field()
+
+
+func _handle_stutter_field(_delta: float) -> void:
+	var is_active := false
+	for inst in equipped_weapons:
+		if inst.weapon_data:
+			var wid: StringName = inst.weapon_data.weapon_id
+			if (wid == &"singularity_pulsar" or wid == &"void_siphon") and inst.active_cooldown > 0.0:
+				is_active = true
+				break
+
+	var tree := get_tree()
+	if not tree:
+		return
+
+	if not is_active:
+		_clear_stutter_field()
+		return
+
+	var enemies := tree.get_nodes_in_group("enemies")
+	var current_slowed: Array[Node2D] = []
+	var center := global_position
+
+	for node in enemies:
+		if not is_instance_valid(node) or not (node is Node2D):
+			continue
+		var enemy := node as Node2D
+		if center.distance_to(enemy.global_position) <= 140.0:
+			current_slowed.append(enemy)
+			if not enemy.has_meta("is_stutter_slowed"):
+				if "move_speed" in enemy:
+					var orig_spd: float = float(enemy.move_speed)
+					enemy.set_meta("stutter_orig_speed", orig_spd)
+					enemy.move_speed = orig_spd * 0.75
+				enemy.set_meta("is_stutter_slowed", true)
+
+	for enemy in _stutter_slowed_enemies:
+		if is_instance_valid(enemy) and not current_slowed.has(enemy):
+			if enemy.has_meta("is_stutter_slowed"):
+				if enemy.has_meta("stutter_orig_speed") and "move_speed" in enemy:
+					enemy.move_speed = float(enemy.get_meta("stutter_orig_speed"))
+					enemy.remove_meta("stutter_orig_speed")
+				enemy.remove_meta("is_stutter_slowed")
+
+	_stutter_slowed_enemies = current_slowed
+
+
+func _clear_stutter_field() -> void:
+	for enemy in _stutter_slowed_enemies:
+		if is_instance_valid(enemy):
+			if enemy.has_meta("is_stutter_slowed"):
+				if enemy.has_meta("stutter_orig_speed") and "move_speed" in enemy:
+					enemy.move_speed = float(enemy.get_meta("stutter_orig_speed"))
+					enemy.remove_meta("stutter_orig_speed")
+				enemy.remove_meta("is_stutter_slowed")
+	_stutter_slowed_enemies.clear()

@@ -1,28 +1,28 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_09"]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_tachyon_beam"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
 [ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")
-weapon_id = &"solar_beam"
-weapon_name = "Rayo Solar Orbital"
-description = "Haz continuo de microondas solares de alta radiación térmica que perfora blindajes de manera sostenida."
+weapon_id = &"tachyon_beam"
+weapon_name = "Emisor de Haz Taquiónico"
+description = "Haz continuo taquiónico perforante con altísima cadencia de tics y daño térmico sostenido."
 icon = ExtResource("2_ico")
-rarity = 3
-tags = [&"solar", &"beam", &"thermal"]
-cost = 150
-base_damage = 50.0
-base_cooldown = 1.4
-proc_coefficient = 0.20
-damage_growth_per_level = 0.3
+rarity = 2
+tags = [&"beam", &"laser", &"thermal"]
+cost = 80
+base_damage = 18.0
+base_cooldown = 0.1
+proc_coefficient = 0.10
+damage_growth_per_level = 0.15
 cooldown_reduction_per_level = 0.08
 passive_interval_reduction_per_level = 0.08
 active_burst_count = 1
 active_spread_deg = 0.0
 active_behavior_type = &"solar"
-passive_interval = 2.6
-passive_search_radius = 550.0
+passive_interval = 2.0
+passive_search_radius = 500.0
 passive_target_mode = 0
 passive_behavior_type = &"missile"
 scales_with_projectile_count = false

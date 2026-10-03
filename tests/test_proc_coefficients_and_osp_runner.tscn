@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://proc_osp_runner_01"]
+
+[ext_resource type="Script" path="res://tests/test_proc_coefficients_and_osp_suite.gd" id="1_proc_osp_test"]
+
+[node name="TestProcCoefficientsAndOspRunner" type="Node"]
+script = ExtResource("1_proc_osp_test")

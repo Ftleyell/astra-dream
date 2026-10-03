@@ -62,7 +62,8 @@ func _test_player_death_sequence() -> void:
 	var died_emitted := [false]
 	player.player_died.connect(func(): died_emitted[0] = true)
 
-	player.take_damage(9999.0)
+	# Recibir daño letal (ejecución directa)
+	player.take_damage(HitContext.create_direct_hit(9999.0, false, 1.0, true))
 	await get_tree().process_frame
 
 	assert(player.is_dead == true, "Player.is_dead debe ser true tras daño letal")

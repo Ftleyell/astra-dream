@@ -23,7 +23,7 @@ func execute(context: HitContext, stack_count: int, source_entity: Node) -> void
 		return
 
 	var spawn_pos: Vector2 = (source_entity as Node2D).global_position if source_entity is Node2D else context.hit_position
-	var child_ctx := context.fork_child_hit(base_damage * float(stack_count), 0.3, &"kinetic_plating")
+	var child_ctx := context.fork_child_hit(base_damage * float(stack_count), 0.0, &"kinetic_plating")
 	var shock := _shock_scene.instantiate() as ShockwaveArea
 	shock.setup(spawn_pos, child_ctx, 1.0 + 0.15 * float(stack_count - 1))
 	var spawn_parent: Node = tree.current_scene if tree.current_scene else tree.root
