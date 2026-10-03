@@ -7,8 +7,8 @@
 script = ExtResource("2_nlfpp")
 id = "shrapnel_rain"
 name = "Lluvia de Metralla"
-description_boon = "+3 Proyectiles adicionales en cada disparo"
-description_curse = "-30% Daño de cada bala individual"
+description_boon = "+3 Proyectiles Adicionales"
+description_curse = "-30% Daño General"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_0a8lo")
 color_accent = Color(0, 0.95, 1, 1)

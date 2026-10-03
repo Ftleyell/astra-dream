@@ -615,8 +615,8 @@ func _process(delta: float) -> void:
 				_wave_encounter_timer = 2.0
 				save_current_run_state()
 				_spawn_next_satellite_for_wave()
-				if space_object_spawner and space_object_spawner.has_method("force_spawn_monolith"):
-					space_object_spawner.force_spawn_monolith()
+				if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
+					space_object_spawner.notify_wave_started(current_wave)
 
 		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 

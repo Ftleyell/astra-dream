@@ -125,23 +125,22 @@ func _ready() -> void:
 	print("  ✓ Indicador oculto mientras no hay Monolitos en el espacio.")
 
 	# ----------------------------------------------------
-	# CASO 6: Respawn Dinámico de Monolitos Arcanos (Timer <= 45s)
+	# CASO 6: Ritmo Controlado por Oleadas Hito (Max 4 por run)
 	# ----------------------------------------------------
-	print("\n[6/7] Testing Dynamic Respawn Timer (45s cycle)...")
-	assert(get_tree().get_nodes_in_group("monoliths").size() == 0, "No debe haber monolitos antes de probar respawn")
+	print("\n[6/7] Testing Controlled Milestone Wave Pacing (Max 4 per run)...")
+	assert(get_tree().get_nodes_in_group("monoliths").size() == 0, "No debe haber monolitos antes de probar oleadas")
 
-	# Avanzar 44 segundos (no debe respawnear todavía)
-	spawner.spawn_timer = 999.0
-	spawner.monolith_respawn_timer = 45.0
-	spawner._process(44.0)
-	assert(get_tree().get_nodes_in_group("monoliths").size() == 0, "A 44s aún no debe ocurrir respawn")
+	# Probar oleada no-hito (ej. wave 2 -> no debe spawnear)
+	spawner.notify_wave_started(2)
+	await get_tree().process_frame
+	assert(get_tree().get_nodes_in_group("monoliths").size() == 0, "Oleada 2 no es hito, no debe spawnear monolito")
 
-	# Avanzar 2 segundos más (total 46s -> respawn garantizado)
-	spawner._process(2.0)
+	# Probar oleada hito (wave 3 -> debe spawnear 1er monolito)
+	spawner.notify_wave_started(3)
 	await get_tree().process_frame
 	var respawned := get_tree().get_nodes_in_group("monoliths")
-	assert(respawned.size() >= 1, "Tras cumplirse el temporizador de respawn (45s), debe reaparecer un Monolito")
-	print("  ✓ Respawn dinámico verificado: Nuevo Monolito generado automáticamente tras 45s.")
+	assert(respawned.size() == 1, "En oleada 3 (hito), debe aparecer un Monolito")
+	print("  ✓ Ritmo por oleadas hito verificado: Monolito generado en oleada 3 y cuota registrada.")
 
 	# ----------------------------------------------------
 	# CASO 7: Aislamiento de Cupos (Cápsulas/Geodas no bloquean Monolitos)
@@ -211,23 +210,17 @@ func _ready() -> void:
 	print("  ✓ Conmutación limpia y continua de objetivo entre múltiples Monolitos certificada.")
 
 	# ----------------------------------------------------
-	# CASO 9: Cumplimiento estricto del límite max_active_monoliths = 2
+	# CASO 9: Cumplimiento estricto del límite max_active_monoliths = 1
 	# ----------------------------------------------------
-	print("\n[9/9] Testing Monolith Quota Enforcement (max_active_monoliths = 2)...")
-	# Ya existe mon_b. Spawnear un segundo monolito.
+	print("\n[9/9] Testing Monolith Quota Enforcement (max_active_monoliths = 1)...")
+	# Ya existe mon_b (1 activo). Con max_active_monoliths = 1 no debe permitirse otro simultáneo
 	var mon_c := spawner.force_spawn_monolith()
-	assert(mon_c != null, "Debe permitirse spawnear el 2do monolito")
-	assert(spawner.get_active_monolith_count() == 2, "Deben haber exactamente 2 monolitos activos")
-
-	# Intentar forzar un 3er monolito
-	var mon_d := spawner.force_spawn_monolith()
-	assert(mon_d == null, "No debe permitirse exceder max_active_monoliths (2)")
-	assert(spawner.get_active_monolith_count() == 2, "La cuenta de monolitos debe mantenerse en 2")
-	print("  ✓ Límite máximo de Monolitos (2) verificado y protegido contra sobrepoblación.")
+	assert(mon_c == null, "Con max_active_monoliths = 1, no debe permitirse un 2do monolito simultáneo")
+	assert(spawner.get_active_monolith_count() == 1, "La cuenta de monolitos debe mantenerse en 1")
+	print("  ✓ Límite máximo de Monolitos (1) verificado y protegido contra sobrepoblación.")
 
 	# Limpiar
 	if is_instance_valid(mon_b): mon_b.queue_free()
-	if is_instance_valid(mon_c): mon_c.queue_free()
 
 	print("\n==================================================================")
 	print("RESULTADO: TODOS LOS TESTS (9/9) PASARON PERFECTAMENTE (100%)")

@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1440, 640)
+custom_minimum_size = Vector2(1480, 660)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
@@ -59,7 +59,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 20
 
 [node name="StatsSidePanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
-custom_minimum_size = Vector2(340, 0)
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel"]

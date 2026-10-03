@@ -7,8 +7,8 @@
 script = ExtResource("2_de3qv")
 id = "heavy_ballistics"
 name = "Balística Pesada"
-description_boon = "+50% Daño devastador y +6 Armadura frontal"
-description_curse = "-25% Velocidad de maniobra y giro"
+description_boon = "+50% Daño General | +6 Armadura"
+description_curse = "-25% Velocidad de Movimiento"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_fwirk")
 color_accent = Color(0.3, 0.8, 1, 1)

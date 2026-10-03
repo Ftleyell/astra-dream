@@ -7,8 +7,8 @@
 script = ExtResource("2_fvq84")
 id = "unstable_fission"
 name = "Fisión Inestable"
-description_boon = "+2 Proyectiles y +20% Probabilidad crítica"
-description_curse = "-25% Cadencia de disparo"
+description_boon = "+2 Proyectiles Adicionales | +20% Probabilidad Crítica"
+description_curse = "-25% Cadencia de Fuego"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_8v0ce")
 color_accent = Color(0.2, 1, 0.9, 1)

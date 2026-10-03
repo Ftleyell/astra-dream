@@ -13,21 +13,32 @@ extends Node2D
 @export var spawn_interval: float = 28.0
 @export var initial_delay: float = 6.0
 @export var max_active_macro_objects: int = 4
-@export var max_active_monoliths: int = 2
-@export var monolith_respawn_interval: float = 45.0
+@export var max_active_monoliths: int = 1
 @export var spawn_distance_min: float = 1000.0
 @export var spawn_distance_max: float = 1350.0
 
+const MAX_RUN_MONOLITHS: int = 4
+const MONOLITH_MILESTONE_WAVES: Array[int] = [3, 6, 9, 12]
+
 var player: CharacterBody2D = null
 var spawn_timer: float = 0.0
-var monolith_respawn_timer: float = 0.0
+var total_monoliths_spawned_in_run: int = 0
+var bonus_monolith_granted: bool = false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	spawn_timer = initial_delay
-	monolith_respawn_timer = monolith_respawn_interval
-	call_deferred("force_spawn_monolith")
+
+
+func notify_wave_started(wave: int) -> void:
+	if MONOLITH_MILESTONE_WAVES.has(wave):
+		if total_monoliths_spawned_in_run < MAX_RUN_MONOLITHS and get_active_monolith_count() == 0:
+			force_spawn_monolith()
+	elif wave >= 14 and total_monoliths_spawned_in_run == MAX_RUN_MONOLITHS and not bonus_monolith_granted:
+		if randf() < 0.10 and get_active_monolith_count() == 0:
+			bonus_monolith_granted = true
+			force_spawn_monolith()
 
 
 func get_active_monolith_count() -> int:
@@ -45,28 +56,21 @@ func _process(delta: float) -> void:
 	if not is_inside_tree():
 		return
 
-	# Monolito Arcano: Garantía de presencia y respawn dinámico
-	var monolith_count := get_active_monolith_count()
-	if monolith_count == 0:
-		monolith_respawn_timer -= delta
-		if monolith_respawn_timer <= 0.0:
-			force_spawn_monolith()
-			monolith_respawn_timer = monolith_respawn_interval
-	else:
-		monolith_respawn_timer = monolith_respawn_interval
-
 	spawn_timer -= delta
 	if spawn_timer <= 0.0:
 		spawn_timer = randf_range(spawn_interval * 0.85, spawn_interval * 1.15)
 		_try_spawn_macro_object()
 
 
-func force_spawn_monolith() -> DestructibleSpaceObject:
+func force_spawn_monolith(bypass_cap: bool = false) -> DestructibleSpaceObject:
 	if not is_inside_tree():
 		return null
 
 	var tree := get_tree()
 	if not tree:
+		return null
+
+	if not bypass_cap and total_monoliths_spawned_in_run >= MAX_RUN_MONOLITHS and not bonus_monolith_granted:
 		return null
 
 	if get_active_monolith_count() >= max_active_monoliths:
@@ -97,7 +101,7 @@ func force_spawn_monolith() -> DestructibleSpaceObject:
 		container = self
 	container.add_child(obj)
 
-	monolith_respawn_timer = monolith_respawn_interval
+	total_monoliths_spawned_in_run += 1
 	return obj
 
 
@@ -126,22 +130,16 @@ func _try_spawn_macro_object() -> void:
 
 
 func _spawn_single_object(center: Vector2) -> void:
-	var active_monoliths := get_active_monolith_count()
-
-	# Selección ponderada del resto de macro-objetos espaciales
+	# Selección ponderada exclusiva de suministros y recursos ordinarios
 	var roll := randf()
 	var scene_to_spawn: PackedScene = null
 
-	if roll < 0.35:
+	if roll < 0.40:
 		scene_to_spawn = supply_pod_scene
-	elif roll < 0.70:
+	elif roll < 0.75:
 		scene_to_spawn = astral_geode_scene
-	elif roll < 0.90:
-		scene_to_spawn = bio_cocoon_scene
-	elif active_monoliths < max_active_monoliths:
-		scene_to_spawn = monolith_scene
 	else:
-		scene_to_spawn = supply_pod_scene
+		scene_to_spawn = bio_cocoon_scene
 
 	if not scene_to_spawn:
 		return

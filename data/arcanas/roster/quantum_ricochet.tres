@@ -7,8 +7,8 @@
 script = ExtResource("2_vgjnf")
 id = "quantum_ricochet"
 name = "Rebote Cuántico"
-description_boon = "+40% Velocidad de proyectil e hiper-penetración"
-description_curse = "-15% Daño base de proyectiles"
+description_boon = "+40% Velocidad de Proyectiles"
+description_curse = "-15% Daño General"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_iplpw")
 color_accent = Color(0, 0.9, 0.8, 1)

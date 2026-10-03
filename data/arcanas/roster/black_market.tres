@@ -7,8 +7,8 @@
 script = ExtResource("2_gn4lu")
 id = "black_market"
 name = "Mercado Negro"
-description_boon = "+75% Daño crítico y +30% Daño de armas"
-description_curse = "-30 Suerte (peores probabilidades de botín)"
+description_boon = "+30% Daño General | +75% Daño Crítico"
+description_curse = "-30 Suerte"
 quadrant = "greed"
 icon = ExtResource("1_ahkpa")
 color_accent = Color(0.95, 0.75, 0.05, 1)

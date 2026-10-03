@@ -7,8 +7,8 @@
 script = ExtResource("2_l8p5f")
 id = "voracious_harvest"
 name = "Cosecha Voraz"
-description_boon = "+100% Cosecha duplicada de BioMasa y Créditos"
-description_curse = "-25% Vida máxima y -5 Armadura"
+description_boon = "+100% Biomasa | +100% Créditos"
+description_curse = "-25% Salud Máxima | -5 Armadura"
 quadrant = "greed"
 icon = ExtResource("1_3o78k")
 color_accent = Color(1, 0.85, 0.1, 1)

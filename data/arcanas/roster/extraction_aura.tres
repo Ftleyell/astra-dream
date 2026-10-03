@@ -7,8 +7,8 @@
 script = ExtResource("2_m7mqw")
 id = "extraction_aura"
 name = "Aura de Extracción"
-description_boon = "+30 Suerte, +40% Radio de absorción y +50% BioMasa"
-description_curse = "-15% Daño infligido por armas"
+description_boon = "+50% Biomasa | +40% Radio de Recogida | +30 Suerte"
+description_curse = "-15% Daño General"
 quadrant = "greed"
 icon = ExtResource("1_au5qg")
 color_accent = Color(0.9, 0.8, 0.3, 1)

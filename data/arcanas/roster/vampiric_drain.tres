@@ -7,8 +7,8 @@
 script = ExtResource("2_n8jo3")
 id = "vampiric_drain"
 name = "Drenaje Vampírico"
-description_boon = "+4.0 Regeneración masiva de vida continua"
-description_curse = "-20% Velocidad de desplazamiento"
+description_boon = "+4.0 Regeneración de Salud/s"
+description_curse = "-20% Velocidad de Movimiento"
 icon = ExtResource("1_lbs84")
 color_accent = Color(0.9, 0.1, 0.4, 1)
 stat_modifiers = {

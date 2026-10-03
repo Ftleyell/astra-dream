@@ -7,8 +7,8 @@
 script = ExtResource("2_17280")
 id = "agonic_fury"
 name = "Furia Agónica"
-description_boon = "+50% Cadencia de disparo ultra-rápida"
-description_curse = "-50% Regeneración de salud por segundo"
+description_boon = "+50% Cadencia de Fuego"
+description_curse = "-50% Regeneración de Salud"
 icon = ExtResource("1_lgbsi")
 color_accent = Color(1, 0.2, 0.35, 1)
 stat_modifiers = {

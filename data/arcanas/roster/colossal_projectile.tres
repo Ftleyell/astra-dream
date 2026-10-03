@@ -7,8 +7,8 @@
 script = ExtResource("2_vpxjl")
 id = "colossal_projectile"
 name = "Proyectil Colosal"
-description_boon = "+100% Tamaño colosal de proyectiles y +35% Daño"
-description_curse = "-40% Velocidad de desplazamiento de balas"
+description_boon = "+100% Tamaño de Proyectiles | +35% Daño General"
+description_curse = "-40% Velocidad de Proyectiles"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_83sx5")
 color_accent = Color(0.1, 0.85, 1, 1)

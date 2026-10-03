@@ -7,8 +7,8 @@
 script = ExtResource("2_4a660")
 id = "high_risk_investment"
 name = "Inversión de Alto Riesgo"
-description_boon = "+75% Ganancia de EXP y +35% Cadencia de ataque"
-description_curse = "-40% Integridad de casco (Max HP)"
+description_boon = "+75% Ganancia de EXP | +35% Cadencia de Fuego"
+description_curse = "-40% Salud Máxima"
 quadrant = "greed"
 icon = ExtResource("1_tf1sy")
 color_accent = Color(1, 0.7, 0.15, 1)

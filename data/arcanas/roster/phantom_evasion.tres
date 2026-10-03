@@ -7,8 +7,8 @@
 script = ExtResource("2_npfnw")
 id = "phantom_evasion"
 name = "Evasión Fantasma"
-description_boon = "+10 Armadura espectral y +25% Velocidad"
-description_curse = "-20% Daño infligido por armas"
+description_boon = "+25% Velocidad de Movimiento | +10 Armadura"
+description_curse = "-20% Daño General"
 quadrant = "spacetime"
 icon = ExtResource("1_p3b3f")
 color_accent = Color(0.7, 0.2, 0.9, 1)

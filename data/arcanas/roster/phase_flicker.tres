@@ -7,8 +7,8 @@
 script = ExtResource("2_rn6ff")
 id = "phase_flicker"
 name = "Parpadeo de Fase"
-description_boon = "+30% Velocidad y +20% Cadencia con micro-saltos cuánticos"
-description_curse = "-25% Capacidad máxima de salud"
+description_boon = "+30% Velocidad de Movimiento | +20% Cadencia de Fuego"
+description_curse = "-25% Salud Máxima"
 quadrant = "spacetime"
 icon = ExtResource("1_tr3wa")
 color_accent = Color(0.9, 0.2, 0.85, 1)

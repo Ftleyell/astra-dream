@@ -73,7 +73,18 @@ func _setup_solar_storm_overlay() -> void:
 	solar_canvas_layer.add_child(solar_overlay)
 
 func _process(delta: float) -> void:
-	_acquire_references()
+	# Supresión de crisis si hay jefe o rival activo o emergente
+	var main_game := get_parent()
+	var has_boss: bool = false
+	if main_game and main_game.has_method("_has_active_boss_or_rival"):
+		has_boss = bool(main_game.call("_has_active_boss_or_rival"))
+	elif main_game and ("is_boss_transmission_active" in main_game and main_game.get("is_boss_transmission_active") or "is_rival_cinematic_active" in main_game and main_game.get("is_rival_cinematic_active")):
+		has_boss = true
+
+	if has_boss:
+		if solar_storm_active or current_active_crisis != "":
+			dismiss_for_boss_encounter()
+		return
 
 	# Proceso de Tormenta Solar
 	if solar_storm_active:
@@ -81,12 +92,16 @@ func _process(delta: float) -> void:
 		if is_instance_valid(player) and solar_shader_mat:
 			var canvas_pos := player.get_global_transform_with_canvas().origin
 			solar_shader_mat.set_shader_parameter("player_screen_pos", canvas_pos)
+			var cam := get_viewport().get_camera_2d()
+			var zoom_factor: float = cam.zoom.x if (cam and cam.zoom.x > 0.0) else 1.0
+			solar_shader_mat.set_shader_parameter("inner_radius", 280.0 * zoom_factor)
+			solar_shader_mat.set_shader_parameter("outer_radius", 620.0 * zoom_factor)
 
 		if solar_storm_timer <= 0.0:
 			_end_solar_storm()
 
 	# Cooldown de crisis automáticas
-	if auto_crisis_enabled and not solar_storm_active:
+	if auto_crisis_enabled and not solar_storm_active and not has_boss:
 		crisis_cooldown -= delta
 		if crisis_cooldown <= 0.0:
 			crisis_cooldown = min_crisis_interval + randf_range(5.0, 20.0)
@@ -142,12 +157,28 @@ func _execute_crisis(crisis_id: String) -> void:
 			_spawn_containment_arena()
 	crisis_started.emit(crisis_id)
 
+func dismiss_for_boss_encounter() -> void:
+	if solar_storm_active:
+		_end_solar_storm()
+	current_active_crisis = ""
+	if banner and banner.has_method("force_hide"):
+		banner.force_hide()
+
 # 1. Tormenta Solar
 func _start_solar_storm() -> void:
 	solar_storm_active = true
 	solar_storm_timer = solar_storm_duration
 	if solar_overlay:
 		solar_overlay.visible = true
+
+	# Posicionar inmediatamente el shader en el centro de la pantalla relativo al jugador
+	if is_instance_valid(player) and solar_shader_mat:
+		var canvas_pos := player.get_global_transform_with_canvas().origin
+		solar_shader_mat.set_shader_parameter("player_screen_pos", canvas_pos)
+		var cam := get_viewport().get_camera_2d()
+		var zoom_factor: float = cam.zoom.x if (cam and cam.zoom.x > 0.0) else 1.0
+		solar_shader_mat.set_shader_parameter("inner_radius", 280.0 * zoom_factor)
+		solar_shader_mat.set_shader_parameter("outer_radius", 620.0 * zoom_factor)
 
 	# Transición suave de intensidad del shader
 	var tw := create_tween()

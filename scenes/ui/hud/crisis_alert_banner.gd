@@ -81,3 +81,9 @@ func _play_alarm_sound(pitch: float) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", pitch)
+
+func force_hide() -> void:
+	is_active = false
+	visible = false
+	if root_container:
+		root_container.modulate.a = 0.0

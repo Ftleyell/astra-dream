@@ -7,8 +7,8 @@
 script = ExtResource("2_so6er")
 id = "blood_pact"
 name = "Pacto de Sangre"
-description_boon = "+60% Daño base a todas las armas"
-description_curse = "-35% Vida máxima del chasis"
+description_boon = "+60% Daño General"
+description_curse = "-35% Salud Máxima"
 icon = ExtResource("1_ps6v5")
 color_accent = Color(1, 0.15, 0.25, 1)
 stat_modifiers = {

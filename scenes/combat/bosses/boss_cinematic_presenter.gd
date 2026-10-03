@@ -96,6 +96,13 @@ static func freeze_combat_environment(main_game: Node2D) -> void:
 				shard.set_physics_process(false)
 				shard.set_process(false)
 
+	# Descartar crisis y tormentas solares durante encuentros con jefes o rivales
+	var crisis_mgr: Node = main_game.get("crisis_manager")
+	if not crisis_mgr:
+		crisis_mgr = main_game.get_node_or_null("CrisisEventManager")
+	if crisis_mgr and crisis_mgr.has_method("dismiss_for_boss_encounter"):
+		crisis_mgr.dismiss_for_boss_encounter()
+
 ## Reanuda el procesamiento del entorno y restaura los controles con buffer de invulnerabilidad
 static func unfreeze_combat_environment(main_game: Node2D) -> void:
 	if not is_instance_valid(main_game):

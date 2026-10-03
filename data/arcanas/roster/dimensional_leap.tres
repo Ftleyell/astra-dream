@@ -7,8 +7,8 @@
 script = ExtResource("2_gkfcy")
 id = "dimensional_leap"
 name = "Salto Dimensional"
-description_boon = "+45% Velocidad de maniobra y +35% Recarga de dash"
-description_curse = "-20% Resistencia e integridad de casco (Max HP)"
+description_boon = "+45% Velocidad de Movimiento | +35% Reducción de Enfriamiento"
+description_curse = "-20% Salud Máxima"
 quadrant = "spacetime"
 icon = ExtResource("1_6cwhh")
 color_accent = Color(0.75, 0.25, 1, 1)

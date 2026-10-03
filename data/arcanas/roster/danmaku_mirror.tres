@@ -7,8 +7,8 @@
 script = ExtResource("2_kxtc4")
 id = "danmaku_mirror"
 name = "Espejo Danmaku"
-description_boon = "+4 Proyectiles en abanico y +30% Cadencia de fuego"
-description_curse = "-50% Tamaño de proyectil y -20% Daño base"
+description_boon = "+4 Proyectiles Adicionales | +30% Cadencia de Fuego"
+description_curse = "-20% Daño General | -50% Tamaño de Proyectiles"
 quadrant = "danmaku_chaos"
 icon = ExtResource("1_onxrh")
 color_accent = Color(0.15, 0.95, 1, 1)

@@ -7,8 +7,8 @@
 script = ExtResource("2_hqsfw")
 id = "midas_alchemy"
 name = "Alquimia de Midas"
-description_boon = "+50 Puntos de Suerte cósmica y +50% Ganancia de EXP"
-description_curse = "-20% Potencia de daño base"
+description_boon = "+50 Suerte | +50% Ganancia de EXP"
+description_curse = "-20% Daño General"
 quadrant = "greed"
 icon = ExtResource("1_n3dat")
 color_accent = Color(1, 0.9, 0.2, 1)
