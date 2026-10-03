@@ -79,7 +79,8 @@ const PILOT_THEME_COLORS: Dictionary = {
 	&"nyx": Color(0.85, 0.0, 0.95),
 }
 
-const HyperspacePortalScript := preload("res://scenes/combat/bosses/hyperspace_portal.gd")
+const RivalWarpPresenterScript = preload("res://scenes/combat/bosses/rival_warp_presenter.gd")
+const RivalCombatPatternExecutorScript = preload("res://scenes/combat/bosses/rival_combat_pattern_executor.gd")
 
 var _warp_portal: Node2D = null
 var _warp_target_pos: Vector2 = Vector2.ZERO
@@ -115,96 +116,14 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 
 func prepare_warp_in(target_rest_pos: Vector2 = Vector2.ZERO) -> void:
 	current_state = State.WARPING_IN
-	rotation = -PI / 2.0
-	if target_rest_pos != Vector2.ZERO:
-		_warp_target_pos = target_rest_pos
-		global_position = _warp_target_pos + Vector2(90.0, 0.0)
-	elif _warp_target_pos == Vector2.ZERO:
-		_warp_target_pos = global_position
-		global_position = _warp_target_pos + Vector2(90.0, 0.0)
-
-	if ship_sprite:
-		ship_sprite.scale = Vector2(0.01, 0.01)
-		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
-	if combat_danger_ring:
-		combat_danger_ring.modulate.a = 0.0
-	if warning_label:
-		warning_label.modulate.a = 0.0
-	queue_redraw()
+	_warp_target_pos = RivalWarpPresenterScript.prepare_warp_in(self, target_rest_pos)
 
 func open_warp_portal(on_shockwave_ready: Callable = Callable()) -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	rotation = -PI / 2.0
-
-	if _warp_target_pos == Vector2.ZERO:
-		_warp_target_pos = global_position
-	var portal_pos: Vector2 = _warp_target_pos + Vector2(90.0, 0.0)
 	var theme_col: Color = PILOT_THEME_COLORS.get(pilot_id, Color(0.0, 0.9, 1.0))
-
-	# Instanciar el vórtice hiperespacial temático
-	var portal = HyperspacePortalScript.new()
-	portal.setup(portal_pos, theme_col, 68.0, 680.0)
-	portal.auto_collapse = false
-	portal.process_mode = Node.PROCESS_MODE_ALWAYS
-	_warp_portal = portal
-	var parent_node := get_parent()
-	if parent_node:
-		parent_node.add_child(portal)
-	else:
-		add_child(portal)
-
-	# La nave permanece dentro del portal totalmente oculta
-	global_position = portal_pos
-	if ship_sprite:
-		ship_sprite.scale = Vector2(0.01, 0.01)
-		ship_sprite.modulate = Color(2.5, 2.5, 3.5, 0.0)
-	if combat_danger_ring:
-		combat_danger_ring.modulate.a = 0.0
-	if warning_label:
-		warning_label.modulate.a = 0.0
-
-	if on_shockwave_ready.is_valid():
-		var shockwave_dispatched := [false]
-		var safe_shockwave_cb := func() -> void:
-			if not shockwave_dispatched[0]:
-				shockwave_dispatched[0] = true
-				if on_shockwave_ready.is_valid():
-					on_shockwave_ready.call()
-		portal.shockwave_completed.connect(safe_shockwave_cb, CONNECT_ONE_SHOT)
-		get_tree().create_timer(1.2, true, false, true).timeout.connect(safe_shockwave_cb)
+	_warp_portal = RivalWarpPresenterScript.open_warp_portal(self, _warp_target_pos, theme_col, on_shockwave_ready)
 
 func emerge_from_portal(callback: Callable = Callable()) -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	if not ship_sprite:
-		if is_instance_valid(_warp_portal):
-			_warp_portal.start_collapse()
-		if callback.is_valid():
-			callback.call()
-		return
-
-	_play_sfx("dash", 0.65)
-	var tw := create_tween().set_parallel(true)
-	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-
-	tw.tween_property(self, "global_position", _warp_target_pos, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	var t_anim := tw.tween_property(ship_sprite, "scale", Vector2(0.42, 0.42), 0.5)
-	t_anim.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(ship_sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.5)
-
-	if combat_danger_ring:
-		tw.tween_property(combat_danger_ring, "modulate:a", 0.65, 0.5)
-
-	var emerge_done := [false]
-	var safe_emerge_cb := func() -> void:
-		if not emerge_done[0]:
-			emerge_done[0] = true
-			if is_instance_valid(_warp_portal):
-				_warp_portal.start_collapse()
-			if callback.is_valid():
-				callback.call()
-
-	tw.chain().tween_callback(safe_emerge_cb)
-	get_tree().create_timer(0.9, true, false, true).timeout.connect(safe_emerge_cb)
+	RivalWarpPresenterScript.emerge_from_portal(self, _warp_portal, _warp_target_pos, callback)
 
 func start_encounter() -> void:
 	if is_instance_valid(_warp_portal):
@@ -449,26 +368,7 @@ func engage_combat() -> void:
 
 func _warp_out_peacefully() -> void:
 	current_state = State.WARPING_OUT
-	if warning_label:
-		warning_label.text = "✓ %s: HIPERSALTO INICIADO. CONTACTO PACÍFICO." % pilot_name.to_upper()
-		warning_label.modulate = Color(0.2, 1.0, 0.6, 1.0)
-
-	if combat_danger_ring and is_instance_valid(combat_danger_ring):
-		var tw_ring := create_tween()
-		tw_ring.tween_property(combat_danger_ring, "modulate:a", 0.0, 0.4)
-		tw_ring.chain().tween_callback(combat_danger_ring.queue_free)
-		combat_danger_ring = null
-
-	rival_spared.emit(pilot_id)
-
-	# Animación de hipersalto hacia adelante
-	var forward := Vector2.UP.rotated(rotation)
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(self, "global_position", global_position + forward * 900.0, 0.8).set_ease(Tween.EASE_IN)
-	tw.tween_property(self, "scale", Vector2(0.1, 2.5), 0.8)
-	tw.tween_property(self, "modulate:a", 0.0, 0.8)
-	tw.chain().tween_callback(queue_free)
+	RivalWarpPresenterScript.warp_out_peacefully(self, pilot_id, pilot_name)
 
 func _process_dogfight(delta: float, dist: float) -> void:
 	if not is_instance_valid(player):
@@ -505,40 +405,7 @@ func _process_dogfight(delta: float, dist: float) -> void:
 func _execute_signature_attack() -> void:
 	if not is_instance_valid(player) or not is_instance_valid(bullet_server):
 		return
-
-	var target_pos := player.global_position
-
-	match pilot_id:
-		&"nova":
-			# Ráfaga rápida de riel acelerada
-			bullet_server.fire_aimed_spread(global_position, target_pos, 3, 14.0, 340.0, 2)
-			_play_sfx("laser", 1.2)
-		&"valentina":
-			# Francotirador telegrafiado de altísima velocidad
-			bullet_server.fire_common_aimed_bullet(global_position, target_pos, 440.0, 1)
-			_play_sfx("laser", 0.8)
-		&"kira":
-			# Enjambre de proyectiles biomórficos en espiral
-			bullet_server.fire_serpentine_spread(global_position, target_pos, 5, 35.0, 210.0, 40.0, 3.5, 0)
-			_play_sfx("missile", 1.0)
-		&"selene":
-			# Pulso gravitatorio y abanico de estrellas
-			bullet_server.fire_radial_ring(global_position, 12, 180.0, rotation, 3)
-			_play_sfx("missile", 0.9)
-		&"roxy":
-			# Escopetazo titánico con dispersión pesada
-			bullet_server.fire_aimed_spread(global_position, target_pos, 7, 45.0, 260.0, 1)
-			_play_sfx("explosion", 1.1)
-		&"echo":
-			# Trenza eléctrica de doble lissajous
-			bullet_server.fire_braided_lissajous(global_position, target_pos, 3, 240.0, 50.0, 4.0, 2)
-			_play_sfx("laser", 1.4)
-		&"nyx":
-			# Cuchillas dimensionales en abanico
-			bullet_server.fire_rhodonea_flower(global_position, 14, 220.0, 4, 0.4, rotation, 1)
-			_play_sfx("laser", 1.3)
-		_:
-			bullet_server.fire_aimed_spread(global_position, target_pos, 4, 25.0, 260.0, 1)
+	RivalCombatPatternExecutorScript.execute_signature_attack(bullet_server, pilot_id, global_position, player.global_position, rotation, Callable(self, "_play_sfx"))
 
 func take_damage(arg: Variant) -> void:
 	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
@@ -605,13 +472,7 @@ func _finish_death() -> void:
 	queue_free()
 
 func _drop_weapon_pickup() -> void:
-	var pickup_scene := load("res://scenes/combat/pickups/rival_weapon_pickup.tscn") as PackedScene
-	if pickup_scene:
-		var pickup = pickup_scene.instantiate()
-		pickup.setup(global_position, weapon_data, pilot_name)
-		var spawn_parent: Node = get_parent() if get_parent() else get_tree().current_scene
-		if spawn_parent:
-			spawn_parent.call_deferred("add_child", pickup)
+	RivalCombatPatternExecutorScript.drop_weapon_pickup(get_tree(), get_parent(), global_position, weapon_data, pilot_name)
 
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
