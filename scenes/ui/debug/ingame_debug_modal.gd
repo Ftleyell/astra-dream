@@ -80,13 +80,17 @@ var active_tab_index: int = 0
 var _stat_sliders: Dictionary = {}
 
 const AVAILABLE_WEAPONS: Array[Dictionary] = [
-	{ "id": &"rail_launcher", "name": "Rail Launcher", "path": "res://resources/weapons/rail_launcher.tres" },
-	{ "id": &"plasma_caster", "name": "Plasma Caster", "path": "res://resources/weapons/plasma_caster.tres" },
-	{ "id": &"tesla_coil", "name": "Tesla Coil", "path": "res://resources/weapons/tesla_coil.tres" },
-	{ "id": &"prism_shard", "name": "Prism Shard", "path": "res://resources/weapons/prism_shard.tres" },
-	{ "id": &"gravity_orbiters", "name": "Gravity Orbiters", "path": "res://resources/weapons/gravity_orbiters.tres" },
-	{ "id": &"beam_cannon", "name": "Beam Cannon", "path": "res://resources/weapons/beam_cannon.tres" },
-	{ "id": &"laser_turret", "name": "Laser Turret", "path": "res://resources/weapons/laser_turret.tres" }
+	{ "id": &"rail_launcher", "name": "Rail Launcher (Vanguard)", "path": "res://data/weapons/roster/rail_launcher.tres" },
+	{ "id": &"crescent_blade", "name": "Crescent Blade", "path": "res://data/weapons/roster/crescent_blade.tres" },
+	{ "id": &"hive_cannon", "name": "Hive Cannon", "path": "res://data/weapons/roster/hive_cannon.tres" },
+	{ "id": &"singularity_pulsar", "name": "Singularity Pulsar", "path": "res://data/weapons/roster/singularity_pulsar.tres" },
+	{ "id": &"sniper_rifle", "name": "Sniper Rifle", "path": "res://data/weapons/roster/sniper_rifle.tres" },
+	{ "id": &"tesla_arc", "name": "Tesla Arc", "path": "res://data/weapons/roster/tesla_arc.tres" },
+	{ "id": &"titan_shotgun", "name": "Titan Shotgun", "path": "res://data/weapons/roster/titan_shotgun.tres" },
+	{ "id": &"cluster_submunition", "name": "Cluster Submunition", "path": "res://data/weapons/shop/cluster_submunition.tres" },
+	{ "id": &"dimensional_blade", "name": "Dimensional Blade", "path": "res://data/weapons/shop/dimensional_blade.tres" },
+	{ "id": &"nova_flak", "name": "Nova Flak", "path": "res://data/weapons/shop/nova_flak.tres" },
+	{ "id": &"solar_beam", "name": "Solar Beam", "path": "res://data/weapons/shop/solar_beam.tres" }
 ]
 
 
@@ -334,7 +338,7 @@ func _on_kill_enemies_pressed() -> void:
 		if enemy.is_in_group("bosses") or enemy.is_in_group("boss") or enemy.is_in_group("rivals"):
 			continue
 		if enemy.has_method("take_damage"):
-			var ctx := HitContext.new(999999.0)
+			var ctx := HitContext.create_direct_hit(999999.0)
 			enemy.take_damage(ctx)
 			killed_count += 1
 		else:
@@ -427,7 +431,7 @@ func _populate_stats_sliders() -> void:
 	for stat_name in DebugManager.STAT_CONFIGS.keys():
 		var cfg: Dictionary = DebugManager.STAT_CONFIGS[stat_name]
 		var row := HBoxContainer.new()
-		row.theme_override_constants.separation = 12
+		row.add_theme_constant_override("separation", 12)
 
 		var lbl := Label.new()
 		lbl.text = cfg.name

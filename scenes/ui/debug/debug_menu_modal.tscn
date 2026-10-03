@@ -38,7 +38,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1040, 780)
+custom_minimum_size = Vector2(1040, 720)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_debug_panel")
 
@@ -61,14 +61,14 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.2, 1)
 theme_override_font_sizes/font_size = 22
-text = "🛠 PROTOCOLO DE DESPLIEGUE // MENÚ DE DEBUG Y TESTEO"
+text = "🛠 PROTOCOLO DE DESPLIEGUE // MENÚ DE DEBUG PRE-GAME"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TitleBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.85, 1, 0.8)
 theme_override_font_sizes/font_size = 13
-text = "MODO DESARROLLO (COMENTABLE PARA PRODUCCIÓN) - NAVEGACIÓN [WASD] | FIJAR VALOR [ESPACIO / ENTER] | SALIR [ESC]"
+text = "MODO HANGAR / METAGAME — GACHA, COSMÉTICOS, COMPAÑEROS Y PROGRESIÓN (SALIR [ESC])"
 horizontal_alignment = 1
 
 [node name="HSeparator1" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
@@ -76,284 +76,30 @@ layout_mode = 2
 
 [node name="TabBarRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 alignment = 1
-
-[node name="TabCombatButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
-custom_minimum_size = Vector2(310, 38)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "🛠️ PARÁMETROS Y STATS"
-
-[node name="TabBossesButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
-custom_minimum_size = Vector2(310, 38)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.35, 0.65, 1)
-theme_override_font_sizes/font_size = 13
-text = "👾 TESTEAR JEFES (1v1)"
 
 [node name="TabGachaButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
-custom_minimum_size = Vector2(310, 38)
+custom_minimum_size = Vector2(470, 38)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 13
-text = "🎰 GACHA Y COSMÉTICOS"
+text = "🎰 [1] GACHA Y ECONOMÍA"
 
-[node name="CombatTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-
-[node name="CheatsBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 30
-alignment = 1
-
-[node name="HpCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox"]
-custom_minimum_size = Vector2(250, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
-theme_override_font_sizes/font_size = 13
-text = "VIDA INFINITA (GOD MODE)"
-
-[node name="CreditsCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox"]
-custom_minimum_size = Vector2(240, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 13
-text = "CRÉDITOS INFINITOS (999K)"
-
-[node name="ConsumablesCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CheatsBox"]
-custom_minimum_size = Vector2(260, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "CONSUMIBLES (BOMBAS MAX)"
-
-[node name="QuickCombatActions" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="QuickRivalSpawnButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/QuickCombatActions"]
-custom_minimum_size = Vector2(520, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.85, 1)
-theme_override_font_sizes/font_size = 13
-text = "⚡ TESTEAR SPAWN RIVAL (CINEMÁTICA + SHOCKWAVE)"
-
-[node name="HSeparator2" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-
-[node name="StatsScroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-custom_minimum_size = Vector2(0, 360)
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="StatsList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/StatsScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="CareerDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="ResetCareerButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CareerDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.55, 1)
-theme_override_font_sizes/font_size = 12
-text = "↺ RESETEAR CARRERA (BLOQUEAR NYX Y 0 JEFES)"
-
-[node name="SetBosses9Button" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/CareerDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.45, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "⚡ JEFES A 9 (PRÓXIMO JEFE DESBLOQUEA A NYX)"
-
-[node name="PetsDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="Simulate10mButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/PetsDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "⚡ SIMULAR 10 MIN (TEST DESBLOQUEO PET COSMO)"
-
-[node name="LockCosmoButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/PetsDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.55, 0.4, 1)
-theme_override_font_sizes/font_size = 12
-text = "↺ BLOQUEAR PET COSMO (RESET SECRETO)"
-
-[node name="NavigatorsDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="UnlockIrisButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NavigatorsDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.7, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "✨ DESBLOQUEAR A IRIS (NAVEGANTE SECRETA)"
-
-[node name="LockIrisButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NavigatorsDebugRow"]
-custom_minimum_size = Vector2(470, 34)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.55, 0.4, 1)
-theme_override_font_sizes/font_size = 12
-text = "↺ BLOQUEAR A IRIS (RESET NAVEGANTE SECRETA)"
-
-[node name="NarrativeDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="JumpPacifistButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow"]
-custom_minimum_size = Vector2(230, 32)
+[node name="TabCareerButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
+custom_minimum_size = Vector2(470, 38)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "★ INICIAR W11: PACIFISTA"
-
-[node name="JumpSlayerButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow"]
-custom_minimum_size = Vector2(230, 32)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.3, 0.4, 1)
-theme_override_font_sizes/font_size = 12
-text = "⚔ INICIAR W11: GENOCIDA"
-
-[node name="JumpNeutralButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow"]
-custom_minimum_size = Vector2(230, 32)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 12
-text = "⚖ INICIAR W11: NEUTRAL"
-
-[node name="SpawnRivalButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/NarrativeDebugRow"]
-custom_minimum_size = Vector2(230, 32)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
-theme_override_font_sizes/font_size = 12
-[node name="PlanetDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="TestPlanetsButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CombatTabContent/PlanetDebugRow"]
-custom_minimum_size = Vector2(960, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 13
-text = "🪐 TESTEAR PLANETAS (RUN SIN ENEMIGOS, 3 PLANETAS INMEDIATOS)"
+text = "💾 [2] COMPAÑEROS Y PROGRESO"
 
-[node name="BossesTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-visible = false
+[node name="GachaTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="BossesHeaderBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="BossesTitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesHeaderBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.35, 0.65, 1)
-theme_override_font_sizes/font_size = 16
-text = "⚔️ DUELOS DIRECTOS CONTRA JEFES // TESTEO EN TIEMPO REAL (1v1)"
-horizontal_alignment = 1
-
-[node name="BossesSubtitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesHeaderBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.8)
-theme_override_font_sizes/font_size = 12
-text = "Selecciona cualquier jefe para iniciar inmediatamente una run de combate 1v1 contra él con tu nave y piloto actuales."
-horizontal_alignment = 1
-
-[node name="HSeparatorBosses" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent"]
-layout_mode = 2
-
-[node name="BossesGrid" type="GridContainer" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 12
-columns = 2
-
-[node name="TestHermitBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "🦀 EREMITA DEL VACÍO (OLA 2)
-Dominio del Aislamiento — Balas Rhodonea y pulso de vacío"
-
-[node name="TestAshClockBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-theme_override_font_sizes/font_size = 13
-text = "⌛ RELOJ DE CENIZAS (OLA 4)
-Dominio del Arrepentimiento — Dial de 12 horas y barrido temporal"
-
-[node name="TestBrokenMirrorBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.35, 0.95, 0.95, 1)
-theme_override_font_sizes/font_size = 13
-text = "🪞 ESPEJO QUEBRADO (OLA 6)
-Dominio de la Disociación — Ilusiones y fragmentación fractal"
-
-[node name="TestOverflowVortexBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.3, 0.5, 1)
-theme_override_font_sizes/font_size = 13
-text = "🌀 VÓRTICE DEL DESBORDE (OLA 8)
-Dominio del Agobio — Singularidad gravitacional y caos"
-
-[node name="TestMothershipBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.5, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "🛸 NODRIZA DEL VACÍO (OLA 10)
-Leviatán del Espacio Profundo — Enjambres masivos y bombardeo"
-
-[node name="TestAstraPrimeBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent/BossesGrid"]
-custom_minimum_size = Vector2(470, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 13
-text = "👑 ASTRA PRIME (OLA 11 / JEFE FINAL)
-Soberano Estelar Supremo — Corona cósmica y juicio estelar"
-
-[node name="TestDeathSequenceBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BossesTabContent"]
-custom_minimum_size = Vector2(960, 42)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.4, 0.95, 1)
-theme_override_font_sizes/font_size = 13
-text = "💥 PROBAR MUERTE CINEMÁTICA (SUPERNOVA EN JEFE ACTIVO)"
-
-[node name="GachaTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
-visible = false
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 14
-
 [node name="GachaStatsPanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 
 [node name="GachaStatsHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/GachaStatsPanel"]
@@ -364,26 +110,26 @@ alignment = 1
 [node name="TokensLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/GachaStatsPanel/GachaStatsHBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "🎟️ FICHAS GACHA: 0"
 
 [node name="BiomassLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/GachaStatsPanel/GachaStatsHBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "✨ POLVO ESTELAR: 0"
 
 [node name="SkinsUnlockedLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/GachaStatsPanel/GachaStatsHBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "🎨 SKINS DESBLOQUEADAS: 0 / 186"
 
 [node name="TokensTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 theme_override_font_sizes/font_size = 13
-text = "── FICHAS DE GACHA ──"
+text = "── FICHAS DE DESPLIEGUE Y GACHA ──"
 horizontal_alignment = 1
 
 [node name="TokensRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
@@ -392,19 +138,19 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="AddTokens10Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/TokensRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 text = "+10 FICHAS GACHA"
 
 [node name="AddTokens50Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/TokensRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 text = "+50 FICHAS GACHA"
 
 [node name="ResetTokensBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/TokensRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
 text = "↺ RESETEAR FICHAS (0)"
@@ -413,7 +159,7 @@ text = "↺ RESETEAR FICHAS (0)"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "── POLVO ESTELAR / BIOMASA (UPGRADES & DUPLICADOS 3★) ──"
+text = "── POLVO ESTELAR / BIOMASA (UPGRADES & DUPLICADOS) ──"
 horizontal_alignment = 1
 
 [node name="BiomassRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
@@ -422,28 +168,28 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="AddBiomass500Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/BiomassRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
-text = "+500 POLVO ESTELAR"
+text = "+500 BIOMASA"
 
 [node name="AddBiomass2000Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/BiomassRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
-text = "+2000 POLVO ESTELAR"
+text = "+2000 BIOMASA"
 
 [node name="ResetBiomassBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/BiomassRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
-text = "↺ RESETEAR POLVO (0)"
+text = "↺ RESETEAR BIOMASA (0)"
 
 [node name="SkinsTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "── CATÁLOGO DE SKINS Y PROGRESIÓN DE ESTRELLAS ──"
+text = "── DESBLOQUEO MASIVO DE SKINS ──"
 horizontal_alignment = 1
 
 [node name="SkinsRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
@@ -452,96 +198,149 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="UnlockAll1StarBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SkinsRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
-text = "★ DESBLOQUEAR TODAS (1★)"
+text = "★ DESBLOQUEAR TODAS LAS SKINS 1★"
 
 [node name="UnlockAll3StarBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SkinsRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-text = "★★★ MAX TODAS (3★ GLOW/AURA)"
+text = "★★★ DESBLOQUEAR TODAS LAS SKINS 3★"
 
 [node name="LockAllSkinsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SkinsRow"]
-custom_minimum_size = Vector2(300, 38)
+custom_minimum_size = Vector2(300, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
-text = "↺ BLOQUEAR TODAS (RESET)"
+text = "↺ BLOQUEAR TODAS LAS SKINS (ESTADO BASE)"
 
 [node name="SimulationTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 13
-text = "── ACCIONES EN VIVO Y SIMULACIÓN ──"
+text = "── SIMULACIÓN DE TIRADAS DIRECTAS ──"
 horizontal_alignment = 1
 
 [node name="SimulationRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="TestPull1Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SimulationRow"]
-custom_minimum_size = Vector2(215, 38)
+custom_minimum_size = Vector2(220, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
-text = "🎲 TIRADA DEBUG x1"
+text = "TIRADA x1"
 
 [node name="TestPull5Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SimulationRow"]
-custom_minimum_size = Vector2(215, 38)
+custom_minimum_size = Vector2(220, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
-text = "🎲 TIRADA DEBUG x5"
+text = "TIRADA x5"
 
 [node name="TestPull10Btn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SimulationRow"]
-custom_minimum_size = Vector2(215, 38)
+custom_minimum_size = Vector2(220, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
-text = "🎲 TIRADA DEBUG x10"
+text = "TIRADA x10"
 
 [node name="OpenGachaModalBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/SimulationRow"]
-custom_minimum_size = Vector2(245, 38)
+custom_minimum_size = Vector2(240, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.2, 1)
-text = "🎰 ABRIR GACHA / ROPERO"
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "🎰 ABRIR MODAL GACHA"
 
-[node name="InRunSlotsRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent"]
+[node name="CareerTabContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="PetsTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "── MASCOTAS Y SIMULACIÓN PASIVA ──"
+horizontal_alignment = 1
+
+[node name="PetsDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="SpawnSlotMachineBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/InRunSlotsRow"]
-custom_minimum_size = Vector2(460, 38)
+[node name="LockCosmoButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/PetsDebugRow"]
+custom_minimum_size = Vector2(470, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.75, 0.2, 1)
-text = "🎰 INICIAR RUN SOBRE TRAGAMONEDAS (+25.000 COINS)"
+theme_override_colors/font_color = Color(1, 0.6, 0.4, 1)
+text = "↺ BLOQUEAR A COSMO (RESET MASCOTA)"
 
-[node name="SpawnSlotChestBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/GachaTabContent/InRunSlotsRow"]
-custom_minimum_size = Vector2(460, 38)
+[node name="Simulate10mButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/PetsDebugRow"]
+custom_minimum_size = Vector2(470, 36)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
-text = "🎁 SPAWNEAR COFRE DE TRAGAMONEDAS"
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+text = "⏳ SIMULAR 10 MINUTOS DE RECOLECCIÓN PASIVA"
 
-[node name="HSeparator3" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+[node name="NavigatorsTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "── NAVEGANTES TÁCTICOS ──"
+horizontal_alignment = 1
+
+[node name="NavigatorsDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="UnlockIrisButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/NavigatorsDebugRow"]
+custom_minimum_size = Vector2(470, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.7, 1, 1)
+text = "✨ DESBLOQUEAR A IRIS (NAVEGANTE SECRETA)"
+
+[node name="LockIrisButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/NavigatorsDebugRow"]
+custom_minimum_size = Vector2(470, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.4, 1)
+text = "↺ BLOQUEAR A IRIS (RESET NAVEGANTE)"
+
+[node name="CareerTitle" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "── DATOS DE GUARDADO Y PROGRESO DE CARRERA ──"
+horizontal_alignment = 1
+
+[node name="CareerDebugRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="SetBosses9Button" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/CareerDebugRow"]
+custom_minimum_size = Vector2(470, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "👑 FIJAR 9 JEFES DERROTADOS (DESBLOQUEA A ECHO)"
+
+[node name="ResetCareerButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CareerTabContent/CareerDebugRow"]
+custom_minimum_size = Vector2(470, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+text = "⚠️ BORRAR PROGRESO DE CARRERA Y RESTAURAR DATOS"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 
 [node name="ActionsRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 20
+alignment = 2
 
 [node name="ResetButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ActionsRow"]
-custom_minimum_size = Vector2(340, 42)
+custom_minimum_size = Vector2(240, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "↺ RESTABLECER A VALORES POR DEFECTO"
-
-[node name="Spacer" type="Control" parent="CenterContainer/MainPanel/Margin/VBox/ActionsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
+text = "↺ RESTAURAR VALORES BASE"
 
 [node name="CloseButton" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ActionsRow"]
-custom_minimum_size = Vector2(340, 42)
+custom_minimum_size = Vector2(260, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
-theme_override_font_sizes/font_size = 15
-text = "✔ APLICAR Y VOLVER [ESC]"
+theme_override_colors/font_color = Color(0, 0.94, 1, 1)
+text = "CERRAR MENÚ PRE-GAME [ESC]"

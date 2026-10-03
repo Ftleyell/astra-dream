@@ -174,6 +174,9 @@ static func set_career_bosses_killed(count: int) -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	MetaProgressionState.set_career_bosses_killed(count, self_class)
 
+static func get_bosses_defeated_count() -> int:
+	return int(get_career_stats().get("total_bosses_killed", 0))
+
 # ==============================================================================
 # PETS & COMPANIONS (DELEGACIÓN A SAVE ROSTER MODULE)
 # ==============================================================================

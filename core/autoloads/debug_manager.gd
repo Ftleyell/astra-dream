@@ -5,9 +5,29 @@ extends Node
 ## Puede desactivarse completamente para builds de producción cambiando FORCE_DISABLE_DEBUG a true.
 
 const FORCE_DISABLE_DEBUG: bool = false
+const FORCE_ENABLE_DEBUG: bool = true
 
 static func is_debug_enabled() -> bool:
-	return OS.is_debug_build() and not FORCE_DISABLE_DEBUG
+	if FORCE_DISABLE_DEBUG:
+		return false
+	if FORCE_ENABLE_DEBUG:
+		return true
+	return OS.is_debug_build()
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+func _input(event: InputEvent) -> void:
+	if not is_debug_enabled():
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
+		var tree := get_tree()
+		if not tree:
+			return
+		var current_scene := tree.current_scene
+		if current_scene and current_scene.has_method("_toggle_ingame_debug"):
+			get_viewport().set_input_as_handled()
+			current_scene._toggle_ingame_debug()
 
 # Señales para coordinación reactiva in-game con MainGame y sus coordinadores
 signal spawn_monolith_requested(position: Vector2)

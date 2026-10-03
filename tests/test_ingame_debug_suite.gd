@@ -87,18 +87,18 @@ func _ready() -> void:
 	var initial_weps: int = w_ctrl.equipped_weapons.size()
 	var base_wep_id: StringName = w_ctrl.equipped_weapons[0].weapon_data.weapon_id
 
-	# Inyectar Plasma Caster
-	debug_modal._inject_weapon("res://resources/weapons/plasma_caster.tres", "Plasma Caster")
+	# Inyectar Nova Flak
+	debug_modal._inject_weapon("res://data/weapons/shop/nova_flak.tres", "Nova Flak")
 	await get_tree().process_frame
 
-	assert(w_ctrl.equipped_weapons.size() == initial_weps + 1, "Debe haberse añadido el Plasma Caster")
+	assert(w_ctrl.equipped_weapons.size() == initial_weps + 1, "Debe haberse añadido el Nova Flak")
 	assert(w_ctrl.equipped_weapons[0].weapon_data.weapon_id == base_wep_id, "El arma base del personaje (slot 0) NO debe haber sido reemplazada")
 
 	# Mejorar todas las armas
 	var initial_lvl: int = w_ctrl.equipped_weapons[1].level
 	debug_modal._on_upgrade_all_weapons_pressed()
 	await get_tree().process_frame
-	assert(w_ctrl.equipped_weapons[1].level == initial_lvl + 1, "Plasma Caster debe haber subido a nivel %d" % (initial_lvl + 1))
+	assert(w_ctrl.equipped_weapons[1].level == initial_lvl + 1, "Nova Flak debe haber subido a nivel %d" % (initial_lvl + 1))
 	print("  ✓ Inyección de armas y mejoras respetando bloqueo de arma base verificado")
 
 	# 7. Probar Cierre y Reanudación con Tecla Escape / F1

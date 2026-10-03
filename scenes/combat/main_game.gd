@@ -762,6 +762,11 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
+	if DebugManager.is_debug_enabled() and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
+		get_viewport().set_input_as_handled()
+		_toggle_ingame_debug()
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		# Tecla B para invocar al jefe de la oleada
 		if event.keycode == KEY_B:
@@ -1011,14 +1016,6 @@ func _spawn_debug_test_planets() -> void:
 
 const IngameDebugModalScript := preload("res://scenes/ui/debug/ingame_debug_modal.gd")
 var ingame_debug_modal: CanvasLayer = null
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not DebugManager.is_debug_enabled():
-		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_F1:
-			get_viewport().set_input_as_handled()
-			_toggle_ingame_debug()
 
 func _toggle_ingame_debug() -> void:
 	if not DebugManager.is_debug_enabled():
