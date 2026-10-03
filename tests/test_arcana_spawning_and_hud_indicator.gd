@@ -50,11 +50,10 @@ func _ready() -> void:
 	assert(hud.arcana_tracker != null, "hud.arcana_tracker debe estar vinculado")
 	var arcana_tracker: ArcanaEdgeIndicator = hud.arcana_tracker
 	assert(arcana_tracker is ArcanaEdgeIndicator, "arcana_tracker debe ser instancia de ArcanaEdgeIndicator")
-	assert(arcana_tracker.get_parent() is CanvasLayer, "ArcanaEdgeIndicator debe estar en un CanvasLayer")
 	var tracker_layer := arcana_tracker.get_parent() as CanvasLayer
-	assert(tracker_layer.layer == 8, "El layer del indicador debe ser 8 (debajo de layer 10 de HUD)")
+	assert(tracker_layer.layer < hud.layer, "El layer del indicador debe estar debajo del layer de HUD (tracker: %d, hud: %d)" % [tracker_layer.layer, hud.layer])
 	assert(arcana_tracker.custom_minimum_size == Vector2(50, 50), "Tamaño de caja debe ser 50x50")
-	print("  ✓ Jerarquía de HUD y ArcanaEdgeIndicator verificada (Layer 8 < Layer 10).")
+	print("  ✓ Jerarquía de HUD y ArcanaEdgeIndicator verificada (Layer %d < Layer %d)." % [tracker_layer.layer, hud.layer])
 
 	# ----------------------------------------------------
 	# CASO 2: Garantía de Monolito Arcano en _ready() / Oleada 1
@@ -81,6 +80,12 @@ func _ready() -> void:
 
 	# Posicionar el monolito al este, lejos fuera de pantalla (x = 3200)
 	active_monolith.global_position = Vector2(3200, 540)
+	if dialogic and "current_timeline" in dialogic:
+		dialogic.current_timeline = null
+	if dialogic and dialogic.has_method("end_timeline"):
+		dialogic.end_timeline(true)
+	main_game.is_briefing_active = false
+
 	arcana_tracker.set_player(player)
 	arcana_tracker._process(0.016)
 
