@@ -8,5 +8,11 @@ extends Resource
 @export var target_stat: StringName = &"base_damage"
 @export var modifier_value: float = 0.10
 @export var is_percentage: bool = true
+@export var modifier_type: Enums.ModifierType = Enums.ModifierType.FLAT
 @export var base_weight: float = 100.0
 @export var tags: Array[StringName] = [&"damage", &"offense"]
+
+func get_effective_modifier_type() -> Enums.ModifierType:
+	if modifier_type == Enums.ModifierType.FLAT and is_percentage:
+		return Enums.ModifierType.ADDITIVE_PERCENT
+	return modifier_type

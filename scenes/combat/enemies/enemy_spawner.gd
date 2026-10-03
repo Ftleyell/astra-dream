@@ -171,16 +171,33 @@ func _acquire_player() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
 
+func _get_curse_level() -> float:
+	_acquire_player()
+	if is_instance_valid(player) and player.stats:
+		return player.stats.get_stat(&"curse")
+	return 0.0
+
+func _get_density_multiplier() -> float:
+	var curse: float = _get_curse_level()
+	return 1.0 + (curse * 0.005)
+
+func _get_effective_max_enemies() -> int:
+	return int(round(float(max_enemies) * _get_density_multiplier()))
+
 func _try_spawn_cluster() -> void:
+	var effective_max: int = _get_effective_max_enemies()
 	var existing_enemies := get_tree().get_nodes_in_group("enemies")
 	var active_count := existing_enemies.size()
-	if active_count >= max_enemies:
+	if active_count >= effective_max:
 		return
 
-	var available_slots := max_enemies - active_count
+	var available_slots := effective_max - active_count
+	var density_mult: float = _get_density_multiplier()
 	var min_cluster := current_wave_config.cluster_min if current_wave_config else (3 if current_wave <= 2 else 4)
 	var max_cluster := current_wave_config.cluster_max if current_wave_config else (6 if current_wave <= 2 else 8)
-	var cluster_size := mini(available_slots, randi_range(min_cluster, max_cluster))
+	var scaled_min: int = int(round(float(min_cluster) * density_mult))
+	var scaled_max: int = int(round(float(max_cluster) * density_mult))
+	var cluster_size := mini(available_slots, randi_range(scaled_min, scaled_max))
 
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
@@ -262,13 +279,14 @@ func _select_enemy_scene() -> PackedScene:
 		return splitter_scene
 
 func _trigger_swarm_rush() -> void:
+	var effective_max: int = _get_effective_max_enemies()
 	var existing_enemies := get_tree().get_nodes_in_group("enemies")
 	var active_count := existing_enemies.size()
-	var available_slots := max_enemies - active_count
+	var available_slots := effective_max - active_count
 	if available_slots <= 4:
 		return
 
-	var rush_count := mini(available_slots, 16)
+	var rush_count := mini(available_slots, int(round(16.0 * _get_density_multiplier())))
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
 
@@ -285,12 +303,33 @@ func _spawn_enemy_at(scene: PackedScene, pos: Vector2) -> Node2D:
 	var parent_node: Node = get_parent() if is_inside_tree() else null
 	if not parent_node and is_inside_tree():
 		parent_node = get_tree().current_scene
+	var enemy: Node2D = null
 	if enemy_pool:
-		return enemy_pool.acquire_enemy(scene, pos, parent_node)
-	var enemy := scene.instantiate() as Node2D
-	if not enemy:
-		return null
-	enemy.global_position = pos
-	if parent_node:
-		parent_node.add_child(enemy)
+		enemy = enemy_pool.acquire_enemy(scene, pos, parent_node)
+	else:
+		enemy = scene.instantiate() as Node2D
+		if enemy:
+			enemy.global_position = pos
+			if parent_node:
+				parent_node.add_child(enemy)
+
+	if enemy:
+		var curse: float = _get_curse_level()
+		if curse > 0.0:
+			var speed_mult: float = 1.0 + (curse * 0.005)
+			if "move_speed" in enemy:
+				if not enemy.has_meta(&"base_move_speed"):
+					enemy.set_meta(&"base_move_speed", enemy.move_speed)
+				var base_spd: float = enemy.get_meta(&"base_move_speed")
+				enemy.move_speed = base_spd * speed_mult
+			elif "movement_speed" in enemy:
+				if not enemy.has_meta(&"base_movement_speed"):
+					enemy.set_meta(&"base_movement_speed", enemy.movement_speed)
+				var base_spd: float = enemy.get_meta(&"base_movement_speed")
+				enemy.movement_speed = base_spd * speed_mult
+		elif enemy.has_meta(&"base_move_speed"):
+			enemy.move_speed = enemy.get_meta(&"base_move_speed")
+		elif enemy.has_meta(&"base_movement_speed"):
+			enemy.movement_speed = enemy.get_meta(&"base_movement_speed")
+
 	return enemy

@@ -6,14 +6,24 @@ signal stat_changed(stat_name: StringName, new_value: float)
 class StatModifier:
 	var id: StringName
 	var value: float
-	var is_percentage: bool
+	var mod_type: Enums.ModifierType = Enums.ModifierType.FLAT
+	var is_percentage: bool:
+		get:
+			return mod_type == Enums.ModifierType.ADDITIVE_PERCENT or mod_type == Enums.ModifierType.MULTIPLICATIVE
+		set(val):
+			mod_type = Enums.ModifierType.ADDITIVE_PERCENT if val else Enums.ModifierType.FLAT
 	var source: Variant
 
-	func _init(p_id: StringName, p_val: float, p_is_pct: bool, p_source: Variant = null) -> void:
+	func _init(p_id: StringName, p_val: float, p_type_or_is_pct: Variant = false, p_source: Variant = null) -> void:
 		id = p_id
 		value = p_val
-		is_percentage = p_is_pct
 		source = p_source
+		if p_type_or_is_pct is bool:
+			mod_type = Enums.ModifierType.ADDITIVE_PERCENT if p_type_or_is_pct else Enums.ModifierType.FLAT
+		elif p_type_or_is_pct is int or p_type_or_is_pct is float:
+			mod_type = int(p_type_or_is_pct) as Enums.ModifierType
+		else:
+			mod_type = Enums.ModifierType.FLAT
 
 var _base_stats: Dictionary[StringName, float] = {}
 var _modifiers: Dictionary[StringName, Array] = {}
@@ -39,6 +49,7 @@ func initialize(char_data: CharacterData) -> void:
 		&"exp_multiplier": char_data.exp_multiplier if "exp_multiplier" in char_data else 1.0,
 		&"biomass_multiplier": 1.0,
 		&"credits_multiplier": 1.0,
+		&"curse": 0.0,
 	}
 	for key in _base_stats.keys():
 		_modifiers[key] = []
@@ -52,9 +63,9 @@ func add_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	_is_dirty[stat_name] = true
 	stat_changed.emit(stat_name, get_stat(stat_name))
 
-func add_stat_bonus(stat_name: StringName, amount: float, is_pct: bool = false, source: Variant = null) -> void:
+func add_stat_bonus(stat_name: StringName, amount: float, p_type_or_is_pct: Variant = false, source: Variant = null) -> void:
 	var mod_id: StringName = StringName(str(stat_name) + "_bonus_" + str(Time.get_ticks_usec()))
-	add_modifier(stat_name, StatModifier.new(mod_id, amount, is_pct, source))
+	add_modifier(stat_name, StatModifier.new(mod_id, amount, p_type_or_is_pct, source))
 
 func set_or_replace_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	if not _modifiers.has(stat_name):
@@ -108,15 +119,19 @@ func get_stat(stat_name: StringName) -> float:
 func _recalculate_stat(stat_name: StringName) -> void:
 	var base_val: float = _base_stats.get(stat_name, 0.0)
 	var flat_sum: float = 0.0
-	var percent_sum: float = 0.0
+	var add_pct_sum: float = 0.0
+	var mult_product: float = 1.0
 
 	for mod: StatModifier in _modifiers.get(stat_name, []):
-		if mod.is_percentage:
-			percent_sum += mod.value
-		else:
-			flat_sum += mod.value
+		match mod.mod_type:
+			Enums.ModifierType.FLAT:
+				flat_sum += mod.value
+			Enums.ModifierType.ADDITIVE_PERCENT:
+				add_pct_sum += mod.value
+			Enums.ModifierType.MULTIPLICATIVE:
+				mult_product *= maxf(0.0, 1.0 + mod.value)
 
-	var final_val: float = (base_val + flat_sum) * maxf(0.0, 1.0 + percent_sum)
+	var final_val: float = (base_val + flat_sum) * maxf(0.0, 1.0 + add_pct_sum) * mult_product
 	if stat_name == &"projectile_count":
 		final_val = maxf(1.0, round(final_val))
 	elif stat_name == &"max_health":

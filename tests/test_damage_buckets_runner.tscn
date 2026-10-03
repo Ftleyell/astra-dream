@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci7r6pxk5999"]
+
+[ext_resource type="Script" path="res://tests/test_damage_buckets_suite.gd" id="1_test"]
+
+[node name="TestDamageBucketsRunner" type="Node"]
+script = ExtResource("1_test")

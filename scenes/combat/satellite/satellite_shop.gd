@@ -278,23 +278,38 @@ func _roll_shop_items() -> void:
 	var pool_copy: Array[Resource] = available_items_pool.duplicate()
 	pool_copy.shuffle()
 
-	# Prioridad de armas si el jugador tiene hueco
+	# Slot 0: Arma garantizada si está disponible en el pool
 	_ensure_player()
 	var w_ctrl: WeaponController = player.get_node_or_null("WeaponController") as WeaponController if is_instance_valid(player) else null
-	var needs_weapons: bool = w_ctrl != null and not w_ctrl.is_full()
-	if needs_weapons:
-		for res: Resource in pool_copy:
-			if res is WeaponData and not selected_items.has(res):
-				selected_items.append(res)
-				break
+	for res: Resource in pool_copy:
+		if res is WeaponData:
+			selected_items.append(res)
+			break
 
+	# Slots 1 y 2: Ítems filtrados por max_stacks del jugador
+	var eligible_items: Array[ItemData] = []
+	for res: Resource in pool_copy:
+		if res is ItemData:
+			var it: ItemData = res as ItemData
+			var count: int = 0
+			if is_instance_valid(player) and player.inventory:
+				count = player.inventory.get_item_count(it.item_id)
+			if count < it.max_stacks:
+				eligible_items.append(it)
+
+	for it: ItemData in eligible_items:
+		if selected_items.size() >= 3:
+			break
+		if not selected_items.has(it):
+			selected_items.append(it)
+
+	# Fallback si el pool no alcanza a llenar 3 ranuras
 	for res: Resource in pool_copy:
 		if selected_items.size() >= 3:
 			break
 		if not selected_items.has(res):
 			selected_items.append(res)
 
-	# Fallback si el pool es menor que 3
 	while selected_items.size() < 3 and not pool_copy.is_empty():
 		selected_items.append(pool_copy[randi() % pool_copy.size()])
 

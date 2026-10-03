@@ -20,16 +20,18 @@ func add_item(item: ItemData, count: int = 1) -> void:
 	# Aplicar modificador reactivo a CharacterStats si el ítem define estadísticas
 	if character_stats and item.stat_name != &"":
 		var total_bonus: float = item.stat_value * float(new_count)
-		var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, item.is_percentage, item.item_id)
+		var m_type: Enums.ModifierType = item.get_effective_modifier_type() if item.has_method(&"get_effective_modifier_type") else (item.modifier_type if "modifier_type" in item else (Enums.ModifierType.ADDITIVE_PERCENT if item.is_percentage else Enums.ModifierType.FLAT))
+		var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, m_type, item.item_id)
 		character_stats.set_or_replace_modifier(item.stat_name, mod)
 
 	# Aplicar modificador secundario / de penalización (anti-sinergia)
 	if character_stats and item.secondary_stat_name != &"":
 		var total_penalty: float = item.secondary_stat_value * float(new_count)
+		var sec_type: Enums.ModifierType = item.get_effective_secondary_modifier_type() if item.has_method(&"get_effective_secondary_modifier_type") else (item.secondary_modifier_type if "secondary_modifier_type" in item else (Enums.ModifierType.ADDITIVE_PERCENT if item.secondary_is_percentage else Enums.ModifierType.FLAT))
 		var p_mod := CharacterStats.StatModifier.new(
 			StringName(str(item.item_id) + "_penalty"),
 			total_penalty,
-			item.secondary_is_percentage,
+			sec_type,
 			item.item_id
 		)
 		character_stats.set_or_replace_modifier(item.secondary_stat_name, p_mod)
@@ -183,14 +185,16 @@ func remove_item_stacks(item_id: StringName, count: int = 1) -> bool:
 		_items[item_id]["count"] = new_count
 		if character_stats and item.stat_name != &"":
 			var total_bonus: float = item.stat_value * float(new_count)
-			var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, item.is_percentage, item.item_id)
+			var m_type: Enums.ModifierType = item.get_effective_modifier_type() if item.has_method(&"get_effective_modifier_type") else (item.modifier_type if "modifier_type" in item else (Enums.ModifierType.ADDITIVE_PERCENT if item.is_percentage else Enums.ModifierType.FLAT))
+			var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, m_type, item.item_id)
 			character_stats.set_or_replace_modifier(item.stat_name, mod)
 		if character_stats and item.secondary_stat_name != &"":
 			var total_penalty: float = item.secondary_stat_value * float(new_count)
+			var sec_type: Enums.ModifierType = item.get_effective_secondary_modifier_type() if item.has_method(&"get_effective_secondary_modifier_type") else (item.secondary_modifier_type if "secondary_modifier_type" in item else (Enums.ModifierType.ADDITIVE_PERCENT if item.secondary_is_percentage else Enums.ModifierType.FLAT))
 			var p_mod := CharacterStats.StatModifier.new(
 				StringName(str(item.item_id) + "_penalty"),
 				total_penalty,
-				item.secondary_is_percentage,
+				sec_type,
 				item.item_id
 			)
 			character_stats.set_or_replace_modifier(item.secondary_stat_name, p_mod)

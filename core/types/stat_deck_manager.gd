@@ -24,22 +24,22 @@ func _ready() -> void:
 
 func _generate_default_cards() -> void:
 	var stats_to_create = [
-		{"id": &"card_dmg_1", "title": "+25% Daño Base", "stat": &"base_damage", "val": 0.25, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_dmg_2", "title": "+50% Daño Base", "stat": &"base_damage", "val": 0.50, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_atk_spd", "title": "+20% Cadencia de Fuego", "stat": &"attack_speed", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_crit_chance", "title": "+12% Prob. Crítica", "stat": &"crit_chance", "val": 0.12, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_crit_dmg", "title": "+60% Daño Crítico", "stat": &"crit_damage", "val": 0.60, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_hp_up", "title": "+40 Vida Máxima", "stat": &"max_health", "val": 40.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_speed_up", "title": "+18% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.18, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_luck_up", "title": "+25% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.25, "pct": true, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_armor_1", "title": "+5 Armadura", "stat": &"armor", "val": 5.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_armor_2", "title": "+10 Armadura", "stat": &"armor", "val": 10.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_regen_1", "title": "+1.5 Regen/s", "stat": &"health_regen", "val": 1.5, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_regen_2", "title": "+3.5 Regen/s", "stat": &"health_regen", "val": 3.5, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_magnet_1", "title": "+50 px Imán", "stat": &"pickup_radius", "val": 50.0, "pct": false, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_magnet_2", "title": "+100 px Imán", "stat": &"pickup_radius", "val": 100.0, "pct": false, "tier": Enums.Tier.TIER_2},
-		{"id": &"card_exp_1", "title": "+20% EXP Ganada", "stat": &"exp_multiplier", "val": 0.20, "pct": true, "tier": Enums.Tier.TIER_1},
-		{"id": &"card_exp_2", "title": "+40% EXP Ganada", "stat": &"exp_multiplier", "val": 0.40, "pct": true, "tier": Enums.Tier.TIER_2}
+		{"id": &"card_dmg_1", "title": "+12% Daño Base", "stat": &"base_damage", "val": 0.12, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_dmg_2", "title": "+24% Daño Base", "stat": &"base_damage", "val": 0.24, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_atk_spd", "title": "+10% Cadencia de Fuego", "stat": &"attack_speed", "val": 0.10, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_crit_chance", "title": "+6% Prob. Crítica", "stat": &"crit_chance", "val": 0.06, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_crit_dmg", "title": "+30% Daño Crítico", "stat": &"crit_damage", "val": 0.30, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_hp_up", "title": "+25 Vida Máxima", "stat": &"max_health", "val": 25.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_speed_up", "title": "+10% Velocidad de Movimiento", "stat": &"move_speed", "val": 0.10, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_luck_up", "title": "+20% Suerte (Mejores Tiers)", "stat": &"luck", "val": 0.20, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_armor_1", "title": "+3 Armadura", "stat": &"armor", "val": 3.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_armor_2", "title": "+6 Armadura", "stat": &"armor", "val": 6.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_regen_1", "title": "+0.8 Regen/s", "stat": &"health_regen", "val": 0.8, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_regen_2", "title": "+1.8 Regen/s", "stat": &"health_regen", "val": 1.8, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_magnet_1", "title": "+35 px Imán", "stat": &"pickup_radius", "val": 35.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_magnet_2", "title": "+70 px Imán", "stat": &"pickup_radius", "val": 70.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "tier": Enums.Tier.TIER_2},
+		{"id": &"card_exp_1", "title": "+12% EXP Ganada", "stat": &"exp_multiplier", "val": 0.12, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_1},
+		{"id": &"card_exp_2", "title": "+25% EXP Ganada", "stat": &"exp_multiplier", "val": 0.25, "pct": true, "mod_type": Enums.ModifierType.ADDITIVE_PERCENT, "tier": Enums.Tier.TIER_2}
 	]
 	var stat_icon_map := {
 		&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -63,6 +63,7 @@ func _generate_default_cards() -> void:
 		c.target_stat = def["stat"]
 		c.modifier_value = def["val"]
 		c.is_percentage = def["pct"]
+		c.modifier_type = def.get("mod_type", Enums.ModifierType.ADDITIVE_PERCENT if c.is_percentage else Enums.ModifierType.FLAT)
 		c.tier = def["tier"]
 		c.base_weight = 100.0
 		var stat_key: StringName = def["stat"]
@@ -146,10 +147,11 @@ func _sample_card_by_tier(deck: Array[StatCardData], tier: Enums.Tier) -> StatCa
 	return candidates[0]
 
 func apply_card_to_stats(card: StatCardData, char_stats: CharacterStats) -> void:
+	var m_type: Enums.ModifierType = card.get_effective_modifier_type() if card.has_method(&"get_effective_modifier_type") else (card.modifier_type if "modifier_type" in card else (Enums.ModifierType.ADDITIVE_PERCENT if card.is_percentage else Enums.ModifierType.FLAT))
 	var mod := CharacterStats.StatModifier.new(
 		card.card_id,
 		card.modifier_value,
-		card.is_percentage,
+		m_type,
 		card
 	)
 	char_stats.add_modifier(card.target_stat, mod)

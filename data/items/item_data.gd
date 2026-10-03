@@ -14,11 +14,23 @@ extends Resource
 @export var stat_name: StringName = &""
 @export var stat_value: float = 0.0
 @export var is_percentage: bool = false
+@export var modifier_type: Enums.ModifierType = Enums.ModifierType.FLAT
 
 @export_group("Secondary / Penalty Stat")
 @export var secondary_stat_name: StringName = &""
 @export var secondary_stat_value: float = 0.0
 @export var secondary_is_percentage: bool = false
+@export var secondary_modifier_type: Enums.ModifierType = Enums.ModifierType.FLAT
+
+func get_effective_modifier_type() -> Enums.ModifierType:
+	if modifier_type == Enums.ModifierType.FLAT and is_percentage:
+		return Enums.ModifierType.ADDITIVE_PERCENT
+	return modifier_type
+
+func get_effective_secondary_modifier_type() -> Enums.ModifierType:
+	if secondary_modifier_type == Enums.ModifierType.FLAT and secondary_is_percentage:
+		return Enums.ModifierType.ADDITIVE_PERCENT
+	return secondary_modifier_type
 
 @export_group("Stacking")
 @export var max_stacks: int = 99

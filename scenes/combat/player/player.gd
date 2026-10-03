@@ -457,8 +457,12 @@ func heal(amount: float) -> void:
 
 
 func add_credits(amount: int) -> void:
+	if amount <= 0:
+		return
 	var mult: float = stats.get_stat(&"credits_multiplier") if stats else 1.0
-	var effective := int(round(float(amount) * maxf(0.1, mult)))
+	var curse: float = stats.get_stat(&"curse") if stats else 0.0
+	var curse_bonus: float = maxf(0.0, 1.0 + (curse * 0.01))
+	var effective := int(round(float(amount) * maxf(0.1, mult) * curse_bonus))
 	run_credits += effective
 	credits_changed.emit(run_credits)
 

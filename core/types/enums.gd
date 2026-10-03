@@ -1,6 +1,7 @@
 class_name Enums
 extends RefCounted
 
+enum ModifierType { FLAT, ADDITIVE_PERCENT, MULTIPLICATIVE }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, CURSED }
 enum Tier { TIER_1, TIER_2, TIER_3, TIER_4 }
 enum StackType { LINEAR, HYPERBOLIC, EXPONENTIAL, CAPPED }
