@@ -2,7 +2,29 @@ extends Node
 
 ## Singleton de Depuración y Trampas para Testeo de Desarrollo
 ## Permite activar God Mode, Economía Infinita, Consumibles Ilimitados y Modificadores de Stats.
-## Puede desactivarse completamente para builds de producción cambiando is_enabled a false.
+## Puede desactivarse completamente para builds de producción cambiando FORCE_DISABLE_DEBUG a true.
+
+const FORCE_DISABLE_DEBUG: bool = false
+
+static func is_debug_enabled() -> bool:
+	return OS.is_debug_build() and not FORCE_DISABLE_DEBUG
+
+# Señales para coordinación reactiva in-game con MainGame y sus coordinadores
+signal spawn_monolith_requested(position: Vector2)
+signal spawn_boss_requested(boss_id: String, play_intro: bool)
+signal spawn_rival_requested(play_intro: bool)
+signal spawn_slot_machine_requested(position: Vector2)
+signal kill_all_enemies_requested()
+signal clear_all_bullets_requested()
+signal jump_wave_requested(target_wave: int)
+signal trigger_crisis_requested(crisis_id: String)
+signal add_credits_requested(amount: int)
+signal add_bombs_requested(amount: int)
+signal restore_health_requested()
+signal set_speed_mult_requested(mult: float)
+signal give_weapon_requested(weapon_id: StringName)
+signal upgrade_weapons_requested()
+signal give_arcana_pact_requested(pact_id: StringName)
 
 var is_enabled: bool = false
 

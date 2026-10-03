@@ -890,6 +890,8 @@ func has_pending_upgrades() -> bool:
 	return modal_coordinator.has_pending_upgrades() if modal_coordinator else false
 
 func is_any_combat_modal_active() -> bool:
+	if ingame_debug_modal and ingame_debug_modal.is_open:
+		return true
 	return modal_coordinator.is_any_combat_modal_active() if modal_coordinator else false
 
 func notify_menu_closed(duration: float = 0.35) -> void:
@@ -1006,3 +1008,31 @@ func _spawn_navigator_controller() -> void:
 
 func _spawn_debug_test_planets() -> void:
 	PlanetSpawnerHelper.spawn_debug_planets(self, player)
+
+const IngameDebugModalScript := preload("res://scenes/ui/debug/ingame_debug_modal.gd")
+var ingame_debug_modal: CanvasLayer = null
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not DebugManager.is_debug_enabled():
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F1:
+			get_viewport().set_input_as_handled()
+			_toggle_ingame_debug()
+
+func _toggle_ingame_debug() -> void:
+	if not DebugManager.is_debug_enabled():
+		return
+	if not ingame_debug_modal:
+		var scene := load("res://scenes/ui/debug/ingame_debug_modal.tscn") as PackedScene
+		if scene:
+			ingame_debug_modal = scene.instantiate() as CanvasLayer
+			add_child(ingame_debug_modal)
+			if ingame_debug_modal.has_method("setup"):
+				ingame_debug_modal.setup(self)
+
+	if ingame_debug_modal:
+		if ingame_debug_modal.is_open:
+			ingame_debug_modal.close()
+		else:
+			ingame_debug_modal.open()

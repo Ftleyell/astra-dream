@@ -45,10 +45,17 @@ Definidos en [`project.godot`](file:///c:/Users/Frani/.gemini/antigravity/scratc
 - **`ActiveRunStorage`:** Maneja guardado temporal de partidas en curso (`user://active_run.json`) y ranking top 10 (`user://highscores.json`).
 
 ### 2.3 DebugManager
+- **Salvaguarda de Producción Zero-Friction:**
+  - `FORCE_DISABLE_DEBUG` (`bool`): Bandera manual maestra (por defecto `false`).
+  - `is_debug_enabled() -> bool`: Retorna `OS.is_debug_build() and not FORCE_DISABLE_DEBUG`.
+  - En builds de exportación/producción, los botones de depuración se destruyen (`queue_free()`) y el atajo in-game `F1` queda completamente desactivado sin reservar memoria ni precargar interfaces.
+- **División de Menús de Depuración:**
+  - **Pregame (`scenes/ui/debug/debug_menu_modal.gd`):** Restringido estrictamente al metajuego en la pantalla de selección (Gacha, Tokens, Biomasa, Desbloqueo de Skins, Compañeros Cosmo/Iris y Reseteo de Carrera/Save).
+  - **In-Game (`scenes/ui/debug/ingame_debug_modal.gd`):** Accesible con **`F1`** en pleno combate; pausa el árbol de juego (`PROCESS_MODE_ALWAYS`) y ofrece 4 pestañas: Spawns/Entidades (Monolitos directos frente al jugador a ~200px, Jefes con toggle de cinemática, Rivales, Tragaperras, Limpieza), Cheats/Stats (God Mode, Créditos 999k, Bombas 5, Sliders de estadísticas en vivo), Arsenal/Items (Inyección de armas, upgrades de nivel, selector de pactos) y Oleadas/Crisis (Salto de oleada, disparo de Tormenta Solar y eventos de crisis).
 - **Flags principales:** `infinite_hp`, `infinite_credits`, `infinite_consumables`, `pending_debug_route`.
 - **Diccionario de Estadísticas (`stat_overrides`):**
   - Permite sustituir en caliente cualquier estadística de [`CharacterStats`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/types/character_stats.gd) (`max_health`, `move_speed`, `base_damage`, `crit_chance`, `exp_multiplier`, etc.).
-  - Configuración declarativa en `STAT_CONFIGS` con mínimos, máximos y formatos de visualización para la UI de depuración ([`debug_menu_modal.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/debug_menu_modal.gd)).
+  - Configuración declarativa en `STAT_CONFIGS` con mínimos, máximos y formatos de visualización para las interfaces de depuración.
 
 ### 2.4 AudioManager
 - **Pool de Voces:** Pre-instancia 24 nodos `AudioStreamPlayer` para evitar instanciación (`allocation`) en tiempo de ejecución.

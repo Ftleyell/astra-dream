@@ -1,0 +1,423 @@
+[gd_scene load_steps=3 format=3 uid="uid://ingamedebugmodal01"]
+
+[ext_resource type="Script" path="res://scenes/ui/debug/ingame_debug_modal.gd" id="1_debug"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ingame_debug"]
+bg_color = Color(0.04, 0.06, 0.09, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.94, 1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0.94, 1, 0.15)
+shadow_size = 10
+
+[node name="IngameDebugModal" type="CanvasLayer"]
+process_mode = 3
+layer = 125
+script = ExtResource("1_debug")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.015, 0.025, 0.045, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1000, 680)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ingame_debug")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "🛠 PROTOCOLO TÁCTICO // MENÚ DE DEBUG EN COMBATE"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.85, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "MODO DESARROLLO - COMBATE PAUSADO | PRESIONA [F1] O [ESC] PARA REANUDAR"
+horizontal_alignment = 1
+
+[node name="HSeparator1" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="TabBarRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="TabSpawnsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
+custom_minimum_size = Vector2(230, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "👾 [1] ENTIDADES Y SPAWNS"
+
+[node name="TabCheatsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
+custom_minimum_size = Vector2(230, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "🛡️ [2] CHEATS Y STATS"
+
+[node name="TabArsenalBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
+custom_minimum_size = Vector2(230, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚔️ [3] ARSENAL E ITEMS"
+
+[node name="TabWavesBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/TabBarRow"]
+custom_minimum_size = Vector2(230, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "🌊 [4] OLEADAS Y CRISIS"
+
+[node name="FeedbackLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = ">> Listo."
+
+[node name="SpawnsContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="MonolithHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ MONOLITOS DE ARCANA"
+
+[node name="MonolithRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpawnMonolithBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/MonolithRow"]
+custom_minimum_size = Vector2(340, 38)
+layout_mode = 2
+text = "🗿 SPAWNEAR MONOLITO DE ARCANA (~200px)"
+
+[node name="MonolithDesc" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/MonolithRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Spawnea inmediatamente frente al vector de avance de la nave."
+
+[node name="BossHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ COLOSOS Y JEFES DE DOMINIO"
+
+[node name="BossRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BossOption" type="OptionButton" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/BossRow"]
+custom_minimum_size = Vector2(320, 36)
+layout_mode = 2
+
+[node name="BossIntroCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/BossRow"]
+layout_mode = 2
+button_pressed = true
+text = "🎬 Cinemática de Apertura"
+
+[node name="SpawnBossBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/BossRow"]
+custom_minimum_size = Vector2(200, 36)
+layout_mode = 2
+text = "👾 SPAWNEAR JEFE"
+
+[node name="RivalHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ ENCUENTROS CON PILOTOS RIVALES"
+
+[node name="RivalRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RivalOption" type="OptionButton" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/RivalRow"]
+custom_minimum_size = Vector2(320, 36)
+layout_mode = 2
+
+[node name="RivalIntroCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/RivalRow"]
+layout_mode = 2
+button_pressed = true
+text = "🎬 Salto Warp Cinemático"
+
+[node name="SpawnRivalBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/RivalRow"]
+custom_minimum_size = Vector2(200, 36)
+layout_mode = 2
+text = "⚔️ SPAWNEAR RIVAL"
+
+[node name="LootHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.6, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ BOTÍN, RECOMPENSAS Y LIMPIEZA"
+
+[node name="LootRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpawnSlotBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
+custom_minimum_size = Vector2(260, 36)
+layout_mode = 2
+text = "🎰 SPAWNEAR TRAGAPERRAS ARCADE"
+
+[node name="SpawnChestBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+text = "📦 SPAWNEAR COFRE DE BOTÍN"
+
+[node name="ClearRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ClearBulletsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/ClearRow"]
+custom_minimum_size = Vector2(260, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.9, 1)
+text = "✨ LIMPIAR TODAS LAS BALAS"
+
+[node name="KillEnemiesBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/ClearRow"]
+custom_minimum_size = Vector2(260, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "💀 ELIMINAR ENEMIGOS COMUNES"
+
+[node name="CheatsContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="CheatsGrid" type="GridContainer" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 8
+columns = 3
+
+[node name="GodModeCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
+text = "🛡️ GOD MODE (VIDA INFINITA)"
+
+[node name="InfCreditsCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+text = "💰 CRÉDITOS INFINITOS (999K)"
+
+[node name="InfBombsCheck" type="CheckBox" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+text = "💣 BOMBAS INFINITAS (5 FIJAS)"
+
+[node name="RestoreHpBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+text = "❤️ RESTAURAR VIDA AL 100%"
+
+[node name="AddBombsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+text = "💣 DAR +3 BOMBAS TÁCTICAS"
+
+[node name="SpeedRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpeedLabel" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/SpeedRow"]
+layout_mode = 2
+text = "Velocidad de Simulación:"
+
+[node name="Speed1xBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/SpeedRow"]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+text = "1.0x (Normal)"
+
+[node name="Speed2xBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/SpeedRow"]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+text = "2.0x (Rápido)"
+
+[node name="Speed3xBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/SpeedRow"]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+text = "3.0x (Turbo)"
+
+[node name="StatsScroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CheatsContent/StatsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ArsenalContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="WepHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ INYECCIÓN DE ARMAS EN INVENTARIO (4 RANURAS)"
+
+[node name="WeaponsGrid" type="GridContainer" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="WeaponActions" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="UpgradeAllWepsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent/WeaponActions"]
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+text = "⬆️ SUBIR NIVEL A TODAS LAS ARMAS (+1)"
+
+[node name="MaxAllWepsBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent/WeaponActions"]
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+text = "🔥 MAXIMIZAR TODAS LAS ARMAS (LVL 5)"
+
+[node name="ArcanaHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ PACTOS DE ARCANA"
+
+[node name="ArcanaActions" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent"]
+layout_mode = 2
+
+[node name="OpenArcanaModalBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/ArsenalContent/ArcanaActions"]
+custom_minimum_size = Vector2(340, 38)
+layout_mode = 2
+text = "📜 ABRIR SELECCIÓN DE PACTOS DE ARCANA"
+
+[node name="WavesContent" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="WavesHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ SALTO RÁPIDO DE OLEADA"
+
+[node name="WaveJumpRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TimeRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Add30sBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow"]
+custom_minimum_size = Vector2(220, 34)
+layout_mode = 2
+text = "⏳ +30s a la Oleada Actual"
+
+[node name="FinishWaveBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow"]
+custom_minimum_size = Vector2(260, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+text = "⏩ FINALIZAR OLEADA (Siguiente fase)"
+
+[node name="CrisisHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "◆ EVENTOS DINÁMICOS DE CRISIS ESPACIAL"
+
+[node name="CrisisRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CrisisSolarBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "☀️ Tormenta Solar"
+
+[node name="CrisisFlockBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "🛸 Ráfaga Drones"
+
+[node name="CrisisMitosisBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "🦠 Invasión Mitótica"
+
+[node name="CrisisContainBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+text = "⚡ Contención"
+
+[node name="CrisisStopBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow"]
+custom_minimum_size = Vector2(160, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "🛑 Detener Crisis"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="BottomRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="ResumeBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/BottomRow"]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "▶ REANUDAR COMBATE [F1 / ESC]"

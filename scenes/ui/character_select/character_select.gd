@@ -11,9 +11,11 @@ const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
 const DebugMenuModalScript = preload("res://scenes/ui/debug/debug_menu_modal.gd")
 
 # ==============================================================================
-# CONFIGURACIÓN DE DEBUG (Comentar o cambiar a false para desactivar en builds)
+# CONFIGURACIÓN DE DEBUG (Gobernado centralmente por DebugManager)
 # ==============================================================================
-const DEBUG_MENU_AVAILABLE: bool = true
+var is_debug_active: bool:
+	get:
+		return DebugManager.is_debug_enabled() if DebugManager else false
 # ==============================================================================
 
 @onready var char_list_container: VBoxContainer = $MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll/CharList
@@ -138,11 +140,15 @@ func _ready() -> void:
 	UIFocusHelper.apply_cyber_focus(back_button)
 
 	if debug_button:
-		if DEBUG_MENU_AVAILABLE:
+		if is_debug_active:
 			UIFocusHelper.apply_cyber_focus(debug_button)
 			debug_button.pressed.connect(_on_debug_pressed)
 		else:
-			debug_button.visible = false
+			debug_button.queue_free()
+			debug_button = null
+			if debug_menu_modal:
+				debug_menu_modal.queue_free()
+				debug_menu_modal = null
 
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)

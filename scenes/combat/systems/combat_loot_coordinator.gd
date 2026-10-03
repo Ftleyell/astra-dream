@@ -89,6 +89,18 @@ func _on_slot_machine_chest_opened(chest: Node2D) -> void:
 	if slot_machine_reward_modal and is_instance_valid(player_ref):
 		slot_machine_reward_modal.show_reward(chest, player_ref)
 
+func spawn_slot_chest(pos: Vector2 = Vector2.INF) -> Node2D:
+	if not combat_root:
+		return null
+	if pos == Vector2.INF:
+		var move_dir: Vector2 = player_ref.velocity.normalized() if (is_instance_valid(player_ref) and player_ref.velocity.length_squared() > 10.0) else Vector2.UP
+		pos = (player_ref.global_position if is_instance_valid(player_ref) else Vector2.ZERO) + move_dir * 300.0
+	var chest = SlotMachineChestScript.new()
+	chest.global_position = pos
+	chest.chest_opened.connect(_on_slot_machine_chest_opened)
+	combat_root.add_child(chest)
+	return chest
+
 func cleanup() -> void:
 	if is_instance_valid(current_slot_machine):
 		current_slot_machine.queue_free()

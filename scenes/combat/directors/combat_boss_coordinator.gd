@@ -387,6 +387,58 @@ func spawn_elite_herald() -> void:
 func jump_to_boss(boss_id: String) -> void:
 	CombatBossDebugJumperScript.jump_to_boss(main_game, self, boss_id)
 
+func spawn_boss_by_id(boss_id: String, play_intro: bool = true) -> void:
+	if not main_game or not is_instance_valid(main_game):
+		return
+	var scene: PackedScene = boss_mothership_scene
+	match boss_id:
+		"boss_hermit_void":
+			scene = boss_hermit_scene
+		"boss_ash_clock":
+			scene = boss_ash_clock_scene
+		"boss_broken_mirror":
+			scene = boss_broken_mirror_scene
+		"boss_overflow_vortex":
+			scene = boss_overflow_vortex_scene
+		"boss_mothership":
+			scene = boss_mothership_scene
+		"boss_astra_prime":
+			scene = boss_astra_prime_scene
+		"elite_herald":
+			spawn_elite_herald()
+			return
+		_:
+			scene = boss_mothership_scene
+
+	if play_intro:
+		spawn_wave_boss(scene)
+	else:
+		var player: Node2D = main_game.get("player")
+		if not is_instance_valid(player):
+			return
+		var p_vel: Vector2 = player.get("velocity") if "velocity" in player else Vector2.ZERO
+		var forward: Vector2 = p_vel.normalized() if p_vel.length_squared() > 10.0 else Vector2.UP
+		var target_pos: Vector2 = player.global_position + forward * 300.0
+		var boss_node: Node2D = scene.instantiate() as Node2D
+		boss_node.global_position = target_pos
+		boss_node.rotation = PI
+		boss_node.process_mode = Node.PROCESS_MODE_PAUSABLE
+		main_game.add_child(boss_node)
+		main_game.set("current_boss", boss_node)
+		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
+		var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
+		var hud = main_game.get("hud")
+		if hud:
+			hud.show_boss(b_name, b_hp)
+			if hud.has_method("track_boss"):
+				hud.track_boss(boss_node, "JEFE")
+		if boss_node.has_signal("health_changed") and hud:
+			boss_node.connect("health_changed", hud.update_boss_health)
+		if boss_node.has_signal("phase_changed") and hud:
+			boss_node.connect("phase_changed", hud.set_boss_phase)
+		if boss_node.has_signal("boss_defeated"):
+			boss_node.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
+
 func jump_to_wave_16(route: String = "neutral") -> void:
 	CombatBossDebugJumperScript.jump_to_wave_16(main_game, self, route)
 

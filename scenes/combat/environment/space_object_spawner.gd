@@ -73,8 +73,23 @@ func force_spawn_monolith(bypass_cap: bool = false) -> DestructibleSpaceObject:
 	if not bypass_cap and total_monoliths_spawned_in_run >= MAX_RUN_MONOLITHS and not bonus_monolith_granted:
 		return null
 
-	if get_active_monolith_count() >= max_active_monoliths:
+	if not bypass_cap and get_active_monolith_count() >= max_active_monoliths:
 		return null
+
+func spawn_monolith_at(pos: Vector2) -> DestructibleSpaceObject:
+	if not is_inside_tree() or not monolith_scene:
+		return null
+	var obj := monolith_scene.instantiate() as DestructibleSpaceObject
+	if not obj:
+		return null
+	obj.global_position = pos
+	var container: Node = get_parent()
+	if not container:
+		var tree := get_tree()
+		container = tree.current_scene if tree else self
+	if container:
+		container.add_child(obj)
+	return obj
 
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position

@@ -185,10 +185,15 @@ astra_dream/
 │       │   └── sector_selection_modal.gd  # Selección de ruta y peligro
 │       ├── game_over/                     # Fin de Partida
 │       │   └── game_over_modal.gd         # Pantalla de victoria o derrota con telemetría
-│       └── debug/                         # Herramientas del Desarrollador
-│           └── debug_menu_modal.gd        # Panel debug de oleadas, saltos, unlocks y resets
+│       └── debug/                         # Herramientas del Desarrollador (Desacoplables en Producción)
+│           ├── debug_menu_modal.gd / .tscn# Menú de debug Pregame en selección (gacha, skins, pets, save data)
+│           └── ingame_debug_modal.gd / .tscn# Menú de debug In-Game en combate [F1] (spawns, cheats, arsenal, crisis)
 │
 └── tests/                                 # Infraestructura de Pruebas Automatizadas Headless
+    ├── test_ingame_debug_runner.tscn      # Runner de IngameDebugModal (F1, spawns, cheats, arsenal, pausa)
+    ├── test_ingame_debug_suite.gd         # Suite de pruebas unitarias y de integración de debug in-game
+    ├── test_debug_menu_runner.tscn        # Runner de panel de debug pregame y sliders
+    ├── test_debug_menu_suite.gd           # Suite de depuración en selección de personaje
     ├── test_enemy_spawner_data_driven_runner.tscn # Runner del spawner y EnemyNodePool
     ├── test_enemy_spawner_data_driven_suite.gd    # Suite de balance y reciclaje Zero-Allocation
     ├── test_boss_runner.tscn                      # Runner de la Nodriza y HUD
