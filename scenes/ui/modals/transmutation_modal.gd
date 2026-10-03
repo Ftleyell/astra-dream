@@ -184,8 +184,8 @@ func _on_item_selected_to_clone(target_item: ItemData) -> void:
 	# Ejecutar transmutación
 	var sacrifice_item: ItemData = sacrifice_candidates.pick_random()
 	current_player.run_credits -= transmutation_cost
-	if current_player.hud:
-		current_player.hud.update_credits(current_player.run_credits)
+	if current_player.has_signal("credits_changed"):
+		current_player.credits_changed.emit(current_player.run_credits)
 
 	current_player.inventory.remove_item_stacks(sacrifice_item.item_id, 1)
 	current_player.inventory.add_item(target_item, 1)

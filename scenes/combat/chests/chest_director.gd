@@ -15,12 +15,17 @@ var active_chests: Array[SpatialChest] = []
 var continuous_spawn_timer: float = 0.0
 const CONTINUOUS_SPAWN_INTERVAL: float = 18.0
 const MAX_ACTIVE_CHESTS: int = 5
+var item_pool_manager: ItemPoolManager = null
 
 func initialize(economy_cfg: ChestEconomyConfig, starting_paid_chests: int = 0) -> void:
 	config = economy_cfg
 	paid_chests_count = starting_paid_chests
 	active_chests.clear()
 	continuous_spawn_timer = 0.0
+	if not item_pool_manager:
+		item_pool_manager = ItemPoolManager.new()
+		item_pool_manager.name = "ChestItemPoolManager"
+		add_child(item_pool_manager)
 
 ## Chequeo continuo para invocar 1 cofre adicional cada 18s si no se alcanza el tope
 func update_continuous_spawner(delta: float, player_pos: Vector2, parent_container: Node2D, green_card_stacks: int = 0) -> void:
@@ -83,6 +88,7 @@ func _spawn_single_chest(type: SpatialChest.ChestType, center_pos: Vector2, pare
 	var chest := chest_scene.instantiate() as SpatialChest
 	chest.chest_type = type
 	chest.economy_config = config
+	chest.item_pool = item_pool_manager
 
 	# Cálculo de posición dispersa en corona circular
 	var angle := randf() * TAU

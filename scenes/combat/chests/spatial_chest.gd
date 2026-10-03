@@ -23,6 +23,9 @@ const TEXTURE_GOLDEN := "res://assets/sprites/interactables/spatial_chest_golden
 @export var activation_radius: float = 55.0
 @export var float_speed: float = 2.0
 @export var float_amplitude: float = 3.5
+@export var item_pool: ItemPoolManager = null
+
+var _fallback_pool: ItemPoolManager = null
 
 var current_cost: int = 25
 var is_opened: bool = false
@@ -80,7 +83,7 @@ func _process(delta: float) -> void:
 				player_proximity_changed.emit(true, self)
 			# Apertura automática al contacto
 			if _can_afford_or_free(_cached_player):
-				try_open(_cached_player, null)
+				try_open(_cached_player, item_pool)
 			elif _insufficient_cooldown <= 0.0:
 				_flash_insufficient_credits()
 				_insufficient_cooldown = 1.0
@@ -91,8 +94,11 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not player_inside or is_opened or not is_instance_valid(_cached_player):
 		return
-	if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept") or (event is InputEventKey and event.is_pressed() and (event.keycode == KEY_E or event.keycode == KEY_SPACE or event.keycode == KEY_F or event.keycode == KEY_ENTER)):
-		try_open(_cached_player, null)
+	var is_interact_action: bool = InputMap.has_action("interact") and event.is_action_pressed("interact")
+	var is_accept_action: bool = event.is_action_pressed("ui_accept")
+	var is_key: bool = event is InputEventKey and event.is_pressed() and (event.keycode == KEY_E or event.keycode == KEY_SPACE or event.keycode == KEY_F or event.keycode == KEY_ENTER)
+	if is_interact_action or is_accept_action or is_key:
+		try_open(_cached_player, item_pool)
 		get_viewport().set_input_as_handled()
 
 func _apply_visual_skin() -> void:
@@ -161,7 +167,7 @@ func _can_afford_or_free(player: Player) -> bool:
 	return player.run_credits >= current_cost
 
 ## Intenta abrir el cofre consumiendo créditos y otorgando el ítem resultante
-func try_open(player: Player, item_pool: ItemPoolManager) -> bool:
+func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 	if is_opened or not is_instance_valid(player):
 		return false
 
@@ -174,20 +180,29 @@ func try_open(player: Player, item_pool: ItemPoolManager) -> bool:
 			_flash_insufficient_credits()
 			return false
 		player.run_credits -= current_cost
-		if player.hud and is_instance_valid(player.hud):
-			player.hud.update_credits(player.run_credits)
+		if player.has_signal("credits_changed"):
+			player.credits_changed.emit(player.run_credits)
 
 	is_opened = true
 
 	# Tirada de ítem por Suerte
-	var luck: float = player.character_stats.luck if (player.character_stats and "luck" in player.character_stats) else 1.0
+	var luck: float = 1.0
+	if player.stats:
+		luck = player.stats.get_stat(&"luck")
+	elif player.character_stats and "luck" in player.character_stats:
+		luck = float(player.character_stats.luck)
+
 	var weights: Dictionary = economy_config.golden_base_rarity_weights if chest_type == ChestType.GOLDEN else economy_config.regular_base_rarity_weights
 	var chosen_item: ItemData = null
 
-	if item_pool:
-		chosen_item = item_pool.roll_item_by_weights(weights, luck)
-	elif player.item_pool_manager:
-		chosen_item = player.item_pool_manager.roll_item_by_weights(weights, luck)
+	var active_pool: ItemPoolManager = pool if pool != null else item_pool
+	if not active_pool:
+		if not is_instance_valid(_fallback_pool):
+			_fallback_pool = ItemPoolManager.new()
+		active_pool = _fallback_pool
+
+	if active_pool:
+		chosen_item = active_pool.roll_item_by_weights(weights, luck)
 
 	if chosen_item and player.inventory:
 		player.inventory.add_item(chosen_item)

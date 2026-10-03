@@ -165,6 +165,23 @@ func _run_suite_3_spatial_chest_entity_and_textures() -> void:
 	chest.update_price_display(0)
 	_assert_true(chest.current_cost == 150, "Cofre dorado tiene coste base de 150c", "Coste esperado 150")
 
+	# Apertura interactiva directa con try_open
+	chest.chest_type = SpatialChestScript.ChestType.REGULAR
+	chest.update_price_display(0)
+	var p := _create_dummy_player()
+	p.run_credits = 100
+	var opened_box: Array[ItemData] = []
+	chest.chest_opened.connect(func(it: ItemData, _free: bool, _cost: int):
+		opened_box.append(it)
+	)
+	var open_success: bool = chest.try_open(p, null)
+	_assert_true(open_success, "try_open se ejecutó con éxito y sin errores", "try_open falló")
+	_assert_true(chest.is_opened, "Cofre pasa a estado is_opened", "is_opened no es true")
+	_assert_true(p.run_credits == (100 - chest.current_cost), "Créditos del jugador deducidos correctamente", "Créditos incorrectos")
+	_assert_true(not opened_box.is_empty(), "Ítem obtenido del cofre de forma segura", "Ítem obtenido es null")
+	_assert_true(p.inventory.get_item_count(opened_box[0].item_id) > 0, "Ítem añadido al inventario del jugador", "Ítem no está en el inventario")
+	p.queue_free()
+
 	chest.queue_free()
 
 # ==============================================================================
