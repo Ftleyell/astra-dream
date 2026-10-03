@@ -3,12 +3,12 @@
 [ext_resource type="Script" path="res://scenes/combat/chests/spatial_chest.gd" id="1_chest_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_chest"]
-radius = 120.0
+radius = 55.0
 
 [node name="SpatialChest" type="Area2D"]
 z_index = 10
 collision_layer = 0
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_chest_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -24,11 +24,11 @@ default_color = Color(0, 0.9, 1, 0.4)
 position = Vector2(0, 0)
 
 [node name="PriceLabel" type="Label" parent="."]
-offset_left = -100.0
-offset_top = 45.0
-offset_right = 100.0
-offset_bottom = 68.0
+offset_left = -60.0
+offset_top = 26.0
+offset_right = 60.0
+offset_bottom = 46.0
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 14
+add_theme_font_size_override("font_size", 11)
 text = "25c"

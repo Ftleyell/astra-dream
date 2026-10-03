@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/arcana_edge_indicator.tscn" id="8_arcedge"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_edge_indicator.tscn" id="9_bossedge"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/biomass_dna_icon.png" id="10_bio_ico"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/chest_edge_indicator.tscn" id="11_chestdge"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quantum_key.svg" id="12_key_ico"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_credits_large"]
 content_margin_left = 20.0
@@ -181,6 +183,8 @@ layer = 4
 
 [node name="BossEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("9_bossedge")]
 
+[node name="ChestEdgeIndicator" parent="SatelliteTrackerLayer" instance=ExtResource("11_chestdge")]
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
@@ -240,6 +244,29 @@ theme_override_constants/shadow_offset_y = 0
 theme_override_constants/shadow_outline_size = 10
 theme_override_font_sizes/font_size = 24
 text = "0"
+vertical_alignment = 1
+
+[node name="KeyHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="KeyIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopBar/KeyHBox"]
+custom_minimum_size = Vector2(38, 38)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("12_key_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar/KeyHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.6, 1, 0.8)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 8
+theme_override_font_sizes/font_size = 22
+text = "x0 (0%)"
 vertical_alignment = 1
 
 [node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]

@@ -12,15 +12,50 @@ signal chest_opened(item: ItemData, was_free: bool, cost: int)
 
 var paid_chests_count: int = 0
 var active_chests: Array[SpatialChest] = []
+var continuous_spawn_timer: float = 0.0
+const CONTINUOUS_SPAWN_INTERVAL: float = 18.0
+const MAX_ACTIVE_CHESTS: int = 5
 
 func initialize(economy_cfg: ChestEconomyConfig, starting_paid_chests: int = 0) -> void:
 	config = economy_cfg
 	paid_chests_count = starting_paid_chests
 	active_chests.clear()
+	continuous_spawn_timer = 0.0
+
+## Chequeo continuo para invocar 1 cofre adicional cada 18s si no se alcanza el tope
+func update_continuous_spawner(delta: float, player_pos: Vector2, parent_container: Node2D, green_card_stacks: int = 0) -> void:
+	# Limpieza de referencias inválidas
+	var valid_chests: Array[SpatialChest] = []
+	for c in active_chests:
+		if is_instance_valid(c) and not c.is_opened:
+			valid_chests.append(c)
+	active_chests = valid_chests
+
+	continuous_spawn_timer += delta
+	if continuous_spawn_timer >= CONTINUOUS_SPAWN_INTERVAL:
+		continuous_spawn_timer = 0.0
+		if active_chests.size() < MAX_ACTIVE_CHESTS:
+			var roll := randf()
+			var type := SpatialChest.ChestType.REGULAR
+			if roll < 0.25:
+				type = SpatialChest.ChestType.SALVAGE_CAPSULE
+			elif roll > 0.85 and config and randf() < config.golden_chest_chance_per_wave:
+				type = SpatialChest.ChestType.GOLDEN
+			_spawn_single_chest(type, player_pos, parent_container, green_card_stacks)
 
 ## Genera el lote de cofres correspondiente a una nueva oleada dentro del radio del jugador
-func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, _wave_num: int = 1, green_card_stacks: int = 0) -> void:
+func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, wave_num: int = 1, green_card_stacks: int = 0) -> void:
 	if not config or not is_instance_valid(parent_container):
+		return
+
+	# Si ya hay varios cofres en el campo, no sobrecargar
+	if active_chests.size() >= MAX_ACTIVE_CHESTS:
+		return
+
+	if wave_num == 1:
+		# En el segundo 0: 1 cápsula gratuita y 1 cofre regular para arrancar
+		_spawn_single_chest(SpatialChest.ChestType.SALVAGE_CAPSULE, player_pos, parent_container, green_card_stacks)
+		_spawn_single_chest(SpatialChest.ChestType.REGULAR, player_pos, parent_container, green_card_stacks)
 		return
 
 	var salvage_count := randi_range(config.salvage_capsules_per_wave.x, config.salvage_capsules_per_wave.y)
@@ -29,14 +64,16 @@ func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, _wave_num:
 
 	# 1. Cápsulas de chatarra (0 créditos)
 	for i in range(salvage_count):
-		_spawn_single_chest(SpatialChest.ChestType.SALVAGE_CAPSULE, player_pos, parent_container, green_card_stacks)
+		if active_chests.size() < MAX_ACTIVE_CHESTS:
+			_spawn_single_chest(SpatialChest.ChestType.SALVAGE_CAPSULE, player_pos, parent_container, green_card_stacks)
 
 	# 2. Cofres regulares
 	for i in range(regular_count):
-		_spawn_single_chest(SpatialChest.ChestType.REGULAR, player_pos, parent_container, green_card_stacks)
+		if active_chests.size() < MAX_ACTIVE_CHESTS:
+			_spawn_single_chest(SpatialChest.ChestType.REGULAR, player_pos, parent_container, green_card_stacks)
 
 	# 3. Cofre dorado (si aplica)
-	if spawn_golden:
+	if spawn_golden and active_chests.size() < MAX_ACTIVE_CHESTS:
 		_spawn_single_chest(SpatialChest.ChestType.GOLDEN, player_pos, parent_container, green_card_stacks)
 
 func _spawn_single_chest(type: SpatialChest.ChestType, center_pos: Vector2, parent: Node2D, green_card_stacks: int) -> void:

@@ -8,7 +8,8 @@ extends Area2D
 enum ConsumableType {
 	HEAL,
 	MAGNET,
-	BOMB
+	BOMB,
+	QUANTUM_KEY
 }
 
 @export var type: ConsumableType = ConsumableType.HEAL
@@ -62,6 +63,11 @@ func _apply_visuals() -> void:
 			icon_sprite.texture = load("res://assets/sprites/pickups/drop_bomb.png")
 			icon_sprite.modulate = Color.WHITE
 			icon_sprite.scale = Vector2(0.18, 0.18)
+		ConsumableType.QUANTUM_KEY:
+			glow_polygon.color = Color(0.1, 0.85, 1.0, 0.45)
+			icon_sprite.texture = load("res://assets/icons/items/icon_quantum_key.svg")
+			icon_sprite.modulate = Color(0.3, 0.9, 1.0, 1.0)
+			icon_sprite.scale = Vector2(0.24, 0.24)
 
 func _physics_process(delta: float) -> void:
 	if is_collected:
@@ -131,6 +137,19 @@ func collect(player: Player) -> void:
 				if camera and camera.has_method("add_trauma"):
 					camera.add_trauma(0.6)
 				floating_text_script.spawn(parent_node, global_position, "¡PANTALLA LIMPIA!", Color(1.0, 0.3, 0.2))
+
+		ConsumableType.QUANTUM_KEY:
+			var key_item := ItemData.new()
+			key_item.item_id = &"quantum_key"
+			key_item.item_name = "Llave Cuántica"
+			key_item.description = "Probabilidad hiperbólica de abrir cofres gratis y congela su coste."
+			key_item.rarity = Enums.Rarity.COMMON
+			key_item.icon = load("res://assets/icons/items/icon_quantum_key.svg") as Texture2D
+			key_item.effects = [QuantumKeyEffect.new()]
+			player.inventory.add_item(key_item, 1)
+			if audio_mgr and audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("item_pickup", 1.2)
+			floating_text_script.spawn(parent_node, global_position, "+1 LLAVE CUÁNTICA", Color(0.2, 0.9, 1.0))
 
 	# Animación de absorción rápida
 	var tween := create_tween()

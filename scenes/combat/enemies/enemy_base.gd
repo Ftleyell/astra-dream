@@ -219,12 +219,14 @@ func _roll_consumable_drop() -> void:
 	var consumable_script = preload("res://scenes/combat/pickups/field_consumable.gd")
 	var roll := randf()
 	var chosen_type: int = consumable_script.ConsumableType.HEAL
-	if roll < 0.60:
+	if roll < 0.50:
 		chosen_type = consumable_script.ConsumableType.HEAL
-	elif roll < 0.85:
+	elif roll < 0.75:
 		chosen_type = consumable_script.ConsumableType.MAGNET
-	else:
+	elif roll < 0.90:
 		chosen_type = consumable_script.ConsumableType.BOMB
+	else:
+		chosen_type = consumable_script.ConsumableType.QUANTUM_KEY
 
 	var parent_node := get_parent() if is_inside_tree() else null
 	if not parent_node and is_inside_tree():

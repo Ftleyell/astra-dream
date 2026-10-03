@@ -20,15 +20,16 @@ const TEXTURE_GOLDEN := "res://assets/sprites/interactables/spatial_chest_golden
 
 @export var chest_type: ChestType = ChestType.REGULAR
 @export var economy_config: ChestEconomyConfig
-@export var activation_radius: float = 120.0
+@export var activation_radius: float = 55.0
 @export var float_speed: float = 2.0
-@export var float_amplitude: float = 5.0
+@export var float_amplitude: float = 3.5
 
-var current_cost: int = 0
+var current_cost: int = 25
 var is_opened: bool = false
 var player_inside: bool = false
 var _cached_player: Player = null
 var _time_alive: float = 0.0
+var _insufficient_cooldown: float = 0.0
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
@@ -45,6 +46,9 @@ func _ready() -> void:
 		if default_res is ChestEconomyConfig:
 			economy_config = default_res as ChestEconomyConfig
 
+	if collision_shape and collision_shape.shape is CircleShape2D:
+		(collision_shape.shape as CircleShape2D).radius = activation_radius
+
 	_apply_visual_skin()
 	_draw_perimeter_circle()
 
@@ -55,14 +59,39 @@ func _process(delta: float) -> void:
 	if is_opened:
 		return
 	_time_alive += delta
+	if _insufficient_cooldown > 0.0:
+		_insufficient_cooldown -= delta
+
 	# Flotación sutil en gravedad cero
 	if visual_root:
 		visual_root.position.y = sin(_time_alive * float_speed) * float_amplitude
 
+	# Fallback de proximidad por distancia euclidiana directa con el jugador
+	if not _cached_player or not is_instance_valid(_cached_player):
+		var p_nodes := get_tree().get_nodes_in_group("player")
+		if not p_nodes.is_empty():
+			_cached_player = p_nodes[0] as Player
+
+	if _cached_player and is_instance_valid(_cached_player):
+		var dist := global_position.distance_to(_cached_player.global_position)
+		if dist <= activation_radius:
+			if not player_inside:
+				player_inside = true
+				player_proximity_changed.emit(true, self)
+			# Apertura automática al contacto
+			if _can_afford_or_free(_cached_player):
+				try_open(_cached_player, null)
+			elif _insufficient_cooldown <= 0.0:
+				_flash_insufficient_credits()
+				_insufficient_cooldown = 1.0
+		elif dist > activation_radius + 15.0 and player_inside:
+			player_inside = false
+			player_proximity_changed.emit(false, self)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not player_inside or is_opened or not is_instance_valid(_cached_player):
 		return
-	if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept") or (event is InputEventKey and event.is_pressed() and (event.keycode == KEY_E or event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
+	if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept") or (event is InputEventKey and event.is_pressed() and (event.keycode == KEY_E or event.keycode == KEY_SPACE or event.keycode == KEY_F or event.keycode == KEY_ENTER)):
 		try_open(_cached_player, null)
 		get_viewport().set_input_as_handled()
 
@@ -80,7 +109,7 @@ func _apply_visual_skin() -> void:
 
 	if ResourceLoader.exists(tex_path):
 		sprite.texture = load(tex_path) as Texture2D
-		sprite.scale = Vector2(0.18, 0.18) # Escala óptima para 1024x1024 a ~180px de juego
+		sprite.scale = Vector2(0.06, 0.06) # Tamaño táctico ~60px acorde a la nave del jugador
 
 func _draw_perimeter_circle() -> void:
 	if not radius_visual:
@@ -120,6 +149,16 @@ func update_price_display(paid_chests: int, green_cards: int = 0) -> void:
 			if price_label:
 				price_label.text = "%dc" % current_cost
 				price_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+
+func _can_afford_or_free(player: Player) -> bool:
+	if not is_instance_valid(player):
+		return false
+	if chest_type == ChestType.SALVAGE_CAPSULE:
+		return true
+	var keys: int = player.inventory.get_item_count(&"quantum_key") if player.inventory else 0
+	if keys > 0 and chest_type != ChestType.GOLDEN:
+		return true # Tiene chance de llave cuántica
+	return player.run_credits >= current_cost
 
 ## Intenta abrir el cofre consumiendo créditos y otorgando el ítem resultante
 func try_open(player: Player, item_pool: ItemPoolManager) -> bool:

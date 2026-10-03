@@ -30,6 +30,8 @@ const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_ma
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 @onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
 @onready var boss_tracker: Control = find_child("BossEdgeIndicator", true, false) as Control
+@onready var chest_tracker: Control = find_child("ChestEdgeIndicator", true, false) as Control
+@onready var key_label: Label = find_child("KeyLabel", true, false) as Label
 
 @onready var dash_button_body: Control = find_child("DashButtonBody", true, false) as Control
 @onready var dash_cd_overlay: ColorRect = find_child("DashCDOverlay", true, false) as ColorRect
@@ -113,6 +115,8 @@ func _ready() -> void:
 		arcana_tracker.set_player(player)
 	if boss_tracker and is_instance_valid(player):
 		boss_tracker.set_player(player)
+	if chest_tracker and is_instance_valid(player) and chest_tracker.has_method("set_player"):
+		chest_tracker.set_player(player)
 
 	# Ocultar barra rectangular superior para priorizar el anillo diegético bajo la nave
 	if health_bar:
@@ -317,6 +321,21 @@ func _on_bomb_used(remaining: int) -> void:
 func _on_inventory_item_added(item: ItemData, count: int) -> void:
 	if _inventory_ctrl:
 		_inventory_ctrl.add_or_update_inventory_chip(item, count)
+	if item and item.item_id == &"quantum_key":
+		update_quantum_keys(count)
+
+func update_quantum_keys(keys_count: int) -> void:
+	if not key_label:
+		return
+	var chance_pct: int = 0
+	if keys_count > 0:
+		var k: float = float(keys_count)
+		chance_pct = int(round((k / (10.0 + k)) * 100.0))
+	key_label.text = "x%d (%d%%)" % [keys_count, chance_pct]
+	if keys_count > 0:
+		key_label.modulate = Color(0.3, 1.0, 0.6, 1.0)
+	else:
+		key_label.modulate = Color(0.6, 0.8, 1.0, 0.8)
 
 func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	if _inventory_ctrl:

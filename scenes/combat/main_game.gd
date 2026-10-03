@@ -441,6 +441,9 @@ func _ready() -> void:
 	# Generar el primer satélite de la oleada para que el radar lo indique de inmediato
 	_spawn_next_satellite_for_wave()
 
+	# Generar los primeros cofres espaciales desde el segundo 0
+	_spawn_wave_chests()
+
 	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
 	_start_prologue_briefing()
 
@@ -598,6 +601,11 @@ func _process(delta: float) -> void:
 	if _auto_save_timer >= AUTO_SAVE_INTERVAL:
 		_auto_save_timer = 0.0
 		save_current_run_state()
+
+	# Invocación continua y gradual de cofres espaciales
+	if chest_director and is_instance_valid(player):
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if player.inventory else 0
+		chest_director.update_continuous_spawner(delta, player.global_position, self, green_cards)
 
 	# Compactación periódica de cristales de EXP lejanos en Mega-Cristales (Optimización)
 	_exp_batch_timer -= delta
