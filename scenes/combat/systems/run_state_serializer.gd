@@ -94,8 +94,15 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	main_game.set("_wave_encounter_spawned_for_wave", int(run_data.get("_wave_encounter_spawned_for_wave", main_game.get("current_wave"))))
 	main_game.set("_slot_machine_pity_chance", float(run_data.get("_slot_machine_pity_chance", 0.25)))
 	main_game.set("_wave_encounter_pending", false)
-	if "chest_director" in main_game and main_game.chest_director and run_data.has("paid_chests_count"):
-		main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
+	if "chest_director" in main_game and main_game.chest_director:
+		if run_data.has("paid_chests_count"):
+			main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
+		var restored_wave: int = int(run_data.get("current_wave", 1))
+		var green_cards: int = 0
+		var p_node = main_game.get("player")
+		if p_node and "inventory" in p_node and p_node.inventory:
+			green_cards = p_node.inventory.get_item_count(&"credit_card_green")
+		main_game.chest_director.on_new_wave(restored_wave, green_cards)
 
 	if run_data.has("rivals_spared"):
 		var rivals_spared: Array = main_game.get("rivals_spared")

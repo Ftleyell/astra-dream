@@ -11,6 +11,8 @@ signal chest_opened(item: ItemData, was_free: bool, cost: int)
 @export var chest_scene: PackedScene = preload("res://scenes/combat/chests/spatial_chest.tscn")
 
 var paid_chests_count: int = 0
+var current_wave: int = 1
+var local_chests_opened_this_wave: int = 0
 var active_chests: Array[SpatialChest] = []
 var continuous_spawn_timer: float = 0.0
 const CONTINUOUS_SPAWN_INTERVAL: float = 18.0
@@ -20,12 +22,20 @@ var item_pool_manager: ItemPoolManager = null
 func initialize(economy_cfg: ChestEconomyConfig, starting_paid_chests: int = 0) -> void:
 	config = economy_cfg
 	paid_chests_count = starting_paid_chests
+	current_wave = 1
+	local_chests_opened_this_wave = 0
 	active_chests.clear()
 	continuous_spawn_timer = 0.0
 	if not item_pool_manager:
 		item_pool_manager = ItemPoolManager.new()
 		item_pool_manager.name = "ChestItemPoolManager"
 		add_child(item_pool_manager)
+
+## Notificación de inicio de nueva oleada para reiniciar inflación local
+func on_new_wave(new_wave: int, green_card_stacks: int = 0) -> void:
+	current_wave = new_wave
+	local_chests_opened_this_wave = 0
+	refresh_all_chest_prices(green_card_stacks)
 
 ## Chequeo continuo para invocar 1 cofre adicional cada 18s si no se alcanza el tope
 func update_continuous_spawner(delta: float, player_pos: Vector2, parent_container: Node2D, green_card_stacks: int = 0) -> void:
@@ -52,6 +62,8 @@ func update_continuous_spawner(delta: float, player_pos: Vector2, parent_contain
 func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, wave_num: int = 1, green_card_stacks: int = 0) -> void:
 	if not config or not is_instance_valid(parent_container):
 		return
+
+	current_wave = wave_num
 
 	# Si ya hay varios cofres en el campo, no sobrecargar
 	if active_chests.size() >= MAX_ACTIVE_CHESTS:
@@ -103,19 +115,28 @@ func _spawn_single_chest(type: SpatialChest.ChestType, center_pos: Vector2, pare
 
 	chest.global_position = spawn_pos
 	parent.add_child(chest)
-	chest.update_price_display(paid_chests_count, green_card_stacks)
+	chest.update_price_display(current_wave, local_chests_opened_this_wave, green_card_stacks)
 
 	chest.chest_opened.connect(func(item: ItemData, was_free: bool, cost: int):
-		_on_chest_opened(item, was_free, cost, chest, green_card_stacks)
+		var live_cards: int = green_card_stacks
+		if is_inside_tree():
+			var p_nodes := get_tree().get_nodes_in_group("player")
+			for p in p_nodes:
+				if p is Player and is_instance_valid(p) and not p.is_queued_for_deletion() and p.inventory:
+					live_cards = p.inventory.get_item_count(&"credit_card_green")
+					break
+		_on_chest_opened(item, was_free, cost, chest, live_cards)
 	)
 
 	active_chests.append(chest)
 
 func _on_chest_opened(item: ItemData, was_free: bool, cost: int, chest: SpatialChest, green_card_stacks: int) -> void:
 	if not was_free:
+		local_chests_opened_this_wave += 1
 		paid_chests_count += 1
-		# La inflación acumulativa incrementa el coste de los cofres restantes en tiempo real
-		refresh_all_chest_prices(green_card_stacks)
+
+	# Refrescar los precios de los cofres restantes (por inflación o consumo de llaves)
+	refresh_all_chest_prices(green_card_stacks)
 
 	active_chests.erase(chest)
 	chest_opened.emit(item, was_free, cost)
@@ -125,7 +146,7 @@ func refresh_all_chest_prices(green_card_stacks: int = 0) -> void:
 	var cleaned_list: Array[SpatialChest] = []
 	for c in active_chests:
 		if is_instance_valid(c) and not c.is_opened:
-			c.update_price_display(paid_chests_count, green_card_stacks)
+			c.update_price_display(current_wave, local_chests_opened_this_wave, green_card_stacks)
 			cleaned_list.append(c)
 	active_chests = cleaned_list
 

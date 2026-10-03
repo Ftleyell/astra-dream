@@ -327,20 +327,17 @@ func _on_inventory_item_added(item: ItemData, count: int) -> void:
 func update_quantum_keys(keys_count: int) -> void:
 	if not key_label:
 		return
-	var chance_pct: int = 0
 	if keys_count > 0:
-		var k: float = float(keys_count)
-		chance_pct = int(round((k / (10.0 + k)) * 100.0))
-	key_label.text = "x%d (%d%% Gratis)" % [keys_count, chance_pct]
-	var badge := find_child("KeyBadge", true, false) as Control
-	if keys_count > 0:
+		key_label.text = "x%d (-20%% Desc.)" % keys_count
 		key_label.modulate = Color(0.35, 1.0, 0.65, 1.0)
+		var badge := find_child("KeyBadge", true, false) as Control
 		if badge:
 			badge.pivot_offset = badge.size * 0.5
 			var tw := create_tween()
 			tw.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK)
 			tw.tween_property(badge, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE)
 	else:
+		key_label.text = "x0"
 		key_label.modulate = Color(0.7, 0.88, 1.0, 0.85)
 
 func _get_rarity_color(rarity: Enums.Rarity) -> Color:

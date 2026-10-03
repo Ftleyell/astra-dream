@@ -37,6 +37,8 @@ var bosses_defeated_count: int = 0
 var chest_director: ChestDirector = null
 var chest_reward_modal: ChestRewardModal = null
 var transmutation_modal: TransmutationModal = null
+var _last_quantum_keys_count: int = -1
+var _last_green_cards_count: int = -1
 
 const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_satellite_coordinator.gd")
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
@@ -442,6 +444,9 @@ func _ready() -> void:
 	_spawn_next_satellite_for_wave()
 
 	# Generar los primeros cofres espaciales desde el segundo 0
+	if chest_director:
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+		chest_director.on_new_wave(current_wave, green_cards)
 	_spawn_wave_chests()
 
 	# Si es una nueva partida, iniciar secuencia de briefing con Dialogic 2
@@ -607,6 +612,19 @@ func _process(delta: float) -> void:
 		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if player.inventory else 0
 		chest_director.update_continuous_spawner(delta, player.global_position, self, green_cards)
 
+	# Chequeo reactivo de llaves cuánticas y tarjetas verdes para HUD y descuento/recargo en cofres
+	if is_instance_valid(player) and player.inventory:
+		var current_keys: int = player.inventory.get_item_count(&"quantum_key")
+		var current_green_cards: int = player.inventory.get_item_count(&"credit_card_green")
+		if current_keys != _last_quantum_keys_count or current_green_cards != _last_green_cards_count:
+			var keys_changed: bool = (current_keys != _last_quantum_keys_count)
+			_last_quantum_keys_count = current_keys
+			_last_green_cards_count = current_green_cards
+			if keys_changed and hud and hud.has_method("update_quantum_keys"):
+				hud.update_quantum_keys(current_keys)
+			if chest_director:
+				chest_director.refresh_all_chest_prices(current_green_cards)
+
 	# Compactación periódica de cristales de EXP lejanos en Mega-Cristales (Optimización)
 	_exp_batch_timer -= delta
 	if _exp_batch_timer <= 0.0:
@@ -628,6 +646,9 @@ func _process(delta: float) -> void:
 			if enemy_spawner and enemy_spawner.has_method("set_wave"):
 				enemy_spawner.set_wave(1)
 			_spawn_next_satellite_for_wave()
+			if chest_director:
+				var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+				chest_director.on_new_wave(current_wave, green_cards)
 			_spawn_wave_chests()
 			save_current_run_state()
 	else:
@@ -647,6 +668,9 @@ func _process(delta: float) -> void:
 				_wave_encounter_timer = 2.0
 				save_current_run_state()
 				_spawn_next_satellite_for_wave()
+				if chest_director:
+					var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+					chest_director.on_new_wave(current_wave, green_cards)
 				_spawn_wave_chests()
 				if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
 					space_object_spawner.notify_wave_started(current_wave)

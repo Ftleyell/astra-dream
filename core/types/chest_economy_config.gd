@@ -5,17 +5,27 @@ extends Resource
 ## Recurso exportado para calibración data-driven del sistema de cofres espaciales
 ## y de la economía transaccional inspirada en Megabonk y Risk of Rain 2.
 
-@export_group("Precios Base e Inflación")
-## Coste inicial del cofre regular (C_0)
-@export var base_regular_chest_cost: int = 25
-## Factor de escalado lineal por compras pagadas (A * n)
-@export var cost_growth_linear: float = 8.0
-## Factor de escalado cuadrático de segundo orden (B * n^2)
-@export var cost_growth_quadratic: float = 1.5
+@export_group("Precios Base e Inflación Híbrida")
+## Coste inicial base del cofre regular (C_0)
+@export var regular_chest_base_cost: int = 20
+## Crecimiento del coste base por número de oleada
+@export var wave_cost_growth: int = 4
+## Tasa de inflación local por cofres abiertos en la misma oleada
+@export var local_inflation_rate: float = 0.15
+## Recargo porcentual permanente al coste de los cofres por stack de Tarjeta Verde
+@export var green_card_surcharge: float = 0.10
 ## Coste fijo o base del cofre dorado de alta densidad
-@export var golden_chest_base_cost: int = 150
+@export var golden_chest_base_cost: int = 120
 ## Coste de cápsulas de chatarra/suministro (generalmente 0)
 @export var salvage_capsule_cost: int = 0
+
+## Aliases de compatibilidad para código legacy
+var base_regular_chest_cost: int:
+	get: return regular_chest_base_cost
+	set(val): regular_chest_base_cost = val
+var green_card_cost_surcharge_pct: float:
+	get: return green_card_surcharge
+	set(val): green_card_surcharge = val
 
 @export_group("Llave Cuántica (Key)")
 ## Constante de atenuación hiperbólica K: P(gratis) = n / (K + n)
@@ -24,8 +34,6 @@ extends Resource
 @export_group("Tarjetas de Crédito")
 ## Incremento porcentual permanente de Suerte por cada cofre abierto con Tarjeta Verde
 @export var green_card_luck_bonus_per_chest: float = 0.05
-## Recargo porcentual permanente al coste de los cofres por stack de Tarjeta Verde
-@export var green_card_cost_surcharge_pct: float = 0.10
 ## Incremento porcentual permanente de Daño Global por cada cofre abierto con Tarjeta Roja
 @export var red_card_damage_bonus_per_chest: float = 0.02
 
@@ -59,13 +67,13 @@ extends Resource
 	Enums.Rarity.LEGENDARY: 3.0,
 }
 
-## Calcula el coste en créditos de un cofre regular tras 'paid_chests' compras pagadas
-func calculate_regular_chest_cost(paid_chests: int, green_card_stacks: int = 0) -> int:
-	var n: float = float(maxi(0, paid_chests))
-	var base_calc: float = float(base_regular_chest_cost) + (cost_growth_linear * n) + (cost_growth_quadratic * n * n)
-	if green_card_stacks > 0:
-		base_calc *= (1.0 + (green_card_cost_surcharge_pct * float(green_card_stacks)))
-	return maxi(1, int(round(base_calc)))
+## Calcula el coste en créditos de un cofre regular según la fórmula híbrida de oleada e inflación local
+func calculate_regular_chest_cost(wave: int = 1, local_chests_in_wave: int = 0, green_card_stacks: int = 0, has_quantum_key: bool = false) -> int:
+	var base: float = float(regular_chest_base_cost) + float(wave_cost_growth) * float(maxi(1, wave))
+	var local_multiplier: float = 1.0 + (local_inflation_rate * float(maxi(0, local_chests_in_wave)))
+	var card_multiplier: float = 1.0 + (green_card_surcharge * float(maxi(0, green_card_stacks)))
+	var key_discount: float = 0.80 if has_quantum_key else 1.0
+	return int(floor(base * local_multiplier * card_multiplier * key_discount))
 
 ## Calcula la probabilidad de apertura gratuita por Llaves Cuánticas
 func calculate_key_free_chance(key_count: int) -> float:

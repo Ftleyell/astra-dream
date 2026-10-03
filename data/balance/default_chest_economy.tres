@@ -4,14 +4,14 @@
 
 [resource]
 script = ExtResource("1_chest_cfg")
-base_regular_chest_cost = 25
-cost_growth_linear = 8.0
-cost_growth_quadratic = 1.5
-golden_chest_base_cost = 150
+regular_chest_base_cost = 20
+wave_cost_growth = 4
+local_inflation_rate = 0.15
+green_card_surcharge = 0.1
+golden_chest_base_cost = 120
 salvage_capsule_cost = 0
 key_hyperbolic_k = 10.0
 green_card_luck_bonus_per_chest = 0.05
-green_card_cost_surcharge_pct = 0.10
 red_card_damage_bonus_per_chest = 0.02
 salvage_capsules_per_wave = Vector2i(1, 2)
 regular_chests_per_wave = Vector2i(2, 3)

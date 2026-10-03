@@ -73,6 +73,7 @@ func _create_dummy_player() -> Player:
 	p.inventory.character_stats = p.character_stats
 	p.add_child(p.inventory)
 	p.run_credits = 500
+	p.add_to_group("player")
 	add_child(p)
 	return p
 
@@ -86,17 +87,17 @@ func _run_suite_1_economy_config_and_math() -> void:
 	if not cfg:
 		return
 
-	# Comprobar coste base regular (n = 0)
-	var cost_0 := cfg.calculate_regular_chest_cost(0)
-	_assert_true(cost_0 == 25, "Coste regular base es 25c", "Esperado 25, obtenido %d" % cost_0)
+	# Comprobar coste base regular (wave = 1, k = 0: 20 + 4*1 = 24)
+	var cost_0 := cfg.calculate_regular_chest_cost(1, 0)
+	_assert_true(cost_0 == 24, "Coste regular base en Oleada 1 es 24c", "Esperado 24, obtenido %d" % cost_0)
 
-	# Comprobar escalado cuadrático (n = 5: 25 + 8*5 + 1.5*25 = 102.5 -> 103)
-	var cost_5 := cfg.calculate_regular_chest_cost(5)
-	_assert_true(cost_5 == 103, "Coste regular tras 5 compras es 103c", "Esperado 103, obtenido %d" % cost_5)
+	# Comprobar escalado local en oleada (wave = 1, k = 3: 24 * 1.45 = 34.8 -> 34)
+	var cost_3 := cfg.calculate_regular_chest_cost(1, 3)
+	_assert_true(cost_3 == 34, "Coste regular tras 3 compras en Oleada 1 es 34c", "Esperado 34, obtenido %d" % cost_3)
 
-	# Comprobar recargo de Tarjeta Verde (+10% por stack: 103 * 1.1 = 113.3 -> 113)
-	var cost_5_card := cfg.calculate_regular_chest_cost(5, 1)
-	_assert_true(cost_5_card == 113, "Recargo de Tarjeta Verde aplicado correctamente", "Esperado 113, obtenido %d" % cost_5_card)
+	# Comprobar recargo de Tarjeta Verde (+10% por stack: 34.8 * 1.1 = 38.28 -> 38)
+	var cost_3_card := cfg.calculate_regular_chest_cost(1, 3, 1)
+	_assert_true(cost_3_card == 38, "Recargo de Tarjeta Verde aplicado correctamente", "Esperado 38, obtenido %d" % cost_3_card)
 
 	# Comprobar fórmula hiperbólica de Llave Cuántica: n / (10 + n)
 	var p_0 := cfg.calculate_key_free_chance(0)
@@ -154,20 +155,20 @@ func _run_suite_3_spatial_chest_entity_and_textures() -> void:
 	add_child(chest)
 
 	chest.chest_type = SpatialChestScript.ChestType.SALVAGE_CAPSULE
-	chest.update_price_display(0)
+	chest.update_price_display(1, 0)
 	_assert_true(chest.current_cost == 0, "Cápsula de Chatarra tiene coste 0", "Coste no es 0")
 
 	chest.chest_type = SpatialChestScript.ChestType.REGULAR
-	chest.update_price_display(3)
-	_assert_true(chest.current_cost > 25, "Cofre regular escala precio tras 3 compras", "Coste no escaló")
+	chest.update_price_display(1, 3)
+	_assert_true(chest.current_cost > 24, "Cofre regular escala precio tras 3 compras", "Coste no escaló")
 
 	chest.chest_type = SpatialChestScript.ChestType.GOLDEN
-	chest.update_price_display(0)
-	_assert_true(chest.current_cost == 150, "Cofre dorado tiene coste base de 150c", "Coste esperado 150")
+	chest.update_price_display(1, 0)
+	_assert_true(chest.current_cost == 120, "Cofre dorado tiene coste base de 120c", "Coste esperado 120")
 
 	# Apertura interactiva directa con try_open
 	chest.chest_type = SpatialChestScript.ChestType.REGULAR
-	chest.update_price_display(0)
+	chest.update_price_display(1, 0)
 	var p := _create_dummy_player()
 	p.run_credits = 100
 	var opened_box: Array[ItemData] = []
@@ -222,7 +223,7 @@ func _run_suite_5_chest_director_lifecycle_and_inflation() -> void:
 	director.spawn_wave_chests(Vector2.ZERO, spawn_parent, 1)
 	_assert_true(director.active_chests.size() > 0, "Director pobló cofres en el espacio", "No se generaron cofres")
 
-	var initial_cost: int = cfg.calculate_regular_chest_cost(director.paid_chests_count)
+	var initial_cost: int = cfg.calculate_regular_chest_cost(director.current_wave, director.local_chests_opened_this_wave)
 
 	# Simular apertura pagada de un cofre regular
 	var first_regular = null
@@ -237,7 +238,7 @@ func _run_suite_5_chest_director_lifecycle_and_inflation() -> void:
 		first_regular.chest_opened.emit(it, false, first_regular.current_cost)
 
 		_assert_true(director.paid_chests_count == 1, "Contador de compras incrementó a 1 tras apertura pagada", "Contador no incrementó")
-		var new_cost: int = cfg.calculate_regular_chest_cost(director.paid_chests_count)
+		var new_cost: int = cfg.calculate_regular_chest_cost(director.current_wave, director.local_chests_opened_this_wave)
 		_assert_true(new_cost > initial_cost, "Inflación aumentó el coste de los cofres restantes", "El coste no subió tras compra")
 
 	director.cleanup_all_chests()

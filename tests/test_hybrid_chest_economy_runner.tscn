@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvyg76pxk5111"]
+
+[ext_resource type="Script" path="res://tests/test_hybrid_chest_economy_suite.gd" id="1_hybrid_test"]
+
+[node name="TestHybridChestEconomyRunner" type="Node"]
+script = ExtResource("1_hybrid_test")

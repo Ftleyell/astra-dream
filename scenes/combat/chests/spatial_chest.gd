@@ -27,12 +27,13 @@ const TEXTURE_GOLDEN := "res://assets/sprites/interactables/spatial_chest_golden
 
 var _fallback_pool: ItemPoolManager = null
 
-var current_cost: int = 25
+var current_cost: int = 24
 var is_opened: bool = false
 var player_inside: bool = false
 var _cached_player: Player = null
 var _time_alive: float = 0.0
 var _insufficient_cooldown: float = 0.0
+var _flash_tween: Tween = null
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
@@ -54,6 +55,7 @@ func _ready() -> void:
 
 	_apply_visual_skin()
 	_draw_perimeter_circle()
+	update_price_display(1, 0, 0)
 
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
@@ -134,19 +136,36 @@ func _draw_perimeter_circle() -> void:
 		ChestType.GOLDEN:
 			radius_visual.default_color = Color(1.0, 0.85, 0.2, 0.5)
 
-## Actualiza el coste mostrado en pantalla según compras pagadas y tarjetas
-func update_price_display(paid_chests: int, green_cards: int = 0) -> void:
+func _get_player_ref() -> Player:
+	if _cached_player and is_instance_valid(_cached_player) and not _cached_player.is_queued_for_deletion():
+		return _cached_player
+	if is_inside_tree():
+		var p_nodes := get_tree().get_nodes_in_group("player")
+		for node in p_nodes:
+			if node is Player and is_instance_valid(node) and not node.is_queued_for_deletion():
+				_cached_player = node as Player
+				return _cached_player
+	return null
+
+## Actualiza el coste mostrado en pantalla según la fórmula híbrida de oleada y llaves
+func update_price_display(wave: int = 1, local_chests_in_wave: int = 0, green_card_stacks: int = 0) -> void:
 	if not economy_config:
 		return
 
+	var p: Player = _get_player_ref()
+	var keys: int = p.inventory.get_item_count(&"quantum_key") if (p and is_instance_valid(p) and p.inventory) else 0
+	var effective_green_cards: int = green_card_stacks
+	if effective_green_cards <= 0 and p and is_instance_valid(p) and p.inventory:
+		effective_green_cards = p.inventory.get_item_count(&"credit_card_green")
+
 	match chest_type:
 		ChestType.SALVAGE_CAPSULE:
-			current_cost = economy_config.salvage_capsule_cost
+			current_cost = 0
 			if price_label:
 				price_label.text = "GRATIS"
 				price_label.modulate = Color(0.4, 1.0, 0.5, 1.0)
 		ChestType.REGULAR:
-			current_cost = economy_config.calculate_regular_chest_cost(paid_chests, green_cards)
+			current_cost = economy_config.calculate_regular_chest_cost(wave, local_chests_in_wave, effective_green_cards, keys > 0)
 			if price_label:
 				price_label.text = "%dc" % current_cost
 				price_label.modulate = Color(0.2, 0.8, 1.0, 1.0)
@@ -163,19 +182,27 @@ func _can_afford_or_free(player: Player) -> bool:
 		return true
 	var keys: int = player.inventory.get_item_count(&"quantum_key") if player.inventory else 0
 	if keys > 0 and chest_type != ChestType.GOLDEN:
-		return true # Tiene chance de llave cuántica
+		return true
 	return player.run_credits >= current_cost
 
-## Intenta abrir el cofre consumiendo créditos y otorgando el ítem resultante
+## Intenta abrir el cofre consumiendo llaves o créditos y otorgando el ítem resultante
 func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 	if is_opened or not is_instance_valid(player):
 		return false
 
+	_cached_player = player
 	var keys: int = player.inventory.get_item_count(&"quantum_key") if player.inventory else 0
-	var key_free_chance: float = economy_config.calculate_key_free_chance(keys) if economy_config else 0.0
-	var was_free: bool = (chest_type == ChestType.SALVAGE_CAPSULE) or (chest_type != ChestType.GOLDEN and randf() < key_free_chance)
+	var was_free: bool = false
 
-	if not was_free:
+	if chest_type == ChestType.SALVAGE_CAPSULE:
+		was_free = true
+	elif keys > 0 and chest_type != ChestType.GOLDEN:
+		# Consumo activo de 1 llave: abre gratis y no incrementa el contador k local
+		was_free = true
+		player.inventory.remove_item_stacks(&"quantum_key", 1)
+	else:
+		# Pago con créditos
+		was_free = false
 		if player.run_credits < current_cost:
 			_flash_insufficient_credits()
 			return false
@@ -226,16 +253,23 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 func _flash_insufficient_credits() -> void:
 	if not price_label:
 		return
-	var orig_text := price_label.text
-	var orig_col := price_label.modulate
+	if _flash_tween and _flash_tween.is_valid():
+		_flash_tween.kill()
 	price_label.text = "¡FALTAN CRÉDITOS!"
 	price_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
-	var tw := create_tween()
-	tw.tween_interval(0.8)
-	tw.tween_callback(func():
+	_flash_tween = create_tween()
+	_flash_tween.tween_interval(0.8)
+	_flash_tween.tween_callback(func():
 		if is_instance_valid(price_label):
-			price_label.text = orig_text
-			price_label.modulate = orig_col
+			if chest_type == ChestType.SALVAGE_CAPSULE:
+				price_label.text = "GRATIS"
+				price_label.modulate = Color(0.4, 1.0, 0.5, 1.0)
+			elif chest_type == ChestType.GOLDEN:
+				price_label.text = "%dc" % current_cost
+				price_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+			else:
+				price_label.text = "%dc" % current_cost
+				price_label.modulate = Color(0.2, 0.8, 1.0, 1.0)
 	)
 
 func _play_open_and_vanish_fx() -> void:
