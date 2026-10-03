@@ -1,12 +1,25 @@
 class_name PetSelectionModal
 extends CanvasLayer
 
+## PetSelectionModal.gd
+## Modal de selección de compañeros astrales (Mascotas/Pets) y skins CoverFlow.
+## Coordina la selección activa, persistencia en SaveManager e inputs,
+## delegando la presentación visual a PetCoverFlowRenderer y PetDossierController.
+
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const PetDataScript = preload("res://data/pets/pet_data.gd")
+const PetCoverFlowRenderer = preload("res://scenes/ui/character_select/components/pet_cover_flow_renderer.gd")
+const PetDossierController = preload("res://scenes/ui/character_select/components/pet_dossier_controller.gd")
 
 signal pet_selected(pet_id: StringName)
 signal skin_equipped(slot_key: String, skin_id: String)
 signal closed()
 
+# Componentes Modulares
+var cover_flow_renderer: PetCoverFlowRenderer = null
+var dossier_controller: PetDossierController = null
+
+# Nodos de la escena accesibles para suites de tests y dependencias externas
 @onready var index_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader/IndexBadge
 
 @onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/CoverFlowSection/CoverFlowRow/PrevButton
@@ -42,33 +55,22 @@ signal closed()
 var is_open: bool = false
 var current_index: int = 0
 var _pets: Array[PetData] = []
-var _nav_buttons: Array[Button] = []
-var _active_tween: Tween = null
-
-# Modo Galería de Skins CoverFlow
 var _is_skin_mode: bool = false
 var _pet_skins: Array[Dictionary] = []
 var _skin_index: int = 0
 var skins_btn: Button = null
+
+var _nav_buttons: Array[Button]:
+	get:
+		return cover_flow_renderer.nav_buttons if cover_flow_renderer else []
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 125
 	hide()
 
-	if prev_btn:
-		prev_btn.pressed.connect(func(): _cycle(-1))
-		UIFocusHelper.apply_cyber_focus(prev_btn)
-	if next_btn:
-		next_btn.pressed.connect(func(): _cycle(1))
-		UIFocusHelper.apply_cyber_focus(next_btn)
-
-	if left_card:
-		left_card.pressed.connect(func(): _cycle(-1))
-		UIFocusHelper.apply_cyber_focus(left_card)
-	if right_card:
-		right_card.pressed.connect(func(): _cycle(1))
-		UIFocusHelper.apply_cyber_focus(right_card)
+	_init_components()
 
 	if select_btn:
 		select_btn.pressed.connect(_on_select_pressed)
@@ -90,6 +92,40 @@ func _ready() -> void:
 
 	_setup_focus_neighbors()
 
+
+func _init_components() -> void:
+	cover_flow_renderer = PetCoverFlowRenderer.new()
+	cover_flow_renderer.setup(
+		prev_btn,
+		next_btn,
+		left_card,
+		left_texture,
+		left_label,
+		artwork_frame,
+		artwork_viewport,
+		fullbody_texture,
+		locked_overlay,
+		lock_desc,
+		right_card,
+		right_texture,
+		right_label,
+		dots_container,
+		Callable(self, "_cycle")
+	)
+
+	dossier_controller = PetDossierController.new()
+	dossier_controller.setup(
+		index_badge,
+		name_label,
+		title_label,
+		status_badge,
+		bio_desc,
+		power_card,
+		power_desc,
+		select_btn
+	)
+
+
 func open_modal() -> void:
 	is_open = true
 	_is_skin_mode = false
@@ -102,6 +138,7 @@ func open_modal() -> void:
 	elif close_btn:
 		close_btn.grab_focus()
 
+
 func close_modal() -> void:
 	if not is_open:
 		return
@@ -113,6 +150,7 @@ func close_modal() -> void:
 	hide()
 	closed.emit()
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
 		return
@@ -122,7 +160,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		close_modal()
 		return
 
-	# Navegación Cover Flow con teclas A / D, flechas y W / S
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT or event.keycode == KEY_W or event.keycode == KEY_UP:
 			get_viewport().set_input_as_handled()
@@ -138,7 +175,6 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_select_pressed()
 				return
 
-	# Rueda del ratón para Cover Flow
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			get_viewport().set_input_as_handled()
@@ -147,8 +183,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			_cycle(1)
 
+
 func _populate_pets() -> void:
-	const PetDataScript := preload("res://data/pets/pet_data.gd")
 	_pets = PetDataScript.load_roster_ordered()
 
 	var selected_pid := SaveManager.get_selected_pet()
@@ -165,6 +201,7 @@ func _populate_pets() -> void:
 
 	_build_dots(_pets.size(), current_index)
 	_display_current_pet(false, 0)
+
 
 func _populate_pet_skins() -> void:
 	if _pets.is_empty():
@@ -188,34 +225,18 @@ func _populate_pet_skins() -> void:
 	_build_dots(_pet_skins.size(), _skin_index)
 	_display_current_skin(false, 0)
 
+
 func _build_dots(count: int, active_idx: int) -> void:
-	if not dots_container:
-		return
+	if cover_flow_renderer:
+		cover_flow_renderer.build_dots(count, active_idx, Callable(self, "_on_dot_selected"))
 
-	for child in dots_container.get_children():
-		dots_container.remove_child(child)
-		child.queue_free()
-	_nav_buttons.clear()
 
-	for i in range(count):
-		var dot_btn := Button.new()
-		dot_btn.custom_minimum_size = Vector2(26, 26)
-		dot_btn.flat = true
-		dot_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		dot_btn.text = "●" if i == active_idx else "○"
-		dot_btn.add_theme_font_size_override("font_size", 18)
-		dot_btn.focus_mode = Control.FOCUS_NONE
+func _on_dot_selected(target_idx: int) -> void:
+	var cur := _skin_index if _is_skin_mode else current_index
+	if cur != target_idx:
+		var dir: int = 1 if target_idx > cur else -1
+		_set_index(target_idx, dir)
 
-		var target_idx := i
-		dot_btn.pressed.connect(func():
-			var cur := _skin_index if _is_skin_mode else current_index
-			if cur != target_idx:
-				var dir: int = 1 if target_idx > cur else -1
-				_set_index(target_idx, dir)
-		)
-
-		dots_container.add_child(dot_btn)
-		_nav_buttons.append(dot_btn)
 
 func _cycle(direction: int) -> void:
 	if _is_skin_mode:
@@ -235,6 +256,7 @@ func _cycle(direction: int) -> void:
 			next_idx += count
 		_set_index(next_idx, direction)
 
+
 func _set_index(new_idx: int, slide_direction: int = 0) -> void:
 	if _is_skin_mode:
 		if new_idx == _skin_index:
@@ -251,6 +273,7 @@ func _set_index(new_idx: int, slide_direction: int = 0) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
 
+
 func _display_current_pet(animate: bool = true, slide_direction: int = 0) -> void:
 	if _pets.is_empty() or current_index < 0 or current_index >= _pets.size():
 		return
@@ -261,79 +284,25 @@ func _display_current_pet(animate: bool = true, slide_direction: int = 0) -> voi
 	var is_unlocked: bool = SaveManager.is_pet_unlocked(pid)
 	var is_selected: bool = (pid == SaveManager.get_selected_pet())
 
-	if index_badge:
-		index_badge.text = "[ %02d / %02d ]" % [current_index + 1, count]
-
-	# Cartas Laterales
 	var left_idx := (current_index - 1 + count) % count
 	var right_idx := (current_index + 1) % count
 	var left_data: PetData = _pets[left_idx]
 	var right_data: PetData = _pets[right_idx]
 
-	if left_texture and left_data:
-		left_texture.texture = left_data.get_icon_texture()
-	if left_label and left_data:
-		left_label.text = "◀ %s" % left_data.display_name.to_upper()
-		left_label.modulate = left_data.theme_color
+	var slot_key := "pet:" + String(pid).to_lower()
+	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+	var skin_stars: int = 0
+	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+		skin_stars = SaveManager.get_skin_stars(equipped_skin)
+	else:
+		equipped_skin = ""
 
-	if right_texture and right_data:
-		right_texture.texture = right_data.get_icon_texture()
-	if right_label and right_data:
-		right_label.text = "%s ▶" % right_data.display_name.to_upper()
-		right_label.modulate = right_data.theme_color
+	cover_flow_renderer.render_pet_cards(pet_data, left_data, right_data, is_unlocked, equipped_skin, skin_stars)
+	cover_flow_renderer.update_dots(pet_data.theme_color, current_index)
+	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
 
-	if name_label:
-		name_label.text = pet_data.display_name.to_upper()
-		name_label.add_theme_color_override("font_color", pet_data.theme_color if is_unlocked else Color(0.6, 0.65, 0.75))
+	dossier_controller.display_pet(pet_data, is_unlocked, is_selected, current_index, count)
 
-	if title_label:
-		title_label.text = "— " + pet_data.title.to_upper()
-
-	if status_badge:
-		if is_selected:
-			status_badge.text = "[✓ EQUIPADO]"
-			status_badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
-		elif is_unlocked:
-			status_badge.text = "[DISPONIBLE]"
-			status_badge.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
-		else:
-			status_badge.text = "[🔒 BLOQUEADO (10 MIN)]"
-			status_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
-
-	if bio_desc:
-		bio_desc.text = pet_data.description if is_unlocked else "Mascota astral bloqueada. Requiere sintonización."
-	if power_desc:
-		power_desc.text = pet_data.power_description if is_unlocked else "Sobrevive 10 minutos para desbloquear."
-
-	# Botón Seleccionar
-	if select_btn:
-		select_btn.disabled = not is_unlocked
-		if is_selected:
-			select_btn.text = "✓ EQUIPADO (SELECCIONADA)"
-			select_btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.85))
-		elif is_unlocked:
-			select_btn.text = "⚡ EQUIPAR MASCOTA [ESPACIO]"
-			select_btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.85))
-		else:
-			select_btn.text = "🔒 MASCOTA BLOQUEADA"
-			select_btn.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
-
-	# Retrato Central: si tiene skin equipada, mostrarla
-	if fullbody_texture:
-		var slot_key := "pet:" + String(pid).to_lower()
-		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
-		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
-			var stars := SaveManager.get_skin_stars(equipped_skin)
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, equipped_skin, stars)
-		else:
-			fullbody_texture.texture = pet_data.get_icon_texture()
-			fullbody_texture.material = null
-
-	if locked_overlay:
-		locked_overlay.visible = not is_unlocked
-
-	_update_dots(pet_data.theme_color, current_index)
-	_animate_center_card(animate, slide_direction, is_unlocked)
 
 func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> void:
 	if _pet_skins.is_empty():
@@ -342,120 +311,35 @@ func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> vo
 	var count := _pet_skins.size()
 	var cur_skin: Dictionary = _pet_skins[_skin_index]
 	var sid: String = cur_skin.get("id", "")
-	var sname: String = cur_skin.get("skin_name", "Aspecto")
-	var pal_name: String = cur_skin.get("palette_id", "").replace("_", " ").capitalize()
-	var desc: String = cur_skin.get("description", "")
-
 	var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
 	var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
+
 	var slot_key := "pet:" + String(_pets[current_index].pet_id).to_lower()
 	var currently_equipped := SaveManager.get_equipped_skin(slot_key)
 	var is_equipped: bool = (currently_equipped == sid)
 
-	if index_badge:
-		index_badge.text = "[ ASPECTO: %02d / %02d ]" % [_skin_index + 1, count]
-
-	# Cartas Laterales (Skins)
 	var left_idx := (_skin_index - 1 + count) % count
 	var right_idx := (_skin_index + 1) % count
 	var left_skin: Dictionary = _pet_skins[left_idx]
 	var right_skin: Dictionary = _pet_skins[right_idx]
 
-	if left_texture:
-		left_texture.texture = CosmeticsManager.load_texture(left_skin.get("texture_path", ""))
-	if left_label:
-		left_label.text = "◀ " + left_skin.get("skin_name", "").to_upper()
-		left_label.modulate = Color(0.7, 0.85, 1.0)
+	cover_flow_renderer.render_skin_cards(cur_skin, left_skin, right_skin, is_unlocked, stars)
+	cover_flow_renderer.update_dots(Color(1.0, 0.85, 0.2), _skin_index)
+	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
 
-	if right_texture:
-		right_texture.texture = CosmeticsManager.load_texture(right_skin.get("texture_path", ""))
-	if right_label:
-		right_label.text = right_skin.get("skin_name", "").to_upper() + " ▶"
-		right_label.modulate = Color(0.7, 0.85, 1.0)
+	dossier_controller.display_skin(cur_skin, is_unlocked, is_equipped, stars, _skin_index, count)
 
-	if name_label:
-		name_label.text = sname.to_upper()
-		name_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.2) if is_unlocked else Color(0.6, 0.65, 0.75))
 
-	if title_label:
-		var star_str := ""
-		for s in range(stars):
-			star_str += "★"
-		title_label.text = "[%s %d★ | Paleta: %s]" % [star_str, stars, pal_name]
-
-	if status_badge:
-		if is_equipped:
-			status_badge.text = "[✓ EQUIPADO]"
-			status_badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
-		elif is_unlocked:
-			status_badge.text = "[DESBLOQUEADO]"
-			status_badge.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
-		else:
-			status_badge.text = "[🔒 GACHA]"
-			status_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
-
-	if bio_desc:
-		bio_desc.text = desc
-	if power_desc:
-		power_desc.text = "Personalización cosmética. Al subir de nivel en el Gacha desbloquea auras de plasma y destellos estelares."
-
-	# Botón de Equipar Aspecto
-	if select_btn:
-		select_btn.disabled = not is_unlocked
-		if is_equipped:
-			select_btn.text = "✓ DESEQUIPAR ASPECTO"
-			select_btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-		elif is_unlocked:
-			select_btn.text = "★ EQUIPAR ESTE ASPECTO"
-			select_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.2))
-		else:
-			select_btn.text = "🔒 BLOQUEADO EN GACHA"
-			select_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-
-	# Retrato Central con Shader
-	if fullbody_texture:
-		var tex := CosmeticsManager.load_texture(cur_skin.get("texture_path", ""))
-		fullbody_texture.texture = tex
-		if is_unlocked and stars > 1:
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, sid, stars)
-		else:
-			fullbody_texture.material = null
-
-	if locked_overlay:
-		locked_overlay.visible = not is_unlocked
-		if lock_desc:
-			lock_desc.text = "CONSEGUIR EN GACHA"
-
-	_update_dots(Color(1.0, 0.85, 0.2), _skin_index)
-	_animate_center_card(animate, slide_direction, is_unlocked)
-
+# Delegados auxiliares para retrocompatibilidad con tests existentes
 func _update_dots(active_color: Color, active_idx: int) -> void:
-	for i in range(_nav_buttons.size()):
-		var dot_btn := _nav_buttons[i]
-		if i == active_idx:
-			dot_btn.text = "●"
-			dot_btn.add_theme_color_override("font_color", active_color)
-			dot_btn.modulate = Color(1.3, 1.3, 1.3, 1.0)
-		else:
-			dot_btn.text = "○"
-			dot_btn.add_theme_color_override("font_color", Color(0.4, 0.5, 0.65, 0.7))
-			dot_btn.modulate = Color(1.0, 1.0, 1.0, 0.7)
+	if cover_flow_renderer:
+		cover_flow_renderer.update_dots(active_color, active_idx)
 
-func _animate_center_card(animate: bool, slide_direction: int, is_unlocked: bool) -> void:
-	if animate and is_instance_valid(fullbody_texture):
-		if _active_tween and _active_tween.is_valid():
-			_active_tween.kill()
 
-		_active_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var offset_x: float = 35.0 * (1.0 if slide_direction >= 0 else -1.0)
-		fullbody_texture.position.x = offset_x
-		_active_tween.tween_property(fullbody_texture, "position:x", 0.0, 0.22)
-		var target_modulate := Color.WHITE if is_unlocked else Color(0.2, 0.25, 0.35, 0.7)
-		_active_tween.tween_property(fullbody_texture, "modulate", target_modulate, 0.22)
-	else:
-		if fullbody_texture:
-			fullbody_texture.position.x = 0.0
-			fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.2, 0.25, 0.35, 0.7)
+func _animate_center_card(animate: bool, slide_direction: int, p_is_unlocked: bool) -> void:
+	if cover_flow_renderer:
+		cover_flow_renderer.animate_center_card(animate, slide_direction, p_is_unlocked)
+
 
 func _on_skins_toggle_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -468,6 +352,7 @@ func _on_skins_toggle_pressed() -> void:
 	else:
 		_is_skin_mode = true
 		_populate_pet_skins()
+
 
 func _on_select_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -500,6 +385,7 @@ func _on_select_pressed() -> void:
 		SaveManager.set_selected_pet(pid)
 		pet_selected.emit(pid)
 		close_modal()
+
 
 func _setup_focus_neighbors() -> void:
 	if left_card:

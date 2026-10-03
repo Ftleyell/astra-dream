@@ -1,12 +1,25 @@
 class_name NavigatorSelectionModal
 extends CanvasLayer
 
+## NavigatorSelectionModal.gd
+## Modal de selección de Navegantes tácticas y personalización de skins CoverFlow.
+## Coordina la selección activa, persistencia en SaveManager e inputs,
+## delegando la presentación visual a NavigatorCoverFlowRenderer y NavigatorDossierController.
+
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const NavigatorDataScript = preload("res://data/navigators/navigator_data.gd")
+const NavigatorCoverFlowRenderer = preload("res://scenes/ui/character_select/components/navigator_cover_flow_renderer.gd")
+const NavigatorDossierController = preload("res://scenes/ui/character_select/components/navigator_dossier_controller.gd")
 
 signal navigator_selected(nav_id: StringName)
 signal skin_equipped(slot_key: String, skin_id: String)
 signal closed()
 
+# Componentes Modulares
+var cover_flow_renderer: NavigatorCoverFlowRenderer = null
+var dossier_controller: NavigatorDossierController = null
+
+# Nodos de la escena accesibles para suites de tests y dependencias externas
 @onready var index_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader/IndexBadge
 
 @onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/PrevButton
@@ -46,33 +59,22 @@ signal closed()
 var is_open: bool = false
 var current_index: int = 0
 var _navigators: Array = []
-var _nav_buttons: Array[Button] = []
-var _active_tween: Tween = null
-
-# Modo Galería de Skins CoverFlow
 var _is_skin_mode: bool = false
 var _nav_skins: Array[Dictionary] = []
 var _skin_index: int = 0
 var skins_btn: Button = null
+
+var _nav_buttons: Array[Button]:
+	get:
+		return cover_flow_renderer.nav_buttons if cover_flow_renderer else []
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 126
 	hide()
 
-	if prev_btn:
-		prev_btn.pressed.connect(func(): _cycle(-1))
-		UIFocusHelper.apply_cyber_focus(prev_btn)
-	if next_btn:
-		next_btn.pressed.connect(func(): _cycle(1))
-		UIFocusHelper.apply_cyber_focus(next_btn)
-
-	if left_card:
-		left_card.pressed.connect(func(): _cycle(-1))
-		UIFocusHelper.apply_cyber_focus(left_card)
-	if right_card:
-		right_card.pressed.connect(func(): _cycle(1))
-		UIFocusHelper.apply_cyber_focus(right_card)
+	_init_components()
 
 	if select_btn:
 		select_btn.pressed.connect(_on_select_pressed)
@@ -94,6 +96,44 @@ func _ready() -> void:
 
 	_setup_focus_neighbors()
 
+
+func _init_components() -> void:
+	cover_flow_renderer = NavigatorCoverFlowRenderer.new()
+	cover_flow_renderer.setup(
+		prev_btn,
+		next_btn,
+		cards_row,
+		left_card,
+		left_texture,
+		left_label,
+		artwork_frame,
+		artwork_viewport,
+		fullbody_texture,
+		locked_overlay,
+		lock_title,
+		lock_desc,
+		right_card,
+		right_texture,
+		right_label,
+		dots_container,
+		Callable(self, "_cycle")
+	)
+
+	dossier_controller = NavigatorDossierController.new()
+	dossier_controller.setup(
+		index_badge,
+		name_label,
+		status_badge,
+		title_label,
+		radio_dialogue,
+		radar_desc,
+		buff_card,
+		buff_name_label,
+		buff_desc_label,
+		select_btn
+	)
+
+
 func open_modal() -> void:
 	is_open = true
 	_is_skin_mode = false
@@ -106,6 +146,7 @@ func open_modal() -> void:
 	elif close_btn:
 		close_btn.grab_focus()
 
+
 func close_modal() -> void:
 	if not is_open:
 		return
@@ -117,6 +158,7 @@ func close_modal() -> void:
 	hide()
 	closed.emit()
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
 		return
@@ -126,7 +168,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		close_modal()
 		return
 
-	# Navegación Cover Flow con teclas A / D, flechas y W / S
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT or event.keycode == KEY_W or event.keycode == KEY_UP:
 			get_viewport().set_input_as_handled()
@@ -150,8 +191,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			_cycle(1)
 
+
 func _populate_navigators() -> void:
-	const NavigatorDataScript := preload("res://data/navigators/navigator_data.gd")
 	_navigators = NavigatorDataScript.load_roster_ordered()
 
 	var selected_nid := SaveManager.get_selected_navigator()
@@ -168,6 +209,7 @@ func _populate_navigators() -> void:
 
 	_build_dots(_navigators.size(), current_index)
 	_display_current_navigator(false, 0)
+
 
 func _populate_navigator_skins() -> void:
 	if _navigators.is_empty():
@@ -191,34 +233,18 @@ func _populate_navigator_skins() -> void:
 	_build_dots(_nav_skins.size(), _skin_index)
 	_display_current_skin(false, 0)
 
+
 func _build_dots(count: int, active_idx: int) -> void:
-	if not dots_container:
-		return
+	if cover_flow_renderer:
+		cover_flow_renderer.build_dots(count, active_idx, Callable(self, "_on_dot_selected"))
 
-	for child in dots_container.get_children():
-		dots_container.remove_child(child)
-		child.queue_free()
-	_nav_buttons.clear()
 
-	for i in range(count):
-		var dot_btn := Button.new()
-		dot_btn.custom_minimum_size = Vector2(24, 24)
-		dot_btn.flat = true
-		dot_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		dot_btn.text = "●" if i == active_idx else "○"
-		dot_btn.add_theme_font_size_override("font_size", 16)
-		dot_btn.focus_mode = Control.FOCUS_NONE
+func _on_dot_selected(target_idx: int) -> void:
+	var cur := _skin_index if _is_skin_mode else current_index
+	if cur != target_idx:
+		var dir: int = 1 if target_idx > cur else -1
+		_set_index(target_idx, dir)
 
-		var target_idx := i
-		dot_btn.pressed.connect(func():
-			var cur := _skin_index if _is_skin_mode else current_index
-			if cur != target_idx:
-				var dir: int = 1 if target_idx > cur else -1
-				_set_index(target_idx, dir)
-		)
-
-		dots_container.add_child(dot_btn)
-		_nav_buttons.append(dot_btn)
 
 func _cycle(direction: int) -> void:
 	if _is_skin_mode:
@@ -238,6 +264,7 @@ func _cycle(direction: int) -> void:
 			next_idx += count
 		_set_index(next_idx, direction)
 
+
 func _set_index(new_idx: int, slide_direction: int = 0) -> void:
 	if _is_skin_mode:
 		if new_idx == _skin_index:
@@ -254,6 +281,7 @@ func _set_index(new_idx: int, slide_direction: int = 0) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
 
+
 func _display_current_navigator(animate: bool = true, slide_direction: int = 0) -> void:
 	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
 		return
@@ -264,96 +292,26 @@ func _display_current_navigator(animate: bool = true, slide_direction: int = 0) 
 	var is_unlocked: bool = SaveManager.is_navigator_unlocked(nid)
 	var is_selected: bool = (nid == SaveManager.get_selected_navigator())
 
-	if index_badge:
-		index_badge.text = "[ %02d / %02d ]" % [current_index + 1, count]
-
-	# Cartas Laterales (Navegantes Fullbody)
 	var left_idx := (current_index - 1 + count) % count
 	var right_idx := (current_index + 1) % count
 	var left_data = _navigators[left_idx]
 	var right_data = _navigators[right_idx]
 
-	if left_texture and left_data:
-		left_texture.texture = left_data.get_fullbody_texture()
-	if left_label and left_data:
-		left_label.text = "◀ %s" % left_data.display_name.to_upper()
-		left_label.modulate = left_data.theme_color
+	var slot_key := "navigator:" + String(nid).to_lower()
+	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
+	var skin_stars: int = 0
+	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
+		skin_stars = SaveManager.get_skin_stars(equipped_skin)
+	else:
+		equipped_skin = ""
 
-	if right_texture and right_data:
-		right_texture.texture = right_data.get_fullbody_texture()
-	if right_label and right_data:
-		right_label.text = "%s ▶" % right_data.display_name.to_upper()
-		right_label.modulate = right_data.theme_color
+	cover_flow_renderer.render_navigator_cards(nav_data, left_data, right_data, is_unlocked, equipped_skin, skin_stars)
+	cover_flow_renderer.update_carousel_layout(false, nav_data.theme_color)
+	cover_flow_renderer.update_dots(nav_data.theme_color, current_index)
+	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
 
-	if name_label:
-		name_label.text = nav_data.display_name.to_upper()
-		name_label.add_theme_color_override("font_color", nav_data.theme_color if is_unlocked else Color(0.6, 0.65, 0.75))
+	dossier_controller.display_navigator(nav_data, is_unlocked, is_selected, current_index, count)
 
-	if title_label:
-		title_label.text = "— " + nav_data.title.to_upper()
-
-	if status_badge:
-		if is_selected:
-			status_badge.text = "[✓ ENLACE ACTIVO]"
-			status_badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
-		elif is_unlocked:
-			status_badge.text = "[DISPONIBLE]"
-			status_badge.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
-		else:
-			status_badge.text = "[🔒 BLOQUEADA]"
-			status_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
-
-	if radio_dialogue:
-		if not nav_data.dialogue_callouts.is_empty():
-			radio_dialogue.text = "\"%s\"" % nav_data.dialogue_callouts[0]
-		else:
-			radio_dialogue.text = "\"Frecuencia de telemetría a la espera...\""
-
-	if radar_desc:
-		radar_desc.text = nav_data.specialty_desc if is_unlocked else "Algoritmo de telemetría clasificado."
-	if buff_name_label:
-		buff_name_label.text = nav_data.buff_name.to_upper() if is_unlocked else "ENLACE TÁCTICO BLOQUEADO"
-	if buff_desc_label:
-		buff_desc_label.text = nav_data.buff_desc if is_unlocked else "Enlace táctico bloqueado."
-
-	# Botón de Selección
-	if select_btn:
-		select_btn.disabled = not is_unlocked
-		if is_selected:
-			select_btn.text = "✓ ENLACE ACTIVO (SELECCIONADA)"
-			select_btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
-		elif is_unlocked:
-			select_btn.text = "⚡ ENLAZAR A %s [ESPACIO]" % nav_data.display_name.to_upper()
-			select_btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.85))
-		else:
-			select_btn.text = "🔒 NAVEGANTE BLOQUEADA"
-			select_btn.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
-
-	# Retrato Central: siempre el Fullbody de la Navegante; si tiene skin equipada, aplicar shader cósmico sin perder el fullbody
-	if fullbody_texture:
-		fullbody_texture.texture = nav_data.get_fullbody_texture()
-		var slot_key := "navigator:" + String(nid).to_lower()
-		var equipped_skin := SaveManager.get_equipped_skin(slot_key)
-		if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
-			var stars := SaveManager.get_skin_stars(equipped_skin)
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, equipped_skin, stars, false)
-		else:
-			fullbody_texture.material = null
-
-	if locked_overlay:
-		locked_overlay.visible = not is_unlocked
-		if not is_unlocked:
-			if lock_title:
-				lock_title.text = "%s BLOQUEADA" % nav_data.display_name.to_upper()
-			if lock_desc:
-				if nid == &"iris":
-					lock_desc.text = "Completa cualquiera de los 3 finales (Pacifista, Genocida o Neutral) para sintonizar a Iris, o actívala en Debug [F1]."
-				else:
-					lock_desc.text = "Sintonización requerida. Desbloquea a %s en el menú de progresión o en Debug [F1]." % nav_data.display_name
-
-	_update_carousel_layout(false, nav_data.theme_color)
-	_update_dots(nav_data.theme_color, current_index)
-	_animate_center_card(animate, slide_direction, is_unlocked)
 
 func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> void:
 	if _nav_skins.is_empty():
@@ -362,227 +320,42 @@ func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> vo
 	var count := _nav_skins.size()
 	var cur_skin: Dictionary = _nav_skins[_skin_index]
 	var sid: String = cur_skin.get("id", "")
-	var sname: String = cur_skin.get("skin_name", "Aspecto")
-	var pal_name: String = cur_skin.get("palette_id", "").replace("_", " ").capitalize()
-	var desc: String = cur_skin.get("description", "")
-
 	var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
 	var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
+
 	var slot_key := "navigator:" + String(_navigators[current_index].navigator_id).to_lower()
 	var currently_equipped := SaveManager.get_equipped_skin(slot_key)
 	var is_equipped: bool = (currently_equipped == sid)
 
-	if index_badge:
-		index_badge.text = "[ ASPECTO: %02d / %02d ]" % [_skin_index + 1, count]
-
-	# Cartas Laterales (Skins)
 	var left_idx := (_skin_index - 1 + count) % count
 	var right_idx := (_skin_index + 1) % count
 	var left_skin: Dictionary = _nav_skins[left_idx]
 	var right_skin: Dictionary = _nav_skins[right_idx]
 
-	if left_texture:
-		left_texture.texture = CosmeticsManager.load_texture(left_skin.get("texture_path", ""))
-	if left_label:
-		left_label.text = "◀ " + left_skin.get("skin_name", "").to_upper()
-		left_label.modulate = Color(0.7, 0.85, 1.0)
-
-	if right_texture:
-		right_texture.texture = CosmeticsManager.load_texture(right_skin.get("texture_path", ""))
-	if right_label:
-		right_label.text = right_skin.get("skin_name", "").to_upper() + " ▶"
-		right_label.modulate = Color(0.7, 0.85, 1.0)
-
-	if name_label:
-		name_label.text = sname.to_upper()
-		name_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.2) if is_unlocked else Color(0.6, 0.65, 0.75))
-
-	if title_label:
-		var star_str := ""
-		for s in range(stars):
-			star_str += "★"
-		title_label.text = "[%s %d★ | Paleta: %s]" % [star_str, stars, pal_name]
-
-	if status_badge:
-		if is_equipped:
-			status_badge.text = "[✓ EQUIPADO]"
-			status_badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
-		elif is_unlocked:
-			status_badge.text = "[DESBLOQUEADO]"
-			status_badge.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
-		else:
-			status_badge.text = "[🔒 GACHA]"
-			status_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
-
-	if radio_dialogue:
-		radio_dialogue.text = desc
-	if radar_desc:
-		radar_desc.text = "Personalización de telemetría y comunicaciones tácticas."
-	if buff_desc_label:
-		buff_desc_label.text = "Aura holográfica y destellos estelares para la navegante."
-
-	# Botón de Equipar Aspecto
-	if select_btn:
-		select_btn.disabled = not is_unlocked
-		if is_equipped:
-			select_btn.text = "✓ DESEQUIPAR ASPECTO"
-			select_btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-		elif is_unlocked:
-			select_btn.text = "★ EQUIPAR ESTE ASPECTO"
-			select_btn.add_theme_color_override("font_color", Color(1.0, 0.9, 0.2))
-		else:
-			select_btn.text = "🔒 BLOQUEADO EN GACHA"
-			select_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-
-	# Retrato Central con Shader
-	if fullbody_texture:
-		var tex := CosmeticsManager.load_texture(cur_skin.get("texture_path", ""))
-		fullbody_texture.texture = tex
-		if is_unlocked and stars > 1:
-			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, sid, stars)
-		else:
-			fullbody_texture.material = null
-
-	if locked_overlay:
-		locked_overlay.visible = not is_unlocked
-		if lock_title:
-			lock_title.text = "ASPECTO BLOQUEADO"
-		if lock_desc:
-			lock_desc.text = "CONSEGUIR EN GACHA ESTELAR"
-
+	cover_flow_renderer.render_skin_cards(cur_skin, left_skin, right_skin, is_unlocked, stars)
 	var pal_color := Color.from_string(cur_skin.get("glow_hex", "#00F0FF"), Color.CYAN)
-	_update_carousel_layout(true, pal_color)
-	_update_dots(Color(1.0, 0.85, 0.2), _skin_index)
-	_animate_center_card(animate, slide_direction, is_unlocked)
+	cover_flow_renderer.update_carousel_layout(true, pal_color)
+	cover_flow_renderer.update_dots(Color(1.0, 0.85, 0.2), _skin_index)
+	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
 
-func _update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
-	if not artwork_frame:
-		return
+	dossier_controller.display_skin(cur_skin, is_unlocked, is_equipped, stars, _skin_index, count)
 
-	if is_skin:
-		# Modo Skins: carrusel circular holográfico estilo Cover Flow
-		if cards_row:
-			cards_row.add_theme_constant_override("separation", -45)
 
-		artwork_frame.z_index = 2
-		artwork_frame.custom_minimum_size = Vector2(260, 260)
-		artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var af_sb := StyleBoxFlat.new()
-		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
-		af_sb.border_color = theme_color
-		af_sb.set_border_width_all(3)
-		af_sb.set_corner_radius_all(130) # Redondo / Circular
-		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-		af_sb.shadow_size = 18
-		artwork_frame.add_theme_stylebox_override("panel", af_sb)
+# Delegados auxiliares para retrocompatibilidad con tests existentes
+func _update_carousel_layout(p_is_skin: bool, theme_color: Color) -> void:
+	if cover_flow_renderer:
+		cover_flow_renderer.update_carousel_layout(p_is_skin, theme_color)
 
-		if left_card:
-			left_card.z_index = 0
-			left_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
-			left_card.custom_minimum_size = Vector2(150, 150)
-			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(75) # Redondo / Circular
-			left_card.add_theme_stylebox_override("normal", side_sb)
-			left_card.add_theme_stylebox_override("hover", side_sb)
-			left_card.add_theme_stylebox_override("pressed", side_sb)
-		if left_label:
-			left_label.visible = false
-
-		if right_card:
-			right_card.z_index = 0
-			right_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
-			right_card.custom_minimum_size = Vector2(150, 150)
-			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(75) # Redondo / Circular
-			right_card.add_theme_stylebox_override("normal", side_sb)
-			right_card.add_theme_stylebox_override("hover", side_sb)
-			right_card.add_theme_stylebox_override("pressed", side_sb)
-		if right_label:
-			right_label.visible = false
-	else:
-		# Modo Navegadoras: marco esbelto y proporcionado para fullbody
-		if cards_row:
-			cards_row.add_theme_constant_override("separation", 12)
-
-		artwork_frame.z_index = 1
-		artwork_frame.custom_minimum_size = Vector2(240, 480)
-		artwork_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		var af_sb := StyleBoxFlat.new()
-		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
-		af_sb.border_color = theme_color
-		af_sb.set_border_width_all(2)
-		af_sb.set_corner_radius_all(8)
-		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.25)
-		af_sb.shadow_size = 10
-		artwork_frame.add_theme_stylebox_override("panel", af_sb)
-
-		if left_card:
-			left_card.z_index = 0
-			left_card.modulate = Color.WHITE
-			left_card.custom_minimum_size = Vector2(150, 400)
-			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
-			side_sb.set_border_width_all(1)
-			side_sb.set_corner_radius_all(6)
-			left_card.add_theme_stylebox_override("normal", side_sb)
-			left_card.add_theme_stylebox_override("hover", side_sb)
-			left_card.add_theme_stylebox_override("pressed", side_sb)
-		if left_label:
-			left_label.visible = true
-
-		if right_card:
-			right_card.z_index = 0
-			right_card.modulate = Color.WHITE
-			right_card.custom_minimum_size = Vector2(150, 400)
-			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
-			side_sb.set_border_width_all(1)
-			side_sb.set_corner_radius_all(6)
-			right_card.add_theme_stylebox_override("normal", side_sb)
-			right_card.add_theme_stylebox_override("hover", side_sb)
-			right_card.add_theme_stylebox_override("pressed", side_sb)
-		if right_label:
-			right_label.visible = true
 
 func _update_dots(active_color: Color, active_idx: int) -> void:
-	for i in range(_nav_buttons.size()):
-		var dot_btn := _nav_buttons[i]
-		if i == active_idx:
-			dot_btn.text = "●"
-			dot_btn.add_theme_color_override("font_color", active_color)
-			dot_btn.modulate = Color(1.3, 1.3, 1.3, 1.0)
-		else:
-			dot_btn.text = "○"
-			dot_btn.add_theme_color_override("font_color", Color(0.4, 0.5, 0.65, 0.7))
-			dot_btn.modulate = Color(1.0, 1.0, 1.0, 0.7)
+	if cover_flow_renderer:
+		cover_flow_renderer.update_dots(active_color, active_idx)
 
-func _animate_center_card(animate: bool, slide_direction: int, is_unlocked: bool) -> void:
-	if animate and is_instance_valid(fullbody_texture):
-		if _active_tween and _active_tween.is_valid():
-			_active_tween.kill()
 
-		_active_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var offset_x: float = 45.0 * (1.0 if slide_direction >= 0 else -1.0)
-		fullbody_texture.position.x = offset_x
-		_active_tween.tween_property(fullbody_texture, "position:x", 0.0, 0.22)
-		var target_modulate := Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
-		_active_tween.tween_property(fullbody_texture, "modulate", target_modulate, 0.22)
-	else:
-		if fullbody_texture:
-			fullbody_texture.position.x = 0.0
-			fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
+func _animate_center_card(animate: bool, slide_direction: int, p_is_unlocked: bool) -> void:
+	if cover_flow_renderer:
+		cover_flow_renderer.animate_center_card(animate, slide_direction, p_is_unlocked)
+
 
 func _on_skins_toggle_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -595,6 +368,7 @@ func _on_skins_toggle_pressed() -> void:
 	else:
 		_is_skin_mode = true
 		_populate_navigator_skins()
+
 
 func _on_select_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -627,6 +401,7 @@ func _on_select_pressed() -> void:
 		SaveManager.set_selected_navigator(nid)
 		navigator_selected.emit(nid)
 		close_modal()
+
 
 func _setup_focus_neighbors() -> void:
 	if left_card:
