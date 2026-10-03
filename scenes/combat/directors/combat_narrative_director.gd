@@ -5,6 +5,7 @@ extends Node
 ## Gestiona el prólogo táctico, advertencias de mascotas/navegadoras, duelos de rivales y victorias.
 
 const CombatRadioFeedControllerScript = preload("res://scenes/combat/directors/combat_radio_feed_controller.gd")
+const BossCinematicPresenterScript = preload("res://scenes/combat/bosses/boss_cinematic_presenter.gd")
 
 signal briefing_completed(bonus_awarded: bool)
 signal dialogue_started()
@@ -172,13 +173,11 @@ func skip_dialogue() -> void:
 		is_rival_cinematic_active = false
 		var current_rival = main_game.get("current_rival") if main_game else null
 		if is_instance_valid(current_rival):
+			current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 			if current_rival.has_method("start_encounter"):
 				current_rival.start_encounter()
-			else:
-				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-		var spawner = main_game.get("enemy_spawner") if main_game else null
-		if spawner and spawner.has_method("set_spawning_paused"):
-			spawner.set_spawning_paused(false)
+		if main_game:
+			BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
 
 	if main_game and main_game.has_method("notify_menu_closed"):
 		main_game.notify_menu_closed(0.4)
@@ -278,13 +277,11 @@ func on_timeline_ended() -> void:
 		is_rival_cinematic_active = false
 		var current_rival = main_game.get("current_rival") if main_game else null
 		if is_instance_valid(current_rival):
+			current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 			if current_rival.has_method("start_encounter"):
 				current_rival.start_encounter()
-			else:
-				current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-		var spawner = main_game.get("enemy_spawner") if main_game else null
-		if spawner and spawner.has_method("set_spawning_paused"):
-			spawner.set_spawning_paused(false)
+		if main_game:
+			BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
 
 	var backdrop := main_game.get_node_or_null("DialogueBackdropLayer") if main_game else null
 	if backdrop and not is_briefing_active:

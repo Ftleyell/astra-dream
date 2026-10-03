@@ -23,6 +23,8 @@ static func setup_cinematic_duel(main_game: Node2D, cin_zoom: float = 1.0) -> Di
 		if player.has_method("suppress_bomb_input"):
 			player.suppress_bomb_input(999.0)
 
+	freeze_combat_environment(main_game)
+
 	var p_pos: Vector2 = player.global_position if is_instance_valid(player) else Vector2.ZERO
 	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
 	var boss_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
@@ -44,10 +46,93 @@ static func restore_combat_after_emergence(main_game: Node2D, cam: GameCamera2D,
 		cam.clear_cinematic_focus()
 	if is_instance_valid(player) and player.has_method("resume_movement_control"):
 		player.resume_movement_control()
+	unfreeze_combat_environment(main_game)
 	main_game.set("is_boss_transmission_active", false)
 	main_game.get_tree().paused = false
 	main_game.call("notify_menu_closed", 0.4)
 	main_game.call("_resume_pending_systems_after_cinematics")
+
+## Congela inmediatamente proyectiles, oleadas y enemigos menores sincronizados con la cinemática
+static func freeze_combat_environment(main_game: Node2D) -> void:
+	if not is_instance_valid(main_game):
+		return
+
+	# Otorgar invulnerabilidad total al jugador durante la cinemática
+	var player: Node2D = main_game.get("player") as Node2D
+	if not is_instance_valid(player) and main_game.get_tree():
+		player = main_game.get_tree().get_first_node_in_group("player") as Node2D
+	if is_instance_valid(player):
+		player.set("is_invulnerable", true)
+
+	# Limpiar proyectiles hostiles en pantalla
+	var bullet_srv: BulletServer = main_game.get_node_or_null("/root/BulletServer") as BulletServer
+	if not bullet_srv and main_game.get_parent():
+		bullet_srv = main_game.get_parent().get_node_or_null("BulletServer") as BulletServer
+	if bullet_srv:
+		bullet_srv.bomb_clear_all()
+
+	# Pausar generación de nuevos enemigos
+	var enemy_spawner: Node = main_game.get("enemy_spawner")
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(true)
+
+	# Detener en seco y congelar el procesamiento de todos los enemigos comunes
+	var tree := main_game.get_tree()
+	if tree:
+		for enemy in tree.get_nodes_in_group("enemies"):
+			if is_instance_valid(enemy) and not enemy.is_in_group("bosses") and not enemy.is_in_group("rival_pilots"):
+				if enemy is CharacterBody2D:
+					(enemy as CharacterBody2D).velocity = Vector2.ZERO
+				enemy.set_physics_process(false)
+				enemy.set_process(false)
+
+		# Congelar amenazas ambientales activas (asteroides, esquirlas)
+		for ast in tree.get_nodes_in_group("asteroids"):
+			if is_instance_valid(ast):
+				ast.set_physics_process(false)
+				ast.set_process(false)
+		for shard in tree.get_nodes_in_group("shrapnel_shards"):
+			if is_instance_valid(shard):
+				shard.set_physics_process(false)
+				shard.set_process(false)
+
+## Reanuda el procesamiento del entorno y restaura los controles con buffer de invulnerabilidad
+static func unfreeze_combat_environment(main_game: Node2D) -> void:
+	if not is_instance_valid(main_game):
+		return
+
+	var tree := main_game.get_tree()
+	if tree:
+		# Reactivar procesamiento de enemigos comunes
+		for enemy in tree.get_nodes_in_group("enemies"):
+			if is_instance_valid(enemy) and not enemy.is_in_group("bosses") and not enemy.is_in_group("rival_pilots"):
+				enemy.set_physics_process(true)
+				enemy.set_process(true)
+
+		# Reactivar amenazas ambientales
+		for ast in tree.get_nodes_in_group("asteroids"):
+			if is_instance_valid(ast):
+				ast.set_physics_process(true)
+				ast.set_process(true)
+		for shard in tree.get_nodes_in_group("shrapnel_shards"):
+			if is_instance_valid(shard):
+				shard.set_physics_process(true)
+				shard.set_process(true)
+
+	# Reanudar generador de enemigos
+	var enemy_spawner: Node = main_game.get("enemy_spawner")
+	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
+		enemy_spawner.set_spawning_paused(false)
+
+	# Levantar invulnerabilidad del jugador con buffer de gracia (0.5s) para reacción justa
+	var player: Node2D = main_game.get("player") as Node2D
+	if not is_instance_valid(player) and tree:
+		player = tree.get_first_node_in_group("player") as Node2D
+	if is_instance_valid(player) and tree:
+		tree.create_timer(0.5, true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(player):
+				player.set("is_invulnerable", false)
+		)
 
 ## Ejecuta la secuencia cósmica de fractura de realidad y emergencia
 static func play_reality_tear_emergence(

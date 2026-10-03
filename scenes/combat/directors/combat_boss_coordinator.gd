@@ -323,6 +323,8 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 						if not is_instance_valid(rival):
 							return
 						rival.emerge_from_portal(func() -> void:
+							if is_instance_valid(rival):
+								rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 							main_game.call("_trigger_rival_face_to_face_dialogue", rival)
 						)
 					)

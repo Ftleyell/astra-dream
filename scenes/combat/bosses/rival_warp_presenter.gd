@@ -104,6 +104,8 @@ static func emerge_from_portal(rival: CharacterBody2D, warp_portal: Node2D, targ
 	var safe_emerge_cb: Callable = func() -> void:
 		if not emerge_done[0]:
 			emerge_done[0] = true
+			if is_instance_valid(rival):
+				rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 			if is_instance_valid(warp_portal) and warp_portal.has_method("start_collapse"):
 				warp_portal.start_collapse()
 			if callback.is_valid():

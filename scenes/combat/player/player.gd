@@ -128,6 +128,7 @@ var run_credits: int = 40
 var run_biomass: int = 0
 var run_dark_matter: int = 0
 var is_movement_suppressed: bool = false
+var is_invulnerable: bool = false
 
 # Experiencia y Progresión en Run
 var current_level: int = 1
@@ -300,7 +301,7 @@ func _physics_process(delta: float) -> void:
 
 	if bullet_server:
 		bullet_server.player_pos = global_position
-		bullet_server.player_invulnerable = is_dashing
+		bullet_server.player_invulnerable = is_dashing or is_invulnerable
 
 
 func _update_pilot_shader(delta: float, is_moving: bool) -> void:
@@ -484,6 +485,8 @@ func add_exp(amount: float) -> void:
 
 
 func take_damage(amount: float) -> void:
+	if is_invulnerable:
+		return
 	if shield_controller:
 		shield_controller.take_damage(self, amount, stats, inventory)
 

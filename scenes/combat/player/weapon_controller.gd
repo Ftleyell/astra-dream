@@ -169,6 +169,8 @@ func _notification(what: int) -> void:
 
 
 func _process(delta: float) -> void:
+	if player and (player.is_dead or player.is_movement_suppressed):
+		return
 	_handle_toggle_input()
 	_update_locked_target()
 	_handle_aim(delta)

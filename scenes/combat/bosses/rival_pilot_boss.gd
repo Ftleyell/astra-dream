@@ -252,6 +252,8 @@ func _update_warning_label() -> void:
 		warning_label.text = ""
 
 func _process(delta: float) -> void:
+	if get_tree() and get_tree().paused:
+		return
 	elapsed_time += delta
 	warning_ring_pulse += delta * 3.5
 	if combat_danger_ring and is_instance_valid(combat_danger_ring):
@@ -299,7 +301,7 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS / sx, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
 
 func _physics_process(delta: float) -> void:
-	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
+	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN or (get_tree() and get_tree().paused):
 		return
 
 	if not is_instance_valid(player):
@@ -350,6 +352,7 @@ func engage_combat() -> void:
 	if current_state == State.DOGFIGHT:
 		return
 	current_state = State.DOGFIGHT
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_update_warning_label()
 
 	# Disipar proyección holográfica de combate con desvanecimiento limpio

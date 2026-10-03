@@ -15,7 +15,7 @@ func take_damage(
 	stats: CharacterStats,
 	inventory: Node
 ) -> void:
-	if not player or player.is_dead or player.is_dashing:
+	if not player or player.is_dead or player.is_dashing or player.get("is_invulnerable") == true:
 		return
 
 	var debug_mgr: Node = player.get_node_or_null("/root/DebugManager")
