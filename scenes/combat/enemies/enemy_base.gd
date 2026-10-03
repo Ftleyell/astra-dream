@@ -20,6 +20,7 @@ var current_health: float = 30.0
 var player: Player = null
 var is_dying: bool = false
 var contact_cooldown: float = 0.0
+var pool_source: Node = null
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
@@ -49,6 +50,23 @@ func _ready() -> void:
 
 func _ready_custom() -> void:
 	pass
+
+func reset_from_pool(pos: Vector2) -> void:
+	global_position = pos
+	current_health = max_health
+	is_dying = false
+	contact_cooldown = 0.0
+	visible = true
+	scale = Vector2(2.0, 2.0)
+	modulate = Color.WHITE
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if collision_shape:
+		collision_shape.set_deferred("disabled", false)
+	if not is_in_group("enemies"):
+		add_to_group("enemies")
+	if "is_diving" in self:
+		set("is_diving", false)
+	_ready_custom()
 
 func _apply_silhouette_outline() -> void:
 	if not is_instance_valid(sprite):
@@ -175,7 +193,10 @@ func _die() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.15)
 	tween.parallel().tween_property(self, "modulate", Color(1.0, 0.4, 0.1, 0.0), 0.15)
-	tween.tween_callback(queue_free)
+	if pool_source and is_instance_valid(pool_source) and pool_source.has_method("recycle_enemy"):
+		tween.tween_callback(func(): pool_source.call("recycle_enemy", self))
+	else:
+		tween.tween_callback(queue_free)
 
 func _on_die_extra() -> void:
 	pass

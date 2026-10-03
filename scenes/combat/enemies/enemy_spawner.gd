@@ -38,6 +38,10 @@ var champion_spawn_timer: float = 22.0
 var swarm_event_timer: float = 40.0
 const SWARM_EVENT_INTERVAL: float = 45.0
 
+const EnemyNodePoolScript = preload("res://scenes/combat/enemies/enemy_node_pool.gd")
+
+var enemy_pool: Node = EnemyNodePoolScript.new()
+
 signal swarm_rush_triggered(drone_count: int)
 
 func set_spawning_paused(p_paused: bool) -> void:
@@ -45,6 +49,9 @@ func set_spawning_paused(p_paused: bool) -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if not enemy_pool.is_inside_tree():
+		enemy_pool.name = "EnemyNodePool"
+		add_child(enemy_pool)
 	# Spawner inicial inmediato: escuadrón de prueba
 	call_deferred("_spawn_initial_batch")
 
@@ -275,13 +282,15 @@ func _trigger_swarm_rush() -> void:
 func _spawn_enemy_at(scene: PackedScene, pos: Vector2) -> Node2D:
 	if not scene:
 		return null
+	var parent_node: Node = get_parent() if is_inside_tree() else null
+	if not parent_node and is_inside_tree():
+		parent_node = get_tree().current_scene
+	if enemy_pool:
+		return enemy_pool.acquire_enemy(scene, pos, parent_node)
 	var enemy := scene.instantiate() as Node2D
 	if not enemy:
 		return null
 	enemy.global_position = pos
-	var parent_node := get_parent() if is_inside_tree() else null
-	if not parent_node and is_inside_tree():
-		parent_node = get_tree().current_scene
 	if parent_node:
 		parent_node.add_child(enemy)
 	return enemy

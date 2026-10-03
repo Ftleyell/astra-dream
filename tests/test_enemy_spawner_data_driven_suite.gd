@@ -12,6 +12,7 @@ func _ready() -> void:
 	_test_2_wave_schedule_config_lookup()
 	_test_3_spawner_wave_calibration()
 	_test_4_scene_selection_data_driven()
+	_test_5_enemy_node_pool_recycling()
 
 	print("\n==================================================================")
 	print("  TOTAL VERIFIED TEST SUITES: %d/%d PASSED" % [passed_tests, total_tests])
@@ -110,3 +111,40 @@ func _test_4_scene_selection_data_driven() -> void:
 	spawner.queue_free()
 	passed_tests += 1
 	print("  ✓ T4: Data-driven enemy scene selection verified across repeated iterations")
+
+func _test_5_enemy_node_pool_recycling() -> void:
+	total_tests += 1
+	print("\n--- TEST 5: EnemyNodePool Zero-Allocation Recycling ---")
+	var spawner := EnemySpawner.new()
+	add_child(spawner)
+
+	assert(spawner.enemy_pool != null, "EnemySpawner must have enemy_pool initialized")
+
+	var dummy_pos1 := Vector2(100.0, 200.0)
+	var e1: Node2D = spawner.call("_spawn_enemy_at", spawner.drone_scene, dummy_pos1)
+	assert(e1 != null, "Spawned enemy 1 must not be null")
+	assert(e1.global_position == dummy_pos1, "Spawned enemy 1 position must match")
+	assert(e1.is_in_group("enemies"), "Enemy 1 must be in enemies group")
+
+	var id1 := e1.get_instance_id()
+
+	# Reciclar e1
+	spawner.enemy_pool.call("recycle_enemy", e1)
+	assert(not e1.visible, "Recycled enemy must be invisible")
+	assert(e1.process_mode == Node.PROCESS_MODE_DISABLED, "Recycled enemy must be process disabled")
+	assert(not e1.is_in_group("enemies"), "Recycled enemy must be removed from enemies group")
+
+	# Re-adquirir enemigo de la misma escena
+	var dummy_pos2 := Vector2(300.0, 400.0)
+	var e2: Node2D = spawner.call("_spawn_enemy_at", spawner.drone_scene, dummy_pos2)
+	assert(e2 != null, "Re-acquired enemy must not be null")
+	assert(e2.get_instance_id() == id1, "Re-acquired enemy must reuse previous instance ID (Zero-Allocation)")
+	assert(e2.global_position == dummy_pos2, "Re-acquired enemy position must be updated")
+	assert(e2.visible, "Re-acquired enemy must be visible")
+	assert(e2.process_mode == Node.PROCESS_MODE_PAUSABLE, "Re-acquired enemy must be process pausable")
+	assert(e2.is_in_group("enemies"), "Re-acquired enemy must be re-added to enemies group")
+
+	spawner.enemy_pool.call("clear_all")
+	spawner.queue_free()
+	passed_tests += 1
+	print("  ✓ T5: Zero-Allocation EnemyNodePool recycling verified (instance reuse 100%)")
