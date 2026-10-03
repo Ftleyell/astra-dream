@@ -4,6 +4,8 @@ extends CharacterBody2D
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SandevistanFlightVFX = preload("res://scenes/combat/player/sandevistan_flight_vfx.gd")
 const PlayerDashController = preload("res://scenes/combat/player/player_dash_controller.gd")
+const PlayerVisualBuilderClass = preload("res://scenes/combat/player/player_visual_builder.gd")
+const PlayerBombControllerClass = preload("res://scenes/combat/player/player_bomb_controller.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -81,11 +83,33 @@ var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/playe
 
 var is_dead: bool = false
 
-var bomb_count: int = 2
+# Sub-Controllers
+var visual_builder: RefCounted = PlayerVisualBuilderClass.new()
+var bomb_controller: RefCounted = PlayerBombControllerClass.new()
+
+var bomb_count: int:
+	get:
+		return bomb_controller.bomb_count if bomb_controller else 2
+	set(val):
+		if bomb_controller:
+			bomb_controller.bomb_count = val
+
+var _menu_close_suppress_timer: float:
+	get:
+		return bomb_controller.menu_close_suppress_timer if bomb_controller else 0.0
+	set(val):
+		if bomb_controller:
+			bomb_controller.menu_close_suppress_timer = val
+
+var _was_bomb_pressed_during_menu: bool:
+	get:
+		return bomb_controller.was_bomb_pressed_during_menu if bomb_controller else false
+	set(val):
+		if bomb_controller:
+			bomb_controller.was_bomb_pressed_during_menu = val
+
 var run_credits: int = 40
 var run_biomass: int = 0
-var _menu_close_suppress_timer: float = 0.0
-var _was_bomb_pressed_during_menu: bool = false
 var is_movement_suppressed: bool = false
 
 # EXP & Leveling
@@ -141,6 +165,8 @@ func _ready() -> void:
 		add_child(dash_controller)
 	if not dash_controller.dash_updated.is_connected(_on_dash_controller_updated):
 		dash_controller.dash_updated.connect(_on_dash_controller_updated)
+	if bomb_controller and not bomb_controller.bomb_used.is_connected(func(c: int) -> void: bomb_used.emit(c)):
+		bomb_controller.bomb_used.connect(func(c: int) -> void: bomb_used.emit(c))
 	_setup_character_dash()
 	stats.initialize(character_data)
 
@@ -271,151 +297,8 @@ func _ready() -> void:
 
 
 func _apply_visual_theme() -> void:
-	if not character_data:
-		return
-
-	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
-	var ship_tex: Texture2D = character_data.get_ship_texture() if character_data.has_method("get_ship_texture") else null
-
-	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-	if not ship_spr and ship_tex:
-		ship_spr = Sprite2D.new()
-		ship_spr.name = "ShipSprite"
-		ship_spr.z_index = 1
-		add_child(ship_spr)
-		move_child(ship_spr, 0)
-	elif ship_spr:
-		ship_spr.z_index = 1
-
-	# Aplicar Shader Maestro de vuelo de exo-piloto
-	var flight_shader := preload("res://shaders/exo_pilot_flight.gdshader")
-	var flight_mat := ShaderMaterial.new()
-	flight_mat.shader = flight_shader
-	var p_color: Color = character_data.color if character_data else Color(0.2, 0.75, 1.0, 1.0)
-	var sec_color := Color(1.0, 0.85, 0.4, 1.0)
-	if p_color.h < 0.5:
-		sec_color = Color.from_hsv(wrapf(p_color.h + 0.15, 0.0, 1.0), 0.7, 1.1)
-	else:
-		sec_color = Color.from_hsv(wrapf(p_color.h - 0.15, 0.0, 1.0), 0.7, 1.1)
-
-	var noise_res := preload("res://shaders/flame_noise.tres")
-	if noise_res:
-		flight_mat.set_shader_parameter("noise_texture", noise_res)
-
-	flight_mat.set_shader_parameter("primary_color", p_color)
-	flight_mat.set_shader_parameter("secondary_color", sec_color)
-	flight_mat.set_shader_parameter("thrust_intensity", 0.35)
-	flight_mat.set_shader_parameter("speed_ratio", 0.0)
-	flight_mat.set_shader_parameter("bank_tilt", 0.0)
-	flight_mat.set_shader_parameter("chromatic_offset", 0.004)
-	flight_mat.set_shader_parameter("hit_flash", 0.0)
-	flight_mat.set_shader_parameter("core_gem_glow", 1.2)
-	flight_mat.set_shader_parameter("flame_direction", Vector2(0.0, 1.0))
-
-	# Componente de imágenes residuales Sandevistan
-	var vfx_comp := get_node_or_null("SandevistanFlightVFX") as SandevistanFlightVFX
-	if not vfx_comp and ship_spr:
-		vfx_comp = SandevistanFlightVFX.new()
-		vfx_comp.name = "SandevistanFlightVFX"
-		vfx_comp.source_sprite = ship_spr
-		add_child(vfx_comp)
-	if vfx_comp:
-		vfx_comp.configure_colors(p_color, sec_color)
-
-	# Aplicar skin cosmética a la nave si está equipada
-	var char_id_str := String(character_data.character_id) if character_data else "survivor_default"
-	var equipped_ship_skin: String = SaveManager.get_equipped_skin("ship:" + char_id_str)
-	if not equipped_ship_skin.is_empty() and ship_spr:
-		var skin_data := CosmeticsManager.get_skin(equipped_ship_skin)
-		var custom_tex := CosmeticsManager.get_skin_texture(skin_data)
-		if custom_tex:
-			ship_spr.texture = custom_tex
-		var glow_hex: String = skin_data.get("glow_hex", "")
-		if not glow_hex.is_empty():
-			var skin_primary := Color.from_string(glow_hex, p_color)
-			flight_mat.set_shader_parameter("primary_color", skin_primary)
-			if vfx_comp:
-				vfx_comp.configure_colors(skin_primary, sec_color)
-		ship_spr.material = flight_mat
-		ship_spr.visible = true
-		ship_spr.scale = Vector2(0.42, 0.42)
-		if placeholder:
-			placeholder.visible = false
-	elif ship_spr:
-		if ship_tex:
-			ship_spr.texture = ship_tex
-			ship_spr.material = flight_mat
-			ship_spr.visible = true
-			ship_spr.scale = Vector2(0.42, 0.42)
-			if placeholder:
-				placeholder.visible = false
-		else:
-			ship_spr.visible = false
-			ship_spr.material = null
-			if placeholder:
-				placeholder.visible = true
-
-	if placeholder and (not ship_spr or not ship_spr.visible):
-		placeholder.color = character_data.color
-		placeholder.visible = true
-		if character_data.pts.size() >= 3:
-			var scaled_pts := PackedVector2Array()
-			for pt in character_data.pts:
-				scaled_pts.append(pt * 0.35)
-			placeholder.polygon = scaled_pts
-
-	# Configurar sprite del arma rotatoria en WeaponController montado directamente sobre el chasis del jugador
-	var w_ctrl := get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl:
-		w_ctrl.z_index = 20
-		w_ctrl.z_as_relative = false
-		move_child(w_ctrl, get_child_count() - 1)
-		var w_tex: Texture2D = character_data.get_weapon_texture() if character_data.has_method("get_weapon_texture") else null
-		var w_spr := w_ctrl.get_node_or_null("WeaponSprite") as Sprite2D
-		var w_poly := w_ctrl.get_node_or_null("WeaponVisual") as Polygon2D
-		if not w_spr and (w_tex or not SaveManager.get_equipped_skin("weapon:" + char_id_str).is_empty()):
-			w_spr = Sprite2D.new()
-			w_spr.name = "WeaponSprite"
-			w_ctrl.add_child(w_spr)
-		if w_spr:
-			w_spr.z_as_relative = false
-			w_spr.z_index = 20
-			w_spr.move_to_front()
-			var equipped_w_skin: String = SaveManager.get_equipped_skin("weapon:" + char_id_str)
-			if not equipped_w_skin.is_empty():
-				var w_stars: int = SaveManager.get_skin_stars(equipped_w_skin)
-				CosmeticsManager.apply_skin_to_canvas_item(w_spr, equipped_w_skin, w_stars)
-				w_spr.position = Vector2.ZERO
-				w_spr.visible = true
-				if w_poly:
-					w_poly.visible = false
-			elif w_tex:
-				w_spr.texture = w_tex
-				w_spr.material = null
-				w_spr.position = Vector2.ZERO
-				w_spr.visible = true
-				if w_poly:
-					w_poly.visible = false
-			else:
-				w_spr.visible = false
-				w_spr.material = null
-				if w_poly:
-					w_poly.z_as_relative = false
-					w_poly.z_index = 20
-					w_poly.position = Vector2.ZERO
-					w_poly.visible = true
-
-			# Escalar para montarse sobre el chasis de la nave (aprox. 45% del tamaño de la nave)
-			if w_spr.visible:
-				var char_visual_size: float = 108.0
-				if ship_spr and ship_spr.texture:
-					char_visual_size = maxf(float(ship_spr.texture.get_width()) * ship_spr.scale.x, float(ship_spr.texture.get_height()) * ship_spr.scale.y)
-				var target_weapon_pixel_size: float = char_visual_size * 0.45
-				var tex_dim: float = 128.0
-				if w_spr.texture:
-					tex_dim = maxf(float(w_spr.texture.get_width()), float(w_spr.texture.get_height()))
-				var target_scale: float = target_weapon_pixel_size / maxf(tex_dim, 1.0)
-				w_spr.scale = Vector2(target_scale, target_scale)
+	if visual_builder:
+		visual_builder.apply_visual_theme(self, character_data)
 
 
 func _physics_process(delta: float) -> void:
@@ -423,15 +306,14 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 
-	if _menu_close_suppress_timer > 0.0:
-		_menu_close_suppress_timer = maxf(0.0, _menu_close_suppress_timer - delta)
-
-	if is_any_menu_or_modal_active():
-		if Input.is_action_pressed("bomb"):
-			_was_bomb_pressed_during_menu = true
-	elif _was_bomb_pressed_during_menu:
-		if not Input.is_action_pressed("bomb"):
-			_was_bomb_pressed_during_menu = false
+	if bomb_controller:
+		bomb_controller.update_suppression(delta)
+		if is_any_menu_or_modal_active():
+			if Input.is_action_pressed("bomb"):
+				bomb_controller.was_bomb_pressed_during_menu = true
+		elif bomb_controller.was_bomb_pressed_during_menu:
+			if not Input.is_action_pressed("bomb"):
+				bomb_controller.was_bomb_pressed_during_menu = false
 
 	_handle_dash(delta)
 	_handle_movement(delta)
@@ -493,50 +375,9 @@ func _physics_process(delta: float) -> void:
 		bullet_server.player_pos = global_position
 		bullet_server.player_invulnerable = is_dashing
 
-func _update_pilot_shader(_delta: float, is_moving: bool) -> void:
-	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-	if not ship_spr or not (ship_spr.material is ShaderMaterial):
-		return
-
-	var mat := ship_spr.material as ShaderMaterial
-	var max_spd: float = maxf(1.0, stats.get_stat(&"move_speed"))
-	var spd_ratio: float = clampf(velocity.length() / max_spd, 0.0, 1.0)
-
-	var target_thrust: float = 0.25
-	if is_dashing:
-		target_thrust = 2.4 # Estado 3: Sobrecarga hiperbólica en Dash
-	elif is_moving:
-		target_thrust = lerpf(0.65, 1.25, spd_ratio) # Estado 2: Vuelo reactivo a la velocidad
-	else:
-		target_thrust = 0.25 + 0.08 * sin(idle_bob_timer * 6.0) # Estado 1: Llama piloto parpadeante en reposo
-
-	mat.set_shader_parameter("thrust_intensity", target_thrust)
-	mat.set_shader_parameter("speed_ratio", spd_ratio)
-	mat.set_shader_parameter("bank_tilt", current_bank_tilt)
-	mat.set_shader_parameter("hit_flash", 1.0 if hit_flash_timer > 0.0 else 0.0)
-
-	# Brillo del reactor / HitboxCore (intensificado al esquivar o recibir daño)
-	var gem_glow: float = 1.2
-	if is_dashing:
-		gem_glow = 2.2
-	elif hit_flash_timer > 0.0:
-		gem_glow = 2.8
-	mat.set_shader_parameter("core_gem_glow", gem_glow)
-
-	# Dirección del flameo opuesta al arrastre cinemático en coordenadas locales del sprite
-	var visual_rot := current_facing_angle + PI / 2.0
-	var local_burn := Vector2(0.0, 1.0)
-	if is_moving and velocity.length_squared() > 100.0:
-		var local_vel := velocity.rotated(-visual_rot)
-		var dir := -local_vel.normalized()
-		if not dir.is_zero_approx():
-			local_burn = dir
-	mat.set_shader_parameter("flame_direction", local_burn)
-
-	# Actualizar estela cinemática de afterimages Sandevistan
-	var vfx_comp := get_node_or_null("SandevistanFlightVFX") as SandevistanFlightVFX
-	if vfx_comp:
-		vfx_comp.update_flight(_delta, velocity, is_dashing)
+func _update_pilot_shader(delta: float, is_moving: bool) -> void:
+	if visual_builder:
+		visual_builder.update_pilot_shader(self, delta, is_moving)
 
 func _handle_movement(delta: float) -> void:
 	if is_movement_suppressed:
@@ -624,68 +465,18 @@ func _process_roxy_ram_collision() -> void:
 
 
 func suppress_bomb_input(duration: float = 0.35) -> void:
-	_menu_close_suppress_timer = maxf(_menu_close_suppress_timer, duration)
-	_was_bomb_pressed_during_menu = true
+	if bomb_controller:
+		bomb_controller.suppress_bomb_input(duration)
 
 func is_any_menu_or_modal_active() -> bool:
-	if not is_inside_tree():
-		return false
-	var parent_node := get_parent()
-	if parent_node:
-		if parent_node.has_method("is_any_combat_modal_active") and parent_node.is_any_combat_modal_active():
-			return true
-		if parent_node.has_method("is_pause_menu_active") and parent_node.is_pause_menu_active():
-			return true
-		if parent_node.has_method("is_level_up_modal_active") and parent_node.is_level_up_modal_active():
-			return true
-		if parent_node.has_method("is_satellite_shop_active") and parent_node.is_satellite_shop_active():
-			return true
-		if parent_node.has_method("is_character_stats_active") and parent_node.is_character_stats_active():
-			return true
-		if parent_node.has_method("is_dialogue_active") and parent_node.is_dialogue_active():
-			return true
-
-	var dialogic = get_node_or_null("/root/Dialogic")
-	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
-		return true
-
-	var vp := get_viewport()
-	if vp:
-		var focused := vp.gui_get_focus_owner()
-		if focused and focused.is_visible_in_tree():
-			return true
-
-	return false
+	return bomb_controller.is_any_menu_or_modal_active(self) if bomb_controller else false
 
 func _can_trigger_bomb() -> bool:
-	var debug_mgr = get_node_or_null("/root/DebugManager")
-	var inf_consumables: bool = debug_mgr and debug_mgr.has_method("is_infinite_consumables_active") and debug_mgr.is_infinite_consumables_active()
-	if bomb_count <= 0 and not inf_consumables:
-		return false
-	if get_tree() and get_tree().paused:
-		return false
-	if _menu_close_suppress_timer > 0.0:
-		return false
-	if _was_bomb_pressed_during_menu:
-		return false
-	if is_any_menu_or_modal_active():
-		return false
-	return true
+	return bomb_controller.can_trigger_bomb(self) if bomb_controller else false
 
 func _execute_bomb() -> void:
-	if not _can_trigger_bomb():
-		return
-	var debug_mgr = get_node_or_null("/root/DebugManager")
-	var inf_consumables: bool = debug_mgr and debug_mgr.has_method("is_infinite_consumables_active") and debug_mgr.is_infinite_consumables_active()
-	if not inf_consumables:
-		bomb_count -= 1
-	bomb_used.emit(bomb_count)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("bomb")
-	if bullet_server:
-		bullet_server.bomb_clear_all()
-	_spawn_bomb_vfx()
+	if bomb_controller:
+		bomb_controller.execute_bomb(self, bullet_server)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_dead:
@@ -696,38 +487,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _handle_actions() -> void:
-	# Las bombas ahora se procesan de forma segura a través de _unhandled_input(event)
-	# para garantizar que la barra espaciadora en menús, tiendas y diálogos nunca consuma bombas.
 	pass
 
 func add_bombs(amount: int = 1) -> bool:
-	const MAX_BOMBS: int = 5
-	if bomb_count < MAX_BOMBS:
-		bomb_count = mini(MAX_BOMBS, bomb_count + amount)
-		bomb_used.emit(bomb_count)
-		return true
-	else:
-		# Límite alcanzado: detonación táctica inmediata
-		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("bomb")
-		if bullet_server:
-			bullet_server.bomb_clear_all()
-		_spawn_bomb_vfx()
-		return false
+	return bomb_controller.add_bombs(self, bullet_server, amount) if bomb_controller else false
 
 func _spawn_bomb_vfx(at_position: Vector2 = global_position) -> void:
-	if not bomb_shockwave_scene:
-		return
-	var vfx := bomb_shockwave_scene.instantiate()
-	if vfx:
-		if vfx.has_method("setup"):
-			vfx.setup(at_position)
-		else:
-			vfx.global_position = at_position
-		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
-		if spawn_parent:
-			spawn_parent.add_child(vfx)
+	if bomb_controller:
+		bomb_controller.spawn_bomb_vfx(get_tree(), at_position)
 
 func heal(amount: float) -> void:
 	if current_health <= 0.0:
