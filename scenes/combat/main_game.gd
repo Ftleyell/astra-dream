@@ -8,9 +8,9 @@ const CombatBossCoordinator = preload("res://scenes/combat/directors/combat_boss
 const CombatTelemetryRecorder = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
 const PlanetSpawnerHelper = preload("res://scenes/combat/environment/planet_spawner_helper.gd")
 
-var modal_coordinator: CombatModalCoordinator = null
-var narrative_director: CombatNarrativeDirector = null
-var boss_coordinator: CombatBossCoordinator = null
+var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
+var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
+var boss_coordinator: CombatBossCoordinator = CombatBossCoordinator.new()
 
 
 @onready var player: Player = $Player
@@ -143,7 +143,12 @@ var is_rival_cinematic_active: bool:
 	set(val):
 		if narrative_director:
 			narrative_director.is_rival_cinematic_active = val
-var _pending_victory_data: Dictionary = {}
+var _pending_victory_data: Dictionary:
+	get:
+		return narrative_director.pending_victory_data if narrative_director else {}
+	set(val):
+		if narrative_director:
+			narrative_director.pending_victory_data = val
 var _on_dialogue_finished_callback: Callable = Callable()
 var prologue_bonus_chosen: bool = false
 var run_time_elapsed: float = 0.0
@@ -192,9 +197,9 @@ func _ready() -> void:
 	_spawn_companion_pet()
 	_spawn_navigator_controller()
 
-	modal_coordinator = CombatModalCoordinator.new()
-	modal_coordinator.name = "CombatModalCoordinator"
-	add_child(modal_coordinator)
+	if not modal_coordinator.is_inside_tree():
+		modal_coordinator.name = "CombatModalCoordinator"
+		add_child(modal_coordinator)
 	modal_coordinator.setup(self, player)
 	modal_coordinator.level_up_modal = level_up_modal
 	modal_coordinator.satellite_shop = satellite_shop
@@ -203,16 +208,16 @@ func _ready() -> void:
 	modal_coordinator.character_stats_overlay = character_stats_overlay
 	modal_coordinator.resume_encounters_requested.connect(_resume_pending_encounters_after_modal)
 
-	narrative_director = CombatNarrativeDirector.new()
-	narrative_director.name = "CombatNarrativeDirector"
-	add_child(narrative_director)
+	if not narrative_director.is_inside_tree():
+		narrative_director.name = "CombatNarrativeDirector"
+		add_child(narrative_director)
 	narrative_director.setup(self, player, hud, skip_badge_layer, audio_duck_manager)
 	narrative_director.active_navigator_controller = active_navigator_controller
 	narrative_director.victory_screen_requested.connect(_show_game_over_screen)
 
-	boss_coordinator = CombatBossCoordinator.new()
-	boss_coordinator.name = "CombatBossCoordinator"
-	add_child(boss_coordinator)
+	if not boss_coordinator.is_inside_tree():
+		boss_coordinator.name = "CombatBossCoordinator"
+		add_child(boss_coordinator)
 	boss_coordinator.setup(self)
 	# Conexión del HUD con el jugador
 	player.exp_changed.connect(hud.update_exp)

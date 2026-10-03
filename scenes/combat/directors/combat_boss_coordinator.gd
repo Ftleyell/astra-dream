@@ -7,6 +7,8 @@ extends Node
 
 const CosmicRealityTearScript := preload("res://scenes/combat/bosses/cosmic_reality_tear.gd")
 const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emergence_helper.gd")
+const BossCinematicPresenterScript := preload("res://scenes/combat/bosses/boss_cinematic_presenter.gd")
+const CombatBossDebugJumperScript := preload("res://scenes/combat/directors/combat_boss_debug_jumper.gd")
 
 var boss_mothership_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
 var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_hermit_void.tscn")
@@ -73,27 +75,9 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 			_:
 				target_scene = boss_mothership_scene
 
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.set("velocity", Vector2.ZERO)
-			if "current_facing_angle" in player:
-				player.set("current_facing_angle", 0.0)
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	var boss_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	var cam: GameCamera2D = main_game.get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
+	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var cam: GameCamera2D = duel_ctx.get("cam") as GameCamera2D
+	var boss_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
 	var boss_node: Node2D = target_scene.instantiate() as Node2D
 	boss_node.global_position = boss_target_pos
@@ -110,24 +94,8 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	main_game.set("_wave_encounter_spawned_for_wave", current_wave)
 	main_game.set("_wave_encounter_pending", false)
 
-	if "max_health" in boss_node:
-		var base_hp: float = float(boss_node.get("max_health"))
-		var dmg_val: float = 20.0
-		var spd_val: float = 1.0
-		var p_stats = player.get("stats")
-		if is_instance_valid(player) and p_stats:
-			dmg_val = float(p_stats.get_stat(&"base_damage"))
-			spd_val = float(p_stats.get_stat(&"attack_speed"))
-		var adaptive_hp: float = base_hp
-		var enc_dir = main_game.get("encounter_director")
-		if enc_dir and enc_dir.get("boss_rival_director"):
-			adaptive_hp = enc_dir.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val)
-		else:
-			var wave_factor: float = 1.0 + float(current_wave) * 0.08
-			var p_dps_factor: float = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
-			adaptive_hp = base_hp * wave_factor * p_dps_factor
-		boss_node.set("max_health", adaptive_hp)
-		boss_node.set("current_health", adaptive_hp)
+	if target_scene_override == null:
+		_apply_adaptive_hp(boss_node, player, current_wave)
 
 	var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
 	var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
@@ -142,49 +110,42 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 		boss_node.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
 
 	var domain_col: Color = CosmicRealityTearScript.get_boss_domain_color(b_id)
-	var tear = CosmicRealityTearScript.new()
-	tear.setup(boss_target_pos, domain_col, 250.0, 750.0)
-	tear.auto_collapse = false
-	tear.process_mode = Node.PROCESS_MODE_ALWAYS
-	main_game.add_child(tear)
-
-	main_game.get_tree().create_timer(0.40, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(boss_node):
-			return
-		tear.shockwave_completed.connect(func() -> void:
-			main_game.call("_trigger_pet_boss_alert", b_name, func() -> void:
-				main_game.get_tree().create_timer(0.25, true, false, true).timeout.connect(func() -> void:
-					if not is_instance_valid(boss_node):
-						if is_instance_valid(tear):
-							tear.queue_free()
-						return
-					var on_emerge_finished := func() -> void:
-						if is_instance_valid(boss_node):
-							boss_node.set("is_invulnerable", false)
-							boss_node.set_meta("_is_emerging", false)
-						if is_instance_valid(tear):
-							tear.start_collapse()
-						if hud:
-							hud.show_boss(b_name, b_hp)
-							if hud.has_method("track_boss"):
-								hud.track_boss(boss_node, "JEFE")
-						if cam and cam.has_method("clear_cinematic_focus"):
-							cam.clear_cinematic_focus()
-						if is_instance_valid(player) and player.has_method("resume_movement_control"):
-							player.resume_movement_control()
-						main_game.set("is_boss_transmission_active", false)
-						main_game.get_tree().paused = false
-						main_game.call("notify_menu_closed", 0.4)
-						main_game.call("_resume_pending_systems_after_cinematics")
-
-					if boss_node.has_method("emerge_from_tear"):
-						boss_node.emerge_from_tear(on_emerge_finished)
-					else:
-						BossEmergenceHelperScript.emerge_boss(boss_node, tear, on_emerge_finished)
-				)
-			)
-		, CONNECT_ONE_SHOT)
+	BossCinematicPresenterScript.play_reality_tear_emergence(
+		main_game,
+		boss_node,
+		boss_target_pos,
+		domain_col,
+		250.0,
+		750.0,
+		func(next_step: Callable) -> void: main_game.call("_trigger_pet_boss_alert", b_name, next_step),
+		func() -> void:
+			if hud:
+				hud.show_boss(b_name, b_hp)
+				if hud.has_method("track_boss"):
+					hud.track_boss(boss_node, "JEFE")
+			BossCinematicPresenterScript.restore_combat_after_emergence(main_game, cam, player)
 	)
+
+func _apply_adaptive_hp(boss_node: Node2D, player: Node2D, current_wave: int) -> void:
+	if not ("max_health" in boss_node):
+		return
+	var base_hp: float = float(boss_node.get("max_health"))
+	var dmg_val: float = 20.0
+	var spd_val: float = 1.0
+	var p_stats = player.get("stats") if is_instance_valid(player) else null
+	if p_stats:
+		dmg_val = float(p_stats.get_stat(&"base_damage"))
+		spd_val = float(p_stats.get_stat(&"attack_speed"))
+	var adaptive_hp: float = base_hp
+	var enc_dir = main_game.get("encounter_director")
+	if enc_dir and enc_dir.get("boss_rival_director"):
+		adaptive_hp = enc_dir.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val)
+	else:
+		var wave_factor: float = 1.0 + float(current_wave) * 0.08
+		var p_dps_factor: float = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
+		adaptive_hp = base_hp * wave_factor * p_dps_factor
+	boss_node.set("max_health", adaptive_hp)
+	boss_node.set("current_health", adaptive_hp)
 
 func spawn_final_boss(force_spawn: bool = false) -> void:
 	if not main_game or not is_instance_valid(main_game):
@@ -227,27 +188,9 @@ func spawn_final_boss(force_spawn: bool = false) -> void:
 	elif rivals_killed.size() >= 5:
 		route = "slayer"
 
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.set("velocity", Vector2.ZERO)
-			if "current_facing_angle" in player:
-				player.set("current_facing_angle", 0.0)
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	var boss_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	var cam: GameCamera2D = main_game.get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
+	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var cam: GameCamera2D = duel_ctx.get("cam") as GameCamera2D
+	var boss_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
 	var prime = boss_astra_prime_scene.instantiate()
 	prime.global_position = boss_target_pos
@@ -272,61 +215,33 @@ func spawn_final_boss(force_spawn: bool = false) -> void:
 	prime.boss_defeated.connect(func(_b_id): main_game.call("_on_final_boss_defeated", route))
 
 	var domain_col: Color = Color(1.0, 0.15, 0.25, 1.0) if route == "slayer" else CosmicRealityTearScript.get_boss_domain_color("boss_astra_prime")
-	var tear = CosmicRealityTearScript.new()
-	tear.setup(boss_target_pos, domain_col, 280.0, 850.0)
-	tear.auto_collapse = false
-	tear.process_mode = Node.PROCESS_MODE_ALWAYS
-	main_game.add_child(tear)
+	BossCinematicPresenterScript.play_reality_tear_emergence(
+		main_game,
+		prime,
+		boss_target_pos,
+		domain_col,
+		280.0,
+		850.0,
+		func(next_step: Callable) -> void: main_game.call("_trigger_climax_dialogue", route, next_step),
+		func() -> void:
+			if hud:
+				hud.show_boss(prime.boss_name, prime.max_health)
+				if hud.has_method("track_boss"):
+					hud.track_boss(prime, "JEFE FINAL")
+			BossCinematicPresenterScript.restore_combat_after_emergence(main_game, cam, player)
 
-	main_game.get_tree().create_timer(0.40, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(prime):
-			return
-		tear.shockwave_completed.connect(func() -> void:
-			main_game.call("_trigger_climax_dialogue", route, func() -> void:
-				main_game.get_tree().create_timer(0.25, true, false, true).timeout.connect(func() -> void:
-					if not is_instance_valid(prime):
-						if is_instance_valid(tear):
-							tear.queue_free()
-						return
-					var on_emerge_finished := func() -> void:
-						if is_instance_valid(prime):
-							prime.set("is_invulnerable", false)
-							prime.set_meta("_is_emerging", false)
-						if is_instance_valid(tear):
-							tear.start_collapse()
-						if hud:
-							hud.show_boss(prime.boss_name, prime.max_health)
-							if hud.has_method("track_boss"):
-								hud.track_boss(prime, "JEFE FINAL")
-						if cam and cam.has_method("clear_cinematic_focus"):
-							cam.clear_cinematic_focus()
-						if is_instance_valid(player) and player.has_method("resume_movement_control"):
-							player.resume_movement_control()
-						main_game.set("is_boss_transmission_active", false)
-						main_game.get_tree().paused = false
-						main_game.call("notify_menu_closed", 0.4)
-						main_game.call("_resume_pending_systems_after_cinematics")
-
-						if route == "pacifist":
-							spawn_allied_wingmen()
-						elif route == "slayer":
-							var p_stats = player.get("stats")
-							if p_stats:
-								p_stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, main_game))
-							var escort = nyx_boss_escort_scene.instantiate()
-							var escort_pid: StringName = main_game.call("_get_genocide_escort_pilot_id")
-							escort.global_position = boss_target_pos + Vector2(0.0, 110.0)
-							escort.setup(escort_pid, prime)
-							main_game.add_child(escort)
-							main_game.set("current_genocide_escort", escort)
-
-					if prime.has_method("emerge_from_tear"):
-						prime.emerge_from_tear(on_emerge_finished)
-					else:
-						BossEmergenceHelperScript.emerge_boss(prime, tear, on_emerge_finished)
-				)
-			)
-		, CONNECT_ONE_SHOT)
+			if route == "pacifist":
+				spawn_allied_wingmen()
+			elif route == "slayer":
+				var p_stats = player.get("stats")
+				if p_stats:
+					p_stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, main_game))
+				var escort = nyx_boss_escort_scene.instantiate()
+				var escort_pid: StringName = main_game.call("_get_genocide_escort_pilot_id")
+				escort.global_position = boss_target_pos + Vector2(0.0, 110.0)
+				escort.setup(escort_pid, prime)
+				main_game.add_child(escort)
+				main_game.set("current_genocide_escort", escort)
 	)
 
 func spawn_rival_pilot(override_id: StringName = &"") -> void:
@@ -375,27 +290,8 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if bullet_srv:
 		bullet_srv.bomb_clear_all()
 
-	var cin_zoom: float = 1.0
-	var half_width_world: float = 480.0 / cin_zoom
-	var separation_world: float = 960.0 / cin_zoom
-
-	if is_instance_valid(player):
-		if player.has_method("set_cinematic_duel_facing"):
-			player.set_cinematic_duel_facing()
-		else:
-			player.set("velocity", Vector2.ZERO)
-			if "current_facing_angle" in player:
-				player.set("current_facing_angle", 0.0)
-		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
-
-	var p_pos: Vector2 = player.global_position
-	var cam_pos: Vector2 = p_pos + Vector2(half_width_world, 0.0)
-	var rival_target_pos: Vector2 = p_pos + Vector2(separation_world, 0.0)
-
-	var cam: GameCamera2D = main_game.get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("set_cinematic_focus"):
-		cam.set_cinematic_focus(cam_pos, cin_zoom)
+	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var rival_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
 	var rival = rival_pilot_scene.instantiate()
 	rival.global_position = rival_target_pos
@@ -487,194 +383,10 @@ func spawn_elite_herald() -> void:
 		herald.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
 
 func jump_to_boss(boss_id: String) -> void:
-	if not main_game or not is_instance_valid(main_game):
-		return
-	main_game.set("is_pre_round", false)
-	main_game.set("is_briefing_active", false)
-	main_game.set("is_cockpit_active", false)
-	main_game.set("is_boss_transmission_active", false)
-	main_game.set("is_victory_dialogue_active", false)
-	main_game.set("is_rival_cinematic_active", false)
-	main_game.set("prologue_bonus_chosen", true)
-
-	var backdrop: Node = main_game.get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		if "hold_dimmer" in backdrop:
-			backdrop.set("hold_dimmer", false)
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.0)
-
-	var skip_badge = main_game.get("skip_badge_layer")
-	if skip_badge:
-		skip_badge.hide()
-
-	main_game.set("wave_timer", 30.0)
-	main_game.set("_wave_encounter_pending", false)
-
-	var cb = main_game.get("current_boss")
-	if cb and is_instance_valid(cb):
-		cb.queue_free()
-		main_game.set("current_boss", null)
-
-	var cr = main_game.get("current_rival")
-	if cr and is_instance_valid(cr):
-		cr.queue_free()
-		main_game.set("current_rival", null)
-
-	var cs = main_game.get("current_satellite")
-	if cs and is_instance_valid(cs):
-		cs.queue_free()
-		main_game.set("current_satellite", null)
-
-	main_game.set("wave_satellites_spawned", 1)
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("clear_satellite"):
-		hud.clear_satellite()
-
-	if boss_id == "boss_astra_prime":
-		jump_to_wave_16("neutral")
-		return
-
-	var target_scene: PackedScene = boss_mothership_scene
-	var target_wave: int = 14
-	match boss_id:
-		"boss_hermit_void":
-			target_scene = boss_hermit_scene
-			target_wave = 2
-		"boss_broken_mirror":
-			target_scene = boss_broken_mirror_scene
-			target_wave = 5
-		"boss_ash_clock":
-			target_scene = boss_ash_clock_scene
-			target_wave = 8
-		"boss_overflow_vortex":
-			target_scene = boss_overflow_vortex_scene
-			target_wave = 11
-		"boss_mothership":
-			target_scene = boss_mothership_scene
-			target_wave = 14
-		_:
-			target_scene = boss_mothership_scene
-			target_wave = 14
-
-	main_game.set("current_wave", target_wave)
-	main_game.set("_wave_encounter_checked_for_wave", target_wave)
-	main_game.set("_wave_encounter_spawned_for_wave", 0)
-	main_game.set("_wave_encounter_pending", false)
-
-	var player: Node2D = main_game.get("player")
-	if is_instance_valid(player):
-		player.set("velocity", Vector2.ZERO)
-		var p_lvl: int = int(player.get("current_level"))
-		if p_lvl < (target_wave * 2):
-			player.set("current_level", maxi(target_wave * 2, 6))
-			if hud:
-				hud.update_exp(0, 100, int(player.get("current_level")))
-		var cur_cred: int = int(player.get("run_credits"))
-		player.set("run_credits", maxi(cur_cred, 1200))
-		if hud:
-			hud.update_credits(int(player.get("run_credits")))
-
-	if hud:
-		hud.update_wave_status(target_wave, 30.0, 1, 1)
-
-	spawn_wave_boss(target_scene)
+	CombatBossDebugJumperScript.jump_to_boss(main_game, self, boss_id)
 
 func jump_to_wave_16(route: String = "neutral") -> void:
-	if not main_game or not is_instance_valid(main_game):
-		return
-	main_game.set("is_pre_round", false)
-	main_game.set("is_briefing_active", false)
-	main_game.set("is_cockpit_active", false)
-	main_game.set("is_boss_transmission_active", false)
-	main_game.set("is_victory_dialogue_active", false)
-	main_game.set("is_rival_cinematic_active", false)
-	main_game.set("prologue_bonus_chosen", true)
-
-	var backdrop: Node = main_game.get_node_or_null("DialogueBackdropLayer")
-	if backdrop:
-		if "hold_dimmer" in backdrop:
-			backdrop.set("hold_dimmer", false)
-		if backdrop.has_method("fade_out"):
-			backdrop.fade_out(0.0)
-
-	var skip_badge = main_game.get("skip_badge_layer")
-	if skip_badge:
-		skip_badge.hide()
-
-	main_game.set("current_wave", 16)
-	main_game.set("wave_timer", 30.0)
-	main_game.set("_wave_encounter_checked_for_wave", 16)
-	main_game.set("_wave_encounter_spawned_for_wave", 0)
-	main_game.set("_wave_encounter_pending", false)
-
-	var cb = main_game.get("current_boss")
-	if cb and is_instance_valid(cb):
-		cb.queue_free()
-		main_game.set("current_boss", null)
-
-	var cr = main_game.get("current_rival")
-	if cr and is_instance_valid(cr):
-		cr.queue_free()
-		main_game.set("current_rival", null)
-
-	var cs = main_game.get("current_satellite")
-	if cs and is_instance_valid(cs):
-		cs.queue_free()
-		main_game.set("current_satellite", null)
-
-	main_game.set("wave_satellites_spawned", 1)
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("clear_satellite"):
-		hud.clear_satellite()
-
-	var player: Node2D = main_game.get("player")
-	if is_instance_valid(player):
-		player.set("velocity", Vector2.ZERO)
-		var cam: Camera2D = main_game.get_tree().get_first_node_in_group("camera") as Camera2D
-		if cam:
-			cam.global_position = player.global_position
-
-	var r_spared: Array[StringName] = []
-	var r_killed: Array[StringName] = []
-	if route == "pacifist":
-		r_spared = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
-	elif route == "slayer" or route == "genocida":
-		r_killed = [&"nova", &"valentina", &"kira", &"selene", &"roxy"]
-	else:
-		r_spared = [&"nova", &"valentina"]
-		r_killed = [&"kira", &"selene"]
-	main_game.set("rivals_spared", r_spared)
-	main_game.set("rivals_killed", r_killed)
-
-	if is_instance_valid(player):
-		var p_lvl: int = int(player.get("current_level"))
-		if p_lvl < 15:
-			player.set("current_level", 15)
-			var p_stats = player.get("stats")
-			if p_stats:
-				p_stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"debug_w16_hull", 100.0, false, main_game))
-				player.set("current_health", p_stats.get_stat(&"max_health"))
-			if hud:
-				hud.update_exp(0, 100, 15)
-		if route == "slayer" or route == "genocida":
-			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-			if w_ctrl:
-				var rival_weapons := [
-					"res://data/weapons/roster/crescent_blade.tres",
-					"res://data/weapons/roster/sonic_burst.tres",
-					"res://data/weapons/roster/plasma_spear.tres"
-				]
-				for w_path in rival_weapons:
-					if ResourceLoader.exists(w_path):
-						var w_res := load(w_path) as WeaponData
-						if w_res:
-							w_ctrl.add_weapon(w_res)
-
-	if hud:
-		hud.update_wave_status(16, 30.0, 1, 1)
-
-	spawn_final_boss(true)
+	CombatBossDebugJumperScript.jump_to_wave_16(main_game, self, route)
 
 func on_rival_spared(p_id: StringName) -> void:
 	if not main_game or not is_instance_valid(main_game):

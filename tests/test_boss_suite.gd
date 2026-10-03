@@ -30,8 +30,8 @@ func _ready() -> void:
 
 	# 2. Probar Spawn del Jefe y pausa de enemigos comunes
 	print("\n[1/4] Spawning BossMothership...")
-	main_game.current_wave = 10
-	main_game._spawn_wave_boss()
+	main_game.current_wave = 0
+	main_game._spawn_wave_boss(main_game.boss_coordinator.boss_mothership_scene)
 
 	var boss = main_game.current_boss
 	assert(boss != null, "El jefe debe haber sido instanciado al inicio de la oleada 2")
