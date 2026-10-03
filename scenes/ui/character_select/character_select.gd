@@ -1,9 +1,20 @@
 class_name CharacterSelectUI
 extends Control
 
+const CharacterPilotShowcase = preload("res://scenes/ui/character_select/components/character_pilot_showcase.gd")
+const CharacterEquipmentCards = preload("res://scenes/ui/character_select/components/character_equipment_cards.gd")
+const CharacterSpeedSelector = preload("res://scenes/ui/character_select/components/character_speed_selector.gd")
+
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SkinSelectionModalScript = preload("res://scenes/ui/cosmetics/skin_selection_modal.gd")
 const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
+const DebugMenuModalScript = preload("res://scenes/ui/debug/debug_menu_modal.gd")
+
+# ==============================================================================
+# CONFIGURACIÓN DE DEBUG (Comentar o cambiar a false para desactivar en builds)
+# ==============================================================================
+const DEBUG_MENU_AVAILABLE: bool = true
+# ==============================================================================
 
 @onready var char_list_container: VBoxContainer = $MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll/CharList
 @onready var name_label: Label = $MarginContainer/RootVBox/MainColumns/CenterPanel/DossierHeader/NameLabel
@@ -36,8 +47,37 @@ const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
 @onready var navigator_selection_modal = get_node_or_null("NavigatorSelectionModal")
 
 @onready var pilot_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel/PilotButton") as Button
+@onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
+@onready var backlight_glow: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel/BacklightGlow") as TextureRect
+
 @onready var skin_selection_modal = get_node_or_null("SkinSelectionModal")
 @onready var gacha_modal = get_node_or_null("GachaModal")
+@onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
+
+@onready var launch_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LaunchButton
+@onready var loadout_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LoadoutButton
+@onready var debug_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/DebugButton") as Button
+@onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
+
+@onready var speed_1x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed1xBtn")
+@onready var speed_2x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed2xBtn")
+@onready var speed_4x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed4xBtn")
+
+var pilot_showcase: CharacterPilotShowcase = null
+var equipment_cards: CharacterEquipmentCards = null
+var speed_selector: CharacterSpeedSelector = null
+
+var current_game_speed: float:
+	get:
+		return speed_selector.current_game_speed if speed_selector else 1.0
+	set(val):
+		if speed_selector:
+			speed_selector.current_game_speed = val
+
+var current_character_id: StringName = &"nova"
+var roster_dict: Dictionary[StringName, CharacterData] = {}
+var roster_ordered: Array[CharacterData] = []
+var _last_focused_control: Control = null
 
 # Backward-compatible accessors
 var ship_skin_button: Button:
@@ -59,34 +99,6 @@ var skins_button: Button:
 	get:
 		return null
 
-# ==============================================================================
-# CONFIGURACIÓN DE DEBUG (Comentar o cambiar a false para desactivar en builds)
-# ==============================================================================
-const DEBUG_MENU_AVAILABLE: bool = true
-# ==============================================================================
-
-const DebugMenuModalScript := preload("res://scenes/ui/debug/debug_menu_modal.gd")
-
-@onready var launch_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LaunchButton
-@onready var loadout_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LoadoutButton
-@onready var debug_button: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/DebugButton") as Button
-@onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
-@onready var back_button: Button = $MarginContainer/RootVBox/HeaderBar/BackButton
-@onready var fullbody_texture: TextureRect = $MarginContainer/RootVBox/MainColumns/RightPanel/FullbodyTexture
-@onready var backlight_glow: TextureRect = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel/BacklightGlow") as TextureRect
-var _pilot_hover_tween: Tween = null
-
-@onready var speed_1x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed1xBtn")
-@onready var speed_2x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed2xBtn")
-@onready var speed_4x_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainColumns/CenterPanel/SpeedRow/Speed4xBtn")
-var current_game_speed: float = 1.0
-
-var current_character_id: StringName = &"nova"
-var roster_dict: Dictionary[StringName, CharacterData] = {}
-var roster_ordered: Array[CharacterData] = []
-var _last_focused_control: Control = null
-
-# Backward-compatible accessor for any caller referencing characters_data
 var characters_data: Dictionary:
 	get:
 		if roster_dict.is_empty():
@@ -105,10 +117,12 @@ var characters_data: Dictionary:
 				}
 		return d
 
+
 func _ready() -> void:
 	roster_ordered = CharacterData.load_roster_ordered()
 	roster_dict = CharacterData.load_roster()
 
+	_init_components()
 	_populate_roster()
 
 	var saved_char := SaveManager.get_selected_character()
@@ -133,53 +147,39 @@ func _ready() -> void:
 	launch_button.pressed.connect(_on_launch_pressed)
 	loadout_button.pressed.connect(_on_loadout_pressed)
 	back_button.pressed.connect(_on_back_pressed)
-	_setup_speed_buttons()
 
-	# Botones interactivos completos para Nave y Arma
-	if ship_button:
-		UIFocusHelper.apply_cyber_focus(ship_button)
-		ship_button.pressed.connect(_on_ship_skin_pressed)
-		_setup_card_hover_feedback(ship_button, ship_card, Color(0.2, 0.95, 1.0, 1.0))
-	if weapon_button:
-		UIFocusHelper.apply_cyber_focus(weapon_button)
-		weapon_button.pressed.connect(_on_weapon_skin_pressed)
-		_setup_card_hover_feedback(weapon_button, weapon_card, Color(1.0, 0.85, 0.35, 1.0))
+	_connect_modal_signals()
 
-	_setup_pilot_backlight()
 
-	if fullbody_texture:
-		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_PASS
-		fullbody_texture.item_rect_changed.connect(func():
-			fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
-		)
+func _init_components() -> void:
+	pilot_showcase = CharacterPilotShowcase.new()
+	pilot_showcase.setup(fullbody_texture, backlight_glow, pilot_button, Callable(self, "_on_pilot_skin_pressed"))
 
-	if pilot_button:
-		pilot_button.focus_mode = Control.FOCUS_NONE
-		pilot_button.mouse_entered.connect(_on_pilot_mouse_entered)
-		pilot_button.mouse_exited.connect(_on_pilot_mouse_exited)
-		pilot_button.pressed.connect(_on_pilot_button_pressed)
-		pilot_button.tooltip_text = "Haz clic para ver y equipar los aspectos de la piloto"
+	equipment_cards = CharacterEquipmentCards.new()
+	equipment_cards.setup_ship_and_weapon(
+		ship_card, ship_icon, ship_name, ship_button, Callable(self, "_on_ship_skin_pressed"),
+		weapon_card, weapon_icon, weapon_name, weapon_button, Callable(self, "_on_weapon_skin_pressed")
+	)
+	equipment_cards.setup_companions(
+		pet_card, pet_icon, pet_name, pet_desc, pet_button, Callable(self, "_on_pet_card_pressed"),
+		navigator_card, navigator_icon, navigator_name, navigator_desc, navigator_button, Callable(self, "_on_navigator_card_pressed")
+	)
+
+	speed_selector = CharacterSpeedSelector.new()
+	speed_selector.setup(speed_1x_btn, speed_2x_btn, speed_4x_btn)
 
 	var right_panel: Control = get_node_or_null("MarginContainer/RootVBox/MainColumns/RightPanel") as Control
 	if right_panel:
 		right_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	if pet_button:
-		UIFocusHelper.apply_cyber_focus(pet_button)
-		pet_button.pressed.connect(_on_pet_card_pressed)
 
+func _connect_modal_signals() -> void:
 	if pet_selection_modal and pet_selection_modal.has_signal("pet_selected"):
 		pet_selection_modal.pet_selected.connect(_on_pet_selected)
 	if pet_selection_modal and pet_selection_modal.has_signal("skin_equipped"):
 		pet_selection_modal.skin_equipped.connect(func(_slot, _sid): _refresh_pet_display())
 	if pet_selection_modal and pet_selection_modal.has_signal("closed"):
 		pet_selection_modal.closed.connect(_on_pet_modal_closed)
-
-	_refresh_pet_display()
-
-	if navigator_button:
-		UIFocusHelper.apply_cyber_focus(navigator_button)
-		navigator_button.pressed.connect(_on_navigator_card_pressed)
 
 	if navigator_selection_modal and navigator_selection_modal.has_signal("navigator_selected"):
 		navigator_selection_modal.navigator_selected.connect(_on_navigator_selected)
@@ -188,12 +188,9 @@ func _ready() -> void:
 	if navigator_selection_modal and navigator_selection_modal.has_signal("closed"):
 		navigator_selection_modal.closed.connect(_on_navigator_modal_closed)
 
-	_refresh_navigator_display()
-
 	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
 		debug_menu_modal.closed.connect(_on_debug_modal_closed)
 
-	# Modales de Cosméticos y Gacha
 	if skin_selection_modal:
 		if skin_selection_modal.has_signal("skin_selected"):
 			skin_selection_modal.skin_selected.connect(_on_skin_selected)
@@ -207,6 +204,7 @@ func _ready() -> void:
 			gacha_modal.skin_equipped.connect(_on_gacha_skin_equipped)
 		if gacha_modal.has_signal("modal_closed"):
 			gacha_modal.modal_closed.connect(_on_gacha_modal_closed)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
@@ -230,76 +228,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_1:
-			_set_game_speed(1.0)
-		elif event.keycode == KEY_2:
-			_set_game_speed(2.0)
-		elif event.keycode == KEY_3:
-			_set_game_speed(4.0)
+		if speed_selector and speed_selector.handle_shortcut(event.keycode):
+			get_viewport().set_input_as_handled()
 
-func _setup_pilot_backlight() -> void:
-	if not backlight_glow:
-		return
-	var grad := Gradient.new()
-	grad.set_color(0, Color(1, 1, 1, 0.85))
-	grad.set_color(1, Color(1, 1, 1, 0.0))
-	var grad_tex := GradientTexture2D.new()
-	grad_tex.gradient = grad
-	grad_tex.fill = GradientTexture2D.FILL_RADIAL
-	grad_tex.fill_from = Vector2(0.5, 0.45)
-	grad_tex.fill_to = Vector2(0.5, 0.0)
-	grad_tex.width = 512
-	grad_tex.height = 768
-	backlight_glow.texture = grad_tex
-	var mat := CanvasItemMaterial.new()
-	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	backlight_glow.material = mat
-	backlight_glow.modulate.a = 0.0
-
-func _on_pilot_mouse_entered() -> void:
-	if not fullbody_texture:
-		return
-	fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
-	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
-		_pilot_hover_tween.kill()
-	_pilot_hover_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.22)
-	if backlight_glow:
-		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.85, 0.22)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.15)
-
-func _on_pilot_mouse_exited() -> void:
-	if not fullbody_texture:
-		return
-	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
-		_pilot_hover_tween.kill()
-	_pilot_hover_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2.ONE, 0.22)
-	if backlight_glow:
-		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.0, 0.22)
-
-func _on_pilot_button_pressed() -> void:
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
-
-	if fullbody_texture:
-		fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
-		var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.06, 1.06), 0.08)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.14)
-
-	_on_pilot_skin_pressed()
-
-func _on_character_art_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_on_pilot_button_pressed()
-		get_viewport().set_input_as_handled()
-
-func _on_character_art_clicked() -> void:
-	_on_pilot_button_pressed()
 
 func _populate_roster() -> void:
 	for child in char_list_container.get_children():
@@ -335,7 +266,6 @@ func _populate_roster() -> void:
 		UIFocusHelper.apply_cyber_focus(btn)
 		char_list_container.add_child(btn)
 
-		# Navegación horizontal WASD: presionar D/derecha va a los botones de acción
 		if loadout_button:
 			btn.focus_neighbor_right = loadout_button.get_path()
 
@@ -351,7 +281,13 @@ func _populate_roster() -> void:
 		prev_btn.focus_neighbor_bottom = first_btn.get_path()
 		first_btn.focus_neighbor_top = prev_btn.get_path()
 
-	# Cadena de navegación horizontal y vertical en ActionsRow
+	_setup_action_row_navigation(first_btn)
+
+	if first_btn:
+		first_btn.grab_focus()
+
+
+func _setup_action_row_navigation(first_btn: Button) -> void:
 	loadout_button.focus_neighbor_left = first_btn.get_path() if first_btn else NodePath("")
 	if debug_button and debug_button.visible:
 		loadout_button.focus_neighbor_right = debug_button.get_path()
@@ -384,53 +320,6 @@ func _populate_roster() -> void:
 	if pilot_button:
 		pilot_button.focus_mode = Control.FOCUS_NONE
 
-	if first_btn:
-		first_btn.grab_focus()
-
-func _on_debug_pressed() -> void:
-	if not DEBUG_MENU_AVAILABLE or not debug_menu_modal:
-		return
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	debug_menu_modal.open_menu(char_data)
-
-func _on_debug_modal_closed() -> void:
-	var target_focus: Control = null
-	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif debug_button and debug_button.is_visible_in_tree():
-		target_focus = debug_button
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
-
-	if target_focus:
-		target_focus.grab_focus()
-		var target_pos: Vector2 = target_focus.get_global_rect().get_center()
-		get_viewport().warp_mouse(target_pos)
-
-func _on_pet_modal_closed() -> void:
-	var target_focus: Control = null
-	if pet_button and pet_button.is_visible_in_tree():
-		target_focus = pet_button
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
-
-	if target_focus:
-		target_focus.grab_focus()
-
-func _on_navigator_modal_closed() -> void:
-	var target_focus: Control = null
-	if navigator_button and navigator_button.is_visible_in_tree():
-		target_focus = navigator_button
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
-
-	if target_focus:
-		target_focus.grab_focus()
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id
@@ -449,63 +338,14 @@ func _select_character(char_id: StringName) -> void:
 	desc_label.text = data.description
 	stats_label.text = data.get_formatted_stats()
 
-	# Equipamiento Asignado (Nave y Arma) con Cosméticos
-	var ship_slot := "ship:" + String(char_id)
-	var ship_skin_id := SaveManager.get_equipped_skin(ship_slot)
-	if ship_icon:
-		if not ship_skin_id.is_empty():
-			var stars := SaveManager.get_skin_stars(ship_skin_id)
-			CosmeticsManager.apply_skin_to_canvas_item(ship_icon, ship_skin_id, stars)
-		else:
-			ship_icon.material = null
-			ship_icon.texture = data.get_ship_texture()
-	if ship_name:
-		ship_name.text = "%s Mark I" % data.display_name
+	var is_unlocked: bool = SaveManager.is_character_unlocked(char_id)
 
-	var weapon_slot := "weapon:" + String(char_id)
-	var weapon_skin_id := SaveManager.get_equipped_skin(weapon_slot)
-	if weapon_icon:
-		if not weapon_skin_id.is_empty():
-			var stars := SaveManager.get_skin_stars(weapon_skin_id)
-			CosmeticsManager.apply_skin_to_canvas_item(weapon_icon, weapon_skin_id, stars)
-		else:
-			weapon_icon.material = null
-			weapon_icon.texture = data.get_weapon_texture()
-	if weapon_name:
-		if data.starting_weapon and not data.starting_weapon.weapon_name.is_empty():
-			weapon_name.text = data.starting_weapon.weapon_name
-		else:
-			weapon_name.text = "Arma Especializada"
+	# Delegar equipamiento y escaparate de piloto
+	if equipment_cards:
+		equipment_cards.update_equipment(data, char_id)
+	if pilot_showcase:
+		pilot_showcase.update_pilot_display(data, char_id, is_unlocked)
 
-	# Escaparate Full Body con Cosmético de Piloto
-	var pilot_slot := "pilot:" + String(char_id)
-	var pilot_skin_id := SaveManager.get_equipped_skin(pilot_slot)
-	if fullbody_texture:
-		if not pilot_skin_id.is_empty():
-			var stars := SaveManager.get_skin_stars(pilot_skin_id)
-			CosmeticsManager.apply_pilot_selection_to_canvas_item(fullbody_texture, pilot_skin_id, stars, false)
-		else:
-			fullbody_texture.material = null
-			fullbody_texture.texture = null
-
-		if fullbody_texture.texture == null and data:
-			var fb_tex := data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
-			if not fb_tex:
-				fb_tex = data.get_selection_texture(true) if data.has_method("get_selection_texture") else data.get_fullbody_texture(true)
-			if not fb_tex:
-				fb_tex = data.get_fullbody_texture(false)
-			if not fb_tex:
-				fb_tex = data.get_portrait_texture()
-			fullbody_texture.texture = fb_tex
-
-		fullbody_texture.flip_h = true
-		fullbody_texture.visible = (fullbody_texture.texture != null)
-
-	if backlight_glow:
-		var glow_col: Color = data.color if data else Color(0.2, 0.9, 1.0)
-		backlight_glow.modulate = Color(glow_col.r, glow_col.g, glow_col.b, backlight_glow.modulate.a)
-
-	var is_unlocked := SaveManager.is_character_unlocked(char_id)
 	if not is_unlocked:
 		if launch_button:
 			launch_button.disabled = true
@@ -516,99 +356,74 @@ func _select_character(char_id: StringName) -> void:
 			var career := SaveManager.get_career_stats()
 			var bosses := int(career.get("total_bosses_killed", 0))
 			desc_label.text = "🔒 DESBLOQUEO DE CARRERA ESPACIAL:\nDerrota a 10 Jefes Titanes en combate para sincronizar a Nyx.\nProgreso de carrera: [ %d / 10 ] Jefes Eliminados.\n\n%s" % [bosses, data.description]
-		if fullbody_texture:
-			fullbody_texture.modulate = Color(0.2, 0.2, 0.3, 0.85)
 	else:
 		if launch_button:
 			launch_button.disabled = false
 			launch_button.text = "INICIAR RUN"
 		if loadout_button:
 			loadout_button.disabled = false
-		if fullbody_texture:
-			fullbody_texture.modulate = Color.WHITE
 
-	_refresh_pet_display()
-	_refresh_navigator_display()
 
 func _refresh_pet_display() -> void:
-	var sel_pid := SaveManager.get_selected_pet()
-	const PetDataScript := preload("res://data/pets/pet_data.gd")
-	var pet_res = PetDataScript.get_pet(sel_pid)
-	if pet_res:
-		var pet_slot := "pet:" + String(sel_pid)
-		var pet_skin_id := SaveManager.get_equipped_skin(pet_slot)
-		if pet_icon:
-			if not pet_skin_id.is_empty():
-				var stars := SaveManager.get_skin_stars(pet_skin_id)
-				CosmeticsManager.apply_skin_to_canvas_item(pet_icon, pet_skin_id, stars)
-			else:
-				pet_icon.material = null
-				pet_icon.texture = pet_res.get_icon_texture()
-		if pet_name:
-			pet_name.text = "%s — %s" % [pet_res.display_name.to_upper(), pet_res.title.to_upper()]
-			pet_name.modulate = pet_res.theme_color
-		if pet_desc:
-			pet_desc.text = pet_res.power_description
+	if equipment_cards:
+		equipment_cards.refresh_pet_display()
+
 
 func _on_pet_card_pressed() -> void:
 	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):
 		_last_focused_control = get_viewport().gui_get_focus_owner()
 		pet_selection_modal.open_modal()
 
+
 func _on_pet_selected(_pid: StringName) -> void:
 	_refresh_pet_display()
 
+
 func _refresh_navigator_display() -> void:
-	var sel_nid := SaveManager.get_selected_navigator()
-	const NavigatorDataScript := preload("res://data/navigators/navigator_data.gd")
-	var nav_res = NavigatorDataScript.get_navigator(sel_nid)
-	if nav_res:
-		var nav_slot := "navigator:" + String(sel_nid)
-		var nav_skin_id := SaveManager.get_equipped_skin(nav_slot)
-		if navigator_icon:
-			if not nav_skin_id.is_empty():
-				var stars := SaveManager.get_skin_stars(nav_skin_id)
-				CosmeticsManager.apply_skin_to_canvas_item(navigator_icon, nav_skin_id, stars)
-			else:
-				navigator_icon.material = null
-				navigator_icon.texture = nav_res.get_portrait_texture()
-		if navigator_name:
-			navigator_name.text = "%s — %s" % [nav_res.display_name.to_upper(), nav_res.title.to_upper()]
-			navigator_name.modulate = nav_res.theme_color
-		if navigator_desc:
-			navigator_desc.text = "%s | Buff: %s (%s)" % [nav_res.specialty_desc, nav_res.buff_name, nav_res.buff_desc]
+	if equipment_cards:
+		equipment_cards.refresh_navigator_display()
+
 
 func _on_navigator_card_pressed() -> void:
 	if navigator_selection_modal and navigator_selection_modal.has_method("open_modal"):
 		_last_focused_control = get_viewport().gui_get_focus_owner()
 		navigator_selection_modal.open_modal()
 
+
 func _on_navigator_selected(_nid: StringName) -> void:
 	_refresh_navigator_display()
 
+
+func _on_pet_modal_closed() -> void:
+	var target_focus: Control = null
+	if pet_button and pet_button.is_visible_in_tree():
+		target_focus = pet_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+
+
+func _on_navigator_modal_closed() -> void:
+	var target_focus: Control = null
+	if navigator_button and navigator_button.is_visible_in_tree():
+		target_focus = navigator_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+
+
 func _setup_card_hover_feedback(btn: Button, card: PanelContainer, glow_color: Color) -> void:
-	if not btn or not card:
-		return
-	var on_highlight := func():
-		var sb := card.get_theme_stylebox("panel")
-		if sb is StyleBoxFlat:
-			var dup := sb.duplicate() as StyleBoxFlat
-			dup.border_color = glow_color
-			dup.shadow_color = Color(glow_color.r, glow_color.g, glow_color.b, 0.35)
-			dup.shadow_size = 8
-			card.add_theme_stylebox_override("panel", dup)
-	var on_unhighlight := func():
-		var sb := card.get_theme_stylebox("panel")
-		if sb is StyleBoxFlat:
-			var dup := sb.duplicate() as StyleBoxFlat
-			dup.border_color = Color(0.18, 0.3, 0.45, 0.6)
-			dup.shadow_color = Color(0, 0, 0, 0)
-			dup.shadow_size = 0
-			card.add_theme_stylebox_override("panel", dup)
-	btn.mouse_entered.connect(on_highlight)
-	btn.focus_entered.connect(on_highlight)
-	btn.mouse_exited.connect(on_unhighlight)
-	btn.focus_exited.connect(on_unhighlight)
+	if equipment_cards:
+		equipment_cards.setup_card_hover_feedback(btn, card, glow_color)
+
 
 func _open_skin_modal(category: String, target_id: String, display_title: String, default_tex: Texture2D) -> void:
 	if not skin_selection_modal:
@@ -616,15 +431,18 @@ func _open_skin_modal(category: String, target_id: String, display_title: String
 	_last_focused_control = get_viewport().gui_get_focus_owner()
 	skin_selection_modal.open_for_target(category, target_id, display_title, default_tex)
 
+
 func _on_ship_skin_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
 		_open_skin_modal("ship", String(current_character_id), "%s Mark I" % data.display_name, data.get_ship_texture())
 
+
 func _on_weapon_skin_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
 		_open_skin_modal("weapon", String(current_character_id), "Arma de %s" % data.display_name, data.get_weapon_texture())
+
 
 func _on_pilot_skin_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
@@ -634,6 +452,7 @@ func _on_pilot_skin_pressed() -> void:
 			fb = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_portrait_texture()
 		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 
+
 func _on_pet_skin_pressed() -> void:
 	var sel_pid := SaveManager.get_selected_pet()
 	const PetDataScript := preload("res://data/pets/pet_data.gd")
@@ -641,12 +460,14 @@ func _on_pet_skin_pressed() -> void:
 	if pet_res:
 		_open_skin_modal("pet", String(sel_pid), pet_res.display_name, pet_res.get_icon_texture())
 
+
 func _on_navigator_skin_pressed() -> void:
 	var sel_nid := SaveManager.get_selected_navigator()
 	const NavigatorDataScript := preload("res://data/navigators/navigator_data.gd")
 	var nav_res = NavigatorDataScript.get_navigator(sel_nid)
 	if nav_res:
 		_open_skin_modal("navigator", String(sel_nid), nav_res.display_name, nav_res.get_portrait_texture())
+
 
 func _on_skins_button_pressed() -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
@@ -659,6 +480,7 @@ func _on_skins_button_pressed() -> void:
 		_last_focused_control = get_viewport().gui_get_focus_owner()
 		gacha_modal.open_gacha_modal()
 
+
 func _open_gacha_from_skins() -> void:
 	if not gacha_modal:
 		return
@@ -666,19 +488,24 @@ func _open_gacha_from_skins() -> void:
 	gacha_modal.open_gacha_modal()
 	gacha_modal._switch_tab(0)
 
+
 func _on_skin_selected(_slot_key: String, _skin_id: String) -> void:
 	_select_character(current_character_id)
 
+
 func _on_gacha_skin_equipped(_slot_key: String, _skin_id: String) -> void:
 	_select_character(current_character_id)
+
 
 func _on_skin_modal_closed() -> void:
 	_restore_last_focus()
 	_select_character(current_character_id)
 
+
 func _on_gacha_modal_closed() -> void:
 	_restore_last_focus()
 	_select_character(current_character_id)
+
 
 func _restore_last_focus() -> void:
 	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control != pilot_button and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
@@ -693,67 +520,64 @@ func _on_launch_pressed() -> void:
 	SaveManager.set_selected_character(current_character_id)
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
 
+
 func _on_loadout_pressed() -> void:
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
+
 
 func _on_back_pressed() -> void:
 	_set_game_speed(1.0)
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
 
+
 func _setup_speed_buttons() -> void:
-	if not speed_1x_btn or not speed_2x_btn or not speed_4x_btn:
-		return
-	current_game_speed = SaveManager.get_game_speed()
-	UIFocusHelper.apply_cyber_focus(speed_1x_btn)
-	UIFocusHelper.apply_cyber_focus(speed_2x_btn)
-	UIFocusHelper.apply_cyber_focus(speed_4x_btn)
+	if speed_selector:
+		speed_selector.setup(speed_1x_btn, speed_2x_btn, speed_4x_btn)
 
-	speed_1x_btn.pressed.connect(func(): _set_game_speed(1.0))
-	speed_2x_btn.pressed.connect(func(): _set_game_speed(2.0))
-	speed_4x_btn.pressed.connect(func(): _set_game_speed(4.0))
-
-	_refresh_speed_buttons_ui()
 
 func _set_game_speed(speed: float) -> void:
-	current_game_speed = speed
-	SaveManager.set_game_speed(speed)
-	_refresh_speed_buttons_ui()
+	if speed_selector:
+		speed_selector.set_game_speed(speed)
+
 
 func _refresh_speed_buttons_ui() -> void:
-	_style_speed_button(speed_1x_btn, is_equal_approx(current_game_speed, 1.0), "1x NORMAL")
-	_style_speed_button(speed_2x_btn, is_equal_approx(current_game_speed, 2.0), "2x RÁPIDO")
-	_style_speed_button(speed_4x_btn, is_equal_approx(current_game_speed, 4.0), "4x TURBO")
+	if speed_selector:
+		speed_selector.refresh_ui()
 
-func _style_speed_button(btn: Button, is_active: bool, base_text: String) -> void:
-	if not btn:
+
+func _on_debug_pressed() -> void:
+	if not DEBUG_MENU_AVAILABLE or not debug_menu_modal:
 		return
-	var sb := StyleBoxFlat.new()
-	if is_active:
-		btn.text = "● %s" % base_text
-		sb.bg_color = Color(0.06, 0.22, 0.28, 1.0)
-		sb.border_width_left = 3
-		sb.border_width_top = 3
-		sb.border_width_right = 3
-		sb.border_width_bottom = 3
-		sb.border_color = Color(0, 0.94, 1, 1)
-		sb.shadow_color = Color(0, 0.94, 1, 0.35)
-		sb.shadow_size = 4
-		btn.add_theme_color_override("font_color", Color(1, 1, 1, 1))
-	else:
-		btn.text = "○ %s" % base_text
-		sb.bg_color = Color(0.04, 0.04, 0.06, 0.8)
-		sb.border_width_left = 1
-		sb.border_width_top = 1
-		sb.border_width_right = 1
-		sb.border_width_bottom = 1
-		sb.border_color = Color(0.25, 0.28, 0.35, 1.0)
-		btn.add_theme_color_override("font_color", Color(0.65, 0.7, 0.78, 1))
+	_last_focused_control = get_viewport().gui_get_focus_owner()
+	var char_data: CharacterData = roster_dict.get(current_character_id, null)
+	debug_menu_modal.open_menu(char_data)
 
-	sb.corner_radius_top_left = 4
-	sb.corner_radius_top_right = 4
-	sb.corner_radius_bottom_right = 4
-	sb.corner_radius_bottom_left = 4
-	btn.add_theme_stylebox_override("normal", sb)
-	btn.add_theme_stylebox_override("hover", sb)
-	btn.add_theme_stylebox_override("pressed", sb)
 
+func _on_debug_modal_closed() -> void:
+	var target_focus: Control = null
+	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif debug_button and debug_button.is_visible_in_tree():
+		target_focus = debug_button
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+		var target_pos: Vector2 = target_focus.get_global_rect().get_center()
+		get_viewport().warp_mouse(target_pos)
+
+
+func _on_pilot_button_pressed() -> void:
+	if pilot_showcase:
+		pilot_showcase.on_button_pressed()
+
+
+func _on_character_art_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_on_pilot_button_pressed()
+		get_viewport().set_input_as_handled()
+
+
+func _on_character_art_clicked() -> void:
+	_on_pilot_button_pressed()
