@@ -76,7 +76,7 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		&"glass_reactor": "res://assets/icons/items/icon_sword.svg",
 		&"heavy_condenser": "res://assets/icons/items/icon_gauntlet.svg",
 		&"tachyon_piercer": "res://assets/icons/items/icon_glasses.svg",
-		&"quantum_key": "res://assets/icons/items/icon_quantum_key.svg",
+		&"quantum_key": "res://assets/icons/items/icon_quantum_key.png",
 		&"credit_card_green": "res://assets/icons/items/icon_credit_card_green.svg",
 		&"credit_card_red": "res://assets/icons/items/icon_credit_card_red.svg",
 	}
@@ -297,3 +297,59 @@ func roll_item_by_weights(weights: Dictionary, player_luck: float = 1.0) -> Item
 	if not candidate:
 		candidate = roll_item()
 	return candidate
+
+## Rueda un lote de N ítems distintos para elección de cofre según el tipo de cofre y suerte del jugador
+func roll_chest_draft(chest_type_int: int, weights: Dictionary, player_luck: float = 1.0, count: int = 3) -> Array[ItemData]:
+	if _active_pool.is_empty():
+		if master_catalog.is_empty():
+			_populate_default_catalog()
+		_active_pool = master_catalog.duplicate()
+
+	var results: Array[ItemData] = []
+	var attempts: int = 0
+	var max_attempts: int = 60
+
+	while results.size() < count and attempts < max_attempts:
+		attempts += 1
+		var candidate: ItemData = null
+
+		# Salvage (0): Forzar stats básicos comunes y poco comunes
+		if chest_type_int == 0:
+			var common_pool: Array[ItemData] = []
+			for it in _active_pool:
+				if (it.rarity == Enums.Rarity.COMMON or it.rarity == Enums.Rarity.UNCOMMON) and not it.tags.has(&"conversion"):
+					common_pool.append(it)
+			candidate = common_pool.pick_random() if not common_pool.is_empty() else roll_item()
+		# Golden (2): Forzar ítems épicos, legendarios, raros y núcleos de conversión
+		elif chest_type_int == 2:
+			var high_tier_pool: Array[ItemData] = []
+			for it in _active_pool:
+				if it.rarity >= Enums.Rarity.RARE or it.tags.has(&"conversion") or it.tags.has(&"proc"):
+					high_tier_pool.append(it)
+			candidate = high_tier_pool.pick_random() if not high_tier_pool.is_empty() else roll_item()
+		# Regular (1): Ponderado por pesos y suerte
+		else:
+			candidate = roll_item_by_weights(weights, player_luck)
+
+		if candidate:
+			var duplicate_found := false
+			for existing in results:
+				if existing.item_id == candidate.item_id:
+					duplicate_found = true
+					break
+			if not duplicate_found:
+				results.append(candidate)
+
+	while results.size() < count and not _active_pool.is_empty():
+		var fallback: ItemData = _active_pool.pick_random()
+		var dup := false
+		for ex in results:
+			if ex.item_id == fallback.item_id:
+				dup = true
+				break
+		if not dup:
+			results.append(fallback)
+		else:
+			break
+
+	return results

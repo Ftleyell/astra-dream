@@ -193,23 +193,34 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 		luck = float(player.character_stats.luck)
 
 	var weights: Dictionary = economy_config.golden_base_rarity_weights if chest_type == ChestType.GOLDEN else economy_config.regular_base_rarity_weights
-	var chosen_item: ItemData = null
-
 	var active_pool: ItemPoolManager = pool if pool != null else item_pool
 	if not active_pool:
 		if not is_instance_valid(_fallback_pool):
 			_fallback_pool = ItemPoolManager.new()
 		active_pool = _fallback_pool
 
+	var draft_items: Array[ItemData] = []
 	if active_pool:
-		chosen_item = active_pool.roll_item_by_weights(weights, luck)
+		draft_items = active_pool.roll_chest_draft(chest_type, weights, luck, 3)
 
-	if chosen_item and player.inventory:
-		player.inventory.add_item(chosen_item)
-		player.inventory.process_chest_opened_procs(player)
+	var modal: ChestRewardModal = null
+	var tree := get_tree()
+	if tree:
+		modal = tree.get_first_node_in_group("chest_reward_modal") as ChestRewardModal
 
-	chest_opened.emit(chosen_item, was_free, 0 if was_free else current_cost)
-	_play_open_and_vanish_fx()
+	if modal and is_instance_valid(modal) and modal.is_inside_tree() and not draft_items.is_empty():
+		modal.open_draft(draft_items, was_free, player, func(chosen_item: ItemData) -> void:
+			chest_opened.emit(chosen_item, was_free, 0 if was_free else current_cost)
+			_play_open_and_vanish_fx()
+		)
+	else:
+		var chosen_item: ItemData = draft_items[0] if not draft_items.is_empty() else null
+		if chosen_item and player.inventory:
+			player.inventory.add_item(chosen_item)
+			player.inventory.process_chest_opened_procs(player)
+		chest_opened.emit(chosen_item, was_free, 0 if was_free else current_cost)
+		_play_open_and_vanish_fx()
+
 	return true
 
 func _flash_insufficient_credits() -> void:

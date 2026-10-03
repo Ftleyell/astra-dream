@@ -11,7 +11,25 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/boss_edge_indicator.tscn" id="9_bossedge"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/biomass_dna_icon.png" id="10_bio_ico"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/chest_edge_indicator.tscn" id="11_chestdge"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quantum_key.svg" id="12_key_ico"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quantum_key.png" id="12_key_ico"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_key_pill"]
+content_margin_left = 14.0
+content_margin_top = 4.0
+content_margin_right = 14.0
+content_margin_bottom = 4.0
+bg_color = Color(0.02, 0.06, 0.12, 0.78)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.85, 1, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0.7, 1, 0.3)
+shadow_size = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_credits_large"]
 content_margin_left = 20.0
@@ -246,32 +264,41 @@ theme_override_font_sizes/font_size = 24
 text = "0"
 vertical_alignment = 1
 
-[node name="KeyHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopBar"]
+[node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="KeyBadgeContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="KeyBadge" type="PanelContainer" parent="MarginContainer/VBoxContainer/KeyBadgeContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_key_pill")
+
+[node name="KeyHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/KeyBadgeContainer/KeyBadge"]
 layout_mode = 2
 theme_override_constants/separation = 8
+alignment = 1
 
-[node name="KeyIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopBar/KeyHBox"]
-custom_minimum_size = Vector2(38, 38)
+[node name="KeyIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/KeyBadgeContainer/KeyBadge/KeyHBox"]
+custom_minimum_size = Vector2(26, 26)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("12_key_ico")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="KeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar/KeyHBox"]
+[node name="KeyLabel" type="Label" parent="MarginContainer/VBoxContainer/KeyBadgeContainer/KeyBadge/KeyHBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0.6, 1, 0.8)
 theme_override_constants/shadow_offset_x = 0
 theme_override_constants/shadow_offset_y = 0
-theme_override_constants/shadow_outline_size = 8
-theme_override_font_sizes/font_size = 22
-text = "x0 (0%)"
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 13
+text = "x0 (0% Gratis)"
 vertical_alignment = 1
-
-[node name="MiddleSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
 
 [node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

@@ -886,10 +886,7 @@ func _spawn_wave_chests() -> void:
 		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if player.inventory else 0
 		chest_director.spawn_wave_chests(player.global_position, self, current_wave, green_cards)
 
-func _on_chest_opened_from_director(item: ItemData, was_free: bool, _cost: int) -> void:
-	if chest_reward_modal and item:
-		var total_stacks: int = player.inventory.get_item_count(item.item_id) if (player and player.inventory) else 1
-		chest_reward_modal.open_reward(item, was_free, total_stacks)
+func _on_chest_opened_from_director(_item: ItemData, _was_free: bool, _cost: int) -> void:
 	save_current_run_state()
 
 func open_transmutation_modal(station: TransmutationStation) -> void:

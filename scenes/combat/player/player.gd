@@ -201,9 +201,10 @@ func _ready() -> void:
 	var persistent_dm := SaveManager.get_dark_matter()
 	dark_matter_changed.emit(run_dark_matter, persistent_dm)
 	exp_changed.emit(current_exp, exp_to_next, current_level)
-
-	inventory.item_added.connect(func(_it: ItemData, _cnt: int) -> void: _update_conversion_core_stats())
-	add_child(inventory)
+	if not inventory.is_inside_tree():
+		add_child(inventory)
+	if not inventory.item_added.is_connected(_on_inventory_item_added):
+		inventory.item_added.connect(_on_inventory_item_added)
 
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)
@@ -557,3 +558,6 @@ func add_dark_matter(amount: int) -> void:
 	run_dark_matter += amount
 	var total_persistent := SaveManager.add_dark_matter(amount)
 	dark_matter_changed.emit(run_dark_matter, total_persistent)
+
+func _on_inventory_item_added(_it: ItemData, _cnt: int) -> void:
+	_update_conversion_core_stats()
