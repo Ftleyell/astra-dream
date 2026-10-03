@@ -34,15 +34,56 @@ var _pending_satellite_index: int = -1
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
 var bosses_defeated_count: int = 0
 
+const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_satellite_coordinator.gd")
+var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
+
 const WAVE_DURATION: float = 30.0
 const MAX_SATELLITES_PER_WAVE: int = 1
 const BASE_SPAWN_DISTANCE: float = 600.0
 const DISTANCE_INCREMENT_PER_SAT: float = 250.0
 const SPAWN_AHEAD_DISTANCE: float = 1100.0
 
-var current_satellite_idx: int = 1
-var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
-var current_satellite: SatelliteBeacon = null
+var satellite_scene: PackedScene:
+	get:
+		return satellite_coordinator.satellite_scene if satellite_coordinator else null
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.satellite_scene = val
+
+var current_satellite: SatelliteBeacon:
+	get:
+		return satellite_coordinator.current_satellite if satellite_coordinator else null
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.current_satellite = val
+
+var current_satellite_idx: int:
+	get:
+		return satellite_coordinator.current_satellite_idx if satellite_coordinator else 1
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.current_satellite_idx = val
+
+var wave_satellites_spawned: int:
+	get:
+		return satellite_coordinator.wave_satellites_spawned if satellite_coordinator else 0
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.wave_satellites_spawned = val
+
+var satellites_collected_total: int:
+	get:
+		return satellite_coordinator.satellites_collected_total if satellite_coordinator else 0
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.satellites_collected_total = val
+
+var last_anchor_pos: Vector2:
+	get:
+		return satellite_coordinator.last_anchor_pos if satellite_coordinator else Vector2.ZERO
+	set(val):
+		if satellite_coordinator:
+			satellite_coordinator.last_anchor_pos = val
 
 var crisis_event_manager_scene: PackedScene = preload("res://scenes/combat/events/crisis_event_manager.tscn")
 var crisis_alert_banner_scene: PackedScene = preload("res://scenes/ui/hud/crisis_alert_banner.tscn")
@@ -60,9 +101,6 @@ var is_pre_round: bool = true
 const PRE_ROUND_DURATION: float = 30.0
 var pre_round_timer: float = PRE_ROUND_DURATION
 var wave_timer: float = WAVE_DURATION
-var wave_satellites_spawned: int = 0
-var satellites_collected_total: int = 0
-var last_anchor_pos: Vector2 = Vector2.ZERO
 
 var rival_queue: Array[StringName] = []
 var rivals_spared: Array[StringName] = []
@@ -220,6 +258,11 @@ func _ready() -> void:
 	if not crisis_manager and crisis_event_manager_scene:
 		crisis_manager = crisis_event_manager_scene.instantiate() as Node2D
 		add_child(crisis_manager)
+
+	if not satellite_coordinator.is_inside_tree():
+		satellite_coordinator.name = "CombatSatelliteCoordinator"
+		add_child(satellite_coordinator)
+	satellite_coordinator.setup(self)
 
 	_last_player_hp = player.current_health
 
@@ -572,49 +615,20 @@ func _process(delta: float) -> void:
 
 		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
-	# Distancia requerida que escala con cada satélite recolectado
-	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
-	var current_dist: float = player.global_position.distance_to(last_anchor_pos)
-
-	hud.update_satellite_travel_dist(current_dist, req_dist)
-
-	# Chequeo de desespawn cuando el jugador se aleja 10k del satélite
-	_check_satellite_despawn()
-
-	# Chequeo para mantener siempre activo el próximo satélite de la oleada
-	if current_satellite == null and wave_satellites_spawned < MAX_SATELLITES_PER_WAVE:
-		_spawn_next_satellite_for_wave()
+	if satellite_coordinator:
+		satellite_coordinator.update_satellite_lifecycle()
 
 func _check_satellite_despawn() -> void:
-	if is_instance_valid(current_satellite) and is_instance_valid(player):
-		if player.global_position.distance_to(current_satellite.global_position) >= SATELLITE_DESPAWN_DISTANCE:
-			_despawn_current_satellite()
+	if satellite_coordinator:
+		satellite_coordinator.check_satellite_despawn()
 
 func _despawn_current_satellite() -> void:
-	if is_instance_valid(current_satellite):
-		current_satellite.queue_free()
-		current_satellite = null
-	if is_instance_valid(hud):
-		hud.clear_satellite()
-	wave_satellites_spawned = maxi(0, wave_satellites_spawned - 1)
+	if satellite_coordinator:
+		satellite_coordinator.despawn_current_satellite()
 
 func _spawn_next_satellite_for_wave() -> void:
-	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
-		return
-	if current_satellite != null or wave_satellites_spawned >= MAX_SATELLITES_PER_WAVE:
-		return
-	if not is_instance_valid(player) or not player.is_inside_tree() or player.is_queued_for_deletion():
-		return
-
-	var req_dist: float = BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
-	var spawn_dist: float = maxf(SPAWN_AHEAD_DISTANCE, req_dist)
-	var move_dir := player.velocity.normalized() if player.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
-	if move_dir.length_squared() < 0.001:
-		move_dir = Vector2.UP
-
-	var spawn_pos: Vector2 = player.global_position + move_dir * spawn_dist
-	wave_satellites_spawned += 1
-	_spawn_next_satellite(spawn_pos)
+	if satellite_coordinator:
+		satellite_coordinator.spawn_next_satellite_for_wave()
 
 func _has_active_boss_or_rival() -> bool:
 	if is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
@@ -765,49 +779,16 @@ func _input(event: InputEvent) -> void:
 			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
-	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
-		return
-	if current_satellite and is_instance_valid(current_satellite):
-		current_satellite.queue_free()
+	if satellite_coordinator:
+		satellite_coordinator.spawn_next_satellite(target_pos)
 
-	current_satellite = satellite_scene.instantiate() as SatelliteBeacon
-	current_satellite.global_position = target_pos
-	current_satellite.satellite_index = current_satellite_idx
-	add_child.call_deferred(current_satellite)
+func _on_satellite_planted(index: int, pos: Vector2) -> void:
+	if satellite_coordinator:
+		satellite_coordinator._on_satellite_planted(index, pos)
 
-	current_satellite.planted.connect(_on_satellite_planted)
-	current_satellite.exited_perimeter.connect(_on_satellite_exited)
-
-	if hud and is_instance_valid(hud):
-		hud.set_active_satellite(target_pos, current_satellite_idx)
-
-func _on_satellite_planted(index: int, _pos: Vector2) -> void:
-	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
-		return
-	if is_arcana_modal_active() or is_level_up_modal_active() or (level_up_modal and level_up_modal.has_pending_levels()) or is_dialogue_active():
-		_pending_satellite_credits = player.run_credits
-		_pending_satellite_index = index
-	else:
-		satellite_shop.open_shop(player.run_credits)
-
-func _on_satellite_exited(_index: int) -> void:
-	if is_exiting_run or not is_inside_tree() or is_queued_for_deletion():
-		return
-	# El jugador salió del perímetro del satélite: se contabiliza y se actualiza el ancla de distancia
-	current_satellite_idx += 1
-	satellites_collected_total += 1
-	if is_instance_valid(player):
-		last_anchor_pos = player.global_position
-
-	if current_satellite and is_instance_valid(current_satellite):
-		current_satellite.queue_free()
-		current_satellite = null
-
-	if hud and is_instance_valid(hud):
-		hud.clear_satellite()
-	save_current_run_state()
-	if wave_satellites_spawned < MAX_SATELLITES_PER_WAVE and not is_exiting_run and is_inside_tree() and not is_queued_for_deletion():
-		_spawn_next_satellite_for_wave()
+func _on_satellite_exited(index: int) -> void:
+	if satellite_coordinator:
+		satellite_coordinator._on_satellite_exited(index)
 
 func trigger_boss_transmission(speaker: String = "CENTINELA TITÁN", _text: String = "") -> void:
 	var b_name := speaker if not speaker.is_empty() else "CENTINELA TITÁN"
