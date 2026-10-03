@@ -60,3 +60,39 @@ Baliza interactiva opcional que aparece aleatoriamente en el cuadrante de combat
 | **3x 💖 (Jackpot Médico)** | 10.0% | Cura `100% de la Vida` actual y otorga `+25 HP Máximo`. |
 | **Par (2 símbolos iguales)** | 35.0% | Reembolso del `100%` del costo del giro. |
 | **Fallo (3 símbolos dispares)**| 25.0% | Sin recompensa (pérdida de la inversión). |
+
+---
+
+## 5. Sistema de Cofres Espaciales, Llaves Cuánticas y Forja Orbital
+
+### A. Variantes de Cofres Espaciales (`SpatialChest`)
+Los cofres se invocan dinámicamente en el espacio mediante `ChestDirector`:
+* **Cápsula de Chatarra (`SALVAGE_CAPSULE`):**
+  * Coste: `0 Créditos` (siempre gratis).
+  * Pool: Ítems comunes básicos de economía, supervivencia y aceleración inicial.
+* **Cofre Regular (`REGULAR`):**
+  * Coste Base: `25 Créditos`.
+  * Fórmula de Inflación Cuadrática: `C(n) = CosteBase + 8*n + 1.5*n^2` (donde `n` es el número de cofres abiertos con pago).
+  * Recargo por Tarjeta Verde: `+10% acumulativo por stack`.
+  * Pool: Ítems poco comunes y raros, procs reactivos y trade-offs tácticos.
+* **Cofre Dorado (`GOLDEN`):**
+  * Coste Fijo: `150 Créditos` (no inflacionario). Inmune a la apertura por llaves.
+  * Pool: Ítems épicos, legendarios y núcleos de conversión de alto impacto.
+
+### B. Llave Cuántica (`quantum_key`) y Mecánica de Descuento
+* **Efecto Pasivo:** Proporciona una probabilidad asintótica de apertura gratuita en cofres regulares:
+  `P(gratis) = 1.0 - (1.0 / (1.0 + 0.1 * keys))`
+  * 1 Llave: ~9.1%
+  * 10 Llaves: 50.0%
+  * 90 Llaves: 90.0%
+* **Congelación de Inflación:** Al activarse la apertura gratuita con llave, el contador de cofres pagados `n` **no se incrementa**, congelando el coste de los siguientes cofres.
+* **HUD Integrado:** Píldora cian translúcida centrada sobre el contenedor de armas (`WeaponSlotsRow`) mostrando `x{N} ({%}% Gratis)` con animación de escala elástica al recolectar.
+
+### C. Modal de Selección Táctica de 3 Ítems (`ChestRewardModal`)
+* Al abrir cualquier cofre, el combate se pausa y se presenta un borrador de 3 ítems no repetidos generados por `ItemPoolManager.roll_chest_draft()`.
+* Selección mediante atajos de teclado numérico `[1]`, `[2]`, `[3]` o clic directo sobre la carta.
+
+### D. Forja Cuántica Orbital (`TransmutationStation`)
+* Estación interactiva desplegada en fases avanzadas con **3 usos máximos**.
+* Permite al jugador seleccionar un ítem duplicado o no deseado de su inventario para transmutarlo en otro ítem aleatorio de la misma categoría de rareza.
+

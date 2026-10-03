@@ -3,6 +3,27 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.5.1] - 2026-10-03 — Economía de Cofres Espaciales, Llaves Cuánticas y Draft Táctico
+
+### Añadido
+* **Sistema de Cofres Espaciales e Inflación Dinámica (`SpatialChest` & `ChestDirector`):**
+  * Tres tipos de cofres desplegados en el espacio: Cápsula de Chatarra (0c, gratuita), Cofre Regular (25c base con inflación cuadrática `25 + 8n + 1.5n^2`) y Cofre Dorado (150c fijo, inmune a llaves).
+  * Apertura fluida por contacto directo (`activation_radius`) o teclas de interacción (`E`, `Espacio`, `Enter`).
+  * `ChestDirector` gestiona la población periférica, cuotas máximas e inflación acumulativa en tiempo real.
+* **Mecánica y Asset de Llave Cuántica (`quantum_key`):**
+  * Asset gráfico de tarjeta militar sci-fi generado en vista estrictamente cenital top-down 90° con fondo chroma magenta (`#FF00FF`) y despill automatizado.
+  * Fórmula de descuento asintótica `P = 1.0 - (1.0 / (1.0 + 0.1 * keys))` que congela el coste inflacionario al activarse aperturas gratuitas.
+  * Nuevo badge HUD translúcido cian (`KeyBadge`) centrado en pantalla directamente sobre las ranuras de armas (`WeaponSlotsRow`), con formato interactivo `x{N} ({%}% Gratis)` y animación de escala elástica.
+* **Modal de Selección Táctica de 3 Ítems (`ChestRewardModal`):**
+  * Despliega 3 cartas interactivas por cofre mediante `ItemPoolManager.roll_chest_draft()`, con prevención de duplicados y filtros por rareza.
+  * Pausa el combate durante la selección; admite atajos de teclado numérico `[1]`, `[2]`, `[3]` o selección con ratón.
+* **Forja Cuántica Orbital (`TransmutationStation` & `TransmutationModal`):**
+  * Estación interactiva de 3 usos para transmutar ítems del inventario por otros de su misma categoría de rareza.
+* **Suite de Pruebas Unitarias Automatizadas:**
+  * `tests/test_chest_economy_runner.tscn` y `test_chest_economy_suite.gd` con 29/29 pruebas unitarias exitosas en modo headless.
+
+---
+
 ## [0.5.0] - 2026-10-02 — Balística Alienígena Danmaku, Telegrafiado Holográfico y Campeones Élite
 
 ### Añadido

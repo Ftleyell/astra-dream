@@ -54,6 +54,10 @@ astra_dream/
 │   │   ├── hit_context.gd                 # DTO fuertemente tipado de impactos (daño, crit, proc_coeff)
 │   │   └── player_stats_resource.gd       # Recurso de configuración de atributos de personaje
 │   │
+│   ├── types/                             # Definición de tipos y gestores de catálogo
+│   │   ├── chest_economy_config.gd        # Configuración data-driven de economía, llaves e inflación de cofres
+│   │   └── item_pool_manager.gd           # Gestor de pools de ítems, rarezas ponderadas y draft táctico
+│   │
 │   └── systems/                           # Sistemas de backend del juego
 │       ├── cosmetics_manager.gd           # Catálogo de skins, rarezas y paletas shader
 │       └── persistence/                   # Submódulos de almacenamiento modular en disco
@@ -65,6 +69,7 @@ astra_dream/
 │
 ├── data/                                  # Recursos Data-Driven (.tres) — Balance sin números mágicos
 │   ├── balance/                           # Configuración de oleadas y encuentros
+│   │   ├── default_chest_economy.tres     # Configuración de precios, inflación y llaves de cofres
 │   │   ├── default_wave_schedule.tres     # Cronograma de oleadas 1-16 (límites, intervalos y curvas)
 │   │   ├── wave_schedule_config.gd        # Clase del recurso de cronograma
 │   │   └── wave_spawn_config.gd           # Clase de configuración individual por oleada
@@ -135,10 +140,15 @@ astra_dream/
 │   │   │   ├── combat_telemetry_recorder.gd# Recopilación de estadísticas de fin de partida
 │   │   │   └── run_state_serializer.gd    # Guardado y restauración de partida mid-combat
 │   │   │
+│   │   ├── chests/                        # Sistema de Cofres Espaciales e Inflación
+│   │   │   ├── spatial_chest.gd / .tscn   # Cofre espacial físico (Chatarra, Regular, Dorado, auto-contacto)
+│   │   │   └── chest_director.gd          # Invocación periférica continua y orquestador de precios
+│   │   │
 │   │   ├── satellite/                     # Balizas orbitales y tiendas
 │   │   │   ├── satellite_beacon.gd        # Baliza interactiva en el mundo
 │   │   │   ├── satellite_shop.gd          # Tienda orbital de ítems y reciclaje
-│   │   │   └── slot_machine_beacon.gd     # Baliza de azar cósmico
+│   │   │   ├── slot_machine_beacon.gd     # Baliza de azar cósmico
+│   │   │   └── transmutation_station.gd / .tscn # Forja Cuántica orbital de 3 usos (Microwave)
 │   │   │
 │   │   ├── pickups/                       # Colectables de campo
 │   │   │   ├── exp_blob.gd / .tscn        # Gema de EXP con compactación automática
@@ -161,13 +171,16 @@ astra_dream/
 │   │   │   └── planet_spawner_helper.gd   # Distribución de fondos cósmicos
 │   │   │
 │   │   └── ui/                            # Interfaces de combate
-│   │       ├── combat_hud.gd / .tscn      # HUD (barras de vida, minimapa, armas, jefes)
+│   │       ├── combat_hud.gd / .tscn      # HUD (barras, minimapa, armas, KeyBadge centrado)
 │   │       ├── combat_modal_coordinator.gd# Coordinador de modales que pausan el combate
 │   │       ├── boss_edge_indicator.gd     # Indicador de colosos fuera de pantalla
+│   │       ├── chest_edge_indicator.gd / .tscn # Indicador direccional periférico de cofres
 │   │       ├── arcana/                    # Modal de Pactos Arcanos
 │   │       │   ├── arcana_selection_modal.gd# Despliegue de bendiciones y sacrificios contrastados
 │   │       │   └── components/            # arcana_card_builder.gd y arcana_stats_inspector.gd
 │   │       ├── modals/                    # Modales interactivos de combate
+│   │       │   ├── chest_reward_modal.gd / .tscn # Modal de 3-draft táctico al abrir cofres [1, 2, 3]
+│   │       │   ├── transmutation_modal.gd / .tscn# Modal de reciclaje y forja cuántica de ítems
 │   │       │   ├── weapon_swap_modal.gd   # Reemplazo de armas respetando bloqueo de ranura 0
 │   │       │   └── slot_machine_reward_modal.gd# Recompensas de la baliza de azar
 │   │       └── level_up/                  # Modal de subida de nivel
@@ -220,7 +233,9 @@ astra_dream/
     ├── test_narrative_and_rival_pilots_suite.gd   # Suite de rivales, decisiones y 3 finales
     ├── test_prealpha5_runner.tscn                 # Runner de validación de secretos y meta
     ├── test_prealpha5_suite.gd                    # Suite de Nyx, talentos y persistencia
-    └── test_character_dashes_runner.tscn          # Runner de mecánicas de pilotos y dashes
+    ├── test_character_dashes_runner.tscn          # Runner de mecánicas de pilotos y dashes
+    ├── test_chest_economy_runner.tscn             # Runner de economía de cofres, llaves cuánticas y forja
+    └── test_chest_economy_suite.gd                # Suite de 29 tests de inflación, draft y slots de cofres
 ```
 
 ---
@@ -242,6 +257,7 @@ graph TD
     BC --> BCD["CombatBossDebugJumper<br/>(Saltos a oleada 16 y finales)"]
     
     MG --> SC["CombatSatelliteCoordinator<br/>(Balizas, distancias y tiendas)"]
+    MG --> CD["ChestDirector<br/>(Cofres espaciales, inflación y llaves)"]
     MG --> ES["EnemySpawner<br/>(Intercepción geométrica)"]
     ES --> ENP["EnemyNodePool<br/>(Zero-Allocation recycling)"]
     
