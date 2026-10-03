@@ -13,9 +13,11 @@ const DebugMenuModalScript = preload("res://scenes/ui/debug/debug_menu_modal.gd"
 # ==============================================================================
 # CONFIGURACIÓN DE DEBUG (Gobernado centralmente por DebugManager)
 # ==============================================================================
+const DEBUG_MENU_AVAILABLE: bool = true
+
 var is_debug_active: bool:
 	get:
-		return DebugManager.is_debug_enabled() if DebugManager else false
+		return DEBUG_MENU_AVAILABLE and (DebugManager.is_debug_enabled() if DebugManager else false)
 # ==============================================================================
 
 @onready var char_list_container: VBoxContainer = $MarginContainer/RootVBox/MainColumns/LeftPanel/CharScroll/CharList
@@ -230,7 +232,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_C:
 		_on_loadout_pressed()
 		get_viewport().set_input_as_handled()
-	elif DEBUG_MENU_AVAILABLE and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
+	elif is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
@@ -552,7 +554,7 @@ func _refresh_speed_buttons_ui() -> void:
 
 
 func _on_debug_pressed() -> void:
-	if not DEBUG_MENU_AVAILABLE or not debug_menu_modal:
+	if not is_debug_active or not debug_menu_modal:
 		return
 	_last_focused_control = get_viewport().gui_get_focus_owner()
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
