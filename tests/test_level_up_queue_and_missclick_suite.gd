@@ -15,6 +15,8 @@ func _ready() -> void:
 	var main_game: MainGame = main_scene.instantiate()
 	add_child(main_game)
 
+	await get_tree().process_frame
+	await get_tree().process_frame
 	# Limpiar timelines o diálogos iniciales para aislar pruebas
 	if Dialogic.has_subsystem("Styles") and Dialogic.Styles.has_active_layout_node():
 		var l_node = Dialogic.Styles.get_layout_node()
