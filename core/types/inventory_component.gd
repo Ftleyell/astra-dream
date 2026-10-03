@@ -149,6 +149,54 @@ func process_kill_procs(target_entity: Node) -> void:
 			if randf() <= effective_chance:
 				effect.execute(context, stacks, target_entity)
 
+func process_chest_opened_procs(source_entity: Node) -> void:
+	var context := HitContext.new()
+	context.attacker = source_entity
+	if source_entity is Node2D:
+		context.hit_position = (source_entity as Node2D).global_position
+	context.proc_coefficient = 1.0
+
+	for id: StringName in _items.keys():
+		var entry: Dictionary = _items[id]
+		var data: ItemData = entry["data"]
+		var stacks: int = entry["count"]
+
+		for effect: ItemEffect in data.effects:
+			if effect.trigger != Enums.TriggerType.ON_CHEST_OPENED:
+				continue
+			effect.execute(context, stacks, source_entity)
+
+func remove_item_stacks(item_id: StringName, count: int = 1) -> bool:
+	if not _items.has(item_id):
+		return false
+	var current: int = _items[item_id]["count"]
+	var item: ItemData = _items[item_id]["data"]
+	var new_count: int = current - count
+
+	if new_count <= 0:
+		if character_stats and item.stat_name != &"":
+			character_stats.remove_modifier(item.stat_name, item.item_id)
+		if character_stats and item.secondary_stat_name != &"":
+			character_stats.remove_modifier(item.secondary_stat_name, StringName(str(item.item_id) + "_penalty"))
+		_items.erase(item_id)
+	else:
+		_items[item_id]["count"] = new_count
+		if character_stats and item.stat_name != &"":
+			var total_bonus: float = item.stat_value * float(new_count)
+			var mod := CharacterStats.StatModifier.new(item.item_id, total_bonus, item.is_percentage, item.item_id)
+			character_stats.set_or_replace_modifier(item.stat_name, mod)
+		if character_stats and item.secondary_stat_name != &"":
+			var total_penalty: float = item.secondary_stat_value * float(new_count)
+			var p_mod := CharacterStats.StatModifier.new(
+				StringName(str(item.item_id) + "_penalty"),
+				total_penalty,
+				item.secondary_is_percentage,
+				item.item_id
+			)
+			character_stats.set_or_replace_modifier(item.secondary_stat_name, p_mod)
+
+	return true
+
 func _calculate_chance(base: float, stack_type: Enums.StackType, stacks: int, factor: float) -> float:
 	match stack_type:
 		Enums.StackType.LINEAR:

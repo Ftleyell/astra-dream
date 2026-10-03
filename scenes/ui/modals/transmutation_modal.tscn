@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/modals/transmutation_modal.gd" id="1_transmutation_modal"]
+
+[node name="TransmutationModal" type="CanvasLayer"]
+process_mode = 3
+layer = 126
+script = ExtResource("1_transmutation_modal")

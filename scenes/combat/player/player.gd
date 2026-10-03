@@ -23,6 +23,9 @@ const PlayerProgressionApplierClass = preload("res://scenes/combat/player/player
 @export var bullet_server: BulletServer
 
 var stats: CharacterStats = CharacterStats.new()
+var character_stats: CharacterStats:
+	get: return stats
+	set(val): stats = val
 var inventory: InventoryComponent = InventoryComponent.new()
 var _static_charge: float = 0.0
 

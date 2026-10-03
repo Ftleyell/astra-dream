@@ -89,6 +89,15 @@ func remove_modifier(stat_name: StringName, mod_id: StringName) -> void:
 		_is_dirty[stat_name] = true
 		stat_changed.emit(stat_name, get_stat(stat_name))
 
+func get_stat_modifier(stat_name: StringName, mod_id: StringName) -> StatModifier:
+	if not _modifiers.has(stat_name):
+		return null
+	var list: Array = _modifiers[stat_name]
+	for mod in list:
+		if (mod as StatModifier).id == mod_id:
+			return mod as StatModifier
+	return null
+
 func get_stat(stat_name: StringName) -> float:
 	if not _base_stats.has(stat_name):
 		return 0.0

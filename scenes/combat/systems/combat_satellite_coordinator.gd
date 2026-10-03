@@ -8,7 +8,8 @@ const SPAWN_AHEAD_DISTANCE: float = 1100.0
 const SATELLITE_DESPAWN_DISTANCE: float = 10000.0
 
 var satellite_scene: PackedScene = preload("res://scenes/combat/satellite/satellite_beacon.tscn")
-var current_satellite: SatelliteBeacon = null
+var transmutation_scene: PackedScene = preload("res://scenes/combat/satellite/transmutation_station.tscn")
+var current_satellite: Node2D = null
 var current_satellite_idx: int = 1
 var wave_satellites_spawned: int = 0
 var satellites_collected_total: int = 0
@@ -74,16 +75,31 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 
-	current_satellite = satellite_scene.instantiate() as SatelliteBeacon
-	current_satellite.global_position = target_pos
-	current_satellite.satellite_index = current_satellite_idx
-	main_game.add_child.call_deferred(current_satellite)
-
-	current_satellite.planted.connect(_on_satellite_planted)
-	current_satellite.exited_perimeter.connect(_on_satellite_exited)
+	var is_transmutation: bool = (satellites_collected_total > 0 and satellites_collected_total % 2 == 1)
+	if is_transmutation:
+		var station := transmutation_scene.instantiate() as TransmutationStation
+		station.global_position = target_pos
+		current_satellite = station
+		main_game.add_child.call_deferred(station)
+		station.station_activated.connect(_on_transmutation_activated)
+		station.station_depleted.connect(func(): _on_satellite_exited(current_satellite_idx))
+	else:
+		var beacon := satellite_scene.instantiate() as SatelliteBeacon
+		beacon.global_position = target_pos
+		beacon.satellite_index = current_satellite_idx
+		current_satellite = beacon
+		main_game.add_child.call_deferred(beacon)
+		beacon.planted.connect(_on_satellite_planted)
+		beacon.exited_perimeter.connect(_on_satellite_exited)
 
 	if main_game.hud and is_instance_valid(main_game.hud):
 		main_game.hud.set_active_satellite(target_pos, current_satellite_idx)
+
+func _on_transmutation_activated(station: TransmutationStation) -> void:
+	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
+		return
+	if main_game.has_method("open_transmutation_modal"):
+		main_game.open_transmutation_modal(station)
 
 func _on_satellite_planted(index: int, _pos: Vector2) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():

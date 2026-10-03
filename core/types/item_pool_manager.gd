@@ -11,6 +11,9 @@ const PyroclasticBatteryEffectClass := preload("res://data/items/effects/pyrocla
 const CryoCondenserEffectClass := preload("res://data/items/effects/cryo_condenser_effect.gd")
 const PhotonicTransducerEffectClass := preload("res://data/items/effects/photonic_transducer_effect.gd")
 const OverdrainModuleEffectClass := preload("res://data/items/effects/overdrain_module_effect.gd")
+const QuantumKeyEffectClass := preload("res://data/items/effects/quantum_key_effect.gd")
+const CreditCardGreenEffectClass := preload("res://data/items/effects/credit_card_green_effect.gd")
+const CreditCardRedEffectClass := preload("res://data/items/effects/credit_card_red_effect.gd")
 
 @export var master_catalog: Array[ItemData] = []
 
@@ -45,7 +48,11 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		# 3 Ítems con anti-sinergias y penalizaciones explícitas (R3)
 		{"id": &"glass_reactor", "name": "Reactor de Cristal", "desc": "+50% Daño Base, pero -30% Vida Máxima.", "stat": &"base_damage", "val": 0.50, "pct": true, "sec_stat": &"max_health", "sec_val": -0.30, "sec_pct": true, "cost": 70, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"damage", &"penalty", &"anti_synergy"]},
 		{"id": &"heavy_condenser", "name": "Condensador Pesado", "desc": "+60% Daño Base, pero -25% Cadencia de Ataque.", "stat": &"base_damage", "val": 0.60, "pct": true, "sec_stat": &"attack_speed", "sec_val": -0.25, "sec_pct": true, "cost": 70, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"damage", &"penalty", &"anti_synergy"]},
-		{"id": &"tachyon_piercer", "name": "Perforador Taquiónico", "desc": "+30% Probabilidad Crítica, pero -20% Velocidad de Movimiento.", "stat": &"crit_chance", "val": 0.30, "pct": false, "sec_stat": &"move_speed", "sec_val": -0.20, "sec_pct": true, "cost": 75, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"crit", &"penalty", &"anti_synergy"]}
+		{"id": &"tachyon_piercer", "name": "Perforador Taquiónico", "desc": "+30% Probabilidad Crítica, pero -20% Velocidad de Movimiento.", "stat": &"crit_chance", "val": 0.30, "pct": false, "sec_stat": &"move_speed", "sec_val": -0.20, "sec_pct": true, "cost": 75, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"crit", &"penalty", &"anti_synergy"]},
+		# 3 Ítems de Economía y Cofres (Megabonk / RoR2)
+		{"id": &"quantum_key", "name": "Llave Cuántica", "desc": "Probabilidad hiperbólica de abrir cofres gratis y congela su coste.", "stat": &"", "val": 0.0, "pct": false, "cost": 50, "rarity": Enums.Rarity.COMMON, "tags": [&"utility", &"economy", &"chest"], "effects": [QuantumKeyEffectClass.new()]},
+		{"id": &"credit_card_green", "name": "Tarjeta Cuántica (Verde)", "desc": "+5% Suerte permanente por cada cofre abierto, pero +10% recargo al coste.", "stat": &"", "val": 0.0, "pct": false, "cost": 70, "rarity": Enums.Rarity.UNCOMMON, "tags": [&"utility", &"luck", &"economy"], "effects": [CreditCardGreenEffectClass.new()]},
+		{"id": &"credit_card_red", "name": "Tarjeta Cuántica (Roja)", "desc": "+2% Daño Global permanente por cada cofre abierto.", "stat": &"", "val": 0.0, "pct": false, "cost": 85, "rarity": Enums.Rarity.RARE, "tags": [&"offense", &"damage", &"economy"], "effects": [CreditCardRedEffectClass.new()]}
 	]
 	var icon_map := {
 		&"botas": "res://assets/icons/items/icon_boots.svg",
@@ -69,6 +76,9 @@ static func create_canonical_stat_items() -> Array[ItemData]:
 		&"glass_reactor": "res://assets/icons/items/icon_sword.svg",
 		&"heavy_condenser": "res://assets/icons/items/icon_gauntlet.svg",
 		&"tachyon_piercer": "res://assets/icons/items/icon_glasses.svg",
+		&"quantum_key": "res://assets/icons/items/icon_quantum_key.svg",
+		&"credit_card_green": "res://assets/icons/items/icon_credit_card_green.svg",
+		&"credit_card_red": "res://assets/icons/items/icon_credit_card_red.svg",
 	}
 
 	var items: Array[ItemData] = []
@@ -239,3 +249,51 @@ func roll_item(rarity_filter: Enums.Rarity = -1 as Enums.Rarity) -> ItemData:
 	if eligible.is_empty():
 		return _active_pool.pick_random() if not _active_pool.is_empty() else null
 	return eligible.pick_random()
+
+## Realiza una tirada estocástica ponderada por rareza modulada por la Suerte del jugador
+func roll_item_by_weights(weights: Dictionary, player_luck: float = 1.0) -> ItemData:
+	if _active_pool.is_empty():
+		if master_catalog.is_empty():
+			_populate_default_catalog()
+		_active_pool = master_catalog.duplicate()
+
+	var total_weight: float = 0.0
+	var weighted_map: Dictionary = {}
+	var luck_mult: float = maxf(0.1, player_luck)
+
+	for r in weights.keys():
+		var rarity: Enums.Rarity = r as Enums.Rarity
+		var base_w: float = float(weights[r])
+		var adjusted_w: float = base_w
+		if rarity == Enums.Rarity.COMMON:
+			adjusted_w = base_w * maxf(0.05, 1.0 - (luck_mult - 1.0) * 0.25)
+		elif rarity == Enums.Rarity.UNCOMMON:
+			adjusted_w = base_w * (1.0 + (luck_mult - 1.0) * 0.15)
+		elif rarity == Enums.Rarity.RARE:
+			adjusted_w = base_w * (1.0 + (luck_mult - 1.0) * 0.35)
+		elif rarity == Enums.Rarity.EPIC:
+			adjusted_w = base_w * (1.0 + (luck_mult - 1.0) * 0.55)
+		elif rarity == Enums.Rarity.LEGENDARY:
+			adjusted_w = base_w * (1.0 + (luck_mult - 1.0) * 0.80)
+
+		adjusted_w = maxf(0.0, adjusted_w)
+		weighted_map[rarity] = adjusted_w
+		total_weight += adjusted_w
+
+	if total_weight <= 0.0:
+		return roll_item()
+
+	var roll_val: float = randf() * total_weight
+	var accum: float = 0.0
+	var chosen_rarity: Enums.Rarity = Enums.Rarity.COMMON
+
+	for r in weighted_map.keys():
+		accum += float(weighted_map[r])
+		if roll_val <= accum:
+			chosen_rarity = r as Enums.Rarity
+			break
+
+	var candidate: ItemData = roll_item(chosen_rarity)
+	if not candidate:
+		candidate = roll_item()
+	return candidate

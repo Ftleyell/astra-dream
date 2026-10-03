@@ -34,6 +34,10 @@ var _pending_satellite_index: int = -1
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
 var bosses_defeated_count: int = 0
 
+var chest_director: ChestDirector = null
+var chest_reward_modal: ChestRewardModal = null
+var transmutation_modal: TransmutationModal = null
+
 const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_satellite_coordinator.gd")
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
 
@@ -207,6 +211,25 @@ func _ready() -> void:
 	modal_coordinator.game_over_modal = game_over_modal
 	modal_coordinator.character_stats_overlay = character_stats_overlay
 	modal_coordinator.resume_encounters_requested.connect(_resume_pending_encounters_after_modal)
+
+	# 1. Sistema de Cofres Espaciales
+	chest_director = ChestDirector.new()
+	chest_director.name = "ChestDirector"
+	add_child(chest_director)
+	var chest_cfg = load("res://data/balance/default_chest_economy.tres") as ChestEconomyConfig
+	chest_director.initialize(chest_cfg, 0)
+	chest_director.chest_opened.connect(_on_chest_opened_from_director)
+
+	var c_modal_scene: PackedScene = preload("res://scenes/ui/modals/chest_reward_modal.tscn")
+	chest_reward_modal = c_modal_scene.instantiate() as ChestRewardModal
+	add_child(chest_reward_modal)
+	modal_coordinator.chest_reward_modal = chest_reward_modal
+
+	# 2. Forja Cuántica (Microondas)
+	var t_modal_scene: PackedScene = preload("res://scenes/ui/modals/transmutation_modal.tscn")
+	transmutation_modal = t_modal_scene.instantiate() as TransmutationModal
+	add_child(transmutation_modal)
+	modal_coordinator.transmutation_modal = transmutation_modal
 
 	if not narrative_director.is_inside_tree():
 		narrative_director.name = "CombatNarrativeDirector"
@@ -597,6 +620,7 @@ func _process(delta: float) -> void:
 			if enemy_spawner and enemy_spawner.has_method("set_wave"):
 				enemy_spawner.set_wave(1)
 			_spawn_next_satellite_for_wave()
+			_spawn_wave_chests()
 			save_current_run_state()
 	else:
 		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en cualquier estado)
@@ -615,6 +639,7 @@ func _process(delta: float) -> void:
 				_wave_encounter_timer = 2.0
 				save_current_run_state()
 				_spawn_next_satellite_for_wave()
+				_spawn_wave_chests()
 				if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
 					space_object_spawner.notify_wave_started(current_wave)
 
@@ -847,6 +872,21 @@ func _on_arcana_modal_closed() -> void:
 func _on_level_up_modal_closed() -> void:
 	if modal_coordinator:
 		modal_coordinator.on_level_up_modal_closed()
+
+func _spawn_wave_chests() -> void:
+	if chest_director and is_instance_valid(player):
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if player.inventory else 0
+		chest_director.spawn_wave_chests(player.global_position, self, current_wave, green_cards)
+
+func _on_chest_opened_from_director(item: ItemData, was_free: bool, _cost: int) -> void:
+	if chest_reward_modal and item:
+		var total_stacks: int = player.inventory.get_item_count(item.item_id) if (player and player.inventory) else 1
+		chest_reward_modal.open_reward(item, was_free, total_stacks)
+	save_current_run_state()
+
+func open_transmutation_modal(station: TransmutationStation) -> void:
+	if transmutation_modal and is_instance_valid(player):
+		transmutation_modal.open_for_station(player, station)
 
 func _resume_pending_encounters_after_modal() -> void:
 	if _pending_rival_for_dialogue != null and is_instance_valid(_pending_rival_for_dialogue):

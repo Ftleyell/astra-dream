@@ -70,7 +70,8 @@ static func get_run_state(main_game: Node) -> Dictionary:
 		"rival_queue": main_game.get("rival_queue").duplicate() if main_game.get("rival_queue") else [],
 		"_wave_encounter_checked_for_wave": main_game.get("_wave_encounter_checked_for_wave"),
 		"_wave_encounter_spawned_for_wave": main_game.get("_wave_encounter_spawned_for_wave"),
-		"_slot_machine_pity_chance": main_game.get("_slot_machine_pity_chance")
+		"_slot_machine_pity_chance": main_game.get("_slot_machine_pity_chance"),
+		"paid_chests_count": main_game.chest_director.paid_chests_count if ("chest_director" in main_game and main_game.chest_director) else 0
 	}
 
 static func save_run_state(main_game: Node) -> void:
@@ -93,6 +94,8 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	main_game.set("_wave_encounter_spawned_for_wave", int(run_data.get("_wave_encounter_spawned_for_wave", main_game.get("current_wave"))))
 	main_game.set("_slot_machine_pity_chance", float(run_data.get("_slot_machine_pity_chance", 0.25)))
 	main_game.set("_wave_encounter_pending", false)
+	if "chest_director" in main_game and main_game.chest_director and run_data.has("paid_chests_count"):
+		main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
 
 	if run_data.has("rivals_spared"):
 		var rivals_spared: Array = main_game.get("rivals_spared")

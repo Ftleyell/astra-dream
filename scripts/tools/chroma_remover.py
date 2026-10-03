@@ -92,7 +92,7 @@ def process_file(in_path: str, out_path: str, key_hsv: tuple[float, float, float
     clean_im = remove_chroma(im, key_hsv, hue_tolerance=tol, despill=despill)
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     clean_im.save(out_path, "PNG")
-    print(f"  ✓ Guardado con éxito: {out_path}")
+    print(f"  [OK] Guardado con exito: {out_path}")
 
 def main():
     parser = argparse.ArgumentParser(description="Remueve fondos chroma key de sprites generados por IA.")

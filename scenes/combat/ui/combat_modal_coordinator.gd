@@ -21,6 +21,8 @@ var game_over_modal: Node = null
 var character_stats_overlay: Node = null
 var slot_machine_modal: Node = null
 var slot_machine_reward_modal: Node = null
+var chest_reward_modal: Node = null
+var transmutation_modal: Node = null
 
 # Estado de colas pendientes
 var pending_arcana_picks: int = 0
@@ -38,6 +40,12 @@ func is_pause_menu_active() -> bool:
 func is_satellite_shop_active() -> bool:
 	return satellite_shop != null and satellite_shop.visible
 
+func is_transmutation_active() -> bool:
+	return transmutation_modal != null and transmutation_modal.visible
+
+func is_chest_reward_active() -> bool:
+	return chest_reward_modal != null and chest_reward_modal.visible
+
 func is_arcana_modal_active() -> bool:
 	return arcana_modal != null and (arcana_modal.visible or ("is_active" in arcana_modal and arcana_modal.is_active))
 
@@ -51,7 +59,7 @@ func is_game_over_active() -> bool:
 	return game_over_modal != null and (game_over_modal.visible or ("is_active" in game_over_modal and game_over_modal.is_active))
 
 func is_upgrade_or_shop_modal_active() -> bool:
-	if is_satellite_shop_active() or is_level_up_modal_active() or is_arcana_modal_active():
+	if is_satellite_shop_active() or is_transmutation_active() or is_chest_reward_active() or is_level_up_modal_active() or is_arcana_modal_active():
 		return true
 	if is_pause_menu_active() or is_game_over_active() or is_character_stats_active():
 		return true
