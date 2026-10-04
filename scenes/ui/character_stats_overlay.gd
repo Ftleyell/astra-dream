@@ -335,6 +335,12 @@ func _populate_stats_display(data: CharacterData, stats: CharacterStats, col: Co
 				{"name": "REGENERACIÓN DE VIDA", "key": &"health_regen", "base": data.health_regen, "fmt": "%.1f", "suffix": "/s"},
 				{"name": "ARMADURA", "key": &"armor", "base": data.armor, "fmt": "%.0f", "suffix": ""},
 			]
+		},
+		{
+			"title": "☣️ RIESGO Y CORRUPCIÓN",
+			"stats": [
+				{"name": "MALDICIÓN", "key": &"curse", "base": 0.0, "fmt": "%.0f", "suffix": " pts"},
+			]
 		}
 	]
 

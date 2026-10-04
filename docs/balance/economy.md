@@ -69,30 +69,41 @@ Baliza interactiva opcional que aparece aleatoriamente en el cuadrante de combat
 Los cofres se invocan dinámicamente en el espacio mediante `ChestDirector`:
 * **Cápsula de Chatarra (`SALVAGE_CAPSULE`):**
   * Coste: `0 Créditos` (siempre gratis).
-  * Pool: Ítems comunes básicos de economía, supervivencia y aceleración inicial.
+  * Pool: Ítems comunes básicos de economía, supervivencia y aceleración inicial. Sinergiza con `heavy_salvager` (+2 HP Max y +3c por cápsula).
 * **Cofre Regular (`REGULAR`):**
-  * Coste Base: `25 Créditos`.
-  * Fórmula de Inflación Cuadrática: `C(n) = CosteBase + 8*n + 1.5*n^2` (donde `n` es el número de cofres abiertos con pago).
-  * Recargo por Tarjeta Verde: `+10% acumulativo por stack`.
-  * Pool: Ítems poco comunes y raros, procs reactivos y trade-offs tácticos.
+  * Coste Base: `20 Créditos` + `4 * Oleada`.
+  * **Modelo Híbrido Wave-Inflation Amortiguado:**
+    $$C(w, k) = \lfloor (20 + 4w) \cdot (1 + 0.15k) \cdot (1 + 0.10 \cdot \text{cards}) \cdot \text{key\_discount} \rfloor$$
+    * $w \in [1, 16]$: Oleada activa.
+    * $k \in \mathbb{N}_0$: Aperturas de cofres locales en la oleada activa (se reinicia $k \to 0$ al pasar de oleada).
+    * $\text{cards}$: Stacks de Tarjeta de Crédito Verde (`credit_card_green`).
+    * $\text{key\_discount}$: Multiplicador de $0.80$ (-20% de descuento) si el jugador porta al menos 1 Llave Cuántica en inventario.
+  * Ejemplos calibrados:
+    * Oleada 1 ($k=0$): 24c (19c con Llave).
+    * Oleada 1 ($k=3$): 34c (27c con Llave).
+    * Oleada 8 ($k=0$): 52c.
+    * Oleada 16 ($k=0$): 84c.
 * **Cofre Dorado (`GOLDEN`):**
-  * Coste Fijo: `150 Créditos` (no inflacionario). Inmune a la apertura por llaves.
-  * Pool: Ítems épicos, legendarios y núcleos de conversión de alto impacto.
+  * Coste Fijo: `120 Créditos` (no inflacionario, inmune a consumo o descuento por Llaves Cuánticas).
+  * Pool: Ítems épicos, legendarios y de gran sinergia.
 
-### B. Llave Cuántica (`quantum_key`) y Mecánica de Descuento
-* **Efecto Pasivo:** Proporciona una probabilidad asintótica de apertura gratuita en cofres regulares:
-  `P(gratis) = 1.0 - (1.0 / (1.0 + 0.1 * keys))`
-  * 1 Llave: ~9.1%
-  * 10 Llaves: 50.0%
-  * 90 Llaves: 90.0%
-* **Congelación de Inflación:** Al activarse la apertura gratuita con llave, el contador de cofres pagados `n` **no se incrementa**, congelando el coste de los siguientes cofres.
-* **HUD Integrado:** Píldora cian translúcida centrada sobre el contenedor de armas (`WeaponSlotsRow`) mostrando `x{N} ({%}% Gratis)` con animación de escala elástica al recolectar.
+### B. Llave Cuántica (`quantum_key`) y Consumo Activo / Descuento Pasivo
+* **Consumo Activo (Apertura Gratuita):** Si el jugador posee al menos 1 Llave Cuántica, al interactuar con un Cofre Regular se consume **1 llave** para abrirlo completamente gratis (`0c`), **sin incrementar la inflación local $k$** ni el contador de compras pagadas.
+* **Descuento Pasivo (-20%):** Si el jugador decide o debe pagar con créditos teniendo llaves, se le aplica un 20% de descuento permanente en el coste monetario de compra.
+* **HUD Integrado:** Píldora cian translúcida (`KeyBadge`) sobre las ranuras de armas (`WeaponSlotsRow`), mostrando `x{N} (-20% Desc.)` con animación elástica al recolectar.
 
-### C. Modal de Selección Táctica de 3 Ítems (`ChestRewardModal`)
+### C. Modal de Selección Táctica de 3 Ítems (`ChestRewardModal`) & Sistema de Pity PRD
 * Al abrir cualquier cofre, el combate se pausa y se presenta un borrador de 3 ítems no repetidos generados por `ItemPoolManager.roll_chest_draft()`.
-* Selección mediante atajos de teclado numérico `[1]`, `[2]`, `[3]` o clic directo sobre la carta.
+* **Distribución Pseudo-Aleatoria (PRD) y Pity System Dinámico:**
+  * Contador interno de tiradas sin rarezas altas:
+    * Umbral Raro: 5 cofres (reducido por suerte).
+    * Umbral Épico: 10 cofres (reducido por suerte).
+    * Umbral Legendario: 15 cofres (reducido por suerte).
+  * Reducción por Suerte (`player_luck`): $\Delta = \lfloor \text{luck} / 20 \rfloor$, con piso mínimo garantizado de 5 cofres para Legendario.
+  * Al forzar o salir una rareza alta, su contador se reinicia limpiamente a cero.
 
 ### D. Forja Cuántica Orbital (`TransmutationStation`)
-* Estación interactiva desplegada en fases avanzadas con **3 usos máximos**.
-* Permite al jugador seleccionar un ítem duplicado o no deseado de su inventario para transmutarlo en otro ítem aleatorio de la misma categoría de rareza.
+* Estación interactiva desplegada en fases avanzadas con **3 usos base** (aumentados a **4 usos** con el artefacto `quantum_recompiler`).
+* Permite al jugador seleccionar un ítem de su inventario para transmutarlo en otro ítem aleatorio de la misma categoría de rareza.
+
 

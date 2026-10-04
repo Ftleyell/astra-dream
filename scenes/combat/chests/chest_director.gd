@@ -30,6 +30,8 @@ func initialize(economy_cfg: ChestEconomyConfig, starting_paid_chests: int = 0) 
 		item_pool_manager = ItemPoolManager.new()
 		item_pool_manager.name = "ChestItemPoolManager"
 		add_child(item_pool_manager)
+	else:
+		item_pool_manager.reset_pity_counters()
 
 ## Notificación de inicio de nueva oleada para reiniciar inflación local
 func on_new_wave(new_wave: int, green_card_stacks: int = 0) -> void:

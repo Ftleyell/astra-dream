@@ -933,8 +933,10 @@ func on_salvage_capsule_opened(player_ref: Player = null) -> void:
 	var target_player: Player = player_ref if player_ref else player
 	if is_instance_valid(target_player) and target_player.inventory and target_player.inventory.get_item_count(&"heavy_salvager") > 0:
 		if target_player.character_stats:
-			var cur_max_hp: float = target_player.character_stats.get_stat(&"max_health")
-			target_player.character_stats.set_base_stat(&"max_health", cur_max_hp + 2.0)
+			var cur_base_hp: float = target_player.character_stats.get_base_stat(&"max_health")
+			target_player.character_stats.set_base_stat(&"max_health", cur_base_hp + 2.0)
+		if target_player.has_method("heal"):
+			target_player.heal(2.0)
 		target_player.run_credits += 3
 		if target_player.has_signal("credits_changed"):
 			target_player.credits_changed.emit(target_player.run_credits)

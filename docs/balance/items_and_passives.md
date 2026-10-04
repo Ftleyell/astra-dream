@@ -4,39 +4,38 @@ Este documento es la **fuente autoritativa** de balance para todos los objetos p
 
 ---
 
-## 1. Separación de Dominios: Level-Up vs Tienda Satelital
+## 1. Álgebra de Daño y Separación de Contenedores (3-Bucket Architecture)
 
-* **Subida de Nivel (`LevelUpModal` / `StatDeckManager`):**
-  * Dominio exclusivo de **estadísticas planas y porcentuales directas**.
-  * Oferta de exactamente **3 cartas** con impacto notable (+25% a +30% en stats principales).
-  * *Prohibición de Proyectiles Planos:* Las cartas de proyectil plano universal fueron eliminadas del pool común para evitar roturas tempranas del balance.
-* **Tienda del Satélite (`SatelliteShop` / `ItemPoolManager`):**
-  * Dominio exclusivo de **Sobrecargas (Trade-offs)**, **Artefactos Reactivos (Procs)** y **Núcleos de Conversión**.
-  * No ofrece stats planos vacíos; todo ítem del satélite confiere una mecánica diferenciada.
-  * Límites estrictos de acumulación (`max_stacks`).
+El daño de las armas y entidades se calcula mediante tres contenedores matemáticos desacoplados:
+$$D_{\text{final}} = (D_{\text{base}} + D_{\text{plano}}) \cdot \max(0.0, 1.0 + \sum B_{\text{aditivo}}) \cdot \prod \max(0.0, 1.0 + M_{\text{multiplicativo}})$$
+
+* **Contenedor 1 — Aditivo Plano ($D_{\text{plano}}$):** Cofres espaciales, mejoras base directas de armas y stats planos (`Enums.ModifierType.FLAT`).
+* **Contenedor 2 — Porcentual Aditivo ($\sum B_{\text{aditivo}}$):** Subidas de nivel ordinarias (`StatDeckManager`) sujetas a rendimientos decrecientes relativos (`Enums.ModifierType.ADDITIVE_PERCENT`).
+* **Contenedor 3 — Multiplicativo Puro ($\prod (1 + M_{\text{multiplicativo}})$):** Exclusivo de Módulos de Sobrecarga del Satélite, Artefactos de Conversión y Pactos Arcanos (`Enums.ModifierType.MULTIPLICATIVE`). Este factor escala de manera independiente, justificando matemáticamente las penalizaciones y riesgos implícitos.
 
 ---
 
 ## 2. Cartas de Estadísticas al Subir de Nivel (`StatDeckManager`)
 
-| Carta | Rareza | Bracket | Efecto Numérico Principal |
-| :--- | :--- | :--- | :--- |
-| **Músculo Sintético** | Común | Lv 1+ | `+25% Daño Base` |
-| **Gatillo Rápido** | Común | Lv 1+ | `+20% Cadencia de Ataque` |
-| **Visor Táctico** | Común | Lv 1+ | `+10% Probabilidad Crítica` |
-| **Propulsor Ligero** | Común | Lv 1+ | `+25 Velocidad de Movimiento` |
-| **Blindaje Básico** | Común | Lv 1+ | `+6 Armadura Plana` |
-| **Nanobots Médicos** | Común | Lv 1+ | `+1.5 Regeneración de Vida/s` |
-| **Núcleo de Potencia** | Rara | Lv 5+ | `+35% Daño Base` |
-| **Acelerador de Partículas** | Rara | Lv 5+ | `+30% Cadencia de Ataque` |
-| **Lente Focal** | Rara | Lv 5+ | `+40% Daño Crítico` |
-| **Imán Gravitacional** | Rara | Lv 5+ | `+60 Radio de Recogida` |
-| **Condensador de Flujo** | Rara | Lv 5+ | `+15% Reducción de Enfriamiento` |
-| **Blindaje Compuesto** | Rara | Lv 5+ | `+15 Armadura Plana` |
-| **Trébol Cuántico** | Rara | Lv 5+ | `+20 Suerte` |
-| **Escudo de Fase** | Épica | Lv 10+ | `+60 Vida Máxima, +12 Armadura` |
-| **Protocolo Berserker** | Épica | Lv 20 | `+50% Daño Crítico, +30% Cadencia` |
-| **Hiperpropulsión** | Épica | Lv 20 | `+45 Vel. Movimiento, +15% Evasión` |
+Las cartas de progresión ordinaria otorgan incrementos calibrados y aditivos (entre +6% y +25% según la métrica) para evitar la inflación descontrolada:
+
+| Carta | Rareza | Bracket | Efecto Numérico Calibrado | Tipo de Modificador |
+| :--- | :--- | :--- | :--- | :---: |
+| **card_dmg_1 (Músculo Sintético)** | Común | Lv 1+ | `+12% Daño Base` | `ADDITIVE_PERCENT` |
+| **card_dmg_2 (Núcleo de Potencia)** | Rara | Lv 5+ | `+24% Daño Base` | `ADDITIVE_PERCENT` |
+| **card_atk_spd (Gatillo Rápido)** | Común | Lv 1+ | `+10% Cadencia de Ataque` | `ADDITIVE_PERCENT` |
+| **card_crit_chance (Visor Táctico)** | Común | Lv 1+ | `+6% Probabilidad Crítica` | `FLAT` |
+| **card_crit_dmg (Lente Focal)** | Rara | Lv 5+ | `+30% Daño Crítico` | `ADDITIVE_PERCENT` |
+| **card_hp_up (Nanobots Médicos)** | Común | Lv 1+ | `+25.0 Vida Máxima` | `FLAT` |
+| **card_speed_up (Propulsor Ligero)** | Común | Lv 1+ | `+10% Velocidad de Movimiento` | `ADDITIVE_PERCENT` |
+| **card_armor_1 (Blindaje Básico)** | Común | Lv 1+ | `+3.0 Armadura Plana` | `FLAT` |
+| **card_armor_2 (Blindaje Reforzado)** | Rara | Lv 5+ | `+6.0 Armadura Plana` | `FLAT` |
+| **card_regen_1 (Regenerador Celular)** | Común | Lv 1+ | `+0.8 Regeneración HP/s` | `FLAT` |
+| **card_regen_2 (Reactor Bio-sintético)**| Rara | Lv 5+ | `+1.8 Regeneración HP/s` | `FLAT` |
+| **card_magnet_1 (Imán Gravitatorio)** | Común | Lv 1+ | `+35.0 Radio de Recogida` | `FLAT` |
+| **card_magnet_2 (Vórtice Magnético)** | Rara | Lv 5+ | `+70.0 Radio de Recogida` | `FLAT` |
+| **card_exp_1 (Chip de Aprendizaje)** | Común | Lv 1+ | `+12% Ganancia de EXP` | `ADDITIVE_PERCENT` |
+| **card_exp_2 (Algoritmo Neural)** | Rara | Lv 5+ | `+25% Ganancia de EXP` | `ADDITIVE_PERCENT` |
 
 ---
 
@@ -77,6 +76,32 @@ Este documento es la **fuente autoritativa** de balance para todos los objetos p
 | `overdrain_module` | **Módulo de Sobredrenaje** | Los impactos críticos curan 1 HP. | Tu Regeneración Pasiva de Vida se reduce a 0. | 1 | 115c |
 | `static_cell` | **Pila de Carga Estática** | Moverse acumula carga (0-100); a 100, el próximo ataque es un crítico garantizado. | Premia reposicionamiento táctico continuo. | 1 | 105c |
 | `stellar_scrap` | **Chatarra Estelar** | Al recibir daño letal, consume 100 créditos para resucitar al 30% HP (1 uso). | El saldo económico actúa como seguro de vida. | 1 | 120c |
+
+### D. Catálogo de los 12 Nuevos Ítems Estratégicos (Rework v0.6.0)
+
+#### 1. Categoría A: Riesgo y Maldición (Curse Enablers)
+| ID | Nombre | Rareza | Efecto Positivo (Multiplicativo / Plano) | Sacrificio / Maldición | Coste |
+| :--- | :--- | :---: | :--- | :--- | :---: |
+| `abyssal_contract` | **Pacto Abisal** | Rara | `+35% Daño Base (MULTIPLICATIVE)` | `+20 Maldición (FLAT)` (+20% mobs, +20% créditos) | 85c |
+| `antimatter_core` | **Núcleo de Antimateria** | Épica | `+100% Daño Crítico` con procs masivos | `-50% Regen HP (MULTIPLICATIVE)` y `+10 Maldición` | 110c |
+| `blood_capacitor` | **Capacitador Sanguíneo** | Rara | Carga de Dash acelerada y daño por ráfaga cinética | `-10% Vida Máxima (MULTIPLICATIVE)` | 80c |
+| `entropy_engine` | **Motor Entrópico** | Épica | Daño escala exponencialmente por punto de Maldición | `+15 Maldición (FLAT)` | 115c |
+
+#### 2. Categoría B: Sinergia Cruzada y Especialización
+| ID | Nombre | Rareza | Efecto Táctico | Etiquetas | Coste |
+| :--- | :--- | :---: | :--- | :--- | :---: |
+| `bifocal_lens` | **Lente Bifocal** | Rara | Convierte daño crítico excedente en onda de choque expansiva | `offense`, `crit`, `conversion` | 80c |
+| `inertial_thruster` | **Propulsor Inercial** | Poco Común | Convierte la velocidad de movimiento en daño de impacto balístico | `mobility`, `damage`, `kinetic` | 60c |
+| `chain_battery` | **Batería en Cadena** | Rara | Al absorber daño con escudo, dispara arcos de relámpago en cadena | `defense`, `proc`, `shield` | 75c |
+| `photonic_prism` | **Prisma Fotónico** | Poco Común | Bifurca los proyectiles energéticos en haces gemelos refractados | `offense`, `projectiles`, `bifurcation` | 65c |
+
+#### 3. Categoría C: Manipulación Espacial y Economía
+| ID | Nombre | Rareza | Efecto Táctico | Sinergia Específica | Coste |
+| :--- | :--- | :---: | :--- | :--- | :---: |
+| `orbital_relay` | **Repetidor Orbital** | Rara | Reduce el tiempo de despliegue satelital de 15.0s a 10.0s | Balizas satelitales en combate | 85c |
+| `quantum_recompiler` | **Recompilador Cuántico** | Poco Común | Otorga +1 uso adicional a las Forjas Cuánticas (4 usos en vez de 3) | Estación de Transmutación | 60c |
+| `heavy_salvager` | **Chatarrero Pesado** | Común | Abrir cápsulas de chatarra otorga permanentemente +2 Max HP y +3c | Cápsulas gratuitas | 45c |
+| `chronos_bank` | **Banco de Cronos** | Rara | Genera 10% de interés sobre créditos no gastados por oleada (tope 50c) | Inversión y ahorro | 75c |
 
 ---
 

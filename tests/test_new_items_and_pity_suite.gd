@@ -369,6 +369,12 @@ func _run_test_6_orbital_relay_and_quantum_recompiler() -> void:
 	station.check_quantum_recompiler(player)
 	_assert_test(station.max_uses == 4 and station.uses_remaining == 4, "Con quantum_recompiler, Forja Cuántica tiene 4 usos", "max: %d, rem: %d" % [station.max_uses, station.uses_remaining])
 
+	# Consumir un uso y volver a entrar / verificar que check_quantum_recompiler no resetea
+	station.consume_use()
+	_assert_test(station.uses_remaining == 3, "Uso consumido correctamente (quedan 3)")
+	station.check_quantum_recompiler(player)
+	_assert_test(station.uses_remaining == 3, "check_quantum_recompiler no resetea usos restantes a 4 tras consumo")
+
 	beacon.queue_free()
 	station.queue_free()
 	coordinator.queue_free()
@@ -419,6 +425,17 @@ func _run_test_7_chronos_bank_and_heavy_salvager() -> void:
 
 	_assert_test(is_equal_approx(new_hp, initial_hp + 2.0), "heavy_salvager otorgó +2.0 Vida Máxima", "got %.1f vs %.1f" % [new_hp, initial_hp + 2.0])
 	_assert_test(new_credits == initial_credits + 3, "heavy_salvager otorgó +3 créditos", "got %d vs %d" % [new_credits, initial_credits + 3])
+
+	# Verificar que modificadores existentes (ej. +20 HP flat) no se duplican indebidamente en la base
+	var hp_mod := CharacterStats.StatModifier.new(&"mod_test_heart", 20.0, Enums.ModifierType.FLAT, self)
+	player.stats.add_modifier(&"max_health", hp_mod)
+	var hp_before_mod_test := player.stats.get_stat(&"max_health")
+	var base_before_mod_test := player.stats.get_base_stat(&"max_health")
+	mg.on_salvage_capsule_opened(player)
+	var hp_after_mod_test := player.stats.get_stat(&"max_health")
+	var base_after_mod_test := player.stats.get_base_stat(&"max_health")
+	_assert_test(is_equal_approx(base_after_mod_test, base_before_mod_test + 2.0), "Base max_health subió exactamente +2.0 con modificadores presentes", "got %.1f vs %.1f" % [base_after_mod_test, base_before_mod_test + 2.0])
+	_assert_test(is_equal_approx(hp_after_mod_test, hp_before_mod_test + 2.0), "Efectivo max_health subió exactamente +2.0 sin duplicar modificadores", "got %.1f vs %.1f" % [hp_after_mod_test, hp_before_mod_test + 2.0])
 
 	mg.queue_free()
 	player.queue_free()

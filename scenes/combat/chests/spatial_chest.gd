@@ -201,8 +201,10 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 			mg.on_salvage_capsule_opened(player)
 		elif player and player.inventory and player.inventory.get_item_count(&"heavy_salvager") > 0:
 			if player.character_stats:
-				var cur_max_hp: float = player.character_stats.get_stat(&"max_health")
-				player.character_stats.set_base_stat(&"max_health", cur_max_hp + 2.0)
+				var cur_base_hp: float = player.character_stats.get_base_stat(&"max_health")
+				player.character_stats.set_base_stat(&"max_health", cur_base_hp + 2.0)
+			if player.has_method("heal"):
+				player.heal(2.0)
 			player.run_credits += 3
 			if player.has_signal("credits_changed"):
 				player.credits_changed.emit(player.run_credits)

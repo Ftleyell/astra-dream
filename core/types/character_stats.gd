@@ -62,6 +62,9 @@ func set_base_stat(stat_name: StringName, val: float) -> void:
 	_is_dirty[stat_name] = true
 	stat_changed.emit(stat_name, get_stat(stat_name))
 
+func get_base_stat(stat_name: StringName) -> float:
+	return _base_stats.get(stat_name, 0.0)
+
 func add_modifier(stat_name: StringName, mod: StatModifier) -> void:
 	if not _modifiers.has(stat_name):
 		_modifiers[stat_name] = []

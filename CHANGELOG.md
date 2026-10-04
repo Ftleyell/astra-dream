@@ -3,6 +3,42 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [0.6.0] - 2026-10-03 — Rework Maestro de Balance, Álgebra de Daño, Economía Híbrida, Balística & 12 Nuevos Ítems
+
+### Añadido
+* **Fase 1: Álgebra de Daño en 3 Contenedores y Sistema de Maldición (`CharacterStats` & `StatDeckManager`):**
+  * Desacoplamiento matemático estricto: $(D_{\text{base}} + D_{\text{plano}}) \cdot (1 + \sum B_{\text{aditivo}}) \cdot \prod (1 + M_{\text{multiplicativo}})$.
+  * Nuevo enum `Enums.ModifierType` (`FLAT`, `ADDITIVE_PERCENT`, `MULTIPLICATIVE`).
+  * Estadística base `curse` con escalado dinámico (+0.5% velocidad y densidad enemiga por punto) y bonificación de créditos (+1% por punto de maldición).
+  * Rebalanceo numérico de cartas de subida de nivel para mitigar la inflación pasiva (+12%/+24% daño aditivo, +10% cadencia, +6% crítico plano, +30% crítico aditivo).
+* **Fase 2: Economía Híbrida Wave-Inflation y Consumo Activo de Llaves (`SpatialChest` & `ChestDirector`):**
+  * Transición de curva cuadrática a fórmula híbrida de oleada: $C(w, k) = \lfloor (20 + 4w) \cdot (1 + 0.15k) \cdot \text{key\_discount} \rfloor$.
+  * Reseteo automático de inflación local ($k \to 0$) al avanzar de oleada en `ChestDirector`.
+  * Llave Cuántica (`quantum_key`): Consumo activo (1 llave abre un cofre regular gratis a 0c sin aumentar $k$) y descuento pasivo permanente del -20% en pagos con créditos.
+  * Cofre Dorado fijado en 120 créditos inmune a llaves.
+* **Fase 3: Balística de Armas, Coeficientes de Activación (Proc) y Protocolo OSP (`WeaponData`, `Player` & `BulletServer`):**
+  * Calibración de `proc_coefficient` en todo el arsenal (0.10 a 1.00).
+  * **Regla Cero Balística:** Prohibición absoluta de efectos secundarios en cadena ($\kappa_{\text{child}} = 0.0$).
+  * Enfriamiento Interno Dinámico (ICD Throttling) para armas de alta frecuencia continua (`tachyon_beam`, `hive_cannon`).
+  * **Protocolo One-Shot Protection (OSP):** Supervivencia garantizada con al menos 1 HP y 0.5s de invulnerabilidad táctica si el impacto letal ocurre con $\ge 90\%$ de salud/escudo combinados.
+  * Compensación temprana para armas pesadas: Pulso a quemarropa (< 80px) con 30% daño y 250px/s knockback, fragmentación de Scatter Laser y aura Stutter-Field en recargas.
+* **Fase 4: Catálogo de 12 Nuevos Ítems Estratégicos y Sistema de Pity PRD (`ItemPoolManager`):**
+  * 12 nuevos artefactos tácticos divididos en 3 categorías:
+    * *Riesgo y Maldición:* `abyssal_contract`, `antimatter_core`, `blood_capacitor`, `entropy_engine`.
+    * *Sinergia Cruzada:* `bifocal_lens`, `inertial_thruster`, `chain_battery`, `photonic_prism`.
+    * *Espacio y Economía:* `orbital_relay` (10s despliegue de satélite), `quantum_recompiler` (+1 uso en Forja Cuántica), `heavy_salvager` (+2 HP y +3c por cápsula), `chronos_bank` (10% interés por oleada, cap 50c).
+  * Corrección de `nanotitanium_plating` a `FLAT` (+3.0 armadura) para pilotos con 0 base.
+  * Sistema de Pity Dinámico Pseudo-Aleatorio (PRD) con aceleración de umbrales por Suerte (`player_luck`).
+* **Suites de Pruebas Unitarias Automatizadas (310 Pruebas Totales Headless):**
+  * `test_damage_buckets_runner.tscn` (17 pruebas).
+  * `test_hybrid_chest_economy_runner.tscn` (45 pruebas).
+  * `test_proc_coefficients_and_osp_runner.tscn` (66 pruebas).
+  * `test_new_items_and_pity_runner.tscn` (153 pruebas).
+  * `test_chest_economy_runner.tscn` (29 pruebas).
+  * `test_satellite_items_runner.tscn` (4/4 suites).
+
+---
+
 ## [0.5.1] - 2026-10-03 — Economía de Cofres Espaciales, Llaves Cuánticas y Draft Táctico
 
 ### Añadido

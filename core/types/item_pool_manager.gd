@@ -411,17 +411,17 @@ func roll_chest_draft(chest_type_int: int, weights: Dictionary, player_luck: flo
 			if not duplicate_found:
 				results.append(candidate)
 
-	while results.size() < count and not _active_pool.is_empty():
-		var fallback: ItemData = _active_pool.pick_random()
-		var dup := false
-		for ex in results:
-			if ex.item_id == fallback.item_id:
-				dup = true
-				break
-		if not dup:
-			results.append(fallback)
-		else:
-			break
+	if results.size() < count:
+		for fallback: ItemData in _active_pool:
+			var dup := false
+			for ex in results:
+				if ex.item_id == fallback.item_id:
+					dup = true
+					break
+			if not dup:
+				results.append(fallback)
+				if results.size() >= count:
+					break
 
 	# PRD counter reset según la mayor rareza obtenida en el draft de cofre regular
 	if chest_type_int == 1:

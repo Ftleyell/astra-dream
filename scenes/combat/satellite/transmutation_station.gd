@@ -19,6 +19,7 @@ var uses_remaining: int = 3
 var is_active: bool = false
 var player_inside: bool = false
 var is_depleted: bool = false
+var _recompiler_applied: bool = false
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
@@ -39,13 +40,16 @@ func _ready() -> void:
 func check_quantum_recompiler(player_override: Node = null) -> void:
 	var target_player: Node = player_override if player_override else (get_tree().get_first_node_in_group("player") if get_tree() else null)
 	if target_player and "inventory" in target_player and target_player.inventory:
-		if target_player.inventory.has_method("get_item_count") and target_player.inventory.get_item_count(&"quantum_recompiler") > 0:
+		var has_recompiler: bool = target_player.inventory.has_method("get_item_count") and target_player.inventory.get_item_count(&"quantum_recompiler") > 0
+		if has_recompiler and not _recompiler_applied:
+			_recompiler_applied = true
 			max_uses = 4
-			uses_remaining = 4
+			uses_remaining = mini(4, uses_remaining + 1)
 			_update_label()
-		else:
+		elif not has_recompiler and _recompiler_applied:
+			_recompiler_applied = false
 			max_uses = 3
-			uses_remaining = 3
+			uses_remaining = mini(3, uses_remaining)
 			_update_label()
 
 func _process(delta: float) -> void:

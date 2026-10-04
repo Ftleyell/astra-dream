@@ -12,6 +12,10 @@ var _satellite_banner_tween: Tween = null
 var _unlock_banner_node: Control = null
 var _unlock_banner_tween: Tween = null
 
+var _tactical_alert_node: Control = null
+var _tactical_alert_tween: Tween = null
+var _tactical_alert_style: StyleBoxFlat = null
+
 func show_satellite_banner(index: int, hud_node: CanvasLayer) -> void:
 	if not _satellite_banner_node:
 		_create_satellite_banner_ui(hud_node)
