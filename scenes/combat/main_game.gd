@@ -658,6 +658,7 @@ func _process(delta: float) -> void:
 		if not is_major_combat_active:
 			wave_timer -= delta
 			if wave_timer <= 0.0:
+				_on_wave_completed()
 				current_wave += 1
 				wave_timer = WAVE_DURATION
 				wave_satellites_spawned = 0
@@ -912,6 +913,31 @@ func _spawn_wave_chests() -> void:
 
 func _on_chest_opened_from_director(_item: ItemData, _was_free: bool, _cost: int) -> void:
 	save_current_run_state()
+
+func _on_wave_completed() -> void:
+	apply_chronos_bank_interest()
+
+func apply_chronos_bank_interest() -> void:
+	if not is_instance_valid(player) or not player.inventory:
+		return
+	if player.inventory.get_item_count(&"chronos_bank") > 0:
+		var unspent: int = player.run_credits
+		if unspent > 0:
+			var interest: int = mini(50, int(floor(float(unspent) * 0.10)))
+			if interest > 0:
+				player.run_credits += interest
+				if player.has_signal("credits_changed"):
+					player.credits_changed.emit(player.run_credits)
+
+func on_salvage_capsule_opened(player_ref: Player = null) -> void:
+	var target_player: Player = player_ref if player_ref else player
+	if is_instance_valid(target_player) and target_player.inventory and target_player.inventory.get_item_count(&"heavy_salvager") > 0:
+		if target_player.character_stats:
+			var cur_max_hp: float = target_player.character_stats.get_stat(&"max_health")
+			target_player.character_stats.set_base_stat(&"max_health", cur_max_hp + 2.0)
+		target_player.run_credits += 3
+		if target_player.has_signal("credits_changed"):
+			target_player.credits_changed.emit(target_player.run_credits)
 
 func open_transmutation_modal(station: TransmutationStation) -> void:
 	if transmutation_modal and is_instance_valid(player):

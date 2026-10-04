@@ -20,6 +20,11 @@ const CreditCardRedEffectClass := preload("res://data/items/effects/credit_card_
 var _active_pool: Array[ItemData] = []
 var _in_run_banished: Array[StringName] = []
 
+# Pseudo-Random Distribution (PRD) & Pity Tracking
+var chests_since_last_rare: int = 0
+var chests_since_last_epic: int = 0
+var chests_since_last_legendary: int = 0
+
 func _ready() -> void:
 	if master_catalog.is_empty():
 		_populate_default_catalog()
@@ -119,7 +124,7 @@ static func create_satellite_shop_items() -> Array[ItemData]:
 		{"id": &"collimator_lens", "name": "Lente Colimadora", "desc": "+15% Probabilidad Crítica, pero -10% Velocidad de Movimiento.", "stat": &"crit_chance", "val": 0.15, "pct": false, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"move_speed", "sec_val": -0.10, "sec_pct": true, "sec_mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 60, "rarity": Enums.Rarity.UNCOMMON, "max_stacks": 2, "tags": [&"offense", &"crit", &"penalty", &"tradeoff"]},
 		{"id": &"split_salvo", "name": "Salva Dividida", "desc": "+1 Proyectil Adicional, pero -18% Daño por Proyectil.", "stat": &"projectile_count", "val": 1.0, "pct": false, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"base_damage", "sec_val": -0.18, "sec_pct": true, "sec_mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 75, "rarity": Enums.Rarity.RARE, "max_stacks": 1, "tags": [&"offense", &"projectiles", &"penalty", &"tradeoff"]},
 		{"id": &"rapid_injector", "name": "Inyector Rápido", "desc": "+20% Cadencia de Ataque, pero -10% Daño Base.", "stat": &"attack_speed", "val": 0.20, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"base_damage", "sec_val": -0.10, "sec_pct": true, "sec_mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 65, "rarity": Enums.Rarity.UNCOMMON, "max_stacks": 2, "tags": [&"offense", &"speed", &"penalty", &"tradeoff"]},
-		{"id": &"nanotitanium_plating", "name": "Revestimiento Nanotitanio", "desc": "+3 Armadura Base, pero -12% Velocidad de Movimiento.", "stat": &"armor", "val": 3.0, "pct": false, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"move_speed", "sec_val": -0.12, "sec_pct": true, "sec_mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 55, "rarity": Enums.Rarity.COMMON, "max_stacks": 2, "tags": [&"defense", &"armor", &"penalty", &"tradeoff"]},
+		{"id": &"nanotitanium_plating", "name": "Revestimiento Nanotitanio", "desc": "+3 Armadura Base, pero -12% Velocidad de Movimiento.", "stat": &"armor", "val": 3.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "sec_stat": &"move_speed", "sec_val": -0.12, "sec_pct": true, "sec_mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 55, "rarity": Enums.Rarity.COMMON, "max_stacks": 2, "tags": [&"defense", &"armor", &"penalty", &"tradeoff"]},
 		{"id": &"afterburn_thruster", "name": "Post-ignición", "desc": "+20% Velocidad de Movimiento, pero -25 px Radio de Recogida.", "stat": &"move_speed", "val": 0.20, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"pickup_radius", "sec_val": -25.0, "sec_pct": false, "sec_mod_type": Enums.ModifierType.FLAT, "cost": 55, "rarity": Enums.Rarity.COMMON, "max_stacks": 2, "tags": [&"mobility", &"speed", &"penalty", &"tradeoff"]},
 		{"id": &"tachyon_prism", "name": "Prisma Taquiónico", "desc": "+35% Daño Crítico, pero -8% Probabilidad Crítica.", "stat": &"crit_damage", "val": 0.35, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"crit_chance", "sec_val": -0.08, "sec_pct": false, "sec_mod_type": Enums.ModifierType.FLAT, "cost": 70, "rarity": Enums.Rarity.RARE, "max_stacks": 2, "tags": [&"offense", &"crit", &"penalty", &"tradeoff"]},
 
@@ -141,7 +146,24 @@ static func create_satellite_shop_items() -> Array[ItemData]:
 		{"id": &"photonic_transducer", "name": "Transductor Fotónico", "desc": "Al ejecutar un Dash, todas tus armas activas disparan una salva instantánea (CD: 4s).", "stat": &"", "val": 0.0, "pct": false, "cost": 110, "rarity": Enums.Rarity.EPIC, "max_stacks": 1, "tags": [&"offense", &"mobility", &"conversion"], "effects": [PhotonicTransducerEffectClass.new()]},
 		{"id": &"overdrain_module", "name": "Módulo de Sobredrenaje", "desc": "Los impactos críticos curan 1 HP, pero tu Regeneración Pasiva de Vida es 0.", "stat": &"", "val": 0.0, "pct": false, "cost": 115, "rarity": Enums.Rarity.EPIC, "max_stacks": 1, "tags": [&"sustain", &"conversion"], "effects": [OverdrainModuleEffectClass.new()]},
 		{"id": &"static_cell", "name": "Pila de Carga Estática", "desc": "Moverse acumula carga (0 a 100); al llegar a 100, el próximo ataque es un crítico garantizado.", "stat": &"", "val": 0.0, "pct": false, "cost": 105, "rarity": Enums.Rarity.RARE, "max_stacks": 1, "tags": [&"offense", &"mobility", &"conversion"]},
-		{"id": &"stellar_scrap", "name": "Chatarra Estelar", "desc": "Al recibir daño letal, consume 100 créditos para revivir al 30% de HP (1 uso por run).", "stat": &"", "val": 0.0, "pct": false, "cost": 120, "rarity": Enums.Rarity.EPIC, "max_stacks": 1, "tags": [&"sustain", &"defense", &"conversion"]}
+		{"id": &"stellar_scrap", "name": "Chatarra Estelar", "desc": "Al recibir daño letal, consume 100 créditos para revivir al 30% de HP (1 uso por run).", "stat": &"", "val": 0.0, "pct": false, "cost": 120, "rarity": Enums.Rarity.LEGENDARY, "max_stacks": 1, "tags": [&"sustain", &"defense", &"conversion"]},
+
+		# --- 12 Nuevos Ítems Estratégicos (Fase 4) ---
+		# Categoría A: Riesgo y Maldición (Curse Enablers)
+		{"id": &"abyssal_contract", "name": "Pacto Abisal", "desc": "+35% Daño Base multiplicativo, pero añade +20 de Maldición.", "stat": &"base_damage", "val": 0.35, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"curse", "sec_val": 20.0, "sec_pct": false, "sec_mod_type": Enums.ModifierType.FLAT, "cost": 85, "rarity": Enums.Rarity.RARE, "max_stacks": 2, "tags": [&"offense", &"curse", &"tradeoff"]},
+		{"id": &"antimatter_core", "name": "Núcleo de Antimateria", "desc": "-50% Regeneración de Vida, pero añade +10 de Maldición e intensifica procs críticos.", "stat": &"health_regen", "val": -0.50, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "sec_stat": &"curse", "sec_val": 10.0, "sec_pct": false, "sec_mod_type": Enums.ModifierType.FLAT, "cost": 110, "rarity": Enums.Rarity.EPIC, "max_stacks": 2, "tags": [&"crit", &"curse", &"proc"]},
+		{"id": &"blood_capacitor", "name": "Capacitador Sanguíneo", "desc": "-10% Vida Máxima, optimizando la movilidad y respuesta de dash.", "stat": &"max_health", "val": -0.10, "pct": true, "mod_type": Enums.ModifierType.MULTIPLICATIVE, "cost": 80, "rarity": Enums.Rarity.RARE, "max_stacks": 2, "tags": [&"mobility", &"dash", &"tradeoff"]},
+		{"id": &"entropy_engine", "name": "Motor de Entropía", "desc": "+15 Maldición. Convierte la entropía cósmica en escala ofensiva progresiva.", "stat": &"curse", "val": 15.0, "pct": false, "mod_type": Enums.ModifierType.FLAT, "cost": 115, "rarity": Enums.Rarity.EPIC, "max_stacks": 2, "tags": [&"offense", &"curse", &"scaling"]},
+		# Categoría B: Sinergia Cruzada y Especialización
+		{"id": &"bifocal_lens", "name": "Lente Bifocal", "desc": "Calibra la convergencia óptica para optimizar el índice de impactos críticos.", "stat": &"", "val": 0.0, "pct": false, "cost": 80, "rarity": Enums.Rarity.RARE, "max_stacks": 2, "tags": [&"offense", &"crit", &"conversion"]},
+		{"id": &"inertial_thruster", "name": "Propulsor Inercial", "desc": "Transfiere la inercia cinética del desplazamiento a la potencia balística.", "stat": &"", "val": 0.0, "pct": false, "cost": 60, "rarity": Enums.Rarity.UNCOMMON, "max_stacks": 2, "tags": [&"mobility", &"damage", &"kinetic"]},
+		{"id": &"chain_battery", "name": "Batería en Cadena", "desc": "Descarga impulsos voltaicos de protección al absorber impactos con escudos.", "stat": &"", "val": 0.0, "pct": false, "cost": 75, "rarity": Enums.Rarity.RARE, "max_stacks": 2, "tags": [&"defense", &"proc", &"shield"]},
+		{"id": &"photonic_prism", "name": "Prisma Fotónico", "desc": "Refracta y bifurca proyectiles aumentando la cobertura en combate.", "stat": &"", "val": 0.0, "pct": false, "cost": 65, "rarity": Enums.Rarity.UNCOMMON, "max_stacks": 2, "tags": [&"offense", &"projectiles", &"bifurcation"]},
+		# Categoría C: Manipulación Espacial y Economía
+		{"id": &"orbital_relay", "name": "Relé Orbital", "desc": "Enlaza la telemetría orbital: el tiempo de plantado satelital se reduce a 10s.", "stat": &"", "val": 0.0, "pct": false, "cost": 85, "rarity": Enums.Rarity.RARE, "max_stacks": 1, "tags": [&"utility", &"satellite", &"chest"]},
+		{"id": &"quantum_recompiler", "name": "Recompilador Cuántico", "desc": "Optimiza la Forja Cuántica otorgando +1 uso adicional a las estaciones de transmutación.", "stat": &"", "val": 0.0, "pct": false, "cost": 60, "rarity": Enums.Rarity.UNCOMMON, "max_stacks": 1, "tags": [&"utility", &"transmutation"]},
+		{"id": &"heavy_salvager", "name": "Recuperador Pesado", "desc": "Al abrir cápsulas de rescate (salvage), concede +2 de Vida Máxima y +3 créditos.", "stat": &"", "val": 0.0, "pct": false, "cost": 45, "rarity": Enums.Rarity.COMMON, "max_stacks": 2, "tags": [&"utility", &"salvage", &"health"]},
+		{"id": &"chronos_bank", "name": "Banco Cronos", "desc": "Al finalizar cada oleada, genera 10% de interés sobre créditos no gastados (hasta 50c).", "stat": &"", "val": 0.0, "pct": false, "cost": 75, "rarity": Enums.Rarity.RARE, "max_stacks": 1, "tags": [&"utility", &"economy", &"interest"]}
 	]
 
 	var icon_map := {
@@ -169,6 +191,18 @@ static func create_satellite_shop_items() -> Array[ItemData]:
 		&"overdrain_module": "res://assets/icons/items/icon_apple.svg",
 		&"static_cell": "res://assets/icons/items/icon_sword.svg",
 		&"stellar_scrap": "res://assets/icons/items/icon_heart.svg",
+		&"abyssal_contract": "res://assets/icons/items/icon_sword.svg",
+		&"antimatter_core": "res://assets/icons/items/icon_heart.svg",
+		&"blood_capacitor": "res://assets/icons/items/icon_boots.svg",
+		&"entropy_engine": "res://assets/icons/items/icon_magnet.svg",
+		&"bifocal_lens": "res://assets/icons/items/icon_glasses.svg",
+		&"inertial_thruster": "res://assets/icons/items/icon_boots.svg",
+		&"chain_battery": "res://assets/icons/items/icon_shield.svg",
+		&"photonic_prism": "res://assets/icons/items/icon_lens.svg",
+		&"orbital_relay": "res://assets/icons/items/icon_clover.svg",
+		&"quantum_recompiler": "res://assets/icons/items/icon_quantum_key.png",
+		&"heavy_salvager": "res://assets/icons/items/icon_shield.svg",
+		&"chronos_bank": "res://assets/icons/items/icon_credit_card_green.svg",
 	}
 
 	var items: Array[ItemData] = []
@@ -302,6 +336,11 @@ func roll_item_by_weights(weights: Dictionary, player_luck: float = 1.0) -> Item
 		candidate = roll_item()
 	return candidate
 
+func reset_pity_counters() -> void:
+	chests_since_last_rare = 0
+	chests_since_last_epic = 0
+	chests_since_last_legendary = 0
+
 ## Rueda un lote de N ítems distintos para elección de cofre según el tipo de cofre y suerte del jugador
 func roll_chest_draft(chest_type_int: int, weights: Dictionary, player_luck: float = 1.0, count: int = 3) -> Array[ItemData]:
 	if _active_pool.is_empty():
@@ -312,6 +351,34 @@ func roll_chest_draft(chest_type_int: int, weights: Dictionary, player_luck: flo
 	var results: Array[ItemData] = []
 	var attempts: int = 0
 	var max_attempts: int = 60
+
+	# Pity system para cofre regular (chest_type_int == 1)
+	if chest_type_int == 1:
+		chests_since_last_rare += 1
+		chests_since_last_epic += 1
+		chests_since_last_legendary += 1
+
+		var luck_discount: int = int(player_luck / 20.0)
+		var forced_pity_rarity: int = -1
+
+		if chests_since_last_legendary >= maxi(5, 15 - luck_discount):
+			forced_pity_rarity = Enums.Rarity.LEGENDARY
+		elif chests_since_last_epic >= maxi(3, 10 - luck_discount):
+			forced_pity_rarity = Enums.Rarity.EPIC
+		elif chests_since_last_rare >= maxi(2, 5 - luck_discount):
+			forced_pity_rarity = Enums.Rarity.RARE
+
+		if forced_pity_rarity != -1:
+			var pity_candidates: Array[ItemData] = []
+			for it in _active_pool:
+				if it.rarity == forced_pity_rarity:
+					pity_candidates.append(it)
+			if pity_candidates.is_empty():
+				for it in _active_pool:
+					if it.rarity >= forced_pity_rarity:
+						pity_candidates.append(it)
+			if not pity_candidates.is_empty():
+				results.append(pity_candidates.pick_random())
 
 	while results.size() < count and attempts < max_attempts:
 		attempts += 1
@@ -355,5 +422,28 @@ func roll_chest_draft(chest_type_int: int, weights: Dictionary, player_luck: flo
 			results.append(fallback)
 		else:
 			break
+
+	# PRD counter reset según la mayor rareza obtenida en el draft de cofre regular
+	if chest_type_int == 1:
+		var has_legendary: bool = false
+		var has_epic: bool = false
+		var has_rare: bool = false
+		for item in results:
+			if item.rarity == Enums.Rarity.LEGENDARY:
+				has_legendary = true
+			elif item.rarity == Enums.Rarity.EPIC:
+				has_epic = true
+			elif item.rarity == Enums.Rarity.RARE:
+				has_rare = true
+
+		if has_legendary:
+			chests_since_last_legendary = 0
+			chests_since_last_epic = 0
+			chests_since_last_rare = 0
+		elif has_epic:
+			chests_since_last_epic = 0
+			chests_since_last_rare = 0
+		elif has_rare:
+			chests_since_last_rare = 0
 
 	return results

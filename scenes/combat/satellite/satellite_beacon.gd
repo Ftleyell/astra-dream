@@ -3,6 +3,7 @@ extends Node2D
 
 @export var satellite_index: int = 1
 @export var activation_radius: float = 180.0
+@export var plant_duration: float = 15.0
 
 var is_planted: bool = false
 var player_inside: bool = false
@@ -21,11 +22,21 @@ signal exited_perimeter(index: int)
 func _ready() -> void:
 	add_to_group("satellite_beacon")
 	scale = Vector2(2.0, 2.0)
+	check_orbital_relay()
 	_draw_radius_circle()
 	_setup_ping_line()
 	trigger_beacon_ping()
-	area.body_entered.connect(_on_body_entered)
-	area.body_exited.connect(_on_body_exited)
+	if is_instance_valid(area):
+		area.body_entered.connect(_on_body_entered)
+		area.body_exited.connect(_on_body_exited)
+
+func check_orbital_relay(player_override: Node = null) -> void:
+	var target_player: Node = player_override if player_override else (get_tree().get_first_node_in_group("player") if get_tree() else null)
+	if target_player and "inventory" in target_player and target_player.inventory:
+		if target_player.inventory.has_method("get_item_count") and target_player.inventory.get_item_count(&"orbital_relay") > 0:
+			plant_duration = 10.0
+		else:
+			plant_duration = 15.0
 
 func _setup_ping_line() -> void:
 	_ping_line = Line2D.new()
@@ -77,6 +88,7 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if body is Player:
 		player_inside = true
+		check_orbital_relay(body)
 		if not is_planted:
 			plant_satellite()
 

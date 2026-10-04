@@ -87,6 +87,7 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 		var beacon := satellite_scene.instantiate() as SatelliteBeacon
 		beacon.global_position = target_pos
 		beacon.satellite_index = current_satellite_idx
+		beacon.plant_duration = get_plant_duration()
 		current_satellite = beacon
 		main_game.add_child.call_deferred(beacon)
 		beacon.planted.connect(_on_satellite_planted)
@@ -94,6 +95,12 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 
 	if main_game.hud and is_instance_valid(main_game.hud):
 		main_game.hud.set_active_satellite(target_pos, current_satellite_idx)
+
+func get_plant_duration() -> float:
+	if main_game and is_instance_valid(main_game.player) and main_game.player.inventory:
+		if main_game.player.inventory.has_method("get_item_count") and main_game.player.inventory.get_item_count(&"orbital_relay") > 0:
+			return 10.0
+	return 15.0
 
 func _on_transmutation_activated(station: TransmutationStation) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():

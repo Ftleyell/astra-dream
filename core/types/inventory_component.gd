@@ -65,6 +65,9 @@ func get_item_count(item_id: StringName) -> int:
 		return _items[item_id]["count"]
 	return 0
 
+func has_item(item_id: StringName) -> bool:
+	return get_item_count(item_id) > 0
+
 func get_all_items() -> Array[Dictionary]:
 	var list: Array[Dictionary] = []
 	for key in _items.keys():

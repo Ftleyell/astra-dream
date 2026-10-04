@@ -196,6 +196,16 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 
 	if chest_type == ChestType.SALVAGE_CAPSULE:
 		was_free = true
+		var mg: Node = get_tree().get_first_node_in_group("main_game") if get_tree() else null
+		if mg and mg.has_method("on_salvage_capsule_opened"):
+			mg.on_salvage_capsule_opened(player)
+		elif player and player.inventory and player.inventory.get_item_count(&"heavy_salvager") > 0:
+			if player.character_stats:
+				var cur_max_hp: float = player.character_stats.get_stat(&"max_health")
+				player.character_stats.set_base_stat(&"max_health", cur_max_hp + 2.0)
+			player.run_credits += 3
+			if player.has_signal("credits_changed"):
+				player.credits_changed.emit(player.run_credits)
 	elif keys > 0 and chest_type != ChestType.GOLDEN:
 		# Consumo activo de 1 llave: abre gratis y no incrementa el contador k local
 		was_free = true

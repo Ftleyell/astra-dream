@@ -28,12 +28,25 @@ var is_depleted: bool = false
 
 func _ready() -> void:
 	add_to_group("transmutation_stations")
-	uses_remaining = max_uses
+	check_quantum_recompiler()
 	_apply_visual_skin()
 	_draw_radius_circle()
 
-	area.body_entered.connect(_on_body_entered)
-	area.body_exited.connect(_on_body_exited)
+	if is_instance_valid(area):
+		area.body_entered.connect(_on_body_entered)
+		area.body_exited.connect(_on_body_exited)
+
+func check_quantum_recompiler(player_override: Node = null) -> void:
+	var target_player: Node = player_override if player_override else (get_tree().get_first_node_in_group("player") if get_tree() else null)
+	if target_player and "inventory" in target_player and target_player.inventory:
+		if target_player.inventory.has_method("get_item_count") and target_player.inventory.get_item_count(&"quantum_recompiler") > 0:
+			max_uses = 4
+			uses_remaining = 4
+			_update_label()
+		else:
+			max_uses = 3
+			uses_remaining = 3
+			_update_label()
 
 func _process(delta: float) -> void:
 	if visual_root and not is_depleted:
@@ -59,6 +72,7 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if body is Player:
 		player_inside = true
+		check_quantum_recompiler(body)
 		station_activated.emit(self)
 
 func _on_body_exited(body: Node2D) -> void:
