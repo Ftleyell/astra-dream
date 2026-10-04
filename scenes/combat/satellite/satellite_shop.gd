@@ -73,10 +73,13 @@ func _ready() -> void:
 
 	if inventory_side_panel:
 		var inv_style := StyleBoxFlat.new()
-		inv_style.bg_color = Color(0.03, 0.04, 0.07, 0.92)
+		inv_style.bg_color = Color(0.02, 0.03, 0.06, 0.98)
 		inv_style.set_border_width_all(1)
-		inv_style.border_color = Color(0.2, 0.5, 0.8, 0.5)
+		inv_style.border_width_right = 3
+		inv_style.border_color = Color(0.2, 0.7, 1.0, 0.9)
 		inv_style.set_corner_radius_all(8)
+		inv_style.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
+		inv_style.shadow_size = 8
 		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
 
 	if close_btn:

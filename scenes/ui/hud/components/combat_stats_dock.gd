@@ -39,11 +39,13 @@ func _init() -> void:
 
 func _build_ui() -> void:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.03, 0.05, 0.09, 0.94)
-	sb.border_color = Color(0.2, 0.6, 1.0, 0.6)
+	sb.bg_color = Color(0.02, 0.03, 0.06, 0.98)
+	sb.border_color = Color(0.2, 0.7, 1.0, 0.9)
 	sb.set_border_width_all(1)
 	sb.border_width_left = 3
 	sb.set_corner_radius_all(8)
+	sb.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
+	sb.shadow_size = 8
 	add_theme_stylebox_override("panel", sb)
 
 	var margin := MarginContainer.new()

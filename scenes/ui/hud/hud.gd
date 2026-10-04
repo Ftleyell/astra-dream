@@ -550,7 +550,7 @@ func _setup_combat_stats_dock() -> void:
 		return
 	stats_dock_layer = CanvasLayer.new()
 	stats_dock_layer.name = "StatsDockLayer"
-	stats_dock_layer.layer = 120
+	stats_dock_layer.layer = 130
 	stats_dock_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(stats_dock_layer)
 
