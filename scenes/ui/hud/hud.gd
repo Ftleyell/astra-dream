@@ -524,11 +524,15 @@ func _setup_curse_badge() -> void:
 		lbl.add_theme_color_override("font_color", Color(1.0, 0.35, 0.45))
 		hbox.add_child(lbl)
 
+		panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		panel.add_child(hbox)
 		key_container.add_child(panel)
+		key_container.move_child(panel, 0)
 		curse_badge = panel
 		curse_label = lbl
 	else:
+		curse_badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		key_container.move_child(curse_badge, 0)
 		curse_label = curse_badge.find_child("CurseLabel", true, false) as Label
 
 	curse_badge.visible = false

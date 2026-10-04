@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_n8jo3")
 id = "vampiric_drain"
-name = "Drenaje Vampírico"
+name = "Sifón Nanomédico"
 description_boon = "+4.0 Regeneración de Salud/s"
 description_curse = "-20% Velocidad de Movimiento"
 icon = ExtResource("1_lbs84")

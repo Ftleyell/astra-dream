@@ -143,10 +143,22 @@ func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level
 	return true
 
 
-func upgrade_weapon(weapon_id: StringName) -> bool:
+func upgrade_weapon(weapon_id: StringName, tier: Enums.Tier = Enums.Tier.TIER_2) -> bool:
 	for inst in equipped_weapons:
 		if inst.weapon_data.weapon_id == weapon_id:
 			inst.level += 1
+			inst.upgrade_tier = tier
+			match tier:
+				Enums.Tier.TIER_1:
+					inst.tier_damage_multiplier = 0.85
+				Enums.Tier.TIER_2:
+					inst.tier_damage_multiplier = 1.00
+				Enums.Tier.TIER_3:
+					inst.tier_damage_multiplier = 1.20
+				Enums.Tier.TIER_4:
+					inst.tier_damage_multiplier = 1.45
+				_:
+					inst.tier_damage_multiplier = 1.00
 			weapons_updated.emit(equipped_weapons)
 			var audio_mgr := get_node_or_null("/root/AudioManager")
 			if audio_mgr and audio_mgr.has_method("play_sfx"):

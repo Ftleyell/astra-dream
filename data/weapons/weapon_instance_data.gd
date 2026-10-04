@@ -11,12 +11,16 @@ var level: int = 1:
 
 var active_cooldown: float = 0.0
 var passive_timer: float = 0.1
+var upgrade_tier: Enums.Tier = Enums.Tier.TIER_2
+var tier_damage_multiplier: float = 1.0
 
 func _init(p_data: WeaponData = null, p_level: int = 1) -> void:
 	weapon_data = p_data
 	level = maxi(p_level, 1)
 	active_cooldown = 0.0
 	passive_timer = 0.1
+	upgrade_tier = Enums.Tier.TIER_2
+	tier_damage_multiplier = 1.0
 
 func get_damage_multiplier() -> float:
 	if not weapon_data:
@@ -25,7 +29,8 @@ func get_damage_multiplier() -> float:
 	if lvl_diff <= 0.0:
 		return 1.0
 	var linear_growth: float = lvl_diff * weapon_data.damage_growth_per_level
-	return 1.0 + (linear_growth / (1.0 + lvl_diff * 0.05))
+	var mult: float = 1.0 + (linear_growth / (1.0 + lvl_diff * 0.05))
+	return mult * tier_damage_multiplier
 
 func get_cooldown_multiplier() -> float:
 	if not weapon_data:

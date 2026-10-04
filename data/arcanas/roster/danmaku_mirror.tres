@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_kxtc4")
 id = "danmaku_mirror"
-name = "Espejo Danmaku"
+name = "Matriz de Deflexión Cuántica"
 description_boon = "+4 Proyectiles Adicionales | +30% Cadencia de Fuego"
 description_curse = "-20% Daño General | -50% Tamaño de Proyectiles"
 quadrant = "danmaku_chaos"

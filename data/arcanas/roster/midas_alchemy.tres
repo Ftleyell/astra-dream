@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_hqsfw")
 id = "midas_alchemy"
-name = "Alquimia de Midas"
+name = "Transmutador de Singularidad"
 description_boon = "+50 Suerte | +50% Ganancia de EXP"
 description_curse = "-20% Daño General"
 quadrant = "greed"

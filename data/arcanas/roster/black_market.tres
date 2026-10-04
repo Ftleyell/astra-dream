@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_gn4lu")
 id = "black_market"
-name = "Mercado Negro"
+name = "Contrabando Orbital"
 description_boon = "+30% Daño General | +75% Daño Crítico"
 description_curse = "-30 Suerte"
 quadrant = "greed"

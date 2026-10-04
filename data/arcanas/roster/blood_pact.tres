@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_so6er")
 id = "blood_pact"
-name = "Pacto de Sangre"
+name = "Sobrecarga Biomecánica"
 description_boon = "+60% Daño General"
 description_curse = "-35% Salud Máxima"
 icon = ExtResource("1_ps6v5")

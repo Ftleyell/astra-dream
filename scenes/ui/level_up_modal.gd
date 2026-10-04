@@ -360,7 +360,7 @@ func _select_card(card: Variant) -> void:
 					player.weapon_controller.add_weapon(opt.weapon_data)
 			LevelUpRewardOption.OptionType.WEAPON_UPGRADE:
 				if player and "weapon_controller" in player and player.weapon_controller:
-					player.weapon_controller.upgrade_weapon(opt.weapon_data.weapon_id)
+					player.weapon_controller.upgrade_weapon(opt.weapon_data.weapon_id, opt.tier)
 			LevelUpRewardOption.OptionType.TOME_NEW, LevelUpRewardOption.OptionType.TOME_UPGRADE:
 				if player and "tome_controller" in player and player.tome_controller:
 					player.tome_controller.equip_or_upgrade_tome(opt.tome_data)

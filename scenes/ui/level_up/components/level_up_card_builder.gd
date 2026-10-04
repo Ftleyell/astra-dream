@@ -263,14 +263,14 @@ static func build_reward_option_card(
 	var tier_color: Color = tier_info["color"]
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(0, 84)
+	card_panel.custom_minimum_size = Vector2(0, 110)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
+	card_style.bg_color = Color(0.05, 0.07, 0.12, 0.94)
 	card_style.set_border_width_all(2)
-	card_style.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.5)
+	card_style.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.6)
 	card_style.set_corner_radius_all(8)
 	card_style.set_content_margin_all(10.0)
 	card_panel.add_theme_stylebox_override("panel", card_style)
@@ -285,18 +285,18 @@ static func build_reward_option_card(
 
 	# 1. Columna izquierda: Icono
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(58, 58)
+	icon_panel.custom_minimum_size = Vector2(62, 62)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
-	icon_style.bg_color = Color(0.03, 0.04, 0.07, 0.95)
+	icon_style.bg_color = Color(0.02, 0.03, 0.06, 0.95)
 	icon_style.set_border_width_all(2)
 	icon_style.border_color = tier_color
 	icon_style.set_corner_radius_all(6)
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(44, 44)
+	icon_rect.custom_minimum_size = Vector2(46, 46)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -307,11 +307,11 @@ static func build_reward_option_card(
 	icon_panel.add_child(icon_rect)
 	hbox.add_child(icon_panel)
 
-	# 2. Columna central: Nombre, Subtítulo y Badge
+	# 2. Columna central: Nombre, Subtítulo, Badge destacado y Descripción
 	var info_vbox := VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	info_vbox.set("theme_override_constants/separation", 4)
+	info_vbox.set("theme_override_constants/separation", 3)
 
 	var top_line := HBoxContainer.new()
 	top_line.set("theme_override_constants/separation", 8)
@@ -340,6 +340,14 @@ static func build_reward_option_card(
 	badge_lbl.add_theme_font_size_override("font_size", 13)
 	badge_lbl.add_theme_color_override("font_color", Color("#00FF9D") if (option.type == LevelUpRewardOption.OptionType.WEAPON_UPGRADE or option.type == LevelUpRewardOption.OptionType.TOME_UPGRADE) else Color("#FFDE59"))
 	info_vbox.add_child(badge_lbl)
+
+	if not option.description.is_empty() and option.description != option.badge_text:
+		var desc_lbl := Label.new()
+		desc_lbl.text = option.description
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_lbl.add_theme_font_size_override("font_size", 11)
+		desc_lbl.add_theme_color_override("font_color", Color(0.72, 0.78, 0.88))
+		info_vbox.add_child(desc_lbl)
 
 	hbox.add_child(info_vbox)
 

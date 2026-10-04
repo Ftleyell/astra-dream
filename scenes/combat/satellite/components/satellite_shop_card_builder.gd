@@ -23,7 +23,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 				current_wp_lvl = inst.level
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 92)
+	card.custom_minimum_size = Vector2(0, 114)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -172,10 +172,12 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 
 	hbox.add_child(info_vbox)
 
-	# 3. Columna derecha: Atajo y Botón de compra
+	# 3. Columna derecha: Botón de compra unificado e indicador de tecla
 	var btn_vbox := VBoxContainer.new()
-	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	btn_vbox.set("theme_override_constants/separation", 4)
+	btn_vbox.custom_minimum_size = Vector2(115, 0)
+	btn_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	btn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_vbox.set("theme_override_constants/separation", 6)
 
 	var hotkey_lbl := Label.new()
 	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
@@ -187,7 +189,13 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
 	var buy_btn := Button.new()
 	buy_btn.text = "%d C" % cost
-	buy_btn.custom_minimum_size = Vector2(95, 34)
+	buy_btn.custom_minimum_size = Vector2(110, 48)
+	buy_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buy_btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	buy_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	buy_btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 0.4, 1.0))
+	buy_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.3, 1.0))
+	buy_btn.add_theme_font_size_override("font_size", 13)
 	buy_btn.set_meta(&"cost", cost)
 	UIFocusHelper.apply_cyber_focus(buy_btn)
 

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_5n461")
 id = "last_breath"
-name = "Último Aliento"
+name = "Protocolo Fénix Estelar"
 description_boon = "+45% Daño General | +20% Reducción de Enfriamiento"
 description_curse = "-40% Salud Máxima"
 icon = ExtResource("1_w26rh")

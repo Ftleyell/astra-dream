@@ -32,7 +32,11 @@ static func generate_reward_options(
 
 	var candidates: Array[LevelUpRewardOption] = []
 
-	# 1. Mejoras de Armas Equipadas (Infinitas)
+	var player_luck: float = 0.0
+	if player.get("stats") and player.stats.has_method("get_stat"):
+		player_luck = player.stats.get_stat(&"luck")
+
+	# 1. Mejoras de Armas Equipadas (Infinitas con rareza escalada por Suerte)
 	for inst in equipped_weapons:
 		if not inst or not inst.weapon_data:
 			continue
@@ -42,11 +46,27 @@ static func generate_reward_options(
 		opt.current_level = inst.level
 		opt.next_level = inst.level + 1
 		opt.title = inst.weapon_data.weapon_name
-		opt.subtitle = "• MEJORA DE ARMA (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
-		opt.badge_text = "+1 Proyectil Extra y +Daño escalado"
-		opt.description = inst.weapon_data.description
 		opt.icon = inst.weapon_data.icon
-		opt.tier = Enums.Tier.TIER_2
+		opt.description = inst.weapon_data.description
+
+		# Tirada de Rareza ponderada por suerte
+		opt.tier = _roll_weapon_upgrade_tier(player_luck)
+		match opt.tier:
+			Enums.Tier.TIER_1:
+				opt.subtitle = "• MEJORA ESTÁNDAR (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
+				opt.badge_text = "+1 Proy. Extra | Potencia Calibrada (85% daño)"
+			Enums.Tier.TIER_2:
+				opt.subtitle = "• MEJORA MEJORADA (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
+				opt.badge_text = "+1 Proy. Extra | Potencia Nominal (100% daño)"
+			Enums.Tier.TIER_3:
+				opt.subtitle = "• MEJORA AVANZADA (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
+				opt.badge_text = "+1 Proy. Extra | Sobrecarga de Plasma (120% daño)"
+			Enums.Tier.TIER_4:
+				opt.subtitle = "• MEJORA LEGENDARIA (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
+				opt.badge_text = "+1 Proy. Extra | Reactor Hipercrítico (145% daño)"
+			_:
+				opt.subtitle = "• MEJORA DE ARMA (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
+				opt.badge_text = "+1 Proyectil Extra y +Daño escalado"
 		candidates.append(opt)
 
 	# 2. Nuevas Armas (si hay ranuras disponibles < 4)
@@ -130,3 +150,23 @@ static func generate_reward_options(
 			options.append(candidates[i])
 
 	return options
+
+
+static func _roll_weapon_upgrade_tier(luck: float) -> Enums.Tier:
+	# Probabilidades base: Tier 1 (Común 45%), Tier 2 (Poco común 35%), Tier 3 (Raro 15%), Tier 4 (Legendario 5%)
+	# La suerte traslada peso de los tiers bajos a los tiers altos
+	var roll: float = randf() * 100.0
+	var luck_bonus: float = clampf(luck * 0.4, 0.0, 40.0)
+
+	var leg_threshold: float = 5.0 + (luck_bonus * 0.35)
+	var rare_threshold: float = leg_threshold + 15.0 + (luck_bonus * 0.40)
+	var uncom_threshold: float = rare_threshold + 35.0
+
+	if roll < leg_threshold:
+		return Enums.Tier.TIER_4
+	elif roll < rare_threshold:
+		return Enums.Tier.TIER_3
+	elif roll < uncom_threshold:
+		return Enums.Tier.TIER_2
+	else:
+		return Enums.Tier.TIER_1
