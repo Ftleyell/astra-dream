@@ -23,9 +23,9 @@ func _ready() -> void:
 	get_tree().quit(0 if passed == 4 else 1)
 
 func _test_satellite_catalog_composition() -> int:
-	print("--- TEST 1: Satellite Catalog Composition (24 Items) ---")
+	print("--- TEST 1: Satellite Catalog Composition (36 Items) ---")
 	var sat_items: Array[ItemData] = ItemPoolManager.create_satellite_shop_items()
-	assert(sat_items.size() == 24, "Satellite pool must have exactly 24 items, got %d" % sat_items.size())
+	assert(sat_items.size() == 36, "Satellite pool must have exactly 36 items, got %d" % sat_items.size())
 
 	# 1. Purga de stats planos del satélite
 	var purged_ids := [&"botas", &"espada", &"escudo", &"corazon", &"manzana", &"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj", &"chip_telemetria"]
