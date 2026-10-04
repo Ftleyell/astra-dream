@@ -34,9 +34,26 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event is InputEventKey and event.is_pressed() and event.keycode == KEY_ESCAPE:
-		close_modal()
-		get_viewport().set_input_as_handled()
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_ESCAPE:
+			close_modal()
+			get_viewport().set_input_as_handled()
+			return
+		elif _choice_container and _choice_container.visible:
+			if event.keycode == KEY_1 or event.keycode == KEY_KP_1:
+				if _choice_container.has_meta("choice_take_btn"):
+					var b: Button = _choice_container.get_meta("choice_take_btn") as Button
+					if is_instance_valid(b) and not b.disabled:
+						b.emit_signal("pressed")
+						get_viewport().set_input_as_handled()
+						return
+			elif event.keycode == KEY_2 or event.keycode == KEY_KP_2:
+				if _choice_container.has_meta("choice_reject_btn"):
+					var b: Button = _choice_container.get_meta("choice_reject_btn") as Button
+					if is_instance_valid(b) and not b.disabled:
+						b.emit_signal("pressed")
+						get_viewport().set_input_as_handled()
+						return
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -49,13 +66,13 @@ func _build_ui() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(560, 480)
+	_panel.custom_minimum_size = Vector2(620, 680)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.04, 0.12, 0.96)
 	style.set_border_width_all(2)
 	style.border_color = Color(0.7, 0.3, 1.0, 0.8)
 	style.set_corner_radius_all(14)
-	style.set_content_margin_all(20.0)
+	style.set_content_margin_all(18.0)
 	_panel.add_theme_stylebox_override("panel", style)
 	center.add_child(_panel)
 
@@ -91,14 +108,23 @@ func _build_ui() -> void:
 	vbox.add_child(_feedback_label)
 
 	_scroll_container = ScrollContainer.new()
-	_scroll_container.custom_minimum_size = Vector2(520, 260)
+	_scroll_container.custom_minimum_size = Vector2(580, 460)
 	_scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(_scroll_container)
+
+	var scroll_margin := MarginContainer.new()
+	scroll_margin.add_theme_constant_override("margin_left", 18)
+	scroll_margin.add_theme_constant_override("margin_right", 24)
+	scroll_margin.add_theme_constant_override("margin_top", 4)
+	scroll_margin.add_theme_constant_override("margin_bottom", 6)
+	scroll_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll_container.add_child(scroll_margin)
 
 	_items_container = VBoxContainer.new()
 	_items_container.add_theme_constant_override("separation", 10)
 	_items_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll_container.add_child(_items_container)
+	scroll_margin.add_child(_items_container)
 
 	_choice_container = VBoxContainer.new()
 	_choice_container.add_theme_constant_override("separation", 14)
@@ -118,7 +144,7 @@ func _build_ui() -> void:
 func open_for_station(player: Player, station: TransmutationStation) -> void:
 	current_player = player
 	current_station = station
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"transmutation")
 	_title_label.text = "FORJA CUÁNTICA DE TRANSMUTACIÓN"
 	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
 	if _desc_label:
@@ -157,7 +183,7 @@ func close_modal() -> void:
 	if _close_btn:
 		_close_btn.show()
 	hide()
-	get_tree().paused = false
+	PauseArbitrator.release_pause(&"transmutation")
 	modal_closed.emit()
 
 static func is_item_eligible_for_transmutation(it: ItemData) -> bool:
@@ -242,39 +268,58 @@ func _refresh_ui() -> void:
 		for entry in group:
 			var it: ItemData = entry["data"]
 			var count: int = entry["count"]
-			var btn := _create_item_card_button(it, count)
+
+			# Comprobar si existe al menos otro ítem (o copia adicional) de esta misma rareza para sacrificar
+			var has_sacrifice: bool = false
+			for other_entry in eligible_items:
+				var other_it: ItemData = other_entry["data"]
+				var other_count: int = other_entry["count"]
+				if other_it.rarity == it.rarity:
+					if other_it.item_id != it.item_id or other_count > 1:
+						has_sacrifice = true
+						break
+
+			var btn := _create_item_card_button(it, count, has_sacrifice)
 			grid.add_child(btn)
 
-func _create_item_card_button(item: ItemData, count: int) -> Button:
+func _create_item_card_button(item: ItemData, count: int, has_sacrifice: bool = true) -> Button:
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(165, 58)
-	btn.text = "%s (x%d)\n[%s]" % [item.item_name, count, _get_rarity_short_name(item.rarity)]
+	btn.custom_minimum_size = Vector2(165, 54)
+	# Sin etiqueta de rareza escrita en el texto, el color y la sección ya indican la rareza
+	btn.text = "%s (x%d)" % [item.item_name, count]
 	btn.icon = item.icon
 	btn.expand_icon = true
 	btn.clip_text = true
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 	var r_col := _get_rarity_color(item.rarity)
-	btn.add_theme_color_override("font_color", r_col)
-	btn.add_theme_color_override("font_focus_color", Color.WHITE)
-	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	if not has_sacrifice:
+		btn.disabled = true
+		btn.modulate = Color(0.6, 0.6, 0.6, 0.45)
+		btn.tooltip_text = "Sin material de sacrificio disponible (se requiere otro ítem de esta rareza)"
+		btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	else:
+		btn.add_theme_color_override("font_color", r_col)
+		btn.add_theme_color_override("font_focus_color", Color.WHITE)
+		btn.add_theme_color_override("font_hover_color", Color.WHITE)
 
 	# Borde con el color de rareza
 	var normal_box := StyleBoxFlat.new()
-	normal_box.bg_color = Color(0.08, 0.08, 0.14, 0.9)
-	normal_box.border_color = r_col
+	normal_box.bg_color = Color(0.08, 0.08, 0.14, 0.9) if has_sacrifice else Color(0.05, 0.05, 0.08, 0.7)
+	normal_box.border_color = r_col if has_sacrifice else Color(0.3, 0.3, 0.3, 0.5)
 	normal_box.set_border_width_all(2)
 	normal_box.set_corner_radius_all(6)
 	normal_box.set_content_margin_all(6.0)
 	btn.add_theme_stylebox_override("normal", normal_box)
 
-	var hover_box := normal_box.duplicate() as StyleBoxFlat
-	hover_box.bg_color = Color(r_col.r * 0.25, r_col.g * 0.25, r_col.b * 0.25, 0.95)
-	hover_box.border_color = Color.WHITE
-	btn.add_theme_stylebox_override("hover", hover_box)
+	if has_sacrifice:
+		var hover_box := normal_box.duplicate() as StyleBoxFlat
+		hover_box.bg_color = Color(r_col.r * 0.25, r_col.g * 0.25, r_col.b * 0.25, 0.95)
+		hover_box.border_color = Color.WHITE
+		btn.add_theme_stylebox_override("hover", hover_box)
+		UIFocusHelper.apply_cyber_focus(btn)
+		btn.pressed.connect(func(): _on_item_selected_to_clone(item))
 
-	UIFocusHelper.apply_cyber_focus(btn)
-	btn.pressed.connect(func(): _on_item_selected_to_clone(item))
 	return btn
 
 func _on_item_selected_to_clone(target_item: ItemData) -> void:
@@ -322,7 +367,7 @@ func _on_item_selected_to_clone(target_item: ItemData) -> void:
 
 ## Abre el diálogo interactivo para Aceptar o Rechazar el ítem forjado por créditos (idéntico a SlotMachineRewardModal)
 func open_choice(item: ItemData, on_decision: Callable) -> void:
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"transmutation")
 	if _close_btn:
 		_close_btn.hide()
 	if _desc_label:
@@ -414,7 +459,7 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	btn_box.add_theme_constant_override("separation", 20)
 
 	var take_button := Button.new()
-	take_button.text = "✨ TOMAR ÍTEM"
+	take_button.text = "✨ [1] TOMAR ÍTEM"
 	take_button.custom_minimum_size = Vector2(200, 46)
 	UIFocusHelper.apply_cyber_focus(take_button)
 	take_button.pressed.connect(func():
@@ -424,7 +469,7 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	btn_box.add_child(take_button)
 
 	var reject_button := Button.new()
-	reject_button.text = "♻️ RECHAZAR (+%d Créditos)" % refund
+	reject_button.text = "♻️ [2] RECHAZAR (+%d Créditos)" % refund
 	reject_button.custom_minimum_size = Vector2(230, 46)
 	UIFocusHelper.apply_cyber_focus(reject_button)
 	reject_button.pressed.connect(func():
@@ -432,6 +477,9 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 		on_decision.call(false)
 	)
 	btn_box.add_child(reject_button)
+
+	_choice_container.set_meta("choice_take_btn", take_button)
+	_choice_container.set_meta("choice_reject_btn", reject_button)
 
 	_choice_container.add_child(btn_box)
 

@@ -97,8 +97,6 @@ script = ExtResource("12_spawner")
 player = NodePath("../Player")
 
 [node name="HoldToResetOverlay" parent="." instance=ExtResource("16_reset")]
-[node name="CharacterStatsOverlay" parent="." node_paths=PackedStringArray("player") instance=ExtResource("19_stats_overlay")]
-player = NodePath("../Player")
 
 [node name="SkipBadgeLayer" parent="." instance=ExtResource("20_skip")]
 [node name="GameOverModal" parent="." instance=ExtResource("22_gameover")]

@@ -88,7 +88,7 @@ func start_sequence(boss: Node2D) -> void:
 	boss_origin = target_boss.global_position
 
 	# 1. Congelar escena de combate
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"cinematic_death")
 
 	# 2. Configurar cámara y zoom
 	camera = get_viewport().get_camera_2d() as GameCamera2D
@@ -394,10 +394,11 @@ func _finish_sequence() -> void:
 		camera.focus_override = null
 		camera.zoom = original_camera_zoom
 
-	get_tree().paused = false
+	PauseArbitrator.release_pause(&"cinematic_death")
 	sequence_completed.emit()
 	queue_free()
 
 func _exit_tree() -> void:
 	is_sequence_active = false
+	PauseArbitrator.release_pause(&"cinematic_death")
 	AudioServer.set_bus_mute(0, false)

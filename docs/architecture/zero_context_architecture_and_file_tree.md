@@ -46,6 +46,7 @@ astra_dream/
 │   │   ├── bullet_server.gd               # Servidor de Danmaku masivo Zero-Allocation (PackedFloat32Array)
 │   │   ├── debug_manager.gd               # Banderas y herramientas globales de depuración
 │   │   ├── event_bus.gd                   # Bus reactivo de señales desacopladas entre subsistemas
+│   │   ├── pause_arbitrator.gd            # Árbitro central de pausa del árbol por pila de tokens (StringName)
 │   │   ├── save_manager.gd                # Fachada estática de persistencia delegando en submódulos
 │   │   └── settings_manager.gd            # Ajustes gráficos, volumen, atajos y zonas muertas
 │   │

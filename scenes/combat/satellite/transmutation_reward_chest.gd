@@ -84,7 +84,7 @@ func _apply_resolution(player: Player, accepted: bool) -> void:
 	if is_instance_valid(player):
 		if accepted:
 			if player.inventory:
-				player.inventory.add_item(item, 1)
+				player.inventory.add_item(item, 1, "FORJA CUÁNTICA")
 			if player.has_method("show_tactical_alert"):
 				player.show_tactical_alert("FORJA COMPLETADA", "Obtenido: %s" % item.item_name, Color(0.8, 0.4, 1.0))
 		else:

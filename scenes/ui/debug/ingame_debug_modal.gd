@@ -594,7 +594,11 @@ func _on_open_arcana_modal_pressed() -> void:
 		_set_feedback("Modal de Arcana no inicializado en la partida.")
 		return
 	close()
-	main_game.arcana_modal.open_modal(main_game.player)
+	var arc_modal = main_game.arcana_modal
+	if arc_modal.has_method("open_modal"):
+		arc_modal.open_modal(main_game.player)
+	elif arc_modal.has_method("show_arcana_selection"):
+		arc_modal.show_arcana_selection(main_game.player)
 
 
 # ─── PESTAÑA 4: OLEADAS & CRISIS ──────────────────────────────────────────────

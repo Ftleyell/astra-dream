@@ -20,10 +20,13 @@ const HIGH_FREQ_WEAPON_ICDS: Dictionary[StringName, float] = {
 
 signal item_added(item: ItemData, new_total: int)
 
-func add_item(item: ItemData, count: int = 1) -> void:
+func add_item(item: ItemData, count: int = 1, origin: String = "DESCONOCIDO") -> void:
 	var id: StringName = item.item_id
 	if not _items.has(id):
-		_items[id] = { "data": item, "count": 0 }
+		_items[id] = { "data": item, "count": 0, "origin": origin }
+	else:
+		if _items[id].get("origin", "DESCONOCIDO") == "DESCONOCIDO" and origin != "DESCONOCIDO":
+			_items[id]["origin"] = origin
 
 	var current_count: int = _items[id]["count"]
 	var new_count: int = mini(current_count + count, item.max_stacks)

@@ -31,7 +31,8 @@ static func get_run_state(main_game: Node) -> Dictionary:
 			if it_res:
 				items_data.append({
 					"id": String(it_res.item_id),
-					"count": int(it_entry.get("count", 1))
+					"count": int(it_entry.get("count", 1)),
+					"origin": String(it_entry.get("origin", "DESCONOCIDO"))
 				})
 
 	# Cartas de nivel (Brotato)
@@ -165,8 +166,9 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 		for it_entry in saved_items:
 			var i_id: String = String(it_entry.get("id", ""))
 			var i_count: int = int(it_entry.get("count", 1))
+			var i_origin: String = String(it_entry.get("origin", "DESCONOCIDO"))
 			if item_map.has(i_id):
-				player.inventory.add_item(item_map[i_id], i_count)
+				player.inventory.add_item(item_map[i_id], i_count, i_origin)
 
 	# 5. Restaurar armas equipadas y sus niveles
 	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController

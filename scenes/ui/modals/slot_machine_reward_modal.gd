@@ -33,6 +33,19 @@ func _ready() -> void:
 	_build_ui()
 	hide()
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_1 or event.keycode == KEY_KP_1:
+			if _take_button and is_instance_valid(_take_button) and not _take_button.disabled:
+				_on_take_pressed()
+				get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_2 or event.keycode == KEY_KP_2:
+			if _reject_button and is_instance_valid(_reject_button) and not _reject_button.disabled:
+				_on_reject_pressed()
+				get_viewport().set_input_as_handled()
+
 func _build_ui() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color(0.0, 0.0, 0.0, 0.7)
@@ -134,14 +147,16 @@ func _build_ui() -> void:
 	vbox.add_child(btn_box)
 
 	_take_button = Button.new()
-	_take_button.text = "✨ TOMAR ÍTEM"
+	_take_button.text = "✨ [1] TOMAR ÍTEM"
 	_take_button.custom_minimum_size = Vector2(200, 46)
+	UIFocusHelper.apply_cyber_focus(_take_button)
 	_take_button.pressed.connect(_on_take_pressed)
 	btn_box.add_child(_take_button)
 
 	_reject_button = Button.new()
-	_reject_button.text = "♻️ RECHAZAR (+%d Créditos)" % RECYCLE_CREDITS
+	_reject_button.text = "♻️ [2] RECHAZAR (+%d Créditos)" % RECYCLE_CREDITS
 	_reject_button.custom_minimum_size = Vector2(230, 46)
+	UIFocusHelper.apply_cyber_focus(_reject_button)
 	_reject_button.pressed.connect(_on_reject_pressed)
 	btn_box.add_child(_reject_button)
 
@@ -208,9 +223,9 @@ func _populate_weapon_ui() -> void:
 		_rarity_label.text = "INSIGNIA MILITAR"
 		_rarity_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0, 1.0))
 	if _take_button:
-		_take_button.text = "✨ EQUIPAR / MEJORAR"
+		_take_button.text = "✨ [1] EQUIPAR / MEJORAR"
 	if _reject_button:
-		_reject_button.text = "♻️ RECICLAR (+%d Créditos)" % RECYCLE_WEAPON_CREDITS
+		_reject_button.text = "♻️ [2] RECICLAR (+%d Créditos)" % RECYCLE_WEAPON_CREDITS
 
 func _populate_item_ui() -> void:
 	if not current_item:
@@ -220,9 +235,9 @@ func _populate_item_ui() -> void:
 	if _subtitle_label:
 		_subtitle_label.text = "La máquina tragamonedas detonó dejando este ítem de alta tecnología."
 	if _take_button:
-		_take_button.text = "✨ TOMAR ÍTEM"
+		_take_button.text = "✨ [1] TOMAR ÍTEM"
 	if _reject_button:
-		_reject_button.text = "♻️ RECHAZAR (+%d Créditos)" % RECYCLE_CREDITS
+		_reject_button.text = "♻️ [2] RECHAZAR (+%d Créditos)" % RECYCLE_CREDITS
 
 	if _item_name_label:
 		_item_name_label.text = current_item.item_name
@@ -267,7 +282,8 @@ func _on_take_pressed() -> void:
 			audio_mgr.play_sfx(&"upgrade_obtained")
 	elif current_item and current_player:
 		if current_player.inventory:
-			current_player.inventory.add_item(current_item, 1)
+			var player_origin: String = "BOTÍN DE RIVAL" if not current_pilot_name.is_empty() else "COFRE MISTERIOSO"
+			current_player.inventory.add_item(current_item, 1, player_origin)
 		if current_player.stats and current_item.has_method("apply_to_stats"):
 			current_item.apply_to_stats(current_player.stats)
 		item_claimed.emit(current_item)

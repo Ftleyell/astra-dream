@@ -10,7 +10,7 @@ const LevelUpCardBuilder = preload("res://scenes/ui/level_up/components/level_up
 @export var player: Player
 
 @onready var modal_panel: Panel = $Panel
-@onready var cards_container: HBoxContainer = find_child("CardsContainer", true, false) as HBoxContainer
+@onready var cards_container: VBoxContainer = find_child("CardsContainer", true, false) as VBoxContainer
 @onready var level_label: Label = $Panel/VBoxContainer/Title
 @onready var stats_side_panel: PanelContainer = find_child("StatsSidePanel", true, false) as PanelContainer
 @onready var stats_header_label: Label = find_child("StatsHeader", true, false) as Label
@@ -29,6 +29,9 @@ var current_level_shown: int = 1
 var _mouse_lockout_active: bool = false
 
 var stats_inspector: LevelUpStatsInspector = null
+
+var stat_card_ui_entries: Dictionary:
+	get: return stats_inspector.stat_card_ui_entries if stats_inspector else {}
 
 
 func _ready() -> void:
@@ -123,7 +126,7 @@ func _present_level(level: int) -> void:
 	current_level_shown = level
 	_mouse_lockout_active = true
 
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"level_up")
 	_update_header_title()
 	_refresh_player_stats_display(level)
 	show()
@@ -308,12 +311,9 @@ func _select_card(card: StatCardData) -> void:
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("notify_menu_closed"):
 		parent_game.notify_menu_closed(0.4)
-	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
-		get_tree().paused = true
-		if parent_game.has_method("restore_combat_modal_focus"):
-			parent_game.restore_combat_modal_focus()
-	else:
-		get_tree().paused = false
+	PauseArbitrator.release_pause(&"level_up")
+	if parent_game and parent_game.has_method("restore_combat_modal_focus") and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		parent_game.restore_combat_modal_focus()
 
 	if parent_game and parent_game.has_method("_on_level_up_modal_closed"):
 		parent_game._on_level_up_modal_closed()

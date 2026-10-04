@@ -22,15 +22,15 @@ corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
 [node name="BossHealthBar" type="Control"]
-custom_minimum_size = Vector2(540, 58)
+custom_minimum_size = Vector2(600, 62)
 layout_mode = 3
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -270.0
-offset_top = 52.0
-offset_right = 270.0
-offset_bottom = 110.0
+offset_left = -300.0
+offset_top = 150.0
+offset_right = 300.0
+offset_bottom = 212.0
 grow_horizontal = 2
 script = ExtResource("1_hbar")
 

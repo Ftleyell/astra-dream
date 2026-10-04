@@ -48,12 +48,14 @@ func update_satellite_lifecycle() -> void:
 		var sat_pos: Vector2 = current_satellite.global_position
 		var dist_to_sat: float = p_pos.distance_to(sat_pos)
 
+		var is_near: bool = dist_to_sat < 1200.0
 		var has_charge: bool = ("current_charge" in current_satellite and current_satellite.current_charge > 0.0)
 		var is_ready_sat: bool = ("is_ready" in current_satellite and current_satellite.is_ready)
 		var is_busy: bool = ("is_processing" in current_satellite and current_satellite.is_processing)
 		var is_in_perimeter: bool = ("player_inside" in current_satellite and current_satellite.player_inside)
+		var is_chest_active: bool = ("active_reward_chest" in current_satellite and is_instance_valid(current_satellite.active_reward_chest))
 
-		if dist_to_sat < 1200.0 or has_charge or is_ready_sat or is_busy or is_in_perimeter:
+		if is_near or has_charge or is_ready_sat or is_busy or is_in_perimeter or is_chest_active:
 			is_interacting = true
 
 	var req_dist: float = get_required_distance_for_next_sat()
@@ -118,6 +120,11 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
 	if current_satellite and is_instance_valid(current_satellite):
+		if current_satellite is TransmutationStation:
+			var station := current_satellite as TransmutationStation
+			if not station.is_depleted and station.uses_remaining > 0:
+				# La forja aún está operativa; no destruirla ni reemplazarla
+				return
 		current_satellite.queue_free()
 
 	current_satellite_idx += 1
@@ -125,18 +132,18 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 	var is_transmutation: bool = (satellites_collected_total > 0 and satellites_collected_total % 2 == 1)
 	if is_transmutation:
 		var station := transmutation_scene.instantiate() as TransmutationStation
-		station.global_position = target_pos
 		current_satellite = station
-		main_game.add_child.call_deferred(station)
+		main_game.add_child(station)
+		station.global_position = target_pos
 		station.station_activated.connect(_on_transmutation_activated)
 		station.station_depleted.connect(func(): _on_satellite_exited(current_satellite_idx))
 	else:
 		var beacon := satellite_scene.instantiate() as SatelliteBeacon
-		beacon.global_position = target_pos
 		beacon.satellite_index = current_satellite_idx
 		beacon.plant_duration = get_plant_duration()
 		current_satellite = beacon
-		main_game.add_child.call_deferred(beacon)
+		main_game.add_child(beacon)
+		beacon.global_position = target_pos
 		beacon.planted.connect(_on_satellite_planted)
 		beacon.exited_perimeter.connect(_on_satellite_exited)
 
@@ -152,11 +159,11 @@ func spawn_specific_satellite(target_pos: Vector2) -> void:
 	current_satellite_idx += 1
 
 	var beacon := satellite_scene.instantiate() as SatelliteBeacon
-	beacon.global_position = target_pos
 	beacon.satellite_index = current_satellite_idx
 	beacon.plant_duration = get_plant_duration()
 	current_satellite = beacon
-	main_game.add_child.call_deferred(beacon)
+	main_game.add_child(beacon)
+	beacon.global_position = target_pos
 	beacon.planted.connect(_on_satellite_planted)
 	beacon.exited_perimeter.connect(_on_satellite_exited)
 
@@ -172,9 +179,9 @@ func spawn_specific_transmutation(target_pos: Vector2) -> void:
 	current_satellite_idx += 1
 
 	var station := transmutation_scene.instantiate() as TransmutationStation
-	station.global_position = target_pos
 	current_satellite = station
-	main_game.add_child.call_deferred(station)
+	main_game.add_child(station)
+	station.global_position = target_pos
 	station.station_activated.connect(_on_transmutation_activated)
 	station.station_depleted.connect(func(): _on_satellite_exited(current_satellite_idx))
 
@@ -190,12 +197,14 @@ func get_plant_duration() -> float:
 func _on_transmutation_activated(station: TransmutationStation) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
+	satellites_collected_total += 1
 	if main_game.has_method("open_transmutation_modal"):
 		main_game.open_transmutation_modal(station)
 
 func _on_satellite_planted(index: int, _pos: Vector2) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
+	satellites_collected_total += 1
 	if main_game.is_arcana_modal_active() or main_game.is_level_up_modal_active() or (main_game.level_up_modal and main_game.level_up_modal.has_pending_levels()) or main_game.is_dialogue_active():
 		main_game._pending_satellite_credits = main_game.player.run_credits
 		main_game._pending_satellite_index = index

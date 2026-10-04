@@ -64,7 +64,7 @@ func is_dialogue_active() -> bool:
 
 func start_prologue_briefing() -> void:
 	is_briefing_active = true
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"briefing")
 	if skip_badge_layer:
 		skip_badge_layer.show()
 
@@ -121,7 +121,7 @@ leave --All--
 		_setup_dialogic_audio(layout)
 	else:
 		is_briefing_active = false
-		get_tree().paused = false
+		PauseArbitrator.release_pause(&"briefing")
 
 func _setup_dialogic_audio(layout: Node) -> void:
 	if not layout:
@@ -141,7 +141,7 @@ func skip_dialogue() -> void:
 		return
 
 	var is_in_rival_spawn: bool = is_rival_cinematic_active or (main_game != null and main_game.get("is_rival_cinematic_active") == true)
-	var is_in_boss_spawn: bool = is_boss_transmission_active or (main_game != null and main_game.get("is_boss_transmission_active") == true)
+	var is_in_boss_spawn: bool = is_boss_transmission_active or (main_game != null and (main_game.get("is_boss_transmission_active") == true or (main_game.get("current_boss") != null and main_game.get("current_boss").get_meta("_is_emerging", false))))
 
 	if is_in_rival_spawn or is_in_boss_spawn:
 		# Salto total inmediato: descartar callbacks encadenados de fases intermedias
@@ -197,9 +197,9 @@ func skip_dialogue() -> void:
 	if is_in_boss_spawn and main_game:
 		var current_boss = main_game.get("current_boss")
 		if is_instance_valid(current_boss):
-			current_boss.process_mode = Node.PROCESS_MODE_PAUSABLE
-			current_boss.visible = true
-		BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
+			BossCinematicPresenterScript.force_finish_boss_emergence(main_game, current_boss)
+		else:
+			BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
 
 	if main_game and main_game.has_method("notify_menu_closed"):
 		main_game.notify_menu_closed(0.4)
@@ -226,13 +226,14 @@ func skip_dialogue() -> void:
 	if hud:
 		hud.visible = true
 
+	PauseArbitrator.release_pause(&"dialogue")
+	PauseArbitrator.release_pause(&"briefing")
 	var lvl_modal = main_game.get("level_up_modal") if main_game else null
 	if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
 		lvl_modal.show_next_level_up()
-	elif main_game and not main_game.is_any_combat_modal_active():
-		get_tree().paused = false
 
 func on_timeline_started() -> void:
+	PauseArbitrator.acquire_pause(&"dialogue")
 	if skip_badge_layer:
 		skip_badge_layer.show()
 	if audio_duck_manager and audio_duck_manager.has_method("duck_music"):
@@ -245,20 +246,54 @@ func on_timeline_ended() -> void:
 	if audio_duck_manager and audio_duck_manager.has_method("duck_music"):
 		audio_duck_manager.duck_music(false)
 
+	# 1. Liberar incondicionalmente las pausas asociadas al diálogo en PauseArbitrator
+	PauseArbitrator.release_pause(&"dialogue")
+	PauseArbitrator.release_pause(&"briefing")
+
+	# 2. Desactivar flags inmediatas de transmisión
+	is_boss_transmission_active = false
+	is_cockpit_active = false
+	if main_game:
+		main_game.set("is_boss_transmission_active", false)
+		main_game.set("is_cockpit_active", false)
+
+	# 3. Liberar foco de interfaz si Dialogic lo retuvo
+	var tree := get_tree()
+	if tree and tree.root:
+		var focused_ctrl: Control = tree.root.gui_get_focus_owner()
+		if focused_ctrl:
+			focused_ctrl.release_focus()
+
+	# 4. Caso de callback encadenado (secuencia de emergencia de jefe o alerta de rival)
 	if on_dialogue_finished_callback.is_valid():
 		var cb := on_dialogue_finished_callback
 		on_dialogue_finished_callback = Callable()
+
+		var backdrop := main_game.get_node_or_null("DialogueBackdropLayer") if main_game else null
+		if backdrop:
+			if "hold_dimmer" in backdrop:
+				backdrop.hold_dimmer = false
+			if backdrop.has_method("fade_out"):
+				backdrop.fade_out(0.2)
+
+		if hud:
+			hud.visible = true
+
+		dialogue_ended.emit()
 		cb.call()
 		return
 
+	# 5. Caso de diálogo de victoria
 	if is_victory_dialogue_active:
 		is_victory_dialogue_active = false
 		var v_data := pending_victory_data.duplicate()
 		pending_victory_data.clear()
+		dialogue_ended.emit()
 		if not v_data.is_empty():
 			victory_screen_requested.emit(v_data)
 		return
 
+	# 6. Caso de prólogo táctico
 	if is_briefing_active:
 		if not prologue_bonus_chosen:
 			prologue_bonus_chosen = true
@@ -278,8 +313,9 @@ func on_timeline_ended() -> void:
 			_finish_prologue_and_start_run()
 			return
 
+	# 7. Caso de cinemática de rival o flujo regular sin callback encadenado
 	var is_in_cinematic: bool = is_rival_cinematic_active or (main_game and main_game.get("is_rival_cinematic_active") == true)
-	var is_boss_active: bool = is_boss_transmission_active or (main_game and main_game.get("current_boss") != null and main_game.get("current_boss").get_meta("_is_emerging", false))
+	var is_boss_active: bool = (main_game and main_game.get("current_boss") != null and main_game.get("current_boss").get_meta("_is_emerging", false))
 
 	if not is_in_cinematic and not is_boss_active:
 		var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
@@ -288,16 +324,6 @@ func on_timeline_ended() -> void:
 
 		if is_instance_valid(player) and player.has_method("resume_movement_control"):
 			player.resume_movement_control()
-
-	if is_cockpit_active:
-		is_cockpit_active = false
-		if not is_in_cinematic and not is_boss_active and main_game and main_game.has_method("notify_menu_closed"):
-			main_game.notify_menu_closed(0.4)
-
-	if is_boss_transmission_active:
-		is_boss_transmission_active = false
-		if not is_boss_active and main_game and main_game.has_method("notify_menu_closed"):
-			main_game.notify_menu_closed(0.4)
 
 	if is_rival_cinematic_active:
 		is_rival_cinematic_active = false
@@ -324,11 +350,12 @@ func on_timeline_ended() -> void:
 	if hud:
 		hud.visible = true
 
+	if main_game and main_game.has_method("notify_menu_closed"):
+		main_game.notify_menu_closed(0.4)
+
 	var lvl_modal = main_game.get("level_up_modal") if main_game else null
 	if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
 		lvl_modal.show_next_level_up()
-	elif main_game and not main_game.is_any_combat_modal_active():
-		get_tree().paused = false
 
 	dialogue_ended.emit()
 
@@ -344,14 +371,20 @@ func _finish_prologue_and_start_run() -> void:
 	if cam and cam.has_method("clear_cinematic_focus"):
 		cam.clear_cinematic_focus()
 
+	if is_instance_valid(player) and player.has_method("resume_movement_control"):
+		player.resume_movement_control()
+
 	if hud:
 		if hud.has_method("set_hud_visible"):
 			hud.call("set_hud_visible", true)
 		else:
 			hud.visible = true
 
-	if main_game and not main_game.is_any_combat_modal_active():
-		get_tree().paused = false
+	PauseArbitrator.release_pause(&"dialogue")
+	PauseArbitrator.release_pause(&"briefing")
+
+	if main_game and main_game.has_method("notify_menu_closed"):
+		main_game.notify_menu_closed(0.4)
 
 	briefing_completed.emit(prologue_bonus_chosen)
 

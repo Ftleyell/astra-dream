@@ -248,14 +248,15 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 		modal = tree.get_first_node_in_group("chest_reward_modal") as ChestRewardModal
 
 	if modal and is_instance_valid(modal) and modal.is_inside_tree() and not draft_items.is_empty():
+		var paid_cost: int = 0 if was_free else current_cost
 		modal.open_draft(draft_items, was_free, player, func(chosen_item: ItemData) -> void:
-			chest_opened.emit(chosen_item, was_free, 0 if was_free else current_cost)
+			chest_opened.emit(chosen_item, was_free, paid_cost)
 			_play_open_and_vanish_fx()
-		)
+		, paid_cost)
 	else:
 		var chosen_item: ItemData = draft_items[0] if not draft_items.is_empty() else null
 		if chosen_item and player.inventory:
-			player.inventory.add_item(chosen_item)
+			player.inventory.add_item(chosen_item, 1, "COFRE ESPACIAL")
 			player.inventory.process_chest_opened_procs(player)
 		chest_opened.emit(chosen_item, was_free, 0 if was_free else current_cost)
 		_play_open_and_vanish_fx()

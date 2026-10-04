@@ -38,6 +38,7 @@ const RUN_STATS_CONFIG: Array[Dictionary] = [
 	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
 	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
+	{"name": "MALDICIÓN", "key": &"curse", "fmt": "%.0f", "suffix": ""},
 ]
 
 var stats_list: VBoxContainer
@@ -75,15 +76,16 @@ func refresh_stats_display(player: Player) -> void:
 		var fmt: String = cfg["fmt"]
 		var suffix: String = cfg["suffix"]
 
-		var displayed_val: String = (fmt % (current_val * mult)) + suffix
-		var is_buffed: bool = (current_val > base_val + 0.001)
+		var is_curse: bool = (key == &"curse")
+		var is_buffed: bool = (current_val > base_val + 0.001) and not is_curse
+		var is_cursed: bool = is_curse and current_val > 0.0
 
 		var item_panel := PanelContainer.new()
 		item_panel.custom_minimum_size = Vector2(0, 22)
 
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color(0.05, 0.07, 0.11, 0.85)
-		sb.border_color = (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5))
+		sb.border_color = (Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5)))
 		sb.set_border_width_all(1)
 		sb.border_width_left = 3
 		sb.set_corner_radius_all(3)
@@ -103,14 +105,15 @@ func refresh_stats_display(player: Player) -> void:
 		var lbl_name := Label.new()
 		lbl_name.text = cfg["name"]
 		lbl_name.add_theme_font_size_override("font_size", 10)
-		lbl_name.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		lbl_name.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else Color(0.8, 0.85, 0.9))
 		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hbox.add_child(lbl_name)
 
+		var displayed_val: String = (fmt % (current_val * mult)) + suffix
 		var lbl_val := Label.new()
 		lbl_val.text = displayed_val
 		lbl_val.add_theme_font_size_override("font_size", 10)
-		lbl_val.add_theme_color_override("font_color", Color("#00FF9D") if is_buffed else Color.WHITE)
+		lbl_val.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else Color.WHITE))
 		hbox.add_child(lbl_val)
 
 		if is_buffed:

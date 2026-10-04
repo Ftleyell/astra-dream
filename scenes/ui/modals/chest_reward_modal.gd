@@ -13,12 +13,14 @@ var _panel: PanelContainer
 var _title_label: Label
 var _subtitle_label: Label
 var _free_badge_label: Label
-var _cards_container: HBoxContainer
+var _cards_container: VBoxContainer
 
 var _current_candidates: Array[ItemData] = []
 var _current_player: Player = null
 var _selection_callback: Callable = Callable()
 var _card_buttons: Array[Button] = []
+var _paid_cost: int = 0
+var _skip_button: Button = null
 
 func _ready() -> void:
 	layer = 125
@@ -35,10 +37,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_index(0)
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_2 or event.keycode == KEY_KP_2:
-			_select_index(1)
+			if _current_candidates.size() >= 2:
+				_select_index(1)
+			else:
+				# Si solo hay 1 ítem en oferta, presionar 2 rechaza la recompensa
+				skip_and_recycle()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_3 or event.keycode == KEY_KP_3:
-			_select_index(2)
+			if _current_candidates.size() >= 3:
+				_select_index(2)
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_4 or event.keycode == KEY_KP_4 or event.keycode == KEY_ESCAPE:
+			skip_and_recycle()
 			get_viewport().set_input_as_handled()
 
 func _build_ui() -> void:
@@ -55,13 +65,13 @@ func _build_ui() -> void:
 
 	# 3. Panel principal
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(880, 480)
+	_panel.custom_minimum_size = Vector2(560, 480)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.03, 0.05, 0.09, 0.96)
 	style.set_border_width_all(2)
 	style.border_color = Color(0.1, 0.8, 1.0, 0.85)
 	style.set_corner_radius_all(14)
-	style.set_content_margin_all(20.0)
+	style.set_content_margin_all(16.0)
 	_panel.add_theme_stylebox_override("panel", style)
 	center.add_child(_panel)
 
@@ -93,24 +103,45 @@ func _build_ui() -> void:
 	_subtitle_label.modulate = Color(0.65, 0.8, 0.95, 0.75)
 	vbox.add_child(_subtitle_label)
 
-	# Contenedor de las 3 cartas
-	_cards_container = HBoxContainer.new()
-	_cards_container.add_theme_constant_override("separation", 18)
+	# Contenedor de las 3 opciones en lista vertical
+	_cards_container = VBoxContainer.new()
+	_cards_container.add_theme_constant_override("separation", 10)
 	_cards_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(_cards_container)
 
+	_skip_button = Button.new()
+	_skip_button.text = "[ 4 / ESC ] SALTAR Y RECICLAR (+50% Créditos)"
+	_skip_button.custom_minimum_size = Vector2(320, 34)
+	_skip_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_skip_button.pressed.connect(skip_and_recycle)
+	UIFocusHelper.apply_cyber_focus(_skip_button)
+	vbox.add_child(_skip_button)
+
 ## Despliega el borrador de 3 opciones interactivas
-func open_draft(items: Array[ItemData], was_free: bool, player: Player, on_selected: Callable = Callable()) -> void:
+func open_draft(items: Array[ItemData], was_free: bool, player: Player, on_selected: Callable = Callable(), paid_cost: int = 0) -> void:
 	if items.is_empty():
 		return
 
 	_current_candidates = items
 	_current_player = player
 	_selection_callback = on_selected
+	_paid_cost = paid_cost
 	_card_buttons.clear()
 
 	get_tree().paused = true
 	_free_badge_label.visible = was_free
+
+	if _skip_button:
+		var refund_preview: int = int(_paid_cost * 0.5)
+		if refund_preview > 0:
+			_skip_button.text = "[ 4 / ESC ] SALTAR Y RECICLAR (+%d Créditos)" % refund_preview
+		else:
+			_skip_button.text = "[ 4 / ESC ] SALTAR COFRE"
+
+	# Notificar al HUD para proyectar el dock de estadísticas a la izquierda
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"chest_reward", true)
 
 	# Limpiar cartas previas
 	for child in _cards_container.get_children():
@@ -140,88 +171,109 @@ func open_reward(item: ItemData, was_free: bool, _total_stacks: int = 1) -> void
 
 func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelContainer:
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(260, 350)
+	card_panel.custom_minimum_size = Vector2(510, 72)
+	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var rarity_col := _get_rarity_color(item.rarity)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.04, 0.07, 0.13, 0.95)
 	style.set_border_width_all(2)
 	style.border_color = rarity_col
-	style.set_corner_radius_all(10)
-	style.set_content_margin_all(14.0)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10.0)
 	card_panel.add_theme_stylebox_override("panel", style)
 
-	var card_vbox := VBoxContainer.new()
-	card_vbox.add_theme_constant_override("separation", 8)
-	card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	card_panel.add_child(card_vbox)
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 16)
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	card_panel.add_child(hbox)
 
-	# Hotkey pill
-	var hotkey_lbl := Label.new()
-	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
-	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hotkey_lbl.add_theme_font_size_override("font_size", 11)
-	hotkey_lbl.modulate = Color(0.3, 0.9, 1.0, 0.8)
-	card_vbox.add_child(hotkey_lbl)
+	# 1. Icono
+	var icon_panel := PanelContainer.new()
+	icon_panel.custom_minimum_size = Vector2(56, 56)
+	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
-	# Icono
-	var icon_center := CenterContainer.new()
-	icon_center.custom_minimum_size = Vector2(0, 68)
-	card_vbox.add_child(icon_center)
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = Color(0.02, 0.04, 0.08, 0.95)
+	icon_style.set_border_width_all(1)
+	icon_style.border_color = rarity_col
+	icon_style.set_corner_radius_all(6)
+	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(64, 64)
+	icon_rect.custom_minimum_size = Vector2(44, 44)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if item.icon:
 		icon_rect.texture = item.icon
-	icon_center.add_child(icon_rect)
+		icon_rect.modulate = rarity_col
+	icon_panel.add_child(icon_rect)
+	hbox.add_child(icon_panel)
 
-	# Nombre
+	# 2. Información central
+	var info_vbox := VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info_vbox.add_theme_constant_override("separation", 3)
+
+	var top_line := HBoxContainer.new()
+	top_line.add_theme_constant_override("separation", 10)
+
 	var name_lbl := Label.new()
 	name_lbl.text = item.item_name
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", 15)
+	name_lbl.add_theme_font_size_override("font_size", 14)
 	name_lbl.modulate = rarity_col
-	card_vbox.add_child(name_lbl)
+	top_line.add_child(name_lbl)
 
-	# Rareza
 	var rarity_lbl := Label.new()
-	rarity_lbl.text = "[ %s ]" % _get_rarity_name(item.rarity)
-	rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_lbl.add_theme_font_size_override("font_size", 10)
+	rarity_lbl.text = "• [ %s ]" % _get_rarity_name(item.rarity)
+	rarity_lbl.add_theme_font_size_override("font_size", 11)
 	rarity_lbl.modulate = rarity_col
-	card_vbox.add_child(rarity_lbl)
+	top_line.add_child(rarity_lbl)
 
-	# Descripción
+	var stacks: int = player.inventory.get_item_count(item.item_id) if (player and player.inventory) else 0
+	if stacks > 0:
+		var stacks_lbl := Label.new()
+		stacks_lbl.text = "(En posesión: x%d)" % stacks
+		stacks_lbl.add_theme_font_size_override("font_size", 11)
+		stacks_lbl.modulate = Color(0.65, 0.8, 0.95, 0.7)
+		top_line.add_child(stacks_lbl)
+
+	info_vbox.add_child(top_line)
+
 	var desc_lbl := Label.new()
 	desc_lbl.text = item.description
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.custom_minimum_size = Vector2(230, 48)
-	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_font_size_override("font_size", 11)
 	desc_lbl.modulate = Color(0.85, 0.9, 0.96, 0.9)
-	card_vbox.add_child(desc_lbl)
+	info_vbox.add_child(desc_lbl)
 
-	# Stacks en inventario
-	var stacks: int = player.inventory.get_item_count(item.item_id) if (player and player.inventory) else 0
-	var stacks_lbl := Label.new()
-	stacks_lbl.text = "En inventario: x%d" % stacks
-	stacks_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stacks_lbl.add_theme_font_size_override("font_size", 11)
-	stacks_lbl.modulate = Color(0.65, 0.8, 0.95, 0.65)
-	card_vbox.add_child(stacks_lbl)
+	hbox.add_child(info_vbox)
 
-	# Botón de Selección
+	# 3. Columna derecha: Atajo y Botón de Selección
+	var btn_vbox := VBoxContainer.new()
+	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn_vbox.add_theme_constant_override("separation", 4)
+
+	var hotkey_lbl := Label.new()
+	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
+	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hotkey_lbl.add_theme_font_size_override("font_size", 11)
+	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
+	btn_vbox.add_child(hotkey_lbl)
+
 	var select_btn := Button.new()
 	select_btn.text = "ELEGIR [%d]" % (index + 1)
-	select_btn.custom_minimum_size = Vector2(180, 36)
+	select_btn.custom_minimum_size = Vector2(130, 36)
 	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	select_btn.pressed.connect(func(): _select_index(index))
 	UIFocusHelper.apply_cyber_focus(select_btn)
-	card_vbox.add_child(select_btn)
+	btn_vbox.add_child(select_btn)
 	_card_buttons.append(select_btn)
+
+	hbox.add_child(btn_vbox)
 
 	return card_panel
 
@@ -231,7 +283,7 @@ func _select_index(idx: int) -> void:
 
 	var chosen: ItemData = _current_candidates[idx]
 	if _current_player and is_instance_valid(_current_player) and _current_player.inventory:
-		_current_player.inventory.add_item(chosen)
+		_current_player.inventory.add_item(chosen, 1, "COFRE ESPACIAL")
 		_current_player.inventory.process_chest_opened_procs(_current_player)
 
 	if _selection_callback.is_valid():
@@ -240,9 +292,27 @@ func _select_index(idx: int) -> void:
 	item_selected.emit(chosen)
 	close_modal()
 
+func skip_and_recycle() -> void:
+	if _paid_cost > 0 and is_instance_valid(_current_player):
+		var refund: int = int(_paid_cost * 0.5)
+		if refund > 0:
+			_current_player.run_credits += refund
+			if _current_player.has_signal("credits_changed"):
+				_current_player.credits_changed.emit(_current_player.run_credits)
+			var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+			if hud and hud.has_method("show_tactical_alert"):
+				hud.show_tactical_alert("COFRE RECICLADO", "+%d créditos recuperados (50%%)" % refund, Color(0.3, 0.9, 1.0))
+			elif _current_player.has_method("show_tactical_alert"):
+				_current_player.show_tactical_alert("COFRE RECICLADO", "+%d créditos recuperados (50%%)" % refund, Color(0.3, 0.9, 1.0))
+
+	close_modal()
+
 func close_modal() -> void:
 	hide()
 	get_tree().paused = false
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"chest_reward", false)
 	modal_closed.emit()
 
 func _get_rarity_name(rarity: Enums.Rarity) -> String:

@@ -151,7 +151,7 @@ func collect(player: Player) -> void:
 			key_item.rarity = Enums.Rarity.COMMON
 			key_item.icon = load("res://assets/icons/items/icon_quantum_key.svg") as Texture2D
 			key_item.effects = [QuantumKeyEffect.new()]
-			player.inventory.add_item(key_item, 1)
+			player.inventory.add_item(key_item, 1, "CONSUMIBLE / CAMPO")
 			if audio_mgr and audio_mgr.has_method("play_sfx"):
 				audio_mgr.play_sfx("item_pickup", 1.2)
 			floating_text_script.spawn(parent_node, global_position, "+1 LLAVE CUÁNTICA", Color(0.2, 0.9, 1.0))

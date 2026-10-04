@@ -38,41 +38,9 @@ func _ready() -> void:
 		close_button.pressed.connect(close_stats)
 
 
-func _input(event: InputEvent) -> void:
-	# Captura prioritaria de tecla C y acción show_stats
-	var is_c_pressed := false
-	if event is InputEventKey:
-		var key_event := event as InputEventKey
-		if key_event.pressed and not key_event.echo:
-			if key_event.keycode == KEY_C or key_event.physical_keycode == KEY_C:
-				is_c_pressed = true
-
-	if is_c_pressed or event.is_action_pressed("show_stats"):
-		if is_open:
-			close_stats()
-		else:
-			open_stats()
-		get_viewport().set_input_as_handled()
-		return
-
-	if is_open:
-		if event is InputEventKey:
-			var key_event := event as InputEventKey
-			if key_event.pressed and not key_event.echo:
-				if key_event.keycode == KEY_ESCAPE:
-					close_stats()
-					get_viewport().set_input_as_handled()
-					return
-				elif key_event.keycode == KEY_SPACE:
-					var focused := get_viewport().gui_get_focus_owner()
-					if focused == close_button:
-						close_stats()
-					get_viewport().set_input_as_handled()
-					return
-		if event.is_action_pressed("ui_cancel"):
-			close_stats()
-			get_viewport().set_input_as_handled()
-			return
+func _input(_event: InputEvent) -> void:
+	# Retirado for good: La pantalla C ha sido retirada y combinada con PauseMenu
+	pass
 
 
 func open_stats() -> void:
@@ -89,7 +57,7 @@ func open_stats() -> void:
 		return
 
 	is_open = true
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"character_stats")
 	visible = true
 
 	_refresh_display()
@@ -109,12 +77,9 @@ func close_stats() -> void:
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("notify_menu_closed"):
 		parent_game.notify_menu_closed(0.4)
-	if parent_game and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
-		get_tree().paused = true
-		if parent_game.has_method("restore_combat_modal_focus"):
-			parent_game.restore_combat_modal_focus()
-	else:
-		get_tree().paused = false
+	PauseArbitrator.release_pause(&"character_stats")
+	if parent_game and parent_game.has_method("restore_combat_modal_focus") and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
+		parent_game.restore_combat_modal_focus()
 
 
 func _animate_open() -> void:

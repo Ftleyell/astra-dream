@@ -53,7 +53,7 @@ func is_level_up_modal_active() -> bool:
 	return level_up_modal != null and level_up_modal.visible
 
 func is_character_stats_active() -> bool:
-	return character_stats_overlay != null and (("is_open" in character_stats_overlay and character_stats_overlay.is_open) or character_stats_overlay.visible)
+	return false
 
 func is_game_over_active() -> bool:
 	return game_over_modal != null and (game_over_modal.visible or ("is_active" in game_over_modal and game_over_modal.is_active))
@@ -81,6 +81,8 @@ func has_pending_upgrades() -> bool:
 	return false
 
 func is_any_combat_modal_active() -> bool:
+	if PauseArbitrator.is_system_paused():
+		return true
 	if main_game and main_game.has_method("is_dialogue_active") and main_game.is_dialogue_active():
 		return true
 	if is_upgrade_or_shop_modal_active():
@@ -89,19 +91,6 @@ func is_any_combat_modal_active() -> bool:
 		var reset_overlay = main_game.get_node_or_null("HoldToResetOverlay")
 		if reset_overlay and (reset_overlay.visible or ("current_hold" in reset_overlay and reset_overlay.current_hold > 0.0)):
 			return true
-	var vp := get_viewport()
-	if vp:
-		var focused := vp.gui_get_focus_owner()
-		if focused and focused.is_visible_in_tree():
-			var p: Node = focused.get_parent()
-			var in_hidden_layer: bool = false
-			while p:
-				if p is CanvasLayer and not (p as CanvasLayer).visible:
-					in_hidden_layer = true
-					break
-				p = p.get_parent()
-			if not in_hidden_layer:
-				return true
 	return false
 
 func notify_menu_closed(duration: float = 0.35) -> void:

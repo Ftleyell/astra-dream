@@ -13,10 +13,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -730.0
-offset_top = -290.0
-offset_right = 730.0
-offset_bottom = 290.0
+offset_left = -470.0
+offset_top = -370.0
+offset_right = 470.0
+offset_bottom = 370.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -35,33 +35,33 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "¡SUBIDA DE NIVEL! SELECCIONA UNA MEJORA"
 horizontal_alignment = 1
 
 [node name="ContentHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 
 [node name="StatsSidePanel" type="PanelContainer" parent="Panel/VBoxContainer/ContentHBox"]
-custom_minimum_size = Vector2(350, 0)
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
 
 [node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="StatsHeader" type="Label" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "ESTADÍSTICAS EN LA RUN"
 horizontal_alignment = 1
 
@@ -79,17 +79,17 @@ horizontal_scroll_mode = 0
 [node name="StatsList" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox/StatsSidePanel/Margin/VBox/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
 [node name="CardsVBox" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="CardsContainer" type="HBoxContainer" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]
+[node name="CardsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="ControlsHint" type="Label" parent="Panel/VBoxContainer/ContentHBox/CardsVBox"]

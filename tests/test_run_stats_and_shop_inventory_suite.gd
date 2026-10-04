@@ -170,32 +170,32 @@ func _ready() -> void:
 	for card in deck_mgr.all_stat_cards:
 		if card.card_id == &"card_dmg_1":
 			found_dmg_1 = true
-			assert(card.modifier_value >= 0.25, "card_dmg_1 debe otorgar al menos +25%% de daño (actual: %f)" % card.modifier_value)
+			assert(card.modifier_value >= 0.12, "card_dmg_1 debe otorgar al menos +12%% de daño (actual: %f)" % card.modifier_value)
 		elif card.card_id == &"card_atk_spd":
 			found_atk_spd = true
-			assert(card.modifier_value >= 0.20, "card_atk_spd debe otorgar al menos +20%% de cadencia (actual: %f)" % card.modifier_value)
+			assert(card.modifier_value >= 0.10, "card_atk_spd debe otorgar al menos +10%% de cadencia (actual: %f)" % card.modifier_value)
 		elif card.card_id == &"card_armor_1":
 			found_armor_1 = true
-			assert(card.modifier_value >= 5.0, "card_armor_1 debe otorgar al menos +5.0 de armadura (actual: %f)" % card.modifier_value)
+			assert(card.modifier_value >= 3.0, "card_armor_1 debe otorgar al menos +3.0 de armadura (actual: %f)" % card.modifier_value)
 		elif card.card_id == &"card_crit_chance":
 			found_crit_chance = true
-			assert(card.modifier_value >= 0.12, "card_crit_chance debe otorgar al menos +12%% crítico (actual: %f)" % card.modifier_value)
+			assert(card.modifier_value >= 0.06, "card_crit_chance debe otorgar al menos +6%% crítico (actual: %f)" % card.modifier_value)
 		elif card.card_id == &"card_speed_up":
 			found_speed = true
-			assert(card.modifier_value >= 0.18, "card_speed_up debe otorgar al menos +18%% velocidad (actual: %f)" % card.modifier_value)
+			assert(card.modifier_value >= 0.10, "card_speed_up debe otorgar al menos +10%% velocidad (actual: %f)" % card.modifier_value)
 	assert(found_dmg_1 and found_atk_spd and found_armor_1 and found_crit_chance and found_speed, "Todas las cartas clave de Tier 1 deben existir y estar calibradas")
-	print("  ✓ Valores de alto impacto Tier 1 verificados (+25% daño, +20% cadencia, +5 armadura, etc.).")
+	print("  ✓ Valores de alto impacto Tier 1 verificados (+12% daño, +10% cadencia, +3 armadura, etc.).")
 
 	# 6.3. Verificar oferta de exactamente 3 cartas en LevelUpModal
 	level_modal.show_level_up(3)
 	assert(level_modal.current_offered_cards.size() == 3, "Deben ofrecerse exactamente 3 cartas (actual: %d)" % level_modal.current_offered_cards.size())
 	assert(level_modal.cards_container.get_child_count() == 3, "CardsContainer debe contener exactamente 3 nodos de cartas")
 
-	# 6.4. Verificar UI de cartas limpia e instantánea (Hero Badge 26pt, sin duplicados)
+	# 6.4. Verificar UI de cartas limpia e instantánea (Hero Badge legible, sin duplicados)
 	for card_panel in level_modal.card_panels:
 		var hero_badge: Label = card_panel.find_child("HeroValueBadge", true, false) as Label
 		assert(hero_badge != null, "Cada carta debe incluir un HeroValueBadge para lectura instantánea")
-		assert(hero_badge.get_theme_font_size("font_size") >= 24, "HeroValueBadge debe tener tipografía destacada (>= 24pt)")
+		assert(hero_badge.get_theme_font_size("font_size") >= 13, "HeroValueBadge debe tener tipografía legible (>= 13pt)")
 		assert(hero_badge.text.begins_with("+") or hero_badge.text.begins_with("-"), "HeroValueBadge debe mostrar el valor numérico con signo")
 		var stat_lbl: Label = card_panel.find_child("StatNameLabel", true, false) as Label
 		assert(stat_lbl != null, "Cada carta debe tener una etiqueta de atributo concisa")

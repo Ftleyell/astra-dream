@@ -25,7 +25,7 @@ static func build_card(
 	var accent: Color = arc.color_accent if arc.color_accent != Color.BLACK else COLOR_NEON_CYAN
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(360, 530)
+	card_panel.custom_minimum_size = Vector2(260, 520)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP

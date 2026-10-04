@@ -4,6 +4,7 @@ extends CanvasLayer
 const TacticalAbilitiesControllerClass = preload("res://scenes/ui/hud/components/hud_tactical_abilities_controller.gd")
 const InventoryBarControllerClass = preload("res://scenes/ui/hud/components/hud_inventory_bar_controller.gd")
 const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_manager.gd")
+const CombatStatsDock = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
@@ -16,6 +17,9 @@ const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_ma
 @onready var dash_label: Label = find_child("DashLabel", true, false) as Label
 @onready var bomb_label: Label = find_child("BombLabel", true, false) as Label
 @onready var laser_cd_label: Label = find_child("LaserCDLabel", true, false) as Label
+@onready var dash_keybind_label: Label = find_child("DashKeybind", true, false) as Label
+@onready var laser_keybind_label: Label = find_child("LaserKeybind", true, false) as Label
+@onready var bomb_keybind_label: Label = find_child("BombKeybind", true, false) as Label
 @onready var aim_mode_label: Label = find_child("AimModeLabel", true, false) as Label
 @onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
 @onready var biomass_label: Label = find_child("BiomassLabel", true, false) as Label
@@ -98,6 +102,7 @@ var _tactical_alert_node: Control:
 
 var curse_badge: Control = null
 var curse_label: Label = null
+var combat_stats_dock: CombatStatsDock = null
 
 var current_credits: int:
 	get:
@@ -117,6 +122,7 @@ func _ready() -> void:
 	add_to_group("hud")
 	_init_subcontrollers()
 	_setup_curse_badge()
+	_setup_combat_stats_dock()
 
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
@@ -182,6 +188,33 @@ func _ready() -> void:
 		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
 		if spawn_parent:
 			spawn_parent.add_child.call_deferred(target_reticle)
+
+	_update_ability_keybind_labels()
+	var settings_mgr = get_node_or_null("/root/SettingsManager")
+	if settings_mgr and settings_mgr.has_signal("settings_changed"):
+		settings_mgr.settings_changed.connect(_update_ability_keybind_labels)
+	_setup_combat_stats_dock()
+
+func _get_action_key_text(act: StringName) -> String:
+	var events := InputMap.action_get_events(act)
+	for ev in events:
+		if ev is InputEventKey:
+			return ev.as_text_physical_keycode() if ev.physical_keycode != 0 else ev.as_text_keycode()
+		elif ev is InputEventMouseButton:
+			match ev.button_index:
+				MOUSE_BUTTON_LEFT: return "CLIC IZQ"
+				MOUSE_BUTTON_RIGHT: return "CLIC DER"
+				MOUSE_BUTTON_MIDDLE: return "CLIC CEN"
+				_: return "RATÓN %d" % ev.button_index
+	return "N/A"
+
+func _update_ability_keybind_labels() -> void:
+	if dash_keybind_label:
+		dash_keybind_label.text = "[%s]" % _get_action_key_text(&"dash")
+	if laser_keybind_label:
+		laser_keybind_label.text = "[%s]" % _get_action_key_text(&"fire_active")
+	if bomb_keybind_label:
+		bomb_keybind_label.text = "[%s] BOMBA" % _get_action_key_text(&"bomb")
 
 func _init_subcontrollers() -> void:
 	_abilities_ctrl = TacticalAbilitiesControllerClass.new()
@@ -507,4 +540,36 @@ func update_curse(curse_val: float) -> void:
 func _on_stat_changed(stat_name: StringName, new_val: float) -> void:
 	if stat_name == &"curse":
 		update_curse(new_val)
+	if is_instance_valid(combat_stats_dock) and combat_stats_dock.visible and is_instance_valid(player):
+		combat_stats_dock.refresh_stats(player)
+
+func _setup_combat_stats_dock() -> void:
+	if combat_stats_dock:
+		return
+	combat_stats_dock = CombatStatsDock.new()
+	combat_stats_dock.name = "CombatStatsDock"
+	combat_stats_dock.process_mode = Node.PROCESS_MODE_ALWAYS
+	combat_stats_dock.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+	combat_stats_dock.position = Vector2(24.0, 180.0)
+	combat_stats_dock.visible = false
+	add_child(combat_stats_dock)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_TAB:
+			if not combat_stats_dock:
+				_setup_combat_stats_dock()
+			if not is_instance_valid(player):
+				player = get_tree().get_first_node_in_group("player") as Player
+			if is_instance_valid(combat_stats_dock) and is_instance_valid(player):
+				combat_stats_dock.toggle_tab_dock(player)
+				get_viewport().set_input_as_handled()
+
+func set_stats_dock_requested(requester_id: StringName, requested: bool) -> void:
+	if not combat_stats_dock:
+		_setup_combat_stats_dock()
+	if is_instance_valid(combat_stats_dock):
+		if not is_instance_valid(player):
+			player = get_tree().get_first_node_in_group("player") as Player
+		combat_stats_dock.set_dock_requested(requester_id, requested, player)
 

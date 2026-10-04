@@ -33,7 +33,7 @@ var _inventory_panel: RefCounted
 
 # Node References
 @onready var panel: Panel = $ShopPanel
-@onready var items_container: HBoxContainer = find_child("ItemsContainer", true, false) as HBoxContainer
+@onready var items_container: VBoxContainer = find_child("ItemsContainer", true, false) as VBoxContainer
 @onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
 @onready var reroll_btn: Button = find_child("RerollButton", true, false) as Button
 @onready var close_btn: Button = find_child("CloseButton", true, false) as Button
@@ -135,7 +135,10 @@ func open_shop(credits: int, satellite_id: int = -1) -> void:
 	_refresh_inventory_display()
 
 	show()
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"satellite_shop")
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"satellite_shop", true)
 	_setup_focus_and_grab()
 
 
@@ -163,7 +166,10 @@ func restore_focus() -> void:
 
 func close_shop() -> void:
 	hide()
-	get_tree().paused = false
+	PauseArbitrator.release_pause(&"satellite_shop")
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"satellite_shop", false)
 	_clear_stat_highlights()
 	shop_closed.emit()
 

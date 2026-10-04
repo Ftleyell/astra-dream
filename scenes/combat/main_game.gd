@@ -28,7 +28,6 @@ var _pending_satellite_index: int = -1
 @onready var camera: GameCamera2D = $Camera2D
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
 @onready var pause_menu: PauseMenu = get_node_or_null("PauseMenu") as PauseMenu
-@onready var character_stats_overlay: CharacterStatsOverlay = get_node_or_null("CharacterStatsOverlay") as CharacterStatsOverlay
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
 @onready var game_over_modal: GameOverModal = get_node_or_null("GameOverModal") as GameOverModal
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
@@ -216,7 +215,6 @@ func _ready() -> void:
 	modal_coordinator.satellite_shop = satellite_shop
 	modal_coordinator.pause_menu = pause_menu
 	modal_coordinator.game_over_modal = game_over_modal
-	modal_coordinator.character_stats_overlay = character_stats_overlay
 	modal_coordinator.resume_encounters_requested.connect(_resume_pending_encounters_after_modal)
 
 	# 1. Sistema de Cofres Espaciales
@@ -250,11 +248,12 @@ func _ready() -> void:
 		add_child(boss_coordinator)
 	boss_coordinator.setup(self)
 	# Conexión del HUD con el jugador
-	player.exp_changed.connect(hud.update_exp)
-	if not player.credits_changed.is_connected(hud.update_credits):
-		player.credits_changed.connect(hud.update_credits)
-	if not player.biomass_changed.is_connected(hud.update_biomass):
-		player.biomass_changed.connect(hud.update_biomass)
+	if hud:
+		player.exp_changed.connect(hud.update_exp)
+		if not player.credits_changed.is_connected(hud.update_credits):
+			player.credits_changed.connect(hud.update_credits)
+		if not player.biomass_changed.is_connected(hud.update_biomass):
+			player.biomass_changed.connect(hud.update_biomass)
 	player.level_up_requested.connect(_on_level_up_requested)
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
@@ -367,7 +366,7 @@ func _ready() -> void:
 	if debug_boss != "":
 		is_briefing_active = false
 		prologue_bonus_chosen = true
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		jump_to_boss(debug_boss)
@@ -385,7 +384,7 @@ func _ready() -> void:
 	if debug_route != "":
 		is_briefing_active = false
 		prologue_bonus_chosen = true
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		jump_to_wave_16(debug_route)
@@ -397,7 +396,7 @@ func _ready() -> void:
 		is_briefing_active = false
 		prologue_bonus_chosen = true
 		is_pre_round = false
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		get_tree().create_timer(0.5, false).timeout.connect(func() -> void:
@@ -418,7 +417,7 @@ func _ready() -> void:
 	if is_slot_test:
 		is_briefing_active = false
 		prologue_bonus_chosen = true
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		player.run_credits = maxi(int(player.run_credits), 25000)
@@ -681,7 +680,8 @@ func _process(delta: float) -> void:
 				if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
 					space_object_spawner.notify_wave_started(current_wave)
 
-		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+		if is_instance_valid(hud):
+			hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
 	if satellite_coordinator:
 		satellite_coordinator.update_satellite_lifecycle()
@@ -878,7 +878,7 @@ func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 		if w_ctrl:
 			w_ctrl.add_weapon(item_or_weapon as WeaponData)
 	elif item_or_weapon is ItemData:
-		player.inventory.add_item(item_or_weapon as ItemData, 1)
+		player.inventory.add_item(item_or_weapon as ItemData, 1, "TIENDA DE SATÉLITE")
 	hud.update_credits(player.run_credits)
 	save_current_run_state()
 
@@ -1065,21 +1065,20 @@ func _show_game_over_screen(data: Dictionary) -> void:
 	if not game_over_modal.hub_requested.is_connected(_on_game_over_hub):
 		game_over_modal.hub_requested.connect(_on_game_over_hub)
 
-	if is_inside_tree() and get_tree():
-		get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"game_over")
 	game_over_modal.show_game_over(data)
 
 func _on_game_over_restart() -> void:
 	is_exiting_run = true
 	SaveManager.clear_active_run()
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	get_tree().reload_current_scene()
 
 func _on_game_over_hub() -> void:
 	is_exiting_run = true
 	SaveManager.clear_active_run()
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
 	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")

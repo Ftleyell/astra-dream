@@ -5,6 +5,11 @@ func _ready() -> void:
 	print("[TEST] Testing 4 Stats: Armor, Regen, Magnet & EXP Multiplier...")
 	print("==========================================\n")
 
+	get_tree().create_timer(12.0).timeout.connect(func():
+		print("\n[WATCHDOG TIMEOUT] TestAllStatsSuite excedió tiempo máximo.")
+		get_tree().quit(1)
+	)
+
 	# 1. Cargar MainGame
 	var main_scene: PackedScene = load("res://scenes/combat/main_game.tscn")
 	assert(main_scene != null, "main_game.tscn debe existir")
@@ -22,13 +27,21 @@ func _ready() -> void:
 
 	# --- TEST 1: ARMADURA (ARMOR) ---
 	print("[1/5] Testing Armor Damage Mitigation...")
+	# Asegurar que armor base para el test esté normalizado a 0
+	stats.clear_modifiers(&"armor")
+	stats.set_base_stat(&"armor", 0.0)
+	var current_armor: float = stats.get_stat(&"armor")
+	print("  -> Initial Armor: ", current_armor)
 	var initial_hp: float = stats.get_stat(&"max_health")
 	player.current_health = initial_hp
 
-	# Sin armadura (armor = 0): 50 de daño directo
+	# Con armor actual mitigado:
+	var expected_mitigated: float = 50.0 * (100.0 / (100.0 + current_armor))
 	player.take_damage(50.0)
-	assert(is_equal_approx(player.current_health, initial_hp - 50.0), "Sin armadura debe recibir 50.0 de daño")
-	print("  ✓ Sin armadura: 50.0 recibido exactamente")
+	var dmg_taken: float = initial_hp - player.current_health
+	print("  -> Damage taken: ", dmg_taken, " (Expected: ", expected_mitigated, ")")
+	assert(is_equal_approx(dmg_taken, expected_mitigated), "Daño debe coincidir con mitigación de armadura inicial")
+	print("  ✓ Sin modificadores extra: daño recibido verificado")
 
 	# Con 25 de armadura: 50 * (100 / (100 + 25)) = 40.0 de daño (20% de mitigación)
 	player.current_health = initial_hp

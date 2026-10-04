@@ -48,9 +48,43 @@ static func restore_combat_after_emergence(main_game: Node2D, cam: GameCamera2D,
 		player.resume_movement_control()
 	unfreeze_combat_environment(main_game)
 	main_game.set("is_boss_transmission_active", false)
-	main_game.get_tree().paused = false
-	main_game.call("notify_menu_closed", 0.4)
-	main_game.call("_resume_pending_systems_after_cinematics")
+	PauseArbitrator.release_pause(&"dialogue")
+	PauseArbitrator.release_pause(&"boss_cinematic")
+	if main_game.has_method("notify_menu_closed"):
+		main_game.call("notify_menu_closed", 0.4)
+	if main_game.has_method("_resume_pending_systems_after_cinematics"):
+		main_game.call("_resume_pending_systems_after_cinematics")
+
+## Salto forzado total de emergencia: restaura visuales, colisiones, HUD y combate sin desfasar el estado
+static func force_finish_boss_emergence(main_game: Node2D, boss_node: Node2D) -> void:
+	if not is_instance_valid(main_game):
+		return
+
+	# 1. Limpiar o colapsar cualquier fractura cósmica (CosmicRealityTear) en curso
+	for child in main_game.get_children():
+		if is_instance_valid(child) and child.get_script() == CosmicRealityTearScript:
+			if child.has_method("start_collapse"):
+				child.start_collapse()
+			else:
+				child.queue_free()
+
+	# 2. Restaurar al jefe a su escala, visibilidad y capas de colisión normales
+	if is_instance_valid(boss_node):
+		BossEmergenceHelperScript.force_emergence(boss_node)
+
+	# 3. Mostrar y trackear en el HUD si no se había hecho aún
+	var hud = main_game.get("hud")
+	if hud and is_instance_valid(boss_node):
+		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
+		var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
+		hud.show_boss(b_name, b_hp)
+		if hud.has_method("track_boss"):
+			hud.track_boss(boss_node, "JEFE")
+
+	# 4. Descongelar entorno, reanudar cámara y jugador
+	var cam: GameCamera2D = main_game.get_tree().get_first_node_in_group("camera") as GameCamera2D if (main_game.get_tree()) else null
+	var player: Node2D = main_game.get("player") as Node2D
+	restore_combat_after_emergence(main_game, cam, player)
 
 ## Congela inmediatamente proyectiles, oleadas y enemigos menores sincronizados con la cinemática
 static func freeze_combat_environment(main_game: Node2D) -> void:

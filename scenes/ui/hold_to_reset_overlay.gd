@@ -38,5 +38,5 @@ func _process(delta: float) -> void:
 				hide()
 
 func _execute_reset() -> void:
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	get_tree().reload_current_scene()

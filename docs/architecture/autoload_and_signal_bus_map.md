@@ -12,6 +12,7 @@ Definidos en [`project.godot`](file:///c:/Users/Frani/.gemini/antigravity/scratc
 
 | Nombre Autoload | Script / UID | Modo de Proceso | Responsabilidad Principal |
 | :--- | :--- | :--- | :--- |
+| **`PauseArbitrator`** | [`res://core/autoloads/pause_arbitrator.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/pause_arbitrator.gd) | `PROCESS_MODE_ALWAYS` | Árbitro central de pausa del SceneTree mediante tokens (`StringName`). Previene pause leaks y sobreescrituras concurrentes. |
 | **`SettingsManager`** | [`res://core/autoloads/settings_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/settings_manager.gd) | `PROCESS_MODE_ALWAYS` | Configuración de audio, gráficos/pantalla, deadzones e input mappings persistentes en `.cfg`. |
 | **`SaveManager`** | [`res://core/autoloads/save_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/save_manager.gd) | Inherit | Fachada centralizada para perfil meta, run activa, cosméticos, talentos y récords. |
 | **`DebugManager`** | [`res://core/autoloads/debug_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/debug_manager.gd) | Inherit | Flags de testing, God Mode, economía infinita y overrides numéricos de estadísticas. |

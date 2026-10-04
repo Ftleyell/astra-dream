@@ -23,7 +23,8 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 				current_wp_lvl = inst.level
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(235, 330)
+	card.custom_minimum_size = Vector2(0, 84)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var card_style := StyleBoxFlat.new()
@@ -34,41 +35,14 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	card_style.set_content_margin_all(10.0)
 	card.add_theme_stylebox_override("panel", card_style)
 
-	var vbox := VBoxContainer.new()
-	vbox.set("theme_override_constants/separation", 6)
+	var hbox := HBoxContainer.new()
+	hbox.set("theme_override_constants/separation", 16)
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 
-	# 1. Hotkey
-	var hotkey_lbl := Label.new()
-	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
-	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
-	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hotkey_lbl.add_theme_font_size_override("font_size", 11)
-
-	# 2. Title
-	var display_title: String = ""
-	if is_weapon_upgrade:
-		display_title = "[MEJORA] " + (entry as WeaponData).get_display_name() + " (Nv. %d)" % (current_wp_lvl + 1)
-	elif entry is WeaponData:
-		display_title = "[ARMA] " + (entry as WeaponData).get_display_name()
-	elif "item_name" in entry:
-		display_title = entry.item_name
-		if is_instance_valid(player) and player.inventory and entry.get("max_stacks") != null and entry.max_stacks > 1:
-			var cur_s: int = player.inventory.get_item_count(entry.item_id)
-			display_title += " (%d/%d)" % [cur_s, entry.max_stacks]
-	else:
-		display_title = "Mejora Espacial"
-
-	var name_lbl := Label.new()
-	name_lbl.text = display_title
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	name_lbl.add_theme_color_override("font_color", rarity_color)
-	name_lbl.add_theme_font_size_override("font_size", 13)
-
-	# 3. Icon
+	# 1. Icono con marco de rareza
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(56, 56)
-	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_panel.custom_minimum_size = Vector2(58, 58)
+	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
 	icon_style.bg_color = Color(0.03, 0.04, 0.07, 0.95)
@@ -87,8 +61,37 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 		icon_rect.texture = entry.get("icon")
 		icon_rect.modulate = rarity_color
 	icon_panel.add_child(icon_rect)
+	hbox.add_child(icon_panel)
 
-	# 4. Chips
+	# 2. Información central (Título, Badge, Descripción)
+	var display_title: String = ""
+	if is_weapon_upgrade:
+		display_title = "[MEJORA] " + (entry as WeaponData).get_display_name() + " (Nv. %d)" % (current_wp_lvl + 1)
+	elif entry is WeaponData:
+		display_title = "[ARMA] " + (entry as WeaponData).get_display_name()
+	elif "item_name" in entry:
+		display_title = entry.item_name
+		if is_instance_valid(player) and player.inventory and entry.get("max_stacks") != null and entry.max_stacks > 1:
+			var cur_s: int = player.inventory.get_item_count(entry.item_id)
+			display_title += " (%d/%d)" % [cur_s, entry.max_stacks]
+	else:
+		display_title = "Mejora Espacial"
+
+	var info_vbox := VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info_vbox.set("theme_override_constants/separation", 4)
+
+	var top_line := HBoxContainer.new()
+	top_line.set("theme_override_constants/separation", 10)
+
+	var name_lbl := Label.new()
+	name_lbl.text = display_title
+	name_lbl.add_theme_color_override("font_color", rarity_color)
+	name_lbl.add_theme_font_size_override("font_size", 14)
+	top_line.add_child(name_lbl)
+
+	# Chips / Badge de estadística
 	var stat_badge_panel := PanelContainer.new()
 	var stat_badge_sb := StyleBoxFlat.new()
 	stat_badge_sb.set_corner_radius_all(3)
@@ -152,27 +155,42 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	var b_margin := MarginContainer.new()
 	b_margin.add_theme_constant_override("margin_left", 6)
 	b_margin.add_theme_constant_override("margin_right", 6)
-	b_margin.add_theme_constant_override("margin_top", 3)
-	b_margin.add_theme_constant_override("margin_bottom", 3)
+	b_margin.add_theme_constant_override("margin_top", 2)
+	b_margin.add_theme_constant_override("margin_bottom", 2)
 	b_margin.add_child(stat_badge_lbl)
 	stat_badge_panel.add_child(b_margin)
+	top_line.add_child(stat_badge_panel)
 
-	# 5. Description
+	info_vbox.add_child(top_line)
+
 	var desc_lbl := Label.new()
 	if is_weapon_upgrade:
 		desc_lbl.text = "+1 Proyectil Adicional en todas las salvas activas y pasivas (+25% daño base)."
 	else:
 		desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	desc_lbl.add_theme_font_size_override("font_size", 11)
 	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+	info_vbox.add_child(desc_lbl)
 
-	# 6. Buy Button
+	hbox.add_child(info_vbox)
+
+	# 3. Columna derecha: Atajo y Botón de compra
+	var btn_vbox := VBoxContainer.new()
+	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn_vbox.set("theme_override_constants/separation", 4)
+
+	var hotkey_lbl := Label.new()
+	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
+	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
+	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hotkey_lbl.add_theme_font_size_override("font_size", 11)
+	btn_vbox.add_child(hotkey_lbl)
+
 	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
 	var buy_btn := Button.new()
 	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
+	buy_btn.custom_minimum_size = Vector2(140, 36)
 	UIFocusHelper.apply_cyber_focus(buy_btn)
 
 	buy_btn.pressed.connect(func() -> void:
@@ -194,13 +212,9 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 			shop.clear_stat_highlights()
 		)
 
-	vbox.add_child(hotkey_lbl)
-	vbox.add_child(name_lbl)
-	vbox.add_child(icon_panel)
-	vbox.add_child(stat_badge_panel)
-	vbox.add_child(desc_lbl)
-	vbox.add_child(buy_btn)
-	card.add_child(vbox)
+	btn_vbox.add_child(buy_btn)
+	hbox.add_child(btn_vbox)
+	card.add_child(hbox)
 
 	if shop.items_container:
 		shop.items_container.add_child(card)
