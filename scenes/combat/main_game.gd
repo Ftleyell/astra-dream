@@ -928,6 +928,8 @@ func apply_chronos_bank_interest() -> void:
 				player.run_credits += interest
 				if player.has_signal("credits_changed"):
 					player.credits_changed.emit(player.run_credits)
+				if is_instance_valid(hud) and hud.has_method("show_tactical_alert"):
+					hud.show_tactical_alert("⏳ BANCO CRONOS", "+%d créditos generados" % interest, Color(1.0, 0.85, 0.2))
 
 func on_salvage_capsule_opened(player_ref: Player = null) -> void:
 	var target_player: Player = player_ref if player_ref else player
@@ -940,6 +942,9 @@ func on_salvage_capsule_opened(player_ref: Player = null) -> void:
 		target_player.run_credits += 3
 		if target_player.has_signal("credits_changed"):
 			target_player.credits_changed.emit(target_player.run_credits)
+		if is_instance_valid(hud) and hud.has_method("show_tactical_alert"):
+			hud.show_tactical_alert("📦 RECUPERADOR PESADO", "+2 HP Máxima • +3 créditos", Color(0.4, 1.0, 0.6))
+
 
 func open_transmutation_modal(station: TransmutationStation) -> void:
 	if transmutation_modal and is_instance_valid(player):

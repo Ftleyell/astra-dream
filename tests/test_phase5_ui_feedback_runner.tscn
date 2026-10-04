@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://phase5_ui_feedback_runner_01"]
+
+[ext_resource type="Script" path="res://tests/test_phase5_ui_feedback_suite.gd" id="1_suite"]
+
+[node name="TestPhase5UIFeedbackRunner" type="Node"]
+script = ExtResource("1_suite")

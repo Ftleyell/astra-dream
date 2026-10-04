@@ -89,6 +89,16 @@ var _unlock_banner_node: Control:
 		if _banner_mgr:
 			_banner_mgr._unlock_banner_node = val
 
+var _tactical_alert_node: Control:
+	get:
+		return _banner_mgr._tactical_alert_node if _banner_mgr else null
+	set(val):
+		if _banner_mgr:
+			_banner_mgr._tactical_alert_node = val
+
+var curse_badge: Control = null
+var curse_label: Label = null
+
 var current_credits: int:
 	get:
 		return _inventory_ctrl.current_credits if _inventory_ctrl else 120
@@ -106,6 +116,7 @@ var current_biomass: int:
 func _ready() -> void:
 	add_to_group("hud")
 	_init_subcontrollers()
+	_setup_curse_badge()
 
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
@@ -131,6 +142,12 @@ func _ready() -> void:
 		player.bomb_used.connect(_on_bomb_used)
 		_on_health_changed(player.current_health, player.stats.get_stat(&"max_health"))
 		_on_bomb_used(player.bomb_count)
+
+		var player_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
+		if player_stats:
+			if not player_stats.stat_changed.is_connected(_on_stat_changed):
+				player_stats.stat_changed.connect(_on_stat_changed)
+			update_curse(player_stats.get_stat(&"curse"))
 
 		if player.has_signal("dash_updated"):
 			player.dash_updated.connect(_on_dash_updated)
@@ -280,6 +297,11 @@ func show_character_unlock_banner(char_id: StringName, title_text: String, desc_
 	if _banner_mgr:
 		_banner_mgr.show_character_unlock_banner(char_id, title_text, desc_text, self)
 
+func show_tactical_alert(title_text: String, subtitle_text: String = "", border_color: Color = Color(0.2, 0.9, 1.0)) -> void:
+	if _banner_mgr and _banner_mgr.has_method("show_tactical_alert_banner"):
+		_banner_mgr.show_tactical_alert_banner(title_text, subtitle_text, border_color, self)
+
+
 func update_laser_cooldown(current: float, max_val: float) -> void:
 	if _abilities_ctrl:
 		_abilities_ctrl.update_laser_cooldown(current, max_val)
@@ -396,3 +418,93 @@ func _on_osp_triggered(_remaining_hp: float) -> void:
 		tw.tween_callback(flash.queue_free)
 	else:
 		flash.queue_free()
+
+	show_tactical_alert("🛡️ PROTOCOLO OSP ACTIVADO", "¡Impacto letal absorbido! 1.0s de inmunidad concedida", Color(0.2, 0.9, 1.0))
+
+func set_player(p: Player) -> void:
+	player = p
+	if not is_inside_tree():
+		return
+	if satellite_tracker and is_instance_valid(player):
+		satellite_tracker.set_player(player)
+	if arcana_tracker and is_instance_valid(player):
+		arcana_tracker.set_player(player)
+	if boss_tracker and is_instance_valid(player):
+		boss_tracker.set_player(player)
+	if chest_tracker and is_instance_valid(player) and chest_tracker.has_method("set_player"):
+		chest_tracker.set_player(player)
+	if is_instance_valid(player):
+		var target_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
+		if target_stats:
+			if not target_stats.stat_changed.is_connected(_on_stat_changed):
+				target_stats.stat_changed.connect(_on_stat_changed)
+			update_curse(target_stats.get_stat(&"curse"))
+
+func _setup_curse_badge() -> void:
+	var key_container: BoxContainer = find_child("KeyBadgeContainer", true, false) as BoxContainer
+	if not key_container:
+		return
+	curse_badge = key_container.find_child("CurseBadge", true, false) as Control
+	if not curse_badge:
+		var panel := PanelContainer.new()
+		panel.name = "CurseBadge"
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.12, 0.02, 0.05, 0.8)
+		style.border_color = Color(1.0, 0.2, 0.3, 0.9)
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(14)
+		style.content_margin_left = 10.0
+		style.content_margin_right = 12.0
+		style.content_margin_top = 4.0
+		style.content_margin_bottom = 4.0
+		style.shadow_color = Color(1.0, 0.1, 0.2, 0.4)
+		style.shadow_size = 6
+		panel.add_theme_stylebox_override("panel", style)
+
+		var hbox := HBoxContainer.new()
+		hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		hbox.add_theme_constant_override("separation", 6)
+
+		var icon_lbl := Label.new()
+		icon_lbl.text = "☣️"
+		icon_lbl.add_theme_font_size_override("font_size", 13)
+		hbox.add_child(icon_lbl)
+
+		var lbl := Label.new()
+		lbl.name = "CurseLabel"
+		lbl.text = "Maldición: 0"
+		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.35, 0.45))
+		hbox.add_child(lbl)
+
+		panel.add_child(hbox)
+		key_container.add_child(panel)
+		curse_badge = panel
+		curse_label = lbl
+	else:
+		curse_label = curse_badge.find_child("CurseLabel", true, false) as Label
+
+	curse_badge.visible = false
+
+func update_curse(curse_val: float) -> void:
+	if not curse_badge:
+		_setup_curse_badge()
+	if not curse_badge or not curse_label:
+		return
+	if curse_val > 0.0:
+		curse_badge.visible = true
+		curse_label.text = "Maldición: +%d pts" % int(curse_val)
+		curse_badge.pivot_offset = curse_badge.size * 0.5
+		var tw := create_tween()
+		if tw:
+			tw.tween_property(curse_badge, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK)
+			tw.tween_property(curse_badge, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE)
+	else:
+		curse_badge.visible = false
+
+func _on_stat_changed(stat_name: StringName, new_val: float) -> void:
+	if stat_name == &"curse":
+		update_curse(new_val)
+

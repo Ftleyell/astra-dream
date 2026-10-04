@@ -29,11 +29,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
     * *Espacio y Economía:* `orbital_relay` (10s despliegue de satélite), `quantum_recompiler` (+1 uso en Forja Cuántica), `heavy_salvager` (+2 HP y +3c por cápsula), `chronos_bank` (10% interés por oleada, cap 50c).
   * Corrección de `nanotitanium_plating` a `FLAT` (+3.0 armadura) para pilotos con 0 base.
   * Sistema de Pity Dinámico Pseudo-Aleatorio (PRD) con aceleración de umbrales por Suerte (`player_luck`).
-* **Suites de Pruebas Unitarias Automatizadas (310 Pruebas Totales Headless):**
+* **Fase 5: UI/HUD Rework & Feedback Visual (`GameHUD`, `HUDBannerManager`, `CharacterStatsOverlay`):**
+  * Insignia reactiva de Maldición (`CurseBadge`) en HUD, vinculada al evento `stat_changed` de `CharacterStats` con micro-animación de escala y visibilidad contextual (oculta en 0).
+  * Banners cinematográficos de alerta táctica (`TacticalAlertPanel`) gestionados por `HUDBannerManager` para avisos prioritarios:
+    * Alerta de activación del Protocolo One-Shot Protection (OSP).
+    * Alerta de dividendos de interés de Banco Cronos (`chronos_bank`).
+    * Alerta de recompensas de chatarra por cápsulas abiertas con Recuperador Pesado (`heavy_salvager`).
+  * Integración de categoría `"☣️ RIESGO Y CORRUPCIÓN"` con atributo `"MALDICIÓN"` en el Cuadro de Mando Táctico (`CharacterStatsOverlay`).
+* **Suites de Pruebas Unitarias Automatizadas (336 Pruebas Totales Headless):**
   * `test_damage_buckets_runner.tscn` (17 pruebas).
   * `test_hybrid_chest_economy_runner.tscn` (45 pruebas).
   * `test_proc_coefficients_and_osp_runner.tscn` (66 pruebas).
-  * `test_new_items_and_pity_runner.tscn` (153 pruebas).
+  * `test_new_items_and_pity_runner.tscn` (157 pruebas).
+  * `test_phase5_ui_feedback_runner.tscn` (19 pruebas).
   * `test_chest_economy_runner.tscn` (29 pruebas).
   * `test_satellite_items_runner.tscn` (4/4 suites).
 

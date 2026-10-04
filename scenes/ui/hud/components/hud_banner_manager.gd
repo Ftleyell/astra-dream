@@ -201,3 +201,103 @@ func _create_unlock_banner_ui(hud_node: CanvasLayer) -> void:
 	hud_node.add_child(banner_box)
 	_unlock_banner_node = banner_box
 	_unlock_banner_node.visible = false
+
+func show_tactical_alert_banner(title_text: String, subtitle_text: String, border_color: Color, hud_node: CanvasLayer) -> void:
+	if not _tactical_alert_node:
+		_create_alert_banner_ui(hud_node)
+	if not _tactical_alert_node:
+		return
+
+	var title_lbl: Label = _tactical_alert_node.find_child("AlertTitle", true, false) as Label
+	var sub_lbl: Label = _tactical_alert_node.find_child("AlertSubtitle", true, false) as Label
+	if title_lbl:
+		title_lbl.text = title_text
+		title_lbl.add_theme_color_override("font_color", border_color)
+	if sub_lbl:
+		sub_lbl.text = subtitle_text
+
+	if _tactical_alert_style:
+		_tactical_alert_style.border_color = border_color
+		_tactical_alert_style.shadow_color = Color(border_color.r, border_color.g, border_color.b, 0.45)
+
+	if _tactical_alert_tween and _tactical_alert_tween.is_valid():
+		_tactical_alert_tween.kill()
+
+	_tactical_alert_node.visible = true
+	_tactical_alert_node.modulate.a = 0.0
+	_tactical_alert_node.offset_left = -260.0
+	_tactical_alert_node.offset_right = 260.0
+	_tactical_alert_node.offset_top = 175.0
+	_tactical_alert_node.offset_bottom = 240.0
+
+	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.4)
+
+	_tactical_alert_tween = hud_node.create_tween()
+	_tactical_alert_tween.set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "offset_top", 195.0, 0.25)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "offset_bottom", 260.0, 0.25)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "modulate:a", 1.0, 0.2)
+	_tactical_alert_tween.chain().tween_interval(3.5)
+	_tactical_alert_tween.chain().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "offset_top", 175.0, 0.3)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "offset_bottom", 240.0, 0.3)
+	_tactical_alert_tween.tween_property(_tactical_alert_node, "modulate:a", 0.0, 0.3)
+	_tactical_alert_tween.chain().tween_callback(func() -> void:
+		if _tactical_alert_node:
+			_tactical_alert_node.visible = false
+	)
+
+func _create_alert_banner_ui(hud_node: CanvasLayer) -> void:
+	var banner_box := PanelContainer.new()
+	banner_box.name = "TacticalAlertPanel"
+	banner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_box.layout_mode = 1
+	banner_box.anchors_preset = Control.PRESET_CENTER_TOP
+	banner_box.anchor_left = 0.5
+	banner_box.anchor_right = 0.5
+	banner_box.offset_left = -260.0
+	banner_box.offset_top = 195.0
+	banner_box.offset_right = 260.0
+	banner_box.offset_bottom = 260.0
+	banner_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	banner_box.custom_minimum_size = Vector2(520, 65)
+	banner_box.pivot_offset = Vector2(260, 32.5)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.03, 0.08, 0.92)
+	style.border_color = Color(0.2, 0.9, 1.0, 0.8)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(8.0)
+	style.shadow_color = Color(0.2, 0.9, 1.0, 0.35)
+	style.shadow_size = 10
+	banner_box.add_theme_stylebox_override("panel", style)
+	_tactical_alert_style = style
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 3)
+
+	var title := Label.new()
+	title.name = "AlertTitle"
+	title.text = "ALERTA TÁCTICA"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0))
+	vbox.add_child(title)
+
+	var sub := Label.new()
+	sub.name = "AlertSubtitle"
+	sub.text = ""
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_font_size_override("font_size", 12)
+	sub.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0, 0.95))
+	vbox.add_child(sub)
+
+	banner_box.add_child(vbox)
+	hud_node.add_child(banner_box)
+	_tactical_alert_node = banner_box
+	_tactical_alert_node.visible = false
+
