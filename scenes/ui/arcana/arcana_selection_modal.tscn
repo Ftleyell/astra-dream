@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1040, 740)
+custom_minimum_size = Vector2(820, 680)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel"]
@@ -53,60 +53,18 @@ theme_override_font_sizes/font_size = 12
 text = "PACTOS DE ALTO RIESGO / RECOMPENSA - SELECCIONA UNA ALTERACIÓN CUÁNTICA"
 horizontal_alignment = 1
 
-[node name="ContentHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
+[node name="CardsVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="StatsSidePanel" type="PanelContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
-custom_minimum_size = Vector2(280, 0)
-layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="StatsHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "ESTADÍSTICAS EN LA RUN"
-horizontal_alignment = 1
-
-[node name="PilotInfo" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "PILOTO | PACTOS"
-horizontal_alignment = 1
-
-[node name="Scroll" type="ScrollContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="StatsList" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/StatsSidePanel/Margin/VBox/Scroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-
-[node name="CardsVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="CardsContainer" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/CardsVBox"]
+[node name="CardsContainer" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/CardsVBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="ControlsHint" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/ContentHBox/CardsVBox"]
+[node name="ControlsHint" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/CardsVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "[ 1, 2, 3 ] Selección rápida  |  [ A / D ] Navegar  |  [ Espacio / Enter ] Pactar"

@@ -93,6 +93,8 @@ func _ready() -> void:
 func _ensure_player() -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
+	if not is_instance_valid(player) and get_parent() and "player" in get_parent() and is_instance_valid(get_parent().player):
+		player = get_parent().player as Player
 
 
 func _generate_default_shop_items() -> void:
@@ -136,7 +138,7 @@ func open_shop(credits: int, satellite_id: int = -1) -> void:
 
 	show()
 	PauseArbitrator.acquire_pause(&"satellite_shop")
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	var hud: Node = _get_hud_node()
 	if hud and hud.has_method("set_stats_dock_requested"):
 		hud.set_stats_dock_requested(&"satellite_shop", true)
 	_setup_focus_and_grab()
@@ -167,25 +169,41 @@ func restore_focus() -> void:
 func close_shop() -> void:
 	hide()
 	PauseArbitrator.release_pause(&"satellite_shop")
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	var hud: Node = _get_hud_node()
 	if hud and hud.has_method("set_stats_dock_requested"):
 		hud.set_stats_dock_requested(&"satellite_shop", false)
 	_clear_stat_highlights()
 	shop_closed.emit()
 
 
+func _get_hud_node() -> Node:
+	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if not hud_node and get_parent() and "hud" in get_parent() and is_instance_valid(get_parent().hud):
+		hud_node = get_parent().hud
+	return hud_node
+
+
 func _refresh_stats_display() -> void:
 	_ensure_player()
+	var hud: Node = _get_hud_node()
+	if hud and "combat_stats_dock" in hud and is_instance_valid(hud.combat_stats_dock) and is_instance_valid(player):
+		hud.combat_stats_dock.refresh_stats(player)
 	if _inventory_panel:
 		_inventory_panel.refresh_stats_display(player)
 
 
 func _highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void:
+	var hud: Node = _get_hud_node()
+	if hud and "combat_stats_dock" in hud and is_instance_valid(hud.combat_stats_dock):
+		hud.combat_stats_dock.preview_raw_stat(stat_key, delta_val, is_pct)
 	if _inventory_panel:
 		_inventory_panel.highlight_preview_stat(stat_key, delta_val, is_pct)
 
 
 func _clear_stat_highlights() -> void:
+	var hud: Node = _get_hud_node()
+	if hud and "combat_stats_dock" in hud and is_instance_valid(hud.combat_stats_dock):
+		hud.combat_stats_dock.clear_previews()
 	if _inventory_panel:
 		_inventory_panel.clear_stat_highlights()
 

@@ -269,6 +269,12 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 	select_btn.custom_minimum_size = Vector2(130, 36)
 	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	select_btn.pressed.connect(func(): _select_index(index))
+	var on_highlight := func():
+		var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+		if hud and "combat_stats_dock" in hud and is_instance_valid(hud.combat_stats_dock):
+			hud.combat_stats_dock.preview_item_stat(item)
+	select_btn.focus_entered.connect(on_highlight)
+	select_btn.mouse_entered.connect(on_highlight)
 	UIFocusHelper.apply_cyber_focus(select_btn)
 	btn_vbox.add_child(select_btn)
 	_card_buttons.append(select_btn)

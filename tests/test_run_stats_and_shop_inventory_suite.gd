@@ -25,24 +25,25 @@ func _ready() -> void:
 	var level_modal := main_game.level_up_modal
 	var shop := main_game.satellite_shop
 	var arcana_modal := main_game.arcana_modal
+	var hud := main_game.hud
 
 	assert(player != null, "Player debe existir en MainGame")
 	assert(level_modal != null, "LevelUpModal debe existir en MainGame")
 	assert(shop != null, "SatelliteShop debe existir en MainGame")
 	assert(arcana_modal != null, "ArcanaSelectionModal debe existir en MainGame")
+	assert(hud != null, "GameHUD debe existir en MainGame")
 
+	# =========================================================================
 	# =========================================================================
 	# PARTE 1: Panel Lateral de Estadísticas en LevelUpModal
 	# =========================================================================
-	print("\n[1/5] Testing LevelUpModal Run Stats Side Panel...")
+	print("\n[1/5] Testing LevelUpModal Run Stats Side Panel (Unified Dock)...")
 	level_modal.show_level_up(2)
 	assert(level_modal.visible, "LevelUpModal debe mostrarse")
-	assert(level_modal.stats_side_panel != null, "StatsSidePanel debe existir")
-	assert(level_modal.stats_side_panel.is_visible_in_tree(), "StatsSidePanel debe ser visible")
-	assert(level_modal.stats_list_container != null, "StatsListContainer debe existir")
-	assert(level_modal.stats_list_container.get_child_count() >= 14, "Deben renderizarse las 14 estadísticas clasificadas")
-	assert(level_modal.pilot_info_label.text.contains("2"), "PilotInfo debe reflejar el nivel 2")
-	print("  ✓ LevelUpModal renderiza correctamente el panel lateral con las 14 estadísticas y nivel del piloto.")
+	assert(hud.combat_stats_dock != null, "CombatStatsDock debe existir en HUD")
+	assert(hud.combat_stats_dock.visible, "CombatStatsDock debe proyectarse visiblemente al abrir LevelUpModal")
+	assert(level_modal.stat_card_ui_entries.size() >= 14, "Deben estar disponibles al menos 14 estadísticas clasificadas en el dock")
+	print("  ✓ LevelUpModal proyecta correctamente el dock unificado con las estadísticas del piloto.")
 
 	# =========================================================================
 	# PARTE 2: Resaltado de Estadísticas Mejoradas y Previsualización en LevelUpModal
@@ -61,6 +62,7 @@ func _ready() -> void:
 
 	level_modal._select_card_by_index(0)
 	assert(not level_modal.visible, "LevelUpModal debe cerrarse al elegir carta")
+	assert(not hud.combat_stats_dock.visible, "CombatStatsDock debe ocultarse al cerrar LevelUpModal")
 	print("  ✓ Selección de carta procesada y modal cerrado.")
 
 	# =========================================================================
@@ -71,21 +73,19 @@ func _ready() -> void:
 	assert(shop.visible, "SatelliteShop debe mostrarse")
 	assert(shop.inventory_side_panel != null, "InventorySidePanel debe existir")
 	assert(shop.inventory_side_panel.is_visible_in_tree(), "InventorySidePanel debe ser visible")
-	assert(shop.stats_list != null, "StatsList debe existir en SatelliteShop")
-	assert(shop.stats_list.get_child_count() >= 14, "StatsList debe renderizar las 14 estadísticas")
-	assert(shop.stat_ui_entries.has(&"base_damage"), "stat_ui_entries debe contener base_damage")
+	assert(hud.combat_stats_dock.visible, "CombatStatsDock unificado debe proyectarse visiblemente al abrir SatelliteShop")
 	assert(shop.weapons_list != null, "WeaponsList debe existir")
 	assert(shop.weapons_list.get_child_count() >= 1, "Debe mostrar al menos el arma primaria")
 	assert(shop.inventory_summary_label.text.contains("Armas:"), "Summary debe indicar número de armas")
-	print("  ✓ SatelliteShop renderiza tanto las 14 estadísticas del piloto como las armas/ítems de la run.")
+	print("  ✓ SatelliteShop proyecta el dock de estadísticas y mantiene el inventario de armas/ítems de la run.")
 
 	# =========================================================================
 	# PARTE 4: Previsualización de Estadísticas al Hover y Compra en SatelliteShop
 	# =========================================================================
 	print("\n[4/5] Testing Stat Preview & Real-Time Sync on Shop Purchase...")
-	# Probar previsualización numérica en SatelliteShop
+	# Probar previsualización numérica en SatelliteShop proyectada al dock unificado
 	shop._highlight_preview_stat(&"move_speed", 50.0, false)
-	var move_entry: Dictionary = shop.stat_ui_entries[&"move_speed"]
+	var move_entry: Dictionary = hud.combat_stats_dock._stat_ui_entries[&"move_speed"]
 	var lbl_val: Label = move_entry["lbl_val"]
 	assert(lbl_val.text.contains("→"), "Debe mostrar la flecha de transición de valores (antes → después)")
 	shop._clear_stat_highlights()
@@ -104,7 +104,7 @@ func _ready() -> void:
 	shop._refresh_inventory_display()
 	shop._refresh_stats_display()
 	assert(shop.items_list.get_child_count() >= 1, "ItemsList debe contener el ítem añadido")
-	assert(shop.stat_ui_entries[&"move_speed"]["is_buffed"] == true, "move_speed debe estar buffed tras añadir ítem")
+	assert(hud.combat_stats_dock._stat_ui_entries[&"move_speed"]["is_buffed"] == true, "move_speed debe estar buffed tras añadir ítem")
 
 	var initial_credits := shop.current_credits
 	var offered_item = shop.current_offered_items[0]
@@ -114,6 +114,7 @@ func _ready() -> void:
 	assert(shop.current_credits == initial_credits - item_cost, "Los créditos deben reducirse tras la compra")
 	shop.close_shop()
 	assert(not shop.visible, "SatelliteShop debe cerrarse")
+	assert(not hud.combat_stats_dock.visible, "CombatStatsDock debe ocultarse al cerrar SatelliteShop")
 	print("  ✓ Compra de suministros procesada, inventario y estadísticas sincronizados.")
 
 	# =========================================================================
@@ -122,10 +123,7 @@ func _ready() -> void:
 	print("\n[5/5] Testing ArcanaSelectionModal Stats Side Panel & Exact Deltas...")
 	arcana_modal.show_arcana_selection(player)
 	assert(arcana_modal.visible, "ArcanaSelectionModal debe mostrarse")
-	assert(arcana_modal.stats_side_panel != null, "StatsSidePanel debe existir en ArcanaSelectionModal")
-	assert(arcana_modal.stats_side_panel.is_visible_in_tree(), "StatsSidePanel debe ser visible")
-	assert(arcana_modal.stats_list_container != null, "StatsListContainer debe existir en ArcanaSelectionModal")
-	assert(arcana_modal.stats_list_container.get_child_count() >= 14, "Deben renderizarse las 14 estadísticas clasificadas")
+	assert(hud.combat_stats_dock.visible, "CombatStatsDock unificado debe proyectarse visiblemente en ArcanaSelectionModal")
 	assert(arcana_modal.card_panels.size() >= 1, "Deben generarse paneles para las cartas arcanas")
 
 	# Probar previsualización de alteración de arcana
@@ -137,8 +135,8 @@ func _ready() -> void:
 		for mod_k in first_arc.stat_modifiers.keys():
 			var s_key := String(mod_k)
 			var target_stat := StringName(s_key.trim_suffix("_pct"))
-			if arcana_modal.stat_card_ui_entries.has(target_stat):
-				var arc_entry: Dictionary = arcana_modal.stat_card_ui_entries[target_stat]
+			if hud.combat_stats_dock._stat_ui_entries.has(target_stat):
+				var arc_entry: Dictionary = hud.combat_stats_dock._stat_ui_entries[target_stat]
 				var arc_lbl: Label = arc_entry["lbl_val"]
 				assert(arc_lbl.text.contains("→"), "Debe mostrar diff 'antes → después' para la estadística '%s'" % target_stat)
 		print("  ✓ Previsualización multi-estadística verificada exitosamente para cartas de arcana.")
@@ -146,6 +144,7 @@ func _ready() -> void:
 	# Elegir arcana y cerrar
 	arcana_modal._choose_focused_card()
 	assert(not arcana_modal.visible, "ArcanaSelectionModal debe cerrarse tras pactar")
+	assert(not hud.combat_stats_dock.visible, "CombatStatsDock debe ocultarse al cerrar ArcanaSelectionModal")
 	print("  ✓ Pacto de arcana procesado y modal cerrado.")
 
 	# =========================================================================

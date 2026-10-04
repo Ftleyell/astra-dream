@@ -31,14 +31,19 @@ var _mouse_lockout_active: bool = false
 var stats_inspector: LevelUpStatsInspector = null
 
 var stat_card_ui_entries: Dictionary:
-	get: return stats_inspector.stat_card_ui_entries if stats_inspector else {}
+	get:
+		var dock := _get_hud_stats_dock()
+		if dock and not dock._stat_ui_entries.is_empty():
+			return dock._stat_ui_entries
+		return stats_inspector.stat_card_ui_entries if stats_inspector else {}
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
-	stats_inspector = LevelUpStatsInspector.new()
-	stats_inspector.setup(stats_list_container, stats_header_label, pilot_info_label)
+	if stats_list_container:
+		stats_inspector = LevelUpStatsInspector.new()
+		stats_inspector.setup(stats_list_container, stats_header_label, pilot_info_label)
 	_apply_modal_styles()
 
 	if stat_deck_manager:
@@ -128,7 +133,7 @@ func _present_level(level: int) -> void:
 
 	PauseArbitrator.acquire_pause(&"level_up")
 	_update_header_title()
-	_refresh_player_stats_display(level)
+	_notify_hud_stats_dock(true)
 	show()
 
 	if stat_deck_manager and player:
@@ -140,18 +145,47 @@ func _present_level(level: int) -> void:
 	)
 
 
+const CombatStatsDockClass = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
+
+func _notify_hud_stats_dock(active: bool) -> void:
+	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if not hud_node:
+		var parent_game = get_parent()
+		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
+			hud_node = parent_game.hud
+	if hud_node and hud_node.has_method("set_stats_dock_requested"):
+		hud_node.set_stats_dock_requested(&"level_up", active)
+
+
+func _get_hud_stats_dock() -> CombatStatsDockClass:
+	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if not hud_node:
+		var parent_game = get_parent()
+		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
+			hud_node = parent_game.hud
+	if hud_node and "combat_stats_dock" in hud_node and is_instance_valid(hud_node.combat_stats_dock):
+		return hud_node.combat_stats_dock as CombatStatsDockClass
+	return null
+
+
 func _refresh_player_stats_display(level_override: int = -1) -> void:
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
 	if not is_instance_valid(player) and get_parent():
 		player = get_parent().get_node_or_null("Player") as Player
 
-	if stats_inspector and is_instance_valid(player):
+	var dock := _get_hud_stats_dock()
+	if dock and is_instance_valid(player):
+		dock.refresh_stats(player)
+	elif stats_inspector and is_instance_valid(player):
 		stats_inspector.refresh_player_stats(player, level_override)
 
 
 func _highlight_target_stat(target_stat: StringName, card: StatCardData = null) -> void:
-	if stats_inspector:
+	var dock := _get_hud_stats_dock()
+	if dock:
+		dock.preview_stat_delta(target_stat, card)
+	elif stats_inspector:
 		stats_inspector.highlight_target_stat(target_stat, card)
 
 
@@ -308,6 +342,7 @@ func _select_card(card: StatCardData) -> void:
 
 	is_presenting_level = false
 	hide()
+	_notify_hud_stats_dock(false)
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("notify_menu_closed"):
 		parent_game.notify_menu_closed(0.4)

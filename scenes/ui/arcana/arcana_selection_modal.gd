@@ -41,14 +41,19 @@ var _mouse_lockout_active: bool = false
 var stats_inspector: ArcanaStatsInspector = null
 
 var stat_card_ui_entries: Dictionary:
-	get: return stats_inspector.stat_card_ui_entries if stats_inspector else {}
+	get:
+		var dock := _get_hud_stats_dock()
+		if dock and not dock._stat_ui_entries.is_empty():
+			return dock._stat_ui_entries
+		return stats_inspector.stat_card_ui_entries if stats_inspector else {}
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	stats_inspector = ArcanaStatsInspector.new()
-	stats_inspector.setup(stats_list_container, stats_header_label, pilot_info_label)
+	if stats_list_container:
+		stats_inspector = ArcanaStatsInspector.new()
+		stats_inspector.setup(stats_list_container, stats_header_label, pilot_info_label)
 	_apply_modal_styles()
 
 
@@ -176,6 +181,29 @@ func _update_header_title() -> void:
 		header_title.text = "◈ INVOCACIÓN DE ARCANA ◈"
 
 
+const CombatStatsDockClass = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
+
+func _notify_hud_stats_dock(active: bool) -> void:
+	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if not hud_node:
+		var parent_game = get_parent()
+		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
+			hud_node = parent_game.hud
+	if hud_node and hud_node.has_method("set_stats_dock_requested"):
+		hud_node.set_stats_dock_requested(&"arcana_selection", active)
+
+
+func _get_hud_stats_dock() -> CombatStatsDockClass:
+	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if not hud_node:
+		var parent_game = get_parent()
+		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
+			hud_node = parent_game.hud
+	if hud_node and "combat_stats_dock" in hud_node and is_instance_valid(hud_node.combat_stats_dock):
+		return hud_node.combat_stats_dock as CombatStatsDockClass
+	return null
+
+
 func _present_arcana(p_player: Player = null) -> void:
 	if p_player:
 		player = p_player
@@ -208,6 +236,7 @@ func _present_arcana(p_player: Player = null) -> void:
 		offered_arcanas.append(overload_arc)
 
 	_update_header_title()
+	_notify_hud_stats_dock(true)
 	_refresh_player_stats_display()
 	_build_cards_ui()
 
@@ -228,6 +257,7 @@ func _present_arcana(p_player: Player = null) -> void:
 func close_modal() -> void:
 	is_active = false
 	visible = false
+	_notify_hud_stats_dock(false)
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused:
 		focused.release_focus()
@@ -314,12 +344,18 @@ func _refresh_player_stats_display() -> void:
 	if not is_instance_valid(player) and get_parent():
 		player = get_parent().get_node_or_null("Player") as Player
 
-	if stats_inspector:
+	var dock := _get_hud_stats_dock()
+	if dock and is_instance_valid(player):
+		dock.refresh_stats(player)
+	elif stats_inspector:
 		stats_inspector.refresh_player_stats(player)
 
 
 func _highlight_arcana_stats(arc: ArcanaData) -> void:
-	if stats_inspector:
+	var dock := _get_hud_stats_dock()
+	if dock:
+		dock.preview_arcana_deltas(arc)
+	elif stats_inspector:
 		stats_inspector.highlight_arcana_stats(arc)
 
 

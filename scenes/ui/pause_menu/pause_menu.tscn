@@ -31,9 +31,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -550.0
+offset_left = -330.0
 offset_top = -370.0
-offset_right = 550.0
+offset_right = 490.0
 offset_bottom = 370.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -80,7 +80,8 @@ size_flags_vertical = 3
 theme_override_constants/separation = 18
 
 [node name="StatsColumn" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox"]
-custom_minimum_size = Vector2(280, 0)
+visible = false
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -113,6 +114,7 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
 [node name="VSeparator0" type="VSeparator" parent="Panel/VBoxContainer/ContentHBox"]
+visible = false
 layout_mode = 2
 
 [node name="ItemsColumn" type="VBoxContainer" parent="Panel/VBoxContainer/ContentHBox"]

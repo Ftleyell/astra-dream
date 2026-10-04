@@ -204,6 +204,7 @@ func _ready() -> void:
 	exp_changed.emit(current_exp, exp_to_next, current_level)
 	if not inventory.is_inside_tree():
 		add_child(inventory)
+	inventory.character_stats = stats
 	if not inventory.item_added.is_connected(_on_inventory_item_added):
 		inventory.item_added.connect(_on_inventory_item_added)
 

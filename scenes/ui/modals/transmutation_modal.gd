@@ -145,6 +145,9 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 	current_player = player
 	current_station = station
 	PauseArbitrator.acquire_pause(&"transmutation")
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"transmutation", true)
 	_title_label.text = "FORJA CUÁNTICA DE TRANSMUTACIÓN"
 	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
 	if _desc_label:
@@ -184,6 +187,9 @@ func close_modal() -> void:
 		_close_btn.show()
 	hide()
 	PauseArbitrator.release_pause(&"transmutation")
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"transmutation", false)
 	modal_closed.emit()
 
 static func is_item_eligible_for_transmutation(it: ItemData) -> bool:

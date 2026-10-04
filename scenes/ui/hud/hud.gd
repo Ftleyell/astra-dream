@@ -543,16 +543,23 @@ func _on_stat_changed(stat_name: StringName, new_val: float) -> void:
 	if is_instance_valid(combat_stats_dock) and combat_stats_dock.visible and is_instance_valid(player):
 		combat_stats_dock.refresh_stats(player)
 
+var stats_dock_layer: CanvasLayer = null
+
 func _setup_combat_stats_dock() -> void:
 	if combat_stats_dock:
 		return
+	stats_dock_layer = CanvasLayer.new()
+	stats_dock_layer.name = "StatsDockLayer"
+	stats_dock_layer.layer = 120
+	stats_dock_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(stats_dock_layer)
+
 	combat_stats_dock = CombatStatsDock.new()
 	combat_stats_dock.name = "CombatStatsDock"
 	combat_stats_dock.process_mode = Node.PROCESS_MODE_ALWAYS
-	combat_stats_dock.set_anchors_preset(Control.PRESET_CENTER_LEFT)
-	combat_stats_dock.position = Vector2(24.0, 180.0)
+	combat_stats_dock.position = Vector2(24.0, 240.0)
 	combat_stats_dock.visible = false
-	add_child(combat_stats_dock)
+	stats_dock_layer.add_child(combat_stats_dock)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():

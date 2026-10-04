@@ -86,7 +86,7 @@ func refresh_stats(player: Player) -> void:
 	for cfg: Dictionary in RUN_STATS_CONFIG:
 		var key: StringName = cfg["key"]
 		var current_val: float = stats.get_stat(key)
-		var base_val: float = data.get(key) if (data and key in data) else current_val
+		var base_val: float = stats.get_base_stat(key) if stats.has_method("get_base_stat") else (data.get(key) if (data and key in data) else current_val)
 		var mult: float = cfg.get("mult", 1.0)
 		var fmt: String = cfg["fmt"]
 		var suffix: String = cfg["suffix"]
@@ -144,6 +144,208 @@ func refresh_stats(player: Player) -> void:
 			"suffix": suffix
 		}
 
+const COLOR_HIGHLIGHT_BORDER := Color("#FFE600")
+const COLOR_BOON_GREEN := Color("#00FF9D")
+const COLOR_CURSE_RED := Color("#FF4466")
+
+func preview_stat_delta(target_stat: StringName, card: StatCardData = null) -> void:
+	for stat_key in _stat_ui_entries.keys():
+		var entry: Dictionary = _stat_ui_entries[stat_key]
+		var p: PanelContainer = entry.get("panel")
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		if stat_key == target_stat:
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
+			high_style.border_color = COLOR_HIGHLIGHT_BORDER
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
+			high_style.shadow_size = 4
+			p.add_theme_stylebox_override("panel", high_style)
+
+			if card and is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v: float = cur_v * (1.0 + card.modifier_value) if card.is_percentage else (cur_v + card.modifier_value)
+				var proj_str: String = (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN if card.modifier_value >= 0 else COLOR_CURSE_RED)
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN)
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
+func preview_arcana_deltas(arc: ArcanaData) -> void:
+	if not arc:
+		clear_previews()
+		return
+
+	var active_mods: Dictionary = {}
+	for mod_key in arc.stat_modifiers.keys():
+		var s_key := String(mod_key)
+		var stat_name := StringName(s_key.trim_suffix("_pct"))
+		var is_pct: bool = s_key.ends_with("_pct")
+		var val: float = float(arc.stat_modifiers[mod_key])
+		active_mods[stat_name] = {"val": val, "is_pct": is_pct}
+
+	for stat_key in _stat_ui_entries.keys():
+		var entry: Dictionary = _stat_ui_entries[stat_key]
+		var p: PanelContainer = entry.get("panel")
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		if active_mods.has(stat_key):
+			var mod_info: Dictionary = active_mods[stat_key]
+			var val: float = mod_info["val"]
+			var is_pct: bool = mod_info["is_pct"]
+			var is_boon: bool = (val > 0.0)
+
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.14, 0.14, 0.22, 0.98)
+			high_style.border_color = COLOR_HIGHLIGHT_BORDER
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.35)
+			high_style.shadow_size = 5
+			p.add_theme_stylebox_override("panel", high_style)
+
+			if is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v: float = cur_v * (1.0 + val) if is_pct else (cur_v + val)
+				var proj_str: String = (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN if is_boon else COLOR_CURSE_RED)
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN)
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
+func preview_item_stat(item: ItemData) -> void:
+	if not item or item.stat_name == &"":
+		clear_previews()
+		return
+
+	var target_stat := item.stat_name
+	for stat_key in _stat_ui_entries.keys():
+		var entry: Dictionary = _stat_ui_entries[stat_key]
+		var p: PanelContainer = entry.get("panel")
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		if stat_key == target_stat:
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
+			high_style.border_color = COLOR_HIGHLIGHT_BORDER
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
+			high_style.shadow_size = 4
+			p.add_theme_stylebox_override("panel", high_style)
+
+			if is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v: float = cur_v * (1.0 + item.stat_value) if item.is_percentage else (cur_v + item.stat_value)
+				var proj_str: String = (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN if item.stat_value >= 0 else COLOR_CURSE_RED)
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN)
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
+
+func preview_raw_stat(target_stat: StringName, delta_val: float, is_pct: bool) -> void:
+	if delta_val == 0.0 or target_stat == &"":
+		clear_previews()
+		return
+
+	for stat_key in _stat_ui_entries.keys():
+		var entry: Dictionary = _stat_ui_entries[stat_key]
+		var p: PanelContainer = entry.get("panel")
+		if not is_instance_valid(p):
+			continue
+		var lbl_val: Label = entry.get("lbl_val")
+		var displayed_val: String = entry.get("displayed_val", "")
+		var is_buffed: bool = entry.get("is_buffed", false)
+
+		if stat_key == target_stat:
+			var high_style := StyleBoxFlat.new()
+			high_style.bg_color = Color(0.12, 0.16, 0.24, 0.98)
+			high_style.border_color = COLOR_HIGHLIGHT_BORDER
+			high_style.set_border_width_all(2)
+			high_style.border_width_left = 5
+			high_style.set_corner_radius_all(4)
+			high_style.shadow_color = Color(1.0, 0.9, 0.0, 0.3)
+			high_style.shadow_size = 4
+			p.add_theme_stylebox_override("panel", high_style)
+
+			if is_instance_valid(lbl_val):
+				var cur_v: float = entry.get("current_val", 0.0)
+				var mult: float = entry.get("mult", 1.0)
+				var fmt: String = entry.get("fmt", "%.1f")
+				var suffix: String = entry.get("suffix", "")
+				var projected_v: float = cur_v * (1.0 + delta_val) if is_pct else (cur_v + delta_val)
+				var proj_str: String = (fmt % (projected_v * mult)) + suffix
+				lbl_val.text = "%s → %s" % [displayed_val, proj_str]
+				lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN if delta_val >= 0 else COLOR_CURSE_RED)
+		else:
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+			if is_instance_valid(lbl_val):
+				lbl_val.text = displayed_val
+				if is_buffed:
+					lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN)
+				else:
+					lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
+
+func clear_previews() -> void:
+	for stat_key in _stat_ui_entries.keys():
+		var entry: Dictionary = _stat_ui_entries[stat_key]
+		var p: PanelContainer = entry.get("panel")
+		if is_instance_valid(p) and entry.has("base_style"):
+			p.add_theme_stylebox_override("panel", entry["base_style"])
+		var lbl_val: Label = entry.get("lbl_val")
+		if is_instance_valid(lbl_val):
+			lbl_val.text = entry.get("displayed_val", "")
+			if entry.get("is_buffed", false):
+				lbl_val.add_theme_color_override("font_color", COLOR_BOON_GREEN)
+			else:
+				lbl_val.add_theme_color_override("font_color", Color.WHITE)
+
 func set_dock_requested(requester_id: StringName, requested: bool, player: Player = null) -> void:
 	if requested:
 		_external_requesters[requester_id] = true
@@ -152,6 +354,8 @@ func set_dock_requested(requester_id: StringName, requested: bool, player: Playe
 
 	if requested and player:
 		refresh_stats(player)
+	elif not requested:
+		clear_previews()
 
 	visible = not _external_requesters.is_empty()
 

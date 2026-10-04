@@ -144,6 +144,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open_pause_menu() -> void:
 	PauseArbitrator.acquire_pause(&"pause_menu")
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"pause_menu", true)
 	_refresh_build_inspector()
 	show()
 	_setup_button_navigation()
@@ -157,6 +160,9 @@ func resume_game() -> void:
 	if is_instance_valid(player) and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(0.4)
 	hide()
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"pause_menu", false)
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused:
 		focused.release_focus()
@@ -554,6 +560,11 @@ func _on_highscores_pressed() -> void:
 	if highscores_modal:
 		highscores_modal.open_highscores()
 
+func _release_hud_dock() -> void:
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
+	if hud and hud.has_method("set_stats_dock_requested"):
+		hud.set_stats_dock_requested(&"pause_menu", false)
+
 func _on_save_quit_pressed() -> void:
 	# Guardar estado actual de la partida
 	var main_game := get_parent() as MainGame
@@ -565,6 +576,7 @@ func _on_save_quit_pressed() -> void:
 			main_game.save_current_run_state()
 
 	hide()
+	_release_hud_dock()
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
@@ -578,6 +590,7 @@ func _on_restart_pressed() -> void:
 		main_game.set("is_exiting_run", true)
 
 	hide()
+	_release_hud_dock()
 	PauseArbitrator.force_unpause_all()
 	get_tree().reload_current_scene()
 
@@ -589,6 +602,7 @@ func _on_hub_pressed() -> void:
 		main_game.set("is_exiting_run", true)
 
 	hide()
+	_release_hud_dock()
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
@@ -602,6 +616,7 @@ func _on_menu_pressed() -> void:
 		main_game.set("is_exiting_run", true)
 
 	hide()
+	_release_hud_dock()
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
