@@ -181,6 +181,12 @@ var slot_machine_modal: CanvasLayer:
 var slot_machine_reward_modal: CanvasLayer:
 	get:
 		return loot_coordinator.slot_machine_reward_modal if loot_coordinator else null
+var _slot_machine_pity_chance: float:
+	get:
+		return loot_coordinator.pity_chance if loot_coordinator else 0.25
+	set(val):
+		if loot_coordinator:
+			loot_coordinator.pity_chance = val
 var _wave_encounter_checked_for_wave: int = 0
 var _wave_encounter_spawned_for_wave: int = 0
 var _wave_encounter_timer: float = 0.0
