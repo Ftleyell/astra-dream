@@ -378,24 +378,21 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 			return
 		if rival.has_method("open_warp_portal"):
 			rival.open_warp_portal(func() -> void:
-				if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+				if not is_instance_valid(rival):
 					return
 				main_game.call("_trigger_pet_rival_jump_warning", rival, func() -> void:
-					if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+					if not is_instance_valid(rival):
 						return
 					var pl: Node2D = main_game.get("player") as Node2D
 					if is_instance_valid(pl) and "is_movement_suppressed" in pl:
 						pl.set("is_movement_suppressed", true)
 						pl.set("velocity", Vector2.ZERO)
-					main_game.get_tree().create_timer(0.3, true, false, true).timeout.connect(func() -> void:
-						if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+					# Salir del portal directamente
+					rival.emerge_from_portal(func() -> void:
+						if not is_instance_valid(rival):
 							return
-						rival.emerge_from_portal(func() -> void:
-							if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
-								return
-							rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-							main_game.call("_trigger_rival_face_to_face_dialogue", rival)
-						)
+						rival.process_mode = Node.PROCESS_MODE_PAUSABLE
+						main_game.call("_trigger_rival_face_to_face_dialogue", rival)
 					)
 				)
 			)

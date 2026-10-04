@@ -29,6 +29,15 @@ func _ready() -> void:
 		panel.gui_input.connect(_on_panel_gui_input)
 
 func _process(delta: float) -> void:
+	# La animación de muerte de jefes no debe ser skipeable bajo ninguna circunstancia
+	if CinematicDeathSequence.is_sequence_active:
+		if visible:
+			hide()
+		current_hold = 0.0
+		if progress_bar:
+			progress_bar.value = 0.0
+		return
+
 	var is_dialogue_active: bool = false
 	var dialogic = get_node_or_null("/root/Dialogic")
 	if dialogic and "current_timeline" in dialogic and dialogic.current_timeline != null:
@@ -75,7 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var is_dlg: bool = dialogic != null and "current_timeline" in dialogic and dialogic.current_timeline != null
 		var parent_game = get_tree().get_first_node_in_group("main_game")
 		var is_cine: bool = parent_game != null and parent_game.has_method("is_cinematic_or_death_active") and parent_game.is_cinematic_or_death_active()
-		if is_dlg or is_cine:
+		if is_dlg or is_cine or CinematicDeathSequence.is_sequence_active:
 			get_viewport().set_input_as_handled()
 
 func _on_panel_gui_input(event: InputEvent) -> void:
@@ -83,6 +92,9 @@ func _on_panel_gui_input(event: InputEvent) -> void:
 		_execute_skip()
 
 func _execute_skip() -> void:
+	if CinematicDeathSequence.is_sequence_active:
+		return
+
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 1.8, 1.2)

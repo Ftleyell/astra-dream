@@ -137,6 +137,9 @@ func _setup_dialogic_audio(layout: Node) -> void:
 		type_sound.volume_variance = 0.5
 
 func skip_dialogue() -> void:
+	if CinematicDeathSequence.is_sequence_active:
+		return
+
 	var is_in_rival_spawn: bool = is_rival_cinematic_active or (main_game != null and main_game.get("is_rival_cinematic_active") == true)
 	var is_in_boss_spawn: bool = is_boss_transmission_active or (main_game != null and main_game.get("is_boss_transmission_active") == true)
 

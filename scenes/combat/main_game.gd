@@ -156,7 +156,12 @@ var _pending_victory_data: Dictionary:
 		if narrative_director:
 			narrative_director.pending_victory_data = val
 var _on_dialogue_finished_callback: Callable = Callable()
-var prologue_bonus_chosen: bool = false
+var prologue_bonus_chosen: bool:
+	get:
+		return narrative_director.prologue_bonus_chosen if narrative_director else false
+	set(val):
+		if narrative_director:
+			narrative_director.prologue_bonus_chosen = val
 var run_time_elapsed: float = 0.0
 var enemies_killed_count: int = 0
 var _auto_save_timer: float = 0.0

@@ -20,7 +20,7 @@ var _desc_label: Label
 var _uses_label: Label
 var _feedback_label: Label
 var _scroll_container: ScrollContainer
-var _items_container: GridContainer
+var _items_container: VBoxContainer
 var _choice_container: VBoxContainer
 var _close_btn: Button
 
@@ -95,10 +95,8 @@ func _build_ui() -> void:
 	_scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(_scroll_container)
 
-	_items_container = GridContainer.new()
-	_items_container.columns = 3
-	_items_container.add_theme_constant_override("h_separation", 8)
-	_items_container.add_theme_constant_override("v_separation", 8)
+	_items_container = VBoxContainer.new()
+	_items_container.add_theme_constant_override("separation", 10)
 	_items_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll_container.add_child(_items_container)
 
@@ -139,6 +137,13 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 		if child is Button and not child.is_queued_for_deletion():
 			first_btn = child as Control
 			break
+		elif child is Container:
+			for sub in child.get_children():
+				if sub is Button and not sub.is_queued_for_deletion():
+					first_btn = sub as Control
+					break
+			if first_btn:
+				break
 	if first_btn:
 		first_btn.grab_focus()
 	else:
@@ -190,11 +195,55 @@ func _refresh_ui() -> void:
 		_items_container.add_child(empty_lbl)
 		return
 
+	# Agrupar ítems por rareza
+	var rarity_order: Array[Enums.Rarity] = [
+		Enums.Rarity.COMMON,
+		Enums.Rarity.UNCOMMON,
+		Enums.Rarity.RARE,
+		Enums.Rarity.EPIC,
+		Enums.Rarity.LEGENDARY
+	]
+
+	var items_by_rarity: Dictionary = {}
+	for r in rarity_order:
+		items_by_rarity[r] = []
+
 	for entry in eligible_items:
 		var it: ItemData = entry["data"]
-		var count: int = entry["count"]
-		var btn := _create_item_card_button(it, count)
-		_items_container.add_child(btn)
+		var r: Enums.Rarity = it.rarity
+		if not items_by_rarity.has(r):
+			items_by_rarity[r] = []
+		items_by_rarity[r].append(entry)
+
+	for r in rarity_order:
+		var group: Array = items_by_rarity[r]
+		if group.is_empty():
+			continue
+
+		var r_color := _get_rarity_color(r)
+		var r_name := _get_rarity_short_name(r).to_upper()
+
+		# Encabezado de la categoría de rareza
+		var header_lbl := Label.new()
+		header_lbl.text = "─── %s (%d) ───" % [r_name, group.size()]
+		header_lbl.add_theme_font_size_override("font_size", 12)
+		header_lbl.modulate = r_color
+		header_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_items_container.add_child(header_lbl)
+
+		# Sub-cuadrícula para los ítems de esta rareza
+		var grid := GridContainer.new()
+		grid.columns = 3
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 8)
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_items_container.add_child(grid)
+
+		for entry in group:
+			var it: ItemData = entry["data"]
+			var count: int = entry["count"]
+			var btn := _create_item_card_button(it, count)
+			grid.add_child(btn)
 
 func _create_item_card_button(item: ItemData, count: int) -> Button:
 	var btn := Button.new()
@@ -204,6 +253,26 @@ func _create_item_card_button(item: ItemData, count: int) -> Button:
 	btn.expand_icon = true
 	btn.clip_text = true
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+
+	var r_col := _get_rarity_color(item.rarity)
+	btn.add_theme_color_override("font_color", r_col)
+	btn.add_theme_color_override("font_focus_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+
+	# Borde con el color de rareza
+	var normal_box := StyleBoxFlat.new()
+	normal_box.bg_color = Color(0.08, 0.08, 0.14, 0.9)
+	normal_box.border_color = r_col
+	normal_box.set_border_width_all(2)
+	normal_box.set_corner_radius_all(6)
+	normal_box.set_content_margin_all(6.0)
+	btn.add_theme_stylebox_override("normal", normal_box)
+
+	var hover_box := normal_box.duplicate() as StyleBoxFlat
+	hover_box.bg_color = Color(r_col.r * 0.25, r_col.g * 0.25, r_col.b * 0.25, 0.95)
+	hover_box.border_color = Color.WHITE
+	btn.add_theme_stylebox_override("hover", hover_box)
+
 	UIFocusHelper.apply_cyber_focus(btn)
 	btn.pressed.connect(func(): _on_item_selected_to_clone(item))
 	return btn
@@ -381,4 +450,14 @@ func _get_rarity_short_name(rarity: Enums.Rarity) -> String:
 		Enums.Rarity.EPIC: return "Épico"
 		Enums.Rarity.LEGENDARY: return "Legendario"
 		_: return "Base"
+
+func _get_rarity_color(rarity: Enums.Rarity) -> Color:
+	match rarity:
+		Enums.Rarity.COMMON: return Color(0.6, 0.9, 0.6)
+		Enums.Rarity.UNCOMMON: return Color(0.3, 0.7, 1.0)
+		Enums.Rarity.RARE: return Color(0.8, 0.4, 1.0)
+		Enums.Rarity.EPIC: return Color(1.0, 0.3, 0.8)
+		Enums.Rarity.LEGENDARY: return Color(1.0, 0.85, 0.2)
+		_: return Color.WHITE
+
 

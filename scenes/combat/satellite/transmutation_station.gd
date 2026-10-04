@@ -123,13 +123,32 @@ func _check_bump() -> void:
 			_trigger_bump(_cached_player)
 
 func _trigger_bump(player: Node2D) -> void:
-	if is_depleted or is_processing or uses_remaining <= 0 or _bump_cooldown > 0.0 or must_exit_before_rebump:
+	if _bump_cooldown > 0.0 or must_exit_before_rebump:
 		return
+
+	if is_depleted or uses_remaining <= 0:
+		_bump_cooldown = 0.5
+		var spawn_parent: Node = get_parent()
+		if spawn_parent:
+			FloatingText.spawn(spawn_parent, global_position + Vector2(0, -50), "¡FORJA AGOTADA!", Color(0.7, 0.7, 0.7))
+		return
+
+	if is_processing:
+		_bump_cooldown = 0.5
+		var spawn_parent: Node = get_parent()
+		if spawn_parent:
+			FloatingText.spawn(spawn_parent, global_position + Vector2(0, -50), "¡FORJANDO EN PROCESO!", Color(0.95, 0.45, 1.0))
+		return
+
 	if is_instance_valid(active_reward_chest):
 		# No reabrir la forja hasta que el cofre actual sea resuelto (aceptado o reciclado)
+		_bump_cooldown = 0.5
 		if status_label:
 			status_label.text = "[RECOGE LA CÁPSULA]"
 			status_label.modulate = Color(1.0, 0.8, 0.2, 1.0)
+		var spawn_parent: Node = get_parent()
+		if spawn_parent:
+			FloatingText.spawn(spawn_parent, global_position + Vector2(0, -50), "¡RECOGE LA CÁPSULA PRIMERO!", Color(1.0, 0.8, 0.2))
 		return
 
 	# 1. Impulso de repulsión física hacia afuera (Bumper Kickback)
@@ -150,12 +169,7 @@ func _trigger_bump(player: Node2D) -> void:
 			audio_mgr.play_sfx("ui_click", 0.6, 2.0)
 		var spawn_parent: Node = get_parent()
 		if spawn_parent:
-			var ft_scene: PackedScene = load("res://scenes/ui/floating_text.tscn")
-			if ft_scene:
-				var ft: Node = ft_scene.instantiate()
-				if ft and ft.has_method("setup"):
-					spawn_parent.add_child(ft)
-					ft.call("setup", global_position + Vector2(0, -50), String(check.reason), Color(1.0, 0.35, 0.35))
+			FloatingText.spawn(spawn_parent, global_position + Vector2(0, -50), String(check.reason), Color(1.0, 0.35, 0.35))
 		return
 
 	check_quantum_recompiler(player)
