@@ -1,5 +1,5 @@
 class_name WeaponSwapModal
-extends CanvasLayer
+extends BaseModal
 
 signal weapon_swapped(slot_index: int, new_weapon: WeaponData)
 signal weapon_discarded(weapon: WeaponData)
@@ -18,11 +18,11 @@ var _incoming_box: PanelContainer
 var _discard_button: Button
 
 func _ready() -> void:
+	modal_token = &"weapon_swap"
 	layer = 130
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("weapon_swap_modal")
 	_build_ui()
-	hide()
+	super._ready()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -138,8 +138,7 @@ func prompt_swap(p_player: Player, p_incoming: WeaponData, on_replaced: Callable
 	on_discarded_callback = on_discarded
 
 	_refresh_display()
-	get_tree().paused = true
-	show()
+	open_modal()
 	call_deferred("_grab_default_focus")
 
 func _grab_default_focus() -> void:
@@ -332,22 +331,5 @@ func _on_discard_pressed() -> void:
 	_close()
 
 func _close() -> void:
-	hide()
-	var should_unpause: bool = true
-	var tree := get_tree()
-	if tree:
-		var main_game: Node = tree.get_first_node_in_group("main_game")
-		if not main_game:
-			main_game = tree.root.find_child("MainGame", true, false)
-		if main_game:
-			if main_game.has_method("is_satellite_shop_active") and main_game.is_satellite_shop_active():
-				should_unpause = false
-			elif main_game.has_method("is_any_combat_modal_active") and main_game.is_any_combat_modal_active():
-				should_unpause = false
-			elif main_game.has_method("is_dialogue_active") and main_game.is_dialogue_active():
-				should_unpause = false
-			elif main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
-				should_unpause = false
-		if should_unpause and tree:
-			tree.paused = false
+	close_modal()
 	modal_closed.emit()

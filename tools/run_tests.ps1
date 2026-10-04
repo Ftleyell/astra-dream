@@ -65,6 +65,8 @@ if ($Test) {
         "test_pause_arbitrator_runner.tscn",
         "test_persistence_runner.tscn",
         "test_slot_machine_and_gacha_runner.tscn",
+        "test_weapon_swap_and_hud_runner.tscn",
+        "test_level_up_queue_runner.tscn",
         "test_boss_runner.tscn",
         "test_dialogue_skip_runner.tscn"
     )

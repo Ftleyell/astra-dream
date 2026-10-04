@@ -21,11 +21,16 @@ func _enter_tree() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _ready() -> void:
+	visibility_changed.connect(_on_visibility_changed)
 	if not _is_modal_open:
 		hide()
 
+func _on_visibility_changed() -> void:
+	if not visible and _is_modal_open:
+		close_modal()
+
 func open_modal() -> void:
-	if _is_modal_open:
+	if _is_modal_open and visible:
 		return
 	_is_modal_open = true
 	_mouse_lockout_active = true

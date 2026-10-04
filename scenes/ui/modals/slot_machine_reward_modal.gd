@@ -1,5 +1,5 @@
 class_name SlotMachineRewardModal
-extends CanvasLayer
+extends BaseModal
 
 const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
 
@@ -27,11 +27,11 @@ var _take_button: Button
 var _reject_button: Button
 
 func _ready() -> void:
+	modal_token = &"slot_machine_reward"
 	layer = 125
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("slot_machine_reward_modal")
 	_build_ui()
-	hide()
+	super._ready()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -181,8 +181,7 @@ func show_reward(chest: Node2D, player: Player) -> void:
 	if not _panel:
 		_build_ui()
 	_populate_item_ui()
-	show()
-	get_tree().paused = true
+	open_modal()
 	if _take_button:
 		_take_button.grab_focus()
 
@@ -196,8 +195,7 @@ func show_weapon_reward(pickup: Node2D, player: Player, weapon: WeaponData, pilo
 	if not _panel:
 		_build_ui()
 	_populate_weapon_ui()
-	show()
-	get_tree().paused = true
+	open_modal()
 	if _take_button:
 		_take_button.grab_focus()
 
@@ -320,8 +318,5 @@ func _close_and_cleanup() -> void:
 			current_chest.open_and_destroy()
 		else:
 			current_chest.queue_free()
-	hide()
-	var tree := get_tree()
-	if tree:
-		tree.paused = false
+	close_modal()
 	modal_closed.emit()

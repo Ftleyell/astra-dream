@@ -1,5 +1,5 @@
 class_name LevelUpModal
-extends CanvasLayer
+extends BaseModal
 
 signal card_chosen(card: StatCardData)
 
@@ -26,21 +26,21 @@ var current_selected_idx: int = 0
 var pending_levels_queue: Array[int] = []
 var is_presenting_level: bool = false
 var current_level_shown: int = 1
-var _mouse_lockout_active: bool = false
 
 var stats_inspector: LevelUpStatsInspector = null
 
 var stat_card_ui_entries: Dictionary:
 	get:
 		var dock := _get_hud_stats_dock()
-		if dock and not dock._stat_ui_entries.is_empty():
+		if dock and "_stat_ui_entries" in dock and not dock._stat_ui_entries.is_empty():
 			return dock._stat_ui_entries
 		return stats_inspector.stat_card_ui_entries if stats_inspector else {}
 
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	hide()
+	modal_token = &"level_up"
+	mouse_grace_period = 0.3
+	super._ready()
 	if stats_list_container:
 		stats_inspector = LevelUpStatsInspector.new()
 		stats_inspector.setup(stats_list_container, stats_header_label, pilot_info_label)
@@ -113,6 +113,7 @@ func show_next_level_up() -> void:
 func clear_pending_levels() -> void:
 	pending_levels_queue.clear()
 	is_presenting_level = false
+	close_modal()
 
 
 func _update_header_title() -> void:
@@ -129,43 +130,12 @@ func _update_header_title() -> void:
 func _present_level(level: int) -> void:
 	is_presenting_level = true
 	current_level_shown = level
-	_mouse_lockout_active = true
 
-	PauseArbitrator.acquire_pause(&"level_up")
 	_update_header_title()
-	_notify_hud_stats_dock(true)
-	show()
+	open_modal()
 
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 3)
-
-	# Período de gracia contra clicks involuntarios
-	get_tree().create_timer(0.3, true, false, true).timeout.connect(func():
-		_mouse_lockout_active = false
-	)
-
-
-const CombatStatsDockClass = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
-
-func _notify_hud_stats_dock(active: bool) -> void:
-	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if not hud_node:
-		var parent_game = get_parent()
-		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
-			hud_node = parent_game.hud
-	if hud_node and hud_node.has_method("set_stats_dock_requested"):
-		hud_node.set_stats_dock_requested(&"level_up", active)
-
-
-func _get_hud_stats_dock() -> CombatStatsDockClass:
-	var hud_node: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if not hud_node:
-		var parent_game = get_parent()
-		if parent_game and "hud" in parent_game and is_instance_valid(parent_game.hud):
-			hud_node = parent_game.hud
-	if hud_node and "combat_stats_dock" in hud_node and is_instance_valid(hud_node.combat_stats_dock):
-		return hud_node.combat_stats_dock as CombatStatsDockClass
-	return null
 
 
 func _refresh_player_stats_display(level_override: int = -1) -> void:
@@ -341,12 +311,10 @@ func _select_card(card: StatCardData) -> void:
 		return
 
 	is_presenting_level = false
-	hide()
-	_notify_hud_stats_dock(false)
+	close_modal()
 	var parent_game = get_parent()
 	if parent_game and parent_game.has_method("notify_menu_closed"):
 		parent_game.notify_menu_closed(0.4)
-	PauseArbitrator.release_pause(&"level_up")
 	if parent_game and parent_game.has_method("restore_combat_modal_focus") and parent_game.has_method("is_any_combat_modal_active") and parent_game.is_any_combat_modal_active():
 		parent_game.restore_combat_modal_focus()
 

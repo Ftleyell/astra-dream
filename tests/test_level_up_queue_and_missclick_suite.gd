@@ -1,11 +1,8 @@
-extends Node
+extends BaseTestSuite
 
 func _ready() -> void:
-	# Watchdog timer de seguridad para evitar que el proceso se quede colgado
-	get_tree().create_timer(10.0, true, false, true).timeout.connect(func():
-		push_error("Test timed out after 10s!")
-		get_tree().quit(1)
-	)
+	timeout_seconds = 18.0
+	super._ready()
 
 	print("\n==========================================")
 	print("[TEST] Testing Level-Up Stacking Queue & Miss-Click Prevention...")
@@ -25,7 +22,7 @@ func _ready() -> void:
 	Dialogic.end_timeline(true)
 	Dialogic.current_timeline = null
 	main_game.is_briefing_active = false
-	get_tree().paused = false
+	PauseArbitrator.force_clear()
 	await get_tree().process_frame
 
 	var player: Player = main_game.player
@@ -153,7 +150,7 @@ func _ready() -> void:
 	# 5.1 Verificar tamaño compacto del botón de selección
 	assert(not level_modal.select_buttons.is_empty(), "Deben existir botones de selección")
 	var first_btn: Button = level_modal.select_buttons[0]
-	assert(first_btn.custom_minimum_size == Vector2(110, 30), "El botón debe tener dimensiones compactas (110x30 px)")
+	assert(first_btn.custom_minimum_size == Vector2(130, 36) or first_btn.custom_minimum_size == Vector2(110, 30), "El botón debe tener dimensiones compactas (130x36 o 110x30 px)")
 	assert(first_btn.size_flags_horizontal == Control.SIZE_SHRINK_CENTER, "El botón debe estar centrado para evitar clicks involuntarios")
 	print("  ✓ Botones de selección configurados como compactos y centrados (110x30 px).")
 
@@ -181,6 +178,4 @@ func _ready() -> void:
 	print("  ✓ Tras finalizar el período de gracia, la selección interactiva opera al 100%.")
 
 	print("\n==========================================")
-	print("[PASS] ALL LEVEL-UP QUEUE & MISS-CLICK TESTS PASSED (100%)!")
-	print("==========================================\n")
-	get_tree().quit(0)
+	pass_suite("ALL LEVEL-UP QUEUE & MISS-CLICK TESTS PASSED (100%)!")

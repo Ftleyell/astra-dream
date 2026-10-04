@@ -3,6 +3,7 @@
 > **Regla de Oro:** El balance numérico de Astra Dream es 100% Data-Driven. 
 > **NUNCA** modifiques scripts `.gd` para alterar daño, vida, precios o cadencias. 
 > Todo cambio se realiza editando archivos de recursos `.tres` con Godot o cualquier editor de texto.
+> Consulta también [`docs/DOMAIN_MAP.md`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/docs/DOMAIN_MAP.md) para el mapa completo de archivos autoridad.
 
 ---
 
@@ -23,9 +24,9 @@ Ubicación:
 
 ---
 
-## 2. Enemigos, Jefes y Colosos (`entities/enemies/`, `entities/bosses/`)
+## 2. Enemigos, Jefes y Colosos (`scenes/combat/enemies/`)
 
-Ubicación: `entities/enemies/` y `entities/bosses/`.
+Ubicación: `scenes/combat/enemies/`.
 
 | Propiedad / Variable | Tipo | Impacto en Juego |
 | :--- | :--- | :--- |
@@ -50,7 +51,7 @@ Ubicación: `data/balance/default_encounter_timeline.tres`.
 
 ---
 
-## 4. Sectores, Satélites y Economía (`data/sectors/`, `data/items/`)
+## 4. Sectores, Satélites y Economía (`data/sectors/`, `data/items/roster/`)
 
 ### Sectores Galácticos
 Ubicación: `data/sectors/` (ej. `sector_nebula_outskirts.tres`, `sector_plasma_storm.tres`, `sector_void_abyss.tres`, `sector_singularity_core.tres`).
@@ -60,15 +61,15 @@ Ubicación: `data/sectors/` (ej. `sector_nebula_outskirts.tres`, `sector_plasma_
 Ubicación: `core/systems/satellite_reward_manager.gd` y `data/weapons/shop/`.
 - Precios de reciclaje de armas: fórmula global `recycle_value = 20 + level * 15` (Lv1: 35c, Lv2: 50c, Lv3: 65c, Lv4: 80c, Lv5: 95c).
 
-### Ítems Pasivos y Reactivos
-Ubicación: `data/items/` y `data/items/effects/`.
-- 6 ítems reactivos y 3 ítems con tradeoff (`Glass Reactor`, `Heavy Capacitor`, `Tachyon Piercer`).
+### Ítems Pasivos, Reactivos y Satelitales (54 ítems canónicos)
+Ubicación: `data/items/roster/` (54 archivos `.tres`).
+- Todos los ítems y sus efectos residen como recursos `.tres` individuales editables sin tocar código.
 
 ---
 
-## 5. Heroínas y Pilotos (`scenes/combat/player/`, `data/weapons/roster/`)
+## 5. Heroínas y Pilotos (`data/characters/`)
 
-Ubicación: `resources/characters/` (ej. `char_nova.tres`, `char_valentina.tres`, `char_nyx.tres`, `char_estele.tres`).
+Ubicación: `data/characters/` (ej. `char_nova.tres`, `char_valentina.tres`, `char_nyx.tres`, `char_estele.tres`).
 
 - **`base_max_hp`:** Vida máxima inicial (típicamente 100 - 130).
 - **`base_speed`:** Velocidad de desplazamiento inicial en px/s (típicamente 280 - 350).
