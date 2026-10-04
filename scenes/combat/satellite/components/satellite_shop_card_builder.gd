@@ -23,7 +23,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 				current_wp_lvl = inst.level
 
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 68)
+	card.custom_minimum_size = Vector2(0, 92)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -32,16 +32,16 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	card_style.set_border_width_all(2)
 	card_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
 	card_style.set_corner_radius_all(8)
-	card_style.set_content_margin_all(6.0)
+	card_style.set_content_margin_all(8.0)
 	card.add_theme_stylebox_override("panel", card_style)
 
 	var hbox := HBoxContainer.new()
-	hbox.set("theme_override_constants/separation", 10)
+	hbox.set("theme_override_constants/separation", 12)
 	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 	# 1. Icono con marco de rareza
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(46, 46)
+	icon_panel.custom_minimum_size = Vector2(50, 50)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
@@ -52,7 +52,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(34, 34)
+	icon_rect.custom_minimum_size = Vector2(36, 36)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -80,16 +80,14 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	var info_vbox := VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	info_vbox.set("theme_override_constants/separation", 2)
-
-	var top_line := HBoxContainer.new()
-	top_line.set("theme_override_constants/separation", 8)
+	info_vbox.set("theme_override_constants/separation", 3)
 
 	var name_lbl := Label.new()
 	name_lbl.text = display_title
 	name_lbl.add_theme_color_override("font_color", rarity_color)
 	name_lbl.add_theme_font_size_override("font_size", 12)
-	top_line.add_child(name_lbl)
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_vbox.add_child(name_lbl)
 
 	# Chips / Badge de estadística
 	var stat_badge_panel := PanelContainer.new()
@@ -159,16 +157,15 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	b_margin.add_theme_constant_override("margin_bottom", 1)
 	b_margin.add_child(stat_badge_lbl)
 	stat_badge_panel.add_child(b_margin)
-	top_line.add_child(stat_badge_panel)
-
-	info_vbox.add_child(top_line)
+	stat_badge_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	info_vbox.add_child(stat_badge_panel)
 
 	var desc_lbl := Label.new()
 	if is_weapon_upgrade:
 		desc_lbl.text = "+1 Proyectil Adicional en todas las salvas activas y pasivas (+25% daño base)."
 	else:
 		desc_lbl.text = entry.get("description") if entry.get("description") != null else ""
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.add_theme_font_size_override("font_size", 10)
 	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 	info_vbox.add_child(desc_lbl)
@@ -178,7 +175,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	# 3. Columna derecha: Atajo y Botón de compra
 	var btn_vbox := VBoxContainer.new()
 	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	btn_vbox.set("theme_override_constants/separation", 2)
+	btn_vbox.set("theme_override_constants/separation", 4)
 
 	var hotkey_lbl := Label.new()
 	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
@@ -189,8 +186,8 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 
 	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
 	var buy_btn := Button.new()
-	buy_btn.text = "Comprar (%d C) [%d]" % [cost, index + 1]
-	buy_btn.custom_minimum_size = Vector2(130, 32)
+	buy_btn.text = "%d C" % cost
+	buy_btn.custom_minimum_size = Vector2(95, 34)
 	buy_btn.set_meta(&"cost", cost)
 	UIFocusHelper.apply_cyber_focus(buy_btn)
 

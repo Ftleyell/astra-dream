@@ -67,7 +67,7 @@ func _ready() -> void:
 	shop_style.set_border_width_all(2)
 	shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
 	shop_style.set_corner_radius_all(12)
-	shop_style.set_content_margin_all(10.0)
+	shop_style.set_content_margin_all(14.0)
 	if panel:
 		panel.add_theme_stylebox_override("panel", shop_style)
 
@@ -327,10 +327,10 @@ func _update_credits_display() -> void:
 	if close_btn:
 		var cannot_buy_anything: bool = not _can_afford_any_option()
 		if cannot_buy_anything:
-			close_btn.text = "★ Salir de Terminal [ESPACIO / ESC] ★"
+			close_btn.text = "★ Salir [ESC / ESPACIO] ★"
 			close_btn.modulate = Color(0.3, 1.0, 0.6, 1.0)
 		else:
-			close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
+			close_btn.text = "Salir [ESC / ESPACIO]"
 			close_btn.modulate = Color.WHITE
 
 
