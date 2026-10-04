@@ -90,13 +90,17 @@ func _test_loadout_gamespeed_buttons() -> void:
 	print("  ✓ Deployment Menu (CharacterSelect) y HubWorld: Radio buttons y reseteo forzoso a 1x en el Hub verificados.")
 
 func _test_satellite_10k_despawn() -> void:
-	print("\n[3/3] Testing Satellite 10k Despawn System in MainGame...")
+	print("\n[3/3] Testing Satellite Persistence & Odometer System in MainGame...")
 	var main_game_scene = load("res://scenes/combat/main_game.tscn")
 	var main_game: MainGame = main_game_scene.instantiate() as MainGame
 	add_child(main_game)
 
 	var timer = get_tree().create_timer(0.3)
 	await timer.timeout
+
+	# Generar satélite inicial si no existe
+	if main_game.satellite_coordinator and main_game.current_satellite == null:
+		main_game.satellite_coordinator.spawn_next_satellite_ahead()
 
 	assert(main_game.current_satellite != null, "Debe existir un satélite en curso")
 	var sat = main_game.current_satellite
@@ -109,15 +113,13 @@ func _test_satellite_10k_despawn() -> void:
 	main_game._check_satellite_despawn()
 	assert(main_game.current_satellite != null, "A 5k px el satélite debe permanecer activo")
 
-	# Jugador a 10,001 unidades de distancia (> 10k px): DEBE desespawnear
+	# Jugador a 10,001 unidades de distancia (> 10k px): según nuevo balance, TAMPOCO desespawnea por distancia
 	main_game.player.global_position = Vector2(10050.0, 0.0)
-	var prev_spawned: int = main_game.wave_satellites_spawned
 	main_game._check_satellite_despawn()
+	assert(main_game.current_satellite != null and is_instance_valid(main_game.current_satellite), "El satélite NO debe desespawnear por distancia; permanece en el mundo")
 
-	assert(main_game.current_satellite == null or main_game.current_satellite.is_queued_for_deletion(), "El satélite a más de 10k de distancia debe haber desespawneado")
-	assert(main_game.wave_satellites_spawned < prev_spawned, "wave_satellites_spawned debe haberse liberado para re-generar el satélite adelante")
-
-	print("  ✓ MainGame: Satélite desespawneado exitosamente al superar 10k px de distancia.")
+	print("  ✓ MainGame: Satélite persistente verificado (no sufre despawn prematuro por alejamiento).")
 	main_game.is_exiting_run = true
 	main_game.queue_free()
 	await get_tree().process_frame
+

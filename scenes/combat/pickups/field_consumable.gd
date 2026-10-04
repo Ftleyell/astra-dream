@@ -64,10 +64,15 @@ func _apply_visuals() -> void:
 			icon_sprite.modulate = Color.WHITE
 			icon_sprite.scale = Vector2(0.18, 0.18)
 		ConsumableType.QUANTUM_KEY:
-			glow_polygon.color = Color(0.1, 0.85, 1.0, 0.45)
-			icon_sprite.texture = load("res://assets/icons/items/icon_quantum_key.svg")
-			icon_sprite.modulate = Color(0.3, 0.9, 1.0, 1.0)
-			icon_sprite.scale = Vector2(0.24, 0.24)
+			glow_polygon.color = Color(0.1, 0.85, 1.0, 0.55)
+			if ResourceLoader.exists("res://assets/icons/items/icon_quantum_key.png"):
+				icon_sprite.texture = load("res://assets/icons/items/icon_quantum_key.png")
+				icon_sprite.scale = Vector2(0.045, 0.045)
+				icon_sprite.modulate = Color(0.4, 1.0, 1.0, 1.0)
+			else:
+				icon_sprite.texture = load("res://assets/icons/items/icon_quantum_key.svg")
+				icon_sprite.scale = Vector2(0.07, 0.07)
+				icon_sprite.modulate = Color(0.2, 0.9, 1.0, 1.0)
 
 func _physics_process(delta: float) -> void:
 	if is_collected:

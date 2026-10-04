@@ -59,6 +59,18 @@ static func trigger_pet_rival_jump_warning(director: Node, rival: Node2D, on_fin
 	director.set("is_cockpit_active", true)
 	director.get_tree().paused = true
 	director.set("on_dialogue_finished_callback", on_finished)
+
+	var p_node: Node2D = director.get("player") as Node2D
+	if not is_instance_valid(p_node) and director.get_tree():
+		p_node = director.get_tree().get_first_node_in_group("player") as Node2D
+	if is_instance_valid(p_node):
+		p_node.set("is_invulnerable", true)
+		if p_node.has_method("set_cinematic_duel_facing"):
+			p_node.set_cinematic_duel_facing()
+		else:
+			p_node.set("is_movement_suppressed", true)
+			p_node.set("velocity", Vector2.ZERO)
+
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
 		skip_badge.show()
@@ -99,6 +111,18 @@ static func trigger_rival_face_to_face_dialogue(director: Node, rival: Node2D) -
 	director.set("is_cockpit_active", true)
 	director.get_tree().paused = true
 	director.set("on_dialogue_finished_callback", Callable())
+
+	var p_node: Node2D = director.get("player") as Node2D
+	if not is_instance_valid(p_node) and director.get_tree():
+		p_node = director.get_tree().get_first_node_in_group("player") as Node2D
+	if is_instance_valid(p_node):
+		p_node.set("is_invulnerable", true)
+		if p_node.has_method("set_cinematic_duel_facing"):
+			p_node.set_cinematic_duel_facing()
+		else:
+			p_node.set("is_movement_suppressed", true)
+			p_node.set("velocity", Vector2.ZERO)
+
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
 		skip_badge.show()
@@ -181,6 +205,18 @@ static func trigger_pet_boss_alert(director: Node, boss_name: String, on_finishe
 	director.set("is_boss_transmission_active", true)
 	director.get_tree().paused = true
 	director.set("on_dialogue_finished_callback", on_finished)
+
+	var p_node: Node2D = director.get("player") as Node2D
+	if not is_instance_valid(p_node) and director.get_tree():
+		p_node = director.get_tree().get_first_node_in_group("player") as Node2D
+	if is_instance_valid(p_node):
+		p_node.set("is_invulnerable", true)
+		if p_node.has_method("set_cinematic_duel_facing"):
+			p_node.set_cinematic_duel_facing()
+		else:
+			p_node.set("is_movement_suppressed", true)
+			p_node.set("velocity", Vector2.ZERO)
+
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
 		skip_badge.show()

@@ -9,7 +9,8 @@ extends Node2D
 enum TelegraphType {
 	CONE,
 	RING,
-	WAVE
+	WAVE,
+	CHARGE_LANE
 }
 
 signal telegraph_completed()
@@ -113,18 +114,29 @@ func start_telegraph(p_type: TelegraphType, p_duration: float, p_target_dir: Vec
 				_sprite.global_rotation = 0.0
 			_sprite.modulate = Color(0.85, 0.25, 1.0, 0.0) # Púrpura abisal
 
+		TelegraphType.CHARGE_LANE:
+			_sprite.texture = _wave_tex
+			_sprite.offset = Vector2(0.0, -128.0)
+			# Carril estrecho y ultra-largo que atraviesa la pantalla entera (~1800-2000px)
+			_sprite.scale = indicator_scale * Vector2(0.9, 7.5)
+			if p_target_dir.length_squared() > 0.001:
+				_sprite.global_rotation = p_target_dir.angle() + (PI / 2.0)
+			else:
+				_sprite.global_rotation = 0.0
+			_sprite.modulate = Color(1.2, 0.35, 0.1, 0.0) # Rojo-naranja penetrante
+
 	_sprite.visible = true
 	_tween = create_tween()
 	_tween.set_parallel(true)
 
 	# Fade in elástico de advertencia suave (alfa 0.35 - 0.45 para no cegar al jugador)
-	var target_alpha: float = 0.38
+	var target_alpha: float = 0.42 if p_type == TelegraphType.CHARGE_LANE else 0.38
 	var target_color: Color = _sprite.modulate
 	target_color.a = target_alpha
 
 	_tween.tween_property(_sprite, "modulate", target_color, p_duration * 0.4)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_tween.tween_property(_sprite, "scale", _sprite.scale * 1.08, p_duration)\
+	_tween.tween_property(_sprite, "scale", _sprite.scale * 1.06, p_duration)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
 	# Callback al completar el telegrafiado
@@ -133,7 +145,8 @@ func start_telegraph(p_type: TelegraphType, p_duration: float, p_target_dir: Vec
 
 func _on_duration_completed() -> void:
 	telegraph_completed.emit()
-	dismiss()
+	if _active_type != TelegraphType.CHARGE_LANE:
+		dismiss()
 
 func dismiss() -> void:
 	if _tween and _tween.is_valid():

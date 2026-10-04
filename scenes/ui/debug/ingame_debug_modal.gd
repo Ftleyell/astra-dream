@@ -38,6 +38,8 @@ signal modal_closed()
 @onready var rival_intro_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/RivalRow/RivalIntroCheck") as CheckBox
 @onready var spawn_rival_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/RivalRow/SpawnRivalBtn") as Button
 
+@onready var spawn_satellite_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow/SpawnSatelliteBtn") as Button
+@onready var spawn_transmutation_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow/SpawnTransmutationBtn") as Button
 @onready var spawn_slot_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow/SpawnSlotBtn") as Button
 @onready var spawn_chest_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow/SpawnChestBtn") as Button
 @onready var clear_bullets_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/SpawnsContent/ClearRow/ClearBulletsBtn") as Button
@@ -219,6 +221,14 @@ func _setup_spawns_tab() -> void:
 		spawn_rival_btn.pressed.connect(_on_spawn_rival_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_rival_btn)
 
+	if spawn_satellite_btn:
+		spawn_satellite_btn.pressed.connect(_on_spawn_satellite_pressed)
+		UIFocusHelper.apply_cyber_focus(spawn_satellite_btn)
+
+	if spawn_transmutation_btn:
+		spawn_transmutation_btn.pressed.connect(_on_spawn_transmutation_pressed)
+		UIFocusHelper.apply_cyber_focus(spawn_transmutation_btn)
+
 	if spawn_slot_btn:
 		spawn_slot_btn.pressed.connect(_on_spawn_slot_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_slot_btn)
@@ -295,6 +305,28 @@ func _on_spawn_rival_pressed() -> void:
 	if boss_coord.has_method("spawn_rival_pilot"):
 		boss_coord.spawn_rival_pilot(r_pid)
 		_set_feedback("Piloto Rival instanciada: %s" % (r_id_str if r_id_str != "" else "Siguiente en cola"))
+	close()
+
+
+func _on_spawn_satellite_pressed() -> void:
+	if not main_game:
+		return
+	var sat_coord = main_game.get("satellite_coordinator")
+	if sat_coord and sat_coord.has_method("spawn_specific_satellite"):
+		var pos: Vector2 = _get_forward_spawn_position(220.0)
+		sat_coord.spawn_specific_satellite(pos)
+		_set_feedback("Satélite de tienda instanciado frente a la nave.")
+	close()
+
+
+func _on_spawn_transmutation_pressed() -> void:
+	if not main_game:
+		return
+	var sat_coord = main_game.get("satellite_coordinator")
+	if sat_coord and sat_coord.has_method("spawn_specific_transmutation"):
+		var pos: Vector2 = _get_forward_spawn_position(220.0)
+		sat_coord.spawn_specific_transmutation(pos)
+		_set_feedback("Estación de Forja Cuántica instanciada frente a la nave.")
 	close()
 
 

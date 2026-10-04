@@ -1,26 +1,32 @@
 class_name EnemyAssaultCone
 extends EnemyBase
 
-## Campeón de Asalto Frontal (Didáctica: Cono / Escopetazo):
-## Avanza hacia el jugador a velocidad media, telegrafía un abanico angular ámbar
-## y dispara un cono de 5 proyectiles pesados de plasma radiactivo.
+## Campeón de Asalto Frontal (Didáctica: Embestida / Charge de Pantalla Completa):
+## Al detectar al jugador en rango de pantalla, proyecta un carril de advertencia
+## ultra-largo que atraviesa la pantalla completa, y tras el telegrafiado se lanza en una
+## embestida a 750 px/s de punta a punta, manteniendo el indicador visible todo el trayecto.
 
-@export var attack_interval: float = 4.2
-@export var telegraph_duration: float = 0.55
+@export var attack_interval: float = 4.0
+@export var telegraph_duration: float = 0.70
+@export var charge_speed: float = 750.0
+@export var max_charge_distance: float = 1800.0
 
 var _attack_timer: float = 2.0
 var _is_telegraphing: bool = false
+var _is_charging: bool = false
+var _charge_dir: Vector2 = Vector2.ZERO
+var _charge_distance_covered: float = 0.0
 var _bullet_server: BulletServer = null
 var _telegraph_indicator: TelegraphIndicator = null
 
 func _init() -> void:
 	enemy_id = &"enemy_assault_cone"
-	max_health = 85.0
-	move_speed = 120.0
-	contact_damage = 16.0
-	exp_reward = 55.0
-	credits_reward = 5
-	contact_radius = 26.0
+	max_health = 95.0
+	move_speed = 125.0
+	contact_damage = 22.0
+	exp_reward = 60.0
+	credits_reward = 6
+	contact_radius = 28.0
 
 func _ready_custom() -> void:
 	_attack_timer = randf_range(1.5, 3.0)
@@ -35,8 +41,8 @@ func _setup_visual() -> void:
 		if tex:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.075, 0.075)
-			# Matiz ámbar radiactivo característico
-			sprite.modulate = Color(1.3, 1.05, 0.6, 1.0)
+			# Matiz ámbar-anaranjado radiactivo característico
+			sprite.modulate = Color(1.35, 0.95, 0.45, 1.0)
 
 func _setup_telegraph() -> void:
 	if _telegraph_indicator == null:
@@ -57,49 +63,71 @@ func _update_behavior(delta: float) -> void:
 	if not is_instance_valid(player):
 		return
 
-	var to_player: Vector2 = player.global_position - global_position
-	var dir_to_player: Vector2 = to_player.normalized() if to_player.length_squared() > 1.0 else Vector2.RIGHT
+	if _is_charging:
+		# Desplazamiento supersónico que cruza la pantalla completa
+		var step: float = charge_speed * delta
+		velocity = _charge_dir * charge_speed
+		_charge_distance_covered += step
+		move_and_slide()
 
-	# Orientación permanente hacia el jugador
+		# Finalizar carga al recorrer la distancia completa de la pantalla
+		if _charge_distance_covered >= max_charge_distance:
+			_end_charge()
+		return
+
+	var to_player: Vector2 = player.global_position - global_position
+	var dist_to_player: float = to_player.length()
+	var dir_to_player: Vector2 = to_player / dist_to_player if dist_to_player > 0.001 else Vector2.RIGHT
+
+	# Orientación permanente hacia el jugador mientras no embiste
 	rotation = dir_to_player.angle()
 
-	# Avance continuo hacia el jugador (mantiene el ritmo para combate melee)
-	var current_spd: float = move_speed * (0.65 if _is_telegraphing else 1.0)
+	# Avance continuo hacia el jugador
+	var current_spd: float = move_speed * (0.35 if _is_telegraphing else 1.0)
 	velocity = dir_to_player * current_spd
 	move_and_slide()
 
-	# Manejo del temporizador de ataque
-	if not _is_telegraphing:
+	# Manejo del temporizador de ataque (inicia si el jugador está en rango de pantalla de hasta 1400px)
+	if not _is_telegraphing and dist_to_player <= 1400.0:
 		_attack_timer -= delta
 		if _attack_timer <= 0.0:
-			_begin_cone_attack(dir_to_player)
+			_begin_charge_attack(dir_to_player)
 
-func _begin_cone_attack(dir_to_player: Vector2) -> void:
+func _begin_charge_attack(dir_to_player: Vector2) -> void:
 	_is_telegraphing = true
+	_charge_dir = dir_to_player
 	if is_instance_valid(_telegraph_indicator):
-		_telegraph_indicator.start_telegraph(TelegraphIndicator.TelegraphType.CONE, telegraph_duration, dir_to_player)
+		_telegraph_indicator.start_telegraph(TelegraphIndicator.TelegraphType.CHARGE_LANE, telegraph_duration, dir_to_player)
 
-	# Pulso de advertencia visual en el chasis
+	# Pulso de compresión previo a la embestida (toma impulso)
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(1.85, 1.85), telegraph_duration * 0.5)
-	tw.tween_property(self, "scale", Vector2(2.1, 2.1), telegraph_duration * 0.5)
+	tw.tween_property(self, "scale", Vector2(1.7, 2.3), telegraph_duration * 0.45)
+	tw.tween_property(self, "scale", Vector2(2.35, 1.65), telegraph_duration * 0.55)
 
 func _on_telegraph_completed() -> void:
 	_is_telegraphing = false
-	_attack_timer = attack_interval + randf_range(-0.3, 0.4)
-	scale = Vector2(2.0, 2.0)
-
-	if not is_instance_valid(player) or not is_instance_valid(_bullet_server):
-		return
-
-	# Disparo de 5 proyectiles en cono frontal
-	_bullet_server.fire_alien_cone_spread(global_position, player.global_position, 5, 38.0, 230.0)
+	_is_charging = true
+	_charge_distance_covered = 0.0
+	scale = Vector2(2.4, 1.7)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser", 0.85, -2.0)
+		audio_mgr.play_sfx("dash", 0.9, 2.0)
 
-	# Rebote de retroceso
+	# Disparo de dispersión lateral auxiliar durante el estallido inicial
+	if is_instance_valid(player) and is_instance_valid(_bullet_server):
+		_bullet_server.fire_alien_cone_spread(global_position, global_position + _charge_dir * 300.0, 3, 26.0, 260.0)
+
+func _end_charge() -> void:
+	_is_charging = false
+	_attack_timer = attack_interval + randf_range(-0.4, 0.4)
+	scale = Vector2(2.0, 2.0)
+
+	# Desvanecer y retirar el carril de advertencia al culminar el recorrido
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()
+
+	# Freno inercial
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(2.25, 1.75), 0.07)
-	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.12)
+	tw.tween_property(self, "scale", Vector2(1.85, 2.15), 0.12)
+	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)

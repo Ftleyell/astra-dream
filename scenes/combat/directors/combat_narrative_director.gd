@@ -256,21 +256,25 @@ func on_timeline_ended() -> void:
 			_finish_prologue_and_start_run()
 			return
 
-	var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
-	if cam and cam.has_method("clear_cinematic_focus"):
-		cam.clear_cinematic_focus()
+	var is_in_cinematic: bool = is_rival_cinematic_active or (main_game and main_game.get("is_rival_cinematic_active") == true)
+	var is_boss_active: bool = is_boss_transmission_active or (main_game and main_game.get("current_boss") != null and main_game.get("current_boss").get_meta("_is_emerging", false))
 
-	if is_instance_valid(player) and player.has_method("resume_movement_control"):
-		player.resume_movement_control()
+	if not is_in_cinematic and not is_boss_active:
+		var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+		if cam and cam.has_method("clear_cinematic_focus"):
+			cam.clear_cinematic_focus()
+
+		if is_instance_valid(player) and player.has_method("resume_movement_control"):
+			player.resume_movement_control()
 
 	if is_cockpit_active:
 		is_cockpit_active = false
-		if main_game and main_game.has_method("notify_menu_closed"):
+		if not is_in_cinematic and not is_boss_active and main_game and main_game.has_method("notify_menu_closed"):
 			main_game.notify_menu_closed(0.4)
 
 	if is_boss_transmission_active:
 		is_boss_transmission_active = false
-		if main_game and main_game.has_method("notify_menu_closed"):
+		if not is_boss_active and main_game and main_game.has_method("notify_menu_closed"):
 			main_game.notify_menu_closed(0.4)
 
 	if is_rival_cinematic_active:
@@ -282,6 +286,11 @@ func on_timeline_ended() -> void:
 				current_rival.start_encounter()
 		if main_game:
 			BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
+		var cam := get_tree().get_first_node_in_group("camera") as GameCamera2D
+		if cam and cam.has_method("clear_cinematic_focus"):
+			cam.clear_cinematic_focus()
+		if is_instance_valid(player) and player.has_method("resume_movement_control"):
+			player.resume_movement_control()
 
 	var backdrop := main_game.get_node_or_null("DialogueBackdropLayer") if main_game else null
 	if backdrop and not is_briefing_active:

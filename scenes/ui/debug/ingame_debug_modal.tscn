@@ -197,15 +197,25 @@ text = "◆ BOTÍN, RECOMPENSAS Y LIMPIEZA"
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="SpawnSlotBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
-custom_minimum_size = Vector2(260, 36)
+[node name="SpawnSatelliteBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
+custom_minimum_size = Vector2(210, 36)
 layout_mode = 2
-text = "🎰 SPAWNEAR TRAGAPERRAS ARCADE"
+text = "🛰️ SPAWN SATÉLITE"
+
+[node name="SpawnTransmutationBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
+custom_minimum_size = Vector2(210, 36)
+layout_mode = 2
+text = "⚗️ SPAWN FORJA"
+
+[node name="SpawnSlotBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
+custom_minimum_size = Vector2(230, 36)
+layout_mode = 2
+text = "🎰 TRAGAPERRAS"
 
 [node name="SpawnChestBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent/LootRow"]
-custom_minimum_size = Vector2(240, 36)
+custom_minimum_size = Vector2(210, 36)
 layout_mode = 2
-text = "📦 SPAWNEAR COFRE DE BOTÍN"
+text = "📦 COFRE BOTÍN"
 
 [node name="ClearRow" type="HBoxContainer" parent="CenterContainer/MainPanel/Margin/VBox/SpawnsContent"]
 layout_mode = 2

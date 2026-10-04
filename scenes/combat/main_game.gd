@@ -56,7 +56,7 @@ var satellite_scene: PackedScene:
 		if satellite_coordinator:
 			satellite_coordinator.satellite_scene = val
 
-var current_satellite: SatelliteBeacon:
+var current_satellite: Node2D:
 	get:
 		return satellite_coordinator.current_satellite if satellite_coordinator else null
 	set(val):
@@ -574,10 +574,10 @@ func _process(delta: float) -> void:
 			return
 		elif _pending_satellite_credits >= 0:
 			var creds: int = _pending_satellite_credits
-			var _idx: int = _pending_satellite_index
+			var idx_to_open: int = _pending_satellite_index
 			_pending_satellite_credits = -1
 			_pending_satellite_index = -1
-			satellite_shop.open_shop(creds)
+			satellite_shop.open_shop(creds, idx_to_open)
 			return
 
 	# Cronómetro de tiempo total de la run

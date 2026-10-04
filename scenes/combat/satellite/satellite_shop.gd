@@ -23,6 +23,8 @@ var current_credits: int = 100
 @export var max_rerolls_per_satellite: int = 1
 var reroll_cost: int = 30
 var rerolls_used_this_visit: int = 0
+var active_satellite_id: int = -1
+var purchased_slots: Array[int] = []
 var current_offered_items: Array[Resource] = []
 var buy_buttons: Array[Button] = []
 
@@ -113,20 +115,46 @@ func _generate_default_shop_items() -> void:
 				available_items_pool.append(w)
 
 
-func open_shop(credits: int) -> void:
+func open_shop(credits: int, satellite_id: int = -1) -> void:
 	current_credits = credits
-	reroll_cost = base_reroll_cost
-	rerolls_used_this_visit = 0
 	_ensure_player()
 
+	var is_same_satellite: bool = (satellite_id != -1 and satellite_id == active_satellite_id and not current_offered_items.is_empty())
+
+	if not is_same_satellite:
+		active_satellite_id = satellite_id
+		reroll_cost = base_reroll_cost
+		rerolls_used_this_visit = 0
+		purchased_slots.clear()
+		_roll_shop_items()
+	else:
+		_restore_existing_shop_view()
+
 	_update_credits_display()
-	_roll_shop_items()
 	_refresh_stats_display()
 	_refresh_inventory_display()
 
 	show()
 	get_tree().paused = true
 	_setup_focus_and_grab()
+
+
+func _restore_existing_shop_view() -> void:
+	if not items_container:
+		return
+	items_container.queue_free_children() if items_container.has_method("queue_free_children") else null
+	for child: Node in items_container.get_children():
+		child.queue_free()
+	buy_buttons.clear()
+
+	for i: int in range(current_offered_items.size()):
+		var entry: Resource = current_offered_items[i]
+		SatelliteShopCardBuilderClass.create_item_card_ui(entry, i, self)
+		if i in purchased_slots and i < buy_buttons.size():
+			var btn: Button = buy_buttons[i]
+			if is_instance_valid(btn):
+				btn.disabled = true
+				btn.text = "¡Adquirido!"
 
 
 func restore_focus() -> void:
@@ -337,6 +365,9 @@ func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
 	_update_credits_display()
 	buy_btn.disabled = true
 	buy_btn.text = "¡Adquirido!"
+	var btn_idx: int = buy_buttons.find(buy_btn)
+	if btn_idx != -1 and not purchased_slots.has(btn_idx):
+		purchased_slots.append(btn_idx)
 	item_purchased.emit(entry, cost)
 
 	call_deferred("_refresh_inventory_display")
@@ -397,6 +428,7 @@ func _on_reroll_pressed() -> void:
 	if hud and hud.has_method("update_credits"):
 		hud.update_credits(current_credits)
 	_update_credits_display()
+	purchased_slots.clear()
 	_roll_shop_items()
 
 
@@ -419,6 +451,9 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 			if is_instance_valid(buy_btn):
 				buy_btn.disabled = true
 				buy_btn.text = "¡Adquirido!"
+				var btn_idx: int = buy_buttons.find(buy_btn)
+				if btn_idx != -1 and not purchased_slots.has(btn_idx):
+					purchased_slots.append(btn_idx)
 			item_purchased.emit(w_data, cost)
 			call_deferred("_refresh_inventory_display")
 			call_deferred("_refresh_stats_display")

@@ -172,11 +172,12 @@ func _step_next_modal() -> void:
 	elif level_up_modal and level_up_modal.has_method("has_pending_levels") and level_up_modal.has_pending_levels():
 		level_up_modal.call("show_next_level_up")
 	elif pending_satellite_credits >= 0 and satellite_shop:
-		var creds = pending_satellite_credits
+		var creds: int = pending_satellite_credits
+		var sat_idx: int = pending_satellite_index
 		pending_satellite_credits = -1
 		pending_satellite_index = -1
 		if satellite_shop.has_method("open_shop"):
-			satellite_shop.open_shop(creds)
+			satellite_shop.open_shop(creds, sat_idx)
 	elif not is_any_combat_modal_active():
 		if main_game and main_game.get_tree():
 			main_game.get_tree().paused = false

@@ -33,6 +33,9 @@ func _ready_custom() -> void:
 	add_to_group("anomalies")
 	add_to_group("rainbow_enemies")
 
+	# El Goblin Arcoíris no debe colisionar físicamente con ningún otro enemigo ni obstáculo
+	collision_mask = 0
+
 	_acquire_player()
 	if _current_flight_dir == Vector2.RIGHT and is_instance_valid(player):
 		var to_self := (global_position - player.global_position).normalized()
