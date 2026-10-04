@@ -235,7 +235,19 @@ astra_dream/
     ├── test_prealpha5_suite.gd                    # Suite de Nyx, talentos y persistencia
     ├── test_character_dashes_runner.tscn          # Runner de mecánicas de pilotos y dashes
     ├── test_chest_economy_runner.tscn             # Runner de economía de cofres, llaves cuánticas y forja
-    └── test_chest_economy_suite.gd                # Suite de 29 tests de inflación, draft y slots de cofres
+    ├── test_chest_economy_suite.gd                # Suite de 29 tests de inflación, draft y slots de cofres
+    ├── test_hybrid_chest_economy_runner.tscn      # Runner de economía híbrida C(w, k) y wave resets
+    ├── test_hybrid_chest_economy_suite.gd         # Suite de 45 tests de fórmula híbrida, llaves y HUD
+    ├── test_damage_buckets_runner.tscn            # Runner de álgebra de daño en 3 contenedores
+    ├── test_damage_buckets_suite.gd               # Suite de 17 tests de ModifierType (FLAT, ADD, MULT) y curse
+    ├── test_proc_coefficients_and_osp_runner.tscn # Runner de balística proc, Regla Cero y OSP
+    ├── test_proc_coefficients_and_osp_suite.gd    # Suite de 66 tests de proc_coeff, OSP, ICD y armas lentas
+    ├── test_new_items_and_pity_runner.tscn        # Runner de 12 nuevos ítems y sistema de Pity PRD
+    ├── test_new_items_and_pity_suite.gd           # Suite de 157 tests de ítems estratégicos, pity y sinergias
+    ├── test_phase5_ui_feedback_runner.tscn        # Runner de alertas tácticas en HUD y badge de maldición
+    ├── test_phase5_ui_feedback_suite.gd           # Suite de 19 tests de feedback visual OSP y curse badge
+    ├── test_satellite_items_runner.tscn           # Runner de catálogo del satélite y proyectiles de armas
+    └── test_satellite_items_suite.gd              # Suite de 4/4 suites de 36 ítems de satélite y núcleos
 ```
 
 ---
@@ -339,6 +351,29 @@ func take_damage(arg: Variant) -> void:
 1. **Nivel Metajuego (Pregame):** [`DebugMenuModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/debug_menu_modal.gd) en `CharacterSelectUI`. Administra gacha, biomasa, desbloqueo de skins (1★/3★), compañeros (Cosmo/Iris) y reseteo de estadísticas.
 2. **Nivel Combate (In-Game):** [`IngameDebugModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/ingame_debug_modal.gd) accesible con **`F1`** (layer 125, pausa activa). Organizado en 4 pestañas: Spawns (Monolitos directos frente al jugador a ~200px, Jefes, Rivales, Cofres), Cheats & Stats (God Mode, 999k créditos, 5 bombas, 15 sliders en vivo), Arsenal (inyección de armas respetando slot 0, subida de niveles) y Oleadas/Crisis.
 3. **Poda Automática en Producción:** Gobernado centralmente por [`DebugManager.is_debug_enabled()`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/debug_manager.gd). En builds de exportación, destruye los botones interactivos con `queue_free()` e ignora pulsaciones de teclas sin coste alguno de CPU ni memoria.
+
+### 4.6 Álgebra de Daño en 3 Contenedores y Sistema de Maldición (`curse`)
+- **Fórmula de Daño:**
+  $$D_{\text{final}} = (D_{\text{base}} + D_{\text{plano}}) \times \max(0.0, 1.0 + \sum B_{\text{aditivo}}) \times \prod \max(0.0, 1.0 + M_{\text{multiplicativo}})$$
+- **Enums.ModifierType:** `FLAT (0)`, `ADDITIVE_PERCENT (1)`, `MULTIPLICATIVE (2)`.
+  - Nivel pasivo (`StatDeckManager`): Incrementos aditivos (+12%/+24% daño, etc.).
+  - Tienda Satelital (`SatelliteShop`): Módulos de sobrecarga con multiplicador puro (`fusion_reactor` +20% mult) y trade-offs.
+- **Maldición (`curse`):** Stat administrado en `CharacterStats`. Escala densidad y velocidad enemiga (+0.5% por punto) y bonifica créditos (+1% por punto).
+
+### 4.7 Protocolo de Supervivencia OSP (One-Shot Protection)
+- **Umbral de Activación:** $\ge 90\%$ de salud combinada (Vida actual + Escudos actuales $\ge$ 90% del total máximo).
+- **Tratamiento de Daño Letal:** Si un golpe superaría la vitalidad combinada, el daño se trunca para dejar a la nave a `1 HP`, otorga `0.5s` de invulnerabilidad táctica (`is_invulnerable = true`) y emite `osp_triggered` con banner holográfico en el HUD.
+
+### 4.8 Economía Híbrida de Cofres $C(w, k)$ y Llaves Cuánticas
+- **Fórmula de Cofre Regular:**
+  $$C(w, k) = \lfloor (20 + 4w) \cdot (1 + 0.15k) \cdot (1 + 0.10 \cdot \text{tarjetas}) \cdot \text{descuento\_llave} \rfloor$$
+- **Reseteo por Oleada:** Al avanzar de oleada, `ChestDirector` reinicia la inflación local $k \to 0$.
+- **Llave Cuántica (`quantum_key`):** Consumo activo (1 llave abre gratis a 0c sin incrementar $k$) y descuento pasivo del 20% si se paga con créditos. Cofre Dorado cuesta 120c fijos.
+
+### 4.9 Coeficientes de Activación (Proc Coefficients) y Regla Cero
+- **Eficacia de Activación:** Cada arma define `proc_coefficient` ($0.10$ a $1.00$). Los ítems reactivos modulan su disparo: $P_{\text{real}} = P_{\text{base}} \times \kappa_{\text{proc}}$.
+- **Regla Cero Balística:** Todo proyectil o efecto secundario hijo generado por un ítem viaja con `proc_coefficient = 0.0`, impidiendo auto-activaciones y bucles infinitos en `BulletServer`.
+- **Compensación de Armas Lentas ($CD > 1.1s$):** Pulso a quemarropa radial (< 80px, 30% daño, 250 px/s knockback), fragmentación de Scatter Laser y aura Stutter-Field (-25% velocidad).
 
 ---
 
