@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/star.svg" id="1_thgyp"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_byhqa"]
+
+[resource]
+script = ExtResource("2_byhqa")
+tome_id = &"tome_weapon_size"
+display_name = "Tomo de Amplitud"
+description = "Incrementa el tamaño y radio de impacto de proyectiles y explosiones."
+icon = ExtResource("1_thgyp")
+tags = Array[StringName]([&"offense", &"area"])
+stat_name = &"weapon_size"
+stat_value_per_level = 0.15
+is_percentage = true
+modifier_type = 1

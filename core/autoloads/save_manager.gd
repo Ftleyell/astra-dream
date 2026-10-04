@@ -333,3 +333,10 @@ static func increment_banner_pity(banner_id: String, amount: int) -> int:
 static func reset_banner_pity(banner_id: String) -> void:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	SaveSkinsModule.reset_banner_pity(banner_id, self_class)
+
+static func get_character_active_tomes(char_id: StringName) -> Array[StringName]:
+	return ProfileStorage.get_character_active_tomes(char_id)
+
+static func set_character_active_tomes(char_id: StringName, tomes: Array[StringName]) -> void:
+	ProfileStorage.set_character_active_tomes(char_id, tomes)
+

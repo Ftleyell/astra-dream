@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_apple.svg" id="1_rb118"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_vthai"]
+
+[resource]
+script = ExtResource("2_vthai")
+tome_id = &"tome_health_regen"
+display_name = "Tomo de Nanoreparación"
+description = "Regenera puntos de casco de forma sostenida cada segundo."
+icon = ExtResource("1_rb118")
+tags = Array[StringName]([&"defense", &"regen"])
+stat_name = &"health_regen"
+stat_value_per_level = 0.8

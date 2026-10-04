@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/credit_coin_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+item_id = &"moneda_oro"
+item_name = "Moneda Cuántica"
+description = "+25% Créditos obtenidos en combate."
+icon = ExtResource("1_icon")
+rarity = 0
+tags = Array[StringName]([&"economy", &"utility"])
+cost = 45
+stat_name = &"credits_multiplier"
+stat_value = 0.25
+is_percentage = true
+modifier_type = 1

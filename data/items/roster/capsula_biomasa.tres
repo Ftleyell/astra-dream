@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/biomass_dna_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+item_id = &"capsula_biomasa"
+item_name = "Cápsula de Biomasa"
+description = "+25% Biomasa recolectada de aberraciones."
+icon = ExtResource("1_icon")
+rarity = 0
+tags = Array[StringName]([&"economy", &"utility", &"biomass"])
+cost = 45
+stat_name = &"biomass_multiplier"
+stat_value = 0.25
+is_percentage = true
+modifier_type = 1

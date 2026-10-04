@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/icon_arcana_rune.svg" id="1_icon"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+item_id = &"reliquia_maldita"
+item_name = "Reliquia Maldita"
+description = "+10 Maldición. Incrementa la agresividad y densidad enemiga."
+icon = ExtResource("1_icon")
+rarity = 0
+tags = Array[StringName]([&"curse", &"challenge"])
+cost = 45
+stat_name = &"curse"
+stat_value = 10.0
+is_percentage = false
+modifier_type = 0

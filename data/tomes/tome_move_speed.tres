@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="1_sno1q"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_hkstb"]
+
+[resource]
+script = ExtResource("2_hkstb")
+tome_id = &"tome_move_speed"
+display_name = "Tomo de Impulso"
+description = "Aumenta la velocidad de desplazamiento de la nave."
+icon = ExtResource("1_sno1q")
+tags = Array[StringName]([&"mobility", &"speed"])
+stat_name = &"move_speed"
+stat_value_per_level = 20.0

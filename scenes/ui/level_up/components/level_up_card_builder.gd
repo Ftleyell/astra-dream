@@ -7,6 +7,7 @@ extends RefCounted
 ## destacado y botón de selección compacto para evitar clicks involuntarios.
 
 const LevelUpStatsInspector = preload("res://scenes/ui/level_up/components/level_up_stats_inspector.gd")
+const LevelUpRewardOption = preload("res://scenes/ui/level_up/components/level_up_reward_option.gd")
 
 const STAT_ICON_MAP: Dictionary = {
 	&"base_damage": "res://assets/icons/items/icon_sword.svg",
@@ -249,3 +250,149 @@ static func apply_card_selection_style(
 		style.shadow_size = 0
 
 	panel.add_theme_stylebox_override("panel", style)
+
+
+static func build_reward_option_card(
+	option: LevelUpRewardOption,
+	index: int,
+	on_chosen_callback: Callable,
+	on_focused_callback: Callable,
+	is_mouse_locked_callable: Callable
+) -> Dictionary:
+	var tier_info: Dictionary = get_tier_info(option.tier)
+	var tier_color: Color = tier_info["color"]
+
+	var card_panel := PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(0, 84)
+	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
+	card_style.set_border_width_all(2)
+	card_style.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.5)
+	card_style.set_corner_radius_all(8)
+	card_style.set_content_margin_all(10.0)
+	card_panel.add_theme_stylebox_override("panel", card_style)
+
+	card_panel.mouse_entered.connect(func():
+		on_focused_callback.call(index)
+	)
+
+	var hbox := HBoxContainer.new()
+	hbox.set("theme_override_constants/separation", 16)
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+	# 1. Columna izquierda: Icono
+	var icon_panel := PanelContainer.new()
+	icon_panel.custom_minimum_size = Vector2(58, 58)
+	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = Color(0.03, 0.04, 0.07, 0.95)
+	icon_style.set_border_width_all(2)
+	icon_style.border_color = tier_color
+	icon_style.set_corner_radius_all(6)
+	icon_panel.add_theme_stylebox_override("panel", icon_style)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(44, 44)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if option.icon:
+		icon_rect.texture = option.icon
+		icon_rect.modulate = tier_color
+	icon_panel.add_child(icon_rect)
+	hbox.add_child(icon_panel)
+
+	# 2. Columna central: Nombre, Subtítulo y Badge
+	var info_vbox := VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info_vbox.set("theme_override_constants/separation", 4)
+
+	var top_line := HBoxContainer.new()
+	top_line.set("theme_override_constants/separation", 8)
+
+	var name_lbl := Label.new()
+	name_lbl.name = "StatNameLabel"
+	name_lbl.text = option.title
+	name_lbl.add_theme_font_size_override("font_size", 15)
+	name_lbl.add_theme_color_override("font_color", Color.WHITE)
+	top_line.add_child(name_lbl)
+
+	var sub_lbl := Label.new()
+	sub_lbl.text = option.subtitle
+	sub_lbl.modulate = tier_color
+	sub_lbl.add_theme_font_size_override("font_size", 12)
+	top_line.add_child(sub_lbl)
+
+	info_vbox.add_child(top_line)
+
+	var badge_lbl := Label.new()
+	badge_lbl.name = "HeroValueBadge"
+	var raw_badge: String = option.badge_text if not option.badge_text.is_empty() else option.description
+	if not raw_badge.begins_with("+") and not raw_badge.begins_with("-"):
+		raw_badge = "+ " + raw_badge
+	badge_lbl.text = raw_badge
+	badge_lbl.add_theme_font_size_override("font_size", 13)
+	badge_lbl.add_theme_color_override("font_color", Color("#00FF9D") if (option.type == LevelUpRewardOption.OptionType.WEAPON_UPGRADE or option.type == LevelUpRewardOption.OptionType.TOME_UPGRADE) else Color("#FFDE59"))
+	info_vbox.add_child(badge_lbl)
+
+	hbox.add_child(info_vbox)
+
+	# 3. Columna derecha: Atajo y Botón de selección interactivo
+	var btn_vbox := VBoxContainer.new()
+	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn_vbox.set("theme_override_constants/separation", 4)
+
+	var hotkey_lbl := Label.new()
+	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
+	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
+	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hotkey_lbl.add_theme_font_size_override("font_size", 11)
+	btn_vbox.add_child(hotkey_lbl)
+
+	var select_btn := Button.new()
+	select_btn.text = "ELEGIR [%d]" % (index + 1)
+	select_btn.custom_minimum_size = Vector2(130, 36)
+	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	select_btn.focus_mode = Control.FOCUS_ALL
+
+	var btn_normal := StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.12, 0.16, 0.24, 0.9)
+	btn_normal.set_border_width_all(1)
+	btn_normal.border_color = tier_color * Color(1.0, 1.0, 1.0, 0.7)
+	btn_normal.set_corner_radius_all(6)
+	select_btn.add_theme_stylebox_override("normal", btn_normal)
+
+	var btn_hover := StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.2, 0.3, 0.45, 1.0)
+	btn_hover.set_border_width_all(2)
+	btn_hover.border_color = tier_color
+	btn_hover.set_corner_radius_all(6)
+	select_btn.add_theme_stylebox_override("hover", btn_hover)
+	select_btn.add_theme_stylebox_override("focus", btn_hover)
+
+	select_btn.pressed.connect(func():
+		if is_mouse_locked_callable.call():
+			return
+		on_chosen_callback.call(option)
+	)
+
+	select_btn.focus_entered.connect(func():
+		on_focused_callback.call(index)
+	)
+
+	btn_vbox.add_child(select_btn)
+	hbox.add_child(btn_vbox)
+
+	card_panel.add_child(hbox)
+
+	return {
+		"panel": card_panel,
+		"button": select_btn,
+		"tier_color": tier_color
+	}

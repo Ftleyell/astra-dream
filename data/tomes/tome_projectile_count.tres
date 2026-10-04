@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="1_dtf2m"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_g3a5t"]
+
+[resource]
+script = ExtResource("2_g3a5t")
+tome_id = &"tome_projectile_count"
+display_name = "Tomo Multidisparo"
+description = "Añade proyectiles adicionales a todas las salvas disparadas."
+icon = ExtResource("1_dtf2m")
+tags = Array[StringName]([&"offense", &"projectile"])
+stat_name = &"projectile_count"
+stat_value_per_level = 1.0

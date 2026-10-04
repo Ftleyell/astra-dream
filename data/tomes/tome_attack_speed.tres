@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="1_xcyv4"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_b2liu"]
+
+[resource]
+script = ExtResource("2_b2liu")
+tome_id = &"tome_attack_speed"
+display_name = "Tomo de Cadencia"
+description = "Aumenta la velocidad de ataque y disparo de todas las armas."
+icon = ExtResource("1_xcyv4")
+tags = Array[StringName]([&"offense", &"speed"])
+stat_name = &"attack_speed"
+stat_value_per_level = 0.1
+is_percentage = true
+modifier_type = 1

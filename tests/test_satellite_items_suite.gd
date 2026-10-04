@@ -88,12 +88,11 @@ func _test_satellite_shop_slots_and_stacks() -> int:
 	shop._roll_shop_items()
 	assert(shop.current_offered_items.size() == 3, "Shop must offer exactly 3 items, got %d" % shop.current_offered_items.size())
 
-	# Slot 0 must be WeaponData
-	assert(shop.current_offered_items[0] is WeaponData, "Slot 0 must always be a WeaponData")
-	# Slots 1 and 2 must be ItemData
+	# All 3 slots must be ItemData (weapons removed from satellite shop)
+	assert(shop.current_offered_items[0] is ItemData, "Slot 0 must be an ItemData")
 	assert(shop.current_offered_items[1] is ItemData, "Slot 1 must be an ItemData")
 	assert(shop.current_offered_items[2] is ItemData, "Slot 2 must be an ItemData")
-	print("  ✓ T2.1: Exactly 3 shop cards offered with Slot 0 guaranteed as Weapon")
+	print("  ✓ T2.1: Exactly 3 shop cards offered with all slots as ItemData (weapons removed)")
 
 	# Test Max Stacks Filtering: give player max stacks of an item and verify it is not offered
 	var test_item: ItemData = null
@@ -143,7 +142,7 @@ func _test_weapon_projectile_scaling_per_level() -> int:
 	var proj_bonus_lvl2 := maxi(0, inst.level - 1)
 	assert(proj_bonus_lvl2 == 1, "Level 2 weapon must have +1 extra projectile, got %d" % proj_bonus_lvl2)
 
-	# Upgrade to level 5 (MAX)
+	# Upgrade to level 5
 	w_ctrl.upgrade_weapon(wp_data.weapon_id) # 3
 	w_ctrl.upgrade_weapon(wp_data.weapon_id) # 4
 	w_ctrl.upgrade_weapon(wp_data.weapon_id) # 5
@@ -151,10 +150,13 @@ func _test_weapon_projectile_scaling_per_level() -> int:
 	var proj_bonus_lvl5 := maxi(0, inst.level - 1)
 	assert(proj_bonus_lvl5 == 4, "Level 5 weapon must have +4 extra projectiles, got %d" % proj_bonus_lvl5)
 
-	# Level 6 rejection
+	# Infinite weapon leveling: Level 6 and beyond are permitted
 	var upgrade_lvl6 := w_ctrl.upgrade_weapon(wp_data.weapon_id)
-	assert(not upgrade_lvl6, "Weapon level cannot exceed 5")
-	print("  ✓ T3.1: Weapon level 1 -> 5 adds +1 projectile per level up to max +4 projectiles")
+	assert(upgrade_lvl6, "Weapon level can exceed 5 (infinite weapons progression)")
+	assert(inst.level == 6, "Weapon level must be 6")
+	var proj_bonus_lvl6 := maxi(0, inst.level - 1)
+	assert(proj_bonus_lvl6 == 5, "Level 6 weapon must have +5 extra projectiles, got %d" % proj_bonus_lvl6)
+	print("  ✓ T3.1: Weapon scaling adds +1 projectile per level beyond level 5 (infinite progression)")
 
 	w_ctrl.queue_free()
 	return 1

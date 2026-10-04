@@ -106,19 +106,6 @@ func _generate_default_shop_items() -> void:
 	for it: ItemData in items:
 		available_items_pool.append(it)
 
-	# Añadir las 4 armas exclusivas de la tienda
-	var shop_weapon_paths: Array[String] = [
-		"res://data/weapons/shop/nova_flak.tres",
-		"res://data/weapons/shop/dimensional_blade.tres",
-		"res://data/weapons/shop/solar_beam.tres",
-		"res://data/weapons/shop/cluster_submunition.tres"
-	]
-	for p: String in shop_weapon_paths:
-		if ResourceLoader.exists(p):
-			var w: Resource = load(p)
-			if w:
-				available_items_pool.append(w)
-
 
 func open_shop(credits: int, satellite_id: int = -1) -> void:
 	current_credits = credits

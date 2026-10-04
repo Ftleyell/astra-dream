@@ -57,6 +57,7 @@ var is_debug_active: bool:
 @onready var skin_selection_modal = get_node_or_null("SkinSelectionModal")
 @onready var gacha_modal = get_node_or_null("GachaModal")
 @onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
+@onready var tome_selection_modal = get_node_or_null("TomeSelectionModal")
 
 @onready var launch_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LaunchButton
 @onready var loadout_button: Button = $MarginContainer/RootVBox/MainColumns/CenterPanel/ActionsRow/LoadoutButton
@@ -213,6 +214,9 @@ func _connect_modal_signals() -> void:
 		if gacha_modal.has_signal("modal_closed"):
 			gacha_modal.modal_closed.connect(_on_gacha_modal_closed)
 
+	if tome_selection_modal and tome_selection_modal.has_signal("closed"):
+		tome_selection_modal.closed.connect(_on_tome_modal_closed)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
@@ -224,6 +228,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if skin_selection_modal and skin_selection_modal.get("is_open"):
 		return
 	if gacha_modal and gacha_modal.visible:
+		return
+	if tome_selection_modal and tome_selection_modal.get("is_open"):
 		return
 
 	if event.is_action_pressed("ui_cancel"):
@@ -530,7 +536,24 @@ func _on_launch_pressed() -> void:
 
 
 func _on_loadout_pressed() -> void:
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
+	if tome_selection_modal and tome_selection_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		tome_selection_modal.open_modal(current_character_id)
+	else:
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
+
+
+func _on_tome_modal_closed() -> void:
+	var target_focus: Control = null
+	if loadout_button and loadout_button.is_visible_in_tree():
+		target_focus = loadout_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
 
 
 func _on_back_pressed() -> void:

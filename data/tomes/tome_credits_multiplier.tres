@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/credit_coin_icon.png" id="1_2kwja"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_7pr4d"]
+
+[resource]
+script = ExtResource("2_7pr4d")
+tome_id = &"tome_credits_multiplier"
+display_name = "Tomo de Extracción"
+description = "Multiplica la cantidad de créditos cósmicos extraídos en combate."
+icon = ExtResource("1_2kwja")
+tags = Array[StringName]([&"economy", &"utility"])
+stat_name = &"credits_multiplier"
+stat_value_per_level = 0.2
+is_percentage = true
+modifier_type = 1

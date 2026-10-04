@@ -6,6 +6,8 @@ const ITEM_ROSTER_DIR: String = "res://data/items/roster"
 const CANONICAL_ITEM_IDS: Array[StringName] = [
 	&"botas", &"espada", &"escudo", &"corazon", &"manzana", &"iman",
 	&"gafas", &"lupa", &"guante", &"trebol", &"carcaj", &"chip_telemetria",
+	&"propulsor", &"lente_amplificadora", &"reloj_cuantico",
+	&"moneda_oro", &"capsula_biomasa", &"reliquia_maldita",
 	&"tesla_coil", &"kinetic_plating", &"phase_thruster", &"retaliation_swarm",
 	&"entropy_catalyst", &"phase_inverter",
 	&"glass_reactor", &"heavy_condenser", &"tachyon_piercer",

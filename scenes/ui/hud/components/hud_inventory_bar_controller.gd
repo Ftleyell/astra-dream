@@ -1,6 +1,8 @@
 class_name HUDInventoryBarController
 extends RefCounted
 
+const TomeDataScript = preload("res://data/tomes/tome_data.gd")
+
 ## HUDInventoryBarController.gd
 ## Controlador especializado para el inventario in-run en el HUD:
 ## - 4 Ranuras fijas de armas equipadas con niveles, tooltips y barridos de CD.
@@ -8,6 +10,7 @@ extends RefCounted
 ## - Contadores numéricos de créditos y biomasa con animación punch.
 
 var weapon_slots_row: HBoxContainer
+var tome_slots_row: HBoxContainer
 var inventory_row: HBoxContainer
 var credits_label: Label
 var biomass_label: Label
@@ -20,6 +23,7 @@ var _credit_punch_tween: Tween = null
 
 func setup(elements: Dictionary) -> void:
 	weapon_slots_row = elements.get("weapon_slots_row") as HBoxContainer
+	tome_slots_row = elements.get("tome_slots_row") as HBoxContainer
 	inventory_row = elements.get("inventory_row") as HBoxContainer
 	credits_label = elements.get("credits_label") as Label
 	biomass_label = elements.get("biomass_label") as Label
@@ -146,6 +150,73 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 			inner.add_child(slot_lbl)
 
 			weapon_slots_row.add_child(empty_chip)
+
+func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
+	if not tome_slots_row:
+		return
+	for child in tome_slots_row.get_children():
+		tome_slots_row.remove_child(child)
+		child.queue_free()
+
+	const TOTAL_TOME_SLOTS: int = 4
+	for slot_idx in range(TOTAL_TOME_SLOTS):
+		var chip := PanelContainer.new()
+		chip.name = "TomeSlot_%d" % slot_idx
+		chip.custom_minimum_size = Vector2(32, 32)
+		chip.clip_contents = true
+
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.04, 0.05, 0.09, 0.9)
+		style.set_corner_radius_all(5)
+
+		if slot_idx < tomes.size() and tomes[slot_idx] != null:
+			var tome: TomeDataScript = tomes[slot_idx]
+			var t_level: int = int(levels.get(tome.tome_id, 1))
+
+			style.set_border_width_all(2)
+			style.border_color = Color(0.9, 0.75, 0.2, 0.85)
+			chip.add_theme_stylebox_override("panel", style)
+
+			var bonus_text: String = tome.get_bonus_description(t_level)
+			chip.tooltip_text = "[Tomo %d] %s (Nvl. %d)\n%s\nEfecto: %s" % [
+				slot_idx + 1,
+				tome.display_name,
+				t_level,
+				tome.description,
+				bonus_text
+			]
+
+			var inner := Control.new()
+			inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+			inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			chip.add_child(inner)
+
+			var icon_rect := TextureRect.new()
+			icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			if tome.icon:
+				icon_rect.texture = tome.icon
+				icon_rect.modulate = Color(1.0, 0.88, 0.4, 1.0)
+			inner.add_child(icon_rect)
+
+			var lvl_lbl := Label.new()
+			lvl_lbl.text = "★%d" % t_level
+			lvl_lbl.add_theme_font_size_override("font_size", 9)
+			lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4, 1.0))
+			lvl_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+			lvl_lbl.add_theme_constant_override("shadow_outline_size", 2)
+			lvl_lbl.position = Vector2(10, 16)
+			lvl_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			inner.add_child(lvl_lbl)
+		else:
+			style.set_border_width_all(1)
+			style.border_color = Color(0.2, 0.3, 0.4, 0.4)
+			chip.add_theme_stylebox_override("panel", style)
+			chip.tooltip_text = "[Ranura de Tomo %d] Vacía" % (slot_idx + 1)
+
+		tome_slots_row.add_child(chip)
 
 func update_weapon_cooldown_sweeps(equipped_weapons: Array, player_stats: Variant) -> void:
 	if not weapon_slots_row:

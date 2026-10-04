@@ -300,6 +300,12 @@ theme_override_font_sizes/font_size = 13
 text = "x0 (0% Gratis)"
 vertical_alignment = 1
 
+[node name="TomeSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 8
+alignment = 1
+
 [node name="WeaponSlotsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4

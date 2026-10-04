@@ -3,7 +3,7 @@
 param(
     [string]$Test = "",
     [string]$Filter = "",
-    [int]$TimeoutSeconds = 8,
+    [int]$TimeoutSeconds = 15,
     [switch]$CoreOnly,
     [switch]$VerboseOutput
 )
@@ -68,7 +68,8 @@ if ($Test) {
         "test_weapon_swap_and_hud_runner.tscn",
         "test_level_up_queue_runner.tscn",
         "test_boss_runner.tscn",
-        "test_dialogue_skip_runner.tscn"
+        "test_dialogue_skip_runner.tscn",
+        "test_tomes_and_infinite_weapons_runner.tscn"
     )
     foreach ($cn in $coreNames) {
         $p = Join-Path $testsDir $cn

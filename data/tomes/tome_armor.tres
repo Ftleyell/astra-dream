@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="1_t477d"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_h018s"]
+
+[resource]
+script = ExtResource("2_h018s")
+tome_id = &"tome_armor"
+display_name = "Tomo de Mitigación"
+description = "Reduce el daño directo recibido ante cualquier impacto hostil."
+icon = ExtResource("1_t477d")
+tags = Array[StringName]([&"defense", &"armor"])
+stat_name = &"armor"
+stat_value_per_level = 2.0

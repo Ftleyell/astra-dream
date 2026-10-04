@@ -48,6 +48,8 @@ func update_continuous_spawner(delta: float, player_pos: Vector2, parent_contain
 			valid_chests.append(c)
 	active_chests = valid_chests
 
+	_relocate_distant_chests(player_pos, parent_container)
+
 	continuous_spawn_timer += delta
 	if continuous_spawn_timer >= CONTINUOUS_SPAWN_INTERVAL:
 		continuous_spawn_timer = 0.0
@@ -158,3 +160,31 @@ func cleanup_all_chests() -> void:
 		if is_instance_valid(c):
 			c.queue_free()
 	active_chests.clear()
+
+const CHEST_MAX_DISTANCE: float = 1500.0
+const CHEST_RELOCATION_MIN_DIST: float = 850.0
+const CHEST_RELOCATION_MAX_DIST: float = 1100.0
+
+## Reubicación cuántica silenciosa de cofres desatendidos lejanos hacia adelante del jugador
+func _relocate_distant_chests(player_pos: Vector2, parent_container: Node2D) -> void:
+	var forward_dir: Vector2 = Vector2.ZERO
+	if is_instance_valid(parent_container):
+		var player_node: Node2D = parent_container.get("player") as Node2D
+		if is_instance_valid(player_node) and "velocity" in player_node:
+			var vel: Vector2 = player_node.get("velocity")
+			if vel.length_squared() > 100.0:
+				forward_dir = vel.normalized()
+
+	for chest: SpatialChest in active_chests:
+		if not is_instance_valid(chest) or chest.is_opened:
+			continue
+		var dist: float = chest.global_position.distance_to(player_pos)
+		if dist > CHEST_MAX_DISTANCE:
+			var spawn_angle: float
+			if forward_dir.length_squared() > 0.001:
+				spawn_angle = forward_dir.angle() + randf_range(-PI * 0.25, PI * 0.25)
+			else:
+				spawn_angle = randf_range(0.0, TAU)
+			var offset_dist: float = randf_range(CHEST_RELOCATION_MIN_DIST, CHEST_RELOCATION_MAX_DIST)
+			chest.global_position = player_pos + Vector2.from_angle(spawn_angle) * offset_dist
+

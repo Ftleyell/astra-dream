@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/package.svg" id="1_w32mi"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_rtls1"]
+
+[resource]
+script = ExtResource("2_rtls1")
+tome_id = &"tome_exp_multiplier"
+display_name = "Tomo de Telemetría"
+description = "Incrementa la experiencia obtenida de todos los cristales en combate."
+icon = ExtResource("1_w32mi")
+tags = Array[StringName]([&"utility", &"exp"])
+stat_name = &"exp_multiplier"
+stat_value_per_level = 0.15
+is_percentage = true
+modifier_type = 1

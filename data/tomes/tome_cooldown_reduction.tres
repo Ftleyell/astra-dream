@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/restart.svg" id="1_j12ww"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_b521a"]
+
+[resource]
+script = ExtResource("2_b521a")
+tome_id = &"tome_cooldown_reduction"
+display_name = "Tomo de Celeridad"
+description = "Reduce el tiempo de recarga y enfriamiento de armas automáticas y habilidades."
+icon = ExtResource("1_j12ww")
+tags = Array[StringName]([&"utility", &"cooldown"])
+stat_name = &"cooldown_reduction"
+stat_value_per_level = 0.08
+is_percentage = true
+modifier_type = 1

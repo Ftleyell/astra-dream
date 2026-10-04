@@ -110,6 +110,10 @@ func add_weapon(data: WeaponData) -> bool:
 	return false
 
 
+func equip_weapon(data: WeaponData) -> bool:
+	return add_weapon(data)
+
+
 func is_full() -> bool:
 	return equipped_weapons.size() >= MAX_WEAPON_SLOTS
 
@@ -142,14 +146,12 @@ func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level
 func upgrade_weapon(weapon_id: StringName) -> bool:
 	for inst in equipped_weapons:
 		if inst.weapon_data.weapon_id == weapon_id:
-			if inst.level < 5:
-				inst.level += 1
-				weapons_updated.emit(equipped_weapons)
-				var audio_mgr := get_node_or_null("/root/AudioManager")
-				if audio_mgr and audio_mgr.has_method("play_sfx"):
-					audio_mgr.play_sfx("ui_click", 1.8, 4.0)
-				return true
-			return false
+			inst.level += 1
+			weapons_updated.emit(equipped_weapons)
+			var audio_mgr := get_node_or_null("/root/AudioManager")
+			if audio_mgr and audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("ui_click", 1.8, 4.0)
+			return true
 	return false
 
 

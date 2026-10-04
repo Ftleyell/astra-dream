@@ -5,6 +5,7 @@ const TacticalAbilitiesControllerClass = preload("res://scenes/ui/hud/components
 const InventoryBarControllerClass = preload("res://scenes/ui/hud/components/hud_inventory_bar_controller.gd")
 const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_manager.gd")
 const CombatStatsDock = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
+const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
@@ -30,6 +31,7 @@ const CombatStatsDock = preload("res://scenes/ui/hud/components/combat_stats_doc
 @onready var level_label: Label = find_child("LevelLabel", true, false) as Label
 @onready var inventory_row: HBoxContainer = find_child("InventoryRow", true, false) as HBoxContainer
 @onready var weapon_slots_row: HBoxContainer = find_child("WeaponSlotsRow", true, false) as HBoxContainer
+@onready var tome_slots_row: HBoxContainer = find_child("TomeSlotsRow", true, false) as HBoxContainer
 @onready var boss_health_bar: BossHealthBar = get_node_or_null("BossHealthBar")
 @onready var satellite_tracker: SatelliteEdgeIndicator = find_child("SatelliteEdgeIndicator", true, false) as SatelliteEdgeIndicator
 @onready var arcana_tracker: ArcanaEdgeIndicator = find_child("ArcanaEdgeIndicator", true, false) as ArcanaEdgeIndicator
@@ -183,6 +185,11 @@ func _ready() -> void:
 			update_weapon_slots(weapon_ctrl.equipped_weapons)
 			_on_aim_mode_changed(weapon_ctrl.is_manual_aim)
 
+		var tome_ctrl = player.tome_controller if "tome_controller" in player else null
+		if tome_ctrl:
+			tome_ctrl.tomes_updated.connect(update_tome_slots)
+			update_tome_slots(tome_ctrl.equipped_tomes, tome_ctrl.tome_levels)
+
 	if not target_reticle and target_reticle_scene:
 		target_reticle = target_reticle_scene.instantiate() as Node2D
 		var spawn_parent: Node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_parent()
@@ -241,6 +248,7 @@ func _init_subcontrollers() -> void:
 	_inventory_ctrl = InventoryBarControllerClass.new()
 	_inventory_ctrl.setup({
 		"weapon_slots_row": weapon_slots_row,
+		"tome_slots_row": tome_slots_row,
 		"inventory_row": inventory_row,
 		"credits_label": credits_label,
 		"biomass_label": biomass_label,
@@ -342,6 +350,10 @@ func update_laser_cooldown(current: float, max_val: float) -> void:
 func update_weapon_slots(weapons: Array) -> void:
 	if _inventory_ctrl:
 		_inventory_ctrl.update_weapon_slots(weapons, player.stats if is_instance_valid(player) else null)
+
+func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
+	if _inventory_ctrl:
+		_inventory_ctrl.update_tome_slots(tomes, levels)
 
 func _update_weapon_cooldown_sweeps() -> void:
 	if not is_instance_valid(player) or not _inventory_ctrl:

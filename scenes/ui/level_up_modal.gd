@@ -5,6 +5,8 @@ signal card_chosen(card: StatCardData)
 
 const LevelUpStatsInspector = preload("res://scenes/ui/level_up/components/level_up_stats_inspector.gd")
 const LevelUpCardBuilder = preload("res://scenes/ui/level_up/components/level_up_card_builder.gd")
+const LevelUpRewardGenerator = preload("res://scenes/ui/level_up/components/level_up_reward_generator.gd")
+const LevelUpRewardOption = preload("res://scenes/ui/level_up/components/level_up_reward_option.gd")
 
 @export var stat_deck_manager: StatDeckManager
 @export var player: Player
@@ -17,7 +19,7 @@ const LevelUpCardBuilder = preload("res://scenes/ui/level_up/components/level_up
 @onready var pilot_info_label: Label = find_child("PilotInfo", true, false) as Label
 @onready var stats_list_container: VBoxContainer = find_child("StatsList", true, false) as VBoxContainer
 
-var current_offered_cards: Array[StatCardData] = []
+var current_offered_cards: Array = []
 var select_buttons: Array[Button] = []
 var card_panels: Array[PanelContainer] = []
 var card_tier_colors: Array[Color] = []
@@ -134,8 +136,58 @@ func _present_level(level: int) -> void:
 	_update_header_title()
 	open_modal()
 
+	if not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player") as Player
+	if not is_instance_valid(player) and get_parent():
+		player = get_parent().get_node_or_null("Player") as Player
+
+	if player:
+		var char_id: StringName = &"nova"
+		if "character_data" in player and player.character_data:
+			char_id = player.character_data.character_id
+		elif SaveManager.has_method("get_selected_character"):
+			char_id = SaveManager.get_selected_character()
+
+		var active_tomes: Array[StringName] = []
+		if SaveManager.has_method("get_character_active_tomes"):
+			active_tomes = SaveManager.get_character_active_tomes(char_id)
+
+		var options: Array[LevelUpRewardOption] = LevelUpRewardGenerator.generate_reward_options(player, active_tomes, 3)
+		if not options.is_empty():
+			_display_reward_options(options)
+			return
+
 	if stat_deck_manager and player:
 		stat_deck_manager.offer_cards(player.stats, level, 3)
+
+
+func _display_reward_options(options: Array[LevelUpRewardOption]) -> void:
+	current_offered_cards = options
+	select_buttons.clear()
+	card_panels.clear()
+	card_tier_colors.clear()
+	current_selected_idx = 0
+
+	if cards_container:
+		for child in cards_container.get_children():
+			cards_container.remove_child(child)
+			child.queue_free()
+
+		for i in range(options.size()):
+			var opt: LevelUpRewardOption = options[i]
+			var on_chosen := Callable(self, "_select_card")
+			var on_focused := Callable(self, "_update_card_selection")
+			var is_locked := Callable(self, "_is_mouse_locked")
+			var card_info: Dictionary = LevelUpCardBuilder.build_reward_option_card(opt, i, on_chosen, on_focused, is_locked)
+			var card_panel: PanelContainer = card_info["panel"]
+			var select_btn: Button = card_info["button"]
+			var tier_color: Color = card_info["tier_color"]
+			card_panels.append(card_panel)
+			card_tier_colors.append(tier_color)
+			select_buttons.append(select_btn)
+			cards_container.add_child(card_panel)
+
+	call_deferred("_update_card_selection", 0)
 
 
 func _refresh_player_stats_display(level_override: int = -1) -> void:
@@ -239,7 +291,11 @@ func _update_card_selection(idx: int) -> void:
 		LevelUpCardBuilder.apply_card_selection_style(panel_node, btn, color, is_selected)
 
 	if idx < current_offered_cards.size():
-		_highlight_target_stat(current_offered_cards[idx].target_stat, current_offered_cards[idx])
+		var card_item: Variant = current_offered_cards[idx]
+		if card_item is LevelUpRewardOption:
+			_highlight_target_stat((card_item as LevelUpRewardOption).target_stat, null)
+		elif card_item is StatCardData:
+			_highlight_target_stat((card_item as StatCardData).target_stat, card_item as StatCardData)
 
 
 func _confirm_current_selection() -> void:
@@ -295,11 +351,26 @@ func _get_tier_info(tier: Enums.Tier) -> Dictionary:
 	return LevelUpCardBuilder.get_tier_info(tier)
 
 
-func _select_card(card: StatCardData) -> void:
-	if stat_deck_manager and player:
-		stat_deck_manager.apply_card_to_stats(card, player.stats)
-		player.chosen_stat_cards.append(card)
+func _select_card(card: Variant) -> void:
+	if card is LevelUpRewardOption:
+		var opt := card as LevelUpRewardOption
+		match opt.type:
+			LevelUpRewardOption.OptionType.WEAPON_NEW:
+				if player and "weapon_controller" in player and player.weapon_controller:
+					player.weapon_controller.add_weapon(opt.weapon_data)
+			LevelUpRewardOption.OptionType.WEAPON_UPGRADE:
+				if player and "weapon_controller" in player and player.weapon_controller:
+					player.weapon_controller.upgrade_weapon(opt.weapon_data.weapon_id)
+			LevelUpRewardOption.OptionType.TOME_NEW, LevelUpRewardOption.OptionType.TOME_UPGRADE:
+				if player and "tome_controller" in player and player.tome_controller:
+					player.tome_controller.equip_or_upgrade_tome(opt.tome_data)
 		_refresh_player_stats_display(current_level_shown)
+	elif card is StatCardData:
+		if stat_deck_manager and player:
+			stat_deck_manager.apply_card_to_stats(card as StatCardData, player.stats)
+			player.chosen_stat_cards.append(card)
+			_refresh_player_stats_display(current_level_shown)
+
 	if player and player.has_method("suppress_bomb_input"):
 		player.suppress_bomb_input(0.4)
 

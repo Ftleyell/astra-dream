@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_heart.svg" id="1_rr2nt"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_b2r1l"]
+
+[resource]
+script = ExtResource("2_b2r1l")
+tome_id = &"tome_max_health"
+display_name = "Tomo de Blindaje"
+description = "Aumenta la integridad estructural máxima del casco de la nave."
+icon = ExtResource("1_rr2nt")
+tags = Array[StringName]([&"defense", &"health"])
+stat_name = &"max_health"
+stat_value_per_level = 25.0

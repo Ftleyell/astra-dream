@@ -69,6 +69,9 @@ func _ready() -> void:
 	if current_state == State.WARPING_IN:
 		prepare_warp_in()
 
+func is_peaceful() -> bool:
+	return current_state != State.DOGFIGHT
+
 const PILOT_THEME_COLORS: Dictionary = {
 	&"nova": Color(0.0, 0.9, 1.0),
 	&"valentina": Color(1.0, 0.84, 0.0),

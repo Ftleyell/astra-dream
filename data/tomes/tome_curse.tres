@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/icon_arcana_rune.svg" id="1_1fiyx"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_jbco7"]
+
+[resource]
+script = ExtResource("2_jbco7")
+tome_id = &"tome_curse"
+display_name = "Tomo de Entropía"
+description = "Eleva la maldición cósmica, aumentando la densidad y desafío enemigo."
+icon = ExtResource("1_1fiyx")
+tags = Array[StringName]([&"curse", &"challenge"])
+stat_name = &"curse"
+stat_value_per_level = 10.0

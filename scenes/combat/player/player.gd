@@ -18,6 +18,7 @@ const PlayerVisualBuilderClass = preload("res://scenes/combat/player/player_visu
 const PlayerBombControllerClass = preload("res://scenes/combat/player/player_bomb_controller.gd")
 const PlayerShieldControllerClass = preload("res://scenes/combat/player/player_shield_controller.gd")
 const PlayerProgressionApplierClass = preload("res://scenes/combat/player/player_progression_applier.gd")
+const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -27,6 +28,7 @@ var character_stats: CharacterStats:
 	get: return stats
 	set(val): stats = val
 var inventory: InventoryComponent = InventoryComponent.new()
+var tome_controller: Node = TomeControllerClass.new()
 var _static_charge: float = 0.0
 
 # Subcontroladores Modulares
@@ -207,6 +209,10 @@ func _ready() -> void:
 	inventory.character_stats = stats
 	if not inventory.item_added.is_connected(_on_inventory_item_added):
 		inventory.item_added.connect(_on_inventory_item_added)
+
+	if not tome_controller.is_inside_tree():
+		add_child(tome_controller)
+	tome_controller.setup(self)
 
 	if bullet_server:
 		bullet_server.player_hit.connect(_on_bullet_hit)

@@ -53,7 +53,8 @@ static func get_default_profile() -> Dictionary:
 		"gacha_tokens": 0,
 		"unlocked_skins": {} as Dictionary,
 		"equipped_skins": {} as Dictionary,
-		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary
+		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary,
+		"character_active_tomes": {} as Dictionary
 	}
 
 static func save_profile(
@@ -226,7 +227,8 @@ static func save_profile(
 		"gacha_tokens": current_tokens,
 		"unlocked_skins": current_unlocked_skins,
 		"equipped_skins": current_equipped_skins,
-		"gacha_pity": current_gacha_pity
+		"gacha_pity": current_gacha_pity,
+		"character_active_tomes": existing_prof.get("character_active_tomes", {})
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -306,6 +308,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"gacha_tokens": int(raw.get("gacha_tokens", 0)),
 		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
 		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
+		"character_active_tomes": raw.get("character_active_tomes", {}) as Dictionary,
 		"gacha_pity": {
 			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
 			"ships": int(raw.get("gacha_pity", {}).get("ships", 0)),
@@ -369,3 +372,35 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 			cleaned["character_skills"][StringName(cid)] = str_arr
 
 	return cleaned
+
+
+const TomeCatalogScript = preload("res://data/tomes/tome_catalog.gd")
+
+
+static func get_character_active_tomes(char_id: StringName) -> Array[StringName]:
+	var prof: Dictionary = load_profile()
+	var tomes_dict: Dictionary = prof.get("character_active_tomes", {})
+	if tomes_dict.has(str(char_id)):
+		var raw_arr: Array = tomes_dict[str(char_id)]
+		var result: Array[StringName] = []
+		for item in raw_arr:
+			result.append(StringName(str(item)))
+		if not result.is_empty():
+			return result
+	return TomeCatalogScript.ALL_TOME_IDS.duplicate()
+
+
+static func set_character_active_tomes(char_id: StringName, tomes: Array[StringName]) -> void:
+	var prof: Dictionary = load_profile()
+	var tomes_dict: Dictionary = prof.get("character_active_tomes", {}).duplicate()
+	var str_arr: Array[String] = []
+	for t: StringName in tomes:
+		str_arr.append(str(t))
+	tomes_dict[str(char_id)] = str_arr
+	prof["character_active_tomes"] = tomes_dict
+
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(prof, "\t"))
+		file.close()
+

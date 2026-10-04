@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/biomass_dna_icon.png" id="1_y0fxw"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_ohton"]
+
+[resource]
+script = ExtResource("2_ohton")
+tome_id = &"tome_biomass_multiplier"
+display_name = "Tomo de Biocosecha"
+description = "Incrementa la biomasa orgánica recolectada de aberraciones eliminadas."
+icon = ExtResource("1_y0fxw")
+tags = Array[StringName]([&"economy", &"biomass"])
+stat_name = &"biomass_multiplier"
+stat_value_per_level = 0.2
+is_percentage = true
+modifier_type = 1

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/restart.svg" id="1_icon"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+item_id = &"reloj_cuantico"
+item_name = "Cronómetro Cuántico"
+description = "+10% Reducción de Enfriamiento."
+icon = ExtResource("1_icon")
+rarity = 0
+tags = Array[StringName]([&"cooldown", &"utility", &"speed"])
+cost = 45
+stat_name = &"cooldown_reduction"
+stat_value = 0.1
+is_percentage = true
+modifier_type = 1

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/rocket.svg" id="1_ser5w"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_n3jlq"]
+
+[resource]
+script = ExtResource("2_n3jlq")
+tome_id = &"tome_projectile_speed"
+display_name = "Tomo Balístico"
+description = "Aumenta la velocidad de vuelo de todos los proyectiles disparados."
+icon = ExtResource("1_ser5w")
+tags = Array[StringName]([&"offense", &"projectile"])
+stat_name = &"projectile_speed"
+stat_value_per_level = 0.15
+is_percentage = true
+modifier_type = 1

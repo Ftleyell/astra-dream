@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TomeData" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="1_gbksi"]
+[ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_knf6k"]
+
+[resource]
+script = ExtResource("2_knf6k")
+tome_id = &"tome_pickup_radius"
+display_name = "Tomo Gravitatorio"
+description = "Amplía el campo magnético para atraer telemetría y suministros."
+icon = ExtResource("1_gbksi")
+tags = Array[StringName]([&"utility", &"magnet"])
+stat_name = &"pickup_radius"
+stat_value_per_level = 30.0
