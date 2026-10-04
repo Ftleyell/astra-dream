@@ -25,13 +25,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 14.0
-offset_right = -16.0
-offset_bottom = -14.0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = -14.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
 [node name="TopBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
 layout_mode = 2
@@ -39,31 +39,31 @@ layout_mode = 2
 [node name="TitleLabel" type="Label" parent="ShopPanel/VBoxContainer/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
 text = "★ TERMINAL DE SUMINISTROS SATELITAL ★"
 
 [node name="CreditsLabel" type="Label" parent="ShopPanel/VBoxContainer/TopBar"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
 text = "Créditos: 100"
 
 [node name="ShopOfferVBox" type="VBoxContainer" parent="ShopPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="SubtitleLabel" type="Label" parent="ShopPanel/VBoxContainer/ShopOfferVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.3, 0.8, 1, 0.85)
 text = "SUMINISTROS EN ÓRBITA — ELIGE O REASIGNA EQUIPO"
 
 [node name="ItemsContainer" type="VBoxContainer" parent="ShopPanel/VBoxContainer/ShopOfferVBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 alignment = 1
 
 [node name="BottomBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer/ShopOfferVBox"]
@@ -72,12 +72,12 @@ alignment = 2
 theme_override_constants/separation = 10
 
 [node name="RerollButton" type="Button" parent="ShopPanel/VBoxContainer/ShopOfferVBox/BottomBar"]
-custom_minimum_size = Vector2(150, 36)
+custom_minimum_size = Vector2(140, 32)
 layout_mode = 2
 text = "Re-roll (15 C)"
 
 [node name="CloseButton" type="Button" parent="ShopPanel/VBoxContainer/ShopOfferVBox/BottomBar"]
-custom_minimum_size = Vector2(160, 36)
+custom_minimum_size = Vector2(160, 32)
 layout_mode = 2
 text = "Cerrar y Continuar"
 

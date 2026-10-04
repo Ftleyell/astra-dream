@@ -67,7 +67,7 @@ func _ready() -> void:
 	shop_style.set_border_width_all(2)
 	shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
 	shop_style.set_corner_radius_all(12)
-	shop_style.set_content_margin_all(16.0)
+	shop_style.set_content_margin_all(10.0)
 	if panel:
 		panel.add_theme_stylebox_override("panel", shop_style)
 
@@ -297,6 +297,17 @@ func _buy_item_by_index(index: int) -> void:
 			btn.emit_signal("pressed")
 
 
+func _can_afford_any_option() -> bool:
+	if can_reroll():
+		return true
+	for btn: Button in buy_buttons:
+		if is_instance_valid(btn) and not btn.disabled:
+			var cost: int = int(btn.get_meta(&"cost", 999999))
+			if current_credits >= cost:
+				return true
+	return false
+
+
 func _update_credits_display() -> void:
 	if credits_label:
 		credits_label.text = "Créditos: %d" % current_credits
@@ -314,7 +325,13 @@ func _update_credits_display() -> void:
 			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
 			reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	if close_btn:
-		close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
+		var cannot_buy_anything: bool = not _can_afford_any_option()
+		if cannot_buy_anything:
+			close_btn.text = "★ Salir de Terminal [ESPACIO / ESC] ★"
+			close_btn.modulate = Color(0.3, 1.0, 0.6, 1.0)
+		else:
+			close_btn.text = "Cerrar y Continuar [ESC / ESPACIO]"
+			close_btn.modulate = Color.WHITE
 
 
 func _roll_shop_items() -> void:
@@ -433,10 +450,17 @@ func _setup_focus_and_grab() -> void:
 
 
 func _focus_next_available_buy_button() -> void:
-	for btn: Button in buy_buttons:
-		if is_instance_valid(btn) and not btn.disabled:
-			btn.grab_focus()
+	if _can_afford_any_option():
+		for btn: Button in buy_buttons:
+			if is_instance_valid(btn) and not btn.disabled:
+				var cost: int = int(btn.get_meta(&"cost", 0))
+				if current_credits >= cost:
+					btn.grab_focus()
+					return
+		if can_reroll() and reroll_btn and is_instance_valid(reroll_btn) and not reroll_btn.disabled:
+			reroll_btn.grab_focus()
 			return
+
 	if close_btn and is_instance_valid(close_btn):
 		close_btn.grab_focus()
 
