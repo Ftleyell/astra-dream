@@ -147,13 +147,13 @@ func _ready() -> void:
 	assert(card_dmg_1 != null, "card_dmg_1 must exist in StatDeckManager")
 	assert(card_atk_spd != null, "card_atk_spd must exist in StatDeckManager")
 	assert(card_dmg_1.target_stat == &"base_damage", "card_dmg_1 must target base_damage")
-	assert(card_dmg_1.modifier_value == 0.25, "card_dmg_1 modifier_value must be exactly 0.25 (+25%)")
+	assert(card_dmg_1.modifier_value == 0.12, "card_dmg_1 modifier_value must be exactly 0.12 (+12%)")
 	assert(card_dmg_1.is_percentage, "card_dmg_1 must be marked as percentage")
 	assert(card_atk_spd.target_stat == &"attack_speed", "card_atk_spd must target attack_speed")
-	assert(card_atk_spd.modifier_value == 0.20, "card_atk_spd modifier_value must be exactly 0.20 (+20%)")
+	assert(card_atk_spd.modifier_value == 0.10, "card_atk_spd modifier_value must be exactly 0.10 (+10%)")
 	assert(card_atk_spd.is_percentage, "card_atk_spd must be marked as percentage")
 
-	print("  ✓ [PASS] Stat cards definitions verified: card_dmg_1 (+25%), card_atk_spd (+20%).")
+	print("  ✓ [PASS] Stat cards definitions verified: card_dmg_1 (+12%), card_atk_spd (+10%).")
 
 	# Verify Absence of Flat Projectile Cards
 	print("\n[Case 2.1] Verifying total absence of flat projectile cards in common deck:")
@@ -188,21 +188,21 @@ func _ready() -> void:
 		assert(initial_dmg > 0.0, "Pilot %s base_damage must be > 0 (found: %f)" % [char_data.character_id, initial_dmg])
 		assert(initial_spd > 0.0, "Pilot %s attack_speed must be > 0 (found: %f)" % [char_data.character_id, initial_spd])
 
-		# Apply card_dmg_1 (+25%)
+		# Apply card_dmg_1
 		deck_mgr.apply_card_to_stats(card_dmg_1, stats)
 		var buffed_dmg: float = stats.get_stat(&"base_damage")
-		var expected_dmg: float = initial_dmg * 1.25
+		var expected_dmg: float = initial_dmg * (1.0 + card_dmg_1.modifier_value)
 		var dmg_delta_ratio: float = (buffed_dmg - initial_dmg) / initial_dmg
 		assert(is_equal_approx(buffed_dmg, expected_dmg), "Pilot %s: expected damage %f, got %f" % [char_data.character_id, expected_dmg, buffed_dmg])
-		assert(dmg_delta_ratio >= 0.2499, "Pilot %s damage increase must be at least +25%% (got: %.2f%%)" % [char_data.character_id, dmg_delta_ratio * 100.0])
+		assert(dmg_delta_ratio >= card_dmg_1.modifier_value - 0.001, "Pilot %s damage increase must match modifier (got: %.2f%%)" % [char_data.character_id, dmg_delta_ratio * 100.0])
 
-		# Apply card_atk_spd (+20%)
+		# Apply card_atk_spd
 		deck_mgr.apply_card_to_stats(card_atk_spd, stats)
 		var buffed_spd: float = stats.get_stat(&"attack_speed")
-		var expected_spd: float = initial_spd * 1.20
+		var expected_spd: float = initial_spd * (1.0 + card_atk_spd.modifier_value)
 		var spd_delta_ratio: float = (buffed_spd - initial_spd) / initial_spd
 		assert(is_equal_approx(buffed_spd, expected_spd), "Pilot %s: expected cadence %f, got %f" % [char_data.character_id, expected_spd, buffed_spd])
-		assert(spd_delta_ratio >= 0.1999, "Pilot %s cadence increase must be at least +20%% (got: %.2f%%)" % [char_data.character_id, spd_delta_ratio * 100.0])
+		assert(spd_delta_ratio >= card_atk_spd.modifier_value - 0.001, "Pilot %s cadence increase must match modifier (got: %.2f%%)" % [char_data.character_id, spd_delta_ratio * 100.0])
 
 		print("    • Pilot %-10s -> Dmg: %5.1f -> %5.1f (+%.1f%%) | Cadence: %4.2fx -> %4.2fx (+%.1f%%)" % [
 			char_data.character_id,
@@ -210,7 +210,7 @@ func _ready() -> void:
 			initial_spd, buffed_spd, spd_delta_ratio * 100.0
 		])
 
-	print("  ✓ [PASS] All 7 pilots scaled by exactly +25% damage and +20% cadence.")
+	print("  ✓ [PASS] All 7 pilots scaled by card modifier values.")
 
 	# Case 2.3: Multi-card Stacking Stress Test
 	print("\n[Case 2.3] Testing stacking of multiple cards (additive percentage modifiers):")
@@ -221,27 +221,27 @@ func _ready() -> void:
 	var base_dmg: float = stack_stats.get_stat(&"base_damage") # 40.0
 	var base_spd: float = stack_stats.get_stat(&"attack_speed") # 1.0
 
-	# Apply 3 damage cards (+25% each = +75% total)
+	# Apply 3 damage cards
 	for i in range(3):
 		var card_clone: StatCardData = card_dmg_1.duplicate()
 		card_clone.card_id = StringName("card_dmg_1_stack_%d" % i)
 		deck_mgr.apply_card_to_stats(card_clone, stack_stats)
 
 	var triple_dmg: float = stack_stats.get_stat(&"base_damage")
-	var expected_triple_dmg: float = base_dmg * (1.0 + 0.25 * 3) # 40 * 1.75 = 70.0
+	var expected_triple_dmg: float = base_dmg * (1.0 + card_dmg_1.modifier_value * 3.0)
 	assert(is_equal_approx(triple_dmg, expected_triple_dmg), "Triple damage card stack must equal %f (got %f)" % [expected_triple_dmg, triple_dmg])
-	print("  ✓ [PASS] 3x card_dmg_1 stack: %f -> %f (+75.0%% additive)." % [base_dmg, triple_dmg])
+	print("  ✓ [PASS] 3x card_dmg_1 stack: %f -> %f (+%.1f%% additive)." % [base_dmg, triple_dmg, card_dmg_1.modifier_value * 300.0])
 
-	# Apply 3 attack speed cards (+20% each = +60% total)
+	# Apply 3 attack speed cards
 	for i in range(3):
 		var card_clone: StatCardData = card_atk_spd.duplicate()
 		card_clone.card_id = StringName("card_atk_spd_stack_%d" % i)
 		deck_mgr.apply_card_to_stats(card_clone, stack_stats)
 
 	var triple_spd: float = stack_stats.get_stat(&"attack_speed")
-	var expected_triple_spd: float = base_spd * (1.0 + 0.20 * 3) # 1.0 * 1.60 = 1.60
+	var expected_triple_spd: float = base_spd * (1.0 + card_atk_spd.modifier_value * 3.0)
 	assert(is_equal_approx(triple_spd, expected_triple_spd), "Triple cadence card stack must equal %f (got %f)" % [expected_triple_spd, triple_spd])
-	print("  ✓ [PASS] 3x card_atk_spd stack: %f -> %f (+60.0%% additive)." % [base_spd, triple_spd])
+	print("  ✓ [PASS] 3x card_atk_spd stack: %f -> %f (+%.1f%% additive)." % [base_spd, triple_spd, card_atk_spd.modifier_value * 300.0])
 
 	# Case 2.4: Weapon Cadence Mathematical Translation
 	print("\n[Case 2.4] Testing WeaponInstanceData cadence scaling via get_effective_passive_interval:")
@@ -256,11 +256,11 @@ func _ready() -> void:
 	deck_mgr.apply_card_to_stats(card_atk_spd, default_stats)
 	var interval_buffed: float = wpn_inst.get_effective_passive_interval(default_stats)
 	
-	# Rate = 1.0 / interval. Buffed rate / base rate must equal (1.20 / 1.0) = 1.20 (+20% cadence)
+	# Rate = 1.0 / interval. Buffed rate / base rate must equal (1.0 + modifier_value)
 	var base_rate: float = 1.0 / interval_base
 	var buffed_rate: float = 1.0 / interval_buffed
 	var rate_increase: float = (buffed_rate - base_rate) / base_rate
-	assert(is_equal_approx(rate_increase, 0.20), "Firing rate must increase by exactly 20%% (got: %.4f)" % rate_increase)
+	assert(is_equal_approx(rate_increase, card_atk_spd.modifier_value), "Firing rate must increase by card modifier value (got: %.4f)" % rate_increase)
 	print("  ✓ [PASS] Weapon firing cadence (shots/s): %.3f/s -> %.3f/s (+%.1f%% exact)." % [base_rate, buffed_rate, rate_increase * 100.0])
 
 	print("\n========================================================")

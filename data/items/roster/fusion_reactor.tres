@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_2jmoy"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="2_x2m0r"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_cm6ys"]
+
+[resource]
+script = ExtResource("3_cm6ys")
+item_id = &"fusion_reactor"
+item_name = "Reactor de Fusión"
+description = "+20% Daño Base, pero -15% Vida Máxima."
+icon = ExtResource("2_x2m0r")
+rarity = 1
+tags = Array[StringName]([&"offense", &"damage", &"penalty", &"tradeoff"])
+cost = 60
+stat_name = &"base_damage"
+stat_value = 0.2
+is_percentage = true
+modifier_type = 2
+secondary_stat_name = &"max_health"
+secondary_stat_value = -0.15
+secondary_is_percentage = true
+secondary_modifier_type = 2
+max_stacks = 2

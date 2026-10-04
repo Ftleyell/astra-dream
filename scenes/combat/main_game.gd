@@ -438,7 +438,7 @@ func _ready() -> void:
 	if is_planet_test:
 		is_briefing_active = false
 		prologue_bonus_chosen = true
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 		if skip_badge_layer:
 			skip_badge_layer.hide()
 		if enemy_spawner:
@@ -496,7 +496,7 @@ func _start_prologue_briefing() -> void:
 		narrative_director.start_prologue_briefing()
 	else:
 		is_briefing_active = false
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 
 func _setup_dialogic_audio(layout: Node) -> void:
 	if narrative_director:
@@ -534,7 +534,7 @@ func _finish_prologue_and_start_run() -> void:
 		narrative_director._finish_prologue_and_start_run()
 	else:
 		is_briefing_active = false
-		get_tree().paused = false
+		PauseArbitrator.force_unpause_all()
 
 func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
 	return narrative_director.get_rival_dialogue(rival_pid, player_pid)

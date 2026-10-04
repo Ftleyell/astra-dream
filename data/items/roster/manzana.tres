@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_x0gk2"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_apple.svg" id="2_kflr5"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_isanb"]
+
+[resource]
+script = ExtResource("3_isanb")
+item_id = &"manzana"
+item_name = "Manzana"
+description = "+0.5 Regeneración de Vida por segundo."
+icon = ExtResource("2_kflr5")
+tags = Array[StringName]([&"sustain", &"regen"])
+cost = 45
+stat_name = &"health_regen"
+stat_value = 0.5

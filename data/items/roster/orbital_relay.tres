@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_7c6hm"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_clover.svg" id="2_bfvkv"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_8bqrp"]
+
+[resource]
+script = ExtResource("3_8bqrp")
+item_id = &"orbital_relay"
+item_name = "Relé Orbital"
+description = "Enlaza la telemetría orbital: el tiempo de plantado satelital se reduce a 10s."
+icon = ExtResource("2_bfvkv")
+rarity = 2
+tags = Array[StringName]([&"utility", &"satellite", &"chest"])
+cost = 85
+max_stacks = 1

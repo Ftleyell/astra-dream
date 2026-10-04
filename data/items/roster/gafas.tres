@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_cmws7"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_glasses.svg" id="2_8aoat"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_kvp2n"]
+
+[resource]
+script = ExtResource("3_kvp2n")
+item_id = &"gafas"
+item_name = "Gafas"
+description = "+7% Probabilidad de Golpe Crítico."
+icon = ExtResource("2_8aoat")
+rarity = 1
+tags = Array[StringName]([&"offense", &"crit"])
+cost = 60
+stat_name = &"crit_chance"
+stat_value = 0.07

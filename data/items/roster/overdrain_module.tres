@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_bawu3"]
+[ext_resource type="Script" path="res://data/items/effects/overdrain_module_effect.gd" id="2_muap0"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_apple.svg" id="3_62e8p"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_obdaa"]
+
+[sub_resource type="Resource" id="Resource_cafdt"]
+script = ExtResource("2_muap0")
+trigger = 1
+
+[resource]
+script = ExtResource("4_obdaa")
+item_id = &"overdrain_module"
+item_name = "Módulo de Sobredrenaje"
+description = "Los impactos críticos curan 1 HP, pero tu Regeneración Pasiva de Vida es 0."
+icon = ExtResource("3_62e8p")
+rarity = 3
+tags = Array[StringName]([&"sustain", &"conversion"])
+cost = 115
+max_stacks = 1
+effects = Array[ExtResource("1_bawu3")]([SubResource("Resource_cafdt")])

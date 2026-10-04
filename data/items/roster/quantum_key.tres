@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_4yv21"]
+[ext_resource type="Script" path="res://data/items/effects/quantum_key_effect.gd" id="2_6iyii"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quantum_key.png" id="3_xk8dl"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_pisrk"]
+
+[sub_resource type="Resource" id="Resource_1anhv"]
+script = ExtResource("2_6iyii")
+trigger = 6
+
+[resource]
+script = ExtResource("4_pisrk")
+item_id = &"quantum_key"
+item_name = "Llave Cuántica"
+description = "Probabilidad hiperbólica de abrir cofres gratis y congela su coste."
+icon = ExtResource("3_xk8dl")
+tags = Array[StringName]([&"utility", &"economy", &"chest"])
+cost = 50
+effects = Array[ExtResource("1_4yv21")]([SubResource("Resource_1anhv")])

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_pxvd2"]
+[ext_resource type="Script" path="res://data/items/effects/photonic_transducer_effect.gd" id="2_p7lus"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="3_c1veo"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_ba1dt"]
+
+[sub_resource type="Resource" id="Resource_ynwp7"]
+script = ExtResource("2_p7lus")
+trigger = 3
+
+[resource]
+script = ExtResource("4_ba1dt")
+item_id = &"photonic_transducer"
+item_name = "Transductor Fotónico"
+description = "Al ejecutar un Dash, todas tus armas activas disparan una salva instantánea (CD: 4s)."
+icon = ExtResource("3_c1veo")
+rarity = 3
+tags = Array[StringName]([&"offense", &"mobility", &"conversion"])
+cost = 110
+max_stacks = 1
+effects = Array[ExtResource("1_pxvd2")]([SubResource("Resource_ynwp7")])

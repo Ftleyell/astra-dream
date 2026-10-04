@@ -1,11 +1,7 @@
-extends Node
+extends BaseTestSuite
 
 func _ready() -> void:
-	# Fallback watchdog timer
-	get_tree().create_timer(7.0).timeout.connect(func():
-		print("[TEST WATCHDOG] Timeout alcanzado, saliendo...")
-		get_tree().quit(0)
-	)
+	super._ready()
 
 	print("\n==========================================")
 	print("[TEST] Testing Pause, Satellite, Level-Up & Settings Modals Integration...")
@@ -19,7 +15,7 @@ func _ready() -> void:
 
 	# Desactivar briefing inicial para pruebas directas
 	main_game.is_briefing_active = false
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 
 	var shop := main_game.satellite_shop
 	var level_modal := main_game.level_up_modal
@@ -185,12 +181,13 @@ func _ready() -> void:
 	print("  ✓ PauseMenu: Barra espaciadora reanuda el juego sin gastar bombas.")
 
 	# 7.4. CharacterStatsOverlay: Barra espaciadora en cuadro de mando
-	if main_game.character_stats_overlay:
-		main_game.character_stats_overlay.open_stats()
-		assert(main_game.character_stats_overlay.is_open, "CharacterStatsOverlay debe estar abierto")
-		main_game.character_stats_overlay._input(space_event)
+	var stats_overlay = main_game.get_node_or_null("CharacterStatsOverlay")
+	if stats_overlay:
+		stats_overlay.open_stats()
+		assert(stats_overlay.is_open, "CharacterStatsOverlay debe estar abierto")
+		stats_overlay._input(space_event)
 		assert(main_game.player.bomb_count == initial_bombs, "Barra espaciadora en Stats Overlay NO debe consumir bombas")
-		main_game.character_stats_overlay.close_stats()
+		stats_overlay.close_stats()
 		await get_tree().process_frame
 		assert(not get_tree().paused, "Tras cerrar Stats Overlay, el juego debe despausarse")
 		assert(main_game.player.bomb_count == initial_bombs, "Cerrar Stats Overlay NO debe consumir bombas")
@@ -200,7 +197,7 @@ func _ready() -> void:
 	Dialogic.end_timeline(true)
 	Dialogic.current_timeline = null
 	main_game.is_briefing_active = false
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	main_game.player._menu_close_suppress_timer = 0.0
 	main_game.player._was_bomb_pressed_during_menu = false
 	var combat_bomb_event := InputEventAction.new()

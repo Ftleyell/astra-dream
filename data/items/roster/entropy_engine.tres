@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_wu6tw"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="2_5qwj4"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_h07jv"]
+
+[resource]
+script = ExtResource("3_h07jv")
+item_id = &"entropy_engine"
+item_name = "Motor de Entropía"
+description = "+15 Maldición. Convierte la entropía cósmica en escala ofensiva progresiva."
+icon = ExtResource("2_5qwj4")
+rarity = 3
+tags = Array[StringName]([&"offense", &"curse", &"scaling"])
+cost = 115
+stat_name = &"curse"
+stat_value = 15.0
+max_stacks = 2

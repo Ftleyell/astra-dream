@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_l0ujt"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="2_wxl4e"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_klttv"]
+
+[resource]
+script = ExtResource("3_klttv")
+item_id = &"rapid_injector"
+item_name = "Inyector Rápido"
+description = "+20% Cadencia de Ataque, pero -10% Daño Base."
+icon = ExtResource("2_wxl4e")
+rarity = 1
+tags = Array[StringName]([&"offense", &"speed", &"penalty", &"tradeoff"])
+cost = 65
+stat_name = &"attack_speed"
+stat_value = 0.2
+is_percentage = true
+modifier_type = 2
+secondary_stat_name = &"base_damage"
+secondary_stat_value = -0.1
+secondary_is_percentage = true
+secondary_modifier_type = 2
+max_stacks = 2

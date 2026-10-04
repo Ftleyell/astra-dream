@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_2sbpk"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="2_m671r"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_xe786"]
+
+[resource]
+script = ExtResource("3_xe786")
+item_id = &"afterburn_thruster"
+item_name = "Post-ignición"
+description = "+20% Velocidad de Movimiento, pero -25 px Radio de Recogida."
+icon = ExtResource("2_m671r")
+tags = Array[StringName]([&"mobility", &"speed", &"penalty", &"tradeoff"])
+cost = 55
+stat_name = &"move_speed"
+stat_value = 0.2
+is_percentage = true
+modifier_type = 2
+secondary_stat_name = &"pickup_radius"
+secondary_stat_value = -25.0
+max_stacks = 2

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_rc1q6"]
+[ext_resource type="Script" path="res://data/items/effects/kinetic_plating_effect.gd" id="2_vve7u"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="3_jvahe"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_o7hjf"]
+
+[sub_resource type="Resource" id="Resource_1d074"]
+script = ExtResource("2_vve7u")
+trigger = 4
+proc_coefficient = 0.3
+
+[resource]
+script = ExtResource("4_o7hjf")
+item_id = &"kinetic_plating"
+item_name = "Blindaje Cinético"
+description = "Detona una onda de choque repelente al recibir daño."
+icon = ExtResource("3_jvahe")
+rarity = 1
+tags = Array[StringName]([&"defense", &"proc"])
+cost = 60
+max_stacks = 1
+effects = Array[ExtResource("1_rc1q6")]([SubResource("Resource_1d074")])

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_3dq7c"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="2_j0cbi"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_4wj6q"]
+
+[resource]
+script = ExtResource("3_4wj6q")
+item_id = &"chip_telemetria"
+item_name = "Chip de Telemetría"
+description = "+20% EXP obtenida en combate."
+icon = ExtResource("2_j0cbi")
+rarity = 1
+tags = Array[StringName]([&"utility", &"exp"])
+cost = 60
+stat_name = &"exp_multiplier"
+stat_value = 0.2
+is_percentage = true
+modifier_type = 1

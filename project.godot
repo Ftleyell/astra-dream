@@ -32,7 +32,6 @@ SaveManager="*res://core/autoloads/save_manager.gd"
 DebugManager="*res://core/autoloads/debug_manager.gd"
 EventBus="*res://core/autoloads/event_bus.gd"
 AudioManager="*res://core/autoloads/audio_manager.gd"
-PauseArbitrator="*res://core/autoloads/pause_arbitrator.gd"
 Dialogic="*uid://ds2q0uclmolvu"
 
 [dialogic]

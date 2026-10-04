@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_mjewa"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="2_3jhrj"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_56hxm"]
+
+[resource]
+script = ExtResource("3_56hxm")
+item_id = &"inertial_thruster"
+item_name = "Propulsor Inercial"
+description = "Transfiere la inercia cinética del desplazamiento a la potencia balística."
+icon = ExtResource("2_3jhrj")
+rarity = 1
+tags = Array[StringName]([&"mobility", &"damage", &"kinetic"])
+cost = 60
+max_stacks = 2

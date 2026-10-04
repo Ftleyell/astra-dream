@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_y3fh4"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="2_a26ji"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_e0khf"]
+
+[resource]
+script = ExtResource("3_e0khf")
+item_id = &"chain_battery"
+item_name = "Batería en Cadena"
+description = "Descarga impulsos voltaicos de protección al absorber impactos con escudos."
+icon = ExtResource("2_a26ji")
+rarity = 2
+tags = Array[StringName]([&"defense", &"proc", &"shield"])
+cost = 75
+max_stacks = 2

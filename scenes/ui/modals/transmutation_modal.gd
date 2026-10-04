@@ -1,5 +1,5 @@
 class_name TransmutationModal
-extends CanvasLayer
+extends BaseModal
 
 ## TransmutationModal.gd
 ## Interfaz de usuario para la Forja Cuántica (Microondas espacial).
@@ -26,10 +26,10 @@ var _close_btn: Button
 
 func _ready() -> void:
 	layer = 126
-	process_mode = Node.PROCESS_MODE_ALWAYS
+	modal_token = &"transmutation"
 	add_to_group("transmutation_modal")
 	_build_ui()
-	hide()
+	super._ready()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -144,10 +144,7 @@ func _build_ui() -> void:
 func open_for_station(player: Player, station: TransmutationStation) -> void:
 	current_player = player
 	current_station = station
-	PauseArbitrator.acquire_pause(&"transmutation")
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if hud and hud.has_method("set_stats_dock_requested"):
-		hud.set_stats_dock_requested(&"transmutation", true)
+	open_modal()
 	_title_label.text = "FORJA CUÁNTICA DE TRANSMUTACIÓN"
 	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
 	if _desc_label:
@@ -160,7 +157,6 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 		_close_btn.show()
 	_feedback_label.text = ""
 	_refresh_ui()
-	show()
 	var first_btn: Control = null
 	for child in _items_container.get_children():
 		if child is Button and not child.is_queued_for_deletion():
@@ -185,11 +181,7 @@ func close_modal() -> void:
 		_scroll_container.show()
 	if _close_btn:
 		_close_btn.show()
-	hide()
-	PauseArbitrator.release_pause(&"transmutation")
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if hud and hud.has_method("set_stats_dock_requested"):
-		hud.set_stats_dock_requested(&"transmutation", false)
+	super.close_modal()
 	modal_closed.emit()
 
 static func is_item_eligible_for_transmutation(it: ItemData) -> bool:
@@ -373,7 +365,7 @@ func _on_item_selected_to_clone(target_item: ItemData) -> void:
 
 ## Abre el diálogo interactivo para Aceptar o Rechazar el ítem forjado por créditos (idéntico a SlotMachineRewardModal)
 func open_choice(item: ItemData, on_decision: Callable) -> void:
-	PauseArbitrator.acquire_pause(&"transmutation")
+	open_modal()
 	if _close_btn:
 		_close_btn.hide()
 	if _desc_label:

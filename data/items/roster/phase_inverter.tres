@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_2io74"]
+[ext_resource type="Script" path="res://data/items/effects/phase_inverter_effect.gd" id="2_dfo8x"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="3_j4s0o"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_m40rj"]
+
+[sub_resource type="Resource" id="Resource_1nbet"]
+script = ExtResource("2_dfo8x")
+trigger = 0
+base_chance = 0.2
+proc_coefficient = 0.4
+internal_cooldown = 0.0
+
+[resource]
+script = ExtResource("4_m40rj")
+item_id = &"phase_inverter"
+item_name = "Inversor de Fase"
+description = "Probabilidad al impactar de desplegar una barrera protectora de fase."
+icon = ExtResource("3_j4s0o")
+rarity = 3
+tags = Array[StringName]([&"defense", &"shield", &"proc"])
+cost = 85
+max_stacks = 1
+effects = Array[ExtResource("1_2io74")]([SubResource("Resource_1nbet")])

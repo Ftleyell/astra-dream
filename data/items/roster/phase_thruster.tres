@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_ygihp"]
+[ext_resource type="Script" path="res://data/items/effects/phase_thruster_effect.gd" id="2_f4tso"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="3_jxio4"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_e7na0"]
+
+[sub_resource type="Resource" id="Resource_hoys7"]
+script = ExtResource("2_f4tso")
+trigger = 3
+proc_coefficient = 0.4
+
+[resource]
+script = ExtResource("4_e7na0")
+item_id = &"phase_thruster"
+item_name = "Propulsor de Fase"
+description = "El impulso de esquiva detona una onda de choque en el punto de inicio."
+icon = ExtResource("3_jxio4")
+rarity = 2
+tags = Array[StringName]([&"mobility", &"dash", &"proc"])
+cost = 70
+max_stacks = 2
+effects = Array[ExtResource("1_ygihp")]([SubResource("Resource_hoys7")])

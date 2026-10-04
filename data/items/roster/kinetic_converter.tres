@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_qukbo"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="2_6elcd"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_djvx8"]
+
+[resource]
+script = ExtResource("3_djvx8")
+item_id = &"kinetic_converter"
+item_name = "Conversor Cinético"
+description = "El 25% del bonus de Velocidad de Proyectil se suma al Daño porcentual de armas."
+icon = ExtResource("2_6elcd")
+rarity = 2
+tags = Array[StringName]([&"offense", &"conversion"])
+cost = 90
+max_stacks = 1

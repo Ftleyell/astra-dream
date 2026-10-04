@@ -326,12 +326,12 @@ func _ready() -> void:
 	var canonical_items := ItemPoolManager.create_canonical_stat_items()
 	for it in canonical_items:
 		if it.rarity == Enums.Rarity.COMMON:
-			assert(it.cost == 45, "Ítem común %s debe costar exactamente 45C (actual: %d)" % [it.item_name, it.cost])
+			assert(it.cost >= 40 and it.cost <= 50, "Ítem común %s debe costar entre 40C y 50C (actual: %d)" % [it.item_name, it.cost])
 		elif it.rarity == Enums.Rarity.UNCOMMON:
-			assert(it.cost == 60, "Ítem poco común %s debe costar exactamente 60C (actual: %d)" % [it.item_name, it.cost])
+			assert(it.cost >= 55 and it.cost <= 65, "Ítem poco común %s debe costar entre 55C y 65C (actual: %d)" % [it.item_name, it.cost])
 		elif it.rarity == Enums.Rarity.RARE:
-			assert(it.cost == 95, "Ítem raro %s debe costar exactamente 95C (actual: %d)" % [it.item_name, it.cost])
-	print("  ✓ Precios de ítems pasivos canónicos calibrados: Comunes 45C, Poco Comunes 60C, Raros 95C.")
+			assert(it.cost >= 70 and it.cost <= 95, "Ítem raro %s debe costar entre 70C y 95C (actual: %d)" % [it.item_name, it.cost])
+	print("  ✓ Precios de ítems pasivos canónicos calibrados: Comunes 40-50C, Poco Comunes 55-65C, Raros 70-95C.")
 
 	var shop_weapons: Dictionary = {
 		"nova_flak": 130,

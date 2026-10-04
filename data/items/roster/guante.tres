@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_0sfp1"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_gauntlet.svg" id="2_qajs8"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_uixnn"]
+
+[resource]
+script = ExtResource("3_uixnn")
+item_id = &"guante"
+item_name = "Guante"
+description = "+12% Velocidad de Ataque y Cadencia."
+icon = ExtResource("2_qajs8")
+rarity = 1
+tags = Array[StringName]([&"offense", &"speed"])
+cost = 60
+stat_name = &"attack_speed"
+stat_value = 0.12
+is_percentage = true
+modifier_type = 1

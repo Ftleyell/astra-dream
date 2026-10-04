@@ -7,9 +7,9 @@
 ## 1. Manifiesto y Pilares Arquitectónicos
 
 1. **Zero-Allocation en Combate:**
-   - **Danmaku Masivo:** Todo proyectil se gestiona mediante [`core/autoloads/bullet_server.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/bullet_server.gd) usando buffers contiguos de floats (`PackedFloat32Array`) y `MultiMeshInstance2D`. Prohibido instanciar `Area2D` para proyectiles.
-   - **Enjambres de Enemigos:** Todo mob masivo (`drone`, `kamikaze`, `micro_flock`) se reutiliza mediante [`scenes/combat/enemies/enemy_node_pool.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/enemies/enemy_node_pool.gd) y `EnemyBase.reset_from_pool()`. Prohibido el ciclo continuo de `.instantiate()` / `.queue_free()` que provoque pausas de recolección de basura (GC pauses).
-   - **Compactación de Gemas EXP:** [`ExpBlob`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/pickups/exp_blob.gd) compacta automáticamente cristales lejanos (>950 px) en Mega-Cristales cuando la cuenta supera 60 ítems.
+   - **Danmaku Masivo:** Todo proyectil se gestiona mediante [`core/autoloads/bullet_server.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/bullet_server.gd) usando buffers contiguos de floats (`PackedFloat32Array`) y `MultiMeshInstance2D`. Prohibido instanciar `Area2D` para proyectiles.
+   - **Enjambres de Enemigos:** Todo mob masivo (`drone`, `kamikaze`, `micro_flock`) se reutiliza mediante [`scenes/combat/enemies/enemy_node_pool.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/enemies/enemy_node_pool.gd) y `EnemyBase.reset_from_pool()`. Prohibido el ciclo continuo de `.instantiate()` / `.queue_free()` que provoque pausas de recolección de basura (GC pauses).
+   - **Compactación de Gemas EXP:** [`ExpBlob`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/pickups/exp_blob.gd) compacta automáticamente cristales lejanos (>950 px) en Mega-Cristales cuando la cuenta supera 60 ítems.
 
 2. **Modularidad Radical (Anti God-Objects):**
    - Límite máximo objetivo por script: **< 500-600 LOC**.
@@ -340,18 +340,18 @@ func take_damage(arg: Variant) -> void:
 - `"exp_blobs"`: Gemas de experiencia (succionadas por `trigger_global_magnet`).
 
 ### 4.3 Contrato de Bloqueo Inmutable del Arma Base (Slot 0)
-- En [`WeaponController`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/player/weapon_controller.gd), la ranura inicial (`slot 0`) está permanentemente reservada para el arma insignia del piloto seleccionado.
+- En [`WeaponController`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/player/weapon_controller.gd), la ranura inicial (`slot 0`) está permanentemente reservada para el arma insignia del piloto seleccionado.
 - Toda lógica de swap e inventario en tiendas orbitales y recompensas (`weapon_swap_modal.gd`, `satellite_shop.gd`) prohíbe explícitamente seleccionar o descartar el slot 0, restringiendo el intercambio a los slots secundarios (1 a 3).
 
 ### 4.4 Contrato de Peligros Ambientales y Desacoplamiento en Jefes
-- [`CrisisEventManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/events/crisis_event_manager.gd) gobierna eventos periódicos de cuadrante (Tormenta Solar, enjambres masivos).
+- [`CrisisEventManager`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/events/crisis_event_manager.gd) gobierna eventos periódicos de cuadrante (Tormenta Solar, enjambres masivos).
 - **Desactivación Inmediata ante Jefes/Rivales:** Al invocarse un Coloso o Piloto Rival, cualquier peligro ambiental activo es purgado instantáneamente para preservar la equidad del duelo.
 - **Sincronización Cinemática e Inmunidad:** Durante las presentaciones de radio o animaciones de entrada, el árbol de enemigos comunes se congela sincronizadamente y la nave del jugador cuenta con invulnerabilidad total (*iframes*).
 
 ### 4.5 Arquitectura de Depuración de Dos Niveles (Producción Zero-Cost)
-1. **Nivel Metajuego (Pregame):** [`DebugMenuModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/debug_menu_modal.gd) en `CharacterSelectUI`. Administra gacha, biomasa, desbloqueo de skins (1★/3★), compañeros (Cosmo/Iris) y reseteo de estadísticas.
-2. **Nivel Combate (In-Game):** [`IngameDebugModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/debug/ingame_debug_modal.gd) accesible con **`F1`** (layer 125, pausa activa). Organizado en 4 pestañas: Spawns (Monolitos directos frente al jugador a ~200px, Jefes, Rivales, Cofres), Cheats & Stats (God Mode, 999k créditos, 5 bombas, 15 sliders en vivo), Arsenal (inyección de armas respetando slot 0, subida de niveles) y Oleadas/Crisis.
-3. **Poda Automática en Producción:** Gobernado centralmente por [`DebugManager.is_debug_enabled()`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/debug_manager.gd). En builds de exportación, destruye los botones interactivos con `queue_free()` e ignora pulsaciones de teclas sin coste alguno de CPU ni memoria.
+1. **Nivel Metajuego (Pregame):** [`DebugMenuModal`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/debug/debug_menu_modal.gd) en `CharacterSelectUI`. Administra gacha, biomasa, desbloqueo de skins (1★/3★), compañeros (Cosmo/Iris) y reseteo de estadísticas.
+2. **Nivel Combate (In-Game):** [`IngameDebugModal`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/debug/ingame_debug_modal.gd) accesible con **`F1`** (layer 125, pausa activa). Organizado en 4 pestañas: Spawns (Monolitos directos frente al jugador a ~200px, Jefes, Rivales, Cofres), Cheats & Stats (God Mode, 999k créditos, 5 bombas, 15 sliders en vivo), Arsenal (inyección de armas respetando slot 0, subida de niveles) y Oleadas/Crisis.
+3. **Poda Automática en Producción:** Gobernado centralmente por [`DebugManager.is_debug_enabled()`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/debug_manager.gd). En builds de exportación, destruye los botones interactivos con `queue_free()` e ignora pulsaciones de teclas sin coste alguno de CPU ni memoria.
 
 ### 4.6 Álgebra de Daño en 3 Contenedores y Sistema de Maldición (`curse`)
 - **Fórmula de Daño:**

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_k3t2x"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="2_r3lu2"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_k4wej"]
+
+[resource]
+script = ExtResource("3_k4wej")
+item_id = &"glass_reactor"
+item_name = "Reactor de Cristal"
+description = "+50% Daño Base, pero -30% Vida Máxima."
+icon = ExtResource("2_r3lu2")
+rarity = 2
+tags = Array[StringName]([&"offense", &"damage", &"penalty", &"anti_synergy"])
+cost = 70
+stat_name = &"base_damage"
+stat_value = 0.5
+is_percentage = true
+modifier_type = 1
+secondary_stat_name = &"max_health"
+secondary_stat_value = -0.3
+secondary_is_percentage = true
+secondary_modifier_type = 1

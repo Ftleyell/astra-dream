@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_ni4vd"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_heart.svg" id="2_pg06q"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_k1h4m"]
+
+[resource]
+script = ExtResource("3_k1h4m")
+item_id = &"stellar_scrap"
+item_name = "Chatarra Estelar"
+description = "Al recibir daño letal, consume 100 créditos para revivir al 30% de HP (1 uso por run)."
+icon = ExtResource("2_pg06q")
+rarity = 4
+tags = Array[StringName]([&"sustain", &"defense", &"conversion"])
+cost = 120
+max_stacks = 1

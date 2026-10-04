@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_vpxva"]
+[ext_resource type="Script" path="res://data/items/effects/cryo_condenser_effect.gd" id="2_vv6hc"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="3_74krj"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_7lk7e"]
+
+[sub_resource type="Resource" id="Resource_heeas"]
+script = ExtResource("2_vv6hc")
+base_chance = 0.12
+
+[resource]
+script = ExtResource("4_7lk7e")
+item_id = &"cryo_condenser"
+item_name = "Condensador Criogénico"
+description = "Probabilidad al impactar de congelar y ralentizar a los enemigos un 30% por 1.5s."
+icon = ExtResource("3_74krj")
+rarity = 2
+tags = Array[StringName]([&"offense", &"control", &"proc"])
+cost = 85
+max_stacks = 2
+effects = Array[ExtResource("1_vpxva")]([SubResource("Resource_heeas")])

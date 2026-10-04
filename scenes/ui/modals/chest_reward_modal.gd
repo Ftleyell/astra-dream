@@ -1,9 +1,9 @@
 class_name ChestRewardModal
-extends CanvasLayer
+extends BaseModal
 
 ## ChestRewardModal.gd
 ## Modal táctico de selección de 3 ítems desplegado al abrir un cofre espacial.
-## Pausa el combate, exhibe 3 cartas interactivas con estética cyberpunk,
+## Pausa el combate mediante BaseModal/PauseArbitrator, exhibe 3 cartas interactivas
 ## y permite al jugador elegir 1 con ratón o atajos numéricos [1, 2, 3].
 
 signal item_selected(chosen_item: ItemData)
@@ -23,11 +23,11 @@ var _paid_cost: int = 0
 var _skip_button: Button = null
 
 func _ready() -> void:
+	modal_token = &"chest_reward"
 	layer = 125
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("chest_reward_modal")
 	_build_ui()
-	hide()
+	super._ready()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -128,7 +128,6 @@ func open_draft(items: Array[ItemData], was_free: bool, player: Player, on_selec
 	_paid_cost = paid_cost
 	_card_buttons.clear()
 
-	get_tree().paused = true
 	_free_badge_label.visible = was_free
 
 	if _skip_button:
@@ -137,11 +136,6 @@ func open_draft(items: Array[ItemData], was_free: bool, player: Player, on_selec
 			_skip_button.text = "[ 4 / ESC ] SALTAR Y RECICLAR (+%d Créditos)" % refund_preview
 		else:
 			_skip_button.text = "[ 4 / ESC ] SALTAR COFRE"
-
-	# Notificar al HUD para proyectar el dock de estadísticas a la izquierda
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if hud and hud.has_method("set_stats_dock_requested"):
-		hud.set_stats_dock_requested(&"chest_reward", true)
 
 	# Limpiar cartas previas
 	for child in _cards_container.get_children():
@@ -152,7 +146,7 @@ func open_draft(items: Array[ItemData], was_free: bool, player: Player, on_selec
 		var card := _create_draft_card(it, i, player)
 		_cards_container.add_child(card)
 
-	show()
+	open_modal()
 	if not _card_buttons.is_empty() and is_instance_valid(_card_buttons[0]):
 		_card_buttons[0].grab_focus()
 
@@ -314,11 +308,7 @@ func skip_and_recycle() -> void:
 	close_modal()
 
 func close_modal() -> void:
-	hide()
-	get_tree().paused = false
-	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() else null
-	if hud and hud.has_method("set_stats_dock_requested"):
-		hud.set_stats_dock_requested(&"chest_reward", false)
+	super.close_modal()
 	modal_closed.emit()
 
 func _get_rarity_name(rarity: Enums.Rarity) -> String:

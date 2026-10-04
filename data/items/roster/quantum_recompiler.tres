@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_lv0js"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quantum_key.png" id="2_ujnhk"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_nkaxw"]
+
+[resource]
+script = ExtResource("3_nkaxw")
+item_id = &"quantum_recompiler"
+item_name = "Recompilador Cuántico"
+description = "Optimiza la Forja Cuántica otorgando +1 uso adicional a las estaciones de transmutación."
+icon = ExtResource("2_ujnhk")
+rarity = 1
+tags = Array[StringName]([&"utility", &"transmutation"])
+cost = 60
+max_stacks = 1

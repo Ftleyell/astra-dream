@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_ew0ee"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="2_hvgnm"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_eho2i"]
+
+[resource]
+script = ExtResource("3_eho2i")
+item_id = &"tachyon_prism"
+item_name = "Prisma Taquiónico"
+description = "+35% Daño Crítico, pero -8% Probabilidad Crítica."
+icon = ExtResource("2_hvgnm")
+rarity = 2
+tags = Array[StringName]([&"offense", &"crit", &"penalty", &"tradeoff"])
+cost = 70
+stat_name = &"crit_damage"
+stat_value = 0.35
+is_percentage = true
+modifier_type = 2
+secondary_stat_name = &"crit_chance"
+secondary_stat_value = -0.08
+max_stacks = 2

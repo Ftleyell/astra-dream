@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_pl7qm"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="2_lo1c5"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_33vxg"]
+
+[resource]
+script = ExtResource("3_33vxg")
+item_id = &"iman"
+item_name = "Imán"
+description = "+35 px Radio de Recogida y absorción de EXP."
+icon = ExtResource("2_lo1c5")
+tags = Array[StringName]([&"utility", &"pickup"])
+cost = 45
+stat_name = &"pickup_radius"
+stat_value = 35.0

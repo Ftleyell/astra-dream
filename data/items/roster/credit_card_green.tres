@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_xneo8"]
+[ext_resource type="Script" path="res://data/items/effects/credit_card_green_effect.gd" id="2_vv7vs"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_credit_card_green.svg" id="3_3lrjb"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="4_caqk0"]
+
+[sub_resource type="Resource" id="Resource_7t1hd"]
+script = ExtResource("2_vv7vs")
+trigger = 7
+
+[resource]
+script = ExtResource("4_caqk0")
+item_id = &"credit_card_green"
+item_name = "Tarjeta Cuántica (Verde)"
+description = "+5% Suerte permanente por cada cofre abierto, pero +10% recargo al coste."
+icon = ExtResource("3_3lrjb")
+rarity = 1
+tags = Array[StringName]([&"utility", &"luck", &"economy"])
+cost = 60
+effects = Array[ExtResource("1_xneo8")]([SubResource("Resource_7t1hd")])

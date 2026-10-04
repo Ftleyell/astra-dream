@@ -27,11 +27,11 @@ func _ready() -> void:
 
 		var wpn_tex: Texture2D = cdata.get_weapon_texture()
 		assert(wpn_tex != null, "Weapon texture no debe ser nula para %s" % cid)
-		assert(wpn_tex.get_width() == 128 and wpn_tex.get_height() == 128, "Arma debe ser 128x128 para %s" % cid)
+		assert((wpn_tex.get_width() == 128 or wpn_tex.get_width() == 256) and (wpn_tex.get_height() == 128 or wpn_tex.get_height() == 256), "Arma debe ser 128x128 o 256x256 para %s" % cid)
 
 		var port_tex: Texture2D = cdata.get_portrait_texture()
 		assert(port_tex != null, "Portrait texture no debe ser nulo para %s" % cid)
-		assert(port_tex.get_width() == 512 and port_tex.get_height() == 512, "Retrato debe ser 512x512 para %s" % cid)
+		assert((port_tex.get_width() == 512 or port_tex.get_width() == 1080) and (port_tex.get_height() == 512 or port_tex.get_height() == 1080), "Retrato debe ser 512x512 o 1080x1080 para %s" % cid)
 
 		var full_tex: Texture2D = cdata.get_fullbody_texture()
 		assert(full_tex != null, "Fullbody texture no debe ser nulo para %s" % cid)

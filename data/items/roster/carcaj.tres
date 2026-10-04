@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_6e48e"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_quiver.svg" id="2_abvoa"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_7vp00"]
+
+[resource]
+script = ExtResource("3_7vp00")
+item_id = &"carcaj"
+item_name = "Carcaj"
+description = "+1 Proyectil Adicional en todas las armas."
+icon = ExtResource("2_abvoa")
+rarity = 2
+tags = Array[StringName]([&"offense", &"projectiles"])
+cost = 95
+stat_name = &"projectile_count"
+stat_value = 1.0

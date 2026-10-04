@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_mxvc8"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="2_h5tu0"]
+[ext_resource type="Script" path="res://data/items/item_data.gd" id="3_i7tg1"]
+
+[resource]
+script = ExtResource("3_i7tg1")
+item_id = &"static_cell"
+item_name = "Pila de Carga Estática"
+description = "Moverse acumula carga (0 a 100); al llegar a 100, el próximo ataque es un crítico garantizado."
+icon = ExtResource("2_h5tu0")
+rarity = 2
+tags = Array[StringName]([&"offense", &"mobility", &"conversion"])
+cost = 105
+max_stacks = 1
