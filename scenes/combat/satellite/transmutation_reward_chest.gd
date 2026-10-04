@@ -17,7 +17,6 @@ var _time_alive: float = 0.0
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
-@onready var icon_sprite: Sprite2D = $VisualRoot/IconSprite
 @onready var label: Label = $Label
 @onready var aura: Line2D = $VisualRoot/AuraRing
 
@@ -38,9 +37,6 @@ func setup(p_item: ItemData, p_station: TransmutationStation) -> void:
 func _setup_visuals() -> void:
 	if not is_inside_tree():
 		return
-	if item and icon_sprite:
-		icon_sprite.texture = item.icon
-		icon_sprite.scale = Vector2(0.65, 0.65)
 	if label and item:
 		label.text = "[ %s ]\n(BUMPEAR: ACEPTAR/RECHAZAR)" % item.item_name
 		label.modulate = _get_rarity_color(item.rarity)

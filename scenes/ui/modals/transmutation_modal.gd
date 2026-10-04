@@ -16,9 +16,12 @@ var current_station: TransmutationStation = null
 
 var _panel: PanelContainer
 var _title_label: Label
+var _desc_label: Label
 var _uses_label: Label
 var _feedback_label: Label
+var _scroll_container: ScrollContainer
 var _items_container: GridContainer
+var _choice_container: VBoxContainer
 var _close_btn: Button
 
 func _ready() -> void:
@@ -67,13 +70,13 @@ func _build_ui() -> void:
 	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
 	vbox.add_child(_title_label)
 
-	var desc := Label.new()
-	desc.text = "Selecciona un ítem para clonar (+1 copia). Coste: %dc. Consume 1 ítem al azar de la misma rareza como sacrificio molecular." % transmutation_cost
-	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc.add_theme_font_size_override("font_size", 11)
-	desc.modulate = Color(0.75, 0.75, 0.85, 0.8)
-	vbox.add_child(desc)
+	_desc_label = Label.new()
+	_desc_label.text = "Selecciona un ítem para clonar (+1 copia). Coste: %dc. Consume 1 ítem al azar de la misma rareza como sacrificio molecular." % transmutation_cost
+	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_desc_label.add_theme_font_size_override("font_size", 11)
+	_desc_label.modulate = Color(0.75, 0.75, 0.85, 0.8)
+	vbox.add_child(_desc_label)
 
 	_uses_label = Label.new()
 	_uses_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -87,17 +90,24 @@ func _build_ui() -> void:
 	_feedback_label.modulate = Color(0.4, 1.0, 0.6, 1.0)
 	vbox.add_child(_feedback_label)
 
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(520, 260)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(scroll)
+	_scroll_container = ScrollContainer.new()
+	_scroll_container.custom_minimum_size = Vector2(520, 260)
+	_scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(_scroll_container)
 
 	_items_container = GridContainer.new()
 	_items_container.columns = 3
 	_items_container.add_theme_constant_override("h_separation", 8)
 	_items_container.add_theme_constant_override("v_separation", 8)
 	_items_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_items_container)
+	_scroll_container.add_child(_items_container)
+
+	_choice_container = VBoxContainer.new()
+	_choice_container.add_theme_constant_override("separation", 14)
+	_choice_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_choice_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	_choice_container.hide()
+	vbox.add_child(_choice_container)
 
 	_close_btn = Button.new()
 	_close_btn.text = "CERRAR FORJA [ESC]"
@@ -111,6 +121,16 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 	current_player = player
 	current_station = station
 	get_tree().paused = true
+	_title_label.text = "FORJA CUÁNTICA DE TRANSMUTACIÓN"
+	_title_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
+	if _desc_label:
+		_desc_label.show()
+	if _scroll_container:
+		_scroll_container.show()
+	if _choice_container:
+		_choice_container.hide()
+	if _close_btn:
+		_close_btn.show()
 	_feedback_label.text = ""
 	_refresh_ui()
 	show()
@@ -125,6 +145,10 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 		_close_btn.grab_focus()
 
 func close_modal() -> void:
+	if _choice_container:
+		_choice_container.hide()
+	if _scroll_container:
+		_scroll_container.show()
 	if _close_btn:
 		_close_btn.show()
 	hide()
@@ -215,14 +239,21 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	get_tree().paused = true
 	if _close_btn:
 		_close_btn.hide()
+	if _desc_label:
+		_desc_label.hide()
+	if _scroll_container:
+		_scroll_container.hide()
+
 	_title_label.text = "🎁 RESULTADO DE LA TRANSMUTACIÓN"
 	_title_label.modulate = Color(1.0, 0.88, 0.2, 1.0)
 	_uses_label.text = "La forja cuántica ha culminado el proceso molecular con éxito."
 	_uses_label.modulate = Color(0.75, 0.75, 0.85, 1.0)
 	_feedback_label.text = ""
 
-	for child in _items_container.get_children():
+	for child in _choice_container.get_children():
 		child.queue_free()
+
+	_choice_container.show()
 
 	# Item Card Frame idéntico a SlotMachineRewardModal
 	var card_frame := PanelContainer.new()
@@ -236,7 +267,7 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	csb.content_margin_top = 16
 	csb.content_margin_bottom = 16
 	card_frame.add_theme_stylebox_override("panel", csb)
-	_items_container.add_child(card_frame)
+	_choice_container.add_child(card_frame)
 
 	var card_vbox := VBoxContainer.new()
 	card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -316,7 +347,7 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	)
 	btn_box.add_child(reject_button)
 
-	_items_container.add_child(btn_box)
+	_choice_container.add_child(btn_box)
 
 	show()
 	take_button.grab_focus()
