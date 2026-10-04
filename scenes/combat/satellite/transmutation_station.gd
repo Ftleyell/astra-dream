@@ -29,6 +29,7 @@ var active_reward_chest: Node2D = null
 var _recompiler_applied: bool = false
 var _cached_player: Node2D = null
 var _bump_cooldown: float = 0.0
+var must_exit_before_rebump: bool = false
 var _process_ring: Line2D = null
 
 const TransmutationRewardChestClass = preload("res://scenes/combat/satellite/transmutation_reward_chest.gd")
@@ -115,11 +116,14 @@ func _check_bump() -> void:
 
 	if _cached_player and is_instance_valid(_cached_player):
 		var effective_bump: float = core_bump_radius * scale.x
-		if global_position.distance_to(_cached_player.global_position) <= effective_bump:
+		var dist: float = global_position.distance_to(_cached_player.global_position)
+		if dist > effective_bump + 35.0:
+			must_exit_before_rebump = false
+		elif dist <= effective_bump and not must_exit_before_rebump:
 			_trigger_bump(_cached_player)
 
 func _trigger_bump(player: Node2D) -> void:
-	if is_depleted or is_processing or uses_remaining <= 0 or _bump_cooldown > 0.0:
+	if is_depleted or is_processing or uses_remaining <= 0 or _bump_cooldown > 0.0 or must_exit_before_rebump:
 		return
 	if is_instance_valid(active_reward_chest):
 		# No reabrir la forja hasta que el cofre actual sea resuelto (aceptado o reciclado)
@@ -128,9 +132,49 @@ func _trigger_bump(player: Node2D) -> void:
 			status_label.modulate = Color(1.0, 0.8, 0.2, 1.0)
 		return
 
-	_bump_cooldown = 1.0
+	# 1. Impulso de repulsión física hacia afuera (Bumper Kickback)
+	var diff: Vector2 = player.global_position - global_position
+	var bump_dir: Vector2 = diff.normalized() if diff.length_squared() > 1.0 else Vector2.UP
+	if "velocity" in player:
+		player.set("velocity", bump_dir * 540.0)
+	player.global_position += bump_dir * 18.0
+
+	must_exit_before_rebump = true
+	_bump_cooldown = 0.8
+
+	# 2. Validar requisitos mínimos (créditos e ítems compatibles) antes de abrir UI
+	var check := _can_player_transmute(player)
+	if not check.can_open:
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click", 0.6, 2.0)
+		var spawn_parent: Node = get_parent()
+		if spawn_parent:
+			var ft_scene: PackedScene = load("res://scenes/ui/floating_text.tscn")
+			if ft_scene:
+				var ft: Node = ft_scene.instantiate()
+				if ft and ft.has_method("setup"):
+					spawn_parent.add_child(ft)
+					ft.call("setup", global_position + Vector2(0, -50), String(check.reason), Color(1.0, 0.35, 0.35))
+		return
+
 	check_quantum_recompiler(player)
 	station_activated.emit(self)
+
+func _can_player_transmute(p: Node2D) -> Dictionary:
+	var credits: int = int(p.get("run_credits")) if "run_credits" in p else 0
+	if credits < 50:
+		return {"can_open": false, "reason": "¡CRÉDITOS INSUFICIENTES [50c]!"}
+	if not ("inventory" in p and p.inventory):
+		return {"can_open": false, "reason": "¡SIN INVENTARIO!"}
+	var eligible_count: int = 0
+	for entry in p.inventory.get_all_items():
+		var it: ItemData = entry.get("data") as ItemData
+		if it and TransmutationModal.is_item_eligible_for_transmutation(it):
+			eligible_count += 1
+	if eligible_count == 0:
+		return {"can_open": false, "reason": "¡SIN ÍTEMS COMPATIBLES!"}
+	return {"can_open": true, "reason": ""}
 
 func _update_process_ring(progress: float) -> void:
 	if not _process_ring:
@@ -208,6 +252,7 @@ func _on_body_entered(body: Node2D) -> void:
 func _on_body_exited(body: Node2D) -> void:
 	if body is Player or (body != null and body.is_in_group("player")):
 		player_inside = false
+		must_exit_before_rebump = false
 
 func consume_use() -> bool:
 	if uses_remaining <= 0 or is_depleted:

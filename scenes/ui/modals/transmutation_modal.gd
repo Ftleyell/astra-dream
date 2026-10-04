@@ -155,6 +155,15 @@ func close_modal() -> void:
 	get_tree().paused = false
 	modal_closed.emit()
 
+static func is_item_eligible_for_transmutation(it: ItemData) -> bool:
+	if not it:
+		return false
+	if it.item_id == &"quantum_key":
+		return false
+	if it.tags.has(&"consumable") or it.tags.has(&"key"):
+		return false
+	return true
+
 func _refresh_ui() -> void:
 	if not current_station:
 		return
@@ -168,14 +177,20 @@ func _refresh_ui() -> void:
 		return
 
 	var all_items := current_player.inventory.get_all_items()
-	if all_items.is_empty():
+	var eligible_items: Array[Dictionary] = []
+	for entry in all_items:
+		var it: ItemData = entry["data"]
+		if is_item_eligible_for_transmutation(it):
+			eligible_items.append(entry)
+
+	if eligible_items.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.text = "No posees ítems transmutables en tu inventario."
 		empty_lbl.modulate = Color(0.8, 0.8, 0.8, 0.7)
 		_items_container.add_child(empty_lbl)
 		return
 
-	for entry in all_items:
+	for entry in eligible_items:
 		var it: ItemData = entry["data"]
 		var count: int = entry["count"]
 		var btn := _create_item_card_button(it, count)
@@ -208,6 +223,8 @@ func _on_item_selected_to_clone(target_item: ItemData) -> void:
 	for entry in all_items:
 		var it: ItemData = entry["data"]
 		var cnt: int = entry["count"]
+		if not is_item_eligible_for_transmutation(it):
+			continue
 		if it.rarity == target_item.rarity:
 			if it.item_id != target_item.item_id:
 				sacrifice_candidates.append(it)

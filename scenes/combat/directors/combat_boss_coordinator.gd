@@ -21,10 +21,70 @@ var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/alli
 var nyx_boss_escort_scene: PackedScene = preload("res://scenes/combat/bosses/nyx_boss_escort.tscn")
 var elite_herald_scene: PackedScene = preload("res://scenes/combat/bosses/elite_herald_boss.tscn")
 
+const MAX_BOSS_LEASH_DISTANCE: float = 1400.0
+const BOSS_CATCHUP_COOLDOWN: float = 2.5
+
 var main_game: Node2D = null
+var _catchup_timer: float = 0.0
 
 func setup(game: Node2D) -> void:
 	main_game = game
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
+func _physics_process(delta: float) -> void:
+	if not main_game or not is_instance_valid(main_game) or not main_game.is_inside_tree():
+		return
+	if get_tree().paused or (main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active()):
+		return
+
+	if _catchup_timer > 0.0:
+		_catchup_timer -= delta
+		return
+
+	_check_boss_leash_catchup()
+
+func _check_boss_leash_catchup() -> void:
+	var player: Node2D = main_game.get("player") as Node2D
+	if not is_instance_valid(player):
+		return
+
+	var active_threat: Node2D = main_game.get("current_boss") as Node2D
+	if not is_instance_valid(active_threat):
+		active_threat = main_game.get("current_rival") as Node2D
+
+	if not is_instance_valid(active_threat) or not active_threat.is_inside_tree():
+		return
+
+	if active_threat.get("is_dying") == true:
+		return
+	if active_threat.has_method("is_peaceful") and active_threat.is_peaceful():
+		return
+	if "current_state" in active_threat and active_threat.get("current_state") == 0:
+		return
+
+	var dist: float = active_threat.global_position.distance_to(player.global_position)
+	if dist > MAX_BOSS_LEASH_DISTANCE:
+		_execute_boss_tactical_teleport(active_threat, player)
+
+func _execute_boss_tactical_teleport(threat: Node2D, player: Node2D) -> void:
+	_catchup_timer = BOSS_CATCHUP_COOLDOWN
+
+	var p_vel: Vector2 = player.get("velocity") if "velocity" in player else Vector2.ZERO
+	var forward_dir: Vector2 = p_vel.normalized() if p_vel.length_squared() > 10.0 else (threat.global_position - player.global_position).normalized()
+	if forward_dir.length_squared() < 0.001:
+		forward_dir = Vector2.UP
+
+	var target_pos: Vector2 = player.global_position + forward_dir * 720.0
+
+	var tw := threat.create_tween()
+	tw.tween_property(threat, "modulate:a", 0.1, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(threat) and is_instance_valid(player):
+			threat.global_position = target_pos
+			if "velocity" in threat:
+				threat.set("velocity", Vector2.ZERO)
+	)
+	tw.tween_property(threat, "modulate:a", 1.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	if not main_game or not is_instance_valid(main_game):
@@ -314,17 +374,26 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 		hud.track_boss(rival, "RIVAL")
 
 	main_game.get_tree().create_timer(0.45, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(rival):
+		if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
 			return
 		if rival.has_method("open_warp_portal"):
 			rival.open_warp_portal(func() -> void:
+				if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+					return
 				main_game.call("_trigger_pet_rival_jump_warning", rival, func() -> void:
+					if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+						return
+					var pl: Node2D = main_game.get("player") as Node2D
+					if is_instance_valid(pl) and "is_movement_suppressed" in pl:
+						pl.set("is_movement_suppressed", true)
+						pl.set("velocity", Vector2.ZERO)
 					main_game.get_tree().create_timer(0.3, true, false, true).timeout.connect(func() -> void:
-						if not is_instance_valid(rival):
+						if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
 							return
 						rival.emerge_from_portal(func() -> void:
-							if is_instance_valid(rival):
-								rival.process_mode = Node.PROCESS_MODE_PAUSABLE
+							if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
+								return
+							rival.process_mode = Node.PROCESS_MODE_PAUSABLE
 							main_game.call("_trigger_rival_face_to_face_dialogue", rival)
 						)
 					)

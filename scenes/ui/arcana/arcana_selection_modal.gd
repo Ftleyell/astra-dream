@@ -298,6 +298,8 @@ func _update_card_selection(idx: int) -> void:
 		var arc: ArcanaData = offered_arcanas[i]
 		var is_selected: bool = (i == current_selected_idx)
 		ArcanaCardBuilder.apply_selection_style(p, btn, arc, is_selected)
+		if is_selected and is_instance_valid(btn) and not btn.has_focus():
+			btn.grab_focus()
 
 	_highlight_arcana_stats(offered_arcanas[idx])
 

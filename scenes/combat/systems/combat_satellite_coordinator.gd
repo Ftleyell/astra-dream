@@ -120,6 +120,8 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 
+	current_satellite_idx += 1
+
 	var is_transmutation: bool = (satellites_collected_total > 0 and satellites_collected_total % 2 == 1)
 	if is_transmutation:
 		var station := transmutation_scene.instantiate() as TransmutationStation
@@ -147,6 +149,8 @@ func spawn_specific_satellite(target_pos: Vector2) -> void:
 	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
 
+	current_satellite_idx += 1
+
 	var beacon := satellite_scene.instantiate() as SatelliteBeacon
 	beacon.global_position = target_pos
 	beacon.satellite_index = current_satellite_idx
@@ -164,6 +168,8 @@ func spawn_specific_transmutation(target_pos: Vector2) -> void:
 		return
 	if current_satellite and is_instance_valid(current_satellite):
 		current_satellite.queue_free()
+
+	current_satellite_idx += 1
 
 	var station := transmutation_scene.instantiate() as TransmutationStation
 	station.global_position = target_pos

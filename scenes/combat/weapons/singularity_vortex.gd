@@ -47,6 +47,9 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(node) or not (node is Node2D):
 			continue
 		var target := node as Node2D
+		var is_boss_target: bool = target.is_in_group("bosses") or target.is_in_group("rival_pilots") or target.is_in_group("rival_pilot") or (target.get("is_boss") == true)
+		if is_boss_target:
+			continue
 		var d_sq := global_position.distance_squared_to(target.global_position)
 		if d_sq <= pull_r_sq and d_sq > 16.0:
 			var pull_dir := (global_position - target.global_position).normalized()

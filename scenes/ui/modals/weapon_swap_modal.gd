@@ -333,5 +333,21 @@ func _on_discard_pressed() -> void:
 
 func _close() -> void:
 	hide()
-	get_tree().paused = false
+	var should_unpause: bool = true
+	var tree := get_tree()
+	if tree:
+		var main_game: Node = tree.get_first_node_in_group("main_game")
+		if not main_game:
+			main_game = tree.root.find_child("MainGame", true, false)
+		if main_game:
+			if main_game.has_method("is_satellite_shop_active") and main_game.is_satellite_shop_active():
+				should_unpause = false
+			elif main_game.has_method("is_any_combat_modal_active") and main_game.is_any_combat_modal_active():
+				should_unpause = false
+			elif main_game.has_method("is_dialogue_active") and main_game.is_dialogue_active():
+				should_unpause = false
+			elif main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
+				should_unpause = false
+		if should_unpause and tree:
+			tree.paused = false
 	modal_closed.emit()

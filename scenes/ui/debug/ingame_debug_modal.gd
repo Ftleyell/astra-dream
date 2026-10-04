@@ -131,9 +131,22 @@ func close() -> void:
 		return
 	is_open = false
 	hide()
-	get_tree().paused = false
+	if not _should_remain_paused():
+		get_tree().paused = false
 	modal_closed.emit()
 
+func _should_remain_paused() -> bool:
+	if not main_game or not is_instance_valid(main_game):
+		return false
+	if main_game.has_method("is_any_combat_modal_active") and main_game.is_any_combat_modal_active():
+		return true
+	if main_game.has_method("is_dialogue_active") and main_game.is_dialogue_active():
+		return true
+	if main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
+		return true
+	if main_game.has_method("is_pause_menu_active") and main_game.is_pause_menu_active():
+		return true
+	return false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:

@@ -137,7 +137,14 @@ func _setup_dialogic_audio(layout: Node) -> void:
 		type_sound.volume_variance = 0.5
 
 func skip_dialogue() -> void:
-	if on_dialogue_finished_callback.is_valid():
+	var is_in_rival_spawn: bool = is_rival_cinematic_active or (main_game != null and main_game.get("is_rival_cinematic_active") == true)
+	var is_in_boss_spawn: bool = is_boss_transmission_active or (main_game != null and main_game.get("is_boss_transmission_active") == true)
+
+	if is_in_rival_spawn or is_in_boss_spawn:
+		# Salto total inmediato: descartar callbacks encadenados de fases intermedias
+		on_dialogue_finished_callback = Callable()
+
+	elif on_dialogue_finished_callback.is_valid():
 		var cb := on_dialogue_finished_callback
 		on_dialogue_finished_callback = Callable()
 		var dialogic_node := get_dialogic()
@@ -169,8 +176,13 @@ func skip_dialogue() -> void:
 	is_briefing_active = false
 	is_cockpit_active = false
 	is_boss_transmission_active = false
-	if is_rival_cinematic_active:
+	if main_game:
+		main_game.set("is_boss_transmission_active", false)
+
+	if is_rival_cinematic_active or (main_game != null and main_game.get("is_rival_cinematic_active") == true):
 		is_rival_cinematic_active = false
+		if main_game:
+			main_game.set("is_rival_cinematic_active", false)
 		var current_rival = main_game.get("current_rival") if main_game else null
 		if is_instance_valid(current_rival):
 			current_rival.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -178,6 +190,13 @@ func skip_dialogue() -> void:
 				current_rival.start_encounter()
 		if main_game:
 			BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
+
+	if is_in_boss_spawn and main_game:
+		var current_boss = main_game.get("current_boss")
+		if is_instance_valid(current_boss):
+			current_boss.process_mode = Node.PROCESS_MODE_PAUSABLE
+			current_boss.visible = true
+		BossCinematicPresenterScript.unfreeze_combat_environment(main_game)
 
 	if main_game and main_game.has_method("notify_menu_closed"):
 		main_game.notify_menu_closed(0.4)

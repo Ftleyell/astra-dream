@@ -26,6 +26,7 @@ static func build_card(
 
 	var card_panel := PanelContainer.new()
 	card_panel.custom_minimum_size = Vector2(360, 530)
+	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -35,6 +36,7 @@ static func build_card(
 	card_sb.set_border_width_all(2)
 	card_sb.border_width_top = 6
 	card_sb.set_corner_radius_all(0)
+	card_sb.set_content_margin_all(0.0)
 	card_sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.25)
 	card_sb.shadow_size = 10
 	card_panel.add_theme_stylebox_override("panel", card_sb)
@@ -217,10 +219,11 @@ static func build_card(
 
 	vbox.add_child(curse_panel)
 
-	# 9. Botón de Selección con UIFocusHelper
+	# 9. Botón de Selección con dimensiones fijas y sin deformación métrica
 	var btn := Button.new()
 	btn.text = "PACTAR CON ARCANA [%d]" % (index + 1)
 	btn.custom_minimum_size = Vector2(0, 42)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.add_theme_font_size_override("font_size", 14)
 	btn.focus_mode = Control.FOCUS_ALL
 
@@ -229,6 +232,7 @@ static func build_card(
 	btn_normal.border_color = accent
 	btn_normal.set_border_width_all(2)
 	btn_normal.set_corner_radius_all(0)
+	btn_normal.set_content_margin_all(8.0)
 	btn.add_theme_stylebox_override("normal", btn_normal)
 
 	var btn_hover := StyleBoxFlat.new()
@@ -236,10 +240,12 @@ static func build_card(
 	btn_hover.border_color = COLOR_PURE_WHITE
 	btn_hover.set_border_width_all(2)
 	btn_hover.set_corner_radius_all(0)
+	btn_hover.set_content_margin_all(8.0)
 	btn.add_theme_stylebox_override("hover", btn_hover)
 	btn.add_theme_color_override("font_hover_color", COLOR_DEEP_BLACK)
 
-	UIFocusHelper.apply_cyber_focus(btn)
+	var btn_focus: StyleBox = UIFocusHelper.cyber_focus_style.duplicate() if UIFocusHelper.cyber_focus_style else StyleBoxFlat.new()
+	btn.add_theme_stylebox_override("focus", btn_focus)
 
 	btn.pressed.connect(func():
 		if is_mouse_locked_callable.call():
@@ -247,6 +253,9 @@ static func build_card(
 		on_chosen_callback.call(arc)
 	)
 	btn.focus_entered.connect(func():
+		var audio_mgr := btn.get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click")
 		on_focused_callback.call(index)
 	)
 	card_panel.mouse_entered.connect(func():
@@ -263,7 +272,7 @@ static func build_card(
 
 static func apply_selection_style(
 	panel: PanelContainer,
-	button: Button,
+	_button: Button,
 	arc: ArcanaData,
 	is_selected: bool
 ) -> void:
@@ -273,21 +282,19 @@ static func apply_selection_style(
 	var accent: Color = arc.color_accent if arc.color_accent != Color.BLACK else COLOR_NEON_CYAN
 	var sb := StyleBoxFlat.new()
 	sb.set_corner_radius_all(0)
+	sb.set_content_margin_all(0.0)
+	# Anchos de borde estrictamente constantes para prevenir alteraciones de layout
+	sb.set_border_width_all(2)
+	sb.border_width_top = 6
 
 	if is_selected:
 		sb.bg_color = Color(0.08, 0.10, 0.16, 0.98)
 		sb.border_color = COLOR_PURE_WHITE
-		sb.set_border_width_all(3)
-		sb.border_width_top = 8
-		sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.5)
+		sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.6)
 		sb.shadow_size = 14
-		if is_instance_valid(button):
-			button.grab_focus()
 	else:
 		sb.bg_color = Color(0.04, 0.05, 0.08, 0.96)
 		sb.border_color = accent * Color(1.0, 1.0, 1.0, 0.7)
-		sb.set_border_width_all(2)
-		sb.border_width_top = 5
 		sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.2)
 		sb.shadow_size = 6
 

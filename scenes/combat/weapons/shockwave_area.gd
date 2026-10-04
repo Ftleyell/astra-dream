@@ -66,8 +66,10 @@ func _check_shockwave_hits() -> void:
 				c.hit_position = target.global_position
 				target.take_damage(c)
 
-			# Empuje radial
-			var push_dir := (target.global_position - global_position).normalized()
-			if push_dir.length_squared() < 0.001:
-				push_dir = Vector2.RIGHT
-			target.global_position += push_dir * (push_force * (1.0 - (sqrt(d_sq) / max_radius)) * 0.1)
+			# Empuje radial (inmune para jefes y rivales)
+			var is_boss_target: bool = target.is_in_group("bosses") or target.is_in_group("rival_pilots") or target.is_in_group("rival_pilot") or (target.get("is_boss") == true)
+			if not is_boss_target:
+				var push_dir := (target.global_position - global_position).normalized()
+				if push_dir.length_squared() < 0.001:
+					push_dir = Vector2.RIGHT
+				target.global_position += push_dir * (push_force * (1.0 - (sqrt(d_sq) / max_radius)) * 0.1)
