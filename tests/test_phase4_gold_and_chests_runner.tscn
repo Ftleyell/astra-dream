@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_phase4_gold_and_chests_001"]
+
+[ext_resource type="Script" path="res://tests/test_phase4_gold_and_chests_suite.gd" id="1_test"]
+
+[node name="TestPhase4GoldAndChestsRunner" type="Node"]
+script = ExtResource("1_test")

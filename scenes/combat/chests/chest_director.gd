@@ -161,9 +161,9 @@ func cleanup_all_chests() -> void:
 			c.queue_free()
 	active_chests.clear()
 
-const CHEST_MAX_DISTANCE: float = 1500.0
-const CHEST_RELOCATION_MIN_DIST: float = 850.0
-const CHEST_RELOCATION_MAX_DIST: float = 1100.0
+const CHEST_MAX_DISTANCE: float = 1800.0
+const CHEST_RELOCATION_MIN_DIST: float = 1150.0
+const CHEST_RELOCATION_MAX_DIST: float = 1450.0
 
 ## Reubicación cuántica silenciosa de cofres desatendidos lejanos hacia adelante del jugador
 func _relocate_distant_chests(player_pos: Vector2, parent_container: Node2D) -> void:

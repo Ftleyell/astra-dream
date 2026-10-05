@@ -23,6 +23,10 @@ const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
 
+var character_id: StringName:
+	get:
+		return character_data.character_id if character_data else &"nova"
+
 var stats: CharacterStats = CharacterStats.new()
 var character_stats: CharacterStats:
 	get: return stats
@@ -150,6 +154,11 @@ var idle_bob_timer: float = 0.0
 var hit_flash_timer: float = 0.0
 const ROTATION_SMOOTH_SPEED: float = 14.0
 const BANK_SMOOTH_SPEED: float = 8.0
+const TACTICAL_FOCUS_SPEED: float = 280.0
+
+var is_tactical_focus_active: bool = false
+var _threat_check_timer: float = 0.0
+var _is_threat_nearby: bool = false
 
 @onready var hitbox_core: Node2D = get_node_or_null("HitboxCore")
 @onready var weapon_controller: Node2D = get_node_or_null("WeaponController")
@@ -238,10 +247,80 @@ func _ready() -> void:
 			ind.position = Vector2(0, 26)
 			add_child(ind)
 
+	_setup_hitbox_core_visuals()
+
 
 func _apply_visual_theme() -> void:
 	if visual_builder:
 		visual_builder.apply_visual_theme(self, character_data)
+
+func _setup_hitbox_core_visuals() -> void:
+	if not hitbox_core:
+		return
+	hitbox_core.z_index = 25
+	hitbox_core.z_as_relative = true
+	hitbox_core.modulate = Color(1.0, 1.0, 1.0, 0.0)
+
+	if hitbox_core is Polygon2D:
+		var poly := hitbox_core as Polygon2D
+		poly.color = Color(1.0, 0.2, 0.5, 0.95)
+		var points: PackedVector2Array = PackedVector2Array()
+		const SEGMENTS: int = 16
+		const RADIUS: float = 4.5
+		for i in range(SEGMENTS):
+			var a: float = float(i) * TAU / float(SEGMENTS)
+			points.append(Vector2(cos(a) * RADIUS, sin(a) * RADIUS))
+		poly.polygon = points
+
+		if not poly.get_node_or_null("CoreRing"):
+			var ring := Line2D.new()
+			ring.name = "CoreRing"
+			ring.width = 1.5
+			ring.default_color = Color(0.2, 0.95, 1.0, 0.9)
+			var ring_points: PackedVector2Array = PackedVector2Array()
+			const RING_SEGMENTS: int = 20
+			const RING_RADIUS: float = 6.5
+			for i in range(RING_SEGMENTS + 1):
+				var a: float = float(i % RING_SEGMENTS) * TAU / float(RING_SEGMENTS)
+				ring_points.append(Vector2(cos(a) * RING_RADIUS, sin(a) * RING_RADIUS))
+			ring.points = ring_points
+			poly.add_child(ring)
+
+
+func _process(delta: float) -> void:
+	_update_hitbox_core_visibility(delta)
+
+
+func _update_hitbox_core_visibility(delta: float) -> void:
+	if not hitbox_core:
+		return
+	_threat_check_timer -= delta
+	if _threat_check_timer <= 0.0:
+		_threat_check_timer = 0.12
+		_is_threat_nearby = _check_hostile_threat()
+
+	var settings_mgr = get_node_or_null("/root/SettingsManager")
+	var always_on: bool = settings_mgr.is_core_hitbox_always_visible() if settings_mgr and settings_mgr.has_method("is_core_hitbox_always_visible") else false
+
+	var target_alpha: float = 1.0 if (always_on or is_tactical_focus_active or _is_threat_nearby) else 0.0
+	hitbox_core.modulate.a = move_toward(hitbox_core.modulate.a, target_alpha, delta / 0.1)
+
+
+func _check_hostile_threat() -> bool:
+	var tree := get_tree()
+	if not tree:
+		return false
+	if not tree.get_nodes_in_group("bosses").is_empty() or not tree.get_nodes_in_group("rivals").is_empty():
+		return true
+	var chargers := tree.get_nodes_in_group("chargers")
+	for c in chargers:
+		if is_instance_valid(c) and c.get("is_preparing_charge") == true:
+			return true
+	var enemies := tree.get_nodes_in_group("enemies")
+	for e in enemies:
+		if is_instance_valid(e) and e is Node2D and (e as Node2D).global_position.distance_squared_to(global_position) < 14400.0:
+			return true
+	return false
 
 
 func _physics_process(delta: float) -> void:
@@ -337,7 +416,12 @@ func _handle_movement(delta: float) -> void:
 		Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
 	).normalized()
 
+	is_tactical_focus_active = Input.is_key_pressed(KEY_CTRL) or (InputMap.has_action(&"tactical_focus") and Input.is_action_pressed(&"tactical_focus"))
+
 	var speed: float = stats.get_stat(&"move_speed")
+	if is_tactical_focus_active:
+		speed = minf(speed, TACTICAL_FOCUS_SPEED)
+
 	velocity = velocity.move_toward(input_vector * speed, speed * 8.0 * delta)
 	move_and_slide()
 

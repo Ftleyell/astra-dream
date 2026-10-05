@@ -92,6 +92,14 @@ func consume_laser_charge() -> void:
 	laser_charge_ended.emit()
 
 
+func get_effective_max_charge_time() -> float:
+	var base_time: float = max_charge_time
+	if is_instance_valid(player) and "stats" in player and player.stats:
+		var cur_speed: float = player.stats.get_stat(&"move_speed")
+		return clampf(base_time * (340.0 / maxf(100.0, cur_speed)), 1.2, base_time)
+	return base_time
+
+
 ## ─── Gestión de Ranuras y Equipamiento ──────────────────────────────────────
 func add_weapon(data: WeaponData) -> bool:
 	if not data:
@@ -293,13 +301,14 @@ func _handle_active_fire(delta: float) -> void:
 
 	# Mecánica de carga exclusiva para el láser
 	if laser_inst:
+		var effective_max_charge := get_effective_max_charge_time()
 		if has_charge_memory:
 			memory_grace_timer -= delta
 			if memory_grace_timer <= 0.0:
 				has_charge_memory = false
 				laser_charge_ended.emit()
 			else:
-				laser_charge_updated.emit(memory_charge_timer, max_charge_time, memory_is_fully_charged, true)
+				laser_charge_updated.emit(memory_charge_timer, effective_max_charge, memory_is_fully_charged, true)
 
 		if Input.is_action_pressed("fire_active"):
 			if laser_inst.active_cooldown <= 0.0:
@@ -309,15 +318,15 @@ func _handle_active_fire(delta: float) -> void:
 					is_fully_charged = false
 
 				charge_timer += delta
-				if charge_timer >= max_charge_time:
-					charge_timer = max_charge_time
+				if charge_timer >= effective_max_charge:
+					charge_timer = effective_max_charge
 					if not is_fully_charged:
 						is_fully_charged = true
 						var audio_mgr := get_node_or_null("/root/AudioManager")
 						if audio_mgr and audio_mgr.has_method("play_sfx"):
 							audio_mgr.play_sfx("ui_click", 2.0, -2.0)
 
-				laser_charge_updated.emit(charge_timer, max_charge_time, is_fully_charged, false)
+				laser_charge_updated.emit(charge_timer, effective_max_charge, is_fully_charged, false)
 			else:
 				if is_charging:
 					is_charging = false

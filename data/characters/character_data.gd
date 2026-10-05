@@ -40,6 +40,17 @@ extends Resource
 @export_group("Loadout")
 @export var starting_weapon: WeaponData
 
+@export_group("Kit Dossier")
+@export var weapon_archetype: String = ""
+@export_multiline var weapon_description: String = ""
+@export var tactical_ability_name: String = ""
+@export_multiline var tactical_ability_description: String = ""
+@export var dash_ability_name: String = ""
+@export_multiline var dash_ability_description: String = ""
+@export var innate_passive_name: String = ""
+@export_multiline var innate_passive_description: String = ""
+@export var favored_tome_id: StringName = &""
+
 @export_group("Megabonk Banlist Constraints")
 @export var banned_tags: Array[StringName] = []
 @export var inherent_item_banlist: Array[StringName] = []
@@ -135,6 +146,103 @@ func get_formatted_stats() -> String:
 		int(crit_chance * 100.0),
 		int(luck)
 	]
+
+func get_kit_dossier() -> Dictionary:
+	var dossier: Dictionary = {
+		"weapon_name": weapon_archetype,
+		"weapon_desc": weapon_description,
+		"tactical_name": tactical_ability_name,
+		"tactical_desc": tactical_ability_description,
+		"dash_name": dash_ability_name,
+		"dash_desc": dash_ability_description,
+		"passive_name": innate_passive_name,
+		"passive_desc": innate_passive_description,
+		"favored_tome": favored_tome_id
+	}
+
+	if String(dossier.weapon_name).is_empty():
+		match character_id:
+			&"nova":
+				dossier.weapon_name = "Riel Magnético Dual"
+				dossier.weapon_desc = "Proyectiles balísticos gemelos de alta cadencia y penetración cinética frontal."
+				dossier.tactical_name = "Láser Focalizado de Vanguardia"
+				dossier.tactical_desc = "Haz continuo que acelera su tiempo de carga con la velocidad de movimiento (hasta 1.2s)."
+				dossier.dash_name = "Omega Spin"
+				dossier.dash_desc = "Giro evasivo de 360° que aniquila proyectiles hostiles e inflige corte radial limpio."
+				dossier.passive_name = "Sobrecarga de Vanguardia"
+				dossier.passive_desc = "Favorece Tomo de Velocidad: cada +10% de velocidad otorga +6% de Daño a quemarropa (<120px)."
+				dossier.favored_tome = &"tome_move_speed"
+			&"valentina":
+				dossier.weapon_name = "Cañón Francotirador Perforante"
+				dossier.weapon_desc = "Disparos hipersónicos de largo alcance con penetración lineal y telemetría crítica."
+				dossier.tactical_name = "Matriz de Puntería Óptica"
+				dossier.tactical_desc = "Enfoca una retícula balística de alta precisión para impactos letales telegrafiados."
+				dossier.dash_name = "Repliegue Táctico"
+				dossier.dash_desc = "Impulso vectorial hacia atrás que incrementa la velocidad de proyectiles subsecuentes."
+				dossier.passive_name = "Balística de Alta Celeridad"
+				dossier.passive_desc = "Favorece Tomo de Velocidad de Proyectil: cada +10% de velocidad otorga +8% de Daño Crítico."
+				dossier.favored_tome = &"tome_projectile_speed"
+			&"roxy":
+				dossier.weapon_name = "Escopeta de Dispersión Titánica"
+				dossier.weapon_desc = "Descarga de perdigones de plasma masivo con alto retroceso y metralla pesada."
+				dossier.tactical_name = "Barrera de Choque Térmico"
+				dossier.tactical_desc = "Sobrecarga frontal de escudos que repele proyectiles hostiles y absorbe impactos."
+				dossier.dash_name = "Embestida Blindada"
+				dossier.dash_desc = "Carga pesada a través de formaciones enemigas infligiendo aturdimiento e inmunidad breve."
+				dossier.passive_name = "Coraza Balística Pesada"
+				dossier.passive_desc = "Favorece Tomo de Armadura: cada punto de armadura otorga +7% de Daño de Escopeta."
+				dossier.favored_tome = &"tome_armor"
+			&"selene":
+				dossier.weapon_name = "Sifón Gravitatorio de Vacío"
+				dossier.weapon_desc = "Vórtices singulares que colapsan y atraen cúmulos estelares de materia oscura."
+				dossier.tactical_name = "Micro-Horizonte de Sucesos"
+				dossier.tactical_desc = "Invoca un pozo gravitatorio estático que comprime enemigos y absorbe disparos."
+				dossier.dash_name = "Pliegue Espacial"
+				dossier.dash_desc = "Teletransporte cuántico que distorsiona el tejido del vacío evitando colisiones."
+				dossier.passive_name = "Atracción Singular"
+				dossier.passive_desc = "Favorece Tomo de Radio de Recolección: cada +20px de imán otorga +10% de Tamaño de Arma."
+				dossier.favored_tome = &"tome_pickup_radius"
+			&"nyx":
+				dossier.weapon_name = "Hojas de Fractura Dimensional"
+				dossier.weapon_desc = "Cortes hiper-densos de corto alcance que rasgan el espacio e ignoran corazas."
+				dossier.tactical_name = "Desfase Abisal"
+				dossier.tactical_desc = "Fase temporal de intangibilidad absoluta para reposicionamiento crítico en combate."
+				dossier.dash_name = "Paso de Sombras"
+				dossier.dash_desc = "Corte dimensional instantáneo en línea recta ejecutando enemigos vulnerables."
+				dossier.passive_name = "Pacto de Sangre y Cenizas"
+				dossier.passive_desc = "Favorece Tomo de Maldición: cada punto de Maldición otorga +12% de Daño Melee."
+				dossier.favored_tome = &"tome_curse"
+			&"echo":
+				dossier.weapon_name = "Bobina Tesla Voltaica"
+				dossier.weapon_desc = "Arcos voltaicos continuos que encadenan descargas eléctricas entre blancos múltiples."
+				dossier.tactical_name = "Pulso EMP Sistémico"
+				dossier.tactical_desc = "Sobrecarga electromagnética que neutraliza proyectiles cercanos y sobrecalienta escudos."
+				dossier.dash_name = "Destello Cibernético"
+				dossier.dash_desc = "Desplazamiento eléctrico ultrarrápido que deja terminales de inducción sobre el campo."
+				dossier.passive_name = "Bucle de Frecuencia Acelerada"
+				dossier.passive_desc = "Favorece Tomo de Enfriamiento: cada -5% de enfriamiento añade +1 arco eléctrico adicional."
+				dossier.favored_tome = &"tome_cooldown_reduction"
+			&"kira":
+				dossier.weapon_name = "Enjambre Biomórfico"
+				dossier.weapon_desc = "Micro-misiles orgánicos teledirigidos con seguimiento adaptativo de objetivos."
+				dossier.tactical_name = "Colmena de Nanobots"
+				dossier.tactical_desc = "Siembra un enjambre autónomo devorador de bio-materia que ralentiza enemigos."
+				dossier.dash_name = "Desprendimiento Celular"
+				dossier.dash_desc = "Impulso orgánico con señuelos de bio-materia que desorientan el fuego enemigo."
+				dossier.passive_name = "Replicación Azarosa"
+				dossier.passive_desc = "Favorece Tomo de Suerte: cada +5 puntos de Suerte añade probabilidad de duplicar la salva."
+				dossier.favored_tome = &"tome_luck"
+			_:
+				dossier.weapon_name = starting_weapon.weapon_name if starting_weapon else "Arma Estándar"
+				dossier.weapon_desc = starting_weapon.description if starting_weapon else "Armamento balístico estándar de combate."
+				dossier.tactical_name = "Módulo Táctico"
+				dossier.tactical_desc = "Sistema de apoyo auxiliar de combate."
+				dossier.dash_name = "Propulsión Evasiva"
+				dossier.dash_desc = "Impulso vectorial con micro-invulnerabilidad."
+				dossier.passive_name = "Afinidad Táctica"
+				dossier.passive_desc = "Sinergia estándar de combate espacial."
+				dossier.favored_tome = &"tome_base_damage"
+	return dossier
 
 # Static roster loaders
 static func load_roster() -> Dictionary[StringName, CharacterData]:

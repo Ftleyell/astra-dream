@@ -161,13 +161,17 @@ func _die() -> void:
 	if is_instance_valid(player):
 		if player.inventory:
 			player.inventory.process_kill_procs(self)
-		var drop_creds: int = credits_reward
-		if credits_reward == 1:
-			# Swarms/drones have a 30% drop chance to curb hyperinflation
-			drop_creds = 1 if randf() < 0.30 else 0
-		elif credits_reward == 2:
-			# Minor assault units drop 1 credit 50% of the time
-			drop_creds = 1 if randf() < 0.50 else 0
+		var drop_creds: int = 0
+		if is_in_group("elites") or is_in_group("bosses") or credits_reward >= 15:
+			# Élites y jefes otorgan botín sustancial garantizado
+			drop_creds = credits_reward
+		elif credits_reward >= 3:
+			# Mobs medianos: drop rate moderado (15%) de 1 crédito
+			drop_creds = 1 if randf() < 0.15 else 0
+		else:
+			# Mobs comunes y enjambre: drop rate bajo (7%) para erradicar hiperinflación pasiva
+			drop_creds = 1 if randf() < 0.07 else 0
+
 		if drop_creds > 0:
 			player.add_credits(drop_creds)
 

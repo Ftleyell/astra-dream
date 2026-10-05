@@ -203,15 +203,22 @@ icon = ExtResource("6_play")
 alignment = 1
 
 [node name="SettingsButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(120, 38)
+custom_minimum_size = Vector2(110, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "AJUSTES"
 icon = ExtResource("7_gear")
 alignment = 1
 
+[node name="HitboxToggleButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(125, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "HITBOX: AUTO"
+alignment = 1
+
 [node name="HighscoresButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
-custom_minimum_size = Vector2(120, 38)
+custom_minimum_size = Vector2(110, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "RÉCORDS"

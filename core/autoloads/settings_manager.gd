@@ -15,6 +15,7 @@ var sfx_volume: float = 0.85
 var resolution_size: Vector2i = Vector2i(1920, 1080)
 var fullscreen: bool = false
 var gamepad_deadzone: float = 0.15
+var core_hitbox_always_visible: bool = false
 
 signal settings_changed()
 
@@ -35,6 +36,7 @@ func load_and_apply_settings() -> void:
 		fullscreen = bool(config.get_value("display", "fullscreen", false))
 
 		gamepad_deadzone = float(config.get_value("controller", "deadzone", 0.15))
+		core_hitbox_always_visible = bool(config.get_value("gameplay", "core_hitbox_always_visible", false))
 
 		_load_keybindings_from_config()
 	else:
@@ -164,7 +166,17 @@ func save_all_settings() -> void:
 	config.set_value("display", "height", resolution_size.y)
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("controller", "deadzone", gamepad_deadzone)
+	config.set_value("gameplay", "core_hitbox_always_visible", core_hitbox_always_visible)
 	config.save(SETTINGS_PATH)
+
+func set_core_hitbox_always_visible(p_visible: bool) -> void:
+	core_hitbox_always_visible = p_visible
+	config.set_value("gameplay", "core_hitbox_always_visible", core_hitbox_always_visible)
+	config.save(SETTINGS_PATH)
+	settings_changed.emit()
+
+func is_core_hitbox_always_visible() -> bool:
+	return core_hitbox_always_visible
 
 func set_audio_volume(bus_name: String, linear_val: float) -> void:
 	match bus_name.to_lower():

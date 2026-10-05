@@ -18,6 +18,9 @@ signal telegraph_completed()
 @export var indicator_scale: Vector2 = Vector2(1.0, 1.0)
 
 var _sprite: Sprite2D = null
+var _laser_line: Line2D = null
+var _laser_glow: Line2D = null
+var _laser_direction: Vector2 = Vector2.RIGHT
 var _tween: Tween = null
 var _active_type: TelegraphType = TelegraphType.CONE
 var _cone_tex: Texture2D = null
@@ -43,9 +46,38 @@ func _setup_sprite() -> void:
 		_sprite.material = mat
 		add_child(_sprite)
 
+	if _laser_line == null:
+		_laser_glow = Line2D.new()
+		_laser_glow.name = "TelegraphLaserGlow"
+		_laser_glow.visible = false
+		_laser_glow.top_level = true
+		_laser_glow.width = 9.0
+		_laser_glow.default_color = Color(1.0, 0.15, 0.25, 0.35)
+		var mat_glow := CanvasItemMaterial.new()
+		mat_glow.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		_laser_glow.material = mat_glow
+		add_child(_laser_glow)
+
+		_laser_line = Line2D.new()
+		_laser_line.name = "TelegraphLaserCore"
+		_laser_line.visible = false
+		_laser_line.top_level = true
+		_laser_line.width = 2.5
+		_laser_line.default_color = Color(1.5, 0.85, 0.4, 0.95)
+		var mat_core := CanvasItemMaterial.new()
+		mat_core.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		_laser_line.material = mat_core
+		add_child(_laser_line)
+
 func _process(_delta: float) -> void:
 	if is_instance_valid(_sprite) and _sprite.visible:
 		_sprite.global_position = global_position
+	if is_instance_valid(_laser_line) and _laser_line.visible:
+		var end_pt: Vector2 = global_position + _laser_direction * 2600.0
+		var pts: PackedVector2Array = PackedVector2Array([global_position, end_pt])
+		_laser_line.points = pts
+		if is_instance_valid(_laser_glow):
+			_laser_glow.points = pts
 
 func _load_textures() -> void:
 	if _cone_tex != null and _ring_tex != null and _wave_tex != null:
@@ -115,22 +147,37 @@ func start_telegraph(p_type: TelegraphType, p_duration: float, p_target_dir: Vec
 			_sprite.modulate = Color(0.85, 0.25, 1.0, 0.0) # Púrpura abisal
 
 		TelegraphType.CHARGE_LANE:
-			_sprite.texture = _wave_tex
-			_sprite.offset = Vector2(0.0, -128.0)
-			# Carril estrecho y ultra-largo que atraviesa la pantalla entera (~1800-2000px)
-			_sprite.scale = indicator_scale * Vector2(0.9, 7.5)
-			if p_target_dir.length_squared() > 0.001:
-				_sprite.global_rotation = p_target_dir.angle() + (PI / 2.0)
-			else:
-				_sprite.global_rotation = 0.0
-			_sprite.modulate = Color(1.2, 0.35, 0.1, 0.0) # Rojo-naranja penetrante
+			_sprite.visible = false
+			_laser_direction = p_target_dir.normalized() if p_target_dir.length_squared() > 0.001 else Vector2.RIGHT
+			if is_instance_valid(_laser_line) and is_instance_valid(_laser_glow):
+				var end_pt: Vector2 = global_position + _laser_direction * 2600.0
+				var pts: PackedVector2Array = PackedVector2Array([global_position, end_pt])
+				_laser_line.points = pts
+				_laser_glow.points = pts
+				_laser_line.visible = true
+				_laser_glow.visible = true
+				_laser_line.modulate = Color(1.0, 1.0, 1.0, 0.0)
+				_laser_glow.modulate = Color(1.0, 1.0, 1.0, 0.0)
+
+	if p_type == TelegraphType.CHARGE_LANE:
+		_tween = create_tween()
+		_tween.set_parallel(true)
+		if is_instance_valid(_laser_line):
+			_tween.tween_property(_laser_line, "modulate:a", 1.0, p_duration * 0.35)
+			_tween.tween_property(_laser_line, "width", 3.2, p_duration).from(1.5)
+		if is_instance_valid(_laser_glow):
+			_tween.tween_property(_laser_glow, "modulate:a", 1.0, p_duration * 0.35)
+			_tween.tween_property(_laser_glow, "width", 11.0, p_duration).from(5.0)
+		_tween.set_parallel(false)
+		_tween.tween_callback(self._on_duration_completed)
+		return
 
 	_sprite.visible = true
 	_tween = create_tween()
 	_tween.set_parallel(true)
 
 	# Fade in elástico de advertencia suave (alfa 0.35 - 0.45 para no cegar al jugador)
-	var target_alpha: float = 0.42 if p_type == TelegraphType.CHARGE_LANE else 0.38
+	var target_alpha: float = 0.38
 	var target_color: Color = _sprite.modulate
 	target_color.a = target_alpha
 
@@ -151,7 +198,20 @@ func _on_duration_completed() -> void:
 func dismiss() -> void:
 	if _tween and _tween.is_valid():
 		_tween.kill()
-	if not is_instance_valid(_sprite):
+
+	if is_instance_valid(_laser_line) and _laser_line.visible:
+		var line_tw := create_tween()
+		line_tw.set_parallel(true)
+		line_tw.tween_property(_laser_line, "modulate:a", 0.0, 0.08)
+		if is_instance_valid(_laser_glow):
+			line_tw.tween_property(_laser_glow, "modulate:a", 0.0, 0.08)
+		line_tw.set_parallel(false)
+		line_tw.tween_callback(func() -> void:
+			if is_instance_valid(_laser_line): _laser_line.visible = false
+			if is_instance_valid(_laser_glow): _laser_glow.visible = false
+		)
+
+	if not is_instance_valid(_sprite) or not _sprite.visible:
 		return
 
 	# Rápida contracción y desvanecimiento al momento del disparo

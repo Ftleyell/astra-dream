@@ -7,6 +7,7 @@ const HighscoresModalScript := preload("res://scenes/ui/highscores/highscores_mo
 
 @onready var resume_button: Button = $Panel/VBoxContainer/BottomBar/ResumeButton
 @onready var settings_button: Button = $Panel/VBoxContainer/BottomBar/SettingsButton
+@onready var hitbox_toggle_button: Button = get_node_or_null("Panel/VBoxContainer/BottomBar/HitboxToggleButton")
 @onready var highscores_button: Button = $Panel/VBoxContainer/BottomBar/HighscoresButton
 @onready var save_quit_button: Button = $Panel/VBoxContainer/BottomBar/SaveQuitButton
 @onready var restart_button: Button = $Panel/VBoxContainer/BottomBar/RestartButton
@@ -51,6 +52,10 @@ func _ready() -> void:
 
 	UIFocusHelper.apply_cyber_focus(resume_button)
 	UIFocusHelper.apply_cyber_focus(settings_button)
+	if hitbox_toggle_button:
+		UIFocusHelper.apply_cyber_focus(hitbox_toggle_button)
+		hitbox_toggle_button.pressed.connect(_on_hitbox_toggle_pressed)
+		_update_hitbox_toggle_text()
 	UIFocusHelper.apply_cyber_focus(highscores_button)
 	UIFocusHelper.apply_cyber_focus(save_quit_button)
 	UIFocusHelper.apply_cyber_focus(restart_button)
@@ -74,6 +79,7 @@ func _setup_button_navigation() -> void:
 	var buttons: Array[Button] = [
 		resume_button,
 		settings_button,
+		hitbox_toggle_button,
 		highscores_button,
 		save_quit_button,
 		restart_button,
@@ -151,6 +157,7 @@ func open_pause_menu() -> void:
 	if hud and hud.has_method("set_stats_dock_requested"):
 		hud.set_stats_dock_requested(&"pause_menu", true)
 	_refresh_build_inspector()
+	_update_hitbox_toggle_text()
 	show()
 	_setup_button_navigation()
 	resume_button.grab_focus()
@@ -554,6 +561,22 @@ func _populate_upgrades() -> void:
 func _on_settings_pressed() -> void:
 	if settings_modal:
 		settings_modal.open_settings()
+
+func _on_hitbox_toggle_pressed() -> void:
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr and mgr.has_method("set_core_hitbox_always_visible") and mgr.has_method("is_core_hitbox_always_visible"):
+		mgr.set_core_hitbox_always_visible(not mgr.is_core_hitbox_always_visible())
+		_update_hitbox_toggle_text()
+		var audio_mgr = get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("ui_click")
+
+func _update_hitbox_toggle_text() -> void:
+	if not hitbox_toggle_button:
+		return
+	var mgr = get_node_or_null("/root/SettingsManager")
+	var always: bool = mgr.is_core_hitbox_always_visible() if mgr and mgr.has_method("is_core_hitbox_always_visible") else false
+	hitbox_toggle_button.text = "HITBOX: SIEMPRE" if always else "HITBOX: AUTO"
 
 func _on_highscores_pressed() -> void:
 	if highscores_modal:

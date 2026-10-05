@@ -86,6 +86,88 @@ func _apply_tome_modifier(tome: TomeDataScript, level: int) -> void:
 	)
 	player.stats.set_or_replace_modifier(tome.stat_name, mod)
 
+	# Sinergias Temáticas Únicas por Personaje (Fase 6)
+	_apply_pilot_tome_synergy(tome, level)
+
+func _apply_pilot_tome_synergy(tome: TomeDataScript, level: int) -> void:
+	if not player or not is_instance_valid(player) or not player.stats:
+		return
+	var pid: StringName = player.character_id if "character_id" in player else &""
+	var tid: StringName = tome.tome_id
+	var syn_id: StringName = StringName("synergy_" + str(pid) + "_" + str(tid))
+
+	match pid:
+		&"nova":
+			if tid == &"tome_move_speed":
+				# +6% de Daño Base por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					0.06 * float(level),
+					Enums.ModifierType.ADDITIVE_PERCENT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"base_damage", syn_mod)
+		&"valentina":
+			if tid == &"tome_projectile_speed":
+				# +8% de Daño Crítico por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					0.08 * float(level),
+					Enums.ModifierType.ADDITIVE_PERCENT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"crit_damage", syn_mod)
+		&"roxy":
+			if tid == &"tome_armor":
+				# +7% de Daño Base por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					0.07 * float(level),
+					Enums.ModifierType.ADDITIVE_PERCENT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"base_damage", syn_mod)
+		&"selene":
+			if tid == &"tome_pickup_radius":
+				# +10% de Tamaño de Arma por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					0.10 * float(level),
+					Enums.ModifierType.ADDITIVE_PERCENT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"weapon_size", syn_mod)
+		&"nyx":
+			if tid == &"tome_curse":
+				# +12% de Daño Base por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					0.12 * float(level),
+					Enums.ModifierType.ADDITIVE_PERCENT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"base_damage", syn_mod)
+		&"echo":
+			if tid == &"tome_cooldown_reduction":
+				# +1 Proyectil por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					1.0 * float(level),
+					Enums.ModifierType.FLAT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"projectile_count", syn_mod)
+		&"kira":
+			if tid == &"tome_luck":
+				# +1 Proyectil por nivel
+				var syn_mod := CharacterStats.StatModifier.new(
+					syn_id,
+					1.0 * float(level),
+					Enums.ModifierType.FLAT,
+					self
+				)
+				player.stats.set_or_replace_modifier(&"projectile_count", syn_mod)
+
 func apply_all_modifiers() -> void:
 	if not player or not is_instance_valid(player) or not player.stats:
 		return

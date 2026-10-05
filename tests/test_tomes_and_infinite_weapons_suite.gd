@@ -141,9 +141,9 @@ func _test_tome_controller_and_modifiers() -> void:
 	assert_true(fresh_ctrl.get_tome_level(&"tome_base_damage") == 2, "Debe restaurar el nivel 2 del tomo de daño")
 
 	print("  ✓ TomeController y aplicación de modificadores verificados.")
-	player.free()
-	tome_ctrl.free()
-	fresh_ctrl.free()
+	player.queue_free()
+	tome_ctrl.queue_free()
+	fresh_ctrl.queue_free()
 
 
 func _test_level_up_reward_generator_four_slots_guarantee() -> void:
@@ -182,17 +182,16 @@ func _test_level_up_reward_generator_four_slots_guarantee() -> void:
 		assert_true(opt.next_level > opt.current_level, "Cada opción de mejora debe subir de nivel")
 
 	print("  ✓ LevelUpRewardGenerator garantiza 100% opciones de mejora con ranuras llenas.")
-	player.free()
-	w_ctrl.free()
-	t_ctrl.free()
+	player.queue_free()
+	w_ctrl.queue_free()
+	t_ctrl.queue_free()
 
 
 func _test_chest_director_quantum_leash() -> void:
-	print("[5/6] Verifying ChestDirector quantum leash relocation (>1500 px)...")
-	var director = ChestDirectorScript.new()
-	var chest_scene := preload("res://scenes/combat/chests/spatial_chest.tscn")
-	var chest = chest_scene.instantiate()
-	chest.global_position = Vector2(2400, 0) # Lejos del jugador (>1500 px)
+	print("[5/6] Verifying ChestDirector quantum leash relocation (>1800 px)...")
+	var director := ChestDirectorScript.new()
+	var chest := SpatialChest.new()
+	chest.global_position = Vector2(2400, 0) # Lejos del jugador (>1800 px)
 	director.active_chests.append(chest)
 
 	# Simular jugador en el origen moviéndose hacia la derecha
@@ -200,14 +199,14 @@ func _test_chest_director_quantum_leash() -> void:
 	var dummy_player := Node2D.new()
 	dummy_player.set("velocity", Vector2(300, 0))
 	dummy_parent.set("player", dummy_player)
-	dummy_parent.add_child(dummy_player)
 
 	director._relocate_distant_chests(Vector2.ZERO, dummy_parent)
 
 	var new_dist: float = chest.global_position.distance_to(Vector2.ZERO)
-	assert_true(new_dist <= 1250.0 and new_dist >= 800.0, "El cofre reubicado debe estar entre 850 y 1100 px (distancia medida: %.1f)" % new_dist)
+	assert_true(new_dist <= 1500.0 and new_dist >= 1100.0, "El cofre reubicado debe estar entre 1150 y 1450 px (distancia medida: %.1f)" % new_dist)
 
 	chest.free()
+	dummy_player.free()
 	dummy_parent.free()
 	director.free()
 	print("  ✓ Leash cuántico de cofres verificado.")

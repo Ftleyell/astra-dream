@@ -62,4 +62,6 @@ func _cleanup_and_quit(exit_code: int) -> void:
 	var tree := get_tree()
 	if tree:
 		tree.paused = false
+		await tree.process_frame
+		await tree.process_frame
 		tree.quit(exit_code)

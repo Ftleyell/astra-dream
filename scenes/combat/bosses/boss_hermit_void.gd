@@ -12,9 +12,9 @@ signal boss_defeated(boss_id: String)
 
 @export var boss_id: String = "boss_hermit_void"
 @export var boss_name: String = "EREMITA DEL VACÍO"
-@export var max_health: float = 1600.0
+@export var max_health: float = 2600.0
 
-var current_health: float = 1600.0
+var current_health: float = 2600.0
 var current_phase: int = 1
 var is_dying: bool = false
 var elapsed_combat_time: float = 0.0

@@ -175,17 +175,15 @@ func _execute_nova_dash() -> void:
 		return
 
 	is_dashing = true
-	dash_timer = 0.25
-	if fire_trail_scene:
-		var hazard := fire_trail_scene.instantiate()
-		if hazard and hazard.has_method("setup"):
-			hazard.setup(player.global_position, dash_direction, player)
-			var spawn_parent: Node = player.get_tree().current_scene if player.get_tree() and player.get_tree().current_scene else player.get_parent()
-			if spawn_parent:
-				spawn_parent.add_child(hazard)
+	dash_timer = 0.28
+	is_omega_spinning = true
+	omega_spin_angle = dash_direction.angle()
+	if player.has_method("update_omega_spin_rotation"):
+		player.update_omega_spin_rotation(omega_spin_angle)
+
 	var audio_mgr := player.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("dash", 1.2, 0.0)
+		audio_mgr.play_sfx("dash", 1.25, 0.0)
 
 func _execute_nova_omega_spin(wc: WeaponController) -> void:
 	is_dashing = true

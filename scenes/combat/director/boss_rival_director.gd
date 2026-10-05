@@ -17,14 +17,16 @@ var current_rival: Node2D = null
 func initialize(timeline_cfg: EncounterTimelineConfig) -> void:
 	config = timeline_cfg
 
-func calculate_adaptive_hp(base_hp: float, wave_num: int, p_dmg: float, p_spd: float) -> float:
-	var wave_step: float = config.wave_scaling_hp_step if config else 0.08
-	var floor_val: float = config.adaptive_dps_floor if config else 0.85
-	var ceil_val: float = config.adaptive_dps_ceiling if config else 2.50
+func calculate_adaptive_hp(base_hp: float, wave_num: int, p_dmg: float = 20.0, p_spd: float = 1.0, p_crit_c: float = 0.05, p_crit_d: float = 1.5, p_proj_count: float = 1.0) -> float:
+	var wave_step: float = config.wave_scaling_hp_step if config else 0.10
+	var floor_val: float = config.adaptive_dps_floor if config else 1.00
+	var ceil_val: float = config.adaptive_dps_ceiling if config else 10.00
 	var base_mult: float = config.base_boss_hp_multiplier if config else 1.0
 
 	var wave_factor: float = 1.0 + float(wave_num) * wave_step
-	var p_dps_factor: float = clampf((p_dmg / 20.0) * (p_spd / 1.0), floor_val, ceil_val)
+	var player_power: float = p_dmg * p_spd * (1.0 + clampf(p_crit_c, 0.0, 1.0) * maxf(0.0, p_crit_d)) * maxf(1.0, p_proj_count)
+	var baseline_power: float = 20.0 * 1.0 * (1.0 + 0.05 * 1.5) * 1.0
+	var p_dps_factor: float = clampf(pow(player_power / baseline_power, 0.65), floor_val, ceil_val)
 	return base_hp * wave_factor * p_dps_factor * base_mult
 
 func should_spawn_boss(wave_num: int) -> bool:

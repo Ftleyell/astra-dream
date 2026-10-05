@@ -8,9 +8,9 @@ signal boss_defeated(boss_id: String)
 
 @export var boss_id: String = "boss_aegis"
 @export var boss_name: String = "NODRIZA ORBITAL AEGIS"
-@export var max_health: float = 1200.0
+@export var max_health: float = 2800.0
 
-var current_health: float = 1200.0
+var current_health: float = 2800.0
 var current_phase: int = 1
 var is_dying: bool = false
 var player: Player = null

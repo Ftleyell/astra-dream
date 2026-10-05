@@ -19,9 +19,9 @@ enum HeraldType {
 @export var herald_type: HeraldType = HeraldType.TIME
 @export var boss_id: String = "elite_herald"
 @export var boss_name: String = "HERALDO DEL TIEMPO"
-@export var max_health: float = 600.0
+@export var max_health: float = 1400.0
 
-var current_health: float = 600.0
+var current_health: float = 1400.0
 var is_dying: bool = false
 var elapsed_time: float = 0.0
 var fire_timer: float = 0.0
@@ -63,7 +63,7 @@ func _configure_by_wave() -> void:
 		HeraldType.TIME:
 			boss_id = "herald_time"
 			boss_name = "HERALDO DEL TIEMPO"
-			max_health = 550.0
+			max_health = 1400.0
 			if visual_core:
 				visual_core.color = Color(1.0, 0.8, 0.2, 1.0)
 			if visual_frame:
@@ -71,7 +71,7 @@ func _configure_by_wave() -> void:
 		HeraldType.MIRROR:
 			boss_id = "herald_mirror"
 			boss_name = "HERALDO DEL ESPEJO"
-			max_health = 750.0
+			max_health = 1800.0
 			if visual_core:
 				visual_core.color = Color(0.2, 0.9, 1.0, 1.0)
 			if visual_frame:
@@ -79,7 +79,7 @@ func _configure_by_wave() -> void:
 		HeraldType.VORTEX:
 			boss_id = "herald_vortex"
 			boss_name = "HERALDO DEL VÓRTICE"
-			max_health = 950.0
+			max_health = 2200.0
 			if visual_core:
 				visual_core.color = Color(0.8, 0.2, 1.0, 1.0)
 			if visual_frame:
@@ -87,7 +87,7 @@ func _configure_by_wave() -> void:
 		_:
 			boss_id = "herald_time"
 			boss_name = "HERALDO DEL DOMINIO"
-			max_health = 600.0
+			max_health = 1500.0
 
 	current_health = max_health
 

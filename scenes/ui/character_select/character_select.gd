@@ -345,11 +345,23 @@ func _select_character(char_id: StringName) -> void:
 	if not data:
 		return
 
-	# Dossier textual
+	# Dossier textual enriquecido
 	name_label.text = data.display_name.to_upper()
 	name_label.modulate = data.color
 	title_label.text = data.title
-	desc_label.text = data.description
+
+	var kit: Dictionary = data.get_kit_dossier() if data.has_method("get_kit_dossier") else {}
+	var dossier_text: String = ""
+	if not kit.is_empty():
+		dossier_text += "⚔️ ARMA INICIAL: %s\n%s\n\n" % [kit.weapon_name, kit.weapon_desc]
+		dossier_text += "🎯 HABILIDAD TÁCTICA: %s\n%s\n\n" % [kit.tactical_name, kit.tactical_desc]
+		dossier_text += "⚡ MANIOBRA DASH: %s\n%s\n\n" % [kit.dash_name, kit.dash_desc]
+		dossier_text += "📖 CUALIDAD INNATA: %s\n%s\n\n" % [kit.passive_name, kit.passive_desc]
+		dossier_text += "📝 PERFIL: %s" % data.description
+	else:
+		dossier_text = data.description
+
+	desc_label.text = dossier_text
 	stats_label.text = data.get_formatted_stats()
 
 	var is_unlocked: bool = SaveManager.is_character_unlocked(char_id)
@@ -369,7 +381,9 @@ func _select_character(char_id: StringName) -> void:
 		if char_id == &"nyx":
 			var career := SaveManager.get_career_stats()
 			var bosses := int(career.get("total_bosses_killed", 0))
-			desc_label.text = "🔒 DESBLOQUEO DE CARRERA ESPACIAL:\nDerrota a 10 Jefes Titanes en combate para sincronizar a Nyx.\nProgreso de carrera: [ %d / 10 ] Jefes Eliminados.\n\n%s" % [bosses, data.description]
+			desc_label.text = "🔒 DESBLOQUEO DE CARRERA ESPACIAL:\nDerrota a 10 Jefes Titanes en combate para sincronizar a Nyx.\nProgreso de carrera: [ %d / 10 ] Jefes Eliminados.\n\n%s" % [bosses, dossier_text]
+		else:
+			desc_label.text = "🔒 PILOTO BLOQUEADA:\nRequiere desbloqueo en la campaña galáctica.\n\n%s" % dossier_text
 	else:
 		if launch_button:
 			launch_button.disabled = false

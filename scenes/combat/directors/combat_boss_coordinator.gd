@@ -192,17 +192,25 @@ func _apply_adaptive_hp(boss_node: Node2D, player: Node2D, current_wave: int) ->
 	var base_hp: float = float(boss_node.get("max_health"))
 	var dmg_val: float = 20.0
 	var spd_val: float = 1.0
+	var crit_c_val: float = 0.05
+	var crit_d_val: float = 1.5
+	var proj_count_val: float = 1.0
 	var p_stats = player.get("stats") if is_instance_valid(player) else null
 	if p_stats:
 		dmg_val = float(p_stats.get_stat(&"base_damage"))
 		spd_val = float(p_stats.get_stat(&"attack_speed"))
+		crit_c_val = float(p_stats.get_stat(&"crit_chance"))
+		crit_d_val = float(p_stats.get_stat(&"crit_damage"))
+		proj_count_val = float(p_stats.get_stat(&"projectile_count"))
 	var adaptive_hp: float = base_hp
-	var enc_dir = main_game.get("encounter_director")
+	var enc_dir = main_game.get("encounter_director") if main_game else null
 	if enc_dir and enc_dir.get("boss_rival_director"):
-		adaptive_hp = enc_dir.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val)
+		adaptive_hp = enc_dir.boss_rival_director.calculate_adaptive_hp(base_hp, current_wave, dmg_val, spd_val, crit_c_val, crit_d_val, proj_count_val)
 	else:
-		var wave_factor: float = 1.0 + float(current_wave) * 0.08
-		var p_dps_factor: float = clampf((dmg_val / 20.0) * (spd_val / 1.0), 0.85, 2.5)
+		var wave_factor: float = 1.0 + float(current_wave) * 0.10
+		var player_power: float = dmg_val * spd_val * (1.0 + clampf(crit_c_val, 0.0, 1.0) * maxf(0.0, crit_d_val)) * maxf(1.0, proj_count_val)
+		var baseline_power: float = 20.0 * 1.0 * (1.0 + 0.05 * 1.5) * 1.0
+		var p_dps_factor: float = clampf(pow(player_power / baseline_power, 0.65), 1.0, 10.0)
 		adaptive_hp = base_hp * wave_factor * p_dps_factor
 	boss_node.set("max_health", adaptive_hp)
 	boss_node.set("current_health", adaptive_hp)
@@ -267,6 +275,7 @@ func spawn_final_boss(force_spawn: bool = false) -> void:
 	main_game.set("current_boss", prime)
 	main_game.set("_wave_encounter_spawned_for_wave", current_wave)
 	main_game.set("_wave_encounter_pending", false)
+	_apply_adaptive_hp(prime, player, current_wave)
 
 	var hud = main_game.get("hud")
 	if hud:
@@ -358,6 +367,7 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	rival.rotation = -PI / 2.0
 	rival.process_mode = Node.PROCESS_MODE_ALWAYS
 	rival.setup_pilot(next_pid, current_wave)
+	_apply_adaptive_hp(rival, player, current_wave)
 	if rival.has_method("prepare_warp_in"):
 		rival.prepare_warp_in(rival_target_pos)
 	main_game.add_child(rival)
@@ -437,6 +447,7 @@ func spawn_elite_herald() -> void:
 	var herald: Node2D = elite_herald_scene.instantiate() as Node2D
 	herald.global_position = elite_pos
 	herald.setup_type(current_wave)
+	_apply_adaptive_hp(herald, player, current_wave)
 	main_game.set("current_boss", herald)
 	main_game.add_child(herald)
 
@@ -489,6 +500,8 @@ func spawn_boss_by_id(boss_id: String, play_intro: bool = true) -> void:
 		boss_node.global_position = target_pos
 		boss_node.rotation = PI
 		boss_node.process_mode = Node.PROCESS_MODE_PAUSABLE
+		var cur_w: int = int(main_game.get("current_wave"))
+		_apply_adaptive_hp(boss_node, player, cur_w)
 		main_game.add_child(boss_node)
 		main_game.set("current_boss", boss_node)
 		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"

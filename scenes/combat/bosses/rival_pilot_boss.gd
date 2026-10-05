@@ -28,9 +28,9 @@ const CHALLENGE_REQUIRED_TIME: float = 2.0
 
 @export var pilot_id: StringName = &"nova"
 @export var pilot_name: String = "Nova"
-@export var max_health: float = 950.0
+@export var max_health: float = 1600.0
 
-var current_health: float = 950.0
+var current_health: float = 1600.0
 var current_state: State = State.WARPING_IN
 var character_data: CharacterData = null
 var weapon_data: WeaponData = null
@@ -106,7 +106,7 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 	warning_ring_color = Color(theme_col.r, theme_col.g, theme_col.b, 0.5)
 
 	# Escalamiento por oleada
-	max_health = 750.0 + float(p_wave) * 160.0
+	max_health = 1600.0 + float(p_wave) * 280.0
 	current_health = max_health
 
 	if ship_sprite and character_data:

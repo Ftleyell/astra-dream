@@ -70,7 +70,12 @@ if ($Test) {
         "test_boss_runner.tscn",
         "test_dialogue_skip_runner.tscn",
         "test_tomes_and_infinite_weapons_runner.tscn",
-        "test_phase1_ui_polish_runner.tscn"
+        "test_phase1_ui_polish_runner.tscn",
+        "test_phase2_tactical_focus_runner.tscn",
+        "test_phase3_charger_rework_runner.tscn",
+        "test_phase4_gold_and_chests_runner.tscn",
+        "test_phase5_boss_and_bullets_runner.tscn",
+        "test_phase6_tomes_and_dossier_runner.tscn"
     )
     foreach ($cn in $coreNames) {
         $p = Join-Path $testsDir $cn

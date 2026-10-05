@@ -60,6 +60,14 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+	# Warp-in orbital suave para prevenir pop-in abrupto en pantalla
+	modulate.a = 0.0
+	scale = Vector2(0.5, 0.5)
+	var warp_tw := create_tween()
+	warp_tw.set_parallel(true)
+	warp_tw.tween_property(self, "modulate:a", 1.0, 0.40).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	warp_tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.40).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
 func _process(delta: float) -> void:
 	if is_opened:
 		return

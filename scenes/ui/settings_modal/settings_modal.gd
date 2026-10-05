@@ -8,6 +8,7 @@ signal closed
 @onready var sfx_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/SfxSlider
 @onready var resolution_option: OptionButton = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/ResolutionOption
 @onready var fullscreen_check: CheckBox = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/FullscreenCheck
+@onready var hitbox_core_check: CheckBox = get_node_or_null("Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/HitboxCoreCheck")
 
 @onready var kb_rebind_container: VBoxContainer = $Panel/VBoxContainer/TabContainer/Teclado_Raton/ScrollContainer/RebindList
 @onready var deadzone_slider: HSlider = $Panel/VBoxContainer/TabContainer/Mando_Joystick/VBox/DeadzoneRow/DeadzoneSlider
@@ -52,6 +53,8 @@ func _ready() -> void:
 
 	close_button.pressed.connect(close_settings)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
+	if hitbox_core_check:
+		hitbox_core_check.toggled.connect(_on_hitbox_core_toggled)
 	resolution_option.item_selected.connect(_on_resolution_selected)
 
 	master_slider.value_changed.connect(func(v): _on_volume_slider_changed("Master", v))
@@ -66,6 +69,8 @@ func _ready() -> void:
 
 	UIFocusHelper.apply_cyber_focus(close_button)
 	UIFocusHelper.apply_cyber_focus(fullscreen_check)
+	if hitbox_core_check:
+		UIFocusHelper.apply_cyber_focus(hitbox_core_check)
 	UIFocusHelper.apply_cyber_focus(resolution_option)
 	UIFocusHelper.apply_cyber_focus(master_slider)
 	UIFocusHelper.apply_cyber_focus(music_slider)
@@ -79,11 +84,18 @@ func _sync_ui_with_settings_manager() -> void:
 		music_slider.value = mgr.music_volume
 		sfx_slider.value = mgr.sfx_volume
 		fullscreen_check.button_pressed = mgr.fullscreen
+		if hitbox_core_check and mgr.has_method("is_core_hitbox_always_visible"):
+			hitbox_core_check.button_pressed = mgr.is_core_hitbox_always_visible()
 		deadzone_slider.value = mgr.gamepad_deadzone
 		deadzone_label.text = "%.2f" % mgr.gamepad_deadzone
 	else:
 		var mode := DisplayServer.window_get_mode()
 		fullscreen_check.button_pressed = (mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+
+func _on_hitbox_core_toggled(pressed: bool) -> void:
+	var mgr = get_node_or_null("/root/SettingsManager")
+	if mgr and mgr.has_method("set_core_hitbox_always_visible"):
+		mgr.set_core_hitbox_always_visible(pressed)
 
 func open_settings() -> void:
 	show()

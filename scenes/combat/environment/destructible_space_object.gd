@@ -121,6 +121,11 @@ func _die() -> void:
 	# Desactivar colisiones inmediatamente
 	_disable_collisions()
 
+	# Recompensa activa de créditos por destrucción de restos espaciales
+	if is_instance_valid(player) and player.has_method("add_credits"):
+		var obj_creds: int = randi_range(3, 6)
+		player.add_credits(obj_creds)
+
 	# Si DropComponent está presente y no fue accionado automáticamente
 	if drop_component and not is_queued_for_deletion():
 		drop_component.spawn_drops()
