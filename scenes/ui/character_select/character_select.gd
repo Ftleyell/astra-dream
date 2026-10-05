@@ -254,10 +254,21 @@ func _setup_signals() -> void:
 	if loadout_button:
 		loadout_button.pressed.connect(_on_loadout_pressed)
 
-	if pet_selection_modal and pet_selection_modal.has_signal("pet_selected"):
-		pet_selection_modal.pet_selected.connect(_on_pet_selected)
-	if navigator_selection_modal and navigator_selection_modal.has_signal("navigator_selected"):
-		navigator_selection_modal.navigator_selected.connect(_on_navigator_selected)
+	if pet_selection_modal:
+		if pet_selection_modal.has_signal("pet_selected"):
+			pet_selection_modal.pet_selected.connect(_on_pet_selected)
+		if pet_selection_modal.has_signal("skin_equipped"):
+			pet_selection_modal.skin_equipped.connect(_on_pet_skin_equipped)
+		if pet_selection_modal.has_signal("closed"):
+			pet_selection_modal.closed.connect(_on_pet_modal_closed)
+
+	if navigator_selection_modal:
+		if navigator_selection_modal.has_signal("navigator_selected"):
+			navigator_selection_modal.navigator_selected.connect(_on_navigator_selected)
+		if navigator_selection_modal.has_signal("skin_equipped"):
+			navigator_selection_modal.skin_equipped.connect(_on_navigator_skin_equipped)
+		if navigator_selection_modal.has_signal("closed"):
+			navigator_selection_modal.closed.connect(_on_navigator_modal_closed)
 
 	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
 		debug_menu_modal.closed.connect(_on_debug_modal_closed)
@@ -303,9 +314,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("ui_cancel"):
 		_on_back_pressed()
-		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
-		_on_launch_pressed()
 		get_viewport().set_input_as_handled()
 	elif is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
@@ -378,6 +386,8 @@ func _populate_roster() -> void:
 		if not first_btn:
 			first_btn = card_btn
 
+	_setup_focus_mesh()
+
 	if first_btn:
 		first_btn.grab_focus()
 
@@ -399,6 +409,39 @@ func _select_character(char_id: StringName) -> void:
 		SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
 	if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
 		SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
+
+	var cur_pet_str: String = String(SaveManager.get_selected_pet()).to_lower()
+	var pet_skin: String = str(loadout.get("equipped_pet_skin", ""))
+	if not pet_skin.is_empty():
+		SaveManager.equip_skin("pet:" + cur_pet_str, pet_skin)
+	else:
+		SaveManager.unequip_skin("pet:" + cur_pet_str)
+
+	var cur_nav_str: String = String(SaveManager.get_selected_navigator()).to_lower()
+	var nav_skin: String = str(loadout.get("equipped_navigator_skin", ""))
+	if not nav_skin.is_empty():
+		SaveManager.equip_skin("navigator:" + cur_nav_str, nav_skin)
+	else:
+		SaveManager.unequip_skin("navigator:" + cur_nav_str)
+
+	var cid_str: String = String(char_id).to_lower()
+	var ship_skin: String = str(loadout.get("equipped_ship_skin", ""))
+	if not ship_skin.is_empty():
+		SaveManager.equip_skin("ship:" + cid_str, ship_skin)
+	else:
+		SaveManager.unequip_skin("ship:" + cid_str)
+
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", ""))
+	if not weapon_skin.is_empty():
+		SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
+	else:
+		SaveManager.unequip_skin("weapon:" + cid_str)
+
+	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", ""))
+	if not pilot_skin.is_empty():
+		SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
+	else:
+		SaveManager.unequip_skin("pilot:" + cid_str)
 
 	# Dossier táctico sin emojis
 	name_label.text = data.display_name.to_upper()
@@ -483,6 +526,7 @@ func _select_character(char_id: StringName) -> void:
 	_refresh_telemetry_ui()
 	_refresh_talents_summary(char_id)
 	_update_ability_tags()
+	_setup_focus_mesh()
 
 
 func _get_action_key_text(act: StringName) -> String:
@@ -576,15 +620,45 @@ func _on_weapon_card_pressed() -> void:
 
 
 func _on_pet_card_pressed() -> void:
-	_last_focused_control = get_viewport().gui_get_focus_owner()
+	_last_focused_control = pet_button if pet_button else get_viewport().gui_get_focus_owner()
 	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):
 		pet_selection_modal.open_modal()
 
 
 func _on_navigator_card_pressed() -> void:
-	_last_focused_control = get_viewport().gui_get_focus_owner()
+	_last_focused_control = navigator_button if navigator_button else get_viewport().gui_get_focus_owner()
 	if navigator_selection_modal and navigator_selection_modal.has_method("open_modal"):
 		navigator_selection_modal.open_modal()
+
+
+func _on_pet_modal_closed() -> void:
+	if equipment_cards:
+		equipment_cards.refresh_pet_display(current_character_id)
+	var target_focus: Control = null
+	if is_instance_valid(pet_button) and pet_button.is_visible_in_tree():
+		target_focus = pet_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.call_deferred("grab_focus")
+
+
+func _on_navigator_modal_closed() -> void:
+	if equipment_cards:
+		equipment_cards.refresh_navigator_display(current_character_id)
+	var target_focus: Control = null
+	if is_instance_valid(navigator_button) and navigator_button.is_visible_in_tree():
+		target_focus = navigator_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.call_deferred("grab_focus")
 
 
 func _on_pet_selected(pet_id: StringName) -> void:
@@ -592,6 +666,14 @@ func _on_pet_selected(pet_id: StringName) -> void:
 	# Guardar en el loadout de la heroína actual
 	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
 	loadout["selected_pet"] = String(pet_id)
+	SaveManager.set_character_loadout(current_character_id, loadout)
+	if equipment_cards:
+		equipment_cards.refresh_pet_display(current_character_id)
+
+
+func _on_pet_skin_equipped(_slot_key: String, skin_id: String) -> void:
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	loadout["equipped_pet_skin"] = skin_id
 	SaveManager.set_character_loadout(current_character_id, loadout)
 	if equipment_cards:
 		equipment_cards.refresh_pet_display(current_character_id)
@@ -612,6 +694,14 @@ func _on_navigator_selected(nav_id: StringName) -> void:
 	# Guardar en el loadout de la heroína actual
 	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
 	loadout["selected_navigator"] = String(nav_id)
+	SaveManager.set_character_loadout(current_character_id, loadout)
+	if equipment_cards:
+		equipment_cards.refresh_navigator_display(current_character_id)
+
+
+func _on_navigator_skin_equipped(_slot_key: String, skin_id: String) -> void:
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	loadout["equipped_navigator_skin"] = skin_id
 	SaveManager.set_character_loadout(current_character_id, loadout)
 	if equipment_cards:
 		equipment_cards.refresh_navigator_display(current_character_id)
@@ -645,12 +735,24 @@ func _open_gacha_from_skins() -> void:
 	gacha_modal._switch_tab(0)
 
 
-func _on_skin_selected(_slot_key: String, _skin_id: String) -> void:
+func _on_skin_selected(slot_key: String, skin_id: String) -> void:
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	if slot_key.begins_with("ship:"):
+		loadout["equipped_ship_skin"] = skin_id
+	elif slot_key.begins_with("weapon:"):
+		loadout["equipped_weapon_skin"] = skin_id
+	elif slot_key.begins_with("pilot:"):
+		loadout["equipped_pilot_skin"] = skin_id
+	elif slot_key.begins_with("pet:"):
+		loadout["equipped_pet_skin"] = skin_id
+	elif slot_key.begins_with("navigator:"):
+		loadout["equipped_navigator_skin"] = skin_id
+	SaveManager.set_character_loadout(current_character_id, loadout)
 	_select_character(current_character_id)
 
 
-func _on_gacha_skin_equipped(_slot_key: String, _skin_id: String) -> void:
-	_select_character(current_character_id)
+func _on_gacha_skin_equipped(slot_key: String, skin_id: String) -> void:
+	_on_skin_selected(slot_key, skin_id)
 
 
 func _on_skin_modal_closed() -> void:
@@ -674,6 +776,45 @@ func _on_launch_pressed() -> void:
 	if not SaveManager.is_character_unlocked(current_character_id):
 		return
 	SaveManager.set_selected_character(current_character_id)
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
+		SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
+	if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
+		SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
+
+	var cur_pet_str: String = String(SaveManager.get_selected_pet()).to_lower()
+	var pet_skin: String = str(loadout.get("equipped_pet_skin", ""))
+	if not pet_skin.is_empty():
+		SaveManager.equip_skin("pet:" + cur_pet_str, pet_skin)
+	else:
+		SaveManager.unequip_skin("pet:" + cur_pet_str)
+
+	var cur_nav_str: String = String(SaveManager.get_selected_navigator()).to_lower()
+	var nav_skin: String = str(loadout.get("equipped_navigator_skin", ""))
+	if not nav_skin.is_empty():
+		SaveManager.equip_skin("navigator:" + cur_nav_str, nav_skin)
+	else:
+		SaveManager.unequip_skin("navigator:" + cur_nav_str)
+
+	var cid_str: String = String(current_character_id).to_lower()
+	var ship_skin: String = str(loadout.get("equipped_ship_skin", ""))
+	if not ship_skin.is_empty():
+		SaveManager.equip_skin("ship:" + cid_str, ship_skin)
+	else:
+		SaveManager.unequip_skin("ship:" + cid_str)
+
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", ""))
+	if not weapon_skin.is_empty():
+		SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
+	else:
+		SaveManager.unequip_skin("weapon:" + cid_str)
+
+	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", ""))
+	if not pilot_skin.is_empty():
+		SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
+	else:
+		SaveManager.unequip_skin("pilot:" + cid_str)
+
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
 
 
@@ -702,6 +843,99 @@ func _on_back_pressed() -> void:
 func _setup_speed_buttons() -> void:
 	if speed_selector:
 		speed_selector.setup(speed_1x_btn, speed_2x_btn, speed_4x_btn)
+
+
+func _setup_focus_mesh() -> void:
+	# 1. Back button
+	if back_button:
+		back_button.focus_neighbor_bottom = ship_button.get_path() if ship_button else NodePath()
+		back_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+
+	# 2. Equipment row (Ship & Weapon)
+	if ship_button:
+		ship_button.focus_neighbor_top = back_button.get_path() if back_button else NodePath()
+		ship_button.focus_neighbor_right = weapon_button.get_path() if weapon_button else NodePath()
+		ship_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath()
+
+	if weapon_button:
+		weapon_button.focus_neighbor_top = back_button.get_path() if back_button else NodePath()
+		weapon_button.focus_neighbor_left = ship_button.get_path() if ship_button else NodePath()
+		weapon_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		weapon_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath()
+
+	# 3. Companions (Pet & Navigator)
+	if pet_button:
+		pet_button.focus_neighbor_top = ship_button.get_path() if ship_button else NodePath()
+		pet_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		pet_button.focus_neighbor_bottom = navigator_button.get_path() if navigator_button else NodePath()
+
+	if navigator_button:
+		navigator_button.focus_neighbor_top = pet_button.get_path() if pet_button else NodePath()
+		navigator_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		navigator_button.focus_neighbor_bottom = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
+
+	# 4. Talents and Tomes
+	if expand_talents_btn:
+		expand_talents_btn.focus_neighbor_top = navigator_button.get_path() if navigator_button else NodePath()
+		expand_talents_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		expand_talents_btn.focus_neighbor_bottom = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+
+	if tomes_pool_btn:
+		tomes_pool_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
+		tomes_pool_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		tomes_pool_btn.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
+
+	# 5. Speed Buttons (1x, 2x, 4x)
+	if speed_1x_btn:
+		speed_1x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_1x_btn.focus_neighbor_right = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
+		speed_1x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+
+	if speed_2x_btn:
+		speed_2x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_2x_btn.focus_neighbor_left = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
+		speed_2x_btn.focus_neighbor_right = speed_4x_btn.get_path() if speed_4x_btn else NodePath()
+		speed_2x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+
+	if speed_4x_btn:
+		speed_4x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_4x_btn.focus_neighbor_left = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
+		speed_4x_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		speed_4x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+
+	# 6. Launch Button
+	var active_dock_btn: Button = _dock_card_buttons.get(current_character_id, null)
+	if not active_dock_btn and not _dock_card_buttons.is_empty():
+		active_dock_btn = _dock_card_buttons.values()[0]
+
+	if launch_button:
+		launch_button.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
+		launch_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		if active_dock_btn:
+			launch_button.focus_neighbor_bottom = active_dock_btn.get_path()
+
+	# 7. Pilot Skin Button (derecha)
+	if pilot_skin_btn:
+		pilot_skin_btn.focus_neighbor_left = weapon_button.get_path() if weapon_button else NodePath()
+		if active_dock_btn:
+			pilot_skin_btn.focus_neighbor_bottom = active_dock_btn.get_path()
+
+	# 8. Dock Buttons (abajo)
+	var dock_keys: Array[StringName] = _dock_card_buttons.keys()
+	for i: int in range(dock_keys.size()):
+		var btn: Button = _dock_card_buttons[dock_keys[i]]
+		if not btn:
+			continue
+		if launch_button:
+			btn.focus_neighbor_top = launch_button.get_path()
+		if i > 0:
+			btn.focus_neighbor_left = _dock_card_buttons[dock_keys[i - 1]].get_path()
+		else:
+			btn.focus_neighbor_left = btn.get_path()
+		if i < dock_keys.size() - 1:
+			btn.focus_neighbor_right = _dock_card_buttons[dock_keys[i + 1]].get_path()
+		else:
+			btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else btn.get_path()
 
 
 func _set_game_speed(speed: float) -> void:

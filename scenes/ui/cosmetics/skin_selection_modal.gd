@@ -389,13 +389,27 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
+		if event.keycode == KEY_W or event.keycode == KEY_UP:
 			get_viewport().set_input_as_handled()
 			_cycle(-1)
 			return
-		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT:
+		elif event.keycode == KEY_S or event.keycode == KEY_DOWN:
 			get_viewport().set_input_as_handled()
 			_cycle(1)
+			return
+		elif event.keycode == KEY_A or event.keycode == KEY_LEFT:
+			get_viewport().set_input_as_handled()
+			if category_tabs and category_tabs.tab_bar and category_tabs.tab_bar.tab_count > 1:
+				_cycle_tabs(-1)
+			else:
+				_cycle(-1)
+			return
+		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT:
+			get_viewport().set_input_as_handled()
+			if category_tabs and category_tabs.tab_bar and category_tabs.tab_bar.tab_count > 1:
+				_cycle_tabs(1)
+			else:
+				_cycle(1)
 			return
 		elif event.keycode == KEY_Q:
 			get_viewport().set_input_as_handled()
@@ -473,14 +487,33 @@ func _load_category_skins() -> void:
 	if category_tabs:
 		category_tabs.update_styles(_category)
 
-	_skins = CosmeticsManager.get_skins_for_target(_category, _target_id)
+	var raw_skins: Array[Dictionary] = CosmeticsManager.get_skins_for_target(_category, _target_id)
+	_skins.clear()
+
+	# Slot 0: Aspecto Base / Original
+	var base_entry: Dictionary = {
+		"id": "",
+		"skin_name": "Aspecto Estándar",
+		"description": "Apariencia original de fábrica del exo-traje y equipamiento.",
+		"texture_path": "",
+		"glow_hex": "#00E5FF",
+		"palette_id": "original",
+		"rarity": "común",
+		"is_base": true,
+		"is_unlocked": true,
+		"stars": 0
+	}
+	_skins.append(base_entry)
+	for s in raw_skins:
+		_skins.append(s)
 
 	var currently_equipped := SaveManager.get_equipped_skin(_slot_key)
 	current_index = 0
-	for i in range(_skins.size()):
-		if _skins[i].get("id", "") == currently_equipped:
-			current_index = i
-			break
+	if not currently_equipped.is_empty():
+		for i in range(1, _skins.size()):
+			if _skins[i].get("id", "") == currently_equipped:
+				current_index = i
+				break
 
 	if cover_flow_renderer:
 		cover_flow_renderer.build_dots(_skins.size(), current_index)
@@ -515,9 +548,10 @@ func _display_current_skin(animated: bool = false, slide_dir: int = 0) -> void:
 	var count := _skins.size()
 	var cur_skin: Dictionary = _skins[current_index]
 	var sid: String = cur_skin.get("id", "")
+	var is_base: bool = cur_skin.get("is_base", false)
 
-	var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
-	var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
+	var is_unlocked: bool = true if is_base else bool(SaveManager.is_skin_unlocked(sid))
+	var stars: int = 0 if is_base else (SaveManager.get_skin_stars(sid) if is_unlocked else 1)
 	var currently_equipped := SaveManager.get_equipped_skin(_slot_key)
 	var is_equipped: bool = (currently_equipped == sid)
 	var has_any_equipped: bool = not currently_equipped.is_empty()
@@ -546,16 +580,20 @@ func _on_equip_pressed() -> void:
 		return
 	var cur_skin: Dictionary = _skins[current_index]
 	var sid: String = cur_skin.get("id", "")
+	var is_base: bool = cur_skin.get("is_base", false)
 	var currently_equipped := SaveManager.get_equipped_skin(_slot_key)
 
-	if currently_equipped == sid:
+	if is_base or sid.is_empty():
 		SaveManager.unequip_skin(_slot_key)
 		skin_selected.emit(_slot_key, "")
-	else:
+	elif currently_equipped == sid:
+		SaveManager.unequip_skin(_slot_key)
+		skin_selected.emit(_slot_key, "")
+	elif SaveManager.is_skin_unlocked(sid):
 		SaveManager.equip_skin(_slot_key, sid)
 		skin_selected.emit(_slot_key, sid)
 
-	_display_current_skin(false, 0)
+	close_modal()
 
 
 func _on_default_pressed() -> void:

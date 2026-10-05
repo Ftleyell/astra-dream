@@ -74,7 +74,7 @@ func show_prologue_transmission(nav_data: Resource, message_text: String, on_con
 	_on_prologue_continue = on_continue
 
 	if portrait_rect:
-		var nav_id_str: String = String(nav_data.nav_id) if "nav_id" in nav_data else ""
+		var nav_id_str: String = String(nav_data.navigator_id).to_lower() if "navigator_id" in nav_data else (String(nav_data.nav_id).to_lower() if "nav_id" in nav_data else "")
 		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
 		if not equipped_nav_skin.is_empty():
 			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
@@ -118,7 +118,7 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 		return
 
 	if portrait_rect:
-		var nav_id_str: String = String(nav_data.nav_id) if "nav_id" in nav_data else ""
+		var nav_id_str: String = String(nav_data.navigator_id).to_lower() if "navigator_id" in nav_data else (String(nav_data.nav_id).to_lower() if "nav_id" in nav_data else "")
 		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
 		if not equipped_nav_skin.is_empty():
 			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)

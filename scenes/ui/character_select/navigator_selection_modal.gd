@@ -20,49 +20,57 @@ var cover_flow_renderer: NavigatorCoverFlowRenderer = null
 var dossier_controller: NavigatorDossierController = null
 
 # Nodos de la escena accesibles para suites de tests y dependencias externas
-@onready var index_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/ModalHeader/IndexBadge
+@onready var dim_overlay: ColorRect = $DimOverlay
+@onready var root_hbox: HBoxContainer = $DimOverlay/CenterContainer/RootHBox
+@onready var index_badge: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/IndexBadge
 
-@onready var prev_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/PrevButton
-@onready var next_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/NextButton
+var prev_btn: Button = null
+var next_btn: Button = null
 
-@onready var cards_row: HBoxContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow
-@onready var left_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard
-@onready var left_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftTexture
-@onready var left_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/LeftCard/VBox/LeftLabel
+@onready var carousel_panel: PanelContainer = $DimOverlay/CenterContainer/RootHBox/CarouselPanel
+@onready var cards_row: HBoxContainer = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow
+@onready var left_card: Button = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/LeftCard
+@onready var left_texture: TextureRect = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/LeftCard/VBox/LeftTexture
+@onready var left_label: Label = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/LeftCard/VBox/LeftLabel
 
-@onready var artwork_frame: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame
-@onready var artwork_viewport: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport
-@onready var fullbody_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/ArtworkViewport/FullbodyTexture
-@onready var locked_overlay: Control = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay
-@onready var lock_title: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter/LockTitle
-@onready var lock_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/ArtworkFrame/LockedOverlay/LockCenter/LockDesc
+@onready var center_column: VBoxContainer = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn
+@onready var top_card: Button = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/TopCard
+@onready var top_texture: TextureRect = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/TopCard/TopTexture
 
-@onready var right_card: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard
-@onready var right_texture: TextureRect = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox/RightTexture
-@onready var right_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/CoverFlowRow/CardsRow/RightCard/VBox/RightLabel
+@onready var artwork_frame: PanelContainer = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame
+@onready var artwork_viewport: Control = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame/ArtworkViewport
+@onready var fullbody_texture: TextureRect = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame/ArtworkViewport/FullbodyTexture
+@onready var locked_overlay: Control = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame/LockedOverlay
+@onready var lock_title: Label = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame/LockedOverlay/LockCenter/LockTitle
+@onready var lock_desc: Label = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/CenterSlot/ArtworkFrame/LockedOverlay/LockCenter/LockDesc
 
-@onready var dots_container: HBoxContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/CoverFlowSection/DotsContainer
+@onready var bottom_card: Button = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/BottomCard
+@onready var bottom_texture: TextureRect = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/CenterColumn/BottomCard/BottomTexture
 
-@onready var name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow/NameLabel
-@onready var status_badge: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/NameRow/StatusBadge
-@onready var title_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/DossierHeader/TitleLabel
-@onready var radio_dialogue: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadioCard/Margin/VBox/RadioDialogue
+@onready var right_card: Button = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/RightCard
+@onready var right_texture: TextureRect = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/RightCard/VBox/RightTexture
+@onready var right_label: Label = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/CardsRow/RightCard/VBox/RightLabel
 
-@onready var radar_desc: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/RadarCard/Margin/VBox/RadarDesc
-@onready var buff_card: PanelContainer = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard
-@onready var buff_name_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox/BuffNameLabel
-@onready var buff_desc_label: Label = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/BuffCard/Margin/VBox/BuffDescLabel
+@onready var dots_container: HBoxContainer = $DimOverlay/CenterContainer/RootHBox/CarouselPanel/Margin/CarouselVBox/DotsContainer
 
-@onready var select_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer/SelectButton
-@onready var close_btn: Button = $DimOverlay/CenterContainer/MainPanel/Margin/RootVBox/MainColumns/DossierSection/ButtonsContainer/CloseButton
+@onready var name_label: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/NameRow/NameLabel
+@onready var status_badge: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/NameRow/StatusBadge
+@onready var title_label: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/TitleLabel
+@onready var radio_dialogue: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/RadioCard/Margin/VBox/RadioDialogue
+
+@onready var radar_desc: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/RadarCard/Margin/VBox/RadarDesc
+@onready var buff_card: PanelContainer = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/BuffCard
+@onready var buff_name_label: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/BuffCard/Margin/VBox/BuffNameLabel
+@onready var buff_desc_label: Label = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/BuffCard/Margin/VBox/BuffDescLabel
+
+@onready var select_btn: Button = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/ButtonsContainer/SelectButton
+@onready var close_btn: Button = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/ButtonsContainer/CloseButton
 
 var is_open: bool = false
 var current_index: int = 0
 var _navigators: Array = []
-var _is_skin_mode: bool = false
-var _nav_skins: Array[Dictionary] = []
+var _available_skins: Array[Dictionary] = []
 var _skin_index: int = 0
-var skins_btn: Button = null
 
 var _nav_buttons: Array[Button]:
 	get:
@@ -76,23 +84,26 @@ func _ready() -> void:
 
 	_init_components()
 
+	if dim_overlay:
+		dim_overlay.gui_input.connect(_on_dim_overlay_gui_input)
+
+	if artwork_frame:
+		artwork_frame.gui_input.connect(_on_artwork_frame_gui_input)
+
 	if select_btn:
 		select_btn.pressed.connect(_on_select_pressed)
-		UIFocusHelper.apply_cyber_focus(select_btn)
+		select_btn.focus_mode = Control.FOCUS_NONE
 	if close_btn:
 		close_btn.pressed.connect(close_modal)
-		UIFocusHelper.apply_cyber_focus(close_btn)
+		close_btn.focus_mode = Control.FOCUS_NONE
 
-	# Botón de Aspectos / Skins CoverFlow
-	skins_btn = Button.new()
-	skins_btn.name = "SkinsButton"
-	skins_btn.text = "🎨 ASPECTOS / SKINS"
-	skins_btn.custom_minimum_size = Vector2(180, 44)
-	skins_btn.pressed.connect(_on_skins_toggle_pressed)
-	UIFocusHelper.apply_cyber_focus(skins_btn)
-	if select_btn and select_btn.get_parent():
-		select_btn.get_parent().add_child(skins_btn)
-		select_btn.get_parent().move_child(skins_btn, select_btn.get_index() + 1)
+	if carousel_panel:
+		carousel_panel.focus_mode = Control.FOCUS_ALL
+		carousel_panel.focus_neighbor_left = carousel_panel.get_path()
+		carousel_panel.focus_neighbor_right = carousel_panel.get_path()
+		carousel_panel.focus_neighbor_top = carousel_panel.get_path()
+		carousel_panel.focus_neighbor_bottom = carousel_panel.get_path()
+		carousel_panel.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 
 	_setup_focus_neighbors()
 
@@ -116,7 +127,14 @@ func _init_components() -> void:
 		right_texture,
 		right_label,
 		dots_container,
-		Callable(self, "_cycle")
+		Callable(self, "_cycle_horizontal")
+	)
+	cover_flow_renderer.setup_vertical(
+		top_card,
+		top_texture,
+		bottom_card,
+		bottom_texture,
+		Callable(self, "_cycle_vertical")
 	)
 
 	dossier_controller = NavigatorDossierController.new()
@@ -136,60 +154,104 @@ func _init_components() -> void:
 
 func open_modal() -> void:
 	is_open = true
-	_is_skin_mode = false
 	show()
+	if carousel_panel:
+		carousel_panel.call_deferred("grab_focus")
 	_populate_navigators()
-	if select_btn and not select_btn.disabled:
-		select_btn.grab_focus()
-	elif next_btn:
-		next_btn.grab_focus()
-	elif close_btn:
-		close_btn.grab_focus()
 
 
 func close_modal() -> void:
 	if not is_open:
 		return
-	if _is_skin_mode:
-		_is_skin_mode = false
-		_populate_navigators()
-		return
 	is_open = false
+	if get_viewport():
+		get_viewport().gui_release_focus()
 	hide()
 	closed.emit()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not is_open:
 		return
 
-	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+	# 1. Consumir siempre navegación Tab (focus next/prev) para que nunca escape al fondo
+	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
 		get_viewport().set_input_as_handled()
-		close_modal()
 		return
 
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_A or event.keycode == KEY_LEFT or event.keycode == KEY_W or event.keycode == KEY_UP:
-			get_viewport().set_input_as_handled()
-			_cycle(-1)
-			return
-		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT or event.keycode == KEY_S or event.keycode == KEY_DOWN:
-			get_viewport().set_input_as_handled()
-			_cycle(1)
-			return
-		elif event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
-			if select_btn and not select_btn.disabled:
-				get_viewport().set_input_as_handled()
-				_on_select_pressed()
-				return
+	# 2. Confirmación y cierre con Escape
+	if event.is_action("ui_cancel") or (event is InputEventKey and event.keycode == KEY_ESCAPE):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_confirm_and_close()
+		return
 
+	# 3. Confirmación y selección con Espacio / Enter
+	if event.is_action("ui_accept") or (event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_confirm_and_close()
+		return
+
+	# 4. Navegación horizontal (A / D / Izquierda / Derecha)
+	if event.is_action("ui_left") or (event is InputEventKey and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_cycle_horizontal(-1)
+		return
+	elif event.is_action("ui_right") or (event is InputEventKey and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_cycle_horizontal(1)
+		return
+
+	# 5. Navegación vertical (W / S / Arriba / Abajo)
+	if event.is_action("ui_up") or (event is InputEventKey and (event.keycode == KEY_W or event.keycode == KEY_UP)):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_cycle_vertical(-1)
+		return
+	elif event.is_action("ui_down") or (event is InputEventKey and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
+		get_viewport().set_input_as_handled()
+		if event.is_pressed() and not event.is_echo():
+			_cycle_vertical(1)
+		return
+
+	# 6. Rueda del ratón para navegación vertical
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			get_viewport().set_input_as_handled()
-			_cycle(-1)
+			_cycle_vertical(-1)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			get_viewport().set_input_as_handled()
-			_cycle(1)
+			_cycle_vertical(1)
+
+
+func _on_dim_overlay_gui_input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if root_hbox:
+			var mouse_pos := root_hbox.get_local_mouse_position()
+			var bounds := Rect2(Vector2.ZERO, root_hbox.size)
+			if not bounds.has_point(mouse_pos):
+				get_viewport().set_input_as_handled()
+				_confirm_and_close()
+
+
+func _on_artwork_frame_gui_input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		get_viewport().set_input_as_handled()
+		_confirm_and_close()
+
+
+func _confirm_and_close() -> void:
+	if select_btn and not select_btn.disabled:
+		_on_select_pressed()
+	else:
+		close_modal()
 
 
 func _populate_navigators() -> void:
@@ -203,35 +265,60 @@ func _populate_navigators() -> void:
 			break
 	current_index = initial_index
 
-	if skins_btn:
-		skins_btn.text = "🎨 ASPECTOS / SKINS"
-		skins_btn.modulate = Color(1.0, 0.85, 0.2, 1.0)
-
+	_load_available_skins()
 	_build_dots(_navigators.size(), current_index)
-	_display_current_navigator(false, 0)
+	_display_current_navigator(false, 0, 0)
 
 
-func _populate_navigator_skins() -> void:
-	if _navigators.is_empty():
+func _load_available_skins() -> void:
+	_available_skins.clear()
+	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
 		return
 	var cur_nav = _navigators[current_index]
-	var nid_str := String(cur_nav.navigator_id).to_lower()
-	_nav_skins = CosmeticsManager.get_skins_for_target("navigator", nid_str)
+	var nid_str: String = String(cur_nav.navigator_id).to_lower()
+	var slot_key: String = "navigator:" + nid_str
 
-	var slot_key := "navigator:" + nid_str
-	var equipped_sid := SaveManager.get_equipped_skin(slot_key)
+	# Slot 0: Aspecto original/base
+	var base_skin: Dictionary = {
+		"id": "",
+		"skin_name": "Aspecto Estándar",
+		"texture": cur_nav.get_portrait_texture(),
+		"is_base": true,
+		"is_unlocked": true,
+		"stars": 0,
+		"glow_hex": "#00F0FF"
+	}
+	_available_skins.append(base_skin)
+
+	# Slots 1..N: Aspectos alternativos desbloqueables
+	var raw_skins: Array[Dictionary] = CosmeticsManager.get_skins_for_target("navigator", nid_str)
+	for s in raw_skins:
+		var sid: String = s.get("id", "")
+		var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
+		var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
+		var tex: Texture2D = CosmeticsManager.load_texture(s.get("texture_path", ""))
+		if not tex:
+			tex = cur_nav.get_portrait_texture()
+		var skin_entry: Dictionary = {
+			"id": sid,
+			"skin_name": s.get("name", "Aspecto"),
+			"texture": tex,
+			"is_base": false,
+			"is_unlocked": is_unlocked,
+			"stars": stars,
+			"glow_hex": s.get("glow_hex", "#00F0FF"),
+			"desc": s.get("desc", "")
+		}
+		_available_skins.append(skin_entry)
+
+	# Sintonizar skin_index según lo equipado en SaveManager
+	var equipped_sid: String = SaveManager.get_equipped_skin(slot_key)
 	_skin_index = 0
-	for i in range(_nav_skins.size()):
-		if _nav_skins[i].get("id", "") == equipped_sid:
-			_skin_index = i
-			break
-
-	if skins_btn:
-		skins_btn.text = "↺ VOLVER A NAVEGADORAS"
-		skins_btn.modulate = Color(0.2, 0.9, 1.0, 1.0)
-
-	_build_dots(_nav_skins.size(), _skin_index)
-	_display_current_skin(false, 0)
+	if not equipped_sid.is_empty():
+		for i in range(1, _available_skins.size()):
+			if _available_skins[i].get("id", "") == equipped_sid:
+				_skin_index = i
+				break
 
 
 func _build_dots(count: int, active_idx: int) -> void:
@@ -240,108 +327,95 @@ func _build_dots(count: int, active_idx: int) -> void:
 
 
 func _on_dot_selected(target_idx: int) -> void:
-	var cur := _skin_index if _is_skin_mode else current_index
-	if cur != target_idx:
-		var dir: int = 1 if target_idx > cur else -1
+	if current_index != target_idx:
+		var dir: int = 1 if target_idx > current_index else -1
 		_set_index(target_idx, dir)
 
 
+# Método retrocompatible con test suites existentes
 func _cycle(direction: int) -> void:
-	if _is_skin_mode:
-		if _nav_skins.is_empty():
-			return
-		var count := _nav_skins.size()
-		var next_idx := (_skin_index + direction) % count
-		if next_idx < 0:
-			next_idx += count
-		_set_index(next_idx, direction)
-	else:
-		if _navigators.is_empty():
-			return
-		var count := _navigators.size()
-		var next_idx := (current_index + direction) % count
-		if next_idx < 0:
-			next_idx += count
-		_set_index(next_idx, direction)
+	_cycle_horizontal(direction)
+
+
+func _cycle_horizontal(direction: int) -> void:
+	if _navigators.is_empty():
+		return
+	var count: int = _navigators.size()
+	var next_idx: int = (current_index + direction) % count
+	if next_idx < 0:
+		next_idx += count
+	_set_index(next_idx, direction)
+
+
+func _cycle_vertical(direction: int) -> void:
+	if _available_skins.size() <= 1:
+		return
+	var count: int = _available_skins.size()
+	var next_idx: int = (_skin_index + direction) % count
+	if next_idx < 0:
+		next_idx += count
+	_set_skin_index(next_idx, direction)
 
 
 func _set_index(new_idx: int, slide_direction: int = 0) -> void:
-	if _is_skin_mode:
-		if new_idx == _skin_index:
-			return
-		_skin_index = new_idx
-		_display_current_skin(true, slide_direction)
-	else:
-		if new_idx == current_index:
-			return
-		current_index = new_idx
-		_display_current_navigator(true, slide_direction)
+	if new_idx == current_index:
+		return
+	current_index = new_idx
+	_load_available_skins()
+	_display_current_navigator(true, slide_direction, 0)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
 
 
-func _display_current_navigator(animate: bool = true, slide_direction: int = 0) -> void:
+func _set_skin_index(new_skin_idx: int, slide_v: int = 0) -> void:
+	if new_skin_idx == _skin_index:
+		return
+	_skin_index = new_skin_idx
+	_display_current_navigator(true, 0, slide_v)
+
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.2)
+
+
+func _display_current_navigator(animate: bool = true, slide_h: int = 0, slide_v: int = 0) -> void:
 	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
 		return
 
-	var count := _navigators.size()
+	var count: int = _navigators.size()
 	var nav_data = _navigators[current_index]
 	var nid: StringName = nav_data.navigator_id
 	var is_unlocked: bool = SaveManager.is_navigator_unlocked(nid)
 	var is_selected: bool = (nid == SaveManager.get_selected_navigator())
 
-	var left_idx := (current_index - 1 + count) % count
-	var right_idx := (current_index + 1) % count
+	var left_idx: int = (current_index - 1 + count) % count
+	var right_idx: int = (current_index + 1) % count
 	var left_data = _navigators[left_idx]
 	var right_data = _navigators[right_idx]
 
-	var slot_key := "navigator:" + String(nid).to_lower()
-	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
-	var skin_stars: int = 0
-	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
-		skin_stars = SaveManager.get_skin_stars(equipped_skin)
-	else:
-		equipped_skin = ""
-
-	cover_flow_renderer.render_navigator_cards(nav_data, left_data, right_data, is_unlocked, equipped_skin, skin_stars)
+	cover_flow_renderer.render_2d_carousel(nav_data, left_data, right_data, _available_skins, _skin_index, is_unlocked)
 	cover_flow_renderer.update_carousel_layout(false, nav_data.theme_color)
 	cover_flow_renderer.update_dots(nav_data.theme_color, current_index)
-	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
+	cover_flow_renderer.animate_center_card_2d(animate, slide_h, slide_v, is_unlocked)
 
-	dossier_controller.display_navigator(nav_data, is_unlocked, is_selected, current_index, count)
-
-
-func _display_current_skin(animate: bool = true, slide_direction: int = 0) -> void:
-	if _nav_skins.is_empty():
-		return
-
-	var count := _nav_skins.size()
-	var cur_skin: Dictionary = _nav_skins[_skin_index]
-	var sid: String = cur_skin.get("id", "")
-	var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
-	var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
-
-	var slot_key := "navigator:" + String(_navigators[current_index].navigator_id).to_lower()
-	var currently_equipped := SaveManager.get_equipped_skin(slot_key)
-	var is_equipped: bool = (currently_equipped == sid)
-
-	var left_idx := (_skin_index - 1 + count) % count
-	var right_idx := (_skin_index + 1) % count
-	var left_skin: Dictionary = _nav_skins[left_idx]
-	var right_skin: Dictionary = _nav_skins[right_idx]
-
-	cover_flow_renderer.render_skin_cards(cur_skin, left_skin, right_skin, is_unlocked, stars)
-	var pal_color := Color.from_string(cur_skin.get("glow_hex", "#00F0FF"), Color.CYAN)
-	cover_flow_renderer.update_carousel_layout(true, pal_color)
-	cover_flow_renderer.update_dots(Color(1.0, 0.85, 0.2), _skin_index)
-	cover_flow_renderer.animate_center_card(animate, slide_direction, is_unlocked)
-
-	dossier_controller.display_skin(cur_skin, is_unlocked, is_equipped, stars, _skin_index, count)
+	if _skin_index > 0 and _skin_index < _available_skins.size():
+		var cur_skin: Dictionary = _available_skins[_skin_index]
+		var sid: String = cur_skin.get("id", "")
+		var s_unlocked: bool = bool(cur_skin.get("is_unlocked", false))
+		var nid_str: String = String(nid).to_lower()
+		var slot_key: String = "navigator:" + nid_str
+		var is_equipped: bool = (SaveManager.get_equipped_skin(slot_key) == sid)
+		var stars: int = int(cur_skin.get("stars", 1))
+		dossier_controller.display_skin(cur_skin, s_unlocked, is_equipped, stars, _skin_index, _available_skins.size())
+		if title_label:
+			title_label.text = "%s • [%s]" % [nav_data.title, cur_skin.get("skin_name", "").to_upper()]
+	else:
+		dossier_controller.display_navigator(nav_data, is_unlocked, is_selected, current_index, count)
 
 
-# Delegados auxiliares para retrocompatibilidad con tests existentes
+# Métodos delegados para retrocompatibilidad con tests existentes
 func _update_carousel_layout(p_is_skin: bool, theme_color: Color) -> void:
 	if cover_flow_renderer:
 		cover_flow_renderer.update_carousel_layout(p_is_skin, theme_color)
@@ -354,53 +428,39 @@ func _update_dots(active_color: Color, active_idx: int) -> void:
 
 func _animate_center_card(animate: bool, slide_direction: int, p_is_unlocked: bool) -> void:
 	if cover_flow_renderer:
-		cover_flow_renderer.animate_center_card(animate, slide_direction, p_is_unlocked)
-
-
-func _on_skins_toggle_pressed() -> void:
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.2)
-
-	if _is_skin_mode:
-		_is_skin_mode = false
-		_populate_navigators()
-	else:
-		_is_skin_mode = true
-		_populate_navigator_skins()
+		cover_flow_renderer.animate_center_card_2d(animate, slide_direction, 0, p_is_unlocked)
 
 
 func _on_select_pressed() -> void:
+	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
+		return
+	var nav_data = _navigators[current_index]
+	var nid: StringName = nav_data.navigator_id
+	if not SaveManager.is_navigator_unlocked(nid):
+		return
+
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.25)
 
-	if _is_skin_mode:
-		if _nav_skins.is_empty():
-			return
-		var cur_skin: Dictionary = _nav_skins[_skin_index]
-		var sid: String = cur_skin.get("id", "")
-		var slot_key := "navigator:" + String(_navigators[current_index].navigator_id).to_lower()
-		var currently_equipped := SaveManager.get_equipped_skin(slot_key)
+	# 1. Fijar navegante seleccionada
+	SaveManager.set_selected_navigator(nid)
+	navigator_selected.emit(nid)
 
-		if currently_equipped == sid:
-			SaveManager.unequip_skin(slot_key)
-			skin_equipped.emit(slot_key, "")
-		elif SaveManager.is_skin_unlocked(sid):
+	# 2. Equipar skin activa (o desequipar si es Slot 0)
+	var nid_str: String = String(nid).to_lower()
+	var slot_key: String = "navigator:" + nid_str
+	if _skin_index > 0 and _skin_index < _available_skins.size():
+		var cur_skin: Dictionary = _available_skins[_skin_index]
+		var sid: String = cur_skin.get("id", "")
+		if SaveManager.is_skin_unlocked(sid):
 			SaveManager.equip_skin(slot_key, sid)
 			skin_equipped.emit(slot_key, sid)
-
-		_display_current_skin(false, 0)
 	else:
-		if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
-			return
-		var nav_data = _navigators[current_index]
-		var nid: StringName = nav_data.navigator_id
-		if not SaveManager.is_navigator_unlocked(nid):
-			return
-		SaveManager.set_selected_navigator(nid)
-		navigator_selected.emit(nid)
-		close_modal()
+		SaveManager.unequip_skin(slot_key)
+		skin_equipped.emit(slot_key, "")
+
+	close_modal()
 
 
 func _setup_focus_neighbors() -> void:
@@ -408,19 +468,13 @@ func _setup_focus_neighbors() -> void:
 		left_card.focus_mode = Control.FOCUS_NONE
 	if right_card:
 		right_card.focus_mode = Control.FOCUS_NONE
+	if top_card:
+		top_card.focus_mode = Control.FOCUS_NONE
+	if bottom_card:
+		bottom_card.focus_mode = Control.FOCUS_NONE
 
-	if prev_btn and next_btn and select_btn and close_btn:
-		prev_btn.focus_neighbor_right = next_btn.get_path()
-		prev_btn.focus_neighbor_bottom = select_btn.get_path()
-		next_btn.focus_neighbor_left = prev_btn.get_path()
-		next_btn.focus_neighbor_bottom = select_btn.get_path()
-		select_btn.focus_neighbor_top = next_btn.get_path()
-		if skins_btn:
-			select_btn.focus_neighbor_right = skins_btn.get_path()
-			skins_btn.focus_neighbor_left = select_btn.get_path()
-			skins_btn.focus_neighbor_right = close_btn.get_path()
-			close_btn.focus_neighbor_left = skins_btn.get_path()
-		else:
-			select_btn.focus_neighbor_right = close_btn.get_path()
-			close_btn.focus_neighbor_left = select_btn.get_path()
-		close_btn.focus_neighbor_top = next_btn.get_path()
+	if select_btn:
+		select_btn.focus_mode = Control.FOCUS_NONE
+	if close_btn:
+		close_btn.focus_mode = Control.FOCUS_NONE
+

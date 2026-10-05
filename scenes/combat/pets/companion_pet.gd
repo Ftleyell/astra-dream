@@ -66,7 +66,7 @@ func _apply_pet_visuals() -> void:
 	if not sprite:
 		sprite = get_node_or_null("Sprite2D") as Sprite2D
 	if sprite:
-		var pet_id_str := String(pet_data.pet_id)
+		var pet_id_str := String(pet_data.pet_id).to_lower()
 		var equipped_skin_id: String = SaveManager.get_equipped_skin("pet:" + pet_id_str)
 		if not equipped_skin_id.is_empty():
 			var stars: int = SaveManager.get_skin_stars(equipped_skin_id)

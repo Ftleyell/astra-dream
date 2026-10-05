@@ -84,6 +84,7 @@ func test_save_manager_pet_persistence() -> void:
 # ── 3. COMPONENTE DE COMBATE COMPANION PET ────────────────────────────────────
 func test_companion_pet_combat_instance() -> void:
 	print("[3/7] Verificando CompanionPet en combate (sin hitbox, poderes específicos)...")
+	SaveManager.unequip_skin("pet:mochi")
 	var pet_scene := preload("res://scenes/combat/pets/companion_pet.tscn")
 	var pet = pet_scene.instantiate()
 	add_child(pet)

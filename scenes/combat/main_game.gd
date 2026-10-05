@@ -204,6 +204,28 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
+
+	# Sincronización estricta del loadout del personaje seleccionado
+	var sel_char: StringName = SaveManager.get_selected_character()
+	if not sel_char.is_empty():
+		var loadout: Dictionary = SaveManager.get_character_loadout(sel_char)
+		if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
+			SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
+		if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
+			SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
+		var cur_p_str: String = String(SaveManager.get_selected_pet()).to_lower()
+		var p_skin: String = str(loadout.get("equipped_pet_skin", ""))
+		if not p_skin.is_empty():
+			SaveManager.equip_skin("pet:" + cur_p_str, p_skin)
+		else:
+			SaveManager.unequip_skin("pet:" + cur_p_str)
+		var cur_n_str: String = String(SaveManager.get_selected_navigator()).to_lower()
+		var n_skin: String = str(loadout.get("equipped_navigator_skin", ""))
+		if not n_skin.is_empty():
+			SaveManager.equip_skin("navigator:" + cur_n_str, n_skin)
+		else:
+			SaveManager.unequip_skin("navigator:" + cur_n_str)
+
 	encounter_director = get_node_or_null("EncounterDirector") as EncounterDirector
 	if not encounter_director:
 		encounter_director = EncounterDirector.new()

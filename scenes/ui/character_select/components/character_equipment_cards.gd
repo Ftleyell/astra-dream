@@ -94,10 +94,12 @@ func setup_companions(
 	if pet_button:
 		UIFocusHelper.apply_cyber_focus(pet_button)
 		pet_button.pressed.connect(p_on_pet_pressed)
+		setup_card_hover_feedback(pet_button, pet_card, Color(0.2, 0.95, 0.65, 1.0))
 
 	if navigator_button:
 		UIFocusHelper.apply_cyber_focus(navigator_button)
 		navigator_button.pressed.connect(p_on_nav_pressed)
+		setup_card_hover_feedback(navigator_button, navigator_card, Color(0.3, 0.7, 1.0, 1.0))
 
 	refresh_pet_display()
 	refresh_navigator_display()
@@ -167,14 +169,18 @@ func update_equipment(data: CharacterData, char_id: StringName) -> void:
 
 func refresh_pet_display(char_id: StringName = &"") -> void:
 	var sel_pid: StringName = SaveManager.get_selected_pet()
+	var pet_skin_id: String = ""
 	if not char_id.is_empty():
 		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
 		if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
 			sel_pid = StringName(str(loadout["selected_pet"]))
+		if loadout.has("equipped_pet_skin"):
+			pet_skin_id = str(loadout["equipped_pet_skin"])
 	var pet_res = PetDataScript.get_pet(sel_pid)
 	if pet_res:
-		var pet_slot := "pet:" + String(sel_pid)
-		var pet_skin_id := SaveManager.get_equipped_skin(pet_slot)
+		var pet_slot := "pet:" + String(sel_pid).to_lower()
+		if pet_skin_id.is_empty():
+			pet_skin_id = SaveManager.get_equipped_skin(pet_slot)
 		if pet_icon:
 			if not pet_skin_id.is_empty():
 				var stars := SaveManager.get_skin_stars(pet_skin_id)
@@ -191,14 +197,18 @@ func refresh_pet_display(char_id: StringName = &"") -> void:
 
 func refresh_navigator_display(char_id: StringName = &"") -> void:
 	var sel_nid: StringName = SaveManager.get_selected_navigator()
+	var nav_skin_id: String = ""
 	if not char_id.is_empty():
 		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
 		if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
 			sel_nid = StringName(str(loadout["selected_navigator"]))
+		if loadout.has("equipped_navigator_skin"):
+			nav_skin_id = str(loadout["equipped_navigator_skin"])
 	var nav_res = NavigatorDataScript.get_navigator(sel_nid)
 	if nav_res:
-		var nav_slot := "navigator:" + String(sel_nid)
-		var nav_skin_id := SaveManager.get_equipped_skin(nav_slot)
+		var nav_slot := "navigator:" + String(sel_nid).to_lower()
+		if nav_skin_id.is_empty():
+			nav_skin_id = SaveManager.get_equipped_skin(nav_slot)
 		if navigator_icon:
 			if not nav_skin_id.is_empty():
 				var stars := SaveManager.get_skin_stars(nav_skin_id)

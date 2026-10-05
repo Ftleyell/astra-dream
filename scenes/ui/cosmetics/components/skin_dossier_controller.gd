@@ -67,7 +67,20 @@ func update_dossier(
 	if not status_badge or not equip_btn:
 		return
 
-	if is_equipped:
+	if cur_skin.get("is_base", false):
+		if not has_any_equipped:
+			status_badge.text = "✓ PREDETERMINADO"
+			status_badge.modulate = Color(0.2, 1.0, 0.4)
+			equip_btn.text = "✓ PREDETERMINADO ACTIVO"
+			equip_btn.disabled = false
+			equip_btn.modulate = Color(0.3, 1.0, 0.5)
+		else:
+			status_badge.text = "ORIGINAL"
+			status_badge.modulate = Color(0.2, 0.9, 1.0)
+			equip_btn.text = "↺ RESTABLECER ORIGINAL"
+			equip_btn.disabled = false
+			equip_btn.modulate = Color(1.0, 1.0, 1.0)
+	elif is_equipped:
 		status_badge.text = "✓ EQUIPADO"
 		status_badge.modulate = Color(0.2, 1.0, 0.4)
 		equip_btn.text = "✓ EQUIPADO (CLIC PARA DESEQUIPAR)"
