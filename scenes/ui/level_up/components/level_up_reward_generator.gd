@@ -104,9 +104,10 @@ static func generate_reward_options(
 				opt.tome_data = tome
 				opt.current_level = cur_lvl
 				opt.next_level = cur_lvl + 1
+				var stat_display: String = LevelUpStatsInspector.get_stat_display_name(tome.stat_name)
 				opt.title = tome.display_name
 				opt.subtitle = "• MEJORA DE TOMO (Nvl. %d ➔ %d)" % [opt.current_level, opt.next_level]
-				opt.badge_text = "+%s (Efecto total)" % tome.get_bonus_description(opt.next_level)
+				opt.badge_text = "+%s %s (Efecto total)" % [stat_display, tome.get_bonus_description(opt.next_level)]
 				opt.description = tome.description
 				opt.icon = tome.icon
 				opt.target_stat = tome.stat_name
@@ -133,9 +134,10 @@ static func generate_reward_options(
 					opt.tome_data = tome
 					opt.current_level = 0
 					opt.next_level = 1
+					var stat_display: String = LevelUpStatsInspector.get_stat_display_name(tome.stat_name)
 					opt.title = tome.display_name
 					opt.subtitle = "• NUEVO TOMO (Nivel 1)"
-					opt.badge_text = "+%s por nivel" % tome.get_bonus_description(1)
+					opt.badge_text = "+%s %s por nivel" % [stat_display, tome.get_bonus_description(1)]
 					opt.description = tome.description
 					opt.icon = tome.icon
 					opt.target_stat = tome.stat_name

@@ -27,4 +27,4 @@ func get_bonus_description(level: int) -> String:
 	var val_str: String = "%.0f%%" % [total_val * 100.0] if is_percentage else "%.1f" % [total_val]
 	if not is_percentage and is_equal_approx(total_val, roundf(total_val)):
 		val_str = "%d" % [int(total_val)]
-	return "%s %s" % [sign_str, val_str]
+	return "%s%s" % [sign_str, val_str]

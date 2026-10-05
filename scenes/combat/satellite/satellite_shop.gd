@@ -150,6 +150,14 @@ func _restore_existing_shop_view() -> void:
 			if is_instance_valid(btn):
 				btn.disabled = true
 				btn.text = "¡Adquirido!"
+				var p_lbl: Label = btn.get_meta(&"price_label", null) as Label
+				if p_lbl:
+					p_lbl.text = "¡ADQUIRIDO!"
+					p_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5, 0.9))
+				var h_lbl: Label = btn.get_meta(&"hotkey_label", null) as Label
+				if h_lbl:
+					h_lbl.text = "[ COMPRADO ]"
+					h_lbl.modulate = Color(0.5, 0.5, 0.5, 0.6)
 
 
 func restore_focus() -> void:
@@ -396,6 +404,14 @@ func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
 	_update_credits_display()
 	buy_btn.disabled = true
 	buy_btn.text = "¡Adquirido!"
+	var p_lbl: Label = buy_btn.get_meta(&"price_label", null) as Label
+	if p_lbl:
+		p_lbl.text = "¡ADQUIRIDO!"
+		p_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5, 0.9))
+	var h_lbl: Label = buy_btn.get_meta(&"hotkey_label", null) as Label
+	if h_lbl:
+		h_lbl.text = "[ COMPRADO ]"
+		h_lbl.modulate = Color(0.5, 0.5, 0.5, 0.6)
 	var btn_idx: int = buy_buttons.find(buy_btn)
 	if btn_idx != -1 and not purchased_slots.has(btn_idx):
 		purchased_slots.append(btn_idx)

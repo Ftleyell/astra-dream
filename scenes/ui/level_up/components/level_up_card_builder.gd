@@ -334,6 +334,8 @@ static func build_reward_option_card(
 	var badge_lbl := Label.new()
 	badge_lbl.name = "HeroValueBadge"
 	var raw_badge: String = option.badge_text if not option.badge_text.is_empty() else option.description
+	while raw_badge.begins_with("++") or raw_badge.begins_with("+ +"):
+		raw_badge = raw_badge.trim_prefix("+").strip_edges()
 	if not raw_badge.begins_with("+") and not raw_badge.begins_with("-"):
 		raw_badge = "+ " + raw_badge
 	badge_lbl.text = raw_badge

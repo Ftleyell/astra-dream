@@ -7,7 +7,7 @@ extends RefCounted
 ## - Configura badges de estadísticas exactas (+DMG, CD, proc).
 ## - Conecta hover y focus con el panel de estadísticas para previsualización inmediata.
 
-static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop) -> PanelContainer:
+static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop) -> Control:
 	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
 	var rarity_color: Color = _get_rarity_color(entry_rarity)
 
@@ -22,18 +22,47 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 				is_weapon_upgrade = true
 				current_wp_lvl = inst.level
 
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 114)
+	var card := Button.new()
+	card.custom_minimum_size = Vector2(0, 118)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.focus_mode = Control.FOCUS_ALL
 
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
-	card_style.set_border_width_all(2)
-	card_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
-	card_style.set_corner_radius_all(8)
-	card_style.set_content_margin_all(8.0)
-	card.add_theme_stylebox_override("panel", card_style)
+	# Ocultar texto nativo del botón para preservar el layout procedural
+	card.add_theme_color_override("font_color", Color.TRANSPARENT)
+	card.add_theme_color_override("font_focus_color", Color.TRANSPARENT)
+	card.add_theme_color_override("font_hover_color", Color.TRANSPARENT)
+	card.add_theme_color_override("font_pressed_color", Color.TRANSPARENT)
+	card.add_theme_color_override("font_disabled_color", Color.TRANSPARENT)
+
+	var base_style := StyleBoxFlat.new()
+	base_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
+	base_style.set_border_width_all(2)
+	base_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
+	base_style.set_corner_radius_all(8)
+	base_style.set_content_margin_all(8.0)
+	card.add_theme_stylebox_override("normal", base_style)
+
+	var hover_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
+	hover_style.bg_color = Color(0.10, 0.14, 0.22, 0.96)
+	hover_style.border_color = rarity_color.lightened(0.25)
+	card.add_theme_stylebox_override("hover", hover_style)
+
+	var pressed_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
+	pressed_style.bg_color = Color(0.04, 0.05, 0.08, 0.98)
+	pressed_style.border_color = rarity_color
+	card.add_theme_stylebox_override("pressed", pressed_style)
+
+	var focus_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
+	focus_style.border_color = Color(0.0, 0.95, 1.0, 0.95)
+	focus_style.set_border_width_all(2)
+	card.add_theme_stylebox_override("focus", focus_style)
+
+	var disabled_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
+	disabled_style.bg_color = Color(0.03, 0.04, 0.06, 0.6)
+	disabled_style.border_color = Color(0.3, 0.3, 0.3, 0.4)
+	disabled_style.set_border_width_all(1)
+	card.add_theme_stylebox_override("disabled", disabled_style)
 
 	var hbox := HBoxContainer.new()
 	hbox.set("theme_override_constants/separation", 12)
@@ -172,7 +201,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 
 	hbox.add_child(info_vbox)
 
-	# 3. Columna derecha: Botón de compra unificado e indicador de tecla
+	# 3. Columna derecha: Indicador de precio (fuente/color de créditos) y tecla de acceso rápido
 	var btn_vbox := VBoxContainer.new()
 	btn_vbox.custom_minimum_size = Vector2(115, 0)
 	btn_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -187,20 +216,34 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	btn_vbox.add_child(hotkey_lbl)
 
 	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
-	var buy_btn := Button.new()
-	buy_btn.text = "%d C" % cost
-	buy_btn.custom_minimum_size = Vector2(110, 48)
-	buy_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	buy_btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	buy_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
-	buy_btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 0.4, 1.0))
-	buy_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.3, 1.0))
-	buy_btn.add_theme_font_size_override("font_size", 13)
-	buy_btn.set_meta(&"cost", cost)
-	UIFocusHelper.apply_cyber_focus(buy_btn)
+	var price_panel := PanelContainer.new()
+	var price_sb := StyleBoxFlat.new()
+	price_sb.bg_color = Color(0.08, 0.07, 0.02, 0.85)
+	price_sb.border_color = Color(1.0, 0.85, 0.2, 0.85)
+	price_sb.set_border_width_all(1)
+	price_sb.set_corner_radius_all(6)
+	price_panel.add_theme_stylebox_override("panel", price_sb)
+	price_panel.custom_minimum_size = Vector2(100, 36)
 
-	buy_btn.pressed.connect(func() -> void:
-		shop.handle_item_purchase(entry, cost, buy_btn)
+	var price_lbl := Label.new()
+	price_lbl.text = "%d C" % cost
+	price_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	price_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	price_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	price_lbl.add_theme_font_size_override("font_size", 13)
+	price_panel.add_child(price_lbl)
+	btn_vbox.add_child(price_panel)
+
+	hbox.add_child(btn_vbox)
+	card.add_child(hbox)
+	_set_mouse_filter_ignore_recursive(hbox)
+
+	card.set_meta(&"cost", cost)
+	card.set_meta(&"price_label", price_lbl)
+	card.set_meta(&"hotkey_label", hotkey_lbl)
+
+	card.pressed.connect(func() -> void:
+		shop.handle_item_purchase(entry, cost, card)
 	)
 
 	# Hover & Focus connections for stat preview
@@ -211,21 +254,23 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 		card.mouse_exited.connect(func() -> void:
 			shop.clear_stat_highlights()
 		)
-		buy_btn.focus_entered.connect(func() -> void:
+		card.focus_entered.connect(func() -> void:
 			shop.highlight_preview_stat(target_stat_for_hover, stat_delta_for_hover, is_pct_for_hover)
 		)
-		buy_btn.focus_exited.connect(func() -> void:
+		card.focus_exited.connect(func() -> void:
 			shop.clear_stat_highlights()
 		)
 
-	btn_vbox.add_child(buy_btn)
-	hbox.add_child(btn_vbox)
-	card.add_child(hbox)
-
 	if shop.items_container:
 		shop.items_container.add_child(card)
-	shop.buy_buttons.append(buy_btn)
+	shop.buy_buttons.append(card)
 	return card
+
+static func _set_mouse_filter_ignore_recursive(node: Node) -> void:
+	for child: Node in node.get_children():
+		if child is Control:
+			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_set_mouse_filter_ignore_recursive(child)
 
 static func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:
