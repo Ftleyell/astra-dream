@@ -148,16 +148,7 @@ func _restore_existing_shop_view() -> void:
 		if i in purchased_slots and i < buy_buttons.size():
 			var btn: Button = buy_buttons[i]
 			if is_instance_valid(btn):
-				btn.disabled = true
-				btn.text = "¡Adquirido!"
-				var p_lbl: Label = btn.get_meta(&"price_label", null) as Label
-				if p_lbl:
-					p_lbl.text = "¡ADQUIRIDO!"
-					p_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5, 0.9))
-				var h_lbl: Label = btn.get_meta(&"hotkey_label", null) as Label
-				if h_lbl:
-					h_lbl.text = "[ COMPRADO ]"
-					h_lbl.modulate = Color(0.5, 0.5, 0.5, 0.6)
+				SatelliteShopCardBuilderClass.mark_card_purchased(btn)
 
 
 func restore_focus() -> void:
@@ -306,6 +297,9 @@ func _can_afford_any_option() -> bool:
 func _update_credits_display() -> void:
 	if credits_label:
 		credits_label.text = "Créditos: %d" % current_credits
+	for btn: Button in buy_buttons:
+		if is_instance_valid(btn) and not btn.disabled:
+			SatelliteShopCardBuilderClass.update_card_affordability(btn, current_credits)
 	if reroll_btn:
 		if rerolls_used_this_visit >= max_rerolls_per_satellite:
 			reroll_btn.disabled = true
@@ -402,16 +396,7 @@ func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
 
 	current_credits -= cost
 	_update_credits_display()
-	buy_btn.disabled = true
-	buy_btn.text = "¡Adquirido!"
-	var p_lbl: Label = buy_btn.get_meta(&"price_label", null) as Label
-	if p_lbl:
-		p_lbl.text = "¡ADQUIRIDO!"
-		p_lbl.add_theme_color_override("font_color", Color(0.3, 0.95, 0.5, 0.9))
-	var h_lbl: Label = buy_btn.get_meta(&"hotkey_label", null) as Label
-	if h_lbl:
-		h_lbl.text = "[ COMPRADO ]"
-		h_lbl.modulate = Color(0.5, 0.5, 0.5, 0.6)
+	SatelliteShopCardBuilderClass.mark_card_purchased(buy_btn)
 	var btn_idx: int = buy_buttons.find(buy_btn)
 	if btn_idx != -1 and not purchased_slots.has(btn_idx):
 		purchased_slots.append(btn_idx)
@@ -503,8 +488,7 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 				hud.update_credits(current_credits)
 			_update_credits_display()
 			if is_instance_valid(buy_btn):
-				buy_btn.disabled = true
-				buy_btn.text = "¡Adquirido!"
+				SatelliteShopCardBuilderClass.mark_card_purchased(buy_btn)
 				var btn_idx: int = buy_buttons.find(buy_btn)
 				if btn_idx != -1 and not purchased_slots.has(btn_idx):
 					purchased_slots.append(btn_idx)
