@@ -140,104 +140,56 @@ func update_dots(active_color: Color, active_idx: int) -> void:
 			dot_btn.modulate = Color(1.0, 1.0, 1.0, 0.7)
 
 
-func update_carousel_layout(is_skin: bool, theme_color: Color) -> void:
+func update_carousel_layout(_is_skin: bool, theme_color: Color) -> void:
 	if not artwork_frame:
 		return
 
-	if is_skin:
-		if cards_row:
-			cards_row.add_theme_constant_override("separation", -45)
+	if cards_row:
+		cards_row.add_theme_constant_override("separation", -45)
 
-		artwork_frame.z_index = 2
-		artwork_frame.custom_minimum_size = Vector2(260, 260)
-		artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var af_sb := StyleBoxFlat.new()
-		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
-		af_sb.border_color = theme_color
-		af_sb.set_border_width_all(3)
-		af_sb.set_corner_radius_all(130)
-		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-		af_sb.shadow_size = 18
-		artwork_frame.add_theme_stylebox_override("panel", af_sb)
+	artwork_frame.z_index = 2
+	artwork_frame.custom_minimum_size = Vector2(260, 260)
+	artwork_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var af_sb := StyleBoxFlat.new()
+	af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
+	af_sb.border_color = theme_color
+	af_sb.set_border_width_all(3)
+	af_sb.set_corner_radius_all(130)
+	af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+	af_sb.shadow_size = 18
+	artwork_frame.add_theme_stylebox_override("panel", af_sb)
 
-		if left_card:
-			left_card.z_index = 0
-			left_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
-			left_card.custom_minimum_size = Vector2(150, 150)
-			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(75)
-			left_card.add_theme_stylebox_override("normal", side_sb)
-			left_card.add_theme_stylebox_override("hover", side_sb)
-			left_card.add_theme_stylebox_override("pressed", side_sb)
-		if left_label:
-			left_label.visible = false
+	if left_card:
+		left_card.z_index = 0
+		left_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
+		left_card.custom_minimum_size = Vector2(150, 150)
+		left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var side_sb := StyleBoxFlat.new()
+		side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+		side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+		side_sb.set_border_width_all(2)
+		side_sb.set_corner_radius_all(75)
+		left_card.add_theme_stylebox_override("normal", side_sb)
+		left_card.add_theme_stylebox_override("hover", side_sb)
+		left_card.add_theme_stylebox_override("pressed", side_sb)
+	if left_label:
+		left_label.visible = false
 
-		if right_card:
-			right_card.z_index = 0
-			right_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
-			right_card.custom_minimum_size = Vector2(150, 150)
-			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
-			side_sb.set_border_width_all(2)
-			side_sb.set_corner_radius_all(75)
-			right_card.add_theme_stylebox_override("normal", side_sb)
-			right_card.add_theme_stylebox_override("hover", side_sb)
-			right_card.add_theme_stylebox_override("pressed", side_sb)
-		if right_label:
-			right_label.visible = false
-	else:
-		if cards_row:
-			cards_row.add_theme_constant_override("separation", 12)
-
-		artwork_frame.z_index = 1
-		artwork_frame.custom_minimum_size = Vector2(240, 480)
-		artwork_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		var af_sb := StyleBoxFlat.new()
-		af_sb.bg_color = Color(0.02, 0.035, 0.065, 0.95)
-		af_sb.border_color = theme_color
-		af_sb.set_border_width_all(2)
-		af_sb.set_corner_radius_all(8)
-		af_sb.shadow_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.25)
-		af_sb.shadow_size = 10
-		artwork_frame.add_theme_stylebox_override("panel", af_sb)
-
-		if left_card:
-			left_card.z_index = 0
-			left_card.modulate = Color.WHITE
-			left_card.custom_minimum_size = Vector2(150, 400)
-			left_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
-			side_sb.set_border_width_all(1)
-			side_sb.set_corner_radius_all(6)
-			left_card.add_theme_stylebox_override("normal", side_sb)
-			left_card.add_theme_stylebox_override("hover", side_sb)
-			left_card.add_theme_stylebox_override("pressed", side_sb)
-		if left_label:
-			left_label.visible = true
-
-		if right_card:
-			right_card.z_index = 0
-			right_card.modulate = Color.WHITE
-			right_card.custom_minimum_size = Vector2(150, 400)
-			right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			var side_sb := StyleBoxFlat.new()
-			side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
-			side_sb.border_color = Color(0.2, 0.35, 0.5, 0.6)
-			side_sb.set_border_width_all(1)
-			side_sb.set_corner_radius_all(6)
-			right_card.add_theme_stylebox_override("normal", side_sb)
-			right_card.add_theme_stylebox_override("hover", side_sb)
-			right_card.add_theme_stylebox_override("pressed", side_sb)
-		if right_label:
-			right_label.visible = true
+	if right_card:
+		right_card.z_index = 0
+		right_card.modulate = Color(0.75, 0.82, 0.95, 0.65)
+		right_card.custom_minimum_size = Vector2(150, 150)
+		right_card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var side_sb := StyleBoxFlat.new()
+		side_sb.bg_color = Color(0.02, 0.03, 0.06, 0.85)
+		side_sb.border_color = Color(theme_color.r, theme_color.g, theme_color.b, 0.45)
+		side_sb.set_border_width_all(2)
+		side_sb.set_corner_radius_all(75)
+		right_card.add_theme_stylebox_override("normal", side_sb)
+		right_card.add_theme_stylebox_override("hover", side_sb)
+		right_card.add_theme_stylebox_override("pressed", side_sb)
+	if right_label:
+		right_label.visible = false
 
 
 func render_navigator_cards(
@@ -252,19 +204,26 @@ func render_navigator_cards(
 		return
 
 	if left_texture and left_data:
-		left_texture.texture = left_data.get_fullbody_texture()
-	if left_label and left_data:
-		left_label.text = "◀ %s" % left_data.display_name.to_upper()
-		left_label.modulate = left_data.theme_color
+		var l_tex: Texture2D = left_data.get_portrait_texture()
+		if not l_tex:
+			l_tex = left_data.get_fullbody_texture()
+		left_texture.texture = l_tex
+	if left_label:
+		left_label.visible = false
 
 	if right_texture and right_data:
-		right_texture.texture = right_data.get_fullbody_texture()
-	if right_label and right_data:
-		right_label.text = "%s ▶" % right_data.display_name.to_upper()
-		right_label.modulate = right_data.theme_color
+		var r_tex: Texture2D = right_data.get_portrait_texture()
+		if not r_tex:
+			r_tex = right_data.get_fullbody_texture()
+		right_texture.texture = r_tex
+	if right_label:
+		right_label.visible = false
 
 	if fullbody_texture:
-		fullbody_texture.texture = nav_data.get_fullbody_texture()
+		var cur_tex: Texture2D = nav_data.get_portrait_texture()
+		if not cur_tex:
+			cur_tex = nav_data.get_fullbody_texture()
+		fullbody_texture.texture = cur_tex
 		if equipped_skin != "":
 			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, equipped_skin, skin_stars, false)
 		else:

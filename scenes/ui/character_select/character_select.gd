@@ -553,7 +553,9 @@ func _on_ship_card_pressed() -> void:
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
 	var char_name: String = char_data.display_name if char_data else "Exo-Traje"
 	var preview_tex: Texture2D = char_data.get_ship_texture() if char_data else null
-	_open_skin_modal("ship", String(current_character_id), "%s - Exo-Traje" % char_name, preview_tex)
+	_last_focused_control = get_viewport().gui_get_focus_owner()
+	if skin_selection_modal:
+		skin_selection_modal.open_skin_modal("ship", String(current_character_id), "%s - Exo-Traje" % char_name, preview_tex)
 
 
 func _on_ship_skin_pressed() -> void:
@@ -568,18 +570,20 @@ func _on_weapon_card_pressed() -> void:
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
 	var wpn_name: String = char_data.starting_weapon.weapon_name if char_data and char_data.starting_weapon else "Arma"
 	var preview_tex: Texture2D = char_data.get_weapon_texture() if char_data else null
-	_open_skin_modal("weapon", String(current_character_id), "%s - Armamento" % wpn_name, preview_tex)
+	_last_focused_control = get_viewport().gui_get_focus_owner()
+	if skin_selection_modal:
+		skin_selection_modal.open_skin_modal("weapon", String(current_character_id), "%s - Armamento" % wpn_name, preview_tex)
 
 
 func _on_pet_card_pressed() -> void:
+	_last_focused_control = get_viewport().gui_get_focus_owner()
 	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
 		pet_selection_modal.open_modal()
 
 
 func _on_navigator_card_pressed() -> void:
+	_last_focused_control = get_viewport().gui_get_focus_owner()
 	if navigator_selection_modal and navigator_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
 		navigator_selection_modal.open_modal()
 
 
@@ -591,6 +595,16 @@ func _on_pet_selected(pet_id: StringName) -> void:
 	SaveManager.set_character_loadout(current_character_id, loadout)
 	if equipment_cards:
 		equipment_cards.refresh_pet_display(current_character_id)
+
+
+func _refresh_pet_display() -> void:
+	if equipment_cards:
+		equipment_cards.refresh_pet_display(&"")
+
+
+func _refresh_navigator_display() -> void:
+	if equipment_cards:
+		equipment_cards.refresh_navigator_display(&"")
 
 
 func _on_navigator_selected(nav_id: StringName) -> void:
@@ -611,14 +625,15 @@ func _open_skin_modal(category: String, target_id: String, target_name: String, 
 
 
 func _on_skins_button_pressed() -> void:
+	_last_focused_control = get_viewport().gui_get_focus_owner()
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if data:
 		var fb: Texture2D = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 		if not fb:
 			fb = data.get_portrait_texture()
-		_open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
+		if skin_selection_modal:
+			skin_selection_modal.open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 	elif gacha_modal:
-		_last_focused_control = get_viewport().gui_get_focus_owner()
 		gacha_modal.open_gacha_modal()
 
 

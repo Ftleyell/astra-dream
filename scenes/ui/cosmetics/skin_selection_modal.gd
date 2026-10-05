@@ -405,6 +405,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			_cycle_tabs(1)
 			return
+		elif event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+			if dossier_controller and dossier_controller.equip_btn and not dossier_controller.equip_btn.disabled:
+				get_viewport().set_input_as_handled()
+				_on_equip_pressed()
+				return
 
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
