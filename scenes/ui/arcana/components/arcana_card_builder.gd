@@ -7,6 +7,7 @@ extends RefCounted
 ## deltas de estadísticas, descripciones de bendición/maldición y botones de confirmación.
 
 const ArcanaStatsInspector = preload("res://scenes/ui/arcana/components/arcana_stats_inspector.gd")
+const LevelUpStatsInspector = preload("res://scenes/ui/level_up/components/level_up_stats_inspector.gd")
 
 const COLOR_DEEP_BLACK := Color("#0A0A0E")
 const COLOR_PURE_WHITE := Color("#FFFFFF")
@@ -60,15 +61,7 @@ static func build_card(
 	hotkey_lbl.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(hotkey_lbl)
 
-	# 2. Badge del Cuadrante
-	var quad_badge := Label.new()
-	quad_badge.text = "[ %s ]" % arc.get_quadrant_title().to_upper()
-	quad_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	quad_badge.add_theme_color_override("font_color", accent.lightened(0.2))
-	quad_badge.add_theme_font_size_override("font_size", 11)
-	vbox.add_child(quad_badge)
-
-	# 3. Nombre de la Arcana
+	# 2. Nombre de la Arcana (Limpio y Prominente)
 	var name_label := Label.new()
 	name_label.text = arc.name.to_upper()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -77,7 +70,7 @@ static func build_card(
 	name_label.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(name_label)
 
-	# 4. Separador decorativo neón
+	# 3. Separador decorativo neón
 	var sep := HSeparator.new()
 	var sep_style := StyleBoxLine.new()
 	sep_style.color = accent
@@ -85,7 +78,7 @@ static func build_card(
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
-	# 5. Icono o Glifo Central
+	# 4. Icono o Glifo Central
 	var icon_rect := TextureRect.new()
 	icon_rect.custom_minimum_size = Vector2(52, 52)
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -96,7 +89,7 @@ static func build_card(
 	icon_rect.modulate = accent
 	vbox.add_child(icon_rect)
 
-	# 6. Panel de alteraciones exactas de estadísticas (Stat Deltas Badges)
+	# 5. Panel de alteraciones exactas de estadísticas (Stat Deltas Badges)
 	var stat_deltas_box := VBoxContainer.new()
 	stat_deltas_box.add_theme_constant_override("separation", 4)
 
@@ -115,8 +108,7 @@ static func build_card(
 			var mod_val: float = float(arc.stat_modifiers[mod_key])
 
 			var stat_display_name: String = ArcanaStatsInspector.get_stat_display_name(target_stat)
-			var sign_str: String = "+" if mod_val > 0 else ""
-			var val_str: String = ("%s%.0f%%" % [sign_str, mod_val * 100.0]) if is_pct else ("%s%.0f" % [sign_str, mod_val])
+			var val_str: String = LevelUpStatsInspector.format_stat_modifier(target_stat, mod_val, is_pct, true)
 			var arrow_str: String = "▲" if mod_val >= 0 else "▼"
 			var col_badge: Color = COLOR_BOON_GREEN if mod_val >= 0 else COLOR_CURSE_RED
 

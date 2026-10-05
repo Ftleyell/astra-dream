@@ -90,8 +90,8 @@ func _process(delta: float) -> void:
 	if solar_storm_active:
 		solar_storm_timer -= delta
 		if is_instance_valid(player) and solar_shader_mat:
-			var canvas_pos := player.get_global_transform_with_canvas().origin
-			solar_shader_mat.set_shader_parameter("player_screen_pos", canvas_pos)
+			var screen_pos: Vector2 = player.get_viewport_transform() * player.global_position
+			solar_shader_mat.set_shader_parameter("player_screen_pos", screen_pos)
 			var cam := get_viewport().get_camera_2d()
 			var zoom_factor: float = cam.zoom.x if (cam and cam.zoom.x > 0.0) else 1.0
 			solar_shader_mat.set_shader_parameter("inner_radius", 280.0 * zoom_factor)
@@ -173,8 +173,8 @@ func _start_solar_storm() -> void:
 
 	# Posicionar inmediatamente el shader en el centro de la pantalla relativo al jugador
 	if is_instance_valid(player) and solar_shader_mat:
-		var canvas_pos := player.get_global_transform_with_canvas().origin
-		solar_shader_mat.set_shader_parameter("player_screen_pos", canvas_pos)
+		var screen_pos := player.get_viewport_transform() * player.global_position
+		solar_shader_mat.set_shader_parameter("player_screen_pos", screen_pos)
 		var cam := get_viewport().get_camera_2d()
 		var zoom_factor: float = cam.zoom.x if (cam and cam.zoom.x > 0.0) else 1.0
 		solar_shader_mat.set_shader_parameter("inner_radius", 280.0 * zoom_factor)

@@ -112,6 +112,8 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 		display_title = "[ARMA] " + (entry as WeaponData).get_display_name()
 	elif "item_name" in entry:
 		display_title = entry.item_name
+		if display_title.is_empty() and "item_id" in entry:
+			display_title = String(entry.item_id).replace("_", " ").capitalize()
 		if is_instance_valid(player) and player.inventory and entry.get("max_stacks") != null and entry.max_stacks > 1:
 			var cur_s: int = player.inventory.get_item_count(entry.item_id)
 			display_title += " (%d/%d)" % [cur_s, entry.max_stacks]
@@ -132,7 +134,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	name_lbl.text = display_title
 	name_lbl.add_theme_color_override("font_color", rarity_color)
 	name_lbl.add_theme_font_size_override("font_size", 13)
-	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_lbl.custom_minimum_size = Vector2(100, 0)
 	name_lbl.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	header_hbox.add_child(name_lbl)
 

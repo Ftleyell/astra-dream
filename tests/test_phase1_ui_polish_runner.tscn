@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_phase1_ui_polish_001"]
+
+[ext_resource type="Script" path="res://tests/test_phase1_ui_polish_suite.gd" id="1_test"]
+
+[node name="TestPhase1UIPolishRunner" type="Node"]
+script = ExtResource("1_test")

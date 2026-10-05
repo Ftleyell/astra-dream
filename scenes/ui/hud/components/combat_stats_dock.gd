@@ -36,7 +36,7 @@ var _external_requesters: Dictionary = {}
 
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	custom_minimum_size = Vector2(245, 485)
+	custom_minimum_size = Vector2(285, 520)
 	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_build_ui()
 
@@ -52,8 +52,8 @@ func _build_ui() -> void:
 	add_theme_stylebox_override("panel", sb)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_bottom", 10)
 	add_child(margin)
@@ -65,12 +65,12 @@ func _build_ui() -> void:
 	_title_label = Label.new()
 	_title_label.text = "📊 ATRIBUTOS [TAB]"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 12)
+	_title_label.add_theme_font_size_override("font_size", 13)
 	_title_label.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
 	vbox.add_child(_title_label)
 
 	_stats_container = VBoxContainer.new()
-	_stats_container.add_theme_constant_override("separation", 2)
+	_stats_container.add_theme_constant_override("separation", 3)
 	vbox.add_child(_stats_container)
 
 func refresh_stats(player: Player) -> void:
@@ -101,7 +101,7 @@ func refresh_stats(player: Player) -> void:
 		var is_cursed: bool = is_curse and current_val > 0.0
 
 		var item_panel := PanelContainer.new()
-		item_panel.custom_minimum_size = Vector2(0, 22)
+		item_panel.custom_minimum_size = Vector2(0, 24)
 
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = Color(0.04, 0.06, 0.10, 0.85)
@@ -112,10 +112,10 @@ func refresh_stats(player: Player) -> void:
 		item_panel.add_theme_stylebox_override("panel", sb)
 
 		var p_margin := MarginContainer.new()
-		p_margin.add_theme_constant_override("margin_left", 6)
-		p_margin.add_theme_constant_override("margin_right", 6)
-		p_margin.add_theme_constant_override("margin_top", 1)
-		p_margin.add_theme_constant_override("margin_bottom", 1)
+		p_margin.add_theme_constant_override("margin_left", 8)
+		p_margin.add_theme_constant_override("margin_right", 8)
+		p_margin.add_theme_constant_override("margin_top", 2)
+		p_margin.add_theme_constant_override("margin_bottom", 2)
 		item_panel.add_child(p_margin)
 
 		var hbox := HBoxContainer.new()
@@ -124,7 +124,7 @@ func refresh_stats(player: Player) -> void:
 
 		var lbl_name := Label.new()
 		lbl_name.text = cfg["name"]
-		lbl_name.add_theme_font_size_override("font_size", 10)
+		lbl_name.add_theme_font_size_override("font_size", 11)
 		lbl_name.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else Color(0.8, 0.85, 0.9))
 		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hbox.add_child(lbl_name)
@@ -132,7 +132,7 @@ func refresh_stats(player: Player) -> void:
 		var displayed_val: String = (fmt % (current_val * mult)) + suffix
 		var lbl_val := Label.new()
 		lbl_val.text = displayed_val
-		lbl_val.add_theme_font_size_override("font_size", 10)
+		lbl_val.add_theme_font_size_override("font_size", 11)
 		lbl_val.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else Color.WHITE))
 		hbox.add_child(lbl_val)
 
@@ -363,6 +363,9 @@ func set_dock_requested(requester_id: StringName, requested: bool, player: Playe
 		clear_previews()
 
 	visible = not _external_requesters.is_empty()
+	if visible:
+		var only_tab: bool = _external_requesters.has(&"tab") and _external_requesters.size() == 1
+		modulate.a = 0.75 if only_tab else 1.0
 
 func toggle_tab_dock(player: Player) -> void:
 	if _external_requesters.has(&"tab"):
