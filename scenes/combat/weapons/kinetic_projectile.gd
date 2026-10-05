@@ -178,8 +178,8 @@ func _apply_hit(target: Node2D) -> void:
 	if target.has_method("take_damage"):
 		target.take_damage(ctx)
 
-	var is_scatter := (ctx.source_weapon_id == &"scatter_laser" or ctx.source_weapon_id == &"sniper_rifle")
-	var is_dead := (not is_instance_valid(target)) or bool(target.get("is_dying")) or (target.get("current_health") != null and float(target.get("current_health")) <= 0.0)
+	var is_scatter: bool = (ctx.source_weapon_id == &"scatter_laser" or ctx.source_weapon_id == &"sniper_rifle")
+	var is_dead: bool = (not is_instance_valid(target)) or (target.get("is_dying") == true) or (target.get("current_health") != null and float(target.get("current_health")) <= 0.0)
 	if is_scatter and ctx.weapon_level <= 2 and hp_pct < 0.20 and is_dead and not has_meta("is_scatter_fragment"):
 		_spawn_scatter_fragments(global_position, ctx)
 
