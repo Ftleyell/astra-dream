@@ -98,7 +98,7 @@ Las cartas de progresión ordinaria otorgan incrementos calibrados y aditivos (e
 #### 3. Categoría C: Manipulación Espacial y Economía
 | ID | Nombre | Rareza | Efecto Táctico | Sinergia Específica | Coste |
 | :--- | :--- | :---: | :--- | :--- | :---: |
-| `orbital_relay` | **Repetidor Orbital** | Rara | Reduce el tiempo de despliegue satelital de 15.0s a 10.0s | Balizas satelitales en combate | 85c |
+| `orbital_relay` | **Repetidor Orbital** | Rara | Reduce el tiempo de despliegue satelital de 6.0s a 4.0s | Balizas satelitales en combate | 85c |
 | `quantum_recompiler` | **Recompilador Cuántico** | Poco Común | Otorga +1 uso adicional a las Forjas Cuánticas (4 usos en vez de 3) | Estación de Transmutación | 60c |
 | `heavy_salvager` | **Chatarrero Pesado** | Común | Abrir cápsulas de chatarra otorga permanentemente +2 Max HP y +3c | Cápsulas gratuitas | 45c |
 | `chronos_bank` | **Banco de Cronos** | Rara | Genera 10% de interés sobre créditos no gastados por oleada (tope 50c) | Inversión y ahorro | 75c |

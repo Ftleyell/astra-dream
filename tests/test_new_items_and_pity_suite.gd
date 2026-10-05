@@ -336,7 +336,7 @@ func _run_test_6_orbital_relay_and_quantum_recompiler() -> void:
 
 	# 1. orbital_relay en SatelliteBeacon
 	var beacon := SatelliteBeaconClass.new()
-	_assert_test(is_equal_approx(beacon.plant_duration, 15.0), "Duración satelital base es 15.0s", "got %.1f" % beacon.plant_duration)
+	_assert_test(is_equal_approx(beacon.plant_duration, 6.0), "Duración satelital base es 6.0s", "got %.1f" % beacon.plant_duration)
 
 	var player := Player.new()
 	player.inventory = InventoryComponent.new()
@@ -345,18 +345,18 @@ func _run_test_6_orbital_relay_and_quantum_recompiler() -> void:
 	player.inventory.add_item(relay_item)
 
 	beacon.check_orbital_relay(player)
-	_assert_test(is_equal_approx(beacon.plant_duration, 10.0), "Con orbital_relay, duración satelital reducida a 10.0s", "got %.1f" % beacon.plant_duration)
+	_assert_test(is_equal_approx(beacon.plant_duration, 4.0), "Con orbital_relay, duración satelital reducida a 4.0s", "got %.1f" % beacon.plant_duration)
 
 	# 2. CombatSatelliteCoordinator.get_plant_duration()
 	var coordinator := CombatSatelliteCoordinatorClass.new()
 	var dummy_mg := MainGameClass.new()
 	dummy_mg.player = player
 	coordinator.setup(dummy_mg)
-	_assert_test(is_equal_approx(coordinator.get_plant_duration(), 10.0), "Coordinator reporta 10.0s con jugador que posee orbital_relay")
+	_assert_test(is_equal_approx(coordinator.get_plant_duration(), 4.0), "Coordinator reporta 4.0s con jugador que posee orbital_relay")
 
 	# Sin orbital_relay
 	player.inventory.clear_items()
-	_assert_test(is_equal_approx(coordinator.get_plant_duration(), 15.0), "Coordinator reporta 15.0s cuando jugador no tiene orbital_relay")
+	_assert_test(is_equal_approx(coordinator.get_plant_duration(), 6.0), "Coordinator reporta 6.0s cuando jugador no tiene orbital_relay")
 
 	# 3. quantum_recompiler en TransmutationStation
 	var station := TransmutationStationClass.new()
