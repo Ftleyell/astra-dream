@@ -161,12 +161,16 @@ func update_equipment(data: CharacterData, char_id: StringName) -> void:
 		else:
 			weapon_name.text = "Arma Especializada"
 
-	refresh_pet_display()
-	refresh_navigator_display()
+	refresh_pet_display(char_id)
+	refresh_navigator_display(char_id)
 
 
-func refresh_pet_display() -> void:
-	var sel_pid := SaveManager.get_selected_pet()
+func refresh_pet_display(char_id: StringName = &"") -> void:
+	var sel_pid: StringName = SaveManager.get_selected_pet()
+	if not char_id.is_empty():
+		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
+		if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
+			sel_pid = StringName(str(loadout["selected_pet"]))
 	var pet_res = PetDataScript.get_pet(sel_pid)
 	if pet_res:
 		var pet_slot := "pet:" + String(sel_pid)
@@ -185,8 +189,12 @@ func refresh_pet_display() -> void:
 			pet_desc.text = pet_res.power_description
 
 
-func refresh_navigator_display() -> void:
-	var sel_nid := SaveManager.get_selected_navigator()
+func refresh_navigator_display(char_id: StringName = &"") -> void:
+	var sel_nid: StringName = SaveManager.get_selected_navigator()
+	if not char_id.is_empty():
+		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
+		if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
+			sel_nid = StringName(str(loadout["selected_navigator"]))
 	var nav_res = NavigatorDataScript.get_navigator(sel_nid)
 	if nav_res:
 		var nav_slot := "navigator:" + String(sel_nid)
@@ -203,3 +211,4 @@ func refresh_navigator_display() -> void:
 			navigator_name.modulate = nav_res.theme_color
 		if navigator_desc:
 			navigator_desc.text = "%s | Buff: %s (%s)" % [nav_res.specialty_desc, nav_res.buff_name, nav_res.buff_desc]
+

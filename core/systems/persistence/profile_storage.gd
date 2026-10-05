@@ -54,7 +54,8 @@ static func get_default_profile() -> Dictionary:
 		"unlocked_skins": {} as Dictionary,
 		"equipped_skins": {} as Dictionary,
 		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary,
-		"character_active_tomes": {} as Dictionary
+		"character_active_tomes": {} as Dictionary,
+		"character_loadouts": {} as Dictionary
 	}
 
 static func save_profile(
@@ -228,7 +229,8 @@ static func save_profile(
 		"unlocked_skins": current_unlocked_skins,
 		"equipped_skins": current_equipped_skins,
 		"gacha_pity": current_gacha_pity,
-		"character_active_tomes": existing_prof.get("character_active_tomes", {})
+		"character_active_tomes": existing_prof.get("character_active_tomes", {}),
+		"character_loadouts": existing_prof.get("character_loadouts", {})
 	}
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -309,6 +311,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
 		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
 		"character_active_tomes": raw.get("character_active_tomes", {}) as Dictionary,
+		"character_loadouts": raw.get("character_loadouts", {}) as Dictionary,
 		"gacha_pity": {
 			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
 			"ships": int(raw.get("gacha_pity", {}).get("ships", 0)),
@@ -403,4 +406,34 @@ static func set_character_active_tomes(char_id: StringName, tomes: Array[StringN
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
 		file.close()
+
+
+static func get_character_loadout(char_id: StringName) -> Dictionary:
+	var prof: Dictionary = load_profile()
+	var loadouts: Dictionary = prof.get("character_loadouts", {})
+	var cid_str := str(char_id)
+	if loadouts.has(cid_str) and loadouts[cid_str] is Dictionary:
+		return (loadouts[cid_str] as Dictionary).duplicate()
+	return {
+		"selected_pet": StringName(str(prof.get("selected_pet", "mochi"))),
+		"selected_navigator": StringName(str(prof.get("selected_navigator", "lyra"))),
+		"equipped_pet_skin": "",
+		"equipped_navigator_skin": "",
+		"equipped_ship_skin": "",
+		"equipped_weapon_skin": "",
+		"equipped_pilot_skin": ""
+	}
+
+
+static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> void:
+	var prof: Dictionary = load_profile()
+	var loadouts: Dictionary = prof.get("character_loadouts", {}).duplicate()
+	loadouts[str(char_id)] = loadout.duplicate()
+	prof["character_loadouts"] = loadouts
+
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(prof, "\t"))
+		file.close()
+
 

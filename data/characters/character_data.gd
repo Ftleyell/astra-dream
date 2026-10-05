@@ -98,6 +98,13 @@ func get_portrait_texture(flipped: bool = false) -> Texture2D:
 		return load(path_legacy) as Texture2D
 	return null
 
+func get_avatar_texture() -> Texture2D:
+	var path := "res://assets/portraits/avatars/avatar_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return get_portrait_texture()
+
+
 func get_ship_texture() -> Texture2D:
 	if ship_sprite:
 		return ship_sprite

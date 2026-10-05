@@ -38,9 +38,9 @@ func set_game_speed(speed: float) -> void:
 
 
 func refresh_ui() -> void:
-	_style_speed_button(speed_1x_btn, is_equal_approx(current_game_speed, 1.0), "1x NORMAL")
-	_style_speed_button(speed_2x_btn, is_equal_approx(current_game_speed, 2.0), "2x RÁPIDO")
-	_style_speed_button(speed_4x_btn, is_equal_approx(current_game_speed, 4.0), "4x TURBO")
+	_style_speed_button(speed_1x_btn, is_equal_approx(current_game_speed, 1.0), "1.0x")
+	_style_speed_button(speed_2x_btn, is_equal_approx(current_game_speed, 2.0), "2.0x")
+	_style_speed_button(speed_4x_btn, is_equal_approx(current_game_speed, 4.0), "4.0x")
 
 
 func handle_shortcut(keycode: int) -> bool:
@@ -61,26 +61,30 @@ func _style_speed_button(btn: Button, is_active: bool, base_text: String) -> voi
 	if not btn:
 		return
 	var sb := StyleBoxFlat.new()
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
 	if is_active:
-		btn.text = "● %s" % base_text
-		sb.bg_color = Color(0.06, 0.22, 0.28, 1.0)
-		sb.border_width_left = 3
-		sb.border_width_top = 3
-		sb.border_width_right = 3
-		sb.border_width_bottom = 3
+		btn.text = "[ %s ]" % base_text
+		sb.bg_color = Color(0.06, 0.26, 0.32, 1.0)
+		sb.border_width_left = 2
+		sb.border_width_top = 2
+		sb.border_width_right = 2
+		sb.border_width_bottom = 2
 		sb.border_color = Color(0, 0.94, 1, 1)
 		sb.shadow_color = Color(0, 0.94, 1, 0.35)
-		sb.shadow_size = 4
+		sb.shadow_size = 3
 		btn.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 	else:
-		btn.text = "○ %s" % base_text
-		sb.bg_color = Color(0.04, 0.04, 0.06, 0.8)
+		btn.text = base_text
+		sb.bg_color = Color(0.03, 0.05, 0.08, 0.75)
 		sb.border_width_left = 1
 		sb.border_width_top = 1
 		sb.border_width_right = 1
 		sb.border_width_bottom = 1
-		sb.border_color = Color(0.25, 0.28, 0.35, 1.0)
-		btn.add_theme_color_override("font_color", Color(0.65, 0.7, 0.78, 1))
+		sb.border_color = Color(0.2, 0.28, 0.38, 0.7)
+		btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85, 0.85))
 
 	sb.corner_radius_top_left = 4
 	sb.corner_radius_top_right = 4

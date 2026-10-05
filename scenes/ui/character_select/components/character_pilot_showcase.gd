@@ -112,6 +112,24 @@ func on_button_pressed() -> void:
 		on_pilot_pressed_callback.call()
 
 
+const SHOWCASE_SHADER := preload("res://shaders/pilot_showcase_hologram.gdshader")
+
+var _breathe_tween: Tween = null
+
+
+func start_idle_breathing() -> void:
+	if _breathe_tween and _breathe_tween.is_valid():
+		_breathe_tween.kill()
+	if not fullbody_texture:
+		return
+	var tree := Engine.get_main_loop() as SceneTree
+	if not tree:
+		return
+	_breathe_tween = tree.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breathe_tween.tween_property(fullbody_texture, "position:y", 4.0, 2.4).as_relative()
+	_breathe_tween.tween_property(fullbody_texture, "position:y", -4.0, 2.4).as_relative()
+
+
 func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked: bool) -> void:
 	var pilot_slot := "pilot:" + String(char_id)
 	var pilot_skin_id := SaveManager.get_equipped_skin(pilot_slot)
@@ -134,10 +152,22 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 				fb_tex = data.get_portrait_texture()
 			fullbody_texture.texture = fb_tex
 
-		fullbody_texture.flip_h = true
+		# Si no tiene shader cosmético de estrellas altas, aplicar nuestro shader holográfico para defringing y rim-light
+		if fullbody_texture.material == null:
+			var mat := ShaderMaterial.new()
+			mat.shader = SHOWCASE_SHADER
+			var theme_col: Color = data.color if data else Color(0.2, 0.9, 1.0)
+			mat.set_shader_parameter("rim_color", theme_col)
+			mat.set_shader_parameter("bottom_fade_start", 0.90)
+			fullbody_texture.material = mat
+
+		fullbody_texture.flip_h = false
 		fullbody_texture.visible = (fullbody_texture.texture != null)
 		fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.2, 0.2, 0.3, 0.85)
 
 	if backlight_glow:
 		var glow_col: Color = data.color if data else Color(0.2, 0.9, 1.0)
 		backlight_glow.modulate = Color(glow_col.r, glow_col.g, glow_col.b, backlight_glow.modulate.a)
+
+	start_idle_breathing()
+

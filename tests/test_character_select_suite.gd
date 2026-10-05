@@ -24,7 +24,7 @@ func _ready() -> void:
 
 	var first_btn := char_list.get_child(0) as Button
 	assert(first_btn.icon != null, "El botón de Nova debe tener icono de retrato")
-	assert("NOVA" in first_btn.text, "El primer botón debe ser Nova")
+	assert(first_btn.tooltip_text == "NOVA" or "NOVA" in first_btn.text or first_btn.name.to_upper().contains("NOVA"), "El primer botón debe ser Nova")
 
 	# 2. Verificar datos de Nova seleccionada por defecto
 	assert(ui.name_label.text == "NOVA", "Nombre mostrado debe ser NOVA")

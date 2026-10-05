@@ -43,6 +43,10 @@ var category_tabs: SkinCategoryTabs = null
 var cover_flow_renderer: SkinCoverFlowRenderer = null
 var dossier_controller: SkinDossierController = null
 
+var _fullbody_texture: TextureRect:
+	get:
+		return cover_flow_renderer.fullbody_texture if cover_flow_renderer else null
+
 # Nodos UI clave
 var _title_label: Label = null
 var _close_btn: Button = null
@@ -338,6 +342,10 @@ func _build_ui() -> void:
 		Callable(self, "_on_default_pressed"),
 		Callable(self, "_on_gacha_pressed")
 	)
+
+
+func open_skin_modal(category: String, target_id: String, display_title: String, default_texture: Texture2D = null) -> void:
+	open_for_target(category, target_id, display_title, default_texture)
 
 
 func open_for_target(category: String, target_id: String, display_title: String, default_texture: Texture2D) -> void:
