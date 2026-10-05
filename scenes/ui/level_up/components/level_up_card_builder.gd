@@ -140,14 +140,7 @@ static func build_stat_card(
 
 	info_vbox.add_child(top_line)
 
-	var mod_sign: String = "+" if card.modifier_value > 0 else ""
-	var mod_text: String = ""
-	if card.is_percentage:
-		mod_text = "%s%.0f%%" % [mod_sign, card.modifier_value * 100.0]
-	elif card.target_stat == &"health_regen":
-		mod_text = "%s%.1f/s" % [mod_sign, card.modifier_value]
-	else:
-		mod_text = "%s%.0f" % [mod_sign, card.modifier_value]
+	var mod_text: String = LevelUpStatsInspector.format_stat_modifier(card.target_stat, card.modifier_value, card.is_percentage, true)
 
 	var hero_val_lbl := Label.new()
 	hero_val_lbl.name = "HeroValueBadge"

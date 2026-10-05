@@ -290,6 +290,8 @@ func _populate_stats_display(data: CharacterData, stats: CharacterStats, col: Co
 			"stats": [
 				{"name": "RANGO DE RECOLECCIÓN", "key": &"pickup_radius", "base": data.pickup_radius, "fmt": "%.0f", "suffix": " px"},
 				{"name": "GANANCIA DE EXP", "key": &"exp_multiplier", "base": data.exp_multiplier, "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+				{"name": "MULTIPLICADOR DE CRÉDITOS", "key": &"credits_multiplier", "base": data.credits_multiplier if "credits_multiplier" in data else 1.0, "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+				{"name": "MULTIPLICADOR DE BIOMASA", "key": &"biomass_multiplier", "base": data.biomass_multiplier if "biomass_multiplier" in data else 1.0, "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 				{"name": "SUERTE", "key": &"luck", "base": data.luck, "fmt": "%+.0f", "suffix": ""},
 			]
 		},

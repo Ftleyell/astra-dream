@@ -54,9 +54,11 @@ func fail_suite(failure_message: String = "") -> void:
 	_cleanup_and_quit(1)
 
 func _cleanup_and_quit(exit_code: int) -> void:
-	# Forzar liberación de cualquier token de pausa que haya quedado retenido
-	if PauseArbitrator:
-		PauseArbitrator.force_clear()
+	var pa = get_node_or_null("/root/PauseArbitrator")
+	if pa and pa.has_method("force_unpause_all"):
+		pa.force_unpause_all()
+	elif "instance" in PauseArbitrator and PauseArbitrator.instance:
+		PauseArbitrator.instance.force_unpause_all()
 	var tree := get_tree()
 	if tree:
 		tree.paused = false

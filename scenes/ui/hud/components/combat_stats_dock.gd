@@ -15,6 +15,7 @@ const RUN_STATS_CONFIG: Array[Dictionary] = [
 	{"name": "DAÑO CRÍTICO", "key": &"crit_damage", "fmt": "%.2f", "suffix": "x"},
 	{"name": "PROYECTILES", "key": &"projectile_count", "fmt": "%.0f", "suffix": ""},
 	{"name": "VEL. PROYECTIL", "key": &"projectile_speed", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "TAMAÑO DE ARMA", "key": &"weapon_size", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "VEL. MOVIMIENTO", "key": &"move_speed", "fmt": "%.0f", "suffix": " px/s"},
 	{"name": "ENFRIAMIENTO", "key": &"cooldown_reduction", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "VIDA MÁXIMA", "key": &"max_health", "fmt": "%.0f", "suffix": " HP"},
@@ -22,6 +23,8 @@ const RUN_STATS_CONFIG: Array[Dictionary] = [
 	{"name": "ARMADURA", "key": &"armor", "fmt": "%.0f", "suffix": ""},
 	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
 	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "MULTIPLICADOR CRÉDITOS", "key": &"credits_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "MULTIPLICADOR BIOMASA", "key": &"biomass_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
 	{"name": "MALDICIÓN", "key": &"curse", "fmt": "%.0f", "suffix": ""},
 ]
@@ -33,7 +36,7 @@ var _external_requesters: Dictionary = {}
 
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	custom_minimum_size = Vector2(235, 410)
+	custom_minimum_size = Vector2(245, 485)
 	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_build_ui()
 

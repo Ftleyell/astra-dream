@@ -137,7 +137,7 @@ func _init() -> void:
 		{
 			"id": "dimensional_leap",
 			"name": "Salto Dimensional",
-			"boon": "+45% Velocidad de maniobra y +35% Recarga de dash",
+			"boon": "+45% Velocidad de maniobra y +35% Reducción de enfriamiento de armas",
 			"curse": "-20% Resistencia e integridad de casco (Max HP)",
 			"quadrant": "spacetime",
 			"accent": Color(0.75, 0.25, 1.0, 1.0),
@@ -203,7 +203,7 @@ func _init() -> void:
 			"curse": "-25% Vida máxima y -5 Armadura",
 			"quadrant": "greed",
 			"accent": Color(1.0, 0.85, 0.1, 1.0),
-			"mods": {"max_health_pct": -0.25, "armor": -5.0, "biomass_multiplier": 1.0, "credits_multiplier": 1.0},
+			"mods": {"max_health_pct": -0.25, "armor": -5.0, "biomass_multiplier_pct": 1.0, "credits_multiplier_pct": 1.0},
 			"icon": "res://assets/icons/icon_credit.png"
 		},
 		{
@@ -253,7 +253,7 @@ func _init() -> void:
 			"curse": "-15% Daño infligido por armas",
 			"quadrant": "greed",
 			"accent": Color(0.9, 0.8, 0.3, 1.0),
-			"mods": {"luck": 30.0, "pickup_radius_pct": 0.40, "base_damage_pct": -0.15, "biomass_multiplier": 0.5},
+			"mods": {"luck": 30.0, "pickup_radius_pct": 0.40, "base_damage_pct": -0.15, "biomass_multiplier_pct": 0.5},
 			"icon": "res://assets/icons/items/icon_clover.svg"
 		}
 	]

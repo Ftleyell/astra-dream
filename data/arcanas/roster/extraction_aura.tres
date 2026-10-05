@@ -14,7 +14,7 @@ icon = ExtResource("1_au5qg")
 color_accent = Color(0.9, 0.8, 0.3, 1)
 stat_modifiers = {
 "base_damage_pct": -0.15,
-"biomass_multiplier": 0.5,
+"biomass_multiplier_pct": 0.5,
 "luck": 30.0,
 "pickup_radius_pct": 0.4
 }

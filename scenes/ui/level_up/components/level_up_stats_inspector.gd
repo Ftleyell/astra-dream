@@ -18,6 +18,7 @@ const RUN_STATS_CONFIG: Array[Dictionary] = [
 	{"name": "DAÑO CRÍTICO", "key": &"crit_damage", "fmt": "%.2f", "suffix": "x"},
 	{"name": "PROYECTILES", "key": &"projectile_count", "fmt": "%.0f", "suffix": ""},
 	{"name": "VEL. PROYECTIL", "key": &"projectile_speed", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "TAMAÑO DE ARMA", "key": &"weapon_size", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "VEL. MOVIMIENTO", "key": &"move_speed", "fmt": "%.0f", "suffix": " px/s"},
 	{"name": "ENFRIAMIENTO", "key": &"cooldown_reduction", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "VIDA MÁXIMA", "key": &"max_health", "fmt": "%.0f", "suffix": " HP"},
@@ -25,8 +26,21 @@ const RUN_STATS_CONFIG: Array[Dictionary] = [
 	{"name": "ARMADURA", "key": &"armor", "fmt": "%.0f", "suffix": ""},
 	{"name": "RADIO RECOGIDA", "key": &"pickup_radius", "fmt": "%.0f", "suffix": " px"},
 	{"name": "MULTIPLICADOR EXP", "key": &"exp_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "MULTIPLICADOR CRÉDITOS", "key": &"credits_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
+	{"name": "MULTIPLICADOR BIOMASA", "key": &"biomass_multiplier", "fmt": "%.0f", "suffix": "%", "mult": 100.0},
 	{"name": "SUERTE", "key": &"luck", "fmt": "%+.0f", "suffix": ""},
 	{"name": "MALDICIÓN", "key": &"curse", "fmt": "%.0f", "suffix": ""},
+]
+
+const PERCENTAGE_STAT_KEYS: Array[StringName] = [
+	&"crit_chance",
+	&"crit_damage",
+	&"cooldown_reduction",
+	&"projectile_speed",
+	&"exp_multiplier",
+	&"credits_multiplier",
+	&"biomass_multiplier",
+	&"weapon_size"
 ]
 
 var stats_list_container: VBoxContainer = null
@@ -39,6 +53,23 @@ func setup(p_stats_list: VBoxContainer, p_header: Label, p_pilot_info: Label) ->
 	stats_list_container = p_stats_list
 	stats_header_label = p_header
 	pilot_info_label = p_pilot_info
+
+
+static func is_percentage_stat(key: StringName) -> bool:
+	return PERCENTAGE_STAT_KEYS.has(key)
+
+
+static func format_stat_modifier(key: StringName, value: float, is_percentage_flag: bool = false, with_sign: bool = true) -> String:
+	var is_pct: bool = is_percentage_flag or is_percentage_stat(key)
+	var sign_s: String = ("+" if value > 0.0 else "") if with_sign else ""
+	if is_pct:
+		return "%s%.0f%%" % [sign_s, value * 100.0]
+	elif key == &"health_regen":
+		return "%s%.1f/s" % [sign_s, value]
+	elif is_equal_approx(value, roundf(value)):
+		return "%s%.0f" % [sign_s, value]
+	else:
+		return "%s%.1f" % [sign_s, value]
 
 
 static func get_stat_display_name(key: StringName) -> String:

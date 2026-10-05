@@ -235,6 +235,20 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 		stacks_lbl.modulate = Color(0.65, 0.8, 0.95, 0.7)
 		top_line.add_child(stacks_lbl)
 
+	if item.stat_name != &"":
+		var val_s: String = LevelUpStatsInspector.format_stat_modifier(item.stat_name, item.stat_value, item.is_percentage, true)
+		var stat_badge := Label.new()
+		var stat_title: String = LevelUpStatsInspector.get_stat_display_name(item.stat_name)
+		if item.secondary_stat_name != &"":
+			var sec_val_s: String = LevelUpStatsInspector.format_stat_modifier(item.secondary_stat_name, item.secondary_stat_value, item.secondary_is_percentage, true)
+			stat_badge.text = "• [ ⚖ %s / %s ]" % [val_s, sec_val_s]
+			stat_badge.modulate = Color(1.0, 0.75, 0.4)
+		else:
+			stat_badge.text = "• [ ▲ %s %s ]" % [val_s, stat_title]
+			stat_badge.modulate = Color("#00FF9D") if item.stat_value >= 0 else Color("#FF4466")
+		stat_badge.add_theme_font_size_override("font_size", 11)
+		top_line.add_child(stat_badge)
+
 	info_vbox.add_child(top_line)
 
 	var desc_lbl := Label.new()

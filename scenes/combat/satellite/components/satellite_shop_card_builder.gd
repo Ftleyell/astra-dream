@@ -168,12 +168,10 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 			stat_delta_for_hover = it.stat_value
 			is_pct_for_hover = it.is_percentage
 
-			var sign_s: String = "+" if it.stat_value > 0 else ""
-			var val_s: String = ("%s%.0f%%" % [sign_s, it.stat_value * 100.0]) if it.is_percentage else ("%s%.0f" % [sign_s, it.stat_value])
+			var val_s: String = LevelUpStatsInspector.format_stat_modifier(it.stat_name, it.stat_value, it.is_percentage, true)
 
 			if it.secondary_stat_name != &"":
-				var sec_sign: String = "+" if it.secondary_stat_value > 0 else ""
-				var sec_val_s: String = ("%s%.0f%%" % [sec_sign, it.secondary_stat_value * 100.0]) if it.secondary_is_percentage else ("%s%.0f" % [sec_sign, it.secondary_stat_value])
+				var sec_val_s: String = LevelUpStatsInspector.format_stat_modifier(it.secondary_stat_name, it.secondary_stat_value, it.secondary_is_percentage, true)
 				stat_badge_sb.bg_color = Color(1.0, 0.45, 0.1, 0.18)
 				stat_badge_sb.border_color = Color(1.0, 0.55, 0.2, 0.8)
 				stat_badge_lbl.text = "⚖ %s / %s" % [val_s, sec_val_s]
@@ -182,7 +180,8 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 				var col_badge: Color = Color("#00FF9D") if it.stat_value >= 0 else Color("#FF4466")
 				stat_badge_sb.bg_color = Color(col_badge.r, col_badge.g, col_badge.b, 0.12)
 				stat_badge_sb.border_color = col_badge
-				stat_badge_lbl.text = "▲ %s  %s" % [val_s, str(it.stat_name)]
+				var stat_title: String = LevelUpStatsInspector.get_stat_display_name(it.stat_name)
+				stat_badge_lbl.text = "▲ %s  %s" % [val_s, stat_title]
 				stat_badge_lbl.add_theme_color_override("font_color", col_badge)
 		else:
 			if it.tags.has(&"conversion"):

@@ -47,9 +47,9 @@ func initialize(char_data: CharacterData) -> void:
 		&"weapon_size": char_data.weapon_size if "weapon_size" in char_data else 1.0,
 		&"cooldown_reduction": char_data.cooldown_reduction if "cooldown_reduction" in char_data else 0.0,
 		&"exp_multiplier": char_data.exp_multiplier if "exp_multiplier" in char_data else 1.0,
-		&"biomass_multiplier": 1.0,
-		&"credits_multiplier": 1.0,
-		&"curse": 0.0,
+		&"biomass_multiplier": char_data.biomass_multiplier if "biomass_multiplier" in char_data else 1.0,
+		&"credits_multiplier": char_data.credits_multiplier if "credits_multiplier" in char_data else 1.0,
+		&"curse": char_data.curse if "curse" in char_data else 0.0,
 	}
 	for key in _base_stats.keys():
 		_modifiers[key] = []

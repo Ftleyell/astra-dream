@@ -33,6 +33,9 @@ extends Resource
 @export var weapon_size: float = 1.0
 @export var cooldown_reduction: float = 0.0
 @export var exp_multiplier: float = 1.0
+@export var biomass_multiplier: float = 1.0
+@export var credits_multiplier: float = 1.0
+@export var curse: float = 0.0
 
 @export_group("Loadout")
 @export var starting_weapon: WeaponData

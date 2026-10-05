@@ -24,7 +24,8 @@ func get_effective_modifier_type() -> Enums.ModifierType:
 func get_bonus_description(level: int) -> String:
 	var total_val: float = stat_value_per_level * float(level)
 	var sign_str: String = "+" if total_val >= 0.0 else ""
-	var val_str: String = "%.0f%%" % [total_val * 100.0] if is_percentage else "%.1f" % [total_val]
-	if not is_percentage and is_equal_approx(total_val, roundf(total_val)):
+	var is_pct: bool = is_percentage or stat_name == &"crit_chance"
+	var val_str: String = "%.0f%%" % [total_val * 100.0] if is_pct else "%.1f" % [total_val]
+	if not is_pct and is_equal_approx(total_val, roundf(total_val)):
 		val_str = "%d" % [int(total_val)]
 	return "%s%s" % [sign_str, val_str]

@@ -7,7 +7,7 @@
 script = ExtResource("2_gkfcy")
 id = "dimensional_leap"
 name = "Salto Dimensional"
-description_boon = "+45% Velocidad de Movimiento | +35% Reducción de Enfriamiento"
+description_boon = "+45% Velocidad de Movimiento | +35% Enfriamiento de Armas"
 description_curse = "-20% Salud Máxima"
 quadrant = "spacetime"
 icon = ExtResource("1_6cwhh")
