@@ -65,6 +65,8 @@ func _init_pool() -> void:
 		mat.set_shader_parameter("secondary_color", _secondary_color)
 		mat.set_shader_parameter("hdr_energy_multiplier", 2.2)
 		mat.set_shader_parameter("silhouette_solidarity", 0.75) # Silueta estilizada neón
+		mat.set_shader_parameter("has_mask", false)
+		mat.set_shader_parameter("enable_thrusters", false)
 		if noise_texture:
 			mat.set_shader_parameter("noise_texture", noise_texture)
 

@@ -44,6 +44,8 @@ var attack_timer: float = 0.0
 var dash_timer: float = 0.0
 var is_dashing: bool = false
 var dash_velocity: Vector2 = Vector2.ZERO
+var previous_rotation: float = 0.0
+var current_bank_tilt: float = 0.0
 
 # Componentes visuales
 var ship_sprite: Sprite2D = null
@@ -183,6 +185,41 @@ func _setup_visuals() -> void:
 		if ResourceLoader.exists(fb_path):
 			ship_sprite.texture = load(fb_path) as Texture2D
 
+	# Shader maestro de vuelo procedimental
+	var flight_shader: Shader = preload("res://shaders/exo_pilot_flight.gdshader")
+	var flight_mat := ShaderMaterial.new()
+	flight_mat.shader = flight_shader
+
+	var theme_col: Color = PILOT_THEME_COLORS.get(pilot_id, Color(0.0, 0.9, 1.0))
+	var sec_col: Color = Color.from_hsv(wrapf(theme_col.h + 0.15, 0.0, 1.0), 0.7, 1.1)
+	flight_mat.set_shader_parameter("primary_color", theme_col)
+	flight_mat.set_shader_parameter("secondary_color", sec_col)
+	flight_mat.set_shader_parameter("thrust_intensity", 0.5)
+
+	var noise_res: Resource = preload("res://shaders/flame_noise.tres")
+	if noise_res:
+		flight_mat.set_shader_parameter("noise_texture", noise_res)
+
+	var mask_tex: Texture2D = character_data.get_ship_mask() if character_data and character_data.has_method("get_ship_mask") else null
+	if not mask_tex:
+		var mask_path := "res://assets/characters/ships/ship_%s_mask.png" % str(pilot_id).to_lower()
+		if ResourceLoader.exists(mask_path):
+			mask_tex = load(mask_path) as Texture2D
+
+	if mask_tex:
+		flight_mat.set_shader_parameter("has_mask", true)
+		flight_mat.set_shader_parameter("mask_texture", mask_tex)
+		if character_data:
+			flight_mat.set_shader_parameter("hair_dir", character_data.hair_direction)
+			flight_mat.set_shader_parameter("wave_freq", character_data.hair_wave_frequency)
+			flight_mat.set_shader_parameter("hair_amp", character_data.hair_amplitude)
+		flight_mat.set_shader_parameter("enable_thrusters", true)
+	else:
+		flight_mat.set_shader_parameter("has_mask", false)
+		flight_mat.set_shader_parameter("enable_thrusters", false)
+
+	ship_sprite.material = flight_mat
+
 	# Colisión de la nave entera (escala 0.42 de nave ~36px -> radio 18.0)
 	var existing_col := get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if existing_col and existing_col.shape is CircleShape2D:
@@ -321,6 +358,43 @@ func _physics_process(delta: float) -> void:
 		State.DOGFIGHT:
 			_process_dogfight(delta, dist_to_player)
 
+	_update_flight_shader(delta)
+
+func _update_flight_shader(delta: float) -> void:
+	if not ship_sprite or not (ship_sprite.material is ShaderMaterial):
+		return
+	var mat := ship_sprite.material as ShaderMaterial
+
+	var rot_diff: float = wrapf(rotation - previous_rotation, -PI, PI)
+	previous_rotation = rotation
+	var angular_rate: float = rot_diff / maxf(0.001, delta)
+	var target_bank: float = clampf(angular_rate * 0.12, -1.0, 1.0)
+	current_bank_tilt = move_toward(current_bank_tilt, target_bank, 8.0 * delta)
+
+	mat.set_shader_parameter("bank_tilt", current_bank_tilt)
+	var leg_bend_val: float = clampf(-current_bank_tilt * 0.22, -0.22, 0.22)
+	mat.set_shader_parameter("leg_bend", leg_bend_val)
+
+	var spd: float = velocity.length()
+	var spd_ratio: float = clampf(spd / 600.0, 0.0, 1.0)
+	mat.set_shader_parameter("speed_ratio", spd_ratio)
+
+	if is_dashing:
+		mat.set_shader_parameter("thrust_intensity", 2.2)
+		mat.set_shader_parameter("thruster_length", 0.75)
+		mat.set_shader_parameter("thruster_speed", 90.0)
+		mat.set_shader_parameter("thruster_width", 0.075)
+	elif current_state == State.DOGFIGHT:
+		mat.set_shader_parameter("thrust_intensity", lerpf(0.7, 1.4, spd_ratio))
+		mat.set_shader_parameter("thruster_length", lerpf(0.42, 0.58, spd_ratio))
+		mat.set_shader_parameter("thruster_speed", lerpf(50.0, 75.0, spd_ratio))
+		mat.set_shader_parameter("thruster_width", lerpf(0.045, 0.06, spd_ratio))
+	else:
+		mat.set_shader_parameter("thrust_intensity", 0.45)
+		mat.set_shader_parameter("thruster_length", 0.35 + 0.04 * sin(elapsed_time * 4.0))
+		mat.set_shader_parameter("thruster_speed", 40.0)
+		mat.set_shader_parameter("thruster_width", 0.04)
+
 func _process_peaceful_warn(delta: float, dist: float) -> void:
 	if is_instance_valid(player):
 		# Rotar mirando al jugador con cautela
@@ -445,6 +519,10 @@ func take_damage(arg: Variant) -> void:
 		var orig_mod := ship_sprite.modulate
 		ship_sprite.modulate = Color(3.0, 3.0, 3.0, 1.0)
 		create_tween().tween_property(ship_sprite, "modulate", orig_mod, 0.08)
+		if ship_sprite.material is ShaderMaterial:
+			var mat := ship_sprite.material as ShaderMaterial
+			mat.set_shader_parameter("hit_flash", 1.0)
+			create_tween().tween_method(func(val: float) -> void: mat.set_shader_parameter("hit_flash", val), 1.0, 0.0, 0.12)
 
 	if current_health <= 0.0:
 		_die()

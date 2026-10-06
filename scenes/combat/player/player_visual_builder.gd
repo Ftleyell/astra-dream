@@ -54,6 +54,19 @@ func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) 
 	flight_mat.set_shader_parameter("core_gem_glow", 1.2)
 	flight_mat.set_shader_parameter("flame_direction", Vector2(0.0, 1.0))
 
+	# Configuración de máscara procedimental y peinado
+	var mask_tex: Texture2D = character_data.get_ship_mask() if character_data.has_method("get_ship_mask") else null
+	if mask_tex:
+		flight_mat.set_shader_parameter("has_mask", true)
+		flight_mat.set_shader_parameter("mask_texture", mask_tex)
+		flight_mat.set_shader_parameter("hair_dir", character_data.hair_direction)
+		flight_mat.set_shader_parameter("wave_freq", character_data.hair_wave_frequency)
+		flight_mat.set_shader_parameter("hair_amp", character_data.hair_amplitude)
+		flight_mat.set_shader_parameter("enable_thrusters", true)
+	else:
+		flight_mat.set_shader_parameter("has_mask", false)
+		flight_mat.set_shader_parameter("enable_thrusters", false)
+
 	# Componente de imágenes residuales Sandevistan
 	var vfx_comp: SandevistanFlightVFX = player.get_node_or_null("SandevistanFlightVFX") as SandevistanFlightVFX
 	if not vfx_comp and ship_spr:
@@ -164,14 +177,14 @@ func update_pilot_shader(player: CharacterBody2D, delta: float, is_moving: bool)
 		return
 
 	var mat: ShaderMaterial = ship_spr.material as ShaderMaterial
-	var max_spd: float = maxf(1.0, player.stats.get_stat(&"move_speed") if player.stats else 200.0)
+	var max_spd: float = maxf(1.0, player.stats.get_stat(&"move_speed") if ("stats" in player and player.stats) else 200.0)
 	var spd_ratio: float = clampf(player.velocity.length() / max_spd, 0.0, 1.0)
 
-	var is_dashing: bool = player.get("is_dashing") if "is_dashing" in player else false
-	var idle_bob_timer: float = player.get("idle_bob_timer") if "idle_bob_timer" in player else 0.0
-	var current_bank_tilt: float = player.get("current_bank_tilt") if "current_bank_tilt" in player else 0.0
-	var hit_flash_timer: float = player.get("hit_flash_timer") if "hit_flash_timer" in player else 0.0
-	var current_facing_angle: float = player.get("current_facing_angle") if "current_facing_angle" in player else 0.0
+	var is_dashing: bool = (player.get("is_dashing") if "is_dashing" in player else false) or bool(player.get_meta("is_dashing", false))
+	var idle_bob_timer: float = (player.get("idle_bob_timer") if "idle_bob_timer" in player else 0.0) if not player.has_meta("idle_bob_timer") else float(player.get_meta("idle_bob_timer", 0.0))
+	var current_bank_tilt: float = (player.get("current_bank_tilt") if "current_bank_tilt" in player else 0.0) if not player.has_meta("current_bank_tilt") else float(player.get_meta("current_bank_tilt", 0.0))
+	var hit_flash_timer: float = (player.get("hit_flash_timer") if "hit_flash_timer" in player else 0.0) if not player.has_meta("hit_flash_timer") else float(player.get_meta("hit_flash_timer", 0.0))
+	var current_facing_angle: float = (player.get("current_facing_angle") if "current_facing_angle" in player else 0.0) if not player.has_meta("current_facing_angle") else float(player.get_meta("current_facing_angle", 0.0))
 
 	var target_thrust: float = 0.25
 	if is_dashing:
@@ -185,6 +198,23 @@ func update_pilot_shader(player: CharacterBody2D, delta: float, is_moving: bool)
 	mat.set_shader_parameter("speed_ratio", spd_ratio)
 	mat.set_shader_parameter("bank_tilt", current_bank_tilt)
 	mat.set_shader_parameter("hit_flash", 1.0 if hit_flash_timer > 0.0 else 0.0)
+
+	# Inercia de piernas y modulación de soplete
+	var leg_bend_val: float = clampf(-current_bank_tilt * 0.22, -0.22, 0.22)
+	mat.set_shader_parameter("leg_bend", leg_bend_val)
+
+	if is_dashing:
+		mat.set_shader_parameter("thruster_length", 0.75)
+		mat.set_shader_parameter("thruster_speed", 90.0)
+		mat.set_shader_parameter("thruster_width", 0.075)
+	elif is_moving:
+		mat.set_shader_parameter("thruster_length", lerpf(0.38, 0.52, spd_ratio))
+		mat.set_shader_parameter("thruster_speed", lerpf(45.0, 70.0, spd_ratio))
+		mat.set_shader_parameter("thruster_width", lerpf(0.04, 0.055, spd_ratio))
+	else:
+		mat.set_shader_parameter("thruster_length", 0.32 + 0.04 * sin(idle_bob_timer * 4.0))
+		mat.set_shader_parameter("thruster_speed", 40.0)
+		mat.set_shader_parameter("thruster_width", 0.038)
 
 	var gem_glow: float = 1.2
 	if is_dashing:

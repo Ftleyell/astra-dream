@@ -14,6 +14,10 @@ extends Resource
 
 @export_group("Visuals")
 @export var ship_sprite: Texture2D
+@export var ship_mask: Texture2D
+@export var hair_direction: Vector2 = Vector2(1.0, 0.0)
+@export var hair_wave_frequency: float = 16.0
+@export var hair_amplitude: float = 0.02
 @export var fullbody_sprite: Texture2D
 @export var weapon_sprite: Texture2D
 
@@ -109,6 +113,14 @@ func get_ship_texture() -> Texture2D:
 	if ship_sprite:
 		return ship_sprite
 	var path := "res://assets/characters/ships/ship_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+func get_ship_mask() -> Texture2D:
+	if ship_mask:
+		return ship_mask
+	var path := "res://assets/characters/ships/ship_%s_mask.png" % str(character_id).to_lower()
 	if ResourceLoader.exists(path):
 		return load(path) as Texture2D
 	return null
@@ -282,6 +294,27 @@ static func load_roster() -> Dictionary[StringName, CharacterData]:
 				var res = load(fallback_path)
 				if res is CharacterData:
 					roster[cid] = res as CharacterData
+	for cid: StringName in roster.keys():
+		var cd: CharacterData = roster[cid]
+		if cd:
+			if not cd.ship_mask:
+				cd.ship_mask = cd.get_ship_mask()
+			match cid:
+				&"valentina":
+					cd.hair_direction = Vector2(0.2, 1.0)
+					cd.hair_wave_frequency = 24.0
+					cd.hair_amplitude = 0.015
+				&"roxy":
+					cd.hair_direction = Vector2(0.7, -0.7)
+					cd.hair_wave_frequency = 18.0
+					cd.hair_amplitude = 0.02
+				_:
+					if cd.hair_direction == Vector2.ZERO:
+						cd.hair_direction = Vector2(1.0, 0.0)
+					if is_zero_approx(cd.hair_wave_frequency):
+						cd.hair_wave_frequency = 16.0
+					if is_zero_approx(cd.hair_amplitude):
+						cd.hair_amplitude = 0.02
 
 	return roster
 
