@@ -127,6 +127,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="RootHBox" type="HBoxContainer" parent="DimOverlay/CenterContainer"]
+custom_minimum_size = Vector2(1120, 580)
 layout_mode = 2
 theme_override_constants/separation = 40
 alignment = 1
@@ -404,16 +405,21 @@ theme_override_constants/separation = 12
 
 [node name="NameLabel" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/HeaderRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.65, 0.2, 1)
 theme_override_font_sizes/font_size = 28
 text = "MOCHI"
+autowrap_mode = 3
+clip_text = true
 
 [node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/HeaderRow"]
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 8
 theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 13
 text = "[✓ EQUIPADO]"
+horizontal_alignment = 2
 vertical_alignment = 2
 
 [node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader"]
@@ -421,6 +427,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 14
 text = "— CAZADOR DE POLVO ESTELAR"
+autowrap_mode = 3
 
 [node name="BioCard" type="PanelContainer" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2
@@ -448,7 +455,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "Gatito naranja con casco espacial que busca y aspira gemas de EXP lejanas para llevártelas."
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="PowerCard" type="PanelContainer" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2
@@ -476,7 +483,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.96, 1, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "Habilidad: Rastreador de EXP gravitatorio. Su velocidad de vuelo y rango de absorción escalan con tu Imán (Pickup Radius)."
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2

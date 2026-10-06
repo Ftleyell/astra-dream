@@ -134,28 +134,34 @@ func update_equipment(data: CharacterData, char_id: StringName) -> void:
 	if not data:
 		return
 
+	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
+
 	# Nave Asignada
-	var ship_slot := "ship:" + String(char_id)
-	var ship_skin_id := SaveManager.get_equipped_skin(ship_slot)
+	var ship_skin_id: String = str(loadout.get("equipped_ship_skin", "base"))
+	if ship_skin_id.is_empty():
+		ship_skin_id = "base"
 	if ship_icon:
-		if not ship_skin_id.is_empty():
+		ship_icon.material = null
+		ship_icon.texture = null
+		if ship_skin_id != "base":
 			var stars := SaveManager.get_skin_stars(ship_skin_id)
 			CosmeticsManager.apply_skin_to_canvas_item(ship_icon, ship_skin_id, stars)
-		else:
-			ship_icon.material = null
+		if ship_icon.texture == null:
 			ship_icon.texture = data.get_ship_texture()
 	if ship_name:
 		ship_name.text = "%s Mark I" % data.display_name
 
 	# Arma Inicial Asignada
-	var weapon_slot := "weapon:" + String(char_id)
-	var weapon_skin_id := SaveManager.get_equipped_skin(weapon_slot)
+	var weapon_skin_id: String = str(loadout.get("equipped_weapon_skin", "base"))
+	if weapon_skin_id.is_empty():
+		weapon_skin_id = "base"
 	if weapon_icon:
-		if not weapon_skin_id.is_empty():
+		weapon_icon.material = null
+		weapon_icon.texture = null
+		if weapon_skin_id != "base":
 			var stars := SaveManager.get_skin_stars(weapon_skin_id)
 			CosmeticsManager.apply_skin_to_canvas_item(weapon_icon, weapon_skin_id, stars)
-		else:
-			weapon_icon.material = null
+		if weapon_icon.texture == null:
 			weapon_icon.texture = data.get_weapon_texture()
 	if weapon_name:
 		if data.starting_weapon and not data.starting_weapon.weapon_name.is_empty():
@@ -168,7 +174,7 @@ func update_equipment(data: CharacterData, char_id: StringName) -> void:
 
 
 func refresh_pet_display(char_id: StringName = &"") -> void:
-	var sel_pid: StringName = SaveManager.get_selected_pet()
+	var sel_pid: StringName = &"mochi"
 	var pet_skin_id: String = ""
 	if not char_id.is_empty():
 		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
@@ -176,17 +182,23 @@ func refresh_pet_display(char_id: StringName = &"") -> void:
 			sel_pid = StringName(str(loadout["selected_pet"]))
 		if loadout.has("equipped_pet_skin"):
 			pet_skin_id = str(loadout["equipped_pet_skin"])
+	else:
+		sel_pid = SaveManager.get_selected_pet()
+		if sel_pid.is_empty():
+			sel_pid = &"mochi"
+
 	var pet_res = PetDataScript.get_pet(sel_pid)
 	if pet_res:
 		var pet_slot := "pet:" + String(sel_pid).to_lower()
 		if pet_skin_id.is_empty():
 			pet_skin_id = SaveManager.get_equipped_skin(pet_slot)
 		if pet_icon:
-			if not pet_skin_id.is_empty():
+			pet_icon.material = null
+			pet_icon.texture = null
+			if not pet_skin_id.is_empty() and pet_skin_id != "base":
 				var stars := SaveManager.get_skin_stars(pet_skin_id)
 				CosmeticsManager.apply_skin_to_canvas_item(pet_icon, pet_skin_id, stars)
-			else:
-				pet_icon.material = null
+			if pet_icon.texture == null:
 				pet_icon.texture = pet_res.get_icon_texture()
 		if pet_name:
 			pet_name.text = "%s — %s" % [pet_res.display_name.to_upper(), pet_res.title.to_upper()]
@@ -196,7 +208,7 @@ func refresh_pet_display(char_id: StringName = &"") -> void:
 
 
 func refresh_navigator_display(char_id: StringName = &"") -> void:
-	var sel_nid: StringName = SaveManager.get_selected_navigator()
+	var sel_nid: StringName = &"lyra"
 	var nav_skin_id: String = ""
 	if not char_id.is_empty():
 		var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
@@ -204,17 +216,23 @@ func refresh_navigator_display(char_id: StringName = &"") -> void:
 			sel_nid = StringName(str(loadout["selected_navigator"]))
 		if loadout.has("equipped_navigator_skin"):
 			nav_skin_id = str(loadout["equipped_navigator_skin"])
+	else:
+		sel_nid = SaveManager.get_selected_navigator()
+		if sel_nid.is_empty():
+			sel_nid = &"lyra"
+
 	var nav_res = NavigatorDataScript.get_navigator(sel_nid)
 	if nav_res:
 		var nav_slot := "navigator:" + String(sel_nid).to_lower()
 		if nav_skin_id.is_empty():
 			nav_skin_id = SaveManager.get_equipped_skin(nav_slot)
 		if navigator_icon:
-			if not nav_skin_id.is_empty():
+			navigator_icon.material = null
+			navigator_icon.texture = null
+			if not nav_skin_id.is_empty() and nav_skin_id != "base":
 				var stars := SaveManager.get_skin_stars(nav_skin_id)
 				CosmeticsManager.apply_skin_to_canvas_item(navigator_icon, nav_skin_id, stars)
-			else:
-				navigator_icon.material = null
+			if navigator_icon.texture == null:
 				navigator_icon.texture = nav_res.get_portrait_texture()
 		if navigator_name:
 			navigator_name.text = "%s — %s" % [nav_res.display_name.to_upper(), nav_res.title.to_upper()]

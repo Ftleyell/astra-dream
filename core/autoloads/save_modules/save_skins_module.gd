@@ -92,6 +92,43 @@ static func get_skin_stars(skin_id: String, profile: Dictionary) -> int:
 			return int(entry)
 	return 0
 
+static func set_skin_stars(skin_id: String, stars: int, save_manager_ref: Object) -> void:
+	var profile: Dictionary = save_manager_ref.load_profile()
+	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {}).duplicate(true)
+	if unlocked_skins.has(skin_id) and unlocked_skins[skin_id] is Dictionary:
+		unlocked_skins[skin_id]["stars"] = clampi(stars, 1, 3)
+	elif unlocked_skins.has(skin_id):
+		unlocked_skins[skin_id] = clampi(stars, 1, 3)
+	else:
+		unlocked_skins[skin_id] = {
+			"stars": clampi(stars, 1, 3),
+			"unlocked_at": Time.get_datetime_string_from_system(false, true)
+		}
+	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
+	var bans: Dictionary = profile.get("character_banlists", {})
+	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
+	var biomass: int = int(profile.get("biomass", 0))
+	var antimatter: int = int(profile.get("antimatter", 0))
+	var skills: Dictionary = profile.get("character_skills", {})
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var dark_matter: int = int(profile.get("dark_matter", 0))
+	var trophies: Dictionary = profile.get("trophies_unlocked", {})
+	var speed: float = float(profile.get("game_speed", 1.0))
+	var career: Dictionary = profile.get("career_stats", {})
+	var pet: StringName = StringName(str(profile.get("selected_pet", "mochi")))
+	var pets: Array[StringName] = profile.get("unlocked_pets", [])
+	var endings: Array[String] = profile.get("unlocked_endings", [])
+	var nav: StringName = StringName(str(profile.get("selected_navigator", "lyra")))
+	var navs: Array[StringName] = profile.get("unlocked_navigators", [])
+	var tokens: int = int(profile.get("gacha_tokens", 0))
+	var equipped_skins: Dictionary = profile.get("equipped_skins", {})
+
+	save_manager_ref.save_profile(
+		unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char,
+		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
+		tokens, unlocked_skins, equipped_skins
+	)
+
 static func unlock_or_upgrade_skin(skin_id: String, save_manager_ref: Object) -> Dictionary:
 	var profile: Dictionary = save_manager_ref.load_profile()
 	var unlocked_skins: Dictionary = profile.get("unlocked_skins", {}).duplicate(true)

@@ -36,7 +36,7 @@ var is_debug_active: bool:
 
 # Vista Principal Unificada (2 Columnas)
 @onready var loadout_view: VBoxContainer = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView
-@onready var abilities_view: VBoxContainer = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView
+@onready var abilities_view: VBoxContainer = (get_node_or_null("AbilitiesView") as VBoxContainer) if get_node_or_null("AbilitiesView") else ($MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView if has_node("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView") else null)
 
 # Tarjetas de Equipamiento (Columna Loadout)
 @onready var ship_card: PanelContainer = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard
@@ -71,25 +71,25 @@ var is_debug_active: bool:
 @onready var speed_4x_btn: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed4xBtn
 
 # Bloques de Habilidades (Columna Habilidades)
-@onready var weapon_block_icon: TextureRect = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockIcon
-@onready var weapon_block_tag: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTag
-@onready var weapon_block_title: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTitle
-@onready var weapon_block_desc: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockDesc
+@onready var weapon_block_icon: TextureRect = _resolve_ability_node("WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockIcon") as TextureRect
+@onready var weapon_block_tag: Label = _resolve_ability_node("WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTag") as Label
+@onready var weapon_block_title: Label = _resolve_ability_node("WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTitle") as Label
+@onready var weapon_block_desc: Label = _resolve_ability_node("WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockDesc") as Label
 
-@onready var tactical_block_icon: TextureRect = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockIcon
-@onready var tactical_block_tag: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTag
-@onready var tactical_block_title: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTitle
-@onready var tactical_block_desc: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockDesc
+@onready var tactical_block_icon: TextureRect = _resolve_ability_node("TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockIcon") as TextureRect
+@onready var tactical_block_tag: Label = _resolve_ability_node("TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTag") as Label
+@onready var tactical_block_title: Label = _resolve_ability_node("TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTitle") as Label
+@onready var tactical_block_desc: Label = _resolve_ability_node("TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockDesc") as Label
 
-@onready var dash_block_icon: TextureRect = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockIcon
-@onready var dash_block_tag: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTag
-@onready var dash_block_title: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTitle
-@onready var dash_block_desc: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockDesc
+@onready var dash_block_icon: TextureRect = _resolve_ability_node("DashBlock/DashMargin/DashRow/DashBlockIcon") as TextureRect
+@onready var dash_block_tag: Label = _resolve_ability_node("DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTag") as Label
+@onready var dash_block_title: Label = _resolve_ability_node("DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTitle") as Label
+@onready var dash_block_desc: Label = _resolve_ability_node("DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockDesc") as Label
 
-@onready var passive_block_icon: TextureRect = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockIcon
-@onready var passive_block_tag: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTag
-@onready var passive_block_title: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTitle
-@onready var passive_block_desc: Label = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockDesc
+@onready var passive_block_icon: TextureRect = _resolve_ability_node("PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockIcon") as TextureRect
+@onready var passive_block_tag: Label = _resolve_ability_node("PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTag") as Label
+@onready var passive_block_title: Label = _resolve_ability_node("PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTitle") as Label
+@onready var passive_block_desc: Label = _resolve_ability_node("PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockDesc") as Label
 
 var tab_loadout_btn: Button = null
 var tab_abilities_btn: Button = null
@@ -97,10 +97,16 @@ var talents_metrics_label: Label = null
 var favored_tome_desc: Label = null
 
 # Barra de Mando Persistente
-@onready var launch_button: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar/LaunchButton
+@onready var main_margin_container: MarginContainer = $MarginContainer
+@onready var root_vbox: VBoxContainer = $MarginContainer/RootVBox
+@onready var launch_button: Button = (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar/LaunchButton") as Button)
 
 # Dock Inferior de Selección
-@onready var char_list_container: HBoxContainer = $MarginContainer/RootVBox/DockContainer/DockMargin/CharList
+@onready var dock_container: PanelContainer = $MarginContainer/RootVBox/DockContainer
+@onready var command_bar: HBoxContainer = (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar") as HBoxContainer)
+@onready var dock_margin: MarginContainer = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin")
+@onready var char_list_container: HBoxContainer = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin/CharList")
+@onready var dock_unified_button: Button = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockUnifiedButton")
 
 # Modales
 @onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
@@ -110,6 +116,8 @@ var favored_tome_desc: Label = null
 @onready var gacha_modal = get_node_or_null("GachaModal")
 @onready var tome_selection_modal = get_node_or_null("TomeSelectionModal")
 @onready var character_skill_tree_modal = get_node_or_null("CharacterSkillTreeModal")
+@onready var cosmetic_carousel_modal = get_node_or_null("CosmeticCarouselModal")
+@onready var hero_picker_modal = get_node_or_null("HeroPickerModal")
 
 var pilot_showcase: CharacterPilotShowcase = null
 var equipment_cards: CharacterEquipmentCards = null
@@ -168,6 +176,16 @@ var tab_stats_btn: Button:
 		return tab_abilities_btn
 
 
+func _resolve_ability_node(rel_path: String) -> Node:
+	var path_a: String = "AbilitiesView/" + rel_path
+	if has_node(path_a):
+		return get_node(path_a)
+	var path_b: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/" + rel_path
+	if has_node(path_b):
+		return get_node(path_b)
+	return null
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	pilot_showcase = CharacterPilotShowcase.new()
@@ -196,6 +214,44 @@ func _ready() -> void:
 	_refresh_telemetry_ui()
 	_update_ability_tags()
 	_switch_tab(0)
+
+	if dock_margin:
+		dock_margin.visible = false
+	if dock_unified_button:
+		dock_unified_button.visible = false
+	if command_bar:
+		command_bar.visible = true
+	if launch_button:
+		launch_button.visible = true
+	if dock_container:
+		dock_container.visible = true
+	if back_button:
+		back_button.text = "← [ESC] ELEGIR PILOTO"
+
+	if dock_unified_button:
+		dock_unified_button.pressed.connect(_on_dock_unified_button_pressed)
+		var dock_focus_sb := StyleBoxFlat.new()
+		dock_focus_sb.bg_color = Color(0, 0, 0, 0)
+		dock_focus_sb.border_width_left = 2
+		dock_focus_sb.border_width_top = 2
+		dock_focus_sb.border_width_right = 2
+		dock_focus_sb.border_width_bottom = 2
+		dock_focus_sb.border_color = Color(0, 0.95, 1, 0.9)
+		dock_focus_sb.set_corner_radius_all(10)
+		dock_focus_sb.shadow_color = Color(0, 0.8, 1, 0.4)
+		dock_focus_sb.shadow_size = 8
+		dock_unified_button.add_theme_stylebox_override("focus", dock_focus_sb)
+
+	if hero_picker_modal:
+		hero_picker_modal.hero_confirmed.connect(_on_hero_confirmed)
+		hero_picker_modal.hero_cancelled.connect(_on_hero_cancelled)
+		if main_margin_container:
+			main_margin_container.visible = false
+		if root_vbox:
+			root_vbox.visible = false
+		if abilities_view:
+			abilities_view.visible = false
+		hero_picker_modal.open_picker(roster_ordered, current_character_id, true)
 
 
 func _setup_subcomponents() -> void:
@@ -273,6 +329,12 @@ func _setup_signals() -> void:
 	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
 		debug_menu_modal.closed.connect(_on_debug_modal_closed)
 
+	if cosmetic_carousel_modal:
+		if cosmetic_carousel_modal.has_signal("skin_modal_closed"):
+			cosmetic_carousel_modal.skin_modal_closed.connect(_on_cosmetic_carousel_closed)
+		if cosmetic_carousel_modal.has_signal("skin_selected"):
+			cosmetic_carousel_modal.skin_selected.connect(_on_skin_selected)
+
 	if skin_selection_modal:
 		if skin_selection_modal.has_signal("skin_selected"):
 			skin_selection_modal.skin_selected.connect(_on_skin_selected)
@@ -297,6 +359,10 @@ func _setup_signals() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if cosmetic_carousel_modal and cosmetic_carousel_modal.get("is_open"):
+		return
+	if hero_picker_modal and hero_picker_modal.get("is_open"):
+		return
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
 		return
 	if pet_selection_modal and pet_selection_modal.get("is_open"):
@@ -339,7 +405,7 @@ func _populate_roster() -> void:
 		var card_btn := Button.new()
 		card_btn.name = "PilotCard_%s" % cid
 		card_btn.custom_minimum_size = Vector2(76, 76)
-		card_btn.focus_mode = Control.FOCUS_ALL
+		card_btn.focus_mode = Control.FOCUS_NONE
 
 		var card_style := StyleBoxFlat.new()
 		card_style.bg_color = Color(0.025, 0.04, 0.07, 0.92)
@@ -354,6 +420,8 @@ func _populate_roster() -> void:
 		card_style.content_margin_right = 4
 		card_style.content_margin_bottom = 4
 		card_btn.add_theme_stylebox_override("normal", card_style)
+		card_btn.add_theme_stylebox_override("hover", card_style)
+		card_btn.add_theme_stylebox_override("pressed", card_style)
 
 		# Icono del avatar con expand_icon = true para encajar exactamente en el botón cuadrado
 		card_btn.icon = char_data.get_avatar_texture()
@@ -364,10 +432,15 @@ func _populate_roster() -> void:
 		card_btn.text = ""
 
 		card_btn.pivot_offset = Vector2(38, 38)
-		card_btn.pressed.connect(func(): _select_character(cid))
-		card_btn.focus_entered.connect(func(): _select_character(cid))
+		card_btn.pressed.connect(func():
+			_select_character(cid)
+			if hero_picker_modal:
+				if main_margin_container:
+					main_margin_container.visible = false
+				hero_picker_modal.open_picker(roster_ordered, cid, false)
+		)
 
-		# Hover feedback: escala suave 1.08x centrada (sin alterar position.y para evitar desalineación)
+		# Hover feedback: escala suave 1.08x centrada (sin perder fondo)
 		card_btn.mouse_entered.connect(func():
 			card_btn.pivot_offset = card_btn.size * 0.5
 			var tw := card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -388,8 +461,7 @@ func _populate_roster() -> void:
 
 	_setup_focus_mesh()
 
-	if first_btn:
-		first_btn.grab_focus()
+	# El foco inicial lo gestiona HeroPickerModal (o ship_button tras confirmar selección).
 
 
 func _select_character(char_id: StringName) -> void:
@@ -425,23 +497,20 @@ func _select_character(char_id: StringName) -> void:
 		SaveManager.unequip_skin("navigator:" + cur_nav_str)
 
 	var cid_str: String = String(char_id).to_lower()
-	var ship_skin: String = str(loadout.get("equipped_ship_skin", ""))
-	if not ship_skin.is_empty():
-		SaveManager.equip_skin("ship:" + cid_str, ship_skin)
-	else:
-		SaveManager.unequip_skin("ship:" + cid_str)
+	var ship_skin: String = str(loadout.get("equipped_ship_skin", "base"))
+	if ship_skin.is_empty():
+		ship_skin = "base"
+	SaveManager.equip_skin("ship:" + cid_str, ship_skin)
 
-	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", ""))
-	if not weapon_skin.is_empty():
-		SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
-	else:
-		SaveManager.unequip_skin("weapon:" + cid_str)
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", "base"))
+	if weapon_skin.is_empty():
+		weapon_skin = "base"
+	SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
 
-	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", ""))
-	if not pilot_skin.is_empty():
-		SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
-	else:
-		SaveManager.unequip_skin("pilot:" + cid_str)
+	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", "base"))
+	if pilot_skin.is_empty():
+		pilot_skin = "base"
+	SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
 
 	# Dossier táctico sin emojis
 	name_label.text = data.display_name.to_upper()
@@ -506,10 +575,19 @@ func _select_character(char_id: StringName) -> void:
 			if is_current:
 				dup.border_color = c_data.color if c_data else Color(0, 1, 0.85, 1)
 				dup.bg_color = Color(0.04, 0.08, 0.12, 0.96)
+				dup.shadow_color = (c_data.color * Color(1, 1, 1, 0.4)) if c_data else Color(0, 0.8, 1, 0.3)
+				dup.shadow_size = 6
 			else:
 				dup.border_color = (c_data.color * Color(1, 1, 1, 0.4) if c_unlocked else Color(0.2, 0.25, 0.3, 0.5)) if c_data else Color(0.2, 0.4, 0.6, 0.5)
 				dup.bg_color = Color(0.025, 0.04, 0.07, 0.92)
+				dup.shadow_size = 0
 			btn.add_theme_stylebox_override("normal", dup)
+			var hover_dup := dup.duplicate() as StyleBoxFlat
+			if not is_current and c_data:
+				hover_dup.border_color = c_data.color * Color(1, 1, 1, 0.85)
+				hover_dup.bg_color = Color(0.035, 0.065, 0.1, 0.95)
+			btn.add_theme_stylebox_override("hover", hover_dup)
+			btn.add_theme_stylebox_override("pressed", dup)
 
 	# Estado de lanzamiento
 	if not is_unlocked:
@@ -595,10 +673,12 @@ func _on_tomes_pool_pressed() -> void:
 
 func _on_ship_card_pressed() -> void:
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	var char_name: String = char_data.display_name if char_data else "Exo-Traje"
-	var preview_tex: Texture2D = char_data.get_ship_texture() if char_data else null
 	_last_focused_control = get_viewport().gui_get_focus_owner()
-	if skin_selection_modal:
+	if cosmetic_carousel_modal and char_data:
+		cosmetic_carousel_modal.open_modal("ship", current_character_id, char_data)
+	elif skin_selection_modal:
+		var char_name: String = char_data.display_name if char_data else "Exo-Traje"
+		var preview_tex: Texture2D = char_data.get_ship_texture() if char_data else null
 		skin_selection_modal.open_skin_modal("ship", String(current_character_id), "%s - Exo-Traje" % char_name, preview_tex)
 
 
@@ -612,10 +692,12 @@ func _on_pilot_skin_pressed() -> void:
 
 func _on_weapon_card_pressed() -> void:
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	var wpn_name: String = char_data.starting_weapon.weapon_name if char_data and char_data.starting_weapon else "Arma"
-	var preview_tex: Texture2D = char_data.get_weapon_texture() if char_data else null
 	_last_focused_control = get_viewport().gui_get_focus_owner()
-	if skin_selection_modal:
+	if cosmetic_carousel_modal and char_data:
+		cosmetic_carousel_modal.open_modal("weapon", current_character_id, char_data)
+	elif skin_selection_modal:
+		var wpn_name: String = char_data.starting_weapon.weapon_name if char_data and char_data.starting_weapon else "Arma"
+		var preview_tex: Texture2D = char_data.get_weapon_texture() if char_data else null
 		skin_selection_modal.open_skin_modal("weapon", String(current_character_id), "%s - Armamento" % wpn_name, preview_tex)
 
 
@@ -717,7 +799,9 @@ func _open_skin_modal(category: String, target_id: String, target_name: String, 
 func _on_skins_button_pressed() -> void:
 	_last_focused_control = get_viewport().gui_get_focus_owner()
 	var data: CharacterData = roster_dict.get(current_character_id, null)
-	if data:
+	if cosmetic_carousel_modal and data:
+		cosmetic_carousel_modal.open_modal("pilot", current_character_id, data)
+	elif data:
 		var fb: Texture2D = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 		if not fb:
 			fb = data.get_portrait_texture()
@@ -725,6 +809,24 @@ func _on_skins_button_pressed() -> void:
 			skin_selection_modal.open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 	elif gacha_modal:
 		gacha_modal.open_gacha_modal()
+
+
+func _on_cosmetic_carousel_closed(category: String, _target_id: StringName, skin_id: String) -> void:
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	match category:
+		"ship":
+			loadout["equipped_ship_skin"] = skin_id
+			loadout["ship_skin"] = skin_id
+		"weapon":
+			loadout["equipped_weapon_skin"] = skin_id
+			loadout["weapon_skin"] = skin_id
+		"pilot":
+			loadout["equipped_pilot_skin"] = skin_id
+			loadout["pilot_skin"] = skin_id
+	SaveManager.set_character_loadout(current_character_id, loadout)
+	
+	_select_character(current_character_id)
+	_restore_last_focus()
 
 
 func _open_gacha_from_skins() -> void:
@@ -739,10 +841,13 @@ func _on_skin_selected(slot_key: String, skin_id: String) -> void:
 	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
 	if slot_key.begins_with("ship:"):
 		loadout["equipped_ship_skin"] = skin_id
+		loadout["ship_skin"] = skin_id
 	elif slot_key.begins_with("weapon:"):
 		loadout["equipped_weapon_skin"] = skin_id
+		loadout["weapon_skin"] = skin_id
 	elif slot_key.begins_with("pilot:"):
 		loadout["equipped_pilot_skin"] = skin_id
+		loadout["pilot_skin"] = skin_id
 	elif slot_key.begins_with("pet:"):
 		loadout["equipped_pet_skin"] = skin_id
 	elif slot_key.begins_with("navigator:"):
@@ -836,6 +941,13 @@ func _on_tome_modal_closed() -> void:
 
 
 func _on_back_pressed() -> void:
+	if hero_picker_modal:
+		_on_dock_unified_button_pressed()
+	else:
+		_exit_to_hub()
+
+
+func _exit_to_hub() -> void:
 	_set_game_speed(1.0)
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
 
@@ -848,6 +960,7 @@ func _setup_speed_buttons() -> void:
 func _setup_focus_mesh() -> void:
 	# 1. Back button
 	if back_button:
+		back_button.focus_neighbor_top = launch_button.get_path() if launch_button else NodePath()
 		back_button.focus_neighbor_bottom = ship_button.get_path() if ship_button else NodePath()
 		back_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
 
@@ -904,38 +1017,56 @@ func _setup_focus_mesh() -> void:
 		speed_4x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
 
 	# 6. Launch Button
-	var active_dock_btn: Button = _dock_card_buttons.get(current_character_id, null)
-	if not active_dock_btn and not _dock_card_buttons.is_empty():
-		active_dock_btn = _dock_card_buttons.values()[0]
-
 	if launch_button:
 		launch_button.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 		launch_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		if active_dock_btn:
-			launch_button.focus_neighbor_bottom = active_dock_btn.get_path()
+		launch_button.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
 
 	# 7. Pilot Skin Button (derecha)
 	if pilot_skin_btn:
 		pilot_skin_btn.focus_neighbor_left = weapon_button.get_path() if weapon_button else NodePath()
-		if active_dock_btn:
-			pilot_skin_btn.focus_neighbor_bottom = active_dock_btn.get_path()
+		pilot_skin_btn.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
 
-	# 8. Dock Buttons (abajo)
-	var dock_keys: Array[StringName] = _dock_card_buttons.keys()
-	for i: int in range(dock_keys.size()):
-		var btn: Button = _dock_card_buttons[dock_keys[i]]
-		if not btn:
-			continue
-		if launch_button:
-			btn.focus_neighbor_top = launch_button.get_path()
-		if i > 0:
-			btn.focus_neighbor_left = _dock_card_buttons[dock_keys[i - 1]].get_path()
-		else:
-			btn.focus_neighbor_left = btn.get_path()
-		if i < dock_keys.size() - 1:
-			btn.focus_neighbor_right = _dock_card_buttons[dock_keys[i + 1]].get_path()
-		else:
-			btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else btn.get_path()
+
+func _on_dock_unified_button_pressed() -> void:
+	if hero_picker_modal:
+		if main_margin_container:
+			main_margin_container.visible = false
+		if root_vbox:
+			root_vbox.visible = false
+		if abilities_view:
+			abilities_view.visible = false
+		hero_picker_modal.open_picker(roster_ordered, current_character_id, false)
+
+
+func _on_hero_confirmed(char_id: StringName) -> void:
+	if main_margin_container:
+		main_margin_container.visible = true
+	if root_vbox:
+		root_vbox.visible = true
+	if abilities_view:
+		abilities_view.visible = true
+	if dock_margin:
+		dock_margin.visible = false
+	if dock_unified_button:
+		dock_unified_button.visible = false
+	if command_bar:
+		command_bar.visible = true
+	if launch_button:
+		launch_button.visible = true
+	if dock_container:
+		dock_container.visible = true
+	_select_character(char_id)
+	if ship_button:
+		ship_button.grab_focus()
+	elif launch_button:
+		launch_button.grab_focus()
+
+
+func _on_hero_cancelled() -> void:
+	if abilities_view:
+		abilities_view.visible = false
+	_exit_to_hub()
 
 
 func _set_game_speed(speed: float) -> void:

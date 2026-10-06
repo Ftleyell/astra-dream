@@ -293,6 +293,10 @@ static func is_skin_unlocked(skin_id: String) -> bool:
 static func get_skin_stars(skin_id: String) -> int:
 	return SaveSkinsModule.get_skin_stars(skin_id, load_profile())
 
+static func set_skin_stars(skin_id: String, stars: int) -> void:
+	var self_class = load("res://core/autoloads/save_manager.gd")
+	SaveSkinsModule.set_skin_stars(skin_id, stars, self_class)
+
 static func unlock_or_upgrade_skin(skin_id: String) -> Dictionary:
 	var self_class = load("res://core/autoloads/save_manager.gd")
 	return SaveSkinsModule.unlock_or_upgrade_skin(skin_id, self_class)

@@ -127,6 +127,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="RootHBox" type="HBoxContainer" parent="DimOverlay/CenterContainer"]
+custom_minimum_size = Vector2(1120, 580)
 layout_mode = 2
 theme_override_constants/separation = 40
 alignment = 1
@@ -404,16 +405,21 @@ theme_override_constants/separation = 14
 
 [node name="NameLabel" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/NameRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.2, 0.95, 0.85, 1)
 theme_override_font_sizes/font_size = 28
 text = "LYRA"
+autowrap_mode = 3
+clip_text = true
 
 [node name="StatusBadge" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader/NameRow"]
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 8
 theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
 theme_override_font_sizes/font_size = 13
 text = "[✓ ENLACE ACTIVO]"
+horizontal_alignment = 2
 vertical_alignment = 2
 
 [node name="TitleLabel" type="Label" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier/DossierHeader"]
@@ -421,6 +427,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 0.95)
 theme_override_font_sizes/font_size = 14
 text = "CARTÓGRAFA BIOLÓGICA"
+autowrap_mode = 3
 
 [node name="RadioCard" type="PanelContainer" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2
@@ -448,7 +455,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "\"¡Lecturas orgánicas detectadas! Un segmento planetario fértil está a nuestro alcance.\""
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="RadarCard" type="PanelContainer" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2
@@ -476,7 +483,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "Especializada en biosferas estelares. Rastrea planetas, capullos bio y orbes de biomasa."
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="BuffCard" type="PanelContainer" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2
@@ -510,7 +517,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.95, 0.88, 0.95)
 theme_override_font_sizes/font_size = 12
 text = "+25% Velocidad y x2 Radio de Imán por 10s al sincronizar el objetivo marcado."
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Spacer" type="Control" parent="DimOverlay/CenterContainer/RootHBox/FloatingDossier"]
 layout_mode = 2

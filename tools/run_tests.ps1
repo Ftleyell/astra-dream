@@ -153,8 +153,8 @@ foreach ($r in $runners) {
         $failed += $rName
         $combined = $stdout + "`n" + $stderr
         $lines = $combined -split "`r?`n"
-        $errLines = $lines | Where-Object { $_ -match "SCRIPT ERROR|Assertion failed|ASSERTION FAILURE|ERROR:" }
-        foreach ($el in $errLines | Select-Object -First 3) {
+        $errLines = $lines | Where-Object { ($_ -match "SCRIPT ERROR|Assertion failed|ASSERTION FAILURE|ERROR:") -and ($_ -notmatch "RID allocations") }
+        foreach ($el in $errLines | Select-Object -First 5) {
             Write-Host "   $el" -ForegroundColor Red
         }
     }

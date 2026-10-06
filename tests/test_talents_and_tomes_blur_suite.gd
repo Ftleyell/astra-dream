@@ -18,11 +18,13 @@ func _run_all_tests() -> void:
 	_test_skill_tree_modal_blur_configuration()
 	_test_tome_selection_modal_blur_configuration()
 	_test_focus_trapping_in_modals()
+	_test_tome_selection_modal_dim_overlay_click_closes()
+	_test_skill_tree_backdrop_and_navigation_isolation()
 
 	await get_tree().process_frame
 	await get_tree().process_frame
 	print("--- TODAS LAS PRUEBAS DE SCREEN BLUR EN TALENTOS Y TOMOS SUPERADAS ---")
-	pass_suite("4/4 pruebas de blur y aislamiento de foco superadas.")
+	pass_suite("6/6 pruebas de blur, aislamiento de foco y cierre exterior superadas.")
 
 func _test_navigator_reference_blur_parameters() -> void:
 	var nav_modal: Node = NavigatorSelectionModalScene.instantiate()
@@ -104,3 +106,61 @@ func _test_focus_trapping_in_modals() -> void:
 
 	skill_modal.queue_free()
 	print("✓ Test 4: Blindaje de navegación por foco verificado en ambos modales.")
+
+func _test_tome_selection_modal_dim_overlay_click_closes() -> void:
+	var tome_modal: TomeSelectionModal = TomeSelectionModalScript.new()
+	add_child(tome_modal)
+	tome_modal.open_modal(&"nova")
+	assert_true(tome_modal.is_open, "TomeSelectionModal debe estar abierto.")
+	assert_true(tome_modal.dim_overlay.mouse_filter == Control.MOUSE_FILTER_STOP, "dim_overlay debe tener mouse_filter = STOP.")
+	assert_true(tome_modal._card_buttons.size() >= 6, "TomeSelectionModal debe contener botones para la grilla de tomos.")
+
+	var closed_box: Array[bool] = [false]
+	tome_modal.closed.connect(func() -> void: closed_box[0] = true)
+
+	# Simular clic izquierdo del mouse en el dim_overlay exterior
+	var click_ev := InputEventMouseButton.new()
+	click_ev.button_index = MOUSE_BUTTON_LEFT
+	click_ev.pressed = true
+	tome_modal._on_dim_overlay_gui_input(click_ev)
+
+	assert_true(closed_box[0], "Hacer clic en dim_overlay exterior debe emitir señal closed.")
+	assert_true(not tome_modal.is_open, "TomeSelectionModal debe cerrarse tras clic exterior.")
+
+	# Reabrir y validar que ESC en _input también cierra el modal
+	tome_modal.open_modal(&"nova")
+	var esc_ev := InputEventKey.new()
+	esc_ev.keycode = KEY_ESCAPE
+	esc_ev.pressed = true
+	tome_modal._input(esc_ev)
+	assert_true(not tome_modal.is_open, "Presionar ESC debe cerrar y guardar TomeSelectionModal.")
+
+	tome_modal.queue_free()
+	print("✓ Test 5: Clic exterior y tecla ESC en TomeSelectionModal confirman y cierran el modal limpiamente.")
+
+func _test_skill_tree_backdrop_and_navigation_isolation() -> void:
+	var skill_modal: CharacterSkillTreeModal = CharacterSkillTreeModalScene.instantiate() as CharacterSkillTreeModal
+	add_child(skill_modal)
+
+	var backdrop: ColorRect = skill_modal.get_node_or_null("Backdrop") as ColorRect
+	assert_true(backdrop != null, "Backdrop debe existir.")
+	assert_true(backdrop.mouse_filter == Control.MOUSE_FILTER_STOP, "Backdrop debe tener mouse_filter = STOP para bloquear clics al fondo.")
+	assert_true(skill_modal.focus_mode == Control.FOCUS_ALL, "CharacterSkillTreeModal debe poseer focus_mode = FOCUS_ALL.")
+
+	skill_modal.open_for_character(&"nova")
+
+	# Probar que las teclas de navegación WASD en _input son interceptadas
+	var key_w := InputEventKey.new()
+	key_w.keycode = KEY_W
+	key_w.pressed = true
+	skill_modal._input(key_w)
+	assert_true(get_viewport().is_input_handled(), "KEY_W debe ser consumido en _input por CharacterSkillTreeModal.")
+
+	var key_d := InputEventKey.new()
+	key_d.keycode = KEY_D
+	key_d.pressed = true
+	skill_modal._input(key_d)
+	assert_true(get_viewport().is_input_handled(), "KEY_D debe ser consumido en _input por CharacterSkillTreeModal.")
+
+	skill_modal.queue_free()
+	print("✓ Test 6: Backdrop bloquea clicks y _input consume WASD aislando la navegación.")

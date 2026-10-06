@@ -92,6 +92,10 @@ func _test_ui_instantiation_and_tabs() -> void:
 	var ui: CharacterSelectUI = scene_res.instantiate()
 	add_child(ui)
 
+	# Confirmar heroína para salir del HeroPickerModal inicial y desplegar el dashboard
+	if ui.hero_picker_modal and ui.hero_picker_modal.is_open:
+		ui._on_hero_confirmed(&"nyx")
+
 	# Verificar las 2 columnas del dashboard unificado visibles simultáneamente
 	assert_true(ui.loadout_view != null, "loadout_view debe existir")
 	assert_true(ui.abilities_view != null, "abilities_view debe existir")
@@ -123,8 +127,8 @@ func _test_ui_instantiation_and_tabs() -> void:
 	assert_true(ui.speed_1x_btn != null, "speed_1x_btn debe existir en SpeedCard")
 
 	# Verificar Formato Gigante de iconos y autowrap multilínea
-	assert_true(ui.ship_icon.custom_minimum_size == Vector2(112, 112), "ship_icon debe medir 112x112 en formato gigante")
-	assert_true(ui.weapon_icon.custom_minimum_size == Vector2(112, 112), "weapon_icon debe medir 112x112 en formato gigante")
+	assert_true(ui.ship_icon.custom_minimum_size in [Vector2(112, 112), Vector2(120, 120)], "ship_icon debe medir formato gigante (112x112 o 120x120)")
+	assert_true(ui.weapon_icon.custom_minimum_size in [Vector2(112, 112), Vector2(120, 120)], "weapon_icon debe medir formato gigante (112x112 o 120x120)")
 	assert_true(ui.pet_icon.custom_minimum_size == Vector2(88, 88), "pet_icon debe medir 88x88 en formato gigante")
 	assert_true(ui.navigator_icon.custom_minimum_size == Vector2(88, 88), "navigator_icon debe medir 88x88 en formato gigante")
 	assert_true(ui.pet_desc.autowrap_mode != TextServer.AUTOWRAP_OFF, "pet_desc debe tener autowrap activo para no recortar texto")

@@ -120,29 +120,31 @@ var _breathe_tween: Tween = null
 func start_idle_breathing() -> void:
 	if _breathe_tween and _breathe_tween.is_valid():
 		_breathe_tween.kill()
-	if not fullbody_texture:
+	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
-	var tree := Engine.get_main_loop() as SceneTree
-	if not tree:
-		return
-	_breathe_tween = tree.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breathe_tween = fullbody_texture.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_breathe_tween.tween_property(fullbody_texture, "position:y", 4.0, 2.4).as_relative()
 	_breathe_tween.tween_property(fullbody_texture, "position:y", -4.0, 2.4).as_relative()
 
 
 func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked: bool) -> void:
-	var pilot_slot := "pilot:" + String(char_id)
-	var pilot_skin_id := SaveManager.get_equipped_skin(pilot_slot)
+	if not data:
+		return
+
+	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
+	var pilot_skin_id: String = str(loadout.get("equipped_pilot_skin", "base"))
+	if pilot_skin_id.is_empty():
+		pilot_skin_id = "base"
 
 	if fullbody_texture:
-		if not pilot_skin_id.is_empty():
+		fullbody_texture.material = null
+		fullbody_texture.texture = null
+
+		if pilot_skin_id != "base":
 			var stars := SaveManager.get_skin_stars(pilot_skin_id)
 			CosmeticsManager.apply_pilot_selection_to_canvas_item(fullbody_texture, pilot_skin_id, stars, false)
-		else:
-			fullbody_texture.material = null
-			fullbody_texture.texture = null
 
-		if fullbody_texture.texture == null and data:
+		if fullbody_texture.texture == null:
 			var fb_tex: Texture2D = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
 			if not fb_tex:
 				fb_tex = data.get_selection_texture(true) if data.has_method("get_selection_texture") else data.get_fullbody_texture(true)
@@ -158,7 +160,7 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 			mat.shader = SHOWCASE_SHADER
 			var theme_col: Color = data.color if data else Color(0.2, 0.9, 1.0)
 			mat.set_shader_parameter("rim_color", theme_col)
-			mat.set_shader_parameter("bottom_fade_start", 0.90)
+			mat.set_shader_parameter("bottom_fade_start", 0.78 if char_id == &"valentina" else 0.90)
 			fullbody_texture.material = mat
 
 		fullbody_texture.flip_h = false

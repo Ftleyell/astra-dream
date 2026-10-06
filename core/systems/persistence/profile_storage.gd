@@ -311,13 +311,35 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
 		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
 		"character_active_tomes": raw.get("character_active_tomes", {}) as Dictionary,
-		"character_loadouts": raw.get("character_loadouts", {}) as Dictionary,
+		"character_loadouts": {} as Dictionary,
 		"gacha_pity": {
 			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
 			"ships": int(raw.get("gacha_pity", {}).get("ships", 0)),
 			"pilots": int(raw.get("gacha_pity", {}).get("pilots", 0))
 		} as Dictionary
 	}
+
+	var raw_loadouts: Dictionary = raw.get("character_loadouts", {})
+	var clean_loadouts: Dictionary = {}
+	for c_name in [&"nova", &"echo", &"valentina", &"roxy"]:
+		var c_str := String(c_name)
+		var c_loadout: Dictionary = raw_loadouts.get(c_str, {}).duplicate() if raw_loadouts.has(c_str) else {}
+		if not c_loadout.has("selected_pet") or str(c_loadout["selected_pet"]).is_empty():
+			c_loadout["selected_pet"] = &"mochi"
+		if not c_loadout.has("selected_navigator") or str(c_loadout["selected_navigator"]).is_empty():
+			c_loadout["selected_navigator"] = &"lyra"
+		if not c_loadout.has("equipped_pet_skin"):
+			c_loadout["equipped_pet_skin"] = ""
+		if not c_loadout.has("equipped_navigator_skin"):
+			c_loadout["equipped_navigator_skin"] = ""
+		if not c_loadout.has("equipped_ship_skin") or str(c_loadout["equipped_ship_skin"]).is_empty():
+			c_loadout["equipped_ship_skin"] = "base"
+		if not c_loadout.has("equipped_weapon_skin") or str(c_loadout["equipped_weapon_skin"]).is_empty():
+			c_loadout["equipped_weapon_skin"] = "base"
+		if not c_loadout.has("equipped_pilot_skin") or str(c_loadout["equipped_pilot_skin"]).is_empty():
+			c_loadout["equipped_pilot_skin"] = "base"
+		clean_loadouts[c_str] = c_loadout
+	cleaned["character_loadouts"] = clean_loadouts
 
 	if raw.has("unlocked_endings") and (raw["unlocked_endings"] is Array):
 		for e in raw["unlocked_endings"]:
@@ -412,17 +434,39 @@ static func get_character_loadout(char_id: StringName) -> Dictionary:
 	var prof: Dictionary = load_profile()
 	var loadouts: Dictionary = prof.get("character_loadouts", {})
 	var cid_str := str(char_id)
+	var loadout: Dictionary = {}
+	var has_saved_loadout: bool = false
 	if loadouts.has(cid_str) and loadouts[cid_str] is Dictionary:
-		return (loadouts[cid_str] as Dictionary).duplicate()
-	return {
-		"selected_pet": StringName(str(prof.get("selected_pet", "mochi"))),
-		"selected_navigator": StringName(str(prof.get("selected_navigator", "lyra"))),
-		"equipped_pet_skin": "",
-		"equipped_navigator_skin": "",
-		"equipped_ship_skin": "",
-		"equipped_weapon_skin": "",
-		"equipped_pilot_skin": ""
-	}
+		loadout = (loadouts[cid_str] as Dictionary).duplicate()
+		has_saved_loadout = true
+
+	var needs_save: bool = false
+	if not loadout.has("selected_pet") or str(loadout["selected_pet"]).is_empty():
+		loadout["selected_pet"] = &"mochi"
+		needs_save = true
+	if not loadout.has("selected_navigator") or str(loadout["selected_navigator"]).is_empty():
+		loadout["selected_navigator"] = &"lyra"
+		needs_save = true
+	if not loadout.has("equipped_pet_skin"):
+		loadout["equipped_pet_skin"] = ""
+		needs_save = true
+	if not loadout.has("equipped_navigator_skin"):
+		loadout["equipped_navigator_skin"] = ""
+		needs_save = true
+	if not loadout.has("equipped_ship_skin") or str(loadout["equipped_ship_skin"]).is_empty():
+		loadout["equipped_ship_skin"] = "base"
+		needs_save = true
+	if not loadout.has("equipped_weapon_skin") or str(loadout["equipped_weapon_skin"]).is_empty():
+		loadout["equipped_weapon_skin"] = "base"
+		needs_save = true
+	if not loadout.has("equipped_pilot_skin") or str(loadout["equipped_pilot_skin"]).is_empty():
+		loadout["equipped_pilot_skin"] = "base"
+		needs_save = true
+
+	if not has_saved_loadout or needs_save:
+		set_character_loadout(char_id, loadout)
+
+	return loadout
 
 
 static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> void:

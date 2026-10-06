@@ -1,97 +1,7 @@
-[gd_resource type="Resource" script_class="WaveScheduleConfig" load_steps=8 format=3 uid="uid://dwavesched01"]
+[gd_resource type="Resource" script_class="WaveScheduleConfig" format=3 uid="uid://dwavesched01"]
 
-[ext_resource type="Script" path="res://core/types/wave_schedule_config.gd" id="1_sched_script"]
-[ext_resource type="Script" path="res://core/types/wave_spawn_config.gd" id="2_spawn_script"]
-
-[sub_resource type="Resource" id="Resource_wave_1"]
-script = ExtResource("2_spawn_script")
-wave_number = 1
-max_enemies = 50
-base_spawn_interval = 1.2
-min_spawn_interval = 0.5
-cluster_min = 3
-cluster_max = 6
-drone_weight = 75.0
-kamikaze_weight = 15.0
-micro_flock_weight = 10.0
-shooter_weight = 0.0
-tank_weight = 0.0
-splitter_weight = 0.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
-
-[sub_resource type="Resource" id="Resource_wave_2"]
-script = ExtResource("2_spawn_script")
-wave_number = 2
-max_enemies = 65
-base_spawn_interval = 1.0
-min_spawn_interval = 0.42
-cluster_min = 3
-cluster_max = 6
-drone_weight = 50.0
-kamikaze_weight = 20.0
-micro_flock_weight = 15.0
-shooter_weight = 10.0
-tank_weight = 0.0
-splitter_weight = 5.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
-
-[sub_resource type="Resource" id="Resource_wave_3"]
-script = ExtResource("2_spawn_script")
-wave_number = 3
-max_enemies = 75
-base_spawn_interval = 0.85
-min_spawn_interval = 0.35
-cluster_min = 4
-cluster_max = 7
-drone_weight = 40.0
-kamikaze_weight = 20.0
-micro_flock_weight = 15.0
-shooter_weight = 12.0
-tank_weight = 8.0
-splitter_weight = 5.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
-
-[sub_resource type="Resource" id="Resource_wave_6"]
-script = ExtResource("2_spawn_script")
-wave_number = 6
-max_enemies = 80
-base_spawn_interval = 0.7
-min_spawn_interval = 0.28
-cluster_min = 4
-cluster_max = 8
-drone_weight = 20.0
-kamikaze_weight = 15.0
-micro_flock_weight = 10.0
-shooter_weight = 15.0
-tank_weight = 25.0
-splitter_weight = 15.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
-
-[sub_resource type="Resource" id="Resource_wave_12"]
-script = ExtResource("2_spawn_script")
-wave_number = 12
-max_enemies = 80
-base_spawn_interval = 0.65
-min_spawn_interval = 0.25
-cluster_min = 5
-cluster_max = 8
-drone_weight = 15.0
-kamikaze_weight = 15.0
-micro_flock_weight = 10.0
-shooter_weight = 20.0
-tank_weight = 20.0
-splitter_weight = 20.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
+[ext_resource type="Script" uid="uid://cwwou1bxllpot" path="res://core/types/wave_schedule_config.gd" id="1_sched_script"]
+[ext_resource type="Script" uid="uid://sl0pt47sqncj" path="res://core/types/wave_spawn_config.gd" id="2_spawn_script"]
 
 [sub_resource type="Resource" id="Resource_fallback"]
 script = ExtResource("2_spawn_script")
@@ -107,9 +17,62 @@ micro_flock_weight = 15.0
 shooter_weight = 10.0
 tank_weight = 12.0
 splitter_weight = 8.0
-assault_cone_weight = 0.0
-vanguard_ring_weight = 0.0
-specter_wave_weight = 0.0
+
+[sub_resource type="Resource" id="Resource_wave_1"]
+script = ExtResource("2_spawn_script")
+
+[sub_resource type="Resource" id="Resource_wave_2"]
+script = ExtResource("2_spawn_script")
+wave_number = 2
+max_enemies = 65
+base_spawn_interval = 1.0
+min_spawn_interval = 0.42
+drone_weight = 50.0
+kamikaze_weight = 20.0
+micro_flock_weight = 15.0
+shooter_weight = 10.0
+splitter_weight = 5.0
+
+[sub_resource type="Resource" id="Resource_wave_3"]
+script = ExtResource("2_spawn_script")
+wave_number = 3
+max_enemies = 75
+base_spawn_interval = 0.85
+min_spawn_interval = 0.35
+cluster_min = 4
+cluster_max = 7
+drone_weight = 40.0
+kamikaze_weight = 20.0
+micro_flock_weight = 15.0
+shooter_weight = 12.0
+tank_weight = 8.0
+splitter_weight = 5.0
+
+[sub_resource type="Resource" id="Resource_wave_6"]
+script = ExtResource("2_spawn_script")
+wave_number = 6
+max_enemies = 80
+base_spawn_interval = 0.7
+min_spawn_interval = 0.28
+cluster_min = 4
+cluster_max = 8
+drone_weight = 20.0
+shooter_weight = 15.0
+tank_weight = 25.0
+splitter_weight = 15.0
+
+[sub_resource type="Resource" id="Resource_wave_12"]
+script = ExtResource("2_spawn_script")
+wave_number = 12
+max_enemies = 80
+base_spawn_interval = 0.65
+min_spawn_interval = 0.25
+cluster_min = 5
+cluster_max = 8
+drone_weight = 15.0
+shooter_weight = 20.0
+tank_weight = 20.0
+splitter_weight = 20.0
 
 [resource]
 script = ExtResource("1_sched_script")

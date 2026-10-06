@@ -24,8 +24,6 @@ var subtitle_label: Label = null
 var counter_label: Label = null
 var warning_label: Label = null
 var tomes_grid: GridContainer = null
-var reset_button: Button = null
-var close_button: Button = null
 
 var _card_panels: Dictionary[StringName, PanelContainer] = {}
 var _card_badges: Dictionary[StringName, Label] = {}
@@ -53,13 +51,18 @@ func _build_ui() -> void:
 	blur_mat.set_shader_parameter("tint_color", Color(0.015, 0.02, 0.05, 0.85))
 	dim_overlay.material = blur_mat
 
+	dim_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	dim_overlay.gui_input.connect(_on_dim_overlay_gui_input)
+
 	add_child(dim_overlay)
 
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_PASS
 	dim_overlay.add_child(center)
 
 	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.custom_minimum_size = Vector2(1060, 620)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.03, 0.05, 0.09, 0.98)
@@ -146,28 +149,16 @@ func _build_ui() -> void:
 	tomes_grid.add_theme_constant_override("v_separation", 10)
 	scroll.add_child(tomes_grid)
 
-	# 4. Actions Row (Footer)
-	var actions_row := HBoxContainer.new()
-	actions_row.add_theme_constant_override("separation", 16)
-	root_vbox.add_child(actions_row)
+	# 4. Actions Row (Footer Hint)
+	var footer_box := HBoxContainer.new()
+	footer_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	root_vbox.add_child(footer_box)
 
-	reset_button = Button.new()
-	reset_button.text = "⚡ RESTAURAR TODOS (18)"
-	reset_button.custom_minimum_size = Vector2(210, 42)
-	reset_button.pressed.connect(_on_reset_pressed)
-	UIFocusHelper.apply_cyber_focus(reset_button)
-	actions_row.add_child(reset_button)
-
-	var bottom_spacer := Control.new()
-	bottom_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_row.add_child(bottom_spacer)
-
-	close_button = Button.new()
-	close_button.text = "CONFIRMAR Y CERRAR [ESC]"
-	close_button.custom_minimum_size = Vector2(220, 42)
-	close_button.pressed.connect(close_modal)
-	UIFocusHelper.apply_cyber_focus(close_button)
-	actions_row.add_child(close_button)
+	var hint_label := Label.new()
+	hint_label.text = "✦ [ESC] O CLIC EN EL FONDO PARA GUARDAR Y CERRAR"
+	hint_label.add_theme_font_size_override("font_size", 12)
+	hint_label.add_theme_color_override("font_color", Color(0.4, 0.75, 0.9, 0.75))
+	footer_box.add_child(hint_label)
 
 
 func open_modal(char_id: StringName = &"") -> void:
@@ -191,8 +182,8 @@ func open_modal(char_id: StringName = &"") -> void:
 	_populate_grid()
 	_update_counter_label()
 
-	if close_button:
-		close_button.grab_focus()
+	if _card_buttons.size() > 0 and is_instance_valid(_card_buttons[0]):
+		_card_buttons[0].call_deferred("grab_focus")
 
 
 func close_modal() -> void:
@@ -203,11 +194,28 @@ func close_modal() -> void:
 	closed.emit()
 
 
+func _on_dim_overlay_gui_input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if get_viewport():
+			get_viewport().set_input_as_handled()
+		var audio_mgr := get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx(&"ui_click", 0.0, 1.0)
+		close_modal()
+
+
 func _input(event: InputEvent) -> void:
 	if not is_open:
 		return
 	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
 		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+		get_viewport().set_input_as_handled()
+		close_modal()
+		return
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -221,6 +229,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
 		get_viewport().set_input_as_handled()
 		close_modal()
+		return
 
 
 func _update_header_text() -> void:

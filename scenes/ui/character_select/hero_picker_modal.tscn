@@ -1,0 +1,392 @@
+[gd_scene format=3 uid="uid://23nq0fqrpq85"]
+
+[ext_resource type="Script" uid="uid://b2ha8ejxhxe4y" path="res://scenes/ui/character_select/hero_picker_modal.gd" id="1_modal"]
+[ext_resource type="Shader" uid="uid://c0pa52hp0w1xt" path="res://shaders/screen_blur.gdshader" id="2_blur"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_blur"]
+shader = ExtResource("2_blur")
+shader_parameter/blur_amount = 2.8
+shader_parameter/tint_color = Color(0.015, 0.025, 0.05, 0.84)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dossier"]
+bg_color = Color(0.018, 0.03, 0.055, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.85, 1, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0.5, 0.8, 0.15)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abilitycard"]
+bg_color = Color(0.03, 0.05, 0.08, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.3, 0.45, 0.6)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dock"]
+bg_color = Color(0.02, 0.035, 0.07, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.5, 0.8, 0.8)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0.6, 1, 0.25)
+shadow_size = 12
+
+[node name="HeroPickerModal" type="CanvasLayer" unique_id=1050907475]
+layer = 120
+script = ExtResource("1_modal")
+metadata/_edit_vertical_guides_ = [960.0]
+
+[node name="DimOverlay" type="ColorRect" parent="." unique_id=1945915086]
+material = SubResource("ShaderMaterial_blur")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.02, 0.04, 0.9)
+
+[node name="LeftDossierPanel" type="PanelContainer" parent="DimOverlay" unique_id=184029101]
+custom_minimum_size = Vector2(430, 0)
+custom_maximum_size = Vector2(-1, 449)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 470.0
+offset_bottom = -160.0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dossier")
+
+[node name="DossierMargin" type="MarginContainer" parent="DimOverlay/LeftDossierPanel" unique_id=184029102]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="DossierVBox" type="VBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin" unique_id=184029103]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DossierHeader" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029104]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "// SISTEMAS DE COMBATE:"
+
+[node name="WeaponBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029105]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
+
+[node name="WeaponMargin" type="MarginContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock" unique_id=184029106]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="WeaponRow" type="HBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin" unique_id=184029107]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WeaponBlockIcon" type="TextureRect" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin/WeaponRow" unique_id=184029108]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponBlockVBox" type="VBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin/WeaponRow" unique_id=184029109]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="WeaponBlockTag" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=184029110]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 10
+text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
+
+[node name="WeaponBlockTitle" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=184029111]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Arma Principal"
+
+[node name="WeaponBlockDesc" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=184029112]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.85)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="TacticalBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029113]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
+
+[node name="TacticalMargin" type="MarginContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock" unique_id=184029114]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="TacticalRow" type="HBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin" unique_id=184029115]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TacticalBlockIcon" type="TextureRect" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin/TacticalRow" unique_id=184029116]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TacticalBlockVBox" type="VBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin/TacticalRow" unique_id=184029117]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TacticalBlockTag" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=184029118]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[CLIC DER] // HABILIDAD TÁCTICA"
+
+[node name="TacticalBlockTitle" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=184029119]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Habilidad Táctica"
+
+[node name="TacticalBlockDesc" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=184029120]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.85)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="DashBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029121]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
+
+[node name="DashMargin" type="MarginContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock" unique_id=184029122]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="DashRow" type="HBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin" unique_id=184029123]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DashBlockIcon" type="TextureRect" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin/DashRow" unique_id=184029124]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DashBlockVBox" type="VBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin/DashRow" unique_id=184029125]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="DashBlockTag" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=184029126]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "[ESPACIO/SHIFT] // PROPULSIÓN EVASIVA"
+
+[node name="DashBlockTitle" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=184029127]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Propulsión Evasiva"
+
+[node name="DashBlockDesc" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=184029128]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.85)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="PassiveBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029129]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
+
+[node name="PassiveMargin" type="MarginContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock" unique_id=184029130]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="PassiveRow" type="HBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin" unique_id=184029131]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PassiveBlockIcon" type="TextureRect" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin/PassiveRow" unique_id=184029132]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PassiveBlockVBox" type="VBoxContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin/PassiveRow" unique_id=184029133]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="PassiveBlockTag" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=184029134]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[INNATA] // AFINIDAD DE TOMO"
+
+[node name="PassiveBlockTitle" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=184029135]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Rasgo Infranqueable"
+
+[node name="PassiveBlockDesc" type="Label" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=184029136]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.85)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="DimOverlay" unique_id=2118929803]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -135.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterVBox" type="VBoxContainer" parent="DimOverlay/CenterContainer" unique_id=1992877127]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="PreviewHolder" type="Control" parent="DimOverlay/CenterContainer/CenterVBox" unique_id=1412335078]
+custom_minimum_size = Vector2(580, 680)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="HeroBacklight" type="TextureRect" parent="DimOverlay/CenterContainer/CenterVBox/PreviewHolder" unique_id=67420739]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroPreview" type="TextureRect" parent="DimOverlay/CenterContainer/CenterVBox/PreviewHolder" unique_id=2091938083]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroIdentity" type="VBoxContainer" parent="DimOverlay/CenterContainer/CenterVBox" unique_id=1474866822]
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="HeroName" type="Label" parent="DimOverlay/CenterContainer/CenterVBox/HeroIdentity" unique_id=1999252632]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 38
+text = "NOVA"
+horizontal_alignment = 1
+
+[node name="HeroTitle" type="Label" parent="DimOverlay/CenterContainer/CenterVBox/HeroIdentity" unique_id=889292767]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "Piloto de Vanguardia"
+horizontal_alignment = 1
+
+[node name="HintLabel" type="Label" parent="DimOverlay/CenterContainer/CenterVBox/HeroIdentity" unique_id=2113110076]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.72, 0.88, 0.75)
+theme_override_font_sizes/font_size = 11
+text = "✦ [A / D] NAVEGAR  ✦  [ESPACIO / DOBLE CLIC] CONFIRMAR HÉROE  ✦  [ESC] SALIR"
+horizontal_alignment = 1
+
+[node name="BottomDockAnchor" type="Control" parent="DimOverlay" unique_id=69076034]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -142.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="BottomDockBar" type="PanelContainer" parent="DimOverlay/BottomDockAnchor" unique_id=35038124]
+custom_minimum_size = Vector2(680, 122)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -61.0
+offset_right = 340.0
+offset_bottom = 61.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dock")
+
+[node name="Margin" type="MarginContainer" parent="DimOverlay/BottomDockAnchor/BottomDockBar" unique_id=499609032]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="CardsContainer" type="HBoxContainer" parent="DimOverlay/BottomDockAnchor/BottomDockBar/Margin" unique_id=735314416]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1

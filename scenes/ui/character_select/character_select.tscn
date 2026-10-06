@@ -1,16 +1,16 @@
-[gd_scene load_steps=18 format=3 uid="uid://charselect001"]
+[gd_scene format=3 uid="uid://charselect001"]
 
-[ext_resource type="Script" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_spacebg"]
-[ext_resource type="PackedScene" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
-[ext_resource type="PackedScene" path="res://scenes/ui/character_select/pet_selection_modal.tscn" id="5_petmodal"]
+[ext_resource type="Script" uid="uid://4l0cj8du2u0p" path="res://scenes/ui/character_select/character_select.gd" id="1_charsel"]
+[ext_resource type="PackedScene" uid="uid://cdeploybg001" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_spacebg"]
+[ext_resource type="PackedScene" uid="uid://cdebugmodal01" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
+[ext_resource type="PackedScene" uid="uid://wiwqlm1t25f5" path="res://scenes/ui/character_select/pet_selection_modal.tscn" id="5_petmodal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/navigator_selection_modal.tscn" id="6_navmodal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/cosmetics/skin_selection_modal.tscn" id="7_skinmodal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/gacha/gacha_modal.tscn" id="8_gachamodal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/character_select/tome_selection_modal.tscn" id="9_tomemodal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pilot"]
+[ext_resource type="PackedScene" uid="uid://dxyvij3owqokj" path="res://scenes/ui/cosmetics/skin_selection_modal.tscn" id="7_skinmodal"]
+[ext_resource type="PackedScene" uid="uid://cewlokq3pe5aa" path="res://scenes/ui/gacha/gacha_modal.tscn" id="8_gachamodal"]
+[ext_resource type="PackedScene" uid="uid://x0uvp61ixs1u" path="res://scenes/ui/character_select/tome_selection_modal.tscn" id="9_tomemodal"]
+[ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
+[ext_resource type="PackedScene" uid="uid://n7y8dbscg6uu" path="res://scenes/ui/cosmetics/cosmetic_carousel_modal.tscn" id="11_cosmeticmodal"]
+[ext_resource type="PackedScene" uid="uid://23nq0fqrpq85" path="res://scenes/ui/character_select/hero_picker_modal.tscn" id="12_heromodal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tabpanel"]
 bg_color = Color(0.02, 0.035, 0.06, 0.88)
@@ -36,6 +36,8 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pilot"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dock"]
 bg_color = Color(0.015, 0.025, 0.045, 0.94)
 border_width_top = 1
@@ -55,18 +57,6 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_hover"]
-bg_color = Color(0.08, 0.48, 0.5, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 1, 0.9, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_pressed"]
 bg_color = Color(0.03, 0.22, 0.24, 1)
 border_width_left = 2
@@ -74,6 +64,18 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0, 0.8, 0.65, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_hover"]
+bg_color = Color(0.08, 0.48, 0.5, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 1, 0.9, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -91,7 +93,7 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[node name="CharacterSelect" type="Control"]
+[node name="CharacterSelect" type="Control" unique_id=293892912]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -100,9 +102,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_charsel")
 
-[node name="DeploymentSpaceBackground" parent="." instance=ExtResource("2_spacebg")]
+[node name="DeploymentSpaceBackground" parent="." unique_id=621644380 instance=ExtResource("2_spacebg")]
+layout_mode = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1412460089]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -114,131 +117,132 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 12
 
-[node name="RootVBox" type="VBoxContainer" parent="MarginContainer"]
+[node name="RootVBox" type="VBoxContainer" parent="MarginContainer" unique_id=1544039246]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/RootVBox"]
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/RootVBox" unique_id=2020835528]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="BackButton" type="Button" parent="MarginContainer/RootVBox/HeaderBar"]
+[node name="BackButton" type="Button" parent="MarginContainer/RootVBox/HeaderBar" unique_id=608318871]
 custom_minimum_size = Vector2(210, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "← [ESC] SALIR AL HUB"
+text = "← [ESC] ELEGIR PILOTO"
 
-[node name="Spacer1" type="Control" parent="MarginContainer/RootVBox/HeaderBar"]
+[node name="Spacer1" type="Control" parent="MarginContainer/RootVBox/HeaderBar" unique_id=94178724]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TitleBox" type="VBoxContainer" parent="MarginContainer/RootVBox/HeaderBar"]
+[node name="TitleBox" type="VBoxContainer" parent="MarginContainer/RootVBox/HeaderBar" unique_id=1558428298]
 layout_mode = 2
 theme_override_constants/separation = 1
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox"]
+[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox" unique_id=2081725915]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_font_sizes/font_size = 20
 text = "CENTRO DE MANDO // PROTOCOLO DE DESPLIEGUE ORBITAL"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox"]
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/RootVBox/HeaderBar/TitleBox" unique_id=1388040502]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.75, 0.9, 0.8)
 theme_override_font_sizes/font_size = 11
 text = "DESPLIEGUE TÁCTICO DE ASALTO ORBITAL"
 horizontal_alignment = 1
 
-[node name="Spacer2" type="Control" parent="MarginContainer/RootVBox/HeaderBar"]
+[node name="Spacer2" type="Control" parent="MarginContainer/RootVBox/HeaderBar" unique_id=307758317]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MainWorkspace" type="HBoxContainer" parent="MarginContainer/RootVBox"]
+[node name="MainWorkspace" type="HBoxContainer" parent="MarginContainer/RootVBox" unique_id=1270053504]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 24
 
-[node name="LeftCommandPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace"]
+[node name="LeftCommandPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace" unique_id=1445150585]
+custom_maximum_size = Vector2(451, -1)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.3
 size_flags_vertical = 3
+size_flags_stretch_ratio = 1.3
 theme_override_constants/separation = 10
 
-[node name="TabContentPanel" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel"]
+[node name="TabContentPanel" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel" unique_id=1423977783]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_tabpanel")
 
-[node name="TabMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel"]
+[node name="TabMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel" unique_id=943018310]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
-[node name="TwoColumnWorkspace" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin"]
+[node name="TwoColumnWorkspace" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin" unique_id=1969261607]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="LoadoutView" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace"]
+[node name="LoadoutView" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace" unique_id=468855443]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="LoadoutHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
+[node name="LoadoutHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=178222812]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "// LOADOUT OPERATIVO:"
 
-[node name="ChassisWeaponRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
+[node name="ChassisWeaponRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=1901698554]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ShipCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow"]
-custom_minimum_size = Vector2(0, 180)
+[node name="ShipCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow" unique_id=392766557]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="ShipMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard"]
+[node name="ShipMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard" unique_id=608513938]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="ShipBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin"]
+[node name="ShipBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin" unique_id=1925073523]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="ShipIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox"]
-custom_minimum_size = Vector2(112, 112)
+[node name="ShipIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox" unique_id=1934655291]
+custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ShipLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox"]
+[node name="ShipLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox" unique_id=553789709]
 layout_mode = 2
 theme_override_constants/separation = 1
 alignment = 1
 
-[node name="ShipTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox"]
+[node name="ShipTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox" unique_id=1850999641]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.85, 1, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "EXO-TRAJE"
 horizontal_alignment = 1
 
-[node name="ShipName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox"]
+[node name="ShipName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox" unique_id=1780792570]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 12
@@ -246,51 +250,50 @@ text = "Vanguard Mk I"
 horizontal_alignment = 1
 text_overrun_behavior = 3
 
-[node name="ShipButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard"]
+[node name="ShipButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard" unique_id=372331060]
 layout_mode = 2
-flat = true
-mouse_filter = 0
 mouse_default_cursor_shape = 2
+flat = true
 
-[node name="WeaponCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow"]
-custom_minimum_size = Vector2(0, 180)
+[node name="WeaponCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow" unique_id=859347209]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="WeaponMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard"]
+[node name="WeaponMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard" unique_id=1187014656]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="WeaponBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin"]
+[node name="WeaponBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin" unique_id=983144507]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="WeaponIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox"]
-custom_minimum_size = Vector2(112, 112)
+[node name="WeaponIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox" unique_id=841488962]
+custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="WeaponLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox"]
+[node name="WeaponLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox" unique_id=545605252]
 layout_mode = 2
 theme_override_constants/separation = 1
 alignment = 1
 
-[node name="WeaponTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox"]
+[node name="WeaponTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox" unique_id=1066369004]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.4, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "ARMAMENTO"
 horizontal_alignment = 1
 
-[node name="WeaponName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox"]
+[node name="WeaponName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox" unique_id=542641439]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 12
@@ -298,148 +301,145 @@ text = "Riel Dual"
 horizontal_alignment = 1
 text_overrun_behavior = 3
 
-[node name="WeaponButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard"]
+[node name="WeaponButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/WeaponCard" unique_id=2117902856]
 layout_mode = 2
-flat = true
-mouse_filter = 0
 mouse_default_cursor_shape = 2
+flat = true
 
-[node name="PetCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
-custom_minimum_size = Vector2(0, 120)
+[node name="PetCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=1205542640]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="PetMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard"]
+[node name="PetMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard" unique_id=1295809766]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="PetBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin"]
+[node name="PetBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin" unique_id=274463064]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PetIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox"]
+[node name="PetIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox" unique_id=1747713980]
 custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PetLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox"]
+[node name="PetLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox" unique_id=727854244]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 
-[node name="PetHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox"]
+[node name="PetHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox" unique_id=290981392]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.7, 0.3, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "ASISTENTE // DRON FELINO"
 
-[node name="PetName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox"]
+[node name="PetName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox" unique_id=791519118]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "MOCHI"
 
-[node name="PetDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox"]
+[node name="PetDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard/PetMargin/PetBox/PetLabelVBox" unique_id=1647874482]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "Imán cuántico de EXP."
 autowrap_mode = 2
 
-[node name="PetButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard"]
+[node name="PetButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/PetCard" unique_id=11968459]
 layout_mode = 2
-flat = true
-mouse_filter = 0
 mouse_default_cursor_shape = 2
+flat = true
 
-[node name="NavigatorCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
-custom_minimum_size = Vector2(0, 120)
+[node name="NavigatorCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=1830603884]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="NavigatorMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard"]
+[node name="NavigatorMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard" unique_id=317249743]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="NavigatorBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin"]
+[node name="NavigatorBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin" unique_id=1073248503]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="NavigatorIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox"]
+[node name="NavigatorIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox" unique_id=8792192]
 custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NavigatorLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox"]
+[node name="NavigatorLabelVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox" unique_id=124711052]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 
-[node name="NavigatorHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox"]
+[node name="NavigatorHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox" unique_id=1273913899]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.7, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "ENLACE // OFICIAL DE NAVEGACIÓN"
 
-[node name="NavigatorName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox"]
+[node name="NavigatorName" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox" unique_id=421577377]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 12
 text = "LYRA"
 
-[node name="NavigatorDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox"]
+[node name="NavigatorDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox" unique_id=1337481280]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "Sobrecarga de Propulsión."
 autowrap_mode = 2
 
-[node name="NavigatorButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard"]
+[node name="NavigatorButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/NavigatorCard" unique_id=1372319514]
 layout_mode = 2
-flat = true
-mouse_filter = 0
 mouse_default_cursor_shape = 2
+flat = true
 
-[node name="TalentsCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
+[node name="TalentsCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=1984218323]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="TalentsMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard"]
+[node name="TalentsMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard" unique_id=1005000994]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="TalentsVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin"]
+[node name="TalentsVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin" unique_id=1674097193]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="TalentsHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox"]
+[node name="TalentsHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox" unique_id=1714845032]
 layout_mode = 2
 
-[node name="TalentsHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/TalentsHeaderHBox"]
+[node name="TalentsHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/TalentsHeaderHBox" unique_id=344764111]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.95, 1, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "ASIGNACIÓN // ÁRBOL DE TALENTOS"
 
-[node name="TalentsSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/TalentsHeaderHBox"]
+[node name="TalentsSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/TalentsHeaderHBox" unique_id=174410901]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.7)
@@ -447,41 +447,41 @@ theme_override_font_sizes/font_size = 10
 text = "Sinergias neurales de la heroína."
 horizontal_alignment = 2
 
-[node name="ExpandTalentsBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox"]
+[node name="ExpandTalentsBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox" unique_id=754586677]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "[ÁRBOL DE TALENTOS] (1/24)"
 
-[node name="TomesCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
+[node name="TomesCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=393258159]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="TomesMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard"]
+[node name="TomesMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard" unique_id=2015276215]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="TomesVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin"]
+[node name="TomesVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin" unique_id=1913339911]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="TomesHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox"]
+[node name="TomesHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox" unique_id=1714310806]
 layout_mode = 2
 
-[node name="TomesHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesHeaderHBox"]
+[node name="TomesHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesHeaderHBox" unique_id=1690650418]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.3, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "REGISTRO // TOMOS & BANLIST"
 
-[node name="TomesSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesHeaderHBox"]
+[node name="TomesSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesHeaderHBox" unique_id=619501372]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.7)
@@ -489,52 +489,52 @@ theme_override_font_sizes/font_size = 10
 text = "Filtrado y afinidades de arsenal."
 horizontal_alignment = 2
 
-[node name="TomesActionsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox"]
+[node name="TomesActionsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox" unique_id=701616593]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TomesPoolBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox"]
+[node name="TomesPoolBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox" unique_id=458061575]
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "[POOL TOMOS]"
 
-[node name="LoadoutButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox"]
+[node name="LoadoutButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox" unique_id=860523371]
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "[BANLIST]"
 
-[node name="SpeedCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView"]
-custom_minimum_size = Vector2(0, 64)
+[node name="SpeedCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=62412215]
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="SpeedMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard"]
+[node name="SpeedMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard" unique_id=1950635140]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="SpeedVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin"]
+[node name="SpeedVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin" unique_id=27143666]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="SpeedHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox"]
+[node name="SpeedHeaderHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox" unique_id=1387026443]
 layout_mode = 2
 
-[node name="SpeedHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedHeaderHBox"]
+[node name="SpeedHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedHeaderHBox" unique_id=19285082]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.7, 0.9)
 theme_override_font_sizes/font_size = 10
 text = "SIMULACIÓN // VELOCIDAD DE ASALTO"
 
-[node name="SpeedSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedHeaderHBox"]
+[node name="SpeedSub" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedHeaderHBox" unique_id=1658975346]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.7)
@@ -542,260 +542,39 @@ theme_override_font_sizes/font_size = 10
 text = "Flujo temporal del combate."
 horizontal_alignment = 2
 
-[node name="SpeedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox"]
+[node name="SpeedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox" unique_id=1883474421]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="Speed1xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow"]
+[node name="Speed1xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow" unique_id=1514598669]
 custom_minimum_size = Vector2(58, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "1.0x"
 
-[node name="Speed2xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow"]
+[node name="Speed2xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow" unique_id=311536255]
 custom_minimum_size = Vector2(58, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "2.0x"
 
-[node name="Speed4xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow"]
+[node name="Speed4xBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow" unique_id=724977818]
 custom_minimum_size = Vector2(58, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "4.0x"
 
-[node name="AbilitiesView" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="AbilitiesHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 12
-text = "// SISTEMAS DE COMBATE:"
-
-[node name="WeaponBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="WeaponMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock"]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="WeaponRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="WeaponBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow"]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="WeaponBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="WeaponBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 10
-text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
-
-[node name="WeaponBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Riel Magnético Dual"
-
-[node name="WeaponBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Proyectiles balísticos gemelos de alta cadencia y penetración cinética frontal."
-autowrap_mode = 2
-
-[node name="TacticalBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="TacticalMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock"]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="TacticalRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="TacticalBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow"]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TacticalBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="TacticalBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 10
-text = "[CLIC DER] // HABILIDAD TÁCTICA"
-
-[node name="TacticalBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Láser Focalizado de Vanguardia"
-
-[node name="TacticalBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Haz continuo que acelera su tiempo de carga con la velocidad de movimiento (hasta 1.2s)."
-autowrap_mode = 2
-
-[node name="DashBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="DashMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock"]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="DashRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="DashBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow"]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="DashBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="DashBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 1, 0.7, 1)
-theme_override_font_sizes/font_size = 10
-text = "[SHIFT] // PROPULSIÓN EVASIVA"
-
-[node name="DashBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Omega Spin"
-
-[node name="DashBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Giro evasivo de 360° que aniquila proyectiles hostiles e inflige corte radial limpio."
-autowrap_mode = 2
-
-[node name="PassiveBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="PassiveMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock"]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="PassiveRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="PassiveBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow"]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PassiveBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="PassiveBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
-theme_override_font_sizes/font_size = 10
-text = "[INNATA] // AFINIDAD DE TOMO"
-
-[node name="PassiveBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Sobrecarga de Vanguardia"
-
-[node name="PassiveBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Favorece Tomo de Velocidad: cada +10% de velocidad otorga +6% de Daño a quemarropa (<120px)."
-autowrap_mode = 2
-
-[node name="CommandBar" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="LaunchButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_launch_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_launch_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_launch_pressed")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_launch_disabled")
-text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
-
-[node name="RightShowcaseArea" type="Control" parent="MarginContainer/RootVBox/MainWorkspace"]
+[node name="RightShowcaseArea" type="Control" parent="MarginContainer/RootVBox/MainWorkspace" unique_id=1920362489]
 custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
 size_flags_vertical = 3
 
-[node name="BacklightGlow" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea"]
+[node name="BacklightGlow" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=289063820]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -806,7 +585,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea"]
+[node name="FullbodyTexture" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=241488309]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -818,7 +597,7 @@ mouse_default_cursor_shape = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PilotButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea"]
+[node name="PilotButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=870997923]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -826,16 +605,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 focus_mode = 0
+mouse_default_cursor_shape = 2
 theme_override_styles/normal = SubResource("StyleBoxEmpty_pilot")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_pilot")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_pilot")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_pilot")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_pilot")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_pilot")
 flat = true
-mouse_filter = 0
-mouse_default_cursor_shape = 2
 
-[node name="HeroIdentityBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea"]
+[node name="HeroIdentityBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=2087499941]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -850,20 +628,20 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_constants/separation = 3
 
-[node name="NameLabel" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox"]
+[node name="NameLabel" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox" unique_id=262118062]
 layout_mode = 2
 theme_override_font_sizes/font_size = 38
 text = "NOVA"
 horizontal_alignment = 2
 
-[node name="ClassTitleLabel" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox"]
+[node name="ClassTitleLabel" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox" unique_id=1396366368]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.88, 1, 0.95)
 theme_override_font_sizes/font_size = 16
 text = "Piloto de Vanguardia"
 horizontal_alignment = 2
 
-[node name="PilotSkinButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox"]
+[node name="PilotSkinButton" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox" unique_id=68609855]
 custom_minimum_size = Vector2(180, 32)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -871,34 +649,280 @@ theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "// MODIFICAR ASPECTO"
 
-[node name="DockContainer" type="PanelContainer" parent="MarginContainer/RootVBox"]
+[node name="DockContainer" type="PanelContainer" parent="MarginContainer/RootVBox" unique_id=965393716]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_dock")
 
-[node name="DockMargin" type="MarginContainer" parent="MarginContainer/RootVBox/DockContainer"]
+[node name="CommandBar" type="HBoxContainer" parent="MarginContainer/RootVBox/DockContainer" unique_id=328411041]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="LaunchButton" type="Button" parent="MarginContainer/RootVBox/DockContainer/CommandBar" unique_id=434846598]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBoxFlat_launch_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_launch_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_launch_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_launch_disabled")
+text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
+
+[node name="DockMargin" type="MarginContainer" parent="MarginContainer/RootVBox/DockContainer" unique_id=775487468]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 8
 
-[node name="CharList" type="HBoxContainer" parent="MarginContainer/RootVBox/DockContainer/DockMargin"]
+[node name="CharList" type="HBoxContainer" parent="MarginContainer/RootVBox/DockContainer/DockMargin" unique_id=977291292]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="DebugMenuModal" parent="." instance=ExtResource("4_debug")]
+[node name="DockUnifiedButton" type="Button" parent="MarginContainer/RootVBox/DockContainer" unique_id=977291293]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+flat = true
 
-[node name="PetSelectionModal" parent="." instance=ExtResource("5_petmodal")]
+[node name="AbilitiesView" type="VBoxContainer" parent="." unique_id=1972780375]
+visible = false
+layout_mode = 0
+offset_left = 503.0
+offset_top = 495.0
+offset_right = 1131.0
+offset_bottom = 919.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
-[node name="NavigatorSelectionModal" parent="." instance=ExtResource("6_navmodal")]
+[node name="AbilitiesHeader" type="Label" parent="AbilitiesView" unique_id=770646581]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "// SISTEMAS DE COMBATE:"
 
-[node name="SkinSelectionModal" parent="." instance=ExtResource("7_skinmodal")]
+[node name="WeaponBlock" type="PanelContainer" parent="AbilitiesView" unique_id=208461896]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
 
-[node name="GachaModal" parent="." instance=ExtResource("8_gachamodal")]
+[node name="WeaponMargin" type="MarginContainer" parent="AbilitiesView/WeaponBlock" unique_id=1139428644]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
 
-[node name="TomeSelectionModal" parent="." instance=ExtResource("9_tomemodal")]
+[node name="WeaponRow" type="HBoxContainer" parent="AbilitiesView/WeaponBlock/WeaponMargin" unique_id=589300450]
+layout_mode = 2
+theme_override_constants/separation = 10
 
-[node name="CharacterSkillTreeModal" parent="." instance=ExtResource("10_skillmodal")]
+[node name="WeaponBlockIcon" type="TextureRect" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1886694112]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponBlockVBox" type="VBoxContainer" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1002511668]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="WeaponBlockTag" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=17250328]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 10
+text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
+
+[node name="WeaponBlockTitle" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1623966223]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Riel Magnético Dual"
+
+[node name="WeaponBlockDesc" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1352615989]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Proyectiles balísticos gemelos de alta cadencia y penetración cinética frontal."
+autowrap_mode = 2
+
+[node name="TacticalBlock" type="PanelContainer" parent="AbilitiesView" unique_id=1356360077]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="TacticalMargin" type="MarginContainer" parent="AbilitiesView/TacticalBlock" unique_id=1149683704]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="TacticalRow" type="HBoxContainer" parent="AbilitiesView/TacticalBlock/TacticalMargin" unique_id=1224630819]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TacticalBlockIcon" type="TextureRect" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=549937699]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TacticalBlockVBox" type="VBoxContainer" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=969561904]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TacticalBlockTag" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=1873053874]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[CLIC DER] // HABILIDAD TÁCTICA"
+
+[node name="TacticalBlockTitle" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=236556135]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Láser Focalizado de Vanguardia"
+
+[node name="TacticalBlockDesc" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=86475781]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Haz continuo que acelera su tiempo de carga con la velocidad de movimiento (hasta 1.2s)."
+autowrap_mode = 2
+
+[node name="DashBlock" type="PanelContainer" parent="AbilitiesView" unique_id=584089526]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="DashMargin" type="MarginContainer" parent="AbilitiesView/DashBlock" unique_id=43093670]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="DashRow" type="HBoxContainer" parent="AbilitiesView/DashBlock/DashMargin" unique_id=1215704142]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DashBlockIcon" type="TextureRect" parent="AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=787940949]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DashBlockVBox" type="VBoxContainer" parent="AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=155082826]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="DashBlockTag" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1325364599]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "[SHIFT] // PROPULSIÓN EVASIVA"
+
+[node name="DashBlockTitle" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1381096391]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Omega Spin"
+
+[node name="DashBlockDesc" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=2120577095]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Giro evasivo de 360° que aniquila proyectiles hostiles e inflige corte radial limpio."
+autowrap_mode = 2
+
+[node name="PassiveBlock" type="PanelContainer" parent="AbilitiesView" unique_id=696502152]
+custom_maximum_size = Vector2(-1, 130)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="PassiveMargin" type="MarginContainer" parent="AbilitiesView/PassiveBlock" unique_id=270591989]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="PassiveRow" type="HBoxContainer" parent="AbilitiesView/PassiveBlock/PassiveMargin" unique_id=493893658]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PassiveBlockIcon" type="TextureRect" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1408619236]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PassiveBlockVBox" type="VBoxContainer" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1858672520]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="PassiveBlockTag" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1410307546]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[INNATA] // AFINIDAD DE TOMO"
+
+[node name="PassiveBlockTitle" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1112701718]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Sobrecarga de Vanguardia"
+
+[node name="PassiveBlockDesc" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1442248241]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Favorece Tomo de Velocidad: cada +10% de velocidad otorga +6% de Daño a quemarropa (<120px)."
+autowrap_mode = 2
+
+[node name="DebugMenuModal" parent="." unique_id=765611395 instance=ExtResource("4_debug")]
+visible = false
+
+[node name="PetSelectionModal" parent="." unique_id=1118824390 instance=ExtResource("5_petmodal")]
+visible = false
+
+[node name="NavigatorSelectionModal" parent="." unique_id=635182371 instance=ExtResource("6_navmodal")]
+visible = false
+
+[node name="SkinSelectionModal" parent="." unique_id=1646937470 instance=ExtResource("7_skinmodal")]
+
+[node name="GachaModal" parent="." unique_id=91174855 instance=ExtResource("8_gachamodal")]
+
+[node name="TomeSelectionModal" parent="." unique_id=1106035109 instance=ExtResource("9_tomemodal")]
+
+[node name="CharacterSkillTreeModal" parent="." unique_id=874554701 instance=ExtResource("10_skillmodal")]
+visible = false
+layout_mode = 1
+
+[node name="CosmeticCarouselModal" parent="." unique_id=1198472910 instance=ExtResource("11_cosmeticmodal")]
+visible = false
+
+[node name="HeroPickerModal" parent="." unique_id=1298472911 instance=ExtResource("12_heromodal")]
+visible = false

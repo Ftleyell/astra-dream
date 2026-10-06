@@ -80,25 +80,22 @@ func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) 
 	# Aplicar skin cosmética a la nave si está equipada
 	var char_id_str: String = String(character_data.character_id) if character_data else "survivor_default"
 	var equipped_ship_skin: String = SaveManager.get_equipped_skin("ship:" + char_id_str)
-	if not equipped_ship_skin.is_empty() and ship_spr:
-		var skin_data: Dictionary = CosmeticsManager.get_skin(equipped_ship_skin)
-		var custom_tex: Texture2D = CosmeticsManager.get_skin_texture(skin_data)
-		if custom_tex:
-			ship_spr.texture = custom_tex
-		var glow_hex: String = skin_data.get("glow_hex", "")
-		if not glow_hex.is_empty():
-			var skin_primary: Color = Color.from_string(glow_hex, p_color)
-			flight_mat.set_shader_parameter("primary_color", skin_primary)
-			if vfx_comp:
-				vfx_comp.configure_colors(skin_primary, sec_color)
-		ship_spr.material = flight_mat
-		ship_spr.visible = true
-		ship_spr.scale = Vector2(0.42, 0.42)
-		if placeholder:
-			placeholder.visible = false
-	elif ship_spr:
-		if ship_tex:
-			ship_spr.texture = ship_tex
+	var custom_tex: Texture2D = null
+	var skin_data: Dictionary = {}
+	if not equipped_ship_skin.is_empty() and equipped_ship_skin != "base" and equipped_ship_skin != "default":
+		skin_data = CosmeticsManager.get_skin(equipped_ship_skin)
+		custom_tex = CosmeticsManager.get_skin_texture(skin_data)
+
+	if ship_spr:
+		var final_ship_tex: Texture2D = custom_tex if custom_tex else ship_tex
+		if final_ship_tex:
+			ship_spr.texture = final_ship_tex
+			var glow_hex: String = skin_data.get("glow_hex", "")
+			if not glow_hex.is_empty():
+				var skin_primary: Color = Color.from_string(glow_hex, p_color)
+				flight_mat.set_shader_parameter("primary_color", skin_primary)
+				if vfx_comp:
+					vfx_comp.configure_colors(skin_primary, sec_color)
 			ship_spr.material = flight_mat
 			ship_spr.visible = true
 			ship_spr.scale = Vector2(0.42, 0.42)
@@ -137,28 +134,32 @@ func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) 
 			w_spr.z_index = 20
 			w_spr.move_to_front()
 			var equipped_w_skin: String = SaveManager.get_equipped_skin("weapon:" + char_id_str)
-			if not equipped_w_skin.is_empty():
+			var w_applied := false
+			if not equipped_w_skin.is_empty() and equipped_w_skin != "base" and equipped_w_skin != "default":
 				var w_stars: int = SaveManager.get_skin_stars(equipped_w_skin)
 				CosmeticsManager.apply_skin_to_canvas_item(w_spr, equipped_w_skin, w_stars)
-				w_spr.position = Vector2.ZERO
-				w_spr.visible = true
-				if w_poly:
-					w_poly.visible = false
-			elif w_tex:
-				w_spr.texture = w_tex
-				w_spr.material = null
-				w_spr.position = Vector2.ZERO
-				w_spr.visible = true
-				if w_poly:
-					w_poly.visible = false
-			else:
-				w_spr.visible = false
-				w_spr.material = null
-				if w_poly:
-					w_poly.z_as_relative = false
-					w_poly.z_index = 20
-					w_poly.position = Vector2.ZERO
-					w_poly.visible = true
+				if w_spr.texture:
+					w_spr.position = Vector2.ZERO
+					w_spr.visible = true
+					w_applied = true
+					if w_poly:
+						w_poly.visible = false
+			if not w_applied:
+				if w_tex:
+					w_spr.texture = w_tex
+					w_spr.material = null
+					w_spr.position = Vector2.ZERO
+					w_spr.visible = true
+					if w_poly:
+						w_poly.visible = false
+				else:
+					w_spr.visible = false
+					w_spr.material = null
+					if w_poly:
+						w_poly.z_as_relative = false
+						w_poly.z_index = 20
+						w_poly.position = Vector2.ZERO
+						w_poly.visible = true
 
 			if w_spr.visible:
 				var char_visual_size: float = 108.0

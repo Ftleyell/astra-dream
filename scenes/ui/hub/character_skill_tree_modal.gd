@@ -50,6 +50,7 @@ var hex_nodes: Dictionary:
 
 func _ready() -> void:
 	visible = false
+	focus_mode = Control.FOCUS_ALL
 	_renderer = ConstellationRendererClass.new()
 
 	if close_button:
@@ -93,6 +94,7 @@ func open_for_character(char_id: StringName) -> void:
 	_center_canvas()
 	_select_node(&"core")
 	_animate_open()
+	call_deferred("grab_focus")
 
 func open_tree_for_character(char_id: StringName) -> void:
 	open_for_character(char_id)
@@ -319,6 +321,7 @@ func _animate_open() -> void:
 func close_modal() -> void:
 	if not visible:
 		return
+	release_focus()
 	modal_closed.emit()
 	closed.emit()
 	var tw: Tween = create_tween()
@@ -344,20 +347,14 @@ func _navigate_direction(move_dir: Vector2) -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
-		get_viewport().set_input_as_handled()
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not visible:
-		return
 
 	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
 		get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
-		close_modal()
 		get_viewport().set_input_as_handled()
+		close_modal()
 		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
