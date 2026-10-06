@@ -40,16 +40,19 @@ const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.
 @onready var key_label: Label = find_child("KeyLabel", true, false) as Label
 
 @onready var dash_button_body: Control = find_child("DashButtonBody", true, false) as Control
+@onready var dash_icon: TextureRect = find_child("DashIcon", true, false) as TextureRect
 @onready var dash_cd_overlay: ColorRect = find_child("DashCDOverlay", true, false) as ColorRect
 @onready var dash_cd_num: Label = find_child("DashCDNum", true, false) as Label
 @onready var dash_pip_1: Panel = find_child("DashPip1", true, false) as Panel
 @onready var dash_pip_2: Panel = find_child("DashPip2", true, false) as Panel
 
 @onready var laser_button_body: Control = find_child("LaserButtonBody", true, false) as Control
+@onready var laser_icon: TextureRect = find_child("LaserIcon", true, false) as TextureRect
 @onready var laser_cd_overlay: ColorRect = find_child("LaserCDOverlay", true, false) as ColorRect
 @onready var laser_cd_num: Label = find_child("LaserCDNum", true, false) as Label
 
 @onready var bomb_button_body: Control = find_child("BombButtonBody", true, false) as Control
+@onready var bomb_icon: TextureRect = find_child("BombIcon", true, false) as TextureRect
 @onready var bomb_overlay: ColorRect = find_child("BombOverlay", true, false) as ColorRect
 @onready var bomb_pip_1: Panel = find_child("BombPip1", true, false) as Panel
 @onready var bomb_pip_2: Panel = find_child("BombPip2", true, false) as Panel
@@ -161,6 +164,9 @@ func _ready() -> void:
 			player.dash_updated.connect(_on_dash_updated)
 			_on_dash_updated(player.dash_charges, player.max_dash_charges, 1.0, player.is_focus_active)
 
+		if player.character_data and _abilities_ctrl:
+			_abilities_ctrl.update_ability_icons(player.character_data)
+
 		if player.inventory:
 			player.inventory.item_added.connect(_on_inventory_item_added)
 
@@ -227,16 +233,19 @@ func _init_subcontrollers() -> void:
 	_abilities_ctrl = TacticalAbilitiesControllerClass.new()
 	_abilities_ctrl.setup({
 		"dash_button_body": dash_button_body,
+		"dash_icon": dash_icon,
 		"dash_cd_overlay": dash_cd_overlay,
 		"dash_cd_num": dash_cd_num,
 		"dash_pip_1": dash_pip_1,
 		"dash_pip_2": dash_pip_2,
 		"dash_label": dash_label,
 		"laser_button_body": laser_button_body,
+		"laser_icon": laser_icon,
 		"laser_cd_overlay": laser_cd_overlay,
 		"laser_cd_num": laser_cd_num,
 		"laser_cd_label": laser_cd_label,
 		"bomb_button_body": bomb_button_body,
+		"bomb_icon": bomb_icon,
 		"bomb_overlay": bomb_overlay,
 		"bomb_pip_1": bomb_pip_1,
 		"bomb_pip_2": bomb_pip_2,
@@ -346,6 +355,10 @@ func show_tactical_alert(title_text: String, subtitle_text: String = "", border_
 func update_laser_cooldown(current: float, max_val: float) -> void:
 	if _abilities_ctrl:
 		_abilities_ctrl.update_laser_cooldown(current, max_val)
+
+func update_pilot_abilities(data: CharacterData) -> void:
+	if _abilities_ctrl and data:
+		_abilities_ctrl.update_ability_icons(data)
 
 func update_weapon_slots(weapons: Array) -> void:
 	if _inventory_ctrl:

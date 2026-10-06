@@ -13,16 +13,17 @@ func _ready() -> void:
 	passed += _test_weapon_controller_replace_and_level_inheritance()
 	passed += _test_weapon_swap_modal_ui_and_hotkeys()
 	passed += _test_hud_weapon_slots_and_cooldown_overlay()
+	passed += _test_hud_pilot_abilities_icons()
 
 	print("\n==================================================================")
-	print("  TOTAL VERIFIED TEST SUITES: %d/4 PASSED" % passed)
-	if passed == 4:
+	print("  TOTAL VERIFIED TEST SUITES: %d/5 PASSED" % passed)
+	if passed == 5:
 		print("[PASS] 100% SUITE COMPLIANCE — WEAPON SWAP & HUD REWORK VERIFIED!")
 	else:
 		print("[FAIL] SOME SUITES FAILED")
 	print("==================================================================\n")
 
-	get_tree().quit(0 if passed == 4 else 1)
+	get_tree().quit(0 if passed == 5 else 1)
 
 func _create_dummy_weapon(w_id: StringName, name: String, dmg: float = 20.0, cd: float = 0.5) -> WeaponData:
 	var w := WeaponData.new()
@@ -195,5 +196,48 @@ func _test_hud_weapon_slots_and_cooldown_overlay() -> int:
 
 	print("  ✓ T4: HUD WeaponSlotsRow relocated above TacticalAbilitiesRow, 4 slots rendered with CDOverlay and empty placeholders")
 
+	hud.queue_free()
+	return 1
+
+func _test_hud_pilot_abilities_icons() -> int:
+	print("--- TEST 5: HUD Pilot Tactical and Dash Ability Icons Integration ---")
+	var hud_scene: PackedScene = load("res://scenes/ui/hud/hud.tscn")
+	assert(hud_scene != null, "hud.tscn must exist and load")
+
+	var hud: CanvasLayer = hud_scene.instantiate() as CanvasLayer
+	add_child(hud)
+
+	var dash_icon: TextureRect = hud.find_child("DashIcon", true, false) as TextureRect
+	var laser_icon: TextureRect = hud.find_child("LaserIcon", true, false) as TextureRect
+	var dash_button_body: Control = hud.find_child("DashButtonBody", true, false) as Control
+	var laser_button_body: Control = hud.find_child("LaserButtonBody", true, false) as Control
+
+	assert(dash_icon != null, "DashIcon must exist in HUD")
+	assert(laser_icon != null, "LaserIcon must exist in HUD")
+
+	var roster := CharacterData.load_roster()
+	assert(not roster.is_empty(), "Roster must not be empty")
+
+	for pid: StringName in [&"nova", &"valentina", &"selene"]:
+		if roster.has(pid):
+			var c_data: CharacterData = roster[pid]
+			hud.call("update_pilot_abilities", c_data)
+
+			var expected_dash_tex: Texture2D = c_data.get_dash_texture()
+			var expected_laser_tex: Texture2D = c_data.get_tactical_texture()
+
+			assert(dash_icon.texture == expected_dash_tex, "DashIcon texture must match character get_dash_texture for %s" % pid)
+			assert(laser_icon.texture == expected_laser_tex, "LaserIcon texture must match character get_tactical_texture for %s" % pid)
+			assert(dash_icon.texture != null, "DashIcon texture must not be null for %s" % pid)
+			assert(laser_icon.texture != null, "LaserIcon texture must not be null for %s" % pid)
+
+			var kit: Dictionary = c_data.get_pilot_kit()
+			if not kit.is_empty():
+				if dash_button_body and "dash_name" in kit:
+					assert(dash_button_body.tooltip_text.contains(kit["dash_name"]), "Dash tooltip must include kit dash_name for %s" % pid)
+				if laser_button_body and "tactical_name" in kit:
+					assert(laser_button_body.tooltip_text.contains(kit["tactical_name"]), "Laser tooltip must include kit tactical_name for %s" % pid)
+
+	print("  ✓ T5: HUD dynamically swaps Dash and Tactical (Click) icons & tooltips across pilots")
 	hud.queue_free()
 	return 1

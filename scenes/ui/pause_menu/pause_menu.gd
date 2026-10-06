@@ -602,7 +602,7 @@ func _on_save_quit_pressed() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	_transition_to_hub()
 
 func _on_restart_pressed() -> void:
 	var main_game: Node = get_parent()
@@ -628,7 +628,7 @@ func _on_hub_pressed() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	_transition_to_hub()
 
 func _on_menu_pressed() -> void:
 	var main_game: Node = get_parent()
@@ -642,4 +642,12 @@ func _on_menu_pressed() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	_transition_to_hub()
+
+
+func _transition_to_hub() -> void:
+	var st: SceneTransitionClass = get_node_or_null("/root/SceneTransition") as SceneTransitionClass
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	else:
+		get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")

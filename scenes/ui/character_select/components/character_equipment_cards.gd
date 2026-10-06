@@ -64,6 +64,43 @@ func setup_ship_and_weapon(
 		weapon_button.pressed.connect(p_on_weapon_pressed)
 		setup_card_hover_feedback(weapon_button, weapon_card, Color(1.0, 0.85, 0.35, 1.0))
 
+	# Centrado en medio del contenedor: se ajusta dinámicamente según la textura asignada
+	_apply_weapon_optical_centering()
+
+
+func _apply_weapon_optical_centering() -> void:
+	if not weapon_icon or not weapon_icon.texture:
+		return
+	
+	var raw_tex: Texture2D = weapon_icon.texture
+	if raw_tex is AtlasTexture:
+		raw_tex = (raw_tex as AtlasTexture).atlas
+	if not raw_tex:
+		return
+
+	var tw: float = float(raw_tex.get_width())
+	var th: float = float(raw_tex.get_height())
+	if tw <= 0.0 or th <= 0.0:
+		return
+
+	# Si es un sprite de arma orbital con margen de rotación (256x256 o 1024x1024)
+	# recortamos estrictamente a la región visible con un margen equilibrado del 8%
+	if tw == 256.0 or tw == 1024.0:
+		var ratio: float = tw / 256.0
+		# Rectángulo del contenido visible centrado:
+		# En 256x256, el arma va de x: 88..248, y: 88..168 (ancho ~160, alto ~80)
+		var crop_x: float = 84.0 * ratio
+		var crop_y: float = 80.0 * ratio
+		var crop_w: float = 168.0 * ratio
+		var crop_h: float = 96.0 * ratio
+
+		var atlas := AtlasTexture.new()
+		atlas.atlas = raw_tex
+		atlas.region = Rect2(crop_x, crop_y, crop_w, crop_h)
+		weapon_icon.texture = atlas
+		weapon_icon.position = Vector2.ZERO
+		weapon_icon.scale = Vector2.ONE
+
 
 func setup_companions(
 	p_pet_card: PanelContainer,
@@ -163,6 +200,7 @@ func update_equipment(data: CharacterData, char_id: StringName) -> void:
 			CosmeticsManager.apply_skin_to_canvas_item(weapon_icon, weapon_skin_id, stars)
 		if weapon_icon.texture == null:
 			weapon_icon.texture = data.get_weapon_texture()
+		_apply_weapon_optical_centering()
 	if weapon_name:
 		if data.starting_weapon and not data.starting_weapon.weapon_name.is_empty():
 			weapon_name.text = data.starting_weapon.weapon_name

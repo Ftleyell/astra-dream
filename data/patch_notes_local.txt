@@ -1,5 +1,14 @@
-[b][color=#00f0ff]ASTRA DREAM — NOTAS DEL PARCHE (v0.4.0)[/color][/b]
+[b][color=#00f0ff]ASTRA DREAM — NOTAS DEL PARCHE (Alpha 0.1)[/color][/b]
 [color=#70a1ff]Rama: master // Registro Oficial de Actualizaciones[/color]
+
+[b][color=#ffeaa7]━━━ 🚀 SELECCIÓN DE HEROÍNAS & HANGAR DE DESPLIEGUE ━━━[/color][/b]
+• [b]HeroPickerModal Inmersivo:[/b] Apertura fluida de cuadrícula completa de personajes con desenfoque de fondo y foco aislado al presionar Espacio o doble clic sobre cualquier piloto.
+• [b]Botón Marquee Militar en Cinta:[/b] Despegue orbital modernizado con un botón de cinta continua en movimiento perpetuo y shader de tramado activo.
+• [b]Transición Global Cinematográfica:[/b] Sistema centralizado de fundidos y cortinillas diagonales para alternar suavemente entre menús y combate.
+• [b]Vuelo Procedural y Post-Procesado:[/b] Dinámica inercial con máscaras RGBA y toberas de plasma en el showcase de heroínas.
+• [b]Carrusel 360° de Cosméticos:[/b] Vista previa y equipamiento de aspectos para Heroínas, Naves, Armas, Mascotas y Navegadoras con sistema de estrellas.
+• [b]Centrado Dinámico de Armas:[/b] Recorte por AtlasTexture que equilibra la masa del arma en los marcos de selección sin alterar la rotación de combate.
+• [b]Retratos de Diálogo Pulidos:[/b] Shader holográfico con corrección de bordes y halo posterior con el color característico de la piloto.
 
 [b][color=#ffeaa7]━━━ 🎯 ARMAMENTO BALÍSTICO AUTÓNOMO (CAPA PASIVA) ━━━[/color][/b]
 • [b]Trayectoria Balística Directa:[/b] Los misiles de apoyo vuelan en línea recta estricta a alta velocidad, pudiendo impactar enemigos en su camino o errar si el objetivo maniobra con rapidez.

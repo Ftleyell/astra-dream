@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TomeData" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/icons/restart.svg" id="1_j12ww"]
+[ext_resource type="Texture2D" path="res://assets/icons/tomes/icon_tome_cooldown_reduction.png" id="1_j12ww"]
 [ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_b521a"]
 
 [resource]

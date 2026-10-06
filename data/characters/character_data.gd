@@ -155,6 +155,30 @@ func get_weapon_texture() -> Texture2D:
 		return load(path) as Texture2D
 	return null
 
+func get_weapon_skill_texture() -> Texture2D:
+	var path_skill := "res://assets/characters/skills/weapons/icon_weapon_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path_skill):
+		return load(path_skill) as Texture2D
+	return get_weapon_texture()
+
+func get_tactical_texture() -> Texture2D:
+	var path := "res://assets/characters/skills/tacticals/icon_tactical_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return preload("res://assets/sprites/ui/laser_ability_icon.png")
+
+func get_dash_texture() -> Texture2D:
+	var path := "res://assets/characters/skills/dashes/icon_dash_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return preload("res://assets/sprites/ui/dash_ability_icon.png")
+
+func get_passive_texture() -> Texture2D:
+	var path := "res://assets/characters/skills/passives/icon_passive_%s.png" % str(character_id).to_lower()
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return preload("res://assets/sprites/ui/biomass_dna_icon.png")
+
 func get_formatted_stats() -> String:
 	if not stats_summary.is_empty():
 		return stats_summary
@@ -262,6 +286,9 @@ func get_kit_dossier() -> Dictionary:
 				dossier.passive_desc = "Sinergia estándar de combate espacial."
 				dossier.favored_tome = &"tome_base_damage"
 	return dossier
+
+func get_pilot_kit() -> Dictionary:
+	return get_kit_dossier()
 
 # Static roster loaders
 static func load_roster() -> Dictionary[StringName, CharacterData]:

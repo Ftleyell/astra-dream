@@ -351,10 +351,10 @@ func _update_combat_dossier(c_data: CharacterData) -> void:
 			passive_block_desc.text = kit.passive_desc
 
 	if weapon_block_icon:
-		weapon_block_icon.texture = c_data.get_weapon_texture()
+		weapon_block_icon.texture = c_data.get_weapon_skill_texture()
 	if tactical_block_icon:
-		tactical_block_icon.texture = preload("res://assets/sprites/ui/laser_ability_icon.png")
+		tactical_block_icon.texture = c_data.get_tactical_texture()
 	if dash_block_icon:
-		dash_block_icon.texture = preload("res://assets/sprites/ui/dash_ability_icon.png")
+		dash_block_icon.texture = c_data.get_dash_texture()
 	if passive_block_icon:
-		passive_block_icon.texture = preload("res://assets/sprites/ui/biomass_dna_icon.png")
+		passive_block_icon.texture = c_data.get_passive_texture()

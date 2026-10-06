@@ -11,6 +11,25 @@ const TomeDataScript = preload("res://data/tomes/tome_data.gd")
 
 const MIN_ACTIVE_TOMES: int = 6
 
+@export_group("Dimensiones de Ventana")
+@export var modal_size: Vector2 = Vector2(1060, 620)
+@export var margin_horizontal: int = 24
+@export var margin_vertical: int = 20
+@export var content_separation: int = 14
+
+@export_group("Cuadrícula de Tomos")
+@export var grid_columns: int = 3
+@export var grid_h_separation: int = 12
+@export var grid_v_separation: int = 10
+
+@export_group("Dimensiones de Tarjetas")
+@export var card_size: Vector2 = Vector2(310, 80)
+@export var icon_size: Vector2 = Vector2(40, 40)
+@export var badge_min_width: float = 76.0
+
+@export_group("Reglas de Pool")
+@export var min_active_tomes: int = 6
+
 signal closed()
 signal tomes_updated(char_id: StringName, active_tomes: Array[StringName])
 
@@ -22,6 +41,7 @@ var dim_overlay: ColorRect = null
 var title_label: Label = null
 var subtitle_label: Label = null
 var counter_label: Label = null
+var min_rule_label: Label = null
 var warning_label: Label = null
 var tomes_grid: GridContainer = null
 
@@ -63,7 +83,7 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	panel.custom_minimum_size = Vector2(1060, 620)
+	panel.custom_minimum_size = modal_size
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.03, 0.05, 0.09, 0.98)
 	sb.border_color = Color(0, 0.85, 1, 0.85)
@@ -75,14 +95,14 @@ func _build_ui() -> void:
 	center.add_child(panel)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 24)
-	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_left", margin_horizontal)
+	margin.add_theme_constant_override("margin_top", margin_vertical)
+	margin.add_theme_constant_override("margin_right", margin_horizontal)
+	margin.add_theme_constant_override("margin_bottom", margin_vertical)
 	panel.add_child(margin)
 
 	var root_vbox := VBoxContainer.new()
-	root_vbox.add_theme_constant_override("separation", 14)
+	root_vbox.add_theme_constant_override("separation", content_separation)
 	margin.add_child(root_vbox)
 
 	# 1. Header Row
@@ -120,8 +140,8 @@ func _build_ui() -> void:
 	counter_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.8))
 	counter_box.add_child(counter_label)
 
-	var min_rule_label := Label.new()
-	min_rule_label.text = "(MÍNIMO %d ACTIVOS OBLIGATORIOS)" % MIN_ACTIVE_TOMES
+	min_rule_label = Label.new()
+	min_rule_label.text = "(MÍNIMO %d ACTIVOS OBLIGATORIOS)" % min_active_tomes
 	min_rule_label.add_theme_font_size_override("font_size", 11)
 	min_rule_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	min_rule_label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85, 0.75))
@@ -143,10 +163,10 @@ func _build_ui() -> void:
 	root_vbox.add_child(scroll)
 
 	tomes_grid = GridContainer.new()
-	tomes_grid.columns = 3
+	tomes_grid.columns = grid_columns
 	tomes_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tomes_grid.add_theme_constant_override("h_separation", 12)
-	tomes_grid.add_theme_constant_override("v_separation", 10)
+	tomes_grid.add_theme_constant_override("h_separation", grid_h_separation)
+	tomes_grid.add_theme_constant_override("v_separation", grid_v_separation)
 	scroll.add_child(tomes_grid)
 
 	# 4. Actions Row (Footer Hint)
@@ -173,10 +193,13 @@ func open_modal(char_id: StringName = &"") -> void:
 	else:
 		active_tome_ids = TomeCatalog.ALL_TOME_IDS.duplicate()
 
-	if active_tome_ids.size() < MIN_ACTIVE_TOMES:
+	if active_tome_ids.size() < min_active_tomes:
 		active_tome_ids = TomeCatalog.ALL_TOME_IDS.duplicate()
 		if SaveManager.has_method("set_character_active_tomes"):
 			SaveManager.set_character_active_tomes(current_character_id, active_tome_ids)
+
+	if min_rule_label:
+		min_rule_label.text = "(MÍNIMO %d ACTIVOS OBLIGATORIOS)" % min_active_tomes
 
 	_update_header_text()
 	_populate_grid()
@@ -243,7 +266,7 @@ func _update_counter_label() -> void:
 	var count: int = active_tome_ids.size()
 	var total: int = TomeCatalog.ALL_TOME_IDS.size()
 	counter_label.text = "TOMOS ACTIVOS: %d / %d" % [count, total]
-	if count <= MIN_ACTIVE_TOMES:
+	if count <= min_active_tomes:
 		counter_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
 	else:
 		counter_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.8))
@@ -273,7 +296,7 @@ func _build_tome_card(tome: TomeDataScript) -> Control:
 	var is_active: bool = active_tome_ids.has(tid)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(310, 80)
+	panel.custom_minimum_size = card_size
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var margin := MarginContainer.new()
@@ -288,7 +311,7 @@ func _build_tome_card(tome: TomeDataScript) -> Control:
 	margin.add_child(hbox)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(40, 40)
+	icon_rect.custom_minimum_size = icon_size
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_rect.texture = tome.icon
@@ -322,7 +345,7 @@ func _build_tome_card(tome: TomeDataScript) -> Control:
 	badge_lbl.add_theme_font_size_override("font_size", 11)
 	badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	badge_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	badge_lbl.custom_minimum_size = Vector2(76, 0)
+	badge_lbl.custom_minimum_size = Vector2(badge_min_width, 0)
 	hbox.add_child(badge_lbl)
 
 	var btn := Button.new()
@@ -376,8 +399,8 @@ func _on_card_pressed(tome_id: StringName) -> void:
 	var is_active: bool = active_tome_ids.has(tome_id)
 
 	if is_active:
-		if active_tome_ids.size() <= MIN_ACTIVE_TOMES:
-			_show_warning("¡MÍNIMO %d TOMOS OBLIGATORIOS PARA DESPLEGAR!" % MIN_ACTIVE_TOMES)
+		if active_tome_ids.size() <= min_active_tomes:
+			_show_warning("¡MÍNIMO %d TOMOS OBLIGATORIOS PARA DESPLEGAR!" % min_active_tomes)
 			var audio_mgr := get_node_or_null("/root/AudioManager")
 			if audio_mgr and audio_mgr.has_method("play_sfx"):
 				audio_mgr.play_sfx(&"ui_error", 0.0, 0.9)

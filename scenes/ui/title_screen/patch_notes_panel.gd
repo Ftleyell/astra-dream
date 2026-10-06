@@ -35,7 +35,7 @@ func _load_local_notes() -> void:
 			if notes_text:
 				notes_text.text = content
 			if status_label:
-				status_label.text = "● Notas Locales (v0.4.0)"
+				status_label.text = "● Notas Locales (Alpha 0.1)"
 				status_label.modulate = Color(0.22, 0.74, 0.97, 1.0)
 			return
 

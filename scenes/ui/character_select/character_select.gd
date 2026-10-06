@@ -554,13 +554,13 @@ func _select_character(char_id: StringName) -> void:
 			favored_tome_desc.text = "%s — Sinergia: %s" % [String(f_tome), p_desc]
 
 	if weapon_block_icon:
-		weapon_block_icon.texture = data.get_weapon_texture()
+		weapon_block_icon.texture = data.get_weapon_skill_texture()
 	if tactical_block_icon:
-		tactical_block_icon.texture = preload("res://assets/sprites/ui/laser_ability_icon.png")
+		tactical_block_icon.texture = data.get_tactical_texture()
 	if dash_block_icon:
-		dash_block_icon.texture = preload("res://assets/sprites/ui/dash_ability_icon.png")
+		dash_block_icon.texture = data.get_dash_texture()
 	if passive_block_icon:
-		passive_block_icon.texture = preload("res://assets/sprites/ui/biomass_dna_icon.png")
+		passive_block_icon.texture = data.get_passive_texture()
 
 	_refresh_talents_summary(char_id)
 
@@ -986,7 +986,11 @@ func _on_back_pressed() -> void:
 
 func _exit_to_hub() -> void:
 	_set_game_speed(1.0)
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+	var st = get_node_or_null("/root/SceneTransition")
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	else:
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
 
 
 func _setup_speed_buttons() -> void:

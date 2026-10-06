@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TomeData" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/icons/icon_arcana_rune.svg" id="1_1fiyx"]
+[ext_resource type="Texture2D" path="res://assets/icons/tomes/icon_tome_curse.png" id="1_1fiyx"]
 [ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_jbco7"]
 
 [resource]

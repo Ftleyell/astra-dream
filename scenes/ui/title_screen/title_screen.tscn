@@ -41,7 +41,7 @@ alignment = 1
 [node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox"]
 custom_minimum_size = Vector2(580, 290)
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 4
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
@@ -60,6 +60,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "[ TOCA CUALQUIER TECLA PARA CONTINUAR ]"
+horizontal_alignment = 1
 
 [node name="Spacer2" type="Control" parent="MainHBox/LeftVBox"]
 custom_minimum_size = Vector2(0, 30)
@@ -69,7 +70,8 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.5, 0.65, 0.7)
 theme_override_font_sizes/font_size = 14
-text = "v0.4.0 - MASTER STAGE"
+text = "Alpha 0.1"
+horizontal_alignment = 1
 
 [node name="PatchNotesPanel" parent="MainHBox" instance=ExtResource("3_patchpanel")]
 layout_mode = 2

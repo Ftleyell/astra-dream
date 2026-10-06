@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_shop_10"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
-[ext_resource type="Texture2D" path="res://assets/icons/icon_bomb.png" id="2_ico"]
+[ext_resource type="Texture2D" path="res://assets/icons/weapons/cluster_submunition.png" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")

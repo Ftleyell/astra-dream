@@ -72,7 +72,7 @@ static func generate_reward_options(
 
 	# 2. Nuevas Armas (si hay ranuras disponibles < 4)
 	if num_weapons < 4:
-		var all_weapons: Array[WeaponData] = WeaponCatalog.get_all_weapons()
+		var all_weapons: Array[WeaponData] = WeaponCatalog.get_pool_weapons()
 		var equipped_ids: Array[StringName] = []
 		for inst in equipped_weapons:
 			if inst and inst.weapon_data:
@@ -80,9 +80,8 @@ static func generate_reward_options(
 
 		for w in all_weapons:
 			if not equipped_ids.has(w.weapon_id):
-				if WeaponCatalog.POOL_WEAPON_IDS.has(w.weapon_id):
-					if not active_weapon_ids.is_empty() and not active_weapon_ids.has(w.weapon_id):
-						continue
+				if not active_weapon_ids.is_empty() and not active_weapon_ids.has(w.weapon_id):
+					continue
 				var opt := LevelUpRewardOption.new()
 				opt.type = LevelUpRewardOption.OptionType.WEAPON_NEW
 				opt.weapon_data = w

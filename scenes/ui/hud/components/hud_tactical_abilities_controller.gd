@@ -9,6 +9,7 @@ extends RefCounted
 ## - Conmutador visual de Auto-Aim vs Apuntado Manual.
 
 var dash_button_body: Control
+var dash_icon: TextureRect
 var dash_cd_overlay: ColorRect
 var dash_cd_num: Label
 var dash_pip_1: Panel
@@ -16,11 +17,13 @@ var dash_pip_2: Panel
 var dash_label: Label
 
 var laser_button_body: Control
+var laser_icon: TextureRect
 var laser_cd_overlay: ColorRect
 var laser_cd_num: Label
 var laser_cd_label: Label
 
 var bomb_button_body: Control
+var bomb_icon: TextureRect
 var bomb_overlay: ColorRect
 var bomb_pip_1: Panel
 var bomb_pip_2: Panel
@@ -36,6 +39,7 @@ var _bomb_pip_dim_style: StyleBoxFlat
 
 func setup(elements: Dictionary) -> void:
 	dash_button_body = elements.get("dash_button_body") as Control
+	dash_icon = elements.get("dash_icon") as TextureRect
 	dash_cd_overlay = elements.get("dash_cd_overlay") as ColorRect
 	dash_cd_num = elements.get("dash_cd_num") as Label
 	dash_pip_1 = elements.get("dash_pip_1") as Panel
@@ -43,11 +47,13 @@ func setup(elements: Dictionary) -> void:
 	dash_label = elements.get("dash_label") as Label
 
 	laser_button_body = elements.get("laser_button_body") as Control
+	laser_icon = elements.get("laser_icon") as TextureRect
 	laser_cd_overlay = elements.get("laser_cd_overlay") as ColorRect
 	laser_cd_num = elements.get("laser_cd_num") as Label
 	laser_cd_label = elements.get("laser_cd_label") as Label
 
 	bomb_button_body = elements.get("bomb_button_body") as Control
+	bomb_icon = elements.get("bomb_icon") as TextureRect
 	bomb_overlay = elements.get("bomb_overlay") as ColorRect
 	bomb_pip_1 = elements.get("bomb_pip_1") as Panel
 	bomb_pip_2 = elements.get("bomb_pip_2") as Panel
@@ -57,6 +63,25 @@ func setup(elements: Dictionary) -> void:
 	aim_mode_label = elements.get("aim_mode_label") as Label
 
 	_setup_styles()
+
+func update_ability_icons(data: CharacterData) -> void:
+	if not data:
+		return
+	if dash_icon:
+		var d_tex: Texture2D = data.get_dash_texture()
+		if d_tex:
+			dash_icon.texture = d_tex
+	if laser_icon:
+		var t_tex: Texture2D = data.get_tactical_texture()
+		if t_tex:
+			laser_icon.texture = t_tex
+
+	var kit := data.get_pilot_kit()
+	if not kit.is_empty():
+		if dash_button_body and "dash_name" in kit:
+			dash_button_body.tooltip_text = "%s\n%s" % [kit.get("dash_name", "Dash"), kit.get("dash_desc", "")]
+		if laser_button_body and "tactical_name" in kit:
+			laser_button_body.tooltip_text = "%s\n%s" % [kit.get("tactical_name", "Habilidad Táctica"), kit.get("tactical_desc", "")]
 
 func _setup_styles() -> void:
 	_pip_lit_style = StyleBoxFlat.new()

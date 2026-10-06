@@ -282,6 +282,8 @@ func _ready() -> void:
 			player.credits_changed.connect(hud.update_credits)
 		if not player.biomass_changed.is_connected(hud.update_biomass):
 			player.biomass_changed.connect(hud.update_biomass)
+		if player.character_data and hud.has_method("update_pilot_abilities"):
+			hud.update_pilot_abilities(player.character_data)
 	player.level_up_requested.connect(_on_level_up_requested)
 	player.bomb_used.connect(_on_player_bomb_used)
 	player.health_changed.connect(_on_player_health_changed)
@@ -1109,7 +1111,11 @@ func _on_game_over_hub() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	var st: SceneTransitionClass = get_node_or_null("/root/SceneTransition") as SceneTransitionClass
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	else:
+		get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
 
 
 # ==============================================================================

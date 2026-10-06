@@ -305,7 +305,7 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 	var delay_step: float = 0.09
 	var max_delay: float = 3.0 * delay_step
 
-	var tween := create_tween().set_parallel(true)
+	var tween := create_tween().set_parallel(true).set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
 	for p in _pilot_lanes:
 		var spr: Sprite2D = p.sprite
@@ -334,7 +334,7 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 
 	# Esperar a que la última piloto cubra completamente la pantalla
 	var total_sweep_time: float = max_delay + duration
-	await get_tree().create_timer(total_sweep_time).timeout
+	await get_tree().create_timer(total_sweep_time, true, false, true).timeout
 
 	screen_covered.emit()
 
@@ -344,12 +344,12 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 
-	var hold_time: float = 0.25
-	await get_tree().create_timer(hold_time).timeout
+	var hold_time: float = 0.10
+	await get_tree().create_timer(hold_time, true, false, true).timeout
 
 	# Fase 2: Fade-out sutil de izquierda a derecha
-	var fade_duration: float = 0.65
-	var fade_tween := create_tween()
+	var fade_duration: float = 0.40
+	var fade_tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	fade_tween.tween_method(
 		func(val: float) -> void:
 			_wipe_mat.set_shader_parameter("fade_progress", val)

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://wpn_rox_05"]
 
 [ext_resource type="Script" path="res://data/weapons/weapon_data.gd" id="1_wpn"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="2_ico"]
+[ext_resource type="Texture2D" path="res://assets/characters/skills/weapons/icon_weapon_roxy.png" id="2_ico"]
 
 [resource]
 script = ExtResource("1_wpn")

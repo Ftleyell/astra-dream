@@ -3,6 +3,27 @@
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto se adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Alpha 0.1] - 2026-10-06 — Selección de Personajes Rework, Animaciones Procedurales de Vuelo, Modales & Pulido Visual
+
+### Añadido y Mejorado
+* **Menú Principal & Identidad Visual (`TitleScreen`):**
+  * Versión del juego actualizada formalmente a **Alpha 0.1**.
+  * Alineación y centrado geométrico estricto del bloque de presentación en pantalla de título (Logo `Astra Dream`, Prompt de interacción interactivo y Etiqueta de Versión).
+* **Rework de Selección de Personajes & Hangar de Despliegue (`CharacterSelectUI`):**
+  * **HeroPickerModal:** Selector modal inmersivo de heroínas en cuadrícula con desenfoque de fondo y aislamiento de navegación, activado al tocar barra espaciadora o doble clic.
+  * **Botón de Despegue en Cinta Continua (`TapeMarqueeButton`):** Sustitución del botón de lanzamiento estándar por un botón estilizado de cinta transportadora militar continua con animación infinita y shader reactivo.
+  * **Transición de Escenas Global (`SceneTransition`):** Autoload desacoplado para fundidos cinematográficos y barridos diagonales de entrada y salida entre pantallas y partidas.
+  * **Animación Procedural de Vuelo de Pilotos (`ExoPilotFlight`):** Sistema de balanceo y cabeceo inercial de la piloto con máscara RGBA para estelas de propulsores de plasma y llamaradas reactivas.
+  * **Carrusel Cosmético de Aspectos (`CosmeticCarouselModal`):** Modales independientes para inspección 360° y equipamiento de skins de Heroínas, Naves, Armas, Mascotas y Navegadoras con preview en tiempo real y soporte para estrellas cosméticas.
+  * **Centrado Óptico de Armas por AtlasTexture:** Recorte y encuadre dinámico de sprites de armas orbitales (256x256 y 1024x1024) para eliminar márgenes descompensados y centrarlas perfectamente en la tarjeta de equipamiento.
+* **Integración Visual de Diálogos (`DialogueBackdropLayer`):**
+  * Shader de post-procesado holográfico (`pilot_showcase_hologram.gdshader`) con corrección de bordes (alpha feathering / defringing) en los retratos de las pilotos durante las secuencias de diálogo.
+  * Luz perimetral aditiva de contraluz (`BacklightGlow`) modulada al color característico de la piloto activa.
+* **Sincronización de Iconos de Combate al HUD In-Game:**
+  * Transferencia de los iconos de Sistemas de Combate de cada heroína (`icon_dash_<pilot>`, `icon_tactical_<pilot>`) directamente a los slots y botones del HUD en partida.
+
+---
+
 ## [0.6.0] - 2026-10-03 — Rework Maestro de Balance, Álgebra de Daño, Economía Híbrida, Balística & 12 Nuevos Ítems
 
 ### Añadido

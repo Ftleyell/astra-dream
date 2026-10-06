@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TomeData" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_glasses.svg" id="1_omq87"]
+[ext_resource type="Texture2D" path="res://assets/icons/tomes/icon_tome_crit_chance.png" id="1_omq87"]
 [ext_resource type="Script" path="res://data/tomes/tome_data.gd" id="2_nk7vb"]
 
 [resource]
