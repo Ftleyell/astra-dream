@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_1y8uq"]
 [ext_resource type="Script" path="res://data/items/effects/pyroclastic_battery_effect.gd" id="2_spo1t"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="3_r5xqq"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_pyroclastic_battery.png" id="3_r5xqq"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_qysuu"]
 
 [sub_resource type="Resource" id="Resource_yi3lu"]

@@ -86,7 +86,6 @@ static func build_card(
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if arc.icon:
 		icon_rect.texture = arc.icon
-	icon_rect.modulate = accent
 	vbox.add_child(icon_rect)
 
 	# 5. Panel de alteraciones exactas de estadísticas (Stat Deltas Badges)

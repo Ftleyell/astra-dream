@@ -464,6 +464,53 @@ static func set_character_active_weapons(char_id: StringName, weapons: Array[Str
 		file.close()
 
 
+static func get_unlocked_items() -> Array[StringName]:
+	var prof: Dictionary = load_profile()
+	var raw_items: Array = prof.get("unlocked_items", [])
+	var result: Array[StringName] = []
+	for it in raw_items:
+		result.append(StringName(str(it)))
+	return result
+
+
+static func is_item_unlocked(item_id: StringName) -> bool:
+	var unlocked := get_unlocked_items()
+	return unlocked.has(item_id) or unlocked.is_empty()
+
+
+static func get_character_banlist(char_id: StringName) -> Array[StringName]:
+	var prof: Dictionary = load_profile()
+	var ban_dict: Dictionary = prof.get("character_banlists", {})
+	if ban_dict.has(str(char_id)):
+		var raw_arr: Array = ban_dict[str(char_id)]
+		var result: Array[StringName] = []
+		for item in raw_arr:
+			result.append(StringName(str(item)))
+		return result
+	elif ban_dict.has(char_id):
+		var raw_arr: Array = ban_dict[char_id]
+		var result: Array[StringName] = []
+		for item in raw_arr:
+			result.append(StringName(str(item)))
+		return result
+	return []
+
+
+static func set_character_banlist(char_id: StringName, banned_ids: Array[StringName]) -> void:
+	var prof: Dictionary = load_profile()
+	var ban_dict: Dictionary = prof.get("character_banlists", {}).duplicate()
+	var str_arr: Array[String] = []
+	for b: StringName in banned_ids:
+		str_arr.append(str(b))
+	ban_dict[str(char_id)] = str_arr
+	prof["character_banlists"] = ban_dict
+
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(prof, "\t"))
+		file.close()
+
+
 static func get_character_loadout(char_id: StringName) -> Dictionary:
 	var prof: Dictionary = load_profile()
 	var loadouts: Dictionary = prof.get("character_loadouts", {})

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_xneo8"]
 [ext_resource type="Script" path="res://data/items/effects/credit_card_green_effect.gd" id="2_vv7vs"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_credit_card_green.svg" id="3_3lrjb"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_credit_card_green.png" id="3_3lrjb"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_caqk0"]
 
 [sub_resource type="Resource" id="Resource_7t1hd"]

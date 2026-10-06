@@ -96,11 +96,19 @@ func _run_tests() -> void:
 	char_select._on_loadout_pressed()
 	assert_true(char_select.weapon_selection_modal.is_open, "Presionar loadout_button debe abrir weapon_selection_modal")
 
-	char_select.weapon_selection_modal.close_modal()
+	# 6. Validar que la grilla usa iconos cuadrados y posee panel lateral flotante sin foco
+	var wpn_modal: WeaponSelectionModal = char_select.weapon_selection_modal as WeaponSelectionModal
+	assert_true(wpn_modal.side_detail_panel != null, "WeaponSelectionModal debe tener side_detail_panel a la derecha")
+	assert_true(wpn_modal.side_detail_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE, "side_detail_panel no debe capturar mouse ni foco")
+	assert_true(wpn_modal.detail_title_label != null and not wpn_modal.detail_title_label.text.is_empty(), "detail_title_label debe mostrar información del arma activa")
+	assert_true(wpn_modal.card_size == Vector2(80, 80), "Las tarjetas de arma deben ser cuadradas 80x80 px")
+
+	wpn_modal.close_modal()
 	assert_true(not char_select.weapon_selection_modal.is_open, "Cerrar el modal debe actualizar is_open a false")
 
 	char_select.queue_free()
-	print("  ✓ [PASS] Test 5: Botón [POOL ARMAS] y apertura de WeaponSelectionModal integrados perfectamente")
+	print("  ✓ [PASS] Test 5 y 6: Botón [POOL ARMAS], panel lateral flotante y cuadrícula de iconos cuadrados validados")
 
 	print("--- TEST WEAPON POOL MODAL SUITE FINISHED: ALL PASS ---")
 	pass_suite("TestWeaponPoolModalSuite completely passed")
+

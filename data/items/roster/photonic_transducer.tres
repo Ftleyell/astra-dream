@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_pxvd2"]
 [ext_resource type="Script" path="res://data/items/effects/photonic_transducer_effect.gd" id="2_p7lus"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_boots.svg" id="3_c1veo"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_photonic_transducer.png" id="3_c1veo"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_ba1dt"]
 
 [sub_resource type="Resource" id="Resource_ynwp7"]

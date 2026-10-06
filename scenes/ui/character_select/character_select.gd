@@ -63,8 +63,9 @@ var is_debug_active: bool:
 
 # Controles de Talentos, Tomos y Velocidad
 @onready var expand_talents_btn: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/ExpandTalentsBtn
-@onready var tomes_pool_btn: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/TomesPoolBtn
-@onready var loadout_button: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/LoadoutButton
+@onready var arsenal_banlist_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/ArsenalBanlistBtn")
+@onready var tomes_pool_btn: Button = get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/TomesPoolBtn")
+@onready var loadout_button: Button = get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/LoadoutButton")
 
 @onready var speed_1x_btn: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed1xBtn
 @onready var speed_2x_btn: Button = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed2xBtn
@@ -118,6 +119,7 @@ var favored_tome_desc: Label = null
 @onready var character_skill_tree_modal = get_node_or_null("CharacterSkillTreeModal")
 @onready var cosmetic_carousel_modal = get_node_or_null("CosmeticCarouselModal")
 @onready var hero_picker_modal = get_node_or_null("HeroPickerModal")
+@onready var arsenal_banlist_modal = get_node_or_null("ArsenalBanlistModal")
 
 var pilot_showcase: CharacterPilotShowcase = null
 var equipment_cards: CharacterEquipmentCards = null
@@ -312,6 +314,8 @@ func _setup_signals() -> void:
 
 	if expand_talents_btn:
 		expand_talents_btn.pressed.connect(_on_expand_talents_pressed)
+	if arsenal_banlist_btn:
+		arsenal_banlist_btn.pressed.connect(_on_arsenal_banlist_pressed)
 	if tomes_pool_btn:
 		tomes_pool_btn.pressed.connect(_on_tomes_pool_pressed)
 	if loadout_button:
@@ -362,6 +366,9 @@ func _setup_signals() -> void:
 	if weapon_selection_modal and weapon_selection_modal.has_signal("closed"):
 		weapon_selection_modal.closed.connect(_on_weapon_modal_closed)
 
+	if arsenal_banlist_modal and arsenal_banlist_modal.has_signal("closed"):
+		arsenal_banlist_modal.closed.connect(_on_arsenal_banlist_modal_closed)
+
 	if character_skill_tree_modal and character_skill_tree_modal.has_signal("modal_closed"):
 		character_skill_tree_modal.modal_closed.connect(_on_skill_tree_closed)
 	elif character_skill_tree_modal and character_skill_tree_modal.has_signal("closed"):
@@ -386,6 +393,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if tome_selection_modal and tome_selection_modal.get("is_open"):
 		return
 	if weapon_selection_modal and weapon_selection_modal.get("is_open"):
+		return
+	if arsenal_banlist_modal and arsenal_banlist_modal.get("is_open"):
 		return
 	if character_skill_tree_modal and character_skill_tree_modal.visible:
 		return
@@ -683,8 +692,23 @@ func _on_skill_tree_closed() -> void:
 	_restore_last_focus()
 
 
+func _on_arsenal_banlist_pressed(default_tab: int = 0) -> void:
+	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		arsenal_banlist_modal.open_modal(current_character_id, default_tab)
+	elif default_tab == 1 and tome_selection_modal and tome_selection_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		tome_selection_modal.open_modal(current_character_id)
+	elif weapon_selection_modal and weapon_selection_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		weapon_selection_modal.open_modal(current_character_id)
+
+
 func _on_tomes_pool_pressed() -> void:
-	if tome_selection_modal and tome_selection_modal.has_method("open_modal"):
+	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		arsenal_banlist_modal.open_modal(current_character_id, 1)
+	elif tome_selection_modal and tome_selection_modal.has_method("open_modal"):
 		_last_focused_control = get_viewport().gui_get_focus_owner()
 		tome_selection_modal.open_modal(current_character_id)
 
@@ -946,9 +970,26 @@ func _on_launch_pressed() -> void:
 
 
 func _on_loadout_pressed() -> void:
+	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		arsenal_banlist_modal.open_modal(current_character_id, 0)
 	if weapon_selection_modal and weapon_selection_modal.has_method("open_modal"):
 		_last_focused_control = get_viewport().gui_get_focus_owner()
 		weapon_selection_modal.open_modal(current_character_id)
+
+
+func _on_arsenal_banlist_modal_closed() -> void:
+	var target_focus: Control = null
+	if arsenal_banlist_btn and arsenal_banlist_btn.is_visible_in_tree():
+		target_focus = arsenal_banlist_btn
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
+
 
 
 func _on_weapon_modal_closed() -> void:
@@ -1028,11 +1069,19 @@ func _setup_focus_mesh() -> void:
 		navigator_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
 		navigator_button.focus_neighbor_bottom = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
 
-	# 4. Talents and Tomes
+	# 4. Talents and Tomes / Arsenal
+	var eff_pool_btn: Control = arsenal_banlist_btn if (arsenal_banlist_btn and arsenal_banlist_btn.is_visible_in_tree()) else tomes_pool_btn
+	var eff_pool_path: NodePath = eff_pool_btn.get_path() if eff_pool_btn else NodePath()
+
 	if expand_talents_btn:
 		expand_talents_btn.focus_neighbor_top = navigator_button.get_path() if navigator_button else NodePath()
 		expand_talents_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		expand_talents_btn.focus_neighbor_bottom = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		expand_talents_btn.focus_neighbor_bottom = eff_pool_path
+
+	if arsenal_banlist_btn:
+		arsenal_banlist_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
+		arsenal_banlist_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		arsenal_banlist_btn.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 
 	if tomes_pool_btn:
 		tomes_pool_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
@@ -1050,21 +1099,22 @@ func _setup_focus_mesh() -> void:
 	var eff_launch_path: NodePath = eff_launch.get_path() if eff_launch else NodePath()
 
 	if speed_1x_btn:
-		speed_1x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_1x_btn.focus_neighbor_top = eff_pool_path
 		speed_1x_btn.focus_neighbor_right = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
 		speed_1x_btn.focus_neighbor_bottom = eff_launch_path
 
 	if speed_2x_btn:
-		speed_2x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_2x_btn.focus_neighbor_top = eff_pool_path
 		speed_2x_btn.focus_neighbor_left = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 		speed_2x_btn.focus_neighbor_right = speed_4x_btn.get_path() if speed_4x_btn else NodePath()
 		speed_2x_btn.focus_neighbor_bottom = eff_launch_path
 
 	if speed_4x_btn:
-		speed_4x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		speed_4x_btn.focus_neighbor_top = eff_pool_path
 		speed_4x_btn.focus_neighbor_left = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
 		speed_4x_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
 		speed_4x_btn.focus_neighbor_bottom = eff_launch_path
+
 
 	# 6. Launch Button
 	if eff_launch:

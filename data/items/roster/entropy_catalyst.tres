@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_a5eed"]
 [ext_resource type="Script" path="res://data/items/effects/entropy_catalyst_effect.gd" id="2_nv5jc"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_magnet.svg" id="3_cs6xo"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_entropy_catalyst.png" id="3_cs6xo"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_6fmx7"]
 
 [sub_resource type="Resource" id="Resource_avxs5"]

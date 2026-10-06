@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://23nq0fqrpq85" path="res://scenes/ui/character_select/hero_picker_modal.tscn" id="12_heromodal"]
 [ext_resource type="PackedScene" uid="uid://tapemarqueebtn01" path="res://scenes/ui/components/tape_marquee_button.tscn" id="13_tapemarquee"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/weapon_selection_modal.tscn" id="14_wpnmodal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_select/arsenal_banlist_modal.tscn" id="15_arsenalmodal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tabpanel"]
 bg_color = Color(0.02, 0.035, 0.06, 0.88)
@@ -493,7 +494,15 @@ theme_override_font_sizes/font_size = 10
 text = "Filtrado y afinidades de arsenal."
 horizontal_alignment = 2
 
+[node name="ArsenalBanlistBtn" type="Button" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox" unique_id=991616594]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "✦ ARSENAL & BANLIST (GESTIÓN DE POOLS)"
+
 [node name="TomesActionsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox" unique_id=701616593]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -944,4 +953,7 @@ layout_mode = 1
 visible = false
 
 [node name="HeroPickerModal" parent="." unique_id=1298472911 instance=ExtResource("12_heromodal")]
+visible = false
+
+[node name="ArsenalBanlistModal" parent="." unique_id=1106035111 instance=ExtResource("15_arsenalmodal")]
 visible = false

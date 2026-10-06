@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_rc1q6"]
 [ext_resource type="Script" path="res://data/items/effects/kinetic_plating_effect.gd" id="2_vve7u"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_shield.svg" id="3_jvahe"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_kinetic_plating.png" id="3_jvahe"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_o7hjf"]
 
 [sub_resource type="Resource" id="Resource_1d074"]

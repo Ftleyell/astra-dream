@@ -82,7 +82,6 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			if wdata.icon:
 				icon_rect.texture = wdata.icon
-				icon_rect.modulate = rarity_color
 			inner.add_child(icon_rect)
 
 			var cd_overlay := ColorRect.new()
@@ -198,7 +197,6 @@ func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
 			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			if tome.icon:
 				icon_rect.texture = tome.icon
-				icon_rect.modulate = Color(1.0, 0.88, 0.4, 1.0)
 			inner.add_child(icon_rect)
 
 			var lvl_lbl := Label.new()
@@ -275,7 +273,6 @@ func add_or_update_inventory_chip(item: ItemData, count: int) -> void:
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if item.icon:
 		icon_rect.texture = item.icon
-		icon_rect.modulate = rarity_color
 
 	var margin := MarginContainer.new()
 	margin.name = "Margin"

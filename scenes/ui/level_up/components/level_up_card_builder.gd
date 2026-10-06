@@ -111,7 +111,6 @@ static func build_stat_card(
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if card.icon:
 		icon_rect.texture = card.icon
-		icon_rect.modulate = tier_color
 	icon_panel.add_child(icon_rect)
 	hbox.add_child(icon_panel)
 
@@ -296,7 +295,6 @@ static func build_reward_option_card(
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if option.icon:
 		icon_rect.texture = option.icon
-		icon_rect.modulate = tier_color
 	icon_panel.add_child(icon_rect)
 	hbox.add_child(icon_panel)
 

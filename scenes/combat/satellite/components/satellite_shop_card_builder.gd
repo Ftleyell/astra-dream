@@ -100,7 +100,6 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if entry.get("icon"):
 		icon_rect.texture = entry.get("icon")
-		icon_rect.modulate = rarity_color
 	icon_panel.add_child(icon_rect)
 	hbox.add_child(icon_panel)
 

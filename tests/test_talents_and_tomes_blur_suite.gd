@@ -127,6 +127,12 @@ func _test_tome_selection_modal_dim_overlay_click_closes() -> void:
 	assert_true(closed_box[0], "Hacer clic en dim_overlay exterior debe emitir señal closed.")
 	assert_true(not tome_modal.is_open, "TomeSelectionModal debe cerrarse tras clic exterior.")
 
+	# Validar características de diseño visual: iconos cuadrados 80x80 y panel lateral a la derecha
+	assert_true(tome_modal.side_detail_panel != null, "TomeSelectionModal debe poseer side_detail_panel.")
+	assert_true(tome_modal.side_detail_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE, "side_detail_panel de Tomos debe tener mouse_filter = IGNORE.")
+	assert_true(tome_modal.card_size == Vector2(80, 80), "Las tarjetas de tomos deben ser cuadradas 80x80 px.")
+	assert_true(tome_modal.detail_title_label != null and not tome_modal.detail_title_label.text.is_empty(), "detail_title_label debe reflejar el tomo inspeccionado.")
+
 	# Reabrir y validar que ESC en _input también cierra el modal
 	tome_modal.open_modal(&"nova")
 	var esc_ev := InputEventKey.new()
@@ -136,7 +142,7 @@ func _test_tome_selection_modal_dim_overlay_click_closes() -> void:
 	assert_true(not tome_modal.is_open, "Presionar ESC debe cerrar y guardar TomeSelectionModal.")
 
 	tome_modal.queue_free()
-	print("✓ Test 5: Clic exterior y tecla ESC en TomeSelectionModal confirman y cierran el modal limpiamente.")
+	print("✓ Test 5: Clic exterior, tecla ESC, iconos cuadrados y panel lateral flotante en TomeSelectionModal validados.")
 
 func _test_skill_tree_backdrop_and_navigation_isolation() -> void:
 	var skill_modal: CharacterSkillTreeModal = CharacterSkillTreeModalScene.instantiate() as CharacterSkillTreeModal

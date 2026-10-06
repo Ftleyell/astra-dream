@@ -3,6 +3,36 @@ extends Node
 
 const ITEM_ROSTER_DIR: String = "res://data/items/roster"
 
+const OVERLOAD_ITEM_IDS: Array[StringName] = [
+	&"fusion_reactor", &"dense_turbine", &"collimator_lens", &"split_salvo",
+	&"rapid_injector", &"nanotitanium_plating", &"afterburn_thruster", &"tachyon_prism"
+]
+
+const REACTIVE_PROC_ITEM_IDS: Array[StringName] = [
+	&"tesla_coil", &"kinetic_plating", &"phase_thruster", &"retaliation_swarm",
+	&"entropy_catalyst", &"phase_inverter", &"pyroclastic_battery", &"cryo_condenser"
+]
+
+const UTILITY_CORE_ITEM_IDS: Array[StringName] = [
+	&"alchemical_converter", &"hemodynamic_cell", &"kinetic_converter", &"gravitational_resonator",
+	&"photonic_transducer", &"overdrain_module", &"static_cell", &"stellar_scrap"
+]
+
+const STRATEGIC_MODULE_ITEM_IDS: Array[StringName] = [
+	&"abyssal_contract", &"antimatter_core", &"blood_capacitor", &"entropy_engine",
+	&"bifocal_lens", &"inertial_thruster", &"chain_battery", &"photonic_prism",
+	&"orbital_relay", &"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
+]
+
+const CHEST_CANONICAL_ITEM_IDS: Array[StringName] = [
+	&"botas", &"espada", &"escudo", &"corazon", &"manzana", &"iman",
+	&"gafas", &"lupa", &"guante", &"trebol", &"carcaj", &"chip_telemetria",
+	&"propulsor", &"lente_amplificadora", &"reloj_cuantico",
+	&"moneda_oro", &"capsula_biomasa", &"reliquia_maldita",
+	&"glass_reactor", &"heavy_condenser", &"tachyon_piercer",
+	&"quantum_key", &"credit_card_green", &"credit_card_red"
+]
+
 const CANONICAL_ITEM_IDS: Array[StringName] = [
 	&"botas", &"espada", &"escudo", &"corazon", &"manzana", &"iman",
 	&"gafas", &"lupa", &"guante", &"trebol", &"carcaj", &"chip_telemetria",
@@ -29,6 +59,7 @@ const SATELLITE_ITEM_IDS: Array[StringName] = [
 	&"bifocal_lens", &"inertial_thruster", &"chain_battery", &"photonic_prism",
 	&"orbital_relay", &"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
 ]
+
 
 @export var master_catalog: Array[ItemData] = []
 

@@ -253,6 +253,13 @@ func _ready() -> void:
 	chest_director.initialize(chest_cfg, 0)
 	chest_director.chest_opened.connect(_on_chest_opened_from_director)
 
+	var sel_char_id: StringName = SaveManager.get_selected_character()
+	var banned_items: Array[StringName] = SaveManager.get_character_banlist(sel_char_id)
+	var unlocked_items: Array[StringName] = SaveManager.get_unlocked_items()
+	var char_data: CharacterData = player.character_data if is_instance_valid(player) else null
+	if chest_director and chest_director.item_pool_manager:
+		chest_director.item_pool_manager.rebuild_run_pool(char_data, unlocked_items, banned_items)
+
 	var c_modal_scene: PackedScene = preload("res://scenes/ui/modals/chest_reward_modal.tscn")
 	chest_reward_modal = c_modal_scene.instantiate() as ChestRewardModal
 	add_child(chest_reward_modal)

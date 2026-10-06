@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://arsenalbanlistmodal001"]
+
+[ext_resource type="Script" path="res://scenes/ui/character_select/arsenal_banlist_modal.gd" id="1_arsenalmodal"]
+
+[node name="ArsenalBanlistModal" type="CanvasLayer"]
+process_mode = 3
+layer = 126
+visible = false
+script = ExtResource("1_arsenalmodal")

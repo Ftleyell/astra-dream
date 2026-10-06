@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_3he80"]
 [ext_resource type="Script" path="res://data/items/effects/tesla_coil_effect.gd" id="2_5xlxx"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_sword.svg" id="3_d1mjn"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_tesla_coil.png" id="3_d1mjn"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="4_piecs"]
 
 [sub_resource type="Resource" id="Resource_wm8be"]

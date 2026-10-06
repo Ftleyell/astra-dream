@@ -245,7 +245,6 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if inst.weapon_data and inst.weapon_data.icon:
 		icon_rect.texture = inst.weapon_data.icon
-		icon_rect.modulate = border_col
 	icon_center.add_child(icon_rect)
 	card_vbox.add_child(icon_center)
 

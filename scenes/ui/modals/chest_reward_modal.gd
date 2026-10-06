@@ -202,7 +202,6 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if item.icon:
 		icon_rect.texture = item.icon
-		icon_rect.modulate = rarity_col
 	icon_panel.add_child(icon_rect)
 	hbox.add_child(icon_panel)
 

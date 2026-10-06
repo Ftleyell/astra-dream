@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://data/items/item_effect.gd" id="1_aygrv"]
-[ext_resource type="Texture2D" path="res://assets/icons/items/icon_lens.svg" id="2_o8pub"]
+[ext_resource type="Texture2D" path="res://assets/icons/items/icon_photonic_prism.png" id="2_o8pub"]
 [ext_resource type="Script" path="res://data/items/item_data.gd" id="3_jxcus"]
 
 [resource]

@@ -356,4 +356,17 @@ static func get_character_loadout(char_id: StringName) -> Dictionary:
 static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> void:
 	ProfileStorage.set_character_loadout(char_id, loadout)
 
+static func get_character_banlist(char_id: StringName) -> Array[StringName]:
+	return ProfileStorage.get_character_banlist(char_id)
+
+static func set_character_banlist(char_id: StringName, banned_ids: Array[StringName]) -> void:
+	ProfileStorage.set_character_banlist(char_id, banned_ids)
+
+static func get_unlocked_items() -> Array[StringName]:
+	return ProfileStorage.get_unlocked_items()
+
+static func is_item_unlocked(item_id: StringName) -> bool:
+	return ProfileStorage.is_item_unlocked(item_id)
+
+
 
