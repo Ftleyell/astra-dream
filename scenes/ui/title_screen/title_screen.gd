@@ -80,7 +80,10 @@ func _trigger_continue() -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
 
-	if fade_rect:
+	var st = get_node_or_null("/root/SceneTransition")
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	elif fade_rect:
 		fade_rect.visible = true
 		fade_rect.modulate.a = 0.0
 		var tw_out := create_tween()

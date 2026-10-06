@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
 [ext_resource type="PackedScene" uid="uid://n7y8dbscg6uu" path="res://scenes/ui/cosmetics/cosmetic_carousel_modal.tscn" id="11_cosmeticmodal"]
 [ext_resource type="PackedScene" uid="uid://23nq0fqrpq85" path="res://scenes/ui/character_select/hero_picker_modal.tscn" id="12_heromodal"]
+[ext_resource type="PackedScene" uid="uid://tapemarqueebtn01" path="res://scenes/ui/components/tape_marquee_button.tscn" id="13_tapemarquee"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_select/weapon_selection_modal.tscn" id="14_wpnmodal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tabpanel"]
 bg_color = Color(0.02, 0.035, 0.06, 0.88)
@@ -42,8 +44,6 @@ corner_radius_bottom_left = 6
 bg_color = Color(0.015, 0.025, 0.045, 0.94)
 border_width_top = 1
 border_color = Color(0, 0.75, 0.9, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_normal"]
 bg_color = Color(0.05, 0.32, 0.35, 0.95)
@@ -115,7 +115,7 @@ grow_vertical = 2
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_bottom = 104
 
 [node name="RootVBox" type="VBoxContainer" parent="MarginContainer" unique_id=1544039246]
 layout_mode = 2
@@ -505,7 +505,7 @@ custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
-text = "[BANLIST]"
+text = "[POOL ARMAS]"
 
 [node name="SpeedCard" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView" unique_id=62412215]
 custom_minimum_size = Vector2(0, 84)
@@ -649,18 +649,31 @@ theme_override_colors/font_color = Color(0, 0.94, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "// MODIFICAR ASPECTO"
 
-[node name="DockContainer" type="PanelContainer" parent="MarginContainer/RootVBox" unique_id=965393716]
+[node name="DockContainer" type="PanelContainer" parent="." unique_id=965393716]
 custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -96.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dock")
 
-[node name="CommandBar" type="HBoxContainer" parent="MarginContainer/RootVBox/DockContainer" unique_id=328411041]
-custom_maximum_size = Vector2(-1, 130)
+[node name="CommandBar" type="HBoxContainer" parent="DockContainer" unique_id=328411041]
+custom_maximum_size = Vector2(-1, 96)
 layout_mode = 2
-theme_override_constants/separation = 16
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
 
-[node name="LaunchButton" type="Button" parent="MarginContainer/RootVBox/DockContainer/CommandBar" unique_id=434846598]
-custom_minimum_size = Vector2(0, 130)
+[node name="TapeMarqueeButton" parent="DockContainer/CommandBar" unique_id=534846599 instance=ExtResource("13_tapemarquee")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LaunchButton" type="Button" parent="DockContainer/CommandBar" unique_id=434846598]
+visible = false
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -671,20 +684,20 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_launch_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_launch_disabled")
 text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
 
-[node name="DockMargin" type="MarginContainer" parent="MarginContainer/RootVBox/DockContainer" unique_id=775487468]
+[node name="DockMargin" type="MarginContainer" parent="DockContainer" unique_id=775487468]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 8
 
-[node name="CharList" type="HBoxContainer" parent="MarginContainer/RootVBox/DockContainer/DockMargin" unique_id=977291292]
+[node name="CharList" type="HBoxContainer" parent="DockContainer/DockMargin" unique_id=977291292]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="DockUnifiedButton" type="Button" parent="MarginContainer/RootVBox/DockContainer" unique_id=977291293]
+[node name="DockUnifiedButton" type="Button" parent="DockContainer" unique_id=977291293]
 layout_mode = 2
 mouse_default_cursor_shape = 2
 flat = true
@@ -916,6 +929,8 @@ visible = false
 [node name="GachaModal" parent="." unique_id=91174855 instance=ExtResource("8_gachamodal")]
 
 [node name="TomeSelectionModal" parent="." unique_id=1106035109 instance=ExtResource("9_tomemodal")]
+
+[node name="WeaponSelectionModal" parent="." unique_id=1106035110 instance=ExtResource("14_wpnmodal")]
 
 [node name="CharacterSkillTreeModal" parent="." unique_id=874554701 instance=ExtResource("10_skillmodal")]
 visible = false

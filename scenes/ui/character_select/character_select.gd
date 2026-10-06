@@ -99,14 +99,13 @@ var favored_tome_desc: Label = null
 # Barra de Mando Persistente
 @onready var main_margin_container: MarginContainer = $MarginContainer
 @onready var root_vbox: VBoxContainer = $MarginContainer/RootVBox
-@onready var launch_button: Button = (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar/LaunchButton") as Button)
-
-# Dock Inferior de Selección
-@onready var dock_container: PanelContainer = $MarginContainer/RootVBox/DockContainer
-@onready var command_bar: HBoxContainer = (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar") as HBoxContainer)
-@onready var dock_margin: MarginContainer = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin")
-@onready var char_list_container: HBoxContainer = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin/CharList")
-@onready var dock_unified_button: Button = get_node_or_null("MarginContainer/RootVBox/DockContainer/DockUnifiedButton")
+@onready var dock_container: PanelContainer = (get_node_or_null("DockContainer") as PanelContainer) if get_node_or_null("DockContainer") else (get_node_or_null("MarginContainer/RootVBox/DockContainer") as PanelContainer)
+@onready var command_bar: HBoxContainer = (get_node_or_null("DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("DockContainer/CommandBar") else ((get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar") as HBoxContainer))
+@onready var tape_launch_btn: TapeMarqueeButton = (get_node_or_null("DockContainer/CommandBar/TapeMarqueeButton") as TapeMarqueeButton) if get_node_or_null("DockContainer/CommandBar/TapeMarqueeButton") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/TapeMarqueeButton") as TapeMarqueeButton)
+@onready var launch_button: Button = (get_node_or_null("DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("DockContainer/CommandBar/LaunchButton") else ((get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar/LaunchButton") as Button))
+@onready var dock_margin: MarginContainer = (get_node_or_null("DockContainer/DockMargin") as MarginContainer) if get_node_or_null("DockContainer/DockMargin") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin") as MarginContainer)
+@onready var char_list_container: HBoxContainer = (get_node_or_null("DockContainer/DockMargin/CharList") as HBoxContainer) if get_node_or_null("DockContainer/DockMargin/CharList") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin/CharList") as HBoxContainer)
+@onready var dock_unified_button: Button = (get_node_or_null("DockContainer/DockUnifiedButton") as Button) if get_node_or_null("DockContainer/DockUnifiedButton") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockUnifiedButton") as Button)
 
 # Modales
 @onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
@@ -115,6 +114,7 @@ var favored_tome_desc: Label = null
 @onready var skin_selection_modal = get_node_or_null("SkinSelectionModal")
 @onready var gacha_modal = get_node_or_null("GachaModal")
 @onready var tome_selection_modal = get_node_or_null("TomeSelectionModal")
+@onready var weapon_selection_modal = get_node_or_null("WeaponSelectionModal")
 @onready var character_skill_tree_modal = get_node_or_null("CharacterSkillTreeModal")
 @onready var cosmetic_carousel_modal = get_node_or_null("CosmeticCarouselModal")
 @onready var hero_picker_modal = get_node_or_null("HeroPickerModal")
@@ -221,8 +221,10 @@ func _ready() -> void:
 		dock_unified_button.visible = false
 	if command_bar:
 		command_bar.visible = true
+	if tape_launch_btn:
+		tape_launch_btn.visible = true
 	if launch_button:
-		launch_button.visible = true
+		launch_button.visible = false
 	if dock_container:
 		dock_container.visible = true
 	if back_button:
@@ -251,6 +253,8 @@ func _ready() -> void:
 			root_vbox.visible = false
 		if abilities_view:
 			abilities_view.visible = false
+		if dock_container:
+			dock_container.visible = false
 		hero_picker_modal.open_picker(roster_ordered, current_character_id, true)
 
 
@@ -295,7 +299,10 @@ func _switch_tab(index: int) -> void:
 
 func _setup_signals() -> void:
 	back_button.pressed.connect(_on_back_pressed)
-	launch_button.pressed.connect(_on_launch_pressed)
+	if tape_launch_btn:
+		tape_launch_btn.pressed.connect(_on_launch_pressed)
+	if launch_button:
+		launch_button.pressed.connect(_on_launch_pressed)
 	if pilot_skin_btn:
 		pilot_skin_btn.pressed.connect(_on_skins_button_pressed)
 
@@ -352,6 +359,9 @@ func _setup_signals() -> void:
 	if tome_selection_modal and tome_selection_modal.has_signal("closed"):
 		tome_selection_modal.closed.connect(_on_tome_modal_closed)
 
+	if weapon_selection_modal and weapon_selection_modal.has_signal("closed"):
+		weapon_selection_modal.closed.connect(_on_weapon_modal_closed)
+
 	if character_skill_tree_modal and character_skill_tree_modal.has_signal("modal_closed"):
 		character_skill_tree_modal.modal_closed.connect(_on_skill_tree_closed)
 	elif character_skill_tree_modal and character_skill_tree_modal.has_signal("closed"):
@@ -374,6 +384,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if gacha_modal and gacha_modal.visible:
 		return
 	if tome_selection_modal and tome_selection_modal.get("is_open"):
+		return
+	if weapon_selection_modal and weapon_selection_modal.get("is_open"):
 		return
 	if character_skill_tree_modal and character_skill_tree_modal.visible:
 		return
@@ -591,13 +603,19 @@ func _select_character(char_id: StringName) -> void:
 
 	# Estado de lanzamiento
 	if not is_unlocked:
-		launch_button.disabled = true
-		launch_button.text = "PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN"
+		if tape_launch_btn:
+			tape_launch_btn.is_disabled = true
+		if launch_button:
+			launch_button.disabled = true
+			launch_button.text = "PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN"
 		if loadout_button:
 			loadout_button.disabled = true
 	else:
-		launch_button.disabled = false
-		launch_button.text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
+		if tape_launch_btn:
+			tape_launch_btn.is_disabled = false
+		if launch_button:
+			launch_button.disabled = false
+			launch_button.text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
 		if loadout_button:
 			loadout_button.disabled = false
 
@@ -920,11 +938,30 @@ func _on_launch_pressed() -> void:
 	else:
 		SaveManager.unequip_skin("pilot:" + cid_str)
 
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
+	var st = get_node_or_null("/root/SceneTransition")
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/combat/main_game.tscn")
+	else:
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
 
 
 func _on_loadout_pressed() -> void:
-	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hangar_banlist_ui.tscn")
+	if weapon_selection_modal and weapon_selection_modal.has_method("open_modal"):
+		_last_focused_control = get_viewport().gui_get_focus_owner()
+		weapon_selection_modal.open_modal(current_character_id)
+
+
+func _on_weapon_modal_closed() -> void:
+	var target_focus: Control = null
+	if loadout_button and loadout_button.is_visible_in_tree():
+		target_focus = loadout_button
+	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
+		target_focus = _last_focused_control
+	elif launch_button and launch_button.is_visible_in_tree():
+		target_focus = launch_button
+
+	if target_focus:
+		target_focus.grab_focus()
 
 
 func _on_tome_modal_closed() -> void:
@@ -995,32 +1032,41 @@ func _setup_focus_mesh() -> void:
 
 	if tomes_pool_btn:
 		tomes_pool_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
-		tomes_pool_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		tomes_pool_btn.focus_neighbor_right = loadout_button.get_path() if loadout_button else (pilot_skin_btn.get_path() if pilot_skin_btn else NodePath())
 		tomes_pool_btn.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 
+	if loadout_button:
+		loadout_button.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
+		loadout_button.focus_neighbor_left = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
+		loadout_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		loadout_button.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
+
 	# 5. Speed Buttons (1x, 2x, 4x)
+	var eff_launch: Control = (tape_launch_btn as Control) if (tape_launch_btn and tape_launch_btn.is_visible_in_tree()) else (launch_button as Control)
+	var eff_launch_path: NodePath = eff_launch.get_path() if eff_launch else NodePath()
+
 	if speed_1x_btn:
 		speed_1x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
 		speed_1x_btn.focus_neighbor_right = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
-		speed_1x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+		speed_1x_btn.focus_neighbor_bottom = eff_launch_path
 
 	if speed_2x_btn:
 		speed_2x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
 		speed_2x_btn.focus_neighbor_left = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 		speed_2x_btn.focus_neighbor_right = speed_4x_btn.get_path() if speed_4x_btn else NodePath()
-		speed_2x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+		speed_2x_btn.focus_neighbor_bottom = eff_launch_path
 
 	if speed_4x_btn:
 		speed_4x_btn.focus_neighbor_top = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
 		speed_4x_btn.focus_neighbor_left = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
 		speed_4x_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		speed_4x_btn.focus_neighbor_bottom = launch_button.get_path() if launch_button else NodePath()
+		speed_4x_btn.focus_neighbor_bottom = eff_launch_path
 
 	# 6. Launch Button
-	if launch_button:
-		launch_button.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-		launch_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		launch_button.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
+	if eff_launch:
+		eff_launch.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
+		eff_launch.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
+		eff_launch.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
 
 	# 7. Pilot Skin Button (derecha)
 	if pilot_skin_btn:
@@ -1036,6 +1082,8 @@ func _on_dock_unified_button_pressed() -> void:
 			root_vbox.visible = false
 		if abilities_view:
 			abilities_view.visible = false
+		if dock_container:
+			dock_container.visible = false
 		hero_picker_modal.open_picker(roster_ordered, current_character_id, false)
 
 
@@ -1052,13 +1100,19 @@ func _on_hero_confirmed(char_id: StringName) -> void:
 		dock_unified_button.visible = false
 	if command_bar:
 		command_bar.visible = true
-	if launch_button:
+	if tape_launch_btn:
+		tape_launch_btn.visible = true
+		if launch_button:
+			launch_button.visible = false
+	elif launch_button:
 		launch_button.visible = true
 	if dock_container:
 		dock_container.visible = true
 	_select_character(char_id)
 	if ship_button:
 		ship_button.grab_focus()
+	elif tape_launch_btn:
+		tape_launch_btn.grab_focus()
 	elif launch_button:
 		launch_button.grab_focus()
 

@@ -22,7 +22,39 @@ const WEAPON_PATHS: Array[String] = [
 	"res://data/weapons/shop/solar_beam.tres"
 ]
 
+const PILOT_STARTING_WEAPON_IDS: Array[StringName] = [
+	&"crescent_blade",
+	&"hive_cannon",
+	&"rail_launcher",
+	&"singularity_pulsar",
+	&"sniper_rifle",
+	&"tesla_arc",
+	&"titan_shotgun"
+]
+
+const POOL_WEAPON_IDS: Array[StringName] = [
+	&"plasma_flak",
+	&"scatter_laser",
+	&"singularity_cannon",
+	&"solar_flare",
+	&"swarm_missiles",
+	&"tachyon_beam",
+	&"void_siphon",
+	&"cluster_submunition",
+	&"dimensional_blade",
+	&"nova_flak",
+	&"solar_beam"
+]
+
 static var _cached_weapons: Dictionary[StringName, WeaponData] = {}
+
+static func get_pool_weapons() -> Array[WeaponData]:
+	var result: Array[WeaponData] = []
+	for wid: StringName in POOL_WEAPON_IDS:
+		var w: WeaponData = get_weapon_by_id(wid)
+		if w:
+			result.append(w)
+	return result
 
 static func get_all_weapons() -> Array[WeaponData]:
 	var result: Array[WeaponData] = []

@@ -55,6 +55,7 @@ static func get_default_profile() -> Dictionary:
 		"equipped_skins": {} as Dictionary,
 		"gacha_pity": {"general": 0, "ships": 0, "pilots": 0} as Dictionary,
 		"character_active_tomes": {} as Dictionary,
+		"character_active_weapons": {} as Dictionary,
 		"character_loadouts": {} as Dictionary
 	}
 
@@ -230,6 +231,7 @@ static func save_profile(
 		"equipped_skins": current_equipped_skins,
 		"gacha_pity": current_gacha_pity,
 		"character_active_tomes": existing_prof.get("character_active_tomes", {}),
+		"character_active_weapons": existing_prof.get("character_active_weapons", {}),
 		"character_loadouts": existing_prof.get("character_loadouts", {})
 	}
 
@@ -311,6 +313,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		"unlocked_skins": raw.get("unlocked_skins", {}) as Dictionary,
 		"equipped_skins": raw.get("equipped_skins", {}) as Dictionary,
 		"character_active_tomes": raw.get("character_active_tomes", {}) as Dictionary,
+		"character_active_weapons": raw.get("character_active_weapons", {}) as Dictionary,
 		"character_loadouts": {} as Dictionary,
 		"gacha_pity": {
 			"general": int(raw.get("gacha_pity", {}).get("general", 0)),
@@ -423,6 +426,37 @@ static func set_character_active_tomes(char_id: StringName, tomes: Array[StringN
 		str_arr.append(str(t))
 	tomes_dict[str(char_id)] = str_arr
 	prof["character_active_tomes"] = tomes_dict
+
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(prof, "\t"))
+		file.close()
+
+
+const WeaponCatalogScript = preload("res://data/weapons/weapon_catalog.gd")
+
+
+static func get_character_active_weapons(char_id: StringName) -> Array[StringName]:
+	var prof: Dictionary = load_profile()
+	var weapons_dict: Dictionary = prof.get("character_active_weapons", {})
+	if weapons_dict.has(str(char_id)):
+		var raw_arr: Array = weapons_dict[str(char_id)]
+		var result: Array[StringName] = []
+		for item in raw_arr:
+			result.append(StringName(str(item)))
+		if not result.is_empty():
+			return result
+	return WeaponCatalogScript.POOL_WEAPON_IDS.duplicate()
+
+
+static func set_character_active_weapons(char_id: StringName, weapons: Array[StringName]) -> void:
+	var prof: Dictionary = load_profile()
+	var weapons_dict: Dictionary = prof.get("character_active_weapons", {}).duplicate()
+	var str_arr: Array[String] = []
+	for w: StringName in weapons:
+		str_arr.append(str(w))
+	weapons_dict[str(char_id)] = str_arr
+	prof["character_active_weapons"] = weapons_dict
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:

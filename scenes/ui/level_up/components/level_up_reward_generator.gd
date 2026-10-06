@@ -15,7 +15,8 @@ const WeaponCatalog = preload("res://data/weapons/weapon_catalog.gd")
 static func generate_reward_options(
 	player: CharacterBody2D,
 	active_tome_ids: Array[StringName],
-	count: int = 3
+	count: int = 3,
+	active_weapon_ids: Array[StringName] = []
 ) -> Array[LevelUpRewardOption]:
 	var options: Array[LevelUpRewardOption] = []
 	if not player or not is_instance_valid(player):
@@ -79,6 +80,9 @@ static func generate_reward_options(
 
 		for w in all_weapons:
 			if not equipped_ids.has(w.weapon_id):
+				if WeaponCatalog.POOL_WEAPON_IDS.has(w.weapon_id):
+					if not active_weapon_ids.is_empty() and not active_weapon_ids.has(w.weapon_id):
+						continue
 				var opt := LevelUpRewardOption.new()
 				opt.type = LevelUpRewardOption.OptionType.WEAPON_NEW
 				opt.weapon_data = w

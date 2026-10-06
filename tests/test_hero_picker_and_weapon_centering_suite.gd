@@ -123,23 +123,25 @@ func _test_dock_hover_and_focus_flow() -> void:
 	if ui.hero_picker_modal and ui.hero_picker_modal.is_open:
 		assert_true(ui.main_margin_container != null and not ui.main_margin_container.visible, "main_margin_container debe estar oculto mientras el picker de heroína está activo.")
 		assert_true(ui.abilities_view != null and not ui.abilities_view.visible, "AbilitiesView debe estar oculto mientras el picker de heroína está activo.")
+		assert_true(ui.dock_container != null and not ui.dock_container.visible, "dock_container debe estar oculto mientras el picker de heroína está activo.")
 		ui._on_hero_confirmed(&"nova")
 		await get_tree().process_frame
 		assert_true(ui.main_margin_container.visible, "main_margin_container debe revelarse tras confirmar heroína.")
 		assert_true(ui.abilities_view.visible, "AbilitiesView debe revelarse tras confirmar heroína.")
 		assert_true(ui.weapon_block_title != null and not ui.weapon_block_title.text.is_empty(), "weapon_block_title en AbilitiesView debe estar cargado correctamente.")
 		assert_true(ui.dock_container != null and ui.dock_container.visible, "dock_container debe estar visible en la pantalla de loadout.")
-		assert_true(ui.launch_button != null and ui.launch_button.visible, "launch_button debe estar visible en el dock para iniciar la partida.")
+		assert_true((ui.tape_launch_btn != null and ui.tape_launch_btn.visible) or (ui.launch_button != null and ui.launch_button.visible), "El botón de lanzamiento (cinta o fallback) debe estar visible en el dock para iniciar la partida.")
 		assert_true(ui.dock_margin != null and not ui.dock_margin.visible, "dock_margin (avatares colapsados) debe quedar oculto en la pantalla de loadout.")
 		assert_true(ui.back_button != null and ui.back_button.text == "← [ESC] ELEGIR PILOTO", "back_button debe indicar '← [ESC] ELEGIR PILOTO'.")
 		assert_true(ui.ship_button != null, "ship_button debe ser accesible para focus.")
 		var current_focus := get_viewport().gui_get_focus_owner()
 		assert_true(current_focus == ui.ship_button, "El foco debe saltar directamente al Exotraje tras confirmar heroína.")
 
-		# Probar que al presionar back_button (ESC en loadout), se reabre el HeroPickerModal y se oculta AbilitiesView
+		# Probar que al presionar back_button (ESC en loadout), se reabre el HeroPickerModal y se oculta AbilitiesView y dock_container
 		ui._on_back_pressed()
 		assert_true(ui.hero_picker_modal.is_open, "ESC en loadout debe reabrir HeroPickerModal.")
 		assert_true(not ui.abilities_view.visible, "AbilitiesView debe ocultarse al reabrir HeroPickerModal.")
+		assert_true(not ui.dock_container.visible, "dock_container debe ocultarse al reabrir HeroPickerModal.")
 
 	ui.queue_free()
 	print("✓ Test 3: Unificación del dock, hover sin pérdida de fondo, dock oculto en loadout y salto de foco a Exotraje confirmados.")

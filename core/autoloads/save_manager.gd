@@ -344,6 +344,12 @@ static func get_character_active_tomes(char_id: StringName) -> Array[StringName]
 static func set_character_active_tomes(char_id: StringName, tomes: Array[StringName]) -> void:
 	ProfileStorage.set_character_active_tomes(char_id, tomes)
 
+static func get_character_active_weapons(char_id: StringName) -> Array[StringName]:
+	return ProfileStorage.get_character_active_weapons(char_id)
+
+static func set_character_active_weapons(char_id: StringName, weapons: Array[StringName]) -> void:
+	ProfileStorage.set_character_active_weapons(char_id, weapons)
+
 static func get_character_loadout(char_id: StringName) -> Dictionary:
 	return ProfileStorage.get_character_loadout(char_id)
 

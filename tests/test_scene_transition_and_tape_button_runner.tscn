@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://scenetransitionrunner01"]
+
+[ext_resource type="Script" path="res://tests/test_scene_transition_and_tape_button_suite.gd" id="1_suite"]
+
+[node name="TestSceneTransitionRunner" type="Node"]
+script = ExtResource("1_suite")

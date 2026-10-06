@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://wpnselmodal001"]
+
+[ext_resource type="Script" path="res://scenes/ui/character_select/weapon_selection_modal.gd" id="1_wpnmodal"]
+
+[node name="WeaponSelectionModal" type="CanvasLayer"]
+process_mode = 3
+layer = 126
+visible = false
+script = ExtResource("1_wpnmodal")

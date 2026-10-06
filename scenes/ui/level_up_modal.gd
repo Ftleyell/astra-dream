@@ -152,7 +152,11 @@ func _present_level(level: int) -> void:
 		if SaveManager.has_method("get_character_active_tomes"):
 			active_tomes = SaveManager.get_character_active_tomes(char_id)
 
-		var options: Array[LevelUpRewardOption] = LevelUpRewardGenerator.generate_reward_options(player, active_tomes, 3)
+		var active_weapons: Array[StringName] = []
+		if SaveManager.has_method("get_character_active_weapons"):
+			active_weapons = SaveManager.get_character_active_weapons(char_id)
+
+		var options: Array[LevelUpRewardOption] = LevelUpRewardGenerator.generate_reward_options(player, active_tomes, 3, active_weapons)
 		if not options.is_empty():
 			_display_reward_options(options)
 			return
