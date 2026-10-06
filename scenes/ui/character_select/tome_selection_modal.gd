@@ -43,8 +43,16 @@ func _ready() -> void:
 func _build_ui() -> void:
 	dim_overlay = ColorRect.new()
 	dim_overlay.name = "DimOverlay"
-	dim_overlay.color = Color(0.01, 0.015, 0.03, 0.88)
+	dim_overlay.color = Color(0.015, 0.02, 0.04, 0.92)
 	dim_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	var blur_shader: Shader = preload("res://shaders/screen_blur.gdshader")
+	var blur_mat := ShaderMaterial.new()
+	blur_mat.shader = blur_shader
+	blur_mat.set_shader_parameter("blur_amount", 2.8)
+	blur_mat.set_shader_parameter("tint_color", Color(0.015, 0.02, 0.05, 0.85))
+	dim_overlay.material = blur_mat
+
 	add_child(dim_overlay)
 
 	var center := CenterContainer.new()
@@ -195,8 +203,19 @@ func close_modal() -> void:
 	closed.emit()
 
 
+func _input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
+		return
+
+	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
+		get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):

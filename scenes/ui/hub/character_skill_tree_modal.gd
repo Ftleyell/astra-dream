@@ -341,8 +341,18 @@ func _navigate_direction(move_dir: Vector2) -> void:
 		if get_tree():
 			_renderer.animate_hex_pulse(best_nid, Vector2(1.2, 1.2), get_tree())
 
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
+		get_viewport().set_input_as_handled()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
+		return
+
+	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
+		get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):

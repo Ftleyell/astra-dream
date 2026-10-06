@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8mblurrunner111"]
+
+[ext_resource type="Script" path="res://tests/test_talents_and_tomes_blur_suite.gd" id="1_blur_test"]
+
+[node name="TestTalentsAndTomesBlurRunner" type="Node"]
+script = ExtResource("1_blur_test")
