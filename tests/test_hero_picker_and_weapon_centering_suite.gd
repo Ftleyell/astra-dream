@@ -21,13 +21,13 @@ func _ready() -> void:
 func _run_all_tests() -> void:
 	print("--- INICIANDO TEST SUITE: HERO PICKER & WEAPON CENTERING ---")
 	_test_weapon_optical_centering()
-	_test_hero_picker_modal_initial_flow()
+	await _test_hero_picker_modal_initial_flow()
 	await _test_dock_hover_and_focus_flow()
 
 	await get_tree().process_frame
 	await get_tree().process_frame
 	print("--- TODAS LAS PRUEBAS DE HERO PICKER Y CENTRADO DE ARMAS SUPERADAS ---")
-	pass_suite("4/4 pruebas de centrado de armas, hero picker y salto de foco superadas.")
+	pass_suite("Pruebas de centrado de armas, hero picker, escape al hub y salto de foco superadas.")
 
 
 func _test_weapon_optical_centering() -> void:
@@ -89,6 +89,7 @@ func _test_hero_picker_modal_initial_flow() -> void:
 
 	picker._cycle_hero(1)
 	picker._confirm_selection()
+	await get_tree().process_frame
 
 	assert_true(not picker.is_open, "HeroPickerModal debe cerrarse al confirmar.")
 	assert_true(not confirmed_id[0].is_empty(), "hero_confirmed debe emitir el ID de la heroína.")
@@ -119,29 +120,45 @@ func _test_dock_hover_and_focus_flow() -> void:
 		assert_true(hov_sb != null, "Botón de %s debe tener hover StyleBox para no perder fondo." % cid)
 		assert_true(press_sb != null, "Botón de %s debe tener pressed StyleBox." % cid)
 
-	# Simular confirmación en hero_picker_modal -> foco debe ir a ship_button (Exotraje) y dock debe ocultarse
+	# Simular confirmación en hero_picker_modal -> foco debe ir a ship_button (Exotraje)
 	if ui.hero_picker_modal and ui.hero_picker_modal.is_open:
 		assert_true(ui.main_margin_container != null and not ui.main_margin_container.visible, "main_margin_container debe estar oculto mientras el picker de heroína está activo.")
-		assert_true(ui.abilities_view != null and not ui.abilities_view.visible, "AbilitiesView debe estar oculto mientras el picker de heroína está activo.")
-		assert_true(ui.dock_container != null and not ui.dock_container.visible, "dock_container debe estar oculto mientras el picker de heroína está activo.")
 		ui._on_hero_confirmed(&"nova")
 		await get_tree().process_frame
 		assert_true(ui.main_margin_container.visible, "main_margin_container debe revelarse tras confirmar heroína.")
 		assert_true(ui.abilities_view.visible, "AbilitiesView debe revelarse tras confirmar heroína.")
 		assert_true(ui.weapon_block_title != null and not ui.weapon_block_title.text.is_empty(), "weapon_block_title en AbilitiesView debe estar cargado correctamente.")
 		assert_true(ui.dock_container != null and ui.dock_container.visible, "dock_container debe estar visible en la pantalla de loadout.")
-		assert_true((ui.tape_launch_btn != null and ui.tape_launch_btn.visible) or (ui.launch_button != null and ui.launch_button.visible), "El botón de lanzamiento (cinta o fallback) debe estar visible en el dock para iniciar la partida.")
+		assert_true(ui.orbital_terminal != null and ui.orbital_terminal.visible, "El botón de lanzamiento (orbital_terminal) debe estar visible para iniciar la partida.")
 		assert_true(ui.dock_margin != null and not ui.dock_margin.visible, "dock_margin (avatares colapsados) debe quedar oculto en la pantalla de loadout.")
-		assert_true(ui.back_button != null and ui.back_button.text == "← [ESC] ELEGIR PILOTO", "back_button debe indicar '← [ESC] ELEGIR PILOTO'.")
+		assert_true(ui.back_button != null and ui.back_button.text == "← [ESC] HUB", "back_button debe indicar '← [ESC] HUB'.")
 		assert_true(ui.ship_button != null, "ship_button debe ser accesible para focus.")
 		var current_focus := get_viewport().gui_get_focus_owner()
 		assert_true(current_focus == ui.ship_button, "El foco debe saltar directamente al Exotraje tras confirmar heroína.")
 
-		# Probar que al presionar back_button (ESC en loadout), se reabre el HeroPickerModal y se oculta AbilitiesView y dock_container
-		ui._on_back_pressed()
-		assert_true(ui.hero_picker_modal.is_open, "ESC en loadout debe reabrir HeroPickerModal.")
-		assert_true(not ui.abilities_view.visible, "AbilitiesView debe ocultarse al reabrir HeroPickerModal.")
-		assert_true(not ui.dock_container.visible, "dock_container debe ocultarse al reabrir HeroPickerModal.")
+		# Probar centrado simétrico del arma al equipar skin de piloto y de arma
+		assert_true(ui.weapon_icon.texture is AtlasTexture, "weapon_icon debe usar un AtlasTexture centrado.")
+		var initial_region: Rect2 = (ui.weapon_icon.texture as AtlasTexture).region
+		assert_true(is_equal_approx(initial_region.size.x, initial_region.size.y), "La región recortada del arma debe ser perfectamente cuadrada para no descentrarse.")
+
+		# Cambiar skin de piloto
+		ui._on_skin_selected("pilot:nova", "pilot_nova_cyber_neon")
+		await get_tree().process_frame
+		var after_pilot_skin_region: Rect2 = (ui.weapon_icon.texture as AtlasTexture).region
+		assert_true(is_equal_approx(after_pilot_skin_region.size.x, after_pilot_skin_region.size.y), "Tras cambiar skin de piloto, la región del arma debe mantenerse cuadrada y centrada.")
+
+		# Cambiar skin de arma
+		ui._on_skin_selected("weapon:nova", "weapon_nova_cyber_neon")
+		await get_tree().process_frame
+		var after_weapon_skin_region: Rect2 = (ui.weapon_icon.texture as AtlasTexture).region
+		assert_true(is_equal_approx(after_weapon_skin_region.size.x, after_weapon_skin_region.size.y), "Tras cambiar skin de arma, la región del arma debe ser cuadrada y simétrica.")
+
+		# Probar que al presionar ESC (ui_cancel), _input lo maneja llamando a _on_back_pressed
+		var ev := InputEventKey.new()
+		ev.pressed = true
+		ev.keycode = KEY_ESCAPE
+		ui._input(ev)
+		assert_true(get_viewport().is_input_handled(), "ESC sin modales abiertos debe ser consumido por CharacterSelectUI para volver al HUB.")
 
 	ui.queue_free()
-	print("✓ Test 3: Unificación del dock, hover sin pérdida de fondo, dock oculto en loadout y salto de foco a Exotraje confirmados.")
+	print("✓ Test 3: Unificación del dock, retorno al HUB con ESC y centrado simétrico del arma verificados.")

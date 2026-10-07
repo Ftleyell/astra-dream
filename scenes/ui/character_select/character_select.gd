@@ -370,6 +370,13 @@ func _setup_signals() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
+		if _has_any_modal_open():
+			return
+		get_viewport().set_input_as_handled()
+		_on_back_pressed()
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
 			if _has_any_modal_open():
@@ -412,10 +419,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _has_any_modal_open():
 		return
 
-	if event.is_action_pressed("ui_cancel"):
-		_on_back_pressed()
-		get_viewport().set_input_as_handled()
-	elif is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
+	if is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
@@ -1146,6 +1150,8 @@ func _on_dock_unified_button_pressed() -> void:
 
 
 func _on_hero_confirmed(char_id: StringName) -> void:
+	if hero_picker_modal and hero_picker_modal.is_open:
+		hero_picker_modal.close_picker()
 	if main_margin_container:
 		main_margin_container.visible = true
 	if abilities_view:

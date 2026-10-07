@@ -51,6 +51,6 @@ Estado y registro de tareas pendientes organizadas por niveles de prioridad y co
 2. **Sistema de Bombas:**
    - Resolver bug donde las bombas quedan bloqueadas tras ciertos eventos.
    - Auditar sincronización entre el indicador visual derecho del HUD y el valor real/máximo de bombas.
-3. **Selección de Personajes (Regresiones Recientes):**
-   - Restaurar comportamiento de tecla `ESC` para volver al hub sin interferir con otros menús.
-   - Corregir el descentrado del icono del arma al alternar skins de piloto o armas.
+- [x] **Selección de Personajes (Regresiones Recientes):**
+   - Restaurado comportamiento de tecla `ESC` directamente en `_input()` para volver al hub de manera inmediata cuando no hay modales abiertos, evitando que el foco de los controles de UI la consuma.
+   - Corregido el descentrado del icono de arma: eliminado el override erróneo de posición `position = Vector2.ZERO` sobre el hijo del `VBoxContainer` e implementado recorte simétrico estricto 1:1 en `_apply_weapon_optical_centering()` para centrado perfecto con cualquier skin.

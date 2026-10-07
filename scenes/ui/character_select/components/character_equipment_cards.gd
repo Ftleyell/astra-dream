@@ -95,25 +95,29 @@ func _apply_weapon_optical_centering() -> void:
 		weapon_icon.texture = raw_tex
 		return
 
-	# Centrado simétrico: determinar el centro del dibujo activo y encuadrarlo uniformemente
+	# Centrado simétrico estricto: encuadrar el dibujo activo en una región cuadrada perfectamente centrada
 	var center_x: float = float(used_rect.position.x) + float(used_rect.size.x) * 0.5
 	var center_y: float = float(used_rect.position.y) + float(used_rect.size.y) * 0.5
 	var max_dim: float = maxf(float(used_rect.size.x), float(used_rect.size.y))
 	var half_span: float = (max_dim * 0.5) * 1.12 # 12% margen de respiración
 
-	var crop_x: int = clampi(int(floor(center_x - half_span)), 0, tw - 1)
-	var crop_y: int = clampi(int(floor(center_y - half_span)), 0, th - 1)
-	var crop_r: int = clampi(int(ceil(center_x + half_span)), crop_x + 1, tw)
-	var crop_b: int = clampi(int(ceil(center_y + half_span)), crop_y + 1, th)
+	var max_safe_x: float = minf(center_x, float(tw) - center_x)
+	var max_safe_y: float = minf(center_y, float(th) - center_y)
+	var max_safe_span: float = minf(max_safe_x, max_safe_y)
+	var final_span: float = minf(half_span, max_safe_span)
+	if final_span < (max_dim * 0.5):
+		final_span = max_safe_span
 
-	var final_region := Rect2(crop_x, crop_y, crop_r - crop_x, crop_b - crop_y)
+	var crop_x: int = int(round(center_x - final_span))
+	var crop_y: int = int(round(center_y - final_span))
+	var crop_w: int = int(round(final_span * 2.0))
+
+	var final_region := Rect2(crop_x, crop_y, crop_w, crop_w)
 	var atlas := AtlasTexture.new()
 	atlas.atlas = raw_tex
 	atlas.region = final_region
 
 	weapon_icon.texture = atlas
-	weapon_icon.position = Vector2.ZERO
-	weapon_icon.scale = Vector2.ONE
 
 
 func setup_companions(
