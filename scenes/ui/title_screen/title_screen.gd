@@ -7,12 +7,13 @@ extends Control
 ## y el panel integrado de Notas del Parche permanentemente visible y abierto.
 ## Al recibir cualquier input principal, transiciona cinematográficamente hacia el Hub 3D.
 
-@onready var logo_texture: TextureRect = $MainHBox/LeftVBox.get_node_or_null("LogoTexture") as TextureRect
+@onready var logo_texture: TextureRect = $MainHBox/LeftVBox.find_child("LogoTexture", true, false) as TextureRect
 @onready var title_label: Label = $MainHBox/LeftVBox.get_node_or_null("TitleLabel") as Label
 @onready var subtitle_label: Label = $MainHBox/LeftVBox.get_node_or_null("SubtitleLabel") as Label
 @onready var prompt_label: Label = $MainHBox/LeftVBox/PromptLabel
 @onready var fade_rect: ColorRect = $FadeRect
 @onready var patch_notes_panel: Control = $MainHBox/PatchNotesPanel
+@onready var logo_impact_controller: LogoImpactController = get_node_or_null("LogoImpactController") as LogoImpactController
 
 var _is_transitioning: bool = false
 var _prompt_tween: Tween = null
@@ -29,11 +30,27 @@ func _ready() -> void:
 		tw_in.tween_property(fade_rect, "modulate:a", 0.0, 0.45)
 		tw_in.tween_callback(func(): fade_rect.visible = false)
 
-	_start_prompt_pulse()
+	if logo_impact_controller:
+		if prompt_label:
+			prompt_label.modulate.a = 0.0
+		logo_impact_controller.sequence_completed.connect(_on_logo_sequence_completed)
+		logo_impact_controller.play_sequence()
+	else:
+		_start_prompt_pulse()
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("menu")
+
+
+func _on_logo_sequence_completed() -> void:
+	if prompt_label:
+		var tw_p: Tween = create_tween()
+		tw_p.tween_property(prompt_label, "modulate:a", 1.0, 0.35)
+		tw_p.tween_callback(_start_prompt_pulse)
+	else:
+		_start_prompt_pulse()
+
 
 
 func _start_prompt_pulse() -> void:

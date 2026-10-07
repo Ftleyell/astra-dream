@@ -26,7 +26,7 @@ static func build_card(
 	var accent: Color = arc.color_accent if arc.color_accent != Color.BLACK else COLOR_NEON_CYAN
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(260, 520)
+	card_panel.custom_minimum_size = Vector2(290, 560)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -78,15 +78,29 @@ static func build_card(
 	sep.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(sep)
 
-	# 4. Icono o Glifo Central
+	# 4. Vitrina de Icono Central Protagónico (Tarot Artwork Showcase)
+	var icon_frame := PanelContainer.new()
+	icon_frame.custom_minimum_size = Vector2(136, 136)
+	icon_frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var icon_sb := StyleBoxFlat.new()
+	icon_sb.bg_color = Color(0.02, 0.03, 0.06, 0.92)
+	icon_sb.border_color = accent * Color(1.0, 1.0, 1.0, 0.75)
+	icon_sb.set_border_width_all(2)
+	icon_sb.set_corner_radius_all(8)
+	icon_sb.shadow_color = Color(accent.r, accent.g, accent.b, 0.35)
+	icon_sb.shadow_size = 8
+	icon_frame.add_theme_stylebox_override("panel", icon_sb)
+
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(52, 52)
+	icon_rect.custom_minimum_size = Vector2(128, 128)
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if arc.icon:
 		icon_rect.texture = arc.icon
-	vbox.add_child(icon_rect)
+	icon_frame.add_child(icon_rect)
+	vbox.add_child(icon_frame)
 
 	# 5. Panel de alteraciones exactas de estadísticas (Stat Deltas Badges)
 	var stat_deltas_box := VBoxContainer.new()

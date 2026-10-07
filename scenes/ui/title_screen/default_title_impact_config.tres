@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="TitleImpactConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/title_screen/title_impact_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+drop_duration = 0.42
+drop_height_offset = 600.0
+hitstop_duration = 0.08
+start_scale = Vector2(4.8, 4.8)
+target_scale = Vector2(1, 1)
+squash_scale = Vector2(1.35, 0.65)
+squash_duration = 0.06
+stretch_scale = Vector2(0.92, 1.08)
+stretch_duration = 0.12
+bounce_duration = 0.2
+trauma_decay = 2.0
+shake_offset_x = 28.0
+shake_offset_y = 20.0
+noise_frequency = 0.08
+afterimage_count = 5
+afterimage_fade_time = 0.22
+afterimage_scale_ratio = 0.92
+afterimage_color = Color(0.2, 0.8, 2.5, 0.65)
+flash_duration = 0.25
+glitch_duration = 0.45
+flash_color = Color(1, 1, 1, 1)
+idle_scale_duration = 1.6
+idle_scale_a = Vector2(1.025, 0.985)
+idle_scale_b = Vector2(0.985, 1.025)
+idle_float_duration = 2.1
+idle_float_offset = 5.0
+panel_reveal_delay = 0.15
+panel_reveal_duration = 0.45

@@ -1,0 +1,193 @@
+[gd_resource type="Resource" script_class="SkillTreeConfig" format=3]
+
+[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_node_script"]
+[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_config_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_core.png" id="ico_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_speed_1.png" id="ico_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_speed_2.png" id="ico_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_speed_3.png" id="ico_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_damage_1.png" id="ico_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_damage_2.png" id="ico_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_damage_3.png" id="ico_7"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_hp_1.png" id="ico_8"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_hp_2.png" id="ico_9"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_hp_3.png" id="ico_10"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_crit_1.png" id="ico_11"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_crit_2.png" id="ico_12"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/echo/talent_crit_3.png" id="ico_13"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("1_node_script")
+id = &"core"
+branch = "NÚCLEO"
+title = "NÚCLEO VOLTAICO EMP"
+description = "Generador toroidal de alta tensión y condensadores superconductores de pulsos electromagnéticos."
+icon = ExtResource("ico_1")
+glyph = "⚛"
+position = Vector2(0, 0)
+cost = 0
+req_id = &""
+
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("1_node_script")
+id = &"speed_1"
+branch = "VELOCIDAD"
+title = "DESTELLO RELÁMPAGO I"
+description = "+22% Velocidad de movimiento permanente en combate."
+icon = ExtResource("ico_2")
+glyph = "⚡"
+position = Vector2(0, -155)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_3"]
+script = ExtResource("1_node_script")
+id = &"speed_2"
+branch = "VELOCIDAD"
+title = "CONDUCTOR IONIZADO II"
+description = "+22% Velocidad de movimiento permanente (+44% acumulado)."
+icon = ExtResource("ico_3")
+glyph = "⚡"
+position = Vector2(0, -305)
+cost = 25
+req_id = &"speed_1"
+
+[sub_resource type="Resource" id="Resource_4"]
+script = ExtResource("1_node_script")
+id = &"speed_3"
+branch = "VELOCIDAD"
+title = "RUSH HIPER-CONDUCTOR"
+description = "+22% Velocidad (+66% acum.) y rastro de micro-chispas al esquivar."
+icon = ExtResource("ico_4")
+glyph = "⚡"
+position = Vector2(0, -450)
+cost = 25
+req_id = &"speed_2"
+
+[sub_resource type="Resource" id="Resource_5"]
+script = ExtResource("1_node_script")
+id = &"damage_1"
+branch = "DAÑO"
+title = "ARCO TESLA I"
+description = "+15% Daño eléctrico y encadenamiento voltaico."
+icon = ExtResource("ico_5")
+glyph = "⚔"
+position = Vector2(200, 0)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_6"]
+script = ExtResource("1_node_script")
+id = &"damage_2"
+branch = "DAÑO"
+title = "DESCARGA EN CADENA II"
+description = "+15% Daño (+30% acum.) y +1 objetivo extra en arcos voltaicos."
+icon = ExtResource("ico_6")
+glyph = "⚔"
+position = Vector2(380, 0)
+cost = 25
+req_id = &"damage_1"
+
+[sub_resource type="Resource" id="Resource_7"]
+script = ExtResource("1_node_script")
+id = &"damage_3"
+branch = "DAÑO"
+title = "SOBRECARGA SISTÉMICA"
+description = "+20% Daño (+50% acum.) con detonaciones EMP al rematar aberraciones."
+icon = ExtResource("ico_7")
+glyph = "⚔"
+position = Vector2(550, 0)
+cost = 25
+req_id = &"damage_2"
+
+[sub_resource type="Resource" id="Resource_8"]
+script = ExtResource("1_node_script")
+id = &"hp_1"
+branch = "SUPERVIVENCIA"
+title = "BLINDAJE FARADAY I"
+description = "+20 Puntos de Salud Máxima permanente en combate."
+icon = ExtResource("ico_8")
+glyph = "🛡"
+position = Vector2(0, 155)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_9"]
+script = ExtResource("1_node_script")
+id = &"hp_2"
+branch = "SUPERVIVENCIA"
+title = "MALLA AISLANTE II"
+description = "+20 Puntos de Salud Máxima (+40 HP acum.) y +10% Resistencia a daño."
+icon = ExtResource("ico_9")
+glyph = "🛡"
+position = Vector2(0, 305)
+cost = 25
+req_id = &"hp_1"
+
+[sub_resource type="Resource" id="Resource_10"]
+script = ExtResource("1_node_script")
+id = &"hp_3"
+branch = "SUPERVIVENCIA"
+title = "BARRERA SUPERCONDUCTORA"
+description = "+30 Puntos de Salud Máxima (+70 HP acum.) y disipación de escudos."
+icon = ExtResource("ico_10")
+glyph = "🛡"
+position = Vector2(0, 450)
+cost = 25
+req_id = &"hp_2"
+
+[sub_resource type="Resource" id="Resource_11"]
+script = ExtResource("1_node_script")
+id = &"crit_1"
+branch = "UTILIDAD"
+title = "MATRIZ DE FRECUENCIA I"
+description = "+8% Cadencia de ataque y +4% Probabilidad Crítica."
+icon = ExtResource("ico_11")
+glyph = "✦"
+position = Vector2(-200, 0)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_12"]
+script = ExtResource("1_node_script")
+id = &"crit_2"
+branch = "UTILIDAD"
+title = "BUCLE DE RESONANCIA II"
+description = "+8% Cadencia (+16% acum.) y +5% Probabilidad Crítica (+9% acum.)."
+icon = ExtResource("ico_12")
+glyph = "✦"
+position = Vector2(-380, 0)
+cost = 25
+req_id = &"crit_1"
+
+[sub_resource type="Resource" id="Resource_13"]
+script = ExtResource("1_node_script")
+id = &"crit_3"
+branch = "UTILIDAD"
+title = "BOBINA SUPERCONDUCTORA"
+description = "+12% Cadencia (+28% acum.) y +8% Probabilidad Crítica (+17% acum.)."
+icon = ExtResource("ico_13")
+glyph = "✦"
+position = Vector2(-550, 0)
+cost = 25
+req_id = &"crit_2"
+
+[resource]
+script = ExtResource("2_config_script")
+character_id = &"echo"
+node_cost = 25
+nodes = Array[Resource]([
+SubResource("Resource_1"),
+SubResource("Resource_2"),
+SubResource("Resource_3"),
+SubResource("Resource_4"),
+SubResource("Resource_5"),
+SubResource("Resource_6"),
+SubResource("Resource_7"),
+SubResource("Resource_8"),
+SubResource("Resource_9"),
+SubResource("Resource_10"),
+SubResource("Resource_11"),
+SubResource("Resource_12"),
+SubResource("Resource_13"),
+])

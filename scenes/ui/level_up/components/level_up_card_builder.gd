@@ -70,7 +70,7 @@ static func build_stat_card(
 	var tier_color: Color = tier_info["color"]
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(0, 84)
+	card_panel.custom_minimum_size = Vector2(0, 94)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -93,7 +93,7 @@ static func build_stat_card(
 
 	# 1. Columna izquierda: Icono con borde de tier
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(58, 58)
+	icon_panel.custom_minimum_size = Vector2(72, 72)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
@@ -104,7 +104,7 @@ static func build_stat_card(
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(44, 44)
+	icon_rect.custom_minimum_size = Vector2(60, 60)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -255,7 +255,7 @@ static func build_reward_option_card(
 	var tier_color: Color = tier_info["color"]
 
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(0, 110)
+	card_panel.custom_minimum_size = Vector2(0, 116)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -275,9 +275,9 @@ static func build_reward_option_card(
 	hbox.set("theme_override_constants/separation", 16)
 	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 
-	# 1. Columna izquierda: Icono
+	# 1. Columna izquierda: Icono destacado (80x80 px con marco de tier)
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(62, 62)
+	icon_panel.custom_minimum_size = Vector2(88, 88)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
@@ -288,7 +288,7 @@ static func build_reward_option_card(
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(46, 46)
+	icon_rect.custom_minimum_size = Vector2(80, 80)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

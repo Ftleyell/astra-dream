@@ -57,7 +57,7 @@ func _build_ui() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(520, 380)
+	_panel.custom_minimum_size = Vector2(580, 460)
 
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.06, 0.05, 0.12, 0.96)
@@ -113,7 +113,7 @@ func _build_ui() -> void:
 	card_vbox.add_child(icon_center)
 
 	_item_icon = TextureRect.new()
-	_item_icon.custom_minimum_size = Vector2(64, 64)
+	_item_icon.custom_minimum_size = Vector2(120, 120)
 	_item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_center.add_child(_item_icon)

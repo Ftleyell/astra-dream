@@ -35,22 +35,22 @@ func _ready() -> void:
 	assert(prompt_lbl != null, "PromptLabel debe existir")
 	assert(prompt_lbl.text.contains("TOCA CUALQUIER TECLA"), "Debe mostrar prompt para continuar")
 
-	# Verificar panel de notas de parche integrado y siempre visible
+	# Verificar panel de notas de parche preservado (oculto para centrado del logo)
 	var patch_panel: PanelContainer = title_screen.get_node_or_null("MainHBox/PatchNotesPanel") as PanelContainer
 	assert(patch_panel != null, "PatchNotesPanel debe existir integrado en TitleScreen")
-	assert(patch_panel.visible == true, "PatchNotesPanel debe estar visible y abierto permanentemente")
 
 	var notes_text: RichTextLabel = patch_panel.get_node_or_null("MarginContainer/VBoxContainer/ScrollContainer/NotesText") as RichTextLabel
 	assert(notes_text != null, "NotesText debe existir en PatchNotesPanel")
 	assert(notes_text.text.contains("ASTRA DREAM"), "NotesText debe contener las notas del parche locales")
 
-	# Simular clic dentro del área de notas (no debe transicionar al juego)
-	var click_inside := InputEventMouseButton.new()
-	click_inside.pressed = true
-	click_inside.button_index = MOUSE_BUTTON_LEFT
-	click_inside.position = patch_panel.get_global_rect().get_center()
-	title_screen._unhandled_input(click_inside)
-	assert(title_screen.get("_is_transitioning") == false, "Clic dentro del panel de notas NO debe transicionar al juego")
+	# Si el panel estuviera visible, simular clic dentro del área de notas
+	if patch_panel.visible:
+		var click_inside := InputEventMouseButton.new()
+		click_inside.pressed = true
+		click_inside.button_index = MOUSE_BUTTON_LEFT
+		click_inside.position = patch_panel.get_global_rect().get_center()
+		title_screen._unhandled_input(click_inside)
+		assert(title_screen.get("_is_transitioning") == false, "Clic dentro del panel de notas NO debe transicionar al juego")
 
 	# Simular pulsación de tecla para continuar
 	var key_ev := InputEventKey.new()

@@ -1,133 +1,193 @@
 [gd_resource type="Resource" script_class="SkillTreeConfig" format=3]
 
-[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_701ke"]
-[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_wjeyr"]
+[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_node_script"]
+[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_config_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_core.png" id="ico_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_speed_1.png" id="ico_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_speed_2.png" id="ico_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_speed_3.png" id="ico_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_damage_1.png" id="ico_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_damage_2.png" id="ico_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_damage_3.png" id="ico_7"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_hp_1.png" id="ico_8"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_hp_2.png" id="ico_9"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_hp_3.png" id="ico_10"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_crit_1.png" id="ico_11"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_crit_2.png" id="ico_12"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/default/talent_crit_3.png" id="ico_13"]
 
-[sub_resource type="Resource" id="Resource_mltuw"]
-script = ExtResource("1_701ke")
-description = "Matriz neural primaria del piloto. Punto de origen de todas las rutas de hiper-conducción."
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("1_node_script")
+id = &"core"
+branch = "NÚCLEO"
+title = "NÚCLEO DE PILOTO"
+description = "Matriz neural primaria de Nova. Punto de origen de todas las rutas de hiper-conducción y energía de riel."
+icon = ExtResource("ico_1")
+glyph = "⚛"
+position = Vector2(0, 0)
 cost = 0
+req_id = &""
 
-[sub_resource type="Resource" id="Resource_tg24t"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("1_node_script")
 id = &"speed_1"
 branch = "VELOCIDAD"
 title = "IMPULSO VECTORIAL I"
 description = "+20% Velocidad de movimiento permanente en combate."
+icon = ExtResource("ico_2")
 glyph = "⚡"
-position = Vector2(0, -115)
+position = Vector2(0, -155)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_mc2sj"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_3"]
+script = ExtResource("1_node_script")
 id = &"speed_2"
 branch = "VELOCIDAD"
 title = "IMPULSO VECTORIAL II"
 description = "+20% Velocidad de movimiento permanente (+40% acumulado)."
+icon = ExtResource("ico_3")
 glyph = "⚡"
-position = Vector2(0, -225)
+position = Vector2(0, -305)
+cost = 25
 req_id = &"speed_1"
 
-[sub_resource type="Resource" id="Resource_n5pjf"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_4"]
+script = ExtResource("1_node_script")
 id = &"speed_3"
 branch = "VELOCIDAD"
 title = "SOBRECARGA DE POSTQUEMADOR"
 description = "+20% Velocidad de movimiento permanente (+60% acumulado)."
+icon = ExtResource("ico_4")
 glyph = "⚡"
-position = Vector2(0, -335)
+position = Vector2(0, -450)
+cost = 25
 req_id = &"speed_2"
 
-[sub_resource type="Resource" id="Resource_mudgc"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_5"]
+script = ExtResource("1_node_script")
 id = &"damage_1"
 branch = "DAÑO"
 title = "SOBREALIMENTACIÓN TÉRMICA I"
 description = "+15% Daño general infligido permanente en combate."
+icon = ExtResource("ico_5")
 glyph = "⚔"
-position = Vector2(150, 0)
+position = Vector2(200, 0)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_w7aqv"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_6"]
+script = ExtResource("1_node_script")
 id = &"damage_2"
 branch = "DAÑO"
 title = "SOBREALIMENTACIÓN TÉRMICA II"
 description = "+15% Daño general permanente (+30% acumulado)."
+icon = ExtResource("ico_6")
 glyph = "⚔"
-position = Vector2(280, 0)
+position = Vector2(380, 0)
+cost = 25
 req_id = &"damage_1"
 
-[sub_resource type="Resource" id="Resource_5vysg"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_7"]
+script = ExtResource("1_node_script")
 id = &"damage_3"
 branch = "DAÑO"
 title = "FUSIÓN DE CAÑÓN CUÁNTICO"
 description = "+15% Daño general permanente (+45% acumulado)."
+icon = ExtResource("ico_7")
 glyph = "⚔"
-position = Vector2(410, 0)
+position = Vector2(550, 0)
+cost = 25
 req_id = &"damage_2"
 
-[sub_resource type="Resource" id="Resource_4cprs"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_8"]
+script = ExtResource("1_node_script")
 id = &"hp_1"
 branch = "SUPERVIVENCIA"
 title = "NANO-BLINDAJE REGENERATIVO I"
 description = "+25 Puntos de Salud Máxima permanente en combate."
+icon = ExtResource("ico_8")
 glyph = "🛡"
-position = Vector2(0, 115)
+position = Vector2(0, 155)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_vbdae"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_9"]
+script = ExtResource("1_node_script")
 id = &"hp_2"
 branch = "SUPERVIVENCIA"
 title = "NANO-BLINDAJE REGENERATIVO II"
 description = "+25 Puntos de Salud Máxima permanente (+50 HP acumulado)."
+icon = ExtResource("ico_9")
 glyph = "🛡"
-position = Vector2(0, 225)
+position = Vector2(0, 305)
+cost = 25
 req_id = &"hp_1"
 
-[sub_resource type="Resource" id="Resource_xv38t"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_10"]
+script = ExtResource("1_node_script")
 id = &"hp_3"
 branch = "SUPERVIVENCIA"
 title = "MATRIZ DE CASCO TITÁN"
 description = "+25 Puntos de Salud Máxima permanente (+75 HP acumulado)."
+icon = ExtResource("ico_10")
 glyph = "🛡"
-position = Vector2(0, 335)
+position = Vector2(0, 450)
+cost = 25
 req_id = &"hp_2"
 
-[sub_resource type="Resource" id="Resource_naoo4"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_11"]
+script = ExtResource("1_node_script")
 id = &"crit_1"
 branch = "UTILIDAD"
 title = "TELEMETRÍA DE PRECISIÓN I"
 description = "+5% Probabilidad Crítica y +5% Cadencia de ataque permanente."
+icon = ExtResource("ico_11")
 glyph = "✦"
-position = Vector2(-150, 0)
+position = Vector2(-200, 0)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_lqstn"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_12"]
+script = ExtResource("1_node_script")
 id = &"crit_2"
 branch = "UTILIDAD"
 title = "TELEMETRÍA DE PRECISIÓN II"
 description = "+5% Probabilidad Crítica y +5% Cadencia (+10% acumulado)."
+icon = ExtResource("ico_12")
 glyph = "✦"
-position = Vector2(-280, 0)
+position = Vector2(-380, 0)
+cost = 25
 req_id = &"crit_1"
 
-[sub_resource type="Resource" id="Resource_12221"]
-script = ExtResource("1_701ke")
+[sub_resource type="Resource" id="Resource_13"]
+script = ExtResource("1_node_script")
 id = &"crit_3"
 branch = "UTILIDAD"
 title = "SINCRONIZADOR HIPER-ÓPTICO"
 description = "+5% Probabilidad Crítica y +5% Cadencia (+15% acumulado)."
+icon = ExtResource("ico_13")
 glyph = "✦"
-position = Vector2(-410, 0)
+position = Vector2(-550, 0)
+cost = 25
 req_id = &"crit_2"
 
 [resource]
-script = ExtResource("2_wjeyr")
-nodes = Array[Resource]([SubResource("Resource_mltuw"), SubResource("Resource_tg24t"), SubResource("Resource_mc2sj"), SubResource("Resource_n5pjf"), SubResource("Resource_mudgc"), SubResource("Resource_w7aqv"), SubResource("Resource_5vysg"), SubResource("Resource_4cprs"), SubResource("Resource_vbdae"), SubResource("Resource_xv38t"), SubResource("Resource_naoo4"), SubResource("Resource_lqstn"), SubResource("Resource_12221")])
+script = ExtResource("2_config_script")
+character_id = &"default"
+node_cost = 25
+nodes = Array[Resource]([
+SubResource("Resource_1"),
+SubResource("Resource_2"),
+SubResource("Resource_3"),
+SubResource("Resource_4"),
+SubResource("Resource_5"),
+SubResource("Resource_6"),
+SubResource("Resource_7"),
+SubResource("Resource_8"),
+SubResource("Resource_9"),
+SubResource("Resource_10"),
+SubResource("Resource_11"),
+SubResource("Resource_12"),
+SubResource("Resource_13"),
+])

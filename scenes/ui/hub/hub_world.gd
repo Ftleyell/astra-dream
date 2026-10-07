@@ -255,8 +255,15 @@ func _open_settings() -> void:
 
 
 func _quit_game() -> void:
+	if _is_transitioning:
+		return
+	_is_transitioning = true
 	_play_sfx("ui_click")
-	get_tree().quit(0)
+	var st: Node = get_node_or_null("/root/SceneTransition")
+	if st and st.has_method("change_scene_to_file"):
+		st.change_scene_to_file("res://scenes/ui/title_screen/title_screen.tscn")
+	else:
+		get_tree().change_scene_to_file("res://scenes/ui/title_screen/title_screen.tscn")
 
 
 func _on_modal_closed() -> void:

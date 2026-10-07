@@ -1,135 +1,193 @@
 [gd_resource type="Resource" script_class="SkillTreeConfig" format=3]
 
-[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_npd7p"]
-[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_brtsq"]
+[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_node_script"]
+[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_config_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_core.png" id="ico_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_speed_1.png" id="ico_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_speed_2.png" id="ico_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_speed_3.png" id="ico_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_damage_1.png" id="ico_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_damage_2.png" id="ico_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_damage_3.png" id="ico_7"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_hp_1.png" id="ico_8"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_hp_2.png" id="ico_9"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_hp_3.png" id="ico_10"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_crit_1.png" id="ico_11"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_crit_2.png" id="ico_12"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/nyx/talent_crit_3.png" id="ico_13"]
 
-[sub_resource type="Resource" id="Resource_fimj1"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("1_node_script")
+id = &"core"
+branch = "NÚCLEO"
 title = "NÚCLEO CREPUSCULAR"
 description = "Matriz dimensional de Nyx. Canaliza energía del vacío hacia la Hoja Crepuscular y el motor de fase."
+icon = ExtResource("ico_1")
+glyph = "⚛"
+position = Vector2(0, 0)
 cost = 0
+req_id = &""
 
-[sub_resource type="Resource" id="Resource_q0h6f"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("1_node_script")
 id = &"nyx_speed_1"
 branch = "PASO UMBRÍO"
 title = "PASO ENTRE FRENTES I"
 description = "+18% Velocidad de movimiento permanente en combate."
+icon = ExtResource("ico_2")
 glyph = "⚡"
-position = Vector2(0, -115)
+position = Vector2(0, -155)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_qdagl"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_3"]
+script = ExtResource("1_node_script")
 id = &"nyx_speed_2"
 branch = "PASO UMBRÍO"
 title = "TRASLACIÓN FLUIDA II"
 description = "+18% Velocidad de movimiento permanente (+36% acumulado)."
+icon = ExtResource("ico_3")
 glyph = "⚡"
-position = Vector2(0, -225)
+position = Vector2(0, -305)
+cost = 25
 req_id = &"nyx_speed_1"
 
-[sub_resource type="Resource" id="Resource_mpgc0"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_4"]
+script = ExtResource("1_node_script")
 id = &"nyx_speed_3"
 branch = "PASO UMBRÍO"
 title = "SALTO DIMENSIONAL PERPETUO"
 description = "+18% Velocidad (+54% acum.) y recarga de Dash un 15% más rápida."
+icon = ExtResource("ico_4")
 glyph = "⚡"
-position = Vector2(0, -335)
+position = Vector2(0, -450)
+cost = 25
 req_id = &"nyx_speed_2"
 
-[sub_resource type="Resource" id="Resource_oyeyh"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_5"]
+script = ExtResource("1_node_script")
 id = &"nyx_dmg_1"
 branch = "FILO DIMENSIONAL"
 title = "FILO DEL CREPÚSCULO I"
 description = "+18% Daño cuerpo a cuerpo general permanente."
+icon = ExtResource("ico_5")
 glyph = "⚔"
-position = Vector2(150, 0)
+position = Vector2(200, 0)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_fwjcy"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_6"]
+script = ExtResource("1_node_script")
 id = &"nyx_dmg_2"
 branch = "FILO DIMENSIONAL"
 title = "RESQUEBRAJADURA ESPACIAL II"
 description = "+18% Daño cuerpo a cuerpo permanente (+36% acumulado)."
+icon = ExtResource("ico_6")
 glyph = "⚔"
-position = Vector2(280, 0)
+position = Vector2(380, 0)
+cost = 25
 req_id = &"nyx_dmg_1"
 
-[sub_resource type="Resource" id="Resource_u8t21"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_7"]
+script = ExtResource("1_node_script")
 id = &"nyx_dmg_3"
 branch = "FILO DIMENSIONAL"
 title = "SINGULARIDAD CORTANTE"
 description = "+18% Daño cuerpo a cuerpo (+54% acum.) y +15% tamaño del arco de corte."
+icon = ExtResource("ico_7")
 glyph = "⚔"
-position = Vector2(410, 0)
+position = Vector2(550, 0)
+cost = 25
 req_id = &"nyx_dmg_2"
 
-[sub_resource type="Resource" id="Resource_f05jb"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_8"]
+script = ExtResource("1_node_script")
 id = &"nyx_hp_1"
 branch = "MANTO CREPUSCULAR"
 title = "ESCUDO DE EVENTOS I"
 description = "+30 Puntos de Salud Máxima permanente en combate."
+icon = ExtResource("ico_8")
 glyph = "🛡"
-position = Vector2(0, 115)
+position = Vector2(0, 155)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_rnj8p"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_9"]
+script = ExtResource("1_node_script")
 id = &"nyx_hp_2"
 branch = "MANTO CREPUSCULAR"
 title = "TEJIDO DIMENSIONAL II"
 description = "+30 Puntos de Salud Máxima permanente (+60 HP acumulado)."
+icon = ExtResource("ico_9")
 glyph = "🛡"
-position = Vector2(0, 225)
+position = Vector2(0, 305)
+cost = 25
 req_id = &"nyx_hp_1"
 
-[sub_resource type="Resource" id="Resource_ipkye"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_10"]
+script = ExtResource("1_node_script")
 id = &"nyx_hp_3"
 branch = "MANTO CREPUSCULAR"
 title = "ANCLAJE ESPACIO-TEMPORAL"
 description = "+30 HP Máxima (+90 HP acum.) y +1.0 Regeneración de HP/segundo."
+icon = ExtResource("ico_10")
 glyph = "🛡"
-position = Vector2(0, 335)
+position = Vector2(0, 450)
+cost = 25
 req_id = &"nyx_hp_2"
 
-[sub_resource type="Resource" id="Resource_jt3q1"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_11"]
+script = ExtResource("1_node_script")
 id = &"nyx_crit_1"
 branch = "FURIA DE MEDIALUNA"
 title = "COMPÁS DE MEDIA LUNA I"
 description = "+6% Probabilidad Crítica y +6% Cadencia de ataque melee permanente."
+icon = ExtResource("ico_11")
 glyph = "✦"
-position = Vector2(-150, 0)
+position = Vector2(-200, 0)
+cost = 25
 req_id = &"core"
 
-[sub_resource type="Resource" id="Resource_8ttj5"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_12"]
+script = ExtResource("1_node_script")
 id = &"nyx_crit_2"
 branch = "FURIA DE MEDIALUNA"
 title = "RÁFAGA DE VACÍO II"
 description = "+6% Probabilidad Crítica y +6% Cadencia (+12% acumulado)."
+icon = ExtResource("ico_12")
 glyph = "✦"
-position = Vector2(-280, 0)
+position = Vector2(-380, 0)
+cost = 25
 req_id = &"nyx_crit_1"
 
-[sub_resource type="Resource" id="Resource_mt066"]
-script = ExtResource("1_npd7p")
+[sub_resource type="Resource" id="Resource_13"]
+script = ExtResource("1_node_script")
 id = &"nyx_crit_3"
 branch = "FURIA DE MEDIALUNA"
 title = "VERDUGO DEL ECLIPSE"
 description = "+8% Prob. Crítica y +8% Cadencia (+20% acum.) y +20% Daño Crítico."
+icon = ExtResource("ico_13")
 glyph = "✦"
-position = Vector2(-410, 0)
+position = Vector2(-550, 0)
+cost = 25
 req_id = &"nyx_crit_2"
 
 [resource]
-script = ExtResource("2_brtsq")
+script = ExtResource("2_config_script")
 character_id = &"nyx"
-nodes = Array[Resource]([SubResource("Resource_fimj1"), SubResource("Resource_q0h6f"), SubResource("Resource_qdagl"), SubResource("Resource_mpgc0"), SubResource("Resource_oyeyh"), SubResource("Resource_fwjcy"), SubResource("Resource_u8t21"), SubResource("Resource_f05jb"), SubResource("Resource_rnj8p"), SubResource("Resource_ipkye"), SubResource("Resource_jt3q1"), SubResource("Resource_8ttj5"), SubResource("Resource_mt066")])
+node_cost = 25
+nodes = Array[Resource]([
+SubResource("Resource_1"),
+SubResource("Resource_2"),
+SubResource("Resource_3"),
+SubResource("Resource_4"),
+SubResource("Resource_5"),
+SubResource("Resource_6"),
+SubResource("Resource_7"),
+SubResource("Resource_8"),
+SubResource("Resource_9"),
+SubResource("Resource_10"),
+SubResource("Resource_11"),
+SubResource("Resource_12"),
+SubResource("Resource_13"),
+])

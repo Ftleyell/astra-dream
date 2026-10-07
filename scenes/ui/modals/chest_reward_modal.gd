@@ -65,7 +65,7 @@ func _build_ui() -> void:
 
 	# 3. Panel principal
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(560, 480)
+	_panel.custom_minimum_size = Vector2(660, 580)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.03, 0.05, 0.09, 0.96)
 	style.set_border_width_all(2)
@@ -165,7 +165,7 @@ func open_reward(item: ItemData, was_free: bool, _total_stacks: int = 1) -> void
 
 func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelContainer:
 	var card_panel := PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(510, 72)
+	card_panel.custom_minimum_size = Vector2(610, 110)
 	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var rarity_col := _get_rarity_color(item.rarity)
 
@@ -182,20 +182,20 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 	card_panel.add_child(hbox)
 
-	# 1. Icono
+	# 1. Icono destacado (88x88 px con marco de rareza)
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(56, 56)
+	icon_panel.custom_minimum_size = Vector2(96, 96)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var icon_style := StyleBoxFlat.new()
 	icon_style.bg_color = Color(0.02, 0.04, 0.08, 0.95)
-	icon_style.set_border_width_all(1)
+	icon_style.set_border_width_all(2)
 	icon_style.border_color = rarity_col
 	icon_style.set_corner_radius_all(6)
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(44, 44)
+	icon_rect.custom_minimum_size = Vector2(88, 88)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -209,20 +209,20 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 	var info_vbox := VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	info_vbox.add_theme_constant_override("separation", 3)
+	info_vbox.add_theme_constant_override("separation", 4)
 
 	var top_line := HBoxContainer.new()
 	top_line.add_theme_constant_override("separation", 10)
 
 	var name_lbl := Label.new()
 	name_lbl.text = item.item_name
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_font_size_override("font_size", 16)
 	name_lbl.modulate = rarity_col
 	top_line.add_child(name_lbl)
 
 	var rarity_lbl := Label.new()
 	rarity_lbl.text = "• [ %s ]" % _get_rarity_name(item.rarity)
-	rarity_lbl.add_theme_font_size_override("font_size", 11)
+	rarity_lbl.add_theme_font_size_override("font_size", 12)
 	rarity_lbl.modulate = rarity_col
 	top_line.add_child(rarity_lbl)
 
@@ -245,7 +245,7 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 		else:
 			stat_badge.text = "• [ ▲ %s %s ]" % [val_s, stat_title]
 			stat_badge.modulate = Color("#00FF9D") if item.stat_value >= 0 else Color("#FF4466")
-		stat_badge.add_theme_font_size_override("font_size", 11)
+		stat_badge.add_theme_font_size_override("font_size", 12)
 		top_line.add_child(stat_badge)
 
 	info_vbox.add_child(top_line)
@@ -253,7 +253,7 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 	var desc_lbl := Label.new()
 	desc_lbl.text = item.description
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_font_size_override("font_size", 12)
 	desc_lbl.modulate = Color(0.85, 0.9, 0.96, 0.9)
 	info_vbox.add_child(desc_lbl)
 
@@ -273,7 +273,7 @@ func _create_draft_card(item: ItemData, index: int, player: Player) -> PanelCont
 
 	var select_btn := Button.new()
 	select_btn.text = "ELEGIR [%d]" % (index + 1)
-	select_btn.custom_minimum_size = Vector2(130, 36)
+	select_btn.custom_minimum_size = Vector2(130, 42)
 	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	select_btn.pressed.connect(func(): _select_index(index))
 	var on_highlight := func():

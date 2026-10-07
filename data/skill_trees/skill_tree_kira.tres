@@ -1,0 +1,193 @@
+[gd_resource type="Resource" script_class="SkillTreeConfig" format=3]
+
+[ext_resource type="Script" path="res://core/types/skill_tree_node_data.gd" id="1_node_script"]
+[ext_resource type="Script" path="res://core/types/skill_tree_config.gd" id="2_config_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_core.png" id="ico_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_speed_1.png" id="ico_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_speed_2.png" id="ico_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_speed_3.png" id="ico_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_damage_1.png" id="ico_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_damage_2.png" id="ico_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_damage_3.png" id="ico_7"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_hp_1.png" id="ico_8"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_hp_2.png" id="ico_9"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_hp_3.png" id="ico_10"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_crit_1.png" id="ico_11"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_crit_2.png" id="ico_12"]
+[ext_resource type="Texture2D" path="res://assets/characters/talents/kira/talent_crit_3.png" id="ico_13"]
+
+[sub_resource type="Resource" id="Resource_1"]
+script = ExtResource("1_node_script")
+id = &"core"
+branch = "NÚCLEO"
+title = "NÚCLEO DE COLMENA BIOMÓRFICA"
+description = "Matriz orgánica-cibernética de reproducción celular y control del enjambre de micro-nanobots."
+icon = ExtResource("ico_1")
+glyph = "⚛"
+position = Vector2(0, 0)
+cost = 0
+req_id = &""
+
+[sub_resource type="Resource" id="Resource_2"]
+script = ExtResource("1_node_script")
+id = &"speed_1"
+branch = "VELOCIDAD"
+title = "DESPRENDIMIENTO CELULAR I"
+description = "+18% Velocidad de movimiento permanente en combate."
+icon = ExtResource("ico_2")
+glyph = "⚡"
+position = Vector2(0, -155)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_3"]
+script = ExtResource("1_node_script")
+id = &"speed_2"
+branch = "VELOCIDAD"
+title = "PROPULSIÓN DE ESPORAS II"
+description = "+18% Velocidad de movimiento permanente (+36% acumulado)."
+icon = ExtResource("ico_3")
+glyph = "⚡"
+position = Vector2(0, -305)
+cost = 25
+req_id = &"speed_1"
+
+[sub_resource type="Resource" id="Resource_4"]
+script = ExtResource("1_node_script")
+id = &"speed_3"
+branch = "VELOCIDAD"
+title = "METAMORFOSIS DE ENJAMBRE"
+description = "+18% Velocidad (+54% acum.) y liberación de nanobots al acelerar."
+icon = ExtResource("ico_4")
+glyph = "⚡"
+position = Vector2(0, -450)
+cost = 25
+req_id = &"speed_2"
+
+[sub_resource type="Resource" id="Resource_5"]
+script = ExtResource("1_node_script")
+id = &"damage_1"
+branch = "DAÑO"
+title = "MICROMISILES BIO I"
+description = "+18% Daño de enjambres y proyectiles teledirigidos."
+icon = ExtResource("ico_5")
+glyph = "⚔"
+position = Vector2(200, 0)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_6"]
+script = ExtResource("1_node_script")
+id = &"damage_2"
+branch = "DAÑO"
+title = "SALVA DE ENJAMBRE II"
+description = "+18% Daño (+36% acum.) y +1 proyectil teledirigido en salvas bio."
+icon = ExtResource("ico_6")
+glyph = "⚔"
+position = Vector2(380, 0)
+cost = 25
+req_id = &"damage_1"
+
+[sub_resource type="Resource" id="Resource_7"]
+script = ExtResource("1_node_script")
+id = &"damage_3"
+branch = "DAÑO"
+title = "DEVASTADOR BIOMÓRFICO"
+description = "+22% Daño (+58% acum.) con ácido corrosivo en área de impacto."
+icon = ExtResource("ico_7")
+glyph = "⚔"
+position = Vector2(550, 0)
+cost = 25
+req_id = &"damage_2"
+
+[sub_resource type="Resource" id="Resource_8"]
+script = ExtResource("1_node_script")
+id = &"hp_1"
+branch = "SUPERVIVENCIA"
+title = "CAPARAZÓN DE QUITINA I"
+description = "+30 Puntos de Salud Máxima permanente en combate."
+icon = ExtResource("ico_8")
+glyph = "🛡"
+position = Vector2(0, 155)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_9"]
+script = ExtResource("1_node_script")
+id = &"hp_2"
+branch = "SUPERVIVENCIA"
+title = "BIO-FILAMENTOS II"
+description = "+30 Puntos de Salud Máxima (+60 HP acum.) y +0.5 Regeneración de HP/s."
+icon = ExtResource("ico_9")
+glyph = "🛡"
+position = Vector2(0, 305)
+cost = 25
+req_id = &"hp_1"
+
+[sub_resource type="Resource" id="Resource_10"]
+script = ExtResource("1_node_script")
+id = &"hp_3"
+branch = "SUPERVIVENCIA"
+title = "BALUARTE DE REINA"
+description = "+35 Puntos de Salud Máxima (+95 HP acum.) y capullo defensivo."
+icon = ExtResource("ico_10")
+glyph = "🛡"
+position = Vector2(0, 450)
+cost = 25
+req_id = &"hp_2"
+
+[sub_resource type="Resource" id="Resource_11"]
+script = ExtResource("1_node_script")
+id = &"crit_1"
+branch = "UTILIDAD"
+title = "MUTACIÓN DE ENJAMBRE I"
+description = "+6% Probabilidad Crítica y +15% Suerte permanente."
+icon = ExtResource("ico_11")
+glyph = "✦"
+position = Vector2(-200, 0)
+cost = 25
+req_id = &"core"
+
+[sub_resource type="Resource" id="Resource_12"]
+script = ExtResource("1_node_script")
+id = &"crit_2"
+branch = "UTILIDAD"
+title = "REPLICACIÓN AZAROSA II"
+description = "+6% Probabilidad Crítica (+12% acum.) y +15% Suerte (+30% acum.)."
+icon = ExtResource("ico_12")
+glyph = "✦"
+position = Vector2(-380, 0)
+cost = 25
+req_id = &"crit_1"
+
+[sub_resource type="Resource" id="Resource_13"]
+script = ExtResource("1_node_script")
+id = &"crit_3"
+branch = "UTILIDAD"
+title = "BALIZA DE FEROMONAS"
+description = "+8% Probabilidad Crítica (+20% acum.) y golpes críticos que contagian nanobots."
+icon = ExtResource("ico_13")
+glyph = "✦"
+position = Vector2(-550, 0)
+cost = 25
+req_id = &"crit_2"
+
+[resource]
+script = ExtResource("2_config_script")
+character_id = &"kira"
+node_cost = 25
+nodes = Array[Resource]([
+SubResource("Resource_1"),
+SubResource("Resource_2"),
+SubResource("Resource_3"),
+SubResource("Resource_4"),
+SubResource("Resource_5"),
+SubResource("Resource_6"),
+SubResource("Resource_7"),
+SubResource("Resource_8"),
+SubResource("Resource_9"),
+SubResource("Resource_10"),
+SubResource("Resource_11"),
+SubResource("Resource_12"),
+SubResource("Resource_13"),
+])

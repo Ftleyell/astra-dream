@@ -6,6 +6,9 @@ const SHADER_SOLID_TINT = preload("res://sandbox/pilot_solid_tint.gdshader")
 const SHADER_BRUSH = preload("res://sandbox/brush_trail.gdshader")
 const SHIPS_DIR = "res://assets/characters/ships/"
 
+const ORBITAL_TERMINAL_SCENE = preload("res://scenes/ui/components/orbital_terminal/orbital_ignition_terminal.tscn")
+const ORBITAL_ENV = preload("res://scenes/ui/components/orbital_terminal/orbital_environment.tres")
+
 # Configuración de las 7 pilotos (Nova en índice 3 como punta de la V)
 const PILOT_CONFIG = [
 	{"name": "echo",      "color": Color(0.12, 0.85, 0.95)}, # Cian
@@ -20,6 +23,9 @@ const PILOT_CONFIG = [
 var button_container: Control
 var tape_rect: ColorRect
 var tape_mat: ShaderMaterial
+
+var orbital_terminal: OrbitalIgnitionTerminal = null
+var hints_label: Label = null
 
 # Estados y colores del botón de cinta
 const COLOR_WAITING = Color(0.92, 0.12, 0.12, 1.0) # Rojo reposo
@@ -54,9 +60,23 @@ func _ready() -> void:
 	if has_node("Background"):
 		($Background as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+	_crear_entorno_hdr()
 	_crear_fondo_prueba()
 	_crear_boton_cinta()
+	_crear_terminal_orbital()
 	_crear_sistema_transicion_v()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		if event.keycode == KEY_H:
+			if is_instance_valid(button_container):
+				button_container.visible = not button_container.visible
+		elif event.keycode == KEY_R:
+			if is_instance_valid(orbital_terminal):
+				orbital_terminal.reset_terminal()
+		elif event.keycode == KEY_TAB:
+			if is_instance_valid(orbital_terminal):
+				orbital_terminal.grab_focus()
 
 func _process(delta: float) -> void:
 	# Transición suave de color en la cinta
@@ -410,6 +430,8 @@ func disparar_transicion_pilotos() -> void:
 		wipe_mat.set_shader_parameter("fade_progress", -0.5)
 		is_transitioning = false
 		_on_focus_exited()
+		if is_instance_valid(orbital_terminal):
+			orbital_terminal.reset_terminal()
 	)
 
 # ==============================================================================
@@ -471,3 +493,31 @@ func _crear_fondo_prueba() -> void:
 	bg.color = Color(0.06, 0.07, 0.1, 1.0)
 	bg.z_index = -10
 	add_child(bg)
+
+func _crear_entorno_hdr() -> void:
+	if not has_node("WorldEnvironment"):
+		var we := WorldEnvironment.new()
+		we.name = "WorldEnvironment"
+		we.environment = ORBITAL_ENV
+		add_child(we)
+
+func _crear_terminal_orbital() -> void:
+	orbital_terminal = ORBITAL_TERMINAL_SCENE.instantiate() as OrbitalIgnitionTerminal
+	orbital_terminal.name = "OrbitalIgnitionTerminal"
+	# Centrado en el viewport (720x36) en la zona inferior
+	orbital_terminal.position = Vector2(-360.0, 160.0)
+	orbital_terminal.ignition_committed.connect(_on_orbital_ignition_committed)
+	add_child(orbital_terminal)
+
+	hints_label = Label.new()
+	hints_label.name = "TerminalHintsLabel"
+	hints_label.text = "[TERMINAL ORBITAL DIEGÉTICA] • Click / Hover / Tab (Enclavamiento) • [H] Ocultar/Mostrar Cinta Anterior • [R] Reiniciar"
+	hints_label.add_theme_font_size_override("font_size", 12)
+	hints_label.add_theme_color_override("font_color", Color(0.35, 0.85, 0.95, 0.75))
+	hints_label.position = Vector2(-360.0, 210.0)
+	add_child(hints_label)
+
+func _on_orbital_ignition_committed() -> void:
+	print("[ORBITAL TERMINAL] >>> IGNICIÓN CONFIRMADA EN EL PUENTE DE MANDO <<<")
+	if not is_transitioning:
+		disparar_transicion_pilotos()

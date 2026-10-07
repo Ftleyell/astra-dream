@@ -33,6 +33,11 @@ func build_hex_nodes(defs: Array[Dictionary], canvas: Control, on_selected: Call
 		hex.title = str(def.get("title", ""))
 		hex.stat_bonus_text = str(def.get("desc", ""))
 		hex.glyph_icon = str(def.get("glyph", "⚛"))
+		var raw_ico = def.get("icon", null)
+		if raw_ico is Texture2D:
+			hex.icon = raw_ico
+		elif raw_ico is String and not str(raw_ico).is_empty() and ResourceLoader.exists(str(raw_ico)):
+			hex.icon = ResourceLoader.load(str(raw_ico)) as Texture2D
 		hex.cost = int(def.get("cost", 25))
 		hex.req_node_id = def.get("req", &"")
 		var pos_vec: Vector2 = def.get("pos", Vector2.ZERO)
@@ -125,8 +130,8 @@ func handle_gui_input(event: InputEvent, viewport: Control, canvas: Control) -> 
 	elif event is InputEventMouseMotion and is_dragging:
 		var delta_drag: Vector2 = event.position - drag_start_pos
 		var new_pos := canvas_base_pos + delta_drag
-		new_pos.x = clampf(new_pos.x, viewport.size.x * 0.5 - 500.0, viewport.size.x * 0.5 + 500.0)
-		new_pos.y = clampf(new_pos.y, viewport.size.y * 0.5 - 450.0, viewport.size.y * 0.5 + 450.0)
+		new_pos.x = clampf(new_pos.x, viewport.size.x * 0.5 - 650.0, viewport.size.x * 0.5 + 650.0)
+		new_pos.y = clampf(new_pos.y, viewport.size.y * 0.5 - 550.0, viewport.size.y * 0.5 + 550.0)
 		canvas.position = new_pos
 
 func find_best_direction_node(cur_nid: StringName, defs: Array[Dictionary], move_dir: Vector2) -> StringName:

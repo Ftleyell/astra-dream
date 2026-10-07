@@ -164,7 +164,7 @@ func _refresh_display() -> void:
 		hbox.add_theme_constant_override("separation", 14)
 
 		var icon_rect := TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(44, 44)
+		icon_rect.custom_minimum_size = Vector2(68, 68)
 		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		if incoming_weapon.icon:
@@ -208,7 +208,7 @@ func _refresh_display() -> void:
 
 func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContainer:
 	var pc := PanelContainer.new()
-	pc.custom_minimum_size = Vector2(170, 230)
+	pc.custom_minimum_size = Vector2(170, 240)
 	pc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var w_rarity := inst.weapon_data.rarity if inst.weapon_data else Enums.Rarity.COMMON
@@ -240,7 +240,7 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 
 	var icon_center := CenterContainer.new()
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(40, 40)
+	icon_rect.custom_minimum_size = Vector2(64, 64)
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if inst.weapon_data and inst.weapon_data.icon:

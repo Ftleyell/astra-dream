@@ -79,9 +79,9 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	hbox.set("theme_override_constants/separation", 14)
 	card_margin.add_child(hbox)
 
-	# 1. Icono con marco de rareza
+	# 1. Icono con marco de rareza destacado (80x80 px)
 	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(52, 52)
+	icon_panel.custom_minimum_size = Vector2(88, 88)
 	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 
@@ -93,7 +93,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	icon_panel.add_theme_stylebox_override("panel", icon_style)
 
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(38, 38)
+	icon_rect.custom_minimum_size = Vector2(80, 80)
 	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

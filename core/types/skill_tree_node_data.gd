@@ -8,6 +8,7 @@ extends Resource
 @export var branch: String = "NÚCLEO"
 @export var title: String = "NÚCLEO DE PILOTO"
 @export_multiline var description: String = ""
+@export var icon: Texture2D = null
 @export var glyph: String = "⚛"
 @export var position: Vector2 = Vector2.ZERO
 @export var cost: int = 25
@@ -19,6 +20,7 @@ func to_dict() -> Dictionary:
 		"branch": branch,
 		"title": title,
 		"desc": description,
+		"icon": icon,
 		"glyph": glyph,
 		"pos": position,
 		"cost": cost,
@@ -32,6 +34,12 @@ static func from_dict(d: Dictionary) -> Resource:
 	node.branch = str(d.get("branch", "NÚCLEO"))
 	node.title = str(d.get("title", ""))
 	node.description = str(d.get("desc", ""))
+	var raw_icon = d.get("icon", null)
+	if raw_icon is Texture2D:
+		node.icon = raw_icon
+	elif raw_icon is String and not str(raw_icon).is_empty():
+		if ResourceLoader.exists(str(raw_icon)):
+			node.icon = ResourceLoader.load(str(raw_icon)) as Texture2D
 	node.glyph = str(d.get("glyph", "⚛"))
 	var raw_pos = d.get("pos", Vector2.ZERO)
 	if raw_pos is Vector2:

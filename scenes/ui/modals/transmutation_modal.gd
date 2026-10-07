@@ -23,6 +23,8 @@ var _scroll_container: ScrollContainer
 var _items_container: VBoxContainer
 var _choice_container: VBoxContainer
 var _close_btn: Button
+var _item_buttons: Array[Button] = []
+var _last_focused_item_btn: Button = null
 
 func _ready() -> void:
 	layer = 126
@@ -34,6 +36,30 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
+
+	if not (_choice_container and _choice_container.visible):
+		var is_side_nav: bool = false
+		if event is InputEventKey and event.is_pressed() and not event.is_echo():
+			if event.keycode == KEY_A or event.keycode == KEY_D or event.keycode == KEY_LEFT or event.keycode == KEY_RIGHT:
+				is_side_nav = true
+		elif event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
+			is_side_nav = true
+
+		if is_side_nav:
+			var focused := get_viewport().gui_get_focus_owner()
+			if focused == _close_btn:
+				var target_btn: Button = _last_focused_item_btn if (is_instance_valid(_last_focused_item_btn) and not _last_focused_item_btn.disabled) else (_item_buttons[0] if not _item_buttons.is_empty() else null)
+				if target_btn and is_instance_valid(target_btn):
+					target_btn.grab_focus()
+					get_viewport().set_input_as_handled()
+					return
+			elif focused is Button and _item_buttons.has(focused):
+				if _close_btn and is_instance_valid(_close_btn):
+					_last_focused_item_btn = focused as Button
+					_close_btn.grab_focus()
+					get_viewport().set_input_as_handled()
+					return
+
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		if event.keycode == KEY_ESCAPE:
 			close_modal()
@@ -157,21 +183,18 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 		_close_btn.show()
 	_feedback_label.text = ""
 	_refresh_ui()
-	var first_btn: Control = null
-	for child in _items_container.get_children():
-		if child is Button and not child.is_queued_for_deletion():
-			first_btn = child as Control
+	var initial_btn: Button = null
+	for b in _item_buttons:
+		if is_instance_valid(b) and not b.disabled:
+			initial_btn = b
 			break
-		elif child is Container:
-			for sub in child.get_children():
-				if sub is Button and not sub.is_queued_for_deletion():
-					first_btn = sub as Control
-					break
-			if first_btn:
-				break
-	if first_btn:
-		first_btn.grab_focus()
-	else:
+	if not initial_btn and not _item_buttons.is_empty() and is_instance_valid(_item_buttons[0]):
+		initial_btn = _item_buttons[0]
+
+	if initial_btn:
+		_last_focused_item_btn = initial_btn
+		initial_btn.grab_focus()
+	elif _close_btn:
 		_close_btn.grab_focus()
 
 func close_modal() -> void:
@@ -199,6 +222,7 @@ func _refresh_ui() -> void:
 	_uses_label.text = "USOS DISPONIBLES: %d / %d" % [current_station.uses_remaining, current_station.max_uses]
 
 	# Limpiar catálogo anterior
+	_item_buttons.clear()
 	for child in _items_container.get_children():
 		child.queue_free()
 
@@ -255,13 +279,11 @@ func _refresh_ui() -> void:
 		header_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_items_container.add_child(header_lbl)
 
-		# Sub-cuadrícula para los ítems de esta rareza
-		var grid := GridContainer.new()
-		grid.columns = 3
-		grid.add_theme_constant_override("h_separation", 8)
-		grid.add_theme_constant_override("v_separation", 8)
-		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_items_container.add_child(grid)
+		# Sub-lista de filas horizontales para los ítems de esta rareza
+		var group_vbox := VBoxContainer.new()
+		group_vbox.add_theme_constant_override("separation", 8)
+		group_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_items_container.add_child(group_vbox)
 
 		for entry in group:
 			var it: ItemData = entry["data"]
@@ -278,28 +300,56 @@ func _refresh_ui() -> void:
 						break
 
 			var btn := _create_item_card_button(it, count, has_sacrifice)
-			grid.add_child(btn)
+			group_vbox.add_child(btn)
+			_item_buttons.append(btn)
+
+	_setup_forge_navigation()
+
+func _setup_forge_navigation() -> void:
+	if _item_buttons.is_empty():
+		return
+
+	var count: int = _item_buttons.size()
+	for i in range(count):
+		var btn := _item_buttons[i]
+		var prev_btn := _item_buttons[(i - 1 + count) % count]
+		var next_btn := _item_buttons[(i + 1) % count]
+
+		# Navegación vertical: recorre todos los ítems secuencialmente sin saltar a salir
+		btn.focus_neighbor_top = prev_btn.get_path()
+		btn.focus_neighbor_bottom = next_btn.get_path()
+
+		# Navegación horizontal: saltar directamente a salir
+		if _close_btn:
+			btn.focus_neighbor_left = _close_btn.get_path()
+			btn.focus_neighbor_right = _close_btn.get_path()
+
+		btn.focus_entered.connect(func():
+			_last_focused_item_btn = btn
+			if _scroll_container:
+				_scroll_container.ensure_control_visible(btn)
+		)
+
+	if _close_btn:
+		var target_item: Button = _last_focused_item_btn if (is_instance_valid(_last_focused_item_btn) and not _last_focused_item_btn.disabled) else _item_buttons[0]
+		_close_btn.focus_neighbor_left = target_item.get_path()
+		_close_btn.focus_neighbor_right = target_item.get_path()
+		_close_btn.focus_neighbor_top = target_item.get_path()
+		_close_btn.focus_neighbor_bottom = target_item.get_path()
 
 func _create_item_card_button(item: ItemData, count: int, has_sacrifice: bool = true) -> Button:
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(165, 54)
-	# Sin etiqueta de rareza escrita en el texto, el color y la sección ya indican la rareza
-	btn.text = "%s (x%d)" % [item.item_name, count]
-	btn.icon = item.icon
-	btn.expand_icon = true
-	btn.clip_text = true
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.custom_minimum_size = Vector2(0, 74)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.focus_mode = Control.FOCUS_ALL
 
 	var r_col := _get_rarity_color(item.rarity)
 	if not has_sacrifice:
 		btn.disabled = true
 		btn.modulate = Color(0.6, 0.6, 0.6, 0.45)
 		btn.tooltip_text = "Sin material de sacrificio disponible (se requiere otro ítem de esta rareza)"
-		btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	else:
-		btn.add_theme_color_override("font_color", r_col)
-		btn.add_theme_color_override("font_focus_color", Color.WHITE)
-		btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		btn.tooltip_text = "%s (x%d)\n%s" % [item.item_name, count, item.description]
 
 	# Borde con el color de rareza
 	var normal_box := StyleBoxFlat.new()
@@ -307,7 +357,7 @@ func _create_item_card_button(item: ItemData, count: int, has_sacrifice: bool = 
 	normal_box.border_color = r_col if has_sacrifice else Color(0.3, 0.3, 0.3, 0.5)
 	normal_box.set_border_width_all(2)
 	normal_box.set_corner_radius_all(6)
-	normal_box.set_content_margin_all(6.0)
+	normal_box.set_content_margin_all(8.0)
 	btn.add_theme_stylebox_override("normal", normal_box)
 
 	if has_sacrifice:
@@ -317,6 +367,79 @@ func _create_item_card_button(item: ItemData, count: int, has_sacrifice: bool = 
 		btn.add_theme_stylebox_override("hover", hover_box)
 		UIFocusHelper.apply_cyber_focus(btn)
 		btn.pressed.connect(func(): _on_item_selected_to_clone(item))
+
+	# Estructura interna visual en fila horizontal
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn.add_child(margin)
+
+	var hbox := HBoxContainer.new()
+	hbox.set("theme_override_constants/separation", 12)
+	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.add_child(hbox)
+
+	# 1. Icono con marco de rareza (56x56 px)
+	var icon_panel := PanelContainer.new()
+	icon_panel.custom_minimum_size = Vector2(62, 62)
+	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = Color(0.02, 0.04, 0.08, 0.95)
+	icon_style.set_border_width_all(1)
+	icon_style.border_color = r_col
+	icon_style.set_corner_radius_all(6)
+	icon_panel.add_theme_stylebox_override("panel", icon_style)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(56, 56)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if item.icon:
+		icon_rect.texture = item.icon
+	icon_panel.add_child(icon_rect)
+	hbox.add_child(icon_panel)
+
+	# 2. Información central
+	var info_vbox := VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info_vbox.add_theme_constant_override("separation", 2)
+	info_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var title_lbl := Label.new()
+	title_lbl.text = "%s  (x%d)" % [item.item_name, count]
+	title_lbl.add_theme_font_size_override("font_size", 14)
+	title_lbl.add_theme_color_override("font_color", r_col if has_sacrifice else Color(0.6, 0.6, 0.6))
+	title_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_vbox.add_child(title_lbl)
+
+	var desc_lbl := Label.new()
+	desc_lbl.text = item.description
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9, 0.85) if has_sacrifice else Color(0.5, 0.5, 0.5, 0.6))
+	desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_vbox.add_child(desc_lbl)
+
+	hbox.add_child(info_vbox)
+
+	# 3. Badge indicador de acción a la derecha
+	var action_lbl := Label.new()
+	action_lbl.text = "[ CLONAR ]" if has_sacrifice else "[ BLOQUEADO ]"
+	action_lbl.add_theme_font_size_override("font_size", 12)
+	action_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6) if has_sacrifice else Color(0.8, 0.4, 0.4))
+	action_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	action_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hbox.add_child(action_lbl)
 
 	return btn
 
@@ -407,7 +530,7 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	card_vbox.add_child(icon_center)
 
 	var item_icon := TextureRect.new()
-	item_icon.custom_minimum_size = Vector2(64, 64)
+	item_icon.custom_minimum_size = Vector2(110, 110)
 	item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	item_icon.texture = item.icon

@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/title_screen/patch_notes_panel.tscn" id="3_patchpanel"]
 
 [ext_resource type="Texture2D" uid="uid://cbbx6plpdbona" path="res://assets/ui/astra_dream_logo.png" id="4_logo"]
+[ext_resource type="Script" path="res://scenes/ui/title_screen/logo_impact_controller.gd" id="5_controller"]
+[ext_resource type="Resource" path="res://scenes/ui/title_screen/default_title_impact_config.tres" id="6_impact_cfg"]
 
 [node name="TitleScreen" type="Control"]
 process_mode = 3
@@ -38,10 +40,36 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 28
 alignment = 1
 
-[node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox"]
-custom_minimum_size = Vector2(580, 290)
+[node name="LogoContainer" type="Control" parent="MainHBox/LeftVBox"]
+custom_minimum_size = Vector2(840, 420)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="GhostContainer" type="Control" parent="MainHBox/LeftVBox/LogoContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VFXAnchor" type="Control" parent="MainHBox/LeftVBox/LogoContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox/LogoContainer/VFXAnchor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
@@ -74,6 +102,7 @@ text = "Alpha 0.1"
 horizontal_alignment = 1
 
 [node name="PatchNotesPanel" parent="MainHBox" instance=ExtResource("3_patchpanel")]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -87,3 +116,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
+
+[node name="LogoImpactController" type="Node" parent="." node_paths=PackedStringArray("logo_target", "vfx_anchor", "ghost_container", "secondary_panel")]
+script = ExtResource("5_controller")
+config = ExtResource("6_impact_cfg")
+logo_target = NodePath("MainHBox/LeftVBox/LogoContainer/VFXAnchor/LogoTexture")
+vfx_anchor = NodePath("MainHBox/LeftVBox/LogoContainer/VFXAnchor")
+ghost_container = NodePath("MainHBox/LeftVBox/LogoContainer/GhostContainer")
+secondary_panel = NodePath("MainHBox/PatchNotesPanel")
+
