@@ -55,12 +55,14 @@ func setup_ship_and_weapon(
 	weapon_button = p_weapon_button
 
 	if ship_button:
-		UIFocusHelper.apply_cyber_focus(ship_button)
+		var empty_focus := StyleBoxEmpty.new()
+		ship_button.add_theme_stylebox_override("focus", empty_focus)
 		ship_button.pressed.connect(p_on_ship_pressed)
 		setup_card_hover_feedback(ship_button, ship_card, Color(0.2, 0.95, 1.0, 1.0))
 
 	if weapon_button:
-		UIFocusHelper.apply_cyber_focus(weapon_button)
+		var empty_focus := StyleBoxEmpty.new()
+		weapon_button.add_theme_stylebox_override("focus", empty_focus)
 		weapon_button.pressed.connect(p_on_weapon_pressed)
 		setup_card_hover_feedback(weapon_button, weapon_card, Color(1.0, 0.85, 0.35, 1.0))
 
@@ -138,12 +140,14 @@ func setup_companions(
 	navigator_button = p_nav_button
 
 	if pet_button:
-		UIFocusHelper.apply_cyber_focus(pet_button)
+		var empty_focus := StyleBoxEmpty.new()
+		pet_button.add_theme_stylebox_override("focus", empty_focus)
 		pet_button.pressed.connect(p_on_pet_pressed)
 		setup_card_hover_feedback(pet_button, pet_card, Color(0.2, 0.95, 0.65, 1.0))
 
 	if navigator_button:
-		UIFocusHelper.apply_cyber_focus(navigator_button)
+		var empty_focus := StyleBoxEmpty.new()
+		navigator_button.add_theme_stylebox_override("focus", empty_focus)
 		navigator_button.pressed.connect(p_on_nav_pressed)
 		setup_card_hover_feedback(navigator_button, navigator_card, Color(0.3, 0.7, 1.0, 1.0))
 

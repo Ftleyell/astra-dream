@@ -290,10 +290,12 @@ func _switch_tab(index: int) -> void:
 
 
 func _setup_signals() -> void:
+	UIFocusHelper.apply_cyber_focus(back_button)
 	back_button.pressed.connect(_on_back_pressed)
 	if orbital_terminal:
 		orbital_terminal.ignition_committed.connect(_on_launch_committed)
 	if pilot_skin_btn:
+		UIFocusHelper.apply_cyber_focus(pilot_skin_btn)
 		pilot_skin_btn.pressed.connect(_on_skins_button_pressed)
 
 	var settings_mgr: Node = get_node_or_null("/root/SettingsManager")
@@ -301,12 +303,16 @@ func _setup_signals() -> void:
 		settings_mgr.settings_changed.connect(_update_ability_tags)
 
 	if expand_talents_btn:
+		UIFocusHelper.apply_cyber_focus(expand_talents_btn)
 		expand_talents_btn.pressed.connect(_on_expand_talents_pressed)
 	if arsenal_banlist_btn:
+		UIFocusHelper.apply_cyber_focus(arsenal_banlist_btn)
 		arsenal_banlist_btn.pressed.connect(_on_arsenal_banlist_pressed)
 	if tomes_pool_btn:
+		UIFocusHelper.apply_cyber_focus(tomes_pool_btn)
 		tomes_pool_btn.pressed.connect(_on_tomes_pool_pressed)
 	if loadout_button:
+		UIFocusHelper.apply_cyber_focus(loadout_button)
 		loadout_button.pressed.connect(_on_loadout_pressed)
 
 	if pet_selection_modal:
