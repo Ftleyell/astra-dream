@@ -31,10 +31,11 @@ enum TabCategory {
 }
 
 @export_group("Dimensiones de Ventana")
-@export var modal_size: Vector2 = Vector2(740, 640)
-@export var side_panel_size: Vector2 = Vector2(340, 640)
+@export_group("Dimensiones de Ventana")
+@export var modal_size: Vector2 = Vector2(760, 580)
+@export var side_panel_size: Vector2 = Vector2(340, 580)
 @export var card_size: Vector2 = Vector2(80, 80)
-@export var icon_size: Vector2 = Vector2(62, 62)
+@export var icon_size: Vector2 = Vector2(68, 68)
 @export var grid_columns: int = 6
 
 signal closed()
@@ -71,6 +72,8 @@ var _tab_badges: Dictionary[int, Label] = {}
 var _card_buttons: Array[Button] = []
 var _card_panels: Dictionary[StringName, PanelContainer] = {}
 var _card_badges: Dictionary[StringName, Label] = {}
+var _card_icons: Dictionary[StringName, TextureRect] = {}
+var _card_ban_indicators: Dictionary[StringName, Label] = {}
 var _card_data_map: Dictionary[StringName, Resource] = {}
 var _warning_tween: Tween = null
 var _last_focused_card: Button = null
@@ -182,7 +185,23 @@ func _build_ui() -> void:
 	modal_wrapper.add_theme_constant_override("separation", 18)
 	center.add_child(modal_wrapper)
 
-	# --- Panel Principal de Gestión ---
+	# --- Columna Izquierda: Pestañas Extruidas + Panel Principal ---
+	var left_column := VBoxContainer.new()
+	left_column.name = "LeftColumn"
+	left_column.mouse_filter = Control.MOUSE_FILTER_PASS
+	left_column.add_theme_constant_override("separation", -2) # Solapamiento físico con el borde de la ventana
+	modal_wrapper.add_child(left_column)
+
+	# 1. Pestañas Físicas Superiores (Extrusión hacia arriba estilo carpeta)
+	tabs_container = HBoxContainer.new()
+	tabs_container.name = "TabsContainer"
+	tabs_container.mouse_filter = Control.MOUSE_FILTER_PASS
+	tabs_container.add_theme_constant_override("separation", 4)
+	tabs_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+	left_column.add_child(tabs_container)
+	_build_tabs_bar()
+
+	# 2. Panel Principal de Gestión (Cuerpo de la Carpeta)
 	var main_panel := PanelContainer.new()
 	main_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	main_panel.custom_minimum_size = modal_size
@@ -190,11 +209,14 @@ func _build_ui() -> void:
 	sb.bg_color = Color(0.03, 0.05, 0.09, 0.98)
 	sb.border_color = Color(0.0, 0.85, 1.0, 0.85)
 	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
+	sb.corner_radius_top_left = 0
+	sb.corner_radius_top_right = 10
+	sb.corner_radius_bottom_left = 10
+	sb.corner_radius_bottom_right = 10
 	sb.shadow_color = Color(0.0, 0.85, 1.0, 0.25)
 	sb.shadow_size = 14
 	main_panel.add_theme_stylebox_override("panel", sb)
-	modal_wrapper.add_child(main_panel)
+	left_column.add_child(main_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 20)
@@ -207,7 +229,7 @@ func _build_ui() -> void:
 	root_vbox.add_theme_constant_override("separation", 10)
 	margin.add_child(root_vbox)
 
-	# 1. Header con Títulos y Contador
+	# A. Header con Títulos y Contador
 	var header_row := HBoxContainer.new()
 	header_row.add_theme_constant_override("separation", 16)
 	root_vbox.add_child(header_row)
@@ -250,14 +272,7 @@ func _build_ui() -> void:
 	max_rule_label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85, 0.75))
 	counter_box.add_child(max_rule_label)
 
-	# 2. Barra de Pestañas Dossier Sci-Fi
-	tabs_container = HBoxContainer.new()
-	tabs_container.add_theme_constant_override("separation", 4)
-	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	root_vbox.add_child(tabs_container)
-	_build_tabs_bar()
-
-	# 3. Warning Label Flasheable
+	# B. Warning Label Flasheable
 	warning_label = Label.new()
 	warning_label.text = ""
 	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -266,7 +281,7 @@ func _build_ui() -> void:
 	warning_label.modulate.a = 0.0
 	root_vbox.add_child(warning_label)
 
-	# 4. Scroll Container con Grilla de Tarjetas
+	# C. Scroll Container con Grilla de Tarjetas
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -279,13 +294,13 @@ func _build_ui() -> void:
 	items_grid.add_theme_constant_override("v_separation", 10)
 	scroll.add_child(items_grid)
 
-	# 5. Footer con atajos
+	# D. Footer con atajos
 	var footer_box := HBoxContainer.new()
 	footer_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	root_vbox.add_child(footer_box)
 
 	var hint_label := Label.new()
-	hint_label.text = "✦ [ESC] O CLIC EN EL FONDO PARA GUARDAR Y VOLVER | [Q/E] CAMBIAR PESTAÑA"
+	hint_label.text = "✦ [Q / E] CAMBIAR PESTAÑA | [ESC] O CLIC AFUERA PARA GUARDAR Y CERRAR"
 	hint_label.add_theme_font_size_override("font_size", 11)
 	hint_label.add_theme_color_override("font_color", Color(0.4, 0.75, 0.9, 0.75))
 	footer_box.add_child(hint_label)
@@ -299,22 +314,15 @@ func _build_tabs_bar() -> void:
 		var info: Dictionary = _tabs_info[i]
 		var tab_id: int = info["id"]
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(96, 32)
-		btn.focus_mode = Control.FOCUS_ALL
+		btn.custom_minimum_size = Vector2(102, 34)
+		btn.focus_mode = Control.FOCUS_NONE
 		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		btn.flat = true
+		btn.flat = false
 		btn.text = "%s [0]" % info["name"]
 		btn.add_theme_font_size_override("font_size", 11)
 		btn.pressed.connect(_on_tab_pressed.bind(tab_id))
 		tabs_container.add_child(btn)
 		_tab_buttons[tab_id] = btn
-
-		if i < _tabs_info.size() - 1:
-			var sep := Label.new()
-			sep.text = "│"
-			sep.add_theme_font_size_override("font_size", 12)
-			sep.add_theme_color_override("font_color", Color(0.2, 0.45, 0.65, 0.6))
-			tabs_container.add_child(sep)
 
 
 func _build_side_detail_panel(parent: Control) -> void:
@@ -355,42 +363,42 @@ func _build_side_detail_panel(parent: Control) -> void:
 
 	var icon_box := CenterContainer.new()
 	icon_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_box.custom_minimum_size = Vector2(0, 110)
+	icon_box.custom_minimum_size = Vector2(0, 130)
 	vbox.add_child(icon_box)
 
 	var icon_bg := PanelContainer.new()
 	icon_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_bg.custom_minimum_size = Vector2(100, 100)
+	icon_bg.custom_minimum_size = Vector2(120, 120)
 	var icon_bg_sb := StyleBoxFlat.new()
 	icon_bg_sb.bg_color = Color(0.04, 0.07, 0.13, 0.95)
-	icon_bg_sb.border_color = Color(0.0, 0.85, 1.0, 0.6)
+	icon_bg_sb.border_color = Color(0.0, 0.85, 1.0, 0.7)
 	icon_bg_sb.set_border_width_all(2)
 	icon_bg_sb.set_corner_radius_all(10)
-	icon_bg_sb.shadow_color = Color(0.0, 0.85, 1.0, 0.2)
-	icon_bg_sb.shadow_size = 8
+	icon_bg_sb.shadow_color = Color(0.0, 0.85, 1.0, 0.25)
+	icon_bg_sb.shadow_size = 10
 	icon_bg.add_theme_stylebox_override("panel", icon_bg_sb)
 	icon_box.add_child(icon_bg)
 
 	var icon_margin := MarginContainer.new()
 	icon_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_margin.add_theme_constant_override("margin_left", 6)
-	icon_margin.add_theme_constant_override("margin_top", 6)
-	icon_margin.add_theme_constant_override("margin_right", 6)
-	icon_margin.add_theme_constant_override("margin_bottom", 6)
+	icon_margin.add_theme_constant_override("margin_left", 8)
+	icon_margin.add_theme_constant_override("margin_top", 8)
+	icon_margin.add_theme_constant_override("margin_right", 8)
+	icon_margin.add_theme_constant_override("margin_bottom", 8)
 	icon_bg.add_child(icon_margin)
 
 	detail_icon_rect = TextureRect.new()
 	detail_icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	detail_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	detail_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	detail_icon_rect.custom_minimum_size = Vector2(88, 88)
+	detail_icon_rect.custom_minimum_size = Vector2(104, 104)
 	icon_margin.add_child(detail_icon_rect)
 
 	detail_title_label = Label.new()
 	detail_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	detail_title_label.text = "SELECCIONA UN ELEMENTO"
 	detail_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	detail_title_label.add_theme_font_size_override("font_size", 15)
+	detail_title_label.add_theme_font_size_override("font_size", 17)
 	detail_title_label.add_theme_color_override("font_color", Color(0.95, 0.98, 1.0))
 	detail_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(detail_title_label)
@@ -514,6 +522,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			var next_tab: int = (int(active_tab) + 1) % _tabs_info.size()
 			_on_tab_pressed(next_tab)
 			get_viewport().set_input_as_handled()
+	elif event is InputEventJoypadButton and event.pressed:
+		if event.button_index == JOY_BUTTON_LEFT_SHOULDER:
+			var prev_tab: int = (int(active_tab) - 1 + _tabs_info.size()) % _tabs_info.size()
+			_on_tab_pressed(prev_tab)
+			get_viewport().set_input_as_handled()
+		elif event.button_index == JOY_BUTTON_RIGHT_SHOULDER:
+			var next_tab: int = (int(active_tab) + 1) % _tabs_info.size()
+			_on_tab_pressed(next_tab)
+			get_viewport().set_input_as_handled()
 
 
 func _on_tab_pressed(tab_id: int) -> void:
@@ -578,17 +595,41 @@ func _refresh_all_tab_badges() -> void:
 		btn.text = "%s [%d/%d]" % [info["name"], banned.size(), max_bans]
 
 		var sb := StyleBoxFlat.new()
-		sb.set_corner_radius_all(6)
+		sb.corner_radius_top_left = 8
+		sb.corner_radius_top_right = 8
+		sb.corner_radius_bottom_left = 0
+		sb.corner_radius_bottom_right = 0
+
 		if is_active_tab:
-			sb.bg_color = Color(0.06, 0.18, 0.28, 0.95)
+			# Extrusión física hacia arriba: se fusiona sin borde inferior con el main_panel
+			sb.bg_color = Color(0.03, 0.05, 0.09, 0.98)
 			sb.border_color = info["accent"]
-			sb.set_border_width_all(2)
+			sb.border_width_top = 2
+			sb.border_width_left = 2
+			sb.border_width_right = 2
+			sb.border_width_bottom = 0
+			sb.content_margin_top = 8
+			sb.content_margin_bottom = 8
+			sb.content_margin_left = 10
+			sb.content_margin_right = 10
 			btn.add_theme_color_override("font_color", info["accent"])
+			btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
+			btn.z_index = 2
 		else:
-			sb.bg_color = Color(0.02, 0.04, 0.07, 0.7)
-			sb.border_color = Color(0.15, 0.25, 0.35, 0.5)
-			sb.set_border_width_all(1)
-			btn.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 0.8))
+			# Pestaña inactiva: aspecto de ficha guardada/recesada
+			sb.bg_color = Color(0.015, 0.025, 0.04, 0.8)
+			sb.border_color = Color(0.18, 0.28, 0.38, 0.6)
+			sb.border_width_top = 1
+			sb.border_width_left = 1
+			sb.border_width_right = 1
+			sb.border_width_bottom = 1
+			sb.content_margin_top = 5
+			sb.content_margin_bottom = 5
+			sb.content_margin_left = 8
+			sb.content_margin_right = 8
+			btn.add_theme_color_override("font_color", Color(0.55, 0.65, 0.75))
+			btn.add_theme_color_override("font_hover_color", Color(0.9, 0.95, 1.0))
+			btn.z_index = 1
 
 		btn.add_theme_stylebox_override("normal", sb)
 		btn.add_theme_stylebox_override("hover", sb)
@@ -613,6 +654,8 @@ func _load_active_tab() -> void:
 	_card_buttons.clear()
 	_card_panels.clear()
 	_card_badges.clear()
+	_card_icons.clear()
+	_card_ban_indicators.clear()
 	_card_data_map.clear()
 
 	var all_ids: Array = info["item_ids"]
@@ -651,31 +694,23 @@ func _create_item_card(item_id: StringName, tab_id: int) -> void:
 	icon_rect.custom_minimum_size = icon_size
 	icon_rect.texture = _resolve_icon_texture(item_id, tab_id)
 	margin.add_child(icon_rect)
+	_card_icons[item_id] = icon_rect
 
 	if is_banned:
-		icon_rect.modulate = Color(0.65, 0.4, 0.4, 0.55)
-	elif not is_unlocked:
-		icon_rect.modulate = Color(0.2, 0.2, 0.2, 0.4)
+		icon_rect.modulate = Color(0.65, 0.45, 0.45, 0.65)
 	else:
 		icon_rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-	# Badge de estado
-	var badge := Label.new()
-	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	badge.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	badge.add_theme_font_size_override("font_size", 9)
-	if not is_unlocked:
-		badge.text = "🔒 BLOQ"
-		badge.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.8))
-	elif is_banned:
-		badge.text = "EXCLUIDO"
-		badge.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35))
-	else:
-		badge.text = "ACTIVO"
-		badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.65))
-	panel.add_child(badge)
-	_card_badges[item_id] = badge
+	# Indicador sutil de exclusión en esquina superior derecha
+	var ban_ind := Label.new()
+	ban_ind.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ban_ind.text = "⊘"
+	ban_ind.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ban_ind.add_theme_font_size_override("font_size", 14)
+	ban_ind.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	ban_ind.visible = is_banned
+	panel.add_child(ban_ind)
+	_card_ban_indicators[item_id] = ban_ind
 
 	# Botón invisible de captura interactiva
 	var btn := Button.new()
@@ -710,14 +745,14 @@ func _update_card_panel_style(panel: PanelContainer, is_banned: bool, is_unlocke
 		sb.border_color = Color(0.2, 0.25, 0.3, 0.4)
 		sb.set_border_width_all(1)
 	elif is_banned:
-		sb.bg_color = Color(0.12, 0.03, 0.04, 0.9)
-		sb.border_color = Color(0.95, 0.2, 0.2, 0.8)
+		sb.bg_color = Color(0.14, 0.02, 0.03, 0.92)
+		sb.border_color = Color(0.95, 0.2, 0.2, 0.9)
 		sb.set_border_width_all(2)
-		sb.shadow_color = Color(0.9, 0.1, 0.1, 0.2)
+		sb.shadow_color = Color(0.9, 0.1, 0.1, 0.35)
 		sb.shadow_size = 6
 	else:
 		sb.bg_color = Color(0.03, 0.06, 0.1, 0.92)
-		sb.border_color = Color(0.0, 0.7, 0.9, 0.6)
+		sb.border_color = Color(0.0, 0.75, 0.95, 0.6)
 		sb.set_border_width_all(1)
 		sb.shadow_color = Color(0.0, 0.6, 0.9, 0.15)
 		sb.shadow_size = 4
@@ -729,8 +764,9 @@ func _check_item_unlocked(item_id: StringName, tab_id: int) -> bool:
 		TabCategory.WEAPONS, TabCategory.TOMES:
 			return true
 		_:
-			var unlocked: Array[StringName] = SaveManager.get_unlocked_items()
-			return unlocked.has(item_id) or unlocked.is_empty() # fallback a true si recién inicializado
+			if SaveManager.has_method("is_item_unlocked"):
+				return SaveManager.is_item_unlocked(item_id)
+			return true
 
 
 func _on_card_pressed(item_id: StringName, tab_id: int) -> void:
@@ -812,17 +848,15 @@ func _update_card_visuals(item_id: StringName, tab_id: int) -> void:
 	if _card_panels.has(item_id):
 		_update_card_panel_style(_card_panels[item_id], is_banned, is_unlocked)
 
-	if _card_badges.has(item_id):
-		var badge: Label = _card_badges[item_id]
-		if not is_unlocked:
-			badge.text = "🔒 BLOQ"
-			badge.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.8))
-		elif is_banned:
-			badge.text = "EXCLUIDO"
-			badge.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35))
+	if _card_icons.has(item_id):
+		var icon_rect: TextureRect = _card_icons[item_id]
+		if is_banned:
+			icon_rect.modulate = Color(0.65, 0.45, 0.45, 0.65)
 		else:
-			badge.text = "ACTIVO"
-			badge.add_theme_color_override("font_color", Color(0.2, 1.0, 0.65))
+			icon_rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+	if _card_ban_indicators.has(item_id):
+		_card_ban_indicators[item_id].visible = is_banned
 
 	var banned_ids: Array[StringName] = get_banned_ids_for_tab(tab_id)
 	var max_bans: int = get_max_bans_for_tab(tab_id)
@@ -943,10 +977,16 @@ func _resolve_icon_texture(item_id: StringName, tab_id: int) -> Texture2D:
 	var path := ""
 	match tab_id:
 		TabCategory.WEAPONS:
-			path = "res://assets/ui/icons/weapons/%s.png" % str(item_id)
+			var wpn: WeaponData = WeaponCatalogScript.get_weapon_by_id(item_id)
+			if wpn and wpn.icon:
+				return wpn.icon
+			path = "res://assets/characters/skills/weapons/icon_weapon_%s.png" % str(item_id)
 			if not ResourceLoader.exists(path):
-				path = "res://assets/ui/icons/weapons/icon_weapon_%s.png" % str(item_id)
+				path = "res://assets/ui/icons/weapons/%s.png" % str(item_id)
 		TabCategory.TOMES:
+			var tome = TomeCatalogScript.load_tome(item_id)
+			if tome and tome.icon:
+				return tome.icon
 			path = "res://assets/ui/icons/tomes/%s.png" % str(item_id)
 			if not ResourceLoader.exists(path):
 				path = "res://assets/ui/icons/tomes/icon_tome_%s.png" % str(item_id)

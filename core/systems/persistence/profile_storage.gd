@@ -22,7 +22,24 @@ static func get_default_profile() -> Dictionary:
 	return {
 		"unlocked_items": [
 			&"botas", &"espada", &"escudo", &"corazon", &"manzana",
-			&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj"
+			&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj",
+			&"telemetry_chip", &"quantum_thruster", &"expansion_lens",
+			&"quantum_chronometer", &"quantum_coin", &"biomass_capsule",
+			&"cursed_relic", &"reactor_cristal", &"heavy_condenser",
+			&"tachyon_piercer", &"quantum_key", &"green_card", &"red_card",
+			&"fusion_reactor", &"dense_turbine", &"collimating_lens",
+			&"split_salvo", &"rapid_injector", &"nanotitanium_plating",
+			&"afterburner", &"tachyon_prism",
+			&"tesla_coil", &"kinetic_armor", &"phase_thruster",
+			&"retaliation_swarm", &"entropy_catalyst", &"phase_inverter",
+			&"pyroclastic_battery", &"cryogenic_capacitor",
+			&"alchemical_converter", &"hemodynamic_cell", &"kinetic_converter",
+			&"gravitational_resonator", &"photonic_transducer", &"overdrain_module",
+			&"static_charge_battery", &"stellar_scrap",
+			&"abyssal_contract", &"antimatter_core", &"blood_capacitor",
+			&"entropy_engine", &"bifocal_lens", &"inertial_thruster",
+			&"chain_battery", &"photonic_prism", &"orbital_relay",
+			&"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
 		] as Array[StringName],
 		"unlocked_characters": [
 			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
@@ -475,7 +492,10 @@ static func get_unlocked_items() -> Array[StringName]:
 
 static func is_item_unlocked(item_id: StringName) -> bool:
 	var unlocked := get_unlocked_items()
-	return unlocked.has(item_id) or unlocked.is_empty()
+	if unlocked.has(item_id) or unlocked.is_empty():
+		return true
+	# En esta versión todos los ítems actuales están disponibles por defecto:
+	return true
 
 
 static func get_character_banlist(char_id: StringName) -> Array[StringName]:
