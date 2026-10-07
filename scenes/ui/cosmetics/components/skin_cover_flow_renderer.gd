@@ -185,9 +185,9 @@ func render_skin(
 	if animated and is_instance_valid(fullbody_texture):
 		if active_tween and active_tween.is_valid():
 			active_tween.kill()
-		var tree := Engine.get_main_loop() as SceneTree
-		if tree:
-			active_tween = tree.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		var anim_host: Control = artwork_frame if (artwork_frame and artwork_frame.is_inside_tree()) else fullbody_texture
+		if anim_host and anim_host.is_inside_tree():
+			active_tween = anim_host.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			if artwork_frame:
 				artwork_frame.scale = Vector2(0.94, 0.94)
 				active_tween.tween_property(artwork_frame, "scale", Vector2(1.0, 1.0), 0.24)

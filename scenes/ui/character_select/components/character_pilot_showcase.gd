@@ -31,9 +31,8 @@ func setup(
 
 	if fullbody_texture:
 		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_PASS
-		fullbody_texture.item_rect_changed.connect(func():
-			fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
-		)
+		if not fullbody_texture.resized.is_connected(_on_fullbody_resized):
+			fullbody_texture.resized.connect(_on_fullbody_resized)
 
 	if pilot_button:
 		pilot_button.focus_mode = Control.FOCUS_NONE
@@ -41,6 +40,13 @@ func setup(
 		pilot_button.mouse_exited.connect(on_mouse_exited)
 		pilot_button.pressed.connect(on_button_pressed)
 		pilot_button.tooltip_text = "Haz clic para ver y equipar los aspectos de la piloto"
+
+
+func _on_fullbody_resized() -> void:
+	if is_instance_valid(fullbody_texture):
+		var target_pivot := Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
+		if not fullbody_texture.pivot_offset.is_equal_approx(target_pivot):
+			fullbody_texture.pivot_offset = target_pivot
 
 
 func _setup_pilot_backlight() -> void:
@@ -64,52 +70,53 @@ func _setup_pilot_backlight() -> void:
 
 
 func on_mouse_entered() -> void:
-	if not fullbody_texture:
+	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
-	fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
+	_on_fullbody_resized()
 	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
 		_pilot_hover_tween.kill()
-	var tree := Engine.get_main_loop() as SceneTree
-	if not tree:
-		return
-	_pilot_hover_tween = tree.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pilot_hover_tween = fullbody_texture.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.22)
 	if backlight_glow:
 		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.85, 0.22)
 
-	var audio_mgr := tree.root.get_node_or_null("AudioManager") if tree.root else null
+	var audio_mgr := fullbody_texture.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.15)
 
 
 func on_mouse_exited() -> void:
-	if not fullbody_texture:
+	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
 	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
 		_pilot_hover_tween.kill()
-	var tree := Engine.get_main_loop() as SceneTree
-	if not tree:
-		return
-	_pilot_hover_tween = tree.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pilot_hover_tween = fullbody_texture.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_pilot_hover_tween.tween_property(fullbody_texture, "scale", Vector2.ONE, 0.22)
 	if backlight_glow:
 		_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.0, 0.22)
 
 
 func on_button_pressed() -> void:
-	var tree := Engine.get_main_loop() as SceneTree
-	var audio_mgr := tree.root.get_node_or_null("AudioManager") if tree and tree.root else null
+	if not fullbody_texture or not fullbody_texture.is_inside_tree():
+		return
+	var audio_mgr := fullbody_texture.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
 
-	if fullbody_texture and tree:
-		fullbody_texture.pivot_offset = Vector2(fullbody_texture.size.x * 0.5, fullbody_texture.size.y)
-		var tw := tree.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.06, 1.06), 0.08)
-		tw.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.14)
+	_on_fullbody_resized()
+	var tw := fullbody_texture.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(fullbody_texture, "scale", Vector2(1.06, 1.06), 0.08)
+	tw.tween_property(fullbody_texture, "scale", Vector2(1.035, 1.035), 0.14)
 
 	if on_pilot_pressed_callback.is_valid():
 		on_pilot_pressed_callback.call()
+
+
+func cleanup() -> void:
+	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
+		_pilot_hover_tween.kill()
+	if _breathe_tween and _breathe_tween.is_valid():
+		_breathe_tween.kill()
 
 
 const SHOWCASE_SHADER := preload("res://shaders/pilot_showcase_hologram.gdshader")
@@ -122,9 +129,10 @@ func start_idle_breathing() -> void:
 		_breathe_tween.kill()
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
+	fullbody_texture.position.y = 0.0
 	_breathe_tween = fullbody_texture.create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_breathe_tween.tween_property(fullbody_texture, "position:y", 4.0, 2.4).as_relative()
-	_breathe_tween.tween_property(fullbody_texture, "position:y", -4.0, 2.4).as_relative()
+	_breathe_tween.tween_property(fullbody_texture, "position:y", 4.0, 2.4)
+	_breathe_tween.tween_property(fullbody_texture, "position:y", 0.0, 2.4)
 
 
 func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked: bool) -> void:

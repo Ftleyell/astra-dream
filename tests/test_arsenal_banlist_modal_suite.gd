@@ -83,12 +83,20 @@ func _test_modal_structure_and_side_panel() -> void:
 	assert_true(modal.dim_overlay.material is ShaderMaterial, "DimOverlay debe usar ShaderMaterial con screen blur")
 	assert_true(modal.side_detail_panel != null, "Debe tener SideDetailPanel")
 	assert_true(modal.side_detail_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE, "SideDetailPanel debe ignorar eventos de mouse")
-	assert_true(modal.card_size == Vector2(80, 80), "Tarjetas deben medir 80x80 px")
+	# Verificar inspección de armas y tomos sin errores
+	modal._inspect_item(WeaponCatalogScript.POOL_WEAPON_IDS[0], ArsenalBanlistModalScript.TabCategory.WEAPONS)
+	assert_true(not modal.detail_title_label.text.is_empty(), "Título de detalle debe poblarse con arma")
+
+	modal._on_tab_pressed(ArsenalBanlistModalScript.TabCategory.TOMES)
+	modal._inspect_item(TomeCatalogScript.ALL_TOME_IDS[0], ArsenalBanlistModalScript.TabCategory.TOMES)
+	assert_true(not modal.detail_title_label.text.is_empty(), "Título de detalle debe poblarse con tomo")
+	assert_true(not modal.detail_stats_label.text.contains("base_damage") and not modal.detail_stats_label.text.contains("max_health"), "Detalle de tomo no debe contener identificadores crudos")
+	assert_true(modal.detail_stats_label.text.contains("Daño Base") or modal.detail_stats_label.text.contains("Vida Máxima"), "Detalle de tomo debe mostrar nombre en español")
 
 	modal.close_modal()
 	assert_true(not modal.is_open, "Modal debe cerrarse tras close_modal()")
 	modal.queue_free()
-	print("  ✓ [PASS] Test 2: Estructura visual, blur y panel de inspección lateral validados.")
+	print("  ✓ [PASS] Test 2: Estructura visual, blur y panel de inspección lateral (armas y tomos) validados.")
 
 
 func _test_ban_limits_and_denial_behavior() -> void:

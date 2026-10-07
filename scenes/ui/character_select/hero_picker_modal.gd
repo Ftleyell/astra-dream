@@ -51,6 +51,7 @@ var _card_buttons: Array[Button] = []
 var _last_click_msec: int = 0
 var _last_clicked_index: int = -1
 var _preview_tween: Tween = null
+var _is_confirming: bool = false
 
 
 func _ready() -> void:
@@ -92,6 +93,7 @@ func open_picker(p_roster: Array[CharacterData], p_current_id: StringName, p_ini
 	_roster = p_roster
 	is_initial_entry = p_initial
 	is_open = true
+	_is_confirming = false
 	show()
 
 	_current_index = 0
@@ -112,6 +114,9 @@ func close_picker() -> void:
 	if not is_open:
 		return
 	is_open = false
+	_is_confirming = false
+	if _preview_tween and _preview_tween.is_valid():
+		_preview_tween.kill()
 	hide()
 
 
@@ -170,8 +175,9 @@ func _select_index(idx: int) -> void:
 
 
 func _confirm_selection() -> void:
-	if _roster.is_empty():
+	if not is_open or _is_confirming or _roster.is_empty():
 		return
+	_is_confirming = true
 	var char_data: CharacterData = _roster[_current_index]
 	var cid: StringName = char_data.character_id
 
@@ -180,7 +186,7 @@ func _confirm_selection() -> void:
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.15)
 
 	close_picker()
-	hero_confirmed.emit(cid)
+	hero_confirmed.emit.call_deferred(cid)
 
 
 func _cancel_selection() -> void:
@@ -189,7 +195,7 @@ func _cancel_selection() -> void:
 		audio_mgr.play_sfx(&"ui_click", 0.0, 0.9)
 
 	close_picker()
-	hero_cancelled.emit()
+	hero_cancelled.emit.call_deferred()
 
 
 func _build_dock_cards() -> void:
@@ -216,6 +222,8 @@ func _build_dock_cards() -> void:
 
 		var card_idx: int = i
 		btn.pressed.connect(func() -> void:
+			if not is_open or _is_confirming:
+				return
 			var now_msec: int = Time.get_ticks_msec()
 			if _last_clicked_index == card_idx and (now_msec - _last_click_msec) < 380:
 				_confirm_selection()
@@ -226,11 +234,11 @@ func _build_dock_cards() -> void:
 		)
 
 		btn.mouse_entered.connect(func() -> void:
-			if card_idx != _current_index:
+			if is_instance_valid(btn) and card_idx != _current_index:
 				btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(btn, "scale", Vector2(1.06, 1.06), 0.12)
 		)
 		btn.mouse_exited.connect(func() -> void:
-			if card_idx != _current_index:
+			if is_instance_valid(btn) and card_idx != _current_index:
 				btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
 		)
 

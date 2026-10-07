@@ -1163,12 +1163,12 @@ func _on_hero_confirmed(char_id: StringName) -> void:
 	if dock_container:
 		dock_container.visible = true
 	_select_character(char_id)
-	if ship_button:
-		ship_button.grab_focus()
-	elif tape_launch_btn:
-		tape_launch_btn.grab_focus()
-	elif launch_button:
-		launch_button.grab_focus()
+	if ship_button and ship_button.is_inside_tree() and ship_button.is_visible_in_tree():
+		ship_button.call_deferred("grab_focus")
+	elif tape_launch_btn and tape_launch_btn.is_inside_tree() and tape_launch_btn.is_visible_in_tree():
+		tape_launch_btn.call_deferred("grab_focus")
+	elif launch_button and launch_button.is_inside_tree() and launch_button.is_visible_in_tree():
+		launch_button.call_deferred("grab_focus")
 
 
 func _on_hero_cancelled() -> void:
@@ -1201,3 +1201,8 @@ func _on_debug_modal_closed() -> void:
 
 func _on_pilot_button_pressed() -> void:
 	_on_skins_button_pressed()
+
+
+func _exit_tree() -> void:
+	if pilot_showcase and pilot_showcase.has_method("cleanup"):
+		pilot_showcase.cleanup()

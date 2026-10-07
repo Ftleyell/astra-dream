@@ -226,7 +226,10 @@ func _animate_ship(data: Dictionary) -> void:
 	var id: StringName = data["id"]
 	var duration: float = data["duration"]
 
-	var tw := create_tween()
+	if not is_instance_valid(node) or not node.is_inside_tree():
+		return
+
+	var tw := node.create_tween()
 	tw.tween_method(func(val: float):
 		if not is_instance_valid(node):
 			return
@@ -242,7 +245,7 @@ func _animate_ship(data: Dictionary) -> void:
 			node.rotation = forward.angle() + PI * 0.5
 
 		# Actualizar estela (en coordenadas locales de ships_container para quedar detrás de la UI y del piloto)
-		if is_instance_valid(trail):
+		if is_instance_valid(trail) and is_instance_valid(ships_container):
 			var engine_pos: Vector2 = current_pos - forward.normalized() * 16.0
 			var local_engine_pos: Vector2 = ships_container.to_local(engine_pos)
 			var pts: Array = data["trail_points"]
@@ -285,6 +288,13 @@ func _cleanup_ship(id: StringName, node: Node2D, trail: Line2D) -> void:
 		trail.queue_free()
 	if is_instance_valid(node):
 		node.queue_free()
+
+func _exit_tree() -> void:
+	for id in _active_ships.keys():
+		var node = _active_ships[id]
+		if is_instance_valid(node):
+			node.queue_free()
+	_active_ships.clear()
 
 var _ship_texture_cache: Dictionary = {}
 

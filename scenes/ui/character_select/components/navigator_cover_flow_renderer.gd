@@ -387,15 +387,13 @@ func animate_center_card_2d(animate: bool, slide_h: int, slide_v: int, is_unlock
 		fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
 		return
 
-	var tree := Engine.get_main_loop() as SceneTree
-	if tree:
-		if artwork_frame:
-			artwork_frame.position = Vector2(50.0 * float(slide_h), 40.0 * float(slide_v))
-			artwork_frame.modulate = Color(1.25, 1.25, 1.25, 1.0)
+	if artwork_frame and artwork_frame.is_inside_tree():
+		artwork_frame.position = Vector2(50.0 * float(slide_h), 40.0 * float(slide_v))
+		artwork_frame.modulate = Color(1.25, 1.25, 1.25, 1.0)
 		var target_modulate := Color.WHITE if is_unlocked else Color(0.68, 0.72, 0.85, 0.85)
-		fullbody_texture.modulate = target_modulate
+		if fullbody_texture:
+			fullbody_texture.modulate = target_modulate
 
-		active_tween = tree.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		if artwork_frame:
-			active_tween.tween_property(artwork_frame, "position", Vector2.ZERO, 0.24)
-			active_tween.tween_property(artwork_frame, "modulate", Color.WHITE, 0.24)
+		active_tween = artwork_frame.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		active_tween.tween_property(artwork_frame, "position", Vector2.ZERO, 0.24)
+		active_tween.tween_property(artwork_frame, "modulate", Color.WHITE, 0.24)

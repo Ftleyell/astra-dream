@@ -190,13 +190,15 @@ func _build_ui() -> void:
 	left_column.name = "LeftColumn"
 	left_column.mouse_filter = Control.MOUSE_FILTER_PASS
 	left_column.add_theme_constant_override("separation", -2) # Solapamiento físico con el borde de la ventana
+	left_column.custom_minimum_size = Vector2(modal_size.x, modal_size.y + 36)
 	modal_wrapper.add_child(left_column)
 
 	# 1. Pestañas Físicas Superiores (Extrusión hacia arriba estilo carpeta)
 	tabs_container = HBoxContainer.new()
 	tabs_container.name = "TabsContainer"
 	tabs_container.mouse_filter = Control.MOUSE_FILTER_PASS
-	tabs_container.add_theme_constant_override("separation", 4)
+	tabs_container.add_theme_constant_override("separation", 2)
+	tabs_container.custom_minimum_size = Vector2(modal_size.x, 36)
 	tabs_container.alignment = BoxContainer.ALIGNMENT_BEGIN
 	left_column.add_child(tabs_container)
 	_build_tabs_bar()
@@ -245,7 +247,7 @@ func _build_ui() -> void:
 	title_box.add_child(title_label)
 
 	subtitle_label = Label.new()
-	subtitle_label.text = "Excluye hasta un máximo del 40% de elementos por conjunto."
+	subtitle_label.text = "Todos los elementos están ACTIVOS por defecto. Puedes bloquear hasta un 40% del conjunto."
 	subtitle_label.add_theme_font_size_override("font_size", 12)
 	subtitle_label.add_theme_color_override("font_color", Color(0.65, 0.75, 0.9))
 	title_box.add_child(subtitle_label)
@@ -259,14 +261,14 @@ func _build_ui() -> void:
 	header_row.add_child(counter_box)
 
 	counter_label = Label.new()
-	counter_label.text = "BLOQUEADOS: 0 / 4"
+	counter_label.text = "ACTIVOS: 11 / 11  |  BANEOS: 0 / 4"
 	counter_label.add_theme_font_size_override("font_size", 15)
 	counter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	counter_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.8))
 	counter_box.add_child(counter_label)
 
 	max_rule_label = Label.new()
-	max_rule_label.text = "(MÁXIMO 40% EXCLUSIONES)"
+	max_rule_label.text = "(MÁXIMO 40% BANEOS · MÍNIMO 7 ACTIVOS)"
 	max_rule_label.add_theme_font_size_override("font_size", 10)
 	max_rule_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	max_rule_label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85, 0.75))
@@ -283,6 +285,7 @@ func _build_ui() -> void:
 
 	# C. Scroll Container con Grilla de Tarjetas
 	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 420)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root_vbox.add_child(scroll)
@@ -314,12 +317,14 @@ func _build_tabs_bar() -> void:
 		var info: Dictionary = _tabs_info[i]
 		var tab_id: int = info["id"]
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(102, 34)
+		btn.custom_minimum_size = Vector2(100, 36)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		btn.flat = false
+		btn.clip_text = true
 		btn.text = "%s [0]" % info["name"]
-		btn.add_theme_font_size_override("font_size", 11)
+		btn.add_theme_font_size_override("font_size", 10)
 		btn.pressed.connect(_on_tab_pressed.bind(tab_id))
 		tabs_container.add_child(btn)
 		_tab_buttons[tab_id] = btn
@@ -328,7 +333,8 @@ func _build_tabs_bar() -> void:
 func _build_side_detail_panel(parent: Control) -> void:
 	side_detail_panel = PanelContainer.new()
 	side_detail_panel.name = "SideDetailPanel"
-	side_detail_panel.custom_minimum_size = side_panel_size
+	side_detail_panel.custom_minimum_size = Vector2(side_panel_size.x, modal_size.y)
+	side_detail_panel.size_flags_vertical = Control.SIZE_SHRINK_END
 	side_detail_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var side_sb := StyleBoxFlat.new()
@@ -588,17 +594,25 @@ func _refresh_all_tab_badges() -> void:
 		if not btn:
 			continue
 
+		var total_items: int = (info["item_ids"] as Array).size()
 		var banned: Array[StringName] = get_banned_ids_for_tab(tab_id)
 		var max_bans: int = get_max_bans_for_tab(tab_id)
 		var is_active_tab: bool = (tab_id == int(active_tab))
 
-		btn.text = "%s [%d/%d]" % [info["name"], banned.size(), max_bans]
+		if banned.is_empty():
+			btn.text = "%s (%d)" % [info["name"], total_items]
+		else:
+			btn.text = "%s (%d) [%d⊘]" % [info["name"], total_items - banned.size(), banned.size()]
 
 		var sb := StyleBoxFlat.new()
 		sb.corner_radius_top_left = 8
 		sb.corner_radius_top_right = 8
 		sb.corner_radius_bottom_left = 0
 		sb.corner_radius_bottom_right = 0
+		sb.content_margin_top = 7
+		sb.content_margin_bottom = 7
+		sb.content_margin_left = 4
+		sb.content_margin_right = 4
 
 		if is_active_tab:
 			# Extrusión física hacia arriba: se fusiona sin borde inferior con el main_panel
@@ -608,10 +622,6 @@ func _refresh_all_tab_badges() -> void:
 			sb.border_width_left = 2
 			sb.border_width_right = 2
 			sb.border_width_bottom = 0
-			sb.content_margin_top = 8
-			sb.content_margin_bottom = 8
-			sb.content_margin_left = 10
-			sb.content_margin_right = 10
 			btn.add_theme_color_override("font_color", info["accent"])
 			btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
 			btn.z_index = 2
@@ -623,10 +633,6 @@ func _refresh_all_tab_badges() -> void:
 			sb.border_width_left = 1
 			sb.border_width_right = 1
 			sb.border_width_bottom = 1
-			sb.content_margin_top = 5
-			sb.content_margin_bottom = 5
-			sb.content_margin_left = 8
-			sb.content_margin_right = 8
 			btn.add_theme_color_override("font_color", Color(0.55, 0.65, 0.75))
 			btn.add_theme_color_override("font_hover_color", Color(0.9, 0.95, 1.0))
 			btn.z_index = 1
@@ -643,10 +649,14 @@ func _load_active_tab() -> void:
 	subtitle_label.text = info["subtitle"]
 	title_label.add_theme_color_override("font_color", info["accent"])
 
+	var total_items: int = (info["item_ids"] as Array).size()
 	var banned_ids: Array[StringName] = get_banned_ids_for_tab(int(active_tab))
 	var max_bans: int = get_max_bans_for_tab(int(active_tab))
-	counter_label.text = "BLOQUEADOS: %d / %d" % [banned_ids.size(), max_bans]
-	max_rule_label.text = "(MÁXIMO 40%% / MÍNIMO %d ACTIVOS)" % [(info["item_ids"] as Array).size() - max_bans]
+	var active_count: int = total_items - banned_ids.size()
+	var min_active: int = total_items - max_bans
+
+	counter_label.text = "ACTIVOS: %d / %d  |  BANEOS: %d / %d" % [active_count, total_items, banned_ids.size(), max_bans]
+	max_rule_label.text = "(MÁXIMO 40%% BANEOS · MÍNIMO %d ACTIVOS EN COMBATE)" % min_active
 
 	# Limpiar grilla anterior
 	for child in items_grid.get_children():
@@ -697,17 +707,19 @@ func _create_item_card(item_id: StringName, tab_id: int) -> void:
 	_card_icons[item_id] = icon_rect
 
 	if is_banned:
-		icon_rect.modulate = Color(0.65, 0.45, 0.45, 0.65)
+		icon_rect.modulate = Color(0.45, 0.25, 0.25, 0.45)
 	else:
 		icon_rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-	# Indicador sutil de exclusión en esquina superior derecha
+	# Indicador centralizado y legible de exclusión
 	var ban_ind := Label.new()
 	ban_ind.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ban_ind.set_anchors_preset(Control.PRESET_FULL_RECT)
 	ban_ind.text = "⊘"
-	ban_ind.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	ban_ind.add_theme_font_size_override("font_size", 14)
-	ban_ind.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	ban_ind.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ban_ind.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	ban_ind.add_theme_font_size_override("font_size", 38)
+	ban_ind.add_theme_color_override("font_color", Color(1.0, 0.25, 0.25, 0.95))
 	ban_ind.visible = is_banned
 	panel.add_child(ban_ind)
 	_card_ban_indicators[item_id] = ban_ind
@@ -740,20 +752,21 @@ func _create_item_card(item_id: StringName, tab_id: int) -> void:
 func _update_card_panel_style(panel: PanelContainer, is_banned: bool, is_unlocked: bool) -> void:
 	var sb := StyleBoxFlat.new()
 	sb.set_corner_radius_all(8)
+	sb.set_border_width_all(2)
+	sb.set_content_margin_all(4)
+
 	if not is_unlocked:
 		sb.bg_color = Color(0.015, 0.02, 0.03, 0.7)
 		sb.border_color = Color(0.2, 0.25, 0.3, 0.4)
-		sb.set_border_width_all(1)
+		sb.shadow_size = 0
 	elif is_banned:
 		sb.bg_color = Color(0.14, 0.02, 0.03, 0.92)
 		sb.border_color = Color(0.95, 0.2, 0.2, 0.9)
-		sb.set_border_width_all(2)
 		sb.shadow_color = Color(0.9, 0.1, 0.1, 0.35)
-		sb.shadow_size = 6
+		sb.shadow_size = 4
 	else:
 		sb.bg_color = Color(0.03, 0.06, 0.1, 0.92)
 		sb.border_color = Color(0.0, 0.75, 0.95, 0.6)
-		sb.set_border_width_all(1)
 		sb.shadow_color = Color(0.0, 0.6, 0.9, 0.15)
 		sb.shadow_size = 4
 	panel.add_theme_stylebox_override("panel", sb)
@@ -851,16 +864,19 @@ func _update_card_visuals(item_id: StringName, tab_id: int) -> void:
 	if _card_icons.has(item_id):
 		var icon_rect: TextureRect = _card_icons[item_id]
 		if is_banned:
-			icon_rect.modulate = Color(0.65, 0.45, 0.45, 0.65)
+			icon_rect.modulate = Color(0.45, 0.25, 0.25, 0.45)
 		else:
 			icon_rect.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 	if _card_ban_indicators.has(item_id):
 		_card_ban_indicators[item_id].visible = is_banned
 
+	var info: Dictionary = _tabs_info[tab_id]
+	var total_items: int = (info["item_ids"] as Array).size()
 	var banned_ids: Array[StringName] = get_banned_ids_for_tab(tab_id)
 	var max_bans: int = get_max_bans_for_tab(tab_id)
-	counter_label.text = "BLOQUEADOS: %d / %d" % [banned_ids.size(), max_bans]
+	var active_count: int = total_items - banned_ids.size()
+	counter_label.text = "ACTIVOS: %d / %d  |  BANEOS: %d / %d" % [active_count, total_items, banned_ids.size(), max_bans]
 
 
 func _on_card_inspected(item_id: StringName, tab_id: int) -> void:
@@ -922,8 +938,10 @@ func _inspect_tome(tome_id: StringName) -> void:
 	detail_rarity_label.add_theme_color_override("font_color", Color(0.85, 0.5, 1.0))
 
 	if tome:
-		detail_title_label.text = tome.tome_name.to_upper()
-		detail_stats_label.text = "Atributo: %s (+%.1f por rango)" % [tome.stat_affected, tome.value_per_rank]
+		detail_title_label.text = tome.display_name.to_upper()
+		var stat_display: String = get_stat_display_name(tome.stat_name)
+		var bonus_str: String = format_stat_bonus(tome.stat_value_per_level, tome.is_percentage, tome.stat_name)
+		detail_stats_label.text = "Atributo: %s (%s por nivel)" % [stat_display, bonus_str]
 		detail_desc_label.text = tome.description
 	else:
 		detail_title_label.text = str(tome_id).to_upper()
@@ -955,11 +973,14 @@ func _inspect_inventory_item(item_id: StringName) -> void:
 
 		var stats_desc := ""
 		if not item.stat_name.is_empty():
-			var sign_str := "+" if item.stat_value >= 0 else ""
-			stats_desc = "%s%s en %s" % [sign_str, str(item.stat_value), item.stat_name]
+			var val_str := format_stat_bonus(item.stat_value, item.is_percentage, item.stat_name)
+			var name_str := get_stat_display_name(item.stat_name)
+			stats_desc = "%s en %s" % [val_str, name_str]
 		if not item.secondary_stat_name.is_empty():
-			var sign_str2 := "+" if item.secondary_stat_value >= 0 else ""
-			stats_desc += " | %s%s en %s" % [sign_str2, str(item.secondary_stat_value), item.secondary_stat_name]
+			var val_str2 := format_stat_bonus(item.secondary_stat_value, item.secondary_is_percentage, item.secondary_stat_name)
+			var name_str2 := get_stat_display_name(item.secondary_stat_name)
+			var sep := "  |  " if not stats_desc.is_empty() else ""
+			stats_desc += "%s%s en %s" % [sep, val_str2, name_str2]
 		detail_stats_label.text = stats_desc
 		detail_desc_label.text = item.description
 	else:
@@ -967,6 +988,62 @@ func _inspect_inventory_item(item_id: StringName) -> void:
 		detail_rarity_label.text = "MÓDULO DE ARSENAL"
 		detail_stats_label.text = ""
 		detail_desc_label.text = "Módulo estratégico de hangar espacial."
+
+
+static func get_stat_display_name(stat_key: StringName) -> String:
+	match stat_key:
+		&"base_damage":
+			return "Daño Base"
+		&"attack_speed":
+			return "Cadencia de Ataque"
+		&"movement_speed", &"move_speed":
+			return "Velocidad de Movimiento"
+		&"max_health":
+			return "Vida Máxima"
+		&"health_regen":
+			return "Regeneración de Vida"
+		&"armor":
+			return "Armadura"
+		&"crit_chance":
+			return "Probabilidad Crítica"
+		&"crit_damage":
+			return "Daño Crítico"
+		&"pickup_radius":
+			return "Radio de Recogida"
+		&"luck":
+			return "Suerte"
+		&"curse":
+			return "Maldición"
+		&"cooldown_reduction":
+			return "Reducción de Enfriamiento"
+		&"projectile_speed":
+			return "Velocidad de Proyectil"
+		&"weapon_size":
+			return "Área de Proyectiles"
+		&"projectile_count":
+			return "Proyectiles Adicionales"
+		&"exp_multiplier":
+			return "EXP Obtenida"
+		&"credits_multiplier":
+			return "Créditos Obtenidos"
+		&"biomass_multiplier":
+			return "Biomasa Obtenida"
+		_:
+			return str(stat_key).capitalize().replace("_", " ")
+
+
+static func format_stat_bonus(val: float, is_pct: bool, stat_key: StringName) -> String:
+	var sign_str: String = "+" if val >= 0.0 else ""
+	var is_effective_pct: bool = is_pct or (absf(val) < 2.0 and stat_key != &"health_regen" and stat_key != &"armor" and stat_key != &"curse" and stat_key != &"projectile_count")
+	if is_effective_pct:
+		var pct_val: float = val * (100.0 if absf(val) <= 1.0 else 1.0)
+		return "%s%.0f%%" % [sign_str, pct_val]
+	elif stat_key == &"pickup_radius":
+		return "%s%d px" % [sign_str, int(roundf(val))]
+	elif is_equal_approx(val, roundf(val)):
+		return "%s%d" % [sign_str, int(val)]
+	else:
+		return "%s%.1f" % [sign_str, val]
 
 
 # ==============================================================================
