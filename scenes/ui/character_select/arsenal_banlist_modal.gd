@@ -238,26 +238,32 @@ func _build_ui() -> void:
 
 	var title_box := VBoxContainer.new()
 	title_box.add_theme_constant_override("separation", 2)
+	title_box.custom_minimum_size = Vector2(400, 48)
+	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_row.add_child(title_box)
 
 	title_label = Label.new()
 	title_label.text = "GESTIÓN DE ARSENAL // BANLIST"
 	title_label.add_theme_font_size_override("font_size", 18)
 	title_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0))
+	title_label.clip_text = true
 	title_box.add_child(title_label)
 
 	subtitle_label = Label.new()
 	subtitle_label.text = "Todos los elementos están ACTIVOS por defecto. Puedes bloquear hasta un 40% del conjunto."
 	subtitle_label.add_theme_font_size_override("font_size", 12)
 	subtitle_label.add_theme_color_override("font_color", Color(0.65, 0.75, 0.9))
+	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subtitle_label.clip_text = true
 	title_box.add_child(subtitle_label)
 
 	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spacer.size_flags_horizontal = Control.SIZE_SHRINK_END
 	header_row.add_child(spacer)
 
 	var counter_box := VBoxContainer.new()
 	counter_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	counter_box.custom_minimum_size = Vector2(280, 48)
 	header_row.add_child(counter_box)
 
 	counter_label = Label.new()
@@ -280,12 +286,13 @@ func _build_ui() -> void:
 	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning_label.add_theme_font_size_override("font_size", 12)
 	warning_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35))
+	warning_label.custom_minimum_size = Vector2(0, 16)
 	warning_label.modulate.a = 0.0
 	root_vbox.add_child(warning_label)
 
 	# C. Scroll Container con Grilla de Tarjetas
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 420)
+	scroll.custom_minimum_size = Vector2(modal_size.x - 40, 420)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root_vbox.add_child(scroll)
@@ -313,12 +320,13 @@ func _build_ui() -> void:
 
 
 func _build_tabs_bar() -> void:
+	var tab_width: float = floor((modal_size.x - ((_tabs_info.size() - 1) * 2.0)) / float(_tabs_info.size()))
 	for i in range(_tabs_info.size()):
 		var info: Dictionary = _tabs_info[i]
 		var tab_id: int = info["id"]
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(100, 36)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.custom_minimum_size = Vector2(tab_width, 36)
+		btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		btn.flat = false

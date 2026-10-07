@@ -26,9 +26,8 @@ const COMMIT_TELEMETRY: String = ">>> IGNICIÓN DE HIPERESPACIO: COMPROMETIDA <<
 
 @onready var glass_bg: ColorRect = $GlassBackground
 @onready var marquee_zone: Control = $MarqueeZone
-@onready var marquee_display: CanvasGroup = $MarqueeZone/MarqueeDisplay
-@onready var label_a: Label = $MarqueeZone/MarqueeDisplay/MarqueeLabelA
-@onready var label_b: Label = $MarqueeZone/MarqueeDisplay/MarqueeLabelB
+@onready var label_a: Label = $MarqueeZone/MarqueeLabelA
+@onready var label_b: Label = $MarqueeZone/MarqueeLabelB
 @onready var chassis_sep: ColorRect = $ChassisSeparator
 @onready var anchor_action_label: Label = $ConfirmationAnchor/AnchorActionLabel
 @onready var prompt_glyph: Control = $ConfirmationAnchor/PromptGlyph
@@ -253,20 +252,19 @@ func _execute_commit_sequence() -> void:
 		current_chassis_color = color_focus
 	).set_delay(0.03)
 	
-	if is_instance_valid(marquee_display):
-		commit.tween_property(marquee_display, "scale:x", 0.0, 0.08).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	if is_instance_valid(marquee_zone):
+		commit.tween_property(marquee_zone, "scale:x", 0.0, 0.08).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 		commit.tween_callback(func() -> void:
 			active_telemetry_text = COMMIT_TELEMETRY
 			if is_instance_valid(label_a):
 				label_a.text = active_telemetry_text
 				label_a.position.x = 0.0
 				label_a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				if is_instance_valid(marquee_zone):
-					label_a.size.x = marquee_zone.size.x
+				label_a.size.x = marquee_zone.size.x
 			if is_instance_valid(label_b):
 				label_b.text = ""
 		)
-		commit.tween_property(marquee_display, "scale:x", 1.0, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		commit.tween_property(marquee_zone, "scale:x", 1.0, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	commit.parallel().tween_property(self, "bracket_inset", -18.0, 0.20).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	
 	commit.tween_interval(0.35)

@@ -71,35 +71,44 @@ func setup_ship_and_weapon(
 func _apply_weapon_optical_centering() -> void:
 	if not weapon_icon or not weapon_icon.texture:
 		return
-	
+
 	var raw_tex: Texture2D = weapon_icon.texture
 	if raw_tex is AtlasTexture:
 		raw_tex = (raw_tex as AtlasTexture).atlas
 	if not raw_tex:
 		return
 
-	var tw: float = float(raw_tex.get_width())
-	var th: float = float(raw_tex.get_height())
-	if tw <= 0.0 or th <= 0.0:
+	var tw: int = raw_tex.get_width()
+	var th: int = raw_tex.get_height()
+	if tw <= 0 or th <= 0:
 		return
 
-	# Si es un sprite de arma orbital con margen de rotación (256x256 o 1024x1024)
-	# recortamos estrictamente a la región visible con un margen equilibrado del 8%
-	if tw == 256.0 or tw == 1024.0:
-		var ratio: float = tw / 256.0
-		# Rectángulo del contenido visible centrado:
-		# En 256x256, el arma va de x: 88..248, y: 88..168 (ancho ~160, alto ~80)
-		var crop_x: float = 84.0 * ratio
-		var crop_y: float = 80.0 * ratio
-		var crop_w: float = 168.0 * ratio
-		var crop_h: float = 96.0 * ratio
+	# Obtener la imagen subyacente para calcular el bounding box de píxeles no transparentes
+	var img: Image = raw_tex.get_image()
+	if not img:
+		return
 
-		var atlas := AtlasTexture.new()
-		atlas.atlas = raw_tex
-		atlas.region = Rect2(crop_x, crop_y, crop_w, crop_h)
-		weapon_icon.texture = atlas
-		weapon_icon.position = Vector2.ZERO
-		weapon_icon.scale = Vector2.ONE
+	var used_rect: Rect2i = img.get_used_rect()
+	if used_rect.size.x <= 0 or used_rect.size.y <= 0:
+		return
+
+	# Añadir un margen sutil de respiración (5%) sin salir de la textura original
+	var pad_x: int = int(ceil(float(used_rect.size.x) * 0.05))
+	var pad_y: int = int(ceil(float(used_rect.size.y) * 0.05))
+
+	var crop_x: int = clampi(used_rect.position.x - pad_x, 0, tw - 1)
+	var crop_y: int = clampi(used_rect.position.y - pad_y, 0, th - 1)
+	var crop_r: int = clampi(used_rect.position.x + used_rect.size.x + pad_x, crop_x + 1, tw)
+	var crop_b: int = clampi(used_rect.position.y + used_rect.size.y + pad_y, crop_y + 1, th)
+
+	var final_region := Rect2(crop_x, crop_y, crop_r - crop_x, crop_b - crop_y)
+	var atlas := AtlasTexture.new()
+	atlas.atlas = raw_tex
+	atlas.region = final_region
+
+	weapon_icon.texture = atlas
+	weapon_icon.position = Vector2.ZERO
+	weapon_icon.scale = Vector2.ONE
 
 
 func setup_companions(

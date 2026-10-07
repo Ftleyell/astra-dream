@@ -324,7 +324,7 @@ func _refresh_economy_label() -> void:
 	if biomass_label:
 		biomass_label.text = "%d" % current_biomass
 
-func get_rarity_color(rarity: Enums.Rarity) -> Color:
+static func get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:
 		Enums.Rarity.COMMON:
 			return Color(0.5, 0.8, 1.0, 0.95)

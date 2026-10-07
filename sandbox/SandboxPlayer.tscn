@@ -1,21 +1,15 @@
 [gd_scene format=3 uid="uid://b6lpfypdlew72"]
 
 [ext_resource type="Script" uid="uid://crbrxx0ukbjl1" path="res://sandbox/sandbox_player.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://cy3rcoh001jn5" path="res://assets/characters/ships/ship_nova.png" id="2_nova_tex"]
 
-[node name="TestLab" type="Node2D" unique_id=1449857830]
+[node name="TestLab" type="Node2D" unique_id=1914665891]
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="." unique_id=1115360626]
+[node name="Background" type="ColorRect" parent="." unique_id=1909340413]
 offset_left = -960.0
 offset_top = -540.0
 offset_right = 960.0
 offset_bottom = 540.0
-color = Color(0.08, 0.09, 0.12, 1)
+color = Color(0.05, 0.06, 0.08, 1)
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=352015489]
-
-[node name="PilotoTest" type="Node2D" parent="." unique_id=170436441]
-
-[node name="SpriteCompleto" type="Sprite2D" parent="PilotoTest" unique_id=1113245583]
-texture = ExtResource("2_nova_tex")
+[node name="Camera2D" type="Camera2D" parent="." unique_id=388247579]

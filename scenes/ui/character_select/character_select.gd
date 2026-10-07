@@ -101,9 +101,7 @@ var favored_tome_desc: Label = null
 @onready var main_margin_container: MarginContainer = $MarginContainer
 @onready var root_vbox: VBoxContainer = $MarginContainer/RootVBox
 @onready var dock_container: PanelContainer = (get_node_or_null("DockContainer") as PanelContainer) if get_node_or_null("DockContainer") else (get_node_or_null("MarginContainer/RootVBox/DockContainer") as PanelContainer)
-@onready var command_bar: HBoxContainer = (get_node_or_null("DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("DockContainer/CommandBar") else ((get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") as HBoxContainer) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar") as HBoxContainer))
-@onready var tape_launch_btn: TapeMarqueeButton = (get_node_or_null("DockContainer/CommandBar/TapeMarqueeButton") as TapeMarqueeButton) if get_node_or_null("DockContainer/CommandBar/TapeMarqueeButton") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/TapeMarqueeButton") as TapeMarqueeButton)
-@onready var launch_button: Button = (get_node_or_null("DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("DockContainer/CommandBar/LaunchButton") else ((get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") as Button) if get_node_or_null("MarginContainer/RootVBox/DockContainer/CommandBar/LaunchButton") else (get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/CommandBar/LaunchButton") as Button))
+@onready var orbital_terminal: OrbitalIgnitionTerminal = (get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as OrbitalIgnitionTerminal) if get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as OrbitalIgnitionTerminal)
 @onready var dock_margin: MarginContainer = (get_node_or_null("DockContainer/DockMargin") as MarginContainer) if get_node_or_null("DockContainer/DockMargin") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin") as MarginContainer)
 @onready var char_list_container: HBoxContainer = (get_node_or_null("DockContainer/DockMargin/CharList") as HBoxContainer) if get_node_or_null("DockContainer/DockMargin/CharList") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockMargin/CharList") as HBoxContainer)
 @onready var dock_unified_button: Button = (get_node_or_null("DockContainer/DockUnifiedButton") as Button) if get_node_or_null("DockContainer/DockUnifiedButton") else (get_node_or_null("MarginContainer/RootVBox/DockContainer/DockUnifiedButton") as Button)
@@ -223,14 +221,10 @@ func _ready() -> void:
 		dock_margin.visible = false
 	if dock_unified_button:
 		dock_unified_button.visible = false
-	if command_bar:
-		command_bar.visible = true
-	if tape_launch_btn:
-		tape_launch_btn.visible = true
-	if launch_button:
-		launch_button.visible = false
 	if dock_container:
-		dock_container.visible = false
+		dock_container.visible = true
+	if orbital_terminal:
+		orbital_terminal.visible = true
 	if back_button:
 		back_button.text = "← [ESC] ELEGIR PILOTO"
 
@@ -297,10 +291,8 @@ func _switch_tab(index: int) -> void:
 
 func _setup_signals() -> void:
 	back_button.pressed.connect(_on_back_pressed)
-	if tape_launch_btn:
-		tape_launch_btn.pressed.connect(_on_launch_pressed)
-	if launch_button:
-		launch_button.pressed.connect(_on_launch_pressed)
+	if orbital_terminal:
+		orbital_terminal.ignition_committed.connect(_on_launch_committed)
 	if pilot_skin_btn:
 		pilot_skin_btn.pressed.connect(_on_skins_button_pressed)
 
@@ -400,6 +392,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_on_back_pressed()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)):
+		if orbital_terminal and orbital_terminal.is_visible_in_tree() and not orbital_terminal.disabled:
+			if orbital_terminal.has_method("_on_pressed"):
+				orbital_terminal._on_pressed()
+			else:
+				_on_launch_committed()
+			get_viewport().set_input_as_handled()
 	elif is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
@@ -610,19 +609,17 @@ func _select_character(char_id: StringName) -> void:
 
 	# Estado de lanzamiento
 	if not is_unlocked:
-		if tape_launch_btn:
-			tape_launch_btn.is_disabled = true
-		if launch_button:
-			launch_button.disabled = true
-			launch_button.text = "PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN"
+		if orbital_terminal:
+			orbital_terminal.focus_mode = Control.FOCUS_NONE
+			orbital_terminal.active_telemetry_text = "/// PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN DE FLOTA /// PROTOCOLO RESTRINGIDO /// "
+			orbital_terminal._update_telemetry_metrics()
 		if loadout_button:
 			loadout_button.disabled = true
 	else:
-		if tape_launch_btn:
-			tape_launch_btn.is_disabled = false
-		if launch_button:
-			launch_button.disabled = false
-			launch_button.text = "DESPLEGAR // ASALTO ORBITAL [ENTER]"
+		if orbital_terminal:
+			orbital_terminal.focus_mode = Control.FOCUS_ALL
+			orbital_terminal.active_telemetry_text = OrbitalIgnitionTerminal.BASE_TELEMETRY
+			orbital_terminal._update_telemetry_metrics()
 		if loadout_button:
 			loadout_button.disabled = false
 
@@ -761,8 +758,8 @@ func _on_pet_modal_closed() -> void:
 		target_focus = pet_button
 	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		target_focus = orbital_terminal
 
 	if target_focus:
 		target_focus.call_deferred("grab_focus")
@@ -776,8 +773,8 @@ func _on_navigator_modal_closed() -> void:
 		target_focus = navigator_button
 	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		target_focus = orbital_terminal
 
 	if target_focus:
 		target_focus.call_deferred("grab_focus")
@@ -913,11 +910,11 @@ func _on_gacha_modal_closed() -> void:
 func _restore_last_focus() -> void:
 	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control != pilot_button and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		_last_focused_control.grab_focus()
-	elif launch_button and launch_button.is_visible_in_tree():
-		launch_button.grab_focus()
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		orbital_terminal.grab_focus()
 
 
-func _on_launch_pressed() -> void:
+func _on_launch_committed() -> void:
 	if not SaveManager.is_character_unlocked(current_character_id):
 		return
 	SaveManager.set_selected_character(current_character_id)
@@ -982,8 +979,8 @@ func _on_arsenal_banlist_modal_closed() -> void:
 		target_focus = arsenal_banlist_btn
 	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		target_focus = orbital_terminal
 
 	if target_focus:
 		target_focus.grab_focus()
@@ -996,8 +993,8 @@ func _on_weapon_modal_closed() -> void:
 		target_focus = loadout_button
 	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		target_focus = orbital_terminal
 
 	if target_focus:
 		target_focus.grab_focus()
@@ -1009,8 +1006,8 @@ func _on_tome_modal_closed() -> void:
 		target_focus = tomes_pool_btn
 	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		target_focus = _last_focused_control
-	elif launch_button and launch_button.is_visible_in_tree():
-		target_focus = launch_button
+	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
+		target_focus = orbital_terminal
 
 	if target_focus:
 		target_focus.grab_focus()
@@ -1040,7 +1037,7 @@ func _setup_speed_buttons() -> void:
 func _setup_focus_mesh() -> void:
 	# 1. Back button
 	if back_button:
-		back_button.focus_neighbor_top = launch_button.get_path() if launch_button else NodePath()
+		back_button.focus_neighbor_top = orbital_terminal.get_path() if orbital_terminal else NodePath()
 		back_button.focus_neighbor_bottom = ship_button.get_path() if ship_button else NodePath()
 		back_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
 
@@ -1093,7 +1090,7 @@ func _setup_focus_mesh() -> void:
 		loadout_button.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 
 	# 5. Speed Buttons (1x, 2x, 4x)
-	var eff_launch: Control = (tape_launch_btn as Control) if (tape_launch_btn and tape_launch_btn.is_visible_in_tree()) else (launch_button as Control)
+	var eff_launch: Control = orbital_terminal as Control if (orbital_terminal and orbital_terminal.is_visible_in_tree()) else null
 	var eff_launch_path: NodePath = eff_launch.get_path() if eff_launch else NodePath()
 
 	if speed_1x_btn:
@@ -1114,7 +1111,7 @@ func _setup_focus_mesh() -> void:
 		speed_4x_btn.focus_neighbor_bottom = eff_launch_path
 
 
-	# 6. Launch Button
+	# 6. Launch Button (Orbital Terminal)
 	if eff_launch:
 		eff_launch.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
 		eff_launch.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
@@ -1146,21 +1143,13 @@ func _on_hero_confirmed(char_id: StringName) -> void:
 		dock_margin.visible = false
 	if dock_unified_button:
 		dock_unified_button.visible = false
-	if command_bar:
-		command_bar.visible = true
-	if tape_launch_btn:
-		tape_launch_btn.visible = true
-		if launch_button:
-			launch_button.visible = false
-	elif launch_button:
-		launch_button.visible = true
+	if orbital_terminal:
+		orbital_terminal.visible = true
 	_select_character(char_id)
 	if ship_button and ship_button.is_inside_tree() and ship_button.is_visible_in_tree():
 		ship_button.call_deferred("grab_focus")
-	elif tape_launch_btn and tape_launch_btn.is_inside_tree() and tape_launch_btn.is_visible_in_tree():
-		tape_launch_btn.call_deferred("grab_focus")
-	elif launch_button and launch_button.is_inside_tree() and launch_button.is_visible_in_tree():
-		launch_button.call_deferred("grab_focus")
+	elif orbital_terminal and orbital_terminal.is_inside_tree() and orbital_terminal.is_visible_in_tree():
+		orbital_terminal.call_deferred("grab_focus")
 
 
 func _on_hero_cancelled() -> void:

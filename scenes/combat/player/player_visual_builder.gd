@@ -162,6 +162,8 @@ func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) 
 						w_poly.visible = true
 
 			if w_spr.visible:
+				w_spr.centered = true
+				w_spr.offset = Vector2.ZERO
 				var char_visual_size: float = 108.0
 				if ship_spr and ship_spr.texture:
 					char_visual_size = maxf(float(ship_spr.texture.get_width()) * ship_spr.scale.x, float(ship_spr.texture.get_height()) * ship_spr.scale.y)
