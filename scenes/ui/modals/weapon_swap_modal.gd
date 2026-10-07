@@ -24,9 +24,14 @@ func _ready() -> void:
 	_build_ui()
 	super._ready()
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if not visible:
 		return
+
+	var root_pm = get_tree().root.find_child("PauseMenu", true, false) if get_tree() and get_tree().root else null
+	if root_pm and root_pm.visible:
+		return
+
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		var key_event := event as InputEventKey
 		match key_event.keycode:
@@ -51,17 +56,35 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 
-	if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+	var is_left: bool = event.is_action_pressed("ui_left") or event.is_action_pressed("move_left")
+	var is_right: bool = event.is_action_pressed("ui_right") or event.is_action_pressed("move_right")
+	var is_down: bool = event.is_action_pressed("ui_down") or event.is_action_pressed("move_down")
+	var is_up: bool = event.is_action_pressed("ui_up") or event.is_action_pressed("move_up")
+
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		var key_event := event as InputEventKey
+		var k: Key = key_event.keycode
+		var pk: Key = key_event.physical_keycode
+		if k == KEY_A or pk == KEY_A or k == KEY_LEFT or pk == KEY_LEFT:
+			is_left = true
+		elif k == KEY_D or pk == KEY_D or k == KEY_RIGHT or pk == KEY_RIGHT:
+			is_right = true
+		elif k == KEY_S or pk == KEY_S or k == KEY_DOWN or pk == KEY_DOWN:
+			is_down = true
+		elif k == KEY_W or pk == KEY_W or k == KEY_UP or pk == KEY_UP:
+			is_up = true
+
+	if is_left:
 		_navigate_horizontal(-1)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+	elif is_right:
 		_navigate_horizontal(1)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
+	elif is_down:
 		if _discard_button and is_instance_valid(_discard_button):
 			_discard_button.grab_focus()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_W or event.keycode == KEY_UP)):
+	elif is_up:
 		_navigate_horizontal(0)
 		get_viewport().set_input_as_handled()
 
@@ -268,6 +291,29 @@ func _refresh_display() -> void:
 		var inst: WeaponInstanceData = w_ctrl.equipped_weapons[i]
 		var card := _create_slot_card(i, inst)
 		_weapons_container.add_child(card)
+
+	_setup_focus_neighbors()
+
+func _setup_focus_neighbors() -> void:
+	var replaceable_buttons: Array[Button] = []
+	for i in range(1, _weapons_container.get_child_count()):
+		var card = _weapons_container.get_child(i)
+		var btn: Button = card.find_child("ReplaceBtn", true, false) as Button
+		if btn and is_instance_valid(btn) and not btn.disabled:
+			replaceable_buttons.append(btn)
+
+	var count: int = replaceable_buttons.size()
+	for i in range(count):
+		var cur_btn: Button = replaceable_buttons[i]
+		var prev_btn: Button = replaceable_buttons[posmod(i - 1, count)]
+		var next_btn: Button = replaceable_buttons[posmod(i + 1, count)]
+		cur_btn.focus_neighbor_left = prev_btn.get_path()
+		cur_btn.focus_neighbor_right = next_btn.get_path()
+		if _discard_button and is_instance_valid(_discard_button):
+			cur_btn.focus_neighbor_bottom = _discard_button.get_path()
+
+	if _discard_button and is_instance_valid(_discard_button) and not replaceable_buttons.is_empty():
+		_discard_button.focus_neighbor_top = replaceable_buttons[0].get_path()
 
 func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContainer:
 	var pc := PanelContainer.new()

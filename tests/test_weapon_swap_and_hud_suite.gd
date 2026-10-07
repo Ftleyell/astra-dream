@@ -130,6 +130,52 @@ func _test_weapon_swap_modal_ui_and_hotkeys() -> int:
 	assert(container != null, "HBoxContainer for slots must exist")
 	assert(container.get_child_count() == 4, "Modal must contain 4 horizontal cards")
 
+	# Test 3-nav: Navegación horizontal con A / D y vertical con W / S
+	var btn_slot1: Button = container.get_child(1).find_child("ReplaceBtn", true, false) as Button
+	var btn_slot2: Button = container.get_child(2).find_child("ReplaceBtn", true, false) as Button
+	var btn_slot3: Button = container.get_child(3).find_child("ReplaceBtn", true, false) as Button
+	var discard_btn: Button = modal.get("_discard_button") as Button
+
+	btn_slot1.grab_focus()
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot1, "btn_slot1 debe tener foco inicial")
+
+	# Presionar 'D' -> avanza a slot 2
+	var ev_d := InputEventKey.new()
+	ev_d.keycode = KEY_D
+	ev_d.pressed = true
+	modal._input(ev_d)
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot2, "Presionar D debe navegar al botón de ranura 2")
+
+	# Presionar 'D' -> avanza a slot 3
+	modal._input(ev_d)
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot3, "Presionar D debe navegar al botón de ranura 3")
+
+	# Presionar 'D' -> vuelve cíclicamente a slot 1
+	modal._input(ev_d)
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot1, "Presionar D desde ranura 3 debe hacer wrap-around a ranura 1")
+
+	# Presionar 'A' -> retrocede cíclicamente a slot 3
+	var ev_a := InputEventKey.new()
+	ev_a.keycode = KEY_A
+	ev_a.pressed = true
+	modal._input(ev_a)
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot3, "Presionar A desde ranura 1 debe hacer wrap-around a ranura 3")
+
+	# Presionar 'S' -> desciende al botón de Descartar
+	var ev_s := InputEventKey.new()
+	ev_s.keycode = KEY_S
+	ev_s.pressed = true
+	modal._input(ev_s)
+	assert(modal.get_viewport().gui_get_focus_owner() == discard_btn, "Presionar S debe enfocar el botón de Descartar")
+
+	# Presionar 'W' -> asciende de regreso a la ranura 1
+	var ev_w := InputEventKey.new()
+	ev_w.keycode = KEY_W
+	ev_w.pressed = true
+	modal._input(ev_w)
+	assert(modal.get_viewport().gui_get_focus_owner() == btn_slot1, "Presionar W debe regresar el foco a la ranura 1")
+	print("  ✓ T3-nav: Navegación horizontal A/D cíclica y vertical W/S verificada")
+
 	# Test 3a: Intento de reemplazar Ranura 0 (Arma Base) debe ser ignorado y bloqueado
 	modal._handle_slot_hotkey(0)
 	assert(callback_data["called"] == false, "Ranura 0 está bloqueada; no debe detonar el callback de reemplazo")
