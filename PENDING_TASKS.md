@@ -27,13 +27,20 @@ Estado y registro de tareas pendientes organizadas por niveles de prioridad y co
 
 ---
 
-## 🟠 Nivel 3 — Actualización de Carteles y Pantallas (PRÓXIMO)
+## 🟠 Nivel 3 — Actualización de Carteles y Pantallas (COMPLETADO)
 
-1. **Carteles de Vencer Rivales:**
-   - Modernizar el diseño visual y tipográfico del cartel/banner de victoria contra rivales durante el combate.
-2. **Pantalla de Victoria:**
-   - Rediseñar y actualizar la pantalla de victoria final con estética moderna.
-   - Evaluar e integrar soporte para modo Endless / Continuar run infinita.
+- [x] **Carteles de Vencer Rivales (`hud_banner_manager.gd`, `hud.gd`, `combat_boss_coordinator.gd`):**
+  - Banner táctico cinematográfico horizontal (660x110px) en la parte superior sin pausar el combate ni interrumpir controles.
+  - Marco con color de tema distintivo de la rival (`PILOT_COLORS`), retrato de 64x64px a la izquierda, título holográfico `"⚡ OBJETIVO NEUTRALIZADO // PILOTO RIVAL ABATIDA"` y nombre destacado (20px).
+  - Sección derecha con indicador de `"ARMA INSIGNIA"` con icono (36x36px) y nombre del arma drop.
+  - Animación elástica de entrada con sonido SFX y desvanecimiento progresivo tras 4.5 segundos.
+- [x] **Pantalla de Victoria & Loadout (`game_over_modal.tscn`, `game_over_modal.gd`):**
+  - Rediseño visual del inventario: tarjetas de ítems y pactos con iconos grandes (28-32px), bordes coloreados según rareza (`COMMON`, `UNCOMMON`, `RARE`, `EPIC`, `LEGENDARY`) e insignias numéricas `[xN]`.
+  - Tarjetas de armas con borde dorado, nombre estilizado e indicador de nivel `(Nv. X)`.
+- [x] **Modo Endless (Sin Fin):**
+  - Botón interactivo `[E] MODO ENDLESS` visible en victorias de incursión, con soporte de teclado (`KEY_E`).
+  - Al activarse, la partida se reanuda inmediatamente (`PauseArbitrator.release_pause`), el contador de oleadas progresa indefinidamente (12+), y el spawner escala progresivamente el tope de enemigos y la cadencia de spawn.
+  - En caso de muerte en el modo sin fin, la telemetría registra la oleada máxima alcanzada y el récord general.
 
 ---
 

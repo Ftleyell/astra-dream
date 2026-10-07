@@ -147,6 +147,13 @@ func set_wave(wave_num: int) -> void:
 		max_enemies = current_wave_config.max_enemies
 		base_spawn_interval = current_wave_config.base_spawn_interval
 		min_spawn_interval = current_wave_config.min_spawn_interval
+
+		# En modo Endless (oleadas mayores a 11), incrementar capacidad y cadencia proporcionalmente
+		if wave_num > 11:
+			var endless_bonus_waves := wave_num - 11
+			max_enemies = mini(250, max_enemies + (endless_bonus_waves * 12))
+			base_spawn_interval = maxf(0.25, base_spawn_interval - (endless_bonus_waves * 0.03))
+			min_spawn_interval = maxf(0.12, min_spawn_interval - (endless_bonus_waves * 0.015))
 	else:
 		# Fallback legacy si no hay recurso asignado
 		match wave_num:

@@ -13,6 +13,7 @@ extends CanvasLayer
 
 signal restart_requested()
 signal hub_requested()
+signal endless_requested()
 signal closed()
 
 @onready var panel: Panel = $Panel
@@ -42,16 +43,21 @@ signal closed()
 @onready var weapons_container: HFlowContainer = $Panel/VBoxContainer/MainContent/LoadoutPanel/LoadoutScroll/LoadoutVBox/WeaponsContainer
 
 # Action Buttons
+@onready var endless_button: Button = $Panel/VBoxContainer/BottomBar/EndlessButton
 @onready var restart_button: Button = $Panel/VBoxContainer/BottomBar/RestartButton
 @onready var hub_button: Button = $Panel/VBoxContainer/BottomBar/HubButton
 
 var is_active: bool = false
+var is_victory_run: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 70
 	hide()
 
+	if endless_button:
+		UIFocusHelper.apply_cyber_focus(endless_button)
+		endless_button.pressed.connect(_on_endless_pressed)
 	if restart_button:
 		UIFocusHelper.apply_cyber_focus(restart_button)
 		restart_button.pressed.connect(_on_restart_pressed)
@@ -61,7 +67,12 @@ func _ready() -> void:
 
 func show_game_over(data: Dictionary) -> void:
 	is_active = true
+	is_victory_run = bool(data.get("victory", false))
 	_populate_screen(data)
+
+	if endless_button:
+		endless_button.visible = is_victory_run
+
 	show()
 
 	# Sonido dramático de apertura
@@ -69,7 +80,9 @@ func show_game_over(data: Dictionary) -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("menu_open", 1.0, 1.0)
 
-	if restart_button:
+	if is_victory_run and endless_button and endless_button.is_visible_in_tree():
+		endless_button.grab_focus()
+	elif restart_button:
 		restart_button.grab_focus()
 
 func _populate_screen(data: Dictionary) -> void:
@@ -170,7 +183,7 @@ func _populate_arcanas(arcanas_list: Array) -> void:
 		if not (arc is ArcanaData):
 			continue
 		var arc_data := arc as ArcanaData
-		var chip := _create_chip(arc_data.name, arc_data.color_accent, arc_data.icon)
+		var chip := _create_chip(arc_data.name, arc_data.color_accent, arc_data.icon, Vector2(28, 28))
 		arcanas_container.add_child(chip)
 
 func _populate_items(items_list: Array) -> void:
@@ -194,8 +207,22 @@ func _populate_items(items_list: Array) -> void:
 			continue
 		var chip_text := item_res.item_name
 		if count > 1:
-			chip_text += " x%d" % count
-		var chip := _create_chip(chip_text, Color(0.2, 0.9, 0.6, 1.0), item_res.icon)
+			chip_text += " [x%d]" % count
+		
+		var rarity_col: Color = Color(0.3, 0.8, 0.9, 1.0) # COMMON
+		match item_res.rarity:
+			Enums.Rarity.UNCOMMON:
+				rarity_col = Color(0.2, 0.9, 0.4, 1.0) # Verde
+			Enums.Rarity.RARE:
+				rarity_col = Color(0.1, 0.6, 1.0, 1.0) # Azul
+			Enums.Rarity.EPIC:
+				rarity_col = Color(0.8, 0.3, 1.0, 1.0) # Púrpura
+			Enums.Rarity.LEGENDARY:
+				rarity_col = Color(1.0, 0.75, 0.2, 1.0) # Oro
+			_:
+				rarity_col = Color(0.5, 0.65, 0.8, 0.9)
+
+		var chip := _create_chip(chip_text, rarity_col, item_res.icon, Vector2(28, 28))
 		items_container.add_child(chip)
 
 func _populate_weapons(weapons_list: Array) -> void:
@@ -240,36 +267,45 @@ func _populate_weapons(weapons_list: Array) -> void:
 		if w_name.is_empty():
 			w_name = "Arma Estelar"
 
-		var chip_text := "%s (Nvl %d)" % [w_name, w_lvl]
-		var chip := _create_chip(chip_text, Color(1.0, 0.75, 0.2, 1.0), w_icon)
+		var chip_text := "%s (Nv. %d)" % [w_name, w_lvl]
+		var chip := _create_chip(chip_text, Color(1.0, 0.8, 0.25, 1.0), w_icon, Vector2(32, 32))
 		weapons_container.add_child(chip)
 
-func _create_chip(text: String, accent_color: Color, icon_tex: Texture2D = null) -> PanelContainer:
+func _create_chip(text: String, accent_color: Color, icon_tex: Texture2D = null, icon_size: Vector2 = Vector2(24, 24)) -> PanelContainer:
 	var chip := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.04, 0.07, 0.12, 0.85)
+	style.bg_color = Color(0.05, 0.08, 0.14, 0.92)
 	style.border_color = accent_color
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
-	style.set_content_margin_all(5.0)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 10.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	style.shadow_color = Color(accent_color.r, accent_color.g, accent_color.b, 0.2)
+	style.shadow_size = 4
 	chip.add_theme_stylebox_override("panel", style)
 
 	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 6)
+	hbox.add_theme_constant_override("separation", 8)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	if icon_tex:
 		var tr := TextureRect.new()
 		tr.texture = icon_tex
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.custom_minimum_size = Vector2(16, 16)
+		tr.custom_minimum_size = icon_size
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		hbox.add_child(tr)
 
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 12)
-	lbl.modulate = Color(0.9, 0.95, 1.0, 1.0)
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.modulate = Color(0.92, 0.96, 1.0, 1.0)
 	hbox.add_child(lbl)
+
+	chip.add_child(hbox)
+	return chip
 
 	chip.add_child(hbox)
 	return chip
@@ -284,6 +320,14 @@ func _format_number(n: int) -> String:
 		if count % 3 == 0 and i > 0:
 			res = "," + res
 	return res
+
+func _on_endless_pressed() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 1.2, 1.0)
+	hide()
+	is_active = false
+	endless_requested.emit()
 
 func _on_restart_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
@@ -302,7 +346,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventKey and event.pressed and not event.is_echo():
-		if event.keycode == KEY_R:
+		if event.keycode == KEY_E and is_victory_run:
+			_on_endless_pressed()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_R:
 			_on_restart_pressed()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_H or event.keycode == KEY_ESCAPE:

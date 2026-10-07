@@ -347,6 +347,10 @@ func show_character_unlock_banner(char_id: StringName, title_text: String, desc_
 	if _banner_mgr:
 		_banner_mgr.show_character_unlock_banner(char_id, title_text, desc_text, self)
 
+func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon: WeaponData) -> void:
+	if _banner_mgr and _banner_mgr.has_method("show_rival_defeated_banner"):
+		_banner_mgr.show_rival_defeated_banner(pilot_id, pilot_name, weapon, self)
+
 func show_tactical_alert(title_text: String, subtitle_text: String = "", border_color: Color = Color(0.2, 0.9, 1.0)) -> void:
 	if _banner_mgr and _banner_mgr.has_method("show_tactical_alert_banner"):
 		_banner_mgr.show_tactical_alert_banner(title_text, subtitle_text, border_color, self)

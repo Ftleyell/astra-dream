@@ -145,6 +145,211 @@ func show_character_unlock_banner(_char_id: StringName, title_text: String, desc
 			_unlock_banner_node.visible = false
 	)
 
+var _rival_banner_node: Control = null
+var _rival_banner_tween: Tween = null
+
+const PILOT_COLORS: Dictionary = {
+	&"nova": Color(0.0, 0.9, 1.0),
+	&"valentina": Color(1.0, 0.84, 0.0),
+	&"kira": Color(1.0, 0.55, 0.0),
+	&"selene": Color(0.0, 0.9, 0.45),
+	&"roxy": Color(1.0, 0.1, 0.25),
+	&"echo": Color(0.5, 0.3, 1.0),
+	&"nyx": Color(0.85, 0.0, 0.95),
+}
+
+func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon: WeaponData, hud_node: CanvasLayer) -> void:
+	if not _rival_banner_node:
+		_create_rival_defeated_banner_ui(hud_node)
+	if not _rival_banner_node:
+		return
+
+	var theme_col: Color = PILOT_COLORS.get(pilot_id, Color(1.0, 0.3, 0.4))
+	var style: StyleBoxFlat = _rival_banner_node.get_theme_stylebox("panel") as StyleBoxFlat
+	if style:
+		style.border_color = theme_col
+		style.shadow_color = Color(theme_col.r, theme_col.g, theme_col.b, 0.4)
+
+	var portrait_rect: TextureRect = _rival_banner_node.find_child("RivalPortrait", true, false) as TextureRect
+	if portrait_rect:
+		var p_path := "res://assets/characters/portraits/portrait_%s.png" % String(pilot_id).to_lower()
+		if ResourceLoader.exists(p_path):
+			portrait_rect.texture = load(p_path) as Texture2D
+		else:
+			portrait_rect.texture = null
+
+	var portrait_panel: PanelContainer = _rival_banner_node.find_child("PortraitFrame", true, false) as PanelContainer
+	if portrait_panel:
+		var p_style: StyleBoxFlat = portrait_panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if p_style:
+			p_style.border_color = theme_col
+
+	var name_lbl: Label = _rival_banner_node.find_child("RivalName", true, false) as Label
+	if name_lbl:
+		name_lbl.text = pilot_name.to_upper()
+		name_lbl.add_theme_color_override("font_color", theme_col)
+
+	var weapon_icon_rect: TextureRect = _rival_banner_node.find_child("WeaponIcon", true, false) as TextureRect
+	var weapon_name_lbl: Label = _rival_banner_node.find_child("WeaponName", true, false) as Label
+	if weapon:
+		if weapon_icon_rect:
+			weapon_icon_rect.texture = weapon.icon
+			weapon_icon_rect.visible = (weapon.icon != null)
+		if weapon_name_lbl:
+			weapon_name_lbl.text = weapon.weapon_name
+	else:
+		if weapon_icon_rect:
+			weapon_icon_rect.visible = false
+		if weapon_name_lbl:
+			weapon_name_lbl.text = "Arma Insignia Reclamada"
+
+	if _rival_banner_tween and _rival_banner_tween.is_valid():
+		_rival_banner_tween.kill()
+
+	_rival_banner_node.visible = true
+	_rival_banner_node.modulate.a = 0.0
+	_rival_banner_node.offset_top = 90.0
+	_rival_banner_node.offset_bottom = 200.0
+
+	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
+	if audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("ui_click", 0.0, 1.7)
+
+	_rival_banner_tween = hud_node.create_tween()
+	_rival_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_rival_banner_tween.tween_property(_rival_banner_node, "offset_top", 120.0, 0.4)
+	_rival_banner_tween.tween_property(_rival_banner_node, "offset_bottom", 230.0, 0.4)
+	_rival_banner_tween.tween_property(_rival_banner_node, "modulate:a", 1.0, 0.3)
+	_rival_banner_tween.chain().tween_interval(4.5)
+	_rival_banner_tween.chain().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_rival_banner_tween.tween_property(_rival_banner_node, "offset_top", 90.0, 0.4)
+	_rival_banner_tween.tween_property(_rival_banner_node, "offset_bottom", 200.0, 0.4)
+	_rival_banner_tween.tween_property(_rival_banner_node, "modulate:a", 0.0, 0.4)
+	_rival_banner_tween.chain().tween_callback(func():
+		if _rival_banner_node:
+			_rival_banner_node.visible = false
+	)
+
+func _create_rival_defeated_banner_ui(hud_node: CanvasLayer) -> void:
+	var banner_box := PanelContainer.new()
+	banner_box.name = "RivalDefeatedBannerPanel"
+	banner_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_box.layout_mode = 1
+	banner_box.anchors_preset = Control.PRESET_CENTER_TOP
+	banner_box.anchor_left = 0.5
+	banner_box.anchor_right = 0.5
+	banner_box.offset_left = -330.0
+	banner_box.offset_top = 120.0
+	banner_box.offset_right = 330.0
+	banner_box.offset_bottom = 230.0
+	banner_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	banner_box.custom_minimum_size = Vector2(660, 110)
+	banner_box.pivot_offset = Vector2(330, 55)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.03, 0.08, 0.94)
+	style.border_color = Color(1.0, 0.3, 0.4, 1.0)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(12.0)
+	style.shadow_color = Color(1.0, 0.2, 0.4, 0.35)
+	style.shadow_size = 14
+	banner_box.add_theme_stylebox_override("panel", style)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 16)
+
+	# 1. Retrato de la rival (64x64px en marco)
+	var portrait_frame := PanelContainer.new()
+	portrait_frame.name = "PortraitFrame"
+	portrait_frame.custom_minimum_size = Vector2(68, 68)
+	var p_style := StyleBoxFlat.new()
+	p_style.bg_color = Color(0.08, 0.1, 0.16, 0.9)
+	p_style.border_color = Color(1.0, 0.3, 0.4, 1.0)
+	p_style.set_border_width_all(2)
+	p_style.set_corner_radius_all(8)
+	portrait_frame.add_theme_stylebox_override("panel", p_style)
+
+	var portrait_rect := TextureRect.new()
+	portrait_rect.name = "RivalPortrait"
+	portrait_rect.custom_minimum_size = Vector2(64, 64)
+	portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_frame.add_child(portrait_rect)
+	hbox.add_child(portrait_frame)
+
+	# 2. Información central: Titulo y Nombre
+	var center_vbox := VBoxContainer.new()
+	center_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	center_vbox.add_theme_constant_override("separation", 3)
+
+	var top_badge := Label.new()
+	top_badge.text = "⚡ OBJETIVO NEUTRALIZADO // PILOTO RIVAL ABATIDA"
+	top_badge.add_theme_font_size_override("font_size", 11)
+	top_badge.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3, 0.9))
+	center_vbox.add_child(top_badge)
+
+	var name_lbl := Label.new()
+	name_lbl.name = "RivalName"
+	name_lbl.text = "RIVAL"
+	name_lbl.add_theme_font_size_override("font_size", 20)
+	name_lbl.add_theme_color_override("font_color", Color(1.0, 0.35, 0.45, 1.0))
+	center_vbox.add_child(name_lbl)
+
+	var status_lbl := Label.new()
+	status_lbl.text = "Frecuencia de combate desarticulada"
+	status_lbl.add_theme_font_size_override("font_size", 12)
+	status_lbl.add_theme_color_override("font_color", Color(0.7, 0.78, 0.88, 0.85))
+	center_vbox.add_child(status_lbl)
+
+	hbox.add_child(center_vbox)
+
+	# Separador vertical fino
+	var vsep := VSeparator.new()
+	vsep.modulate.a = 0.5
+	hbox.add_child(vsep)
+
+	# 3. Drop de Arma Insignia a la derecha
+	var weapon_vbox := VBoxContainer.new()
+	weapon_vbox.custom_minimum_size = Vector2(170, 0)
+	weapon_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	weapon_vbox.add_theme_constant_override("separation", 4)
+
+	var weapon_tag := Label.new()
+	weapon_tag.text = "ARMA INSIGNIA"
+	weapon_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	weapon_tag.add_theme_font_size_override("font_size", 10)
+	weapon_tag.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0, 0.9))
+	weapon_vbox.add_child(weapon_tag)
+
+	var weapon_hbox := HBoxContainer.new()
+	weapon_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	weapon_hbox.add_theme_constant_override("separation", 6)
+
+	var weapon_icon := TextureRect.new()
+	weapon_icon.name = "WeaponIcon"
+	weapon_icon.custom_minimum_size = Vector2(36, 36)
+	weapon_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	weapon_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	weapon_hbox.add_child(weapon_icon)
+
+	var weapon_name := Label.new()
+	weapon_name.name = "WeaponName"
+	weapon_name.text = "Arma"
+	weapon_name.add_theme_font_size_override("font_size", 13)
+	weapon_name.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8, 1.0))
+	weapon_hbox.add_child(weapon_name)
+
+	weapon_vbox.add_child(weapon_hbox)
+	hbox.add_child(weapon_vbox)
+
+	banner_box.add_child(hbox)
+	hud_node.add_child(banner_box)
+	_rival_banner_node = banner_box
+	_rival_banner_node.visible = false
+
 func _create_unlock_banner_ui(hud_node: CanvasLayer) -> void:
 	var banner_box := PanelContainer.new()
 	banner_box.name = "CharacterUnlockPanel"

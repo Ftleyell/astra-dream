@@ -111,6 +111,7 @@ var rival_queue: Array[StringName] = []
 var rivals_spared: Array[StringName] = []
 var rivals_killed: Array[StringName] = []
 var is_wave_11_cleared: bool = false
+var is_endless_mode: bool = false
 
 var _fallback_briefing_active: bool = true
 var is_briefing_active: bool:
@@ -1101,9 +1102,37 @@ func _show_game_over_screen(data: Dictionary) -> void:
 		game_over_modal.restart_requested.connect(_on_game_over_restart)
 	if not game_over_modal.hub_requested.is_connected(_on_game_over_hub):
 		game_over_modal.hub_requested.connect(_on_game_over_hub)
+	if not game_over_modal.endless_requested.is_connected(_on_game_over_endless):
+		game_over_modal.endless_requested.connect(_on_game_over_endless)
 
 	PauseArbitrator.acquire_pause(&"game_over")
 	game_over_modal.show_game_over(data)
+
+func _on_game_over_endless() -> void:
+	is_endless_mode = true
+	PauseArbitrator.release_pause(&"game_over")
+	Engine.time_scale = 1.0
+	save_current_run_state()
+
+	if hud and hud.has_method("show_tactical_alert"):
+		hud.show_tactical_alert("MODO SIN FIN // ENDLESS DESBLOQUEADO", "Las fuerzas del abismo escalan sin límite. ¡Sobrevive cuanto puedas!", Color(0.2, 1.0, 0.75, 1.0))
+
+	# Reanudar la siguiente oleada de combate sin límite
+	current_wave += 1
+	wave_timer = WAVE_DURATION
+	wave_satellites_spawned = 0
+	if enemy_spawner and enemy_spawner.has_method("set_wave"):
+		enemy_spawner.set_wave(current_wave)
+	_wave_encounter_checked_for_wave = current_wave
+	_wave_encounter_pending = false
+	save_current_run_state()
+	_spawn_next_satellite_for_wave()
+	if chest_director:
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+		chest_director.on_new_wave(current_wave, green_cards)
+	_spawn_wave_chests()
+	if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
+		space_object_spawner.notify_wave_started(current_wave)
 
 func _on_game_over_restart() -> void:
 	is_exiting_run = true
