@@ -2,8 +2,28 @@
 
 [ext_resource type="Script" path="res://scenes/combat/chests/spatial_chest.gd" id="1_chest_script"]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/credit_coin_icon.png" id="2_credit_ico"]
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_chest"]
 radius = 55.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_price_badge"]
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.015, 0.03, 0.06, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.85, 1, 0.45)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 3
 
 [node name="SpatialChest" type="Area2D"]
 z_index = 10
@@ -23,12 +43,39 @@ default_color = Color(0, 0.9, 1, 0.4)
 [node name="Sprite2D" type="Sprite2D" parent="VisualRoot"]
 position = Vector2(0, 0)
 
-[node name="PriceLabel" type="Label" parent="."]
-offset_left = -60.0
+[node name="PriceBadge" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(50, 24)
+offset_left = -45.0
 offset_top = 26.0
-offset_right = 60.0
-offset_bottom = 46.0
+offset_right = 45.0
+offset_bottom = 54.0
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_price_badge")
+
+[node name="HBox" type="HBoxContainer" parent="PriceBadge"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="CreditIcon" type="TextureRect" parent="PriceBadge/HBox"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_credit_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PriceLabel" type="Label" parent="PriceBadge/HBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.35, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
-add_theme_font_size_override("font_size", 11)
-text = "25c"
+

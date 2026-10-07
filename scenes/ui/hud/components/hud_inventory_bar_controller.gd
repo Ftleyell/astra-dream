@@ -48,7 +48,7 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 
 			var chip := PanelContainer.new()
 			chip.name = "WeaponSlot_%d" % slot_idx
-			chip.custom_minimum_size = Vector2(44, 44)
+			chip.custom_minimum_size = Vector2(54, 54)
 			chip.clip_contents = true
 
 			var eff_dmg: float = inst.get_effective_damage(player_stats)
@@ -94,20 +94,20 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 
 			var slot_lbl := Label.new()
 			slot_lbl.text = str(slot_idx + 1)
-			slot_lbl.add_theme_font_size_override("font_size", 9)
+			slot_lbl.add_theme_font_size_override("font_size", 10)
 			slot_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.9, 0.5))
-			slot_lbl.position = Vector2(4, 28)
+			slot_lbl.position = Vector2(4, 36)
 			slot_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(slot_lbl)
 
 			var lvl_lbl := Label.new()
 			lvl_lbl.text = "★%d" % w_level
-			lvl_lbl.add_theme_font_size_override("font_size", 10)
+			lvl_lbl.add_theme_font_size_override("font_size", 11)
 			lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 			lvl_lbl.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.9))
 			lvl_lbl.add_theme_constant_override("shadow_offset_x", 1)
 			lvl_lbl.add_theme_constant_override("shadow_offset_y", 1)
-			lvl_lbl.position = Vector2(24, 2)
+			lvl_lbl.position = Vector2(30, 2)
 			lvl_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(lvl_lbl)
 
@@ -115,7 +115,7 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 		else:
 			var empty_chip := PanelContainer.new()
 			empty_chip.name = "WeaponSlot_Empty_%d" % slot_idx
-			empty_chip.custom_minimum_size = Vector2(44, 44)
+			empty_chip.custom_minimum_size = Vector2(54, 54)
 			empty_chip.tooltip_text = "Ranura #%d [Vacía]\n(Espacio disponible para nuevas armas)" % [slot_idx + 1]
 
 			var style := StyleBoxFlat.new()
@@ -142,9 +142,9 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 
 			var slot_lbl := Label.new()
 			slot_lbl.text = str(slot_idx + 1)
-			slot_lbl.add_theme_font_size_override("font_size", 9)
+			slot_lbl.add_theme_font_size_override("font_size", 10)
 			slot_lbl.add_theme_color_override("font_color", Color(0.3, 0.4, 0.5, 0.35))
-			slot_lbl.position = Vector2(4, 28)
+			slot_lbl.position = Vector2(4, 36)
 			slot_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(slot_lbl)
 
@@ -161,12 +161,12 @@ func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
 	for slot_idx in range(TOTAL_TOME_SLOTS):
 		var chip := PanelContainer.new()
 		chip.name = "TomeSlot_%d" % slot_idx
-		chip.custom_minimum_size = Vector2(32, 32)
+		chip.custom_minimum_size = Vector2(40, 40)
 		chip.clip_contents = true
 
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color(0.04, 0.05, 0.09, 0.9)
-		style.set_corner_radius_all(5)
+		style.set_corner_radius_all(6)
 
 		if slot_idx < tomes.size() and tomes[slot_idx] != null:
 			var tome: TomeDataScript = tomes[slot_idx]
@@ -201,11 +201,11 @@ func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
 
 			var lvl_lbl := Label.new()
 			lvl_lbl.text = "★%d" % t_level
-			lvl_lbl.add_theme_font_size_override("font_size", 9)
+			lvl_lbl.add_theme_font_size_override("font_size", 10)
 			lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4, 1.0))
 			lvl_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 			lvl_lbl.add_theme_constant_override("shadow_outline_size", 2)
-			lvl_lbl.position = Vector2(10, 16)
+			lvl_lbl.position = Vector2(16, 22)
 			lvl_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(lvl_lbl)
 		else:

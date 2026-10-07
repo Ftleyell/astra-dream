@@ -41,7 +41,7 @@ var _cached_screen_size: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
-	layer = 128
+	layer = 150
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	_build_hierarchy()

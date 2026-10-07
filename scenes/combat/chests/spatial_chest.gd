@@ -37,7 +37,9 @@ var _flash_tween: Tween = null
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
-@onready var price_label: Label = $PriceLabel
+@onready var price_badge: PanelContainer = get_node_or_null("PriceBadge") as PanelContainer
+@onready var credit_icon: TextureRect = get_node_or_null("PriceBadge/HBox/CreditIcon") as TextureRect
+@onready var price_label: Label = (get_node_or_null("PriceBadge/HBox/PriceLabel") as Label) if get_node_or_null("PriceBadge/HBox/PriceLabel") else (get_node_or_null("PriceLabel") as Label)
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var radius_visual: Line2D = $RadiusVisual
 
@@ -169,18 +171,24 @@ func update_price_display(wave: int = 1, local_chests_in_wave: int = 0, green_ca
 	match chest_type:
 		ChestType.SALVAGE_CAPSULE:
 			current_cost = 0
+			if credit_icon:
+				credit_icon.visible = false
 			if price_label:
 				price_label.text = "GRATIS"
 				price_label.modulate = Color(0.4, 1.0, 0.5, 1.0)
 		ChestType.REGULAR:
 			current_cost = economy_config.calculate_regular_chest_cost(wave, local_chests_in_wave, effective_green_cards, keys > 0)
+			if credit_icon:
+				credit_icon.visible = true
 			if price_label:
-				price_label.text = "%dc" % current_cost
+				price_label.text = str(current_cost)
 				price_label.modulate = Color(0.2, 0.8, 1.0, 1.0)
 		ChestType.GOLDEN:
 			current_cost = economy_config.golden_chest_base_cost
+			if credit_icon:
+				credit_icon.visible = true
 			if price_label:
-				price_label.text = "%dc" % current_cost
+				price_label.text = str(current_cost)
 				price_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
 
 func _can_afford_or_free(player: Player) -> bool:
@@ -276,6 +284,8 @@ func _flash_insufficient_credits() -> void:
 		return
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
+	if credit_icon:
+		credit_icon.visible = false
 	price_label.text = "¡FALTAN CRÉDITOS!"
 	price_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
 	_flash_tween = create_tween()
@@ -283,13 +293,19 @@ func _flash_insufficient_credits() -> void:
 	_flash_tween.tween_callback(func():
 		if is_instance_valid(price_label):
 			if chest_type == ChestType.SALVAGE_CAPSULE:
+				if credit_icon:
+					credit_icon.visible = false
 				price_label.text = "GRATIS"
 				price_label.modulate = Color(0.4, 1.0, 0.5, 1.0)
 			elif chest_type == ChestType.GOLDEN:
-				price_label.text = "%dc" % current_cost
+				if credit_icon:
+					credit_icon.visible = true
+				price_label.text = str(current_cost)
 				price_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
 			else:
-				price_label.text = "%dc" % current_cost
+				if credit_icon:
+					credit_icon.visible = true
+				price_label.text = str(current_cost)
 				price_label.modulate = Color(0.2, 0.8, 1.0, 1.0)
 	)
 
@@ -299,7 +315,9 @@ func _play_open_and_vanish_fx() -> void:
 	tw.parallel().tween_property(visual_root, "modulate:a", 0.0, 0.3)
 	if radius_visual:
 		tw.parallel().tween_property(radius_visual, "default_color:a", 0.0, 0.3)
-	if price_label:
+	if price_badge:
+		tw.parallel().tween_property(price_badge, "modulate:a", 0.0, 0.3)
+	elif price_label:
 		tw.parallel().tween_property(price_label, "modulate:a", 0.0, 0.3)
 	tw.tween_callback(queue_free)
 

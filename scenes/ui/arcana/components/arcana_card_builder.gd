@@ -61,10 +61,12 @@ static func build_card(
 	hotkey_lbl.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(hotkey_lbl)
 
-	# 2. Nombre de la Arcana (Limpio y Prominente)
+	# 2. Nombre de la Arcana (Limpio y Prominente con altura fija para alineación)
 	var name_label := Label.new()
+	name_label.custom_minimum_size = Vector2(0, 48)
 	name_label.text = arc.name.to_upper()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_label.add_theme_color_override("font_color", COLOR_PURE_WHITE)
 	name_label.add_theme_font_size_override("font_size", 18)

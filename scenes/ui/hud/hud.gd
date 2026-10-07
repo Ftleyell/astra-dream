@@ -509,37 +509,35 @@ func _setup_curse_badge() -> void:
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.12, 0.02, 0.05, 0.8)
-		style.border_color = Color(1.0, 0.2, 0.3, 0.9)
+		style.bg_color = Color(0.12, 0.02, 0.05, 0.85)
+		style.border_color = Color(1.0, 0.25, 0.35, 0.9)
 		style.set_border_width_all(1)
-		style.set_corner_radius_all(14)
-		style.content_margin_left = 10.0
+		style.set_corner_radius_all(10)
+		style.content_margin_left = 12.0
 		style.content_margin_right = 12.0
-		style.content_margin_top = 4.0
-		style.content_margin_bottom = 4.0
-		style.shadow_color = Color(1.0, 0.1, 0.2, 0.4)
-		style.shadow_size = 6
+		style.content_margin_top = 3.0
+		style.content_margin_bottom = 3.0
+		style.shadow_color = Color(0.9, 0.1, 0.2, 0.25)
+		style.shadow_size = 4
 		panel.add_theme_stylebox_override("panel", style)
 
 		var hbox := HBoxContainer.new()
 		hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		hbox.add_theme_constant_override("separation", 6)
-
-		var icon_lbl := Label.new()
-		icon_lbl.text = "☣️"
-		icon_lbl.add_theme_font_size_override("font_size", 13)
-		hbox.add_child(icon_lbl)
+		hbox.add_theme_constant_override("separation", 4)
 
 		var lbl := Label.new()
 		lbl.name = "CurseLabel"
-		lbl.text = "Maldición: 0"
-		lbl.add_theme_font_size_override("font_size", 13)
-		lbl.add_theme_color_override("font_color", Color(1.0, 0.35, 0.45))
+		lbl.text = "MALDICIÓN +0"
+		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.4, 0.48))
+		lbl.add_theme_color_override("font_shadow_color", Color(0.8, 0.05, 0.15, 0.6))
+		lbl.add_theme_constant_override("shadow_outline_size", 4)
 		hbox.add_child(lbl)
 
 		panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		panel.add_child(hbox)
 		key_container.add_child(panel)
+
 		key_container.move_child(panel, 0)
 		curse_badge = panel
 		curse_label = lbl
@@ -557,7 +555,7 @@ func update_curse(curse_val: float) -> void:
 		return
 	if curse_val > 0.0:
 		curse_badge.visible = true
-		curse_label.text = "Maldición: +%d pts" % int(curse_val)
+		curse_label.text = "MALDICIÓN +%d PTS" % int(curse_val)
 		curse_badge.pivot_offset = curse_badge.size * 0.5
 		var tw := create_tween()
 		if tw:

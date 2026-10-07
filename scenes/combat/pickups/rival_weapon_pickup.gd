@@ -73,21 +73,13 @@ func _update_appearance() -> void:
 
 	if label_name:
 		var p_title: String = pilot_name.to_upper() if not pilot_name.is_empty() else "RIVAL"
-		var w_name: String = weapon_data.name if "name" in weapon_data and not weapon_data.name.is_empty() else str(weapon_data.weapon_id)
-		label_name.text = "🎁 COFRE DE %s (%s)" % [p_title, w_name.to_upper()]
+		label_name.text = "🎁 COFRE DE %s" % p_title
 		label_name.modulate = Color(1.0, 0.9, 0.3, 1.0)
 		label_name.position = Vector2(-120, -44)
 		label_name.custom_minimum_size = Vector2(240, 20)
 
-	if weapon_icon and "icon" in weapon_data and weapon_data.icon:
-		var icon_tex: Texture2D = weapon_data.icon
-		weapon_icon.texture = icon_tex
-		var max_dim: float = maxf(float(icon_tex.get_width()), float(icon_tex.get_height()))
-		var target_px: float = 28.0
-		var s: float = target_px / maxf(1.0, max_dim)
-		weapon_icon.scale = Vector2(s, s)
-		weapon_icon.position = Vector2(0, -18)
-		weapon_icon.visible = true
+	if weapon_icon:
+		weapon_icon.visible = false
 
 func _process(delta: float) -> void:
 	if is_collected:
