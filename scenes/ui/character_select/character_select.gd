@@ -222,11 +222,11 @@ func _ready() -> void:
 	if dock_unified_button:
 		dock_unified_button.visible = false
 	if dock_container:
-		dock_container.visible = true
+		dock_container.visible = false
 	if orbital_terminal:
-		orbital_terminal.visible = true
+		orbital_terminal.visible = false
 	if back_button:
-		back_button.text = "← [ESC] ELEGIR PILOTO"
+		back_button.text = "← [ESC] HUB"
 
 	if dock_unified_button:
 		dock_unified_button.pressed.connect(_on_dock_unified_button_pressed)
@@ -1030,10 +1030,7 @@ func _on_tome_modal_closed() -> void:
 
 
 func _on_back_pressed() -> void:
-	if hero_picker_modal:
-		_on_dock_unified_button_pressed()
-	else:
-		_exit_to_hub()
+	_exit_to_hub()
 
 
 func _exit_to_hub() -> void:
@@ -1174,6 +1171,8 @@ func _on_hero_cancelled() -> void:
 			main_margin_container.visible = true
 		if dock_container:
 			dock_container.visible = true
+		if orbital_terminal:
+			orbital_terminal.visible = true
 		return
 	_exit_to_hub()
 

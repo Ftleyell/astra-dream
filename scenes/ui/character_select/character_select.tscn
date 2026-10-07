@@ -134,7 +134,7 @@ theme_override_constants/separation = 14
 custom_minimum_size = Vector2(210, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "← [ESC] ELEGIR PILOTO"
+text = "← [ESC] HUB"
 
 [node name="Spacer1" type="Control" parent="MarginContainer/RootVBox/HeaderBar" unique_id=94178724]
 layout_mode = 2

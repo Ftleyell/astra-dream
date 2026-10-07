@@ -75,7 +75,7 @@ func _apply_weapon_optical_centering() -> void:
 		return
 
 	var raw_tex: Texture2D = weapon_icon.texture
-	if raw_tex is AtlasTexture:
+	while raw_tex is AtlasTexture:
 		raw_tex = (raw_tex as AtlasTexture).atlas
 	if not raw_tex:
 		return
@@ -92,16 +92,19 @@ func _apply_weapon_optical_centering() -> void:
 
 	var used_rect: Rect2i = img.get_used_rect()
 	if used_rect.size.x <= 0 or used_rect.size.y <= 0:
+		weapon_icon.texture = raw_tex
 		return
 
-	# Añadir un margen sutil de respiración (5%) sin salir de la textura original
-	var pad_x: int = int(ceil(float(used_rect.size.x) * 0.05))
-	var pad_y: int = int(ceil(float(used_rect.size.y) * 0.05))
+	# Centrado simétrico: determinar el centro del dibujo activo y encuadrarlo uniformemente
+	var center_x: float = float(used_rect.position.x) + float(used_rect.size.x) * 0.5
+	var center_y: float = float(used_rect.position.y) + float(used_rect.size.y) * 0.5
+	var max_dim: float = maxf(float(used_rect.size.x), float(used_rect.size.y))
+	var half_span: float = (max_dim * 0.5) * 1.12 # 12% margen de respiración
 
-	var crop_x: int = clampi(used_rect.position.x - pad_x, 0, tw - 1)
-	var crop_y: int = clampi(used_rect.position.y - pad_y, 0, th - 1)
-	var crop_r: int = clampi(used_rect.position.x + used_rect.size.x + pad_x, crop_x + 1, tw)
-	var crop_b: int = clampi(used_rect.position.y + used_rect.size.y + pad_y, crop_y + 1, th)
+	var crop_x: int = clampi(int(floor(center_x - half_span)), 0, tw - 1)
+	var crop_y: int = clampi(int(floor(center_y - half_span)), 0, th - 1)
+	var crop_r: int = clampi(int(ceil(center_x + half_span)), crop_x + 1, tw)
+	var crop_b: int = clampi(int(ceil(center_y + half_span)), crop_y + 1, th)
 
 	var final_region := Rect2(crop_x, crop_y, crop_r - crop_x, crop_b - crop_y)
 	var atlas := AtlasTexture.new()
