@@ -363,42 +363,52 @@ func _setup_signals() -> void:
 		character_skill_tree_modal.closed.connect(_on_skill_tree_closed)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
+			if _has_any_modal_open():
+				return
+			if orbital_terminal and orbital_terminal.is_visible_in_tree() and not orbital_terminal.disabled:
+				get_viewport().set_input_as_handled()
+				if orbital_terminal.has_method("_on_pressed"):
+					orbital_terminal._on_pressed()
+				else:
+					_on_launch_committed()
+
+
+func _has_any_modal_open() -> bool:
 	if cosmetic_carousel_modal and cosmetic_carousel_modal.get("is_open"):
-		return
+		return true
 	if hero_picker_modal and hero_picker_modal.get("is_open"):
-		return
+		return true
 	if debug_menu_modal and debug_menu_modal.get("is_open"):
-		return
+		return true
 	if pet_selection_modal and pet_selection_modal.get("is_open"):
-		return
+		return true
 	if navigator_selection_modal and navigator_selection_modal.get("is_open"):
-		return
+		return true
 	if skin_selection_modal and skin_selection_modal.get("is_open"):
-		return
+		return true
 	if gacha_modal and gacha_modal.visible:
-		return
+		return true
 	if tome_selection_modal and tome_selection_modal.get("is_open"):
-		return
+		return true
 	if weapon_selection_modal and weapon_selection_modal.get("is_open"):
-		return
+		return true
 	if arsenal_banlist_modal and arsenal_banlist_modal.get("is_open"):
-		return
+		return true
 	if character_skill_tree_modal and character_skill_tree_modal.visible:
-		return
-	if hero_picker_modal and hero_picker_modal.get("is_open"):
+		return true
+	return false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _has_any_modal_open():
 		return
 
 	if event.is_action_pressed("ui_cancel"):
 		_on_back_pressed()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)):
-		if orbital_terminal and orbital_terminal.is_visible_in_tree() and not orbital_terminal.disabled:
-			if orbital_terminal.has_method("_on_pressed"):
-				orbital_terminal._on_pressed()
-			else:
-				_on_launch_committed()
-			get_viewport().set_input_as_handled()
 	elif is_debug_active and (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1):
 		_on_debug_pressed()
 		get_viewport().set_input_as_handled()
