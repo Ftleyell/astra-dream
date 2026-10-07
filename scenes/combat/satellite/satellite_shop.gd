@@ -251,29 +251,65 @@ func _unhandled_input(event: InputEvent) -> void:
 					_on_reroll_pressed()
 					get_viewport().set_input_as_handled()
 
-	if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
-		_navigate_focus(SIDE_LEFT)
+	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_W or event.keycode == KEY_UP)):
+		_navigate_vertical(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
+		_navigate_vertical(1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+		_navigate_horizontal(-1)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
-		_navigate_focus(SIDE_RIGHT)
+		_navigate_horizontal(1)
 		get_viewport().set_input_as_handled()
 
 
-func _navigate_focus(side: Side) -> void:
+func _navigate_vertical(dir: int) -> void:
 	var focus_owner: Control = get_viewport().gui_get_focus_owner()
 	var current_idx: int = buy_buttons.find(focus_owner as Button)
 
 	if current_idx != -1:
-		var n: int = buy_buttons.size()
-		var step: int = -1 if side == SIDE_LEFT else 1
-		for offset: int in range(1, n + 1):
-			var target_idx: int = (current_idx + step * offset + n) % n
+		var target_idx: int = current_idx + dir
+		if target_idx < 0:
+			# Wrap to bottom bar
+			if close_btn and is_instance_valid(close_btn):
+				close_btn.grab_focus()
+		elif target_idx >= buy_buttons.size():
+			# Go to bottom bar
+			if reroll_btn and is_instance_valid(reroll_btn) and not reroll_btn.disabled:
+				reroll_btn.grab_focus()
+			elif close_btn and is_instance_valid(close_btn):
+				close_btn.grab_focus()
+		else:
 			var target_btn: Button = buy_buttons[target_idx]
-			if is_instance_valid(target_btn) and not target_btn.disabled:
+			if is_instance_valid(target_btn):
 				target_btn.grab_focus()
-				return
+	elif focus_owner == reroll_btn or focus_owner == close_btn:
+		if dir < 0:
+			# Go back to last available card
+			for i in range(buy_buttons.size() - 1, -1, -1):
+				var b: Button = buy_buttons[i]
+				if is_instance_valid(b) and not b.disabled:
+					b.grab_focus()
+					return
+			if not buy_buttons.is_empty():
+				buy_buttons[-1].grab_focus()
 	else:
 		_focus_next_available_buy_button()
+
+
+func _navigate_horizontal(dir: int) -> void:
+	var focus_owner: Control = get_viewport().gui_get_focus_owner()
+	if focus_owner == reroll_btn:
+		if close_btn and is_instance_valid(close_btn):
+			close_btn.grab_focus()
+	elif focus_owner == close_btn:
+		if reroll_btn and is_instance_valid(reroll_btn) and not reroll_btn.disabled:
+			reroll_btn.grab_focus()
+	else:
+		# Si está en una oferta, saltar a la oferta adyacente
+		_navigate_vertical(dir)
 
 
 func _buy_item_by_index(index: int) -> void:
@@ -281,6 +317,7 @@ func _buy_item_by_index(index: int) -> void:
 		var btn: Button = buy_buttons[index]
 		if is_instance_valid(btn) and not btn.disabled:
 			btn.emit_signal("pressed")
+
 
 
 func _can_afford_any_option() -> bool:
@@ -415,26 +452,27 @@ func _setup_focus_and_grab() -> void:
 	var n_items: int = buy_buttons.size()
 	for i: int in range(n_items):
 		var btn: Button = buy_buttons[i]
-		var left_btn: Button = buy_buttons[(i - 1 + n_items) % n_items]
-		var right_btn: Button = buy_buttons[(i + 1) % n_items]
+		var up_btn: Button = buy_buttons[(i - 1 + n_items) % n_items]
+		var down_btn: Button = buy_buttons[(i + 1) % n_items]
 
-		btn.focus_neighbor_left = left_btn.get_path()
-		btn.focus_neighbor_right = right_btn.get_path()
-		btn.focus_neighbor_bottom = reroll_btn.get_path() if i < 2 else close_btn.get_path()
-		btn.focus_neighbor_top = close_btn.get_path()
+		btn.focus_neighbor_top = up_btn.get_path() if i > 0 else close_btn.get_path()
+		btn.focus_neighbor_bottom = down_btn.get_path() if i < n_items - 1 else reroll_btn.get_path()
+		btn.focus_neighbor_left = btn.get_path()
+		btn.focus_neighbor_right = btn.get_path()
 
 	if reroll_btn and close_btn:
 		reroll_btn.focus_neighbor_left = close_btn.get_path()
 		reroll_btn.focus_neighbor_right = close_btn.get_path()
-		reroll_btn.focus_neighbor_top = buy_buttons[0].get_path()
+		reroll_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
 		reroll_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
 
 		close_btn.focus_neighbor_left = reroll_btn.get_path()
 		close_btn.focus_neighbor_right = reroll_btn.get_path()
-		close_btn.focus_neighbor_top = buy_buttons[mini(2, n_items - 1)].get_path()
-		close_btn.focus_neighbor_bottom = buy_buttons[mini(2, n_items - 1)].get_path()
+		close_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
+		close_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
 
 	_focus_next_available_buy_button()
+
 
 
 func _focus_next_available_buy_button() -> void:

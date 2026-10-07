@@ -14,17 +14,21 @@ Estado y registro de tareas pendientes organizadas por niveles de prioridad y co
 
 ---
 
-## 🟡 Nivel 2 — Pulido de Modales & Navegación (PRÓXIMO)
-1. **UI de Tienda de Satélite (`satellite_shop.tscn` / `.gd`):**
-   - Rediseñar y ordenar la disposición de ítems/mejoras.
-   - Mejorar alineación de precios, descripciones y estética cyberpunk elegante.
-2. **UI de Reemplazo de Armas (`weapon_replace_modal`):**
-   - Pulir estética general del modal.
-   - Garantizar soporte de navegación fluida y ergonómica mediante gamepad y teclado.
+## 🟡 Nivel 2 — Pulido de Modales & Navegación (COMPLETADO)
+- [x] **UI de Tienda de Satélite (`satellite_shop.tscn` / `.gd` / `satellite_shop_card_builder.gd`):**
+  - Header de créditos centrado arriba de todo con el estilo oficial del HUD (`CreditsCard` con icono de moneda y texto dorado grande).
+  - Formato de tarjetas estilo `LevelUpModal` con iconos grandes de 80x80px con marco de rareza, información limpia y badges métricos.
+  - Botón de compra interactivo derecho con moneda oficial (`🪙 X`) y atajos `[TECLA 1, 2, 3]`.
+  - Navegación natural con `W/S` (vertical entre ofertas), `A/D` (horizontal entre Reroll y Cerrar), y atajos con `Espacio/Enter` que compran o cierran al quedarse sin fondos.
+- [x] **UI de Reemplazo de Armas (`weapon_swap_modal.gd`):**
+  - Panel superior destacado con el arma entrante en icono de 80x80px y desglose métrico.
+  - Fila horizontal con las 4 armas en iconos de 80x80px: ranura 1 insignia bloqueada (fuera del ciclo de foco, tecla 1 ignorada silenciosamente) y ranuras 2 a 4 con comparativa de stats en verde/rojo.
+  - Navegación fluida con `A/D`, tecla `S` para descender a Descartar, `W` para regresar, y atajos directos `2, 3, 4` y `ESC`.
 
 ---
 
-## 🟠 Nivel 3 — Actualización de Carteles y Pantallas
+## 🟠 Nivel 3 — Actualización de Carteles y Pantallas (PRÓXIMO)
+
 1. **Carteles de Vencer Rivales:**
    - Modernizar el diseño visual y tipográfico del cartel/banner de victoria contra rivales durante el combate.
 2. **Pantalla de Victoria:**

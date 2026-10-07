@@ -1,6 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2m3s24q5c18"]
+[gd_scene load_steps=4 format=3 uid="uid://b2m3s24q5c18"]
 
 [ext_resource type="Script" path="res://scenes/combat/satellite/satellite_shop.gd" id="1_shop"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/credit_coin_icon.png" id="2_credit_ico"]
+
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_credits_card"]
+content_margin_left = 16.0
+content_margin_top = 4.0
+content_margin_right = 16.0
+content_margin_bottom = 4.0
+bg_color = Color(0.03, 0.06, 0.12, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.85, 0.2, 0.7)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 4
 
 [node name="SatelliteShop" type="CanvasLayer"]
 process_mode = 3
@@ -13,10 +33,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -325.0
-offset_top = -295.0
-offset_right = 325.0
-offset_bottom = 295.0
+offset_left = -345.0
+offset_top = -305.0
+offset_right = 345.0
+offset_bottom = 305.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -26,23 +46,55 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 18.0
-offset_top = 16.0
+offset_top = 14.0
 offset_right = -18.0
-offset_bottom = -16.0
+offset_bottom = -14.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="TopBar" type="HBoxContainer" parent="ShopPanel/VBoxContainer"]
+[node name="TopBar" type="VBoxContainer" parent="ShopPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="CreditsCard" type="PanelContainer" parent="ShopPanel/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_credits_card")
+
+[node name="HBox" type="HBoxContainer" parent="ShopPanel/VBoxContainer/TopBar/CreditsCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CreditIcon" type="TextureRect" parent="ShopPanel/VBoxContainer/TopBar/CreditsCard/HBox"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_credit_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CreditsLabel" type="Label" parent="ShopPanel/VBoxContainer/TopBar/CreditsCard/HBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "100 CRÉDITOS"
+vertical_alignment = 1
 
 [node name="TitleLabel" type="Label" parent="ShopPanel/VBoxContainer/TopBar"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
-text = "★ TERMINAL DE SUMINISTROS SATELITAL ★"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.2, 0.85, 1, 0.9)
+text = "★ TERMINAL DE SUMINISTROS SATELITAL — EN ÓRBITA ★"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 
@@ -52,12 +104,14 @@ size_flags_vertical = 3
 theme_override_constants/separation = 8
 
 [node name="SubtitleLabel" type="Label" parent="ShopPanel/VBoxContainer/ShopOfferVBox"]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.3, 0.8, 1, 0.85)
 text = "SUMINISTROS EN ÓRBITA — ELIGE O REASIGNA EQUIPO"
 
 [node name="ItemsContainer" type="VBoxContainer" parent="ShopPanel/VBoxContainer/ShopOfferVBox"]
+
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8

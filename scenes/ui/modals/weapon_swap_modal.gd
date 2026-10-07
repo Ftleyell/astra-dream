@@ -31,20 +31,59 @@ func _unhandled_input(event: InputEvent) -> void:
 		var key_event := event as InputEventKey
 		match key_event.keycode:
 			KEY_1:
-				_handle_slot_hotkey(0)
+				# Tecla 1 ignorada silenciosamente (arma insignia bloqueada)
 				get_viewport().set_input_as_handled()
+				return
 			KEY_2:
 				_handle_slot_hotkey(1)
 				get_viewport().set_input_as_handled()
+				return
 			KEY_3:
 				_handle_slot_hotkey(2)
 				get_viewport().set_input_as_handled()
+				return
 			KEY_4:
 				_handle_slot_hotkey(3)
 				get_viewport().set_input_as_handled()
+				return
 			KEY_ESCAPE:
 				_on_discard_pressed()
 				get_viewport().set_input_as_handled()
+				return
+
+	if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+		_navigate_horizontal(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+		_navigate_horizontal(1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
+		if _discard_button and is_instance_valid(_discard_button):
+			_discard_button.grab_focus()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_W or event.keycode == KEY_UP)):
+		_navigate_horizontal(0)
+		get_viewport().set_input_as_handled()
+
+func _navigate_horizontal(dir: int) -> void:
+	var replaceable_buttons: Array[Button] = []
+	for i in range(1, _weapons_container.get_child_count()):
+		var card = _weapons_container.get_child(i)
+		var btn: Button = card.find_child("ReplaceBtn", true, false) as Button
+		if btn and is_instance_valid(btn) and not btn.disabled:
+			replaceable_buttons.append(btn)
+
+	if replaceable_buttons.is_empty():
+		return
+
+	var current_focus = get_viewport().gui_get_focus_owner()
+	var cur_idx: int = replaceable_buttons.find(current_focus)
+
+	if cur_idx == -1:
+		replaceable_buttons[0].grab_focus()
+	else:
+		var next_idx: int = posmod(cur_idx + dir, replaceable_buttons.size())
+		replaceable_buttons[next_idx].grab_focus()
 
 func _handle_slot_hotkey(slot_idx: int) -> void:
 	if slot_idx <= 0:
@@ -66,7 +105,7 @@ func _build_ui() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(780, 520)
+	_panel.custom_minimum_size = Vector2(880, 560)
 
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.04, 0.06, 0.12, 0.98)
@@ -114,7 +153,7 @@ func _build_ui() -> void:
 	vbox.add_child(_incoming_box)
 
 	var list_lbl := Label.new()
-	list_lbl.text = "SELECCIONA EL ARMA A SUSTITUIR [Teclas 1, 2, 3 o 4]:"
+	list_lbl.text = "SELECCIONA EL ARMA A SUSTITUIR [Teclas 2, 3 o 4]:"
 	list_lbl.add_theme_font_size_override("font_size", 12)
 	list_lbl.add_theme_color_override("font_color", Color(0.3, 0.85, 1.0))
 	vbox.add_child(list_lbl)
@@ -142,14 +181,16 @@ func prompt_swap(p_player: Player, p_incoming: WeaponData, on_replaced: Callable
 	call_deferred("_grab_default_focus")
 
 func _grab_default_focus() -> void:
-	if _weapons_container.get_child_count() > 0:
-		var first_card := _weapons_container.get_child(0)
-		var btn: Button = first_card.find_child("ReplaceBtn", true, false) as Button
+	# Enfocar la ranura 2 (la primera sustituible) por defecto
+	if _weapons_container.get_child_count() > 1:
+		var second_card := _weapons_container.get_child(1)
+		var btn: Button = second_card.find_child("ReplaceBtn", true, false) as Button
 		if btn and is_instance_valid(btn):
 			btn.grab_focus()
 			return
 	if _discard_button and is_instance_valid(_discard_button):
 		_discard_button.grab_focus()
+
 
 func _refresh_display() -> void:
 	for child in _incoming_box.get_children():
@@ -161,38 +202,60 @@ func _refresh_display() -> void:
 
 	if incoming_weapon:
 		var hbox := HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 14)
+		hbox.add_theme_constant_override("separation", 16)
+		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+		var in_icon_panel := PanelContainer.new()
+		in_icon_panel.custom_minimum_size = Vector2(88, 88)
+		in_icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var in_icon_sb := StyleBoxFlat.new()
+		in_icon_sb.bg_color = Color(0.02, 0.04, 0.08, 0.95)
+		in_icon_sb.border_color = Color(0.2, 1.0, 0.6, 0.9)
+		in_icon_sb.set_border_width_all(2)
+		in_icon_sb.set_corner_radius_all(6)
+		in_icon_panel.add_theme_stylebox_override("panel", in_icon_sb)
 
 		var icon_rect := TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(68, 68)
+		icon_rect.custom_minimum_size = Vector2(80, 80)
+		icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		if incoming_weapon.icon:
 			icon_rect.texture = incoming_weapon.icon
-		hbox.add_child(icon_rect)
+		in_icon_panel.add_child(icon_rect)
+		hbox.add_child(in_icon_panel)
 
 		var info_vbox := VBoxContainer.new()
 		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		info_vbox.set("theme_override_constants/separation", 4)
 
 		var name_lbl := Label.new()
-		name_lbl.text = "NUEVA ADQUISICIÓN: %s" % incoming_weapon.weapon_name
+		name_lbl.text = "★ NUEVA ADQUISICIÓN: %s" % incoming_weapon.weapon_name.to_upper()
 		name_lbl.add_theme_font_size_override("font_size", 14)
 		name_lbl.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
 		info_vbox.add_child(name_lbl)
 
 		var stat_lbl := Label.new()
-		stat_lbl.text = "Daño Base: %.0f | Enfriamiento: %.2fs | %s" % [
+		stat_lbl.text = "⚡ Daño Base: %.0f   |   ⏱️ Enfriamiento: %.2fs" % [
 			incoming_weapon.base_damage,
-			incoming_weapon.base_cooldown,
-			incoming_weapon.description
+			incoming_weapon.base_cooldown
 		]
-		stat_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-		stat_lbl.add_theme_font_size_override("font_size", 11)
-		stat_lbl.add_theme_color_override("font_color", Color(0.85, 0.92, 1.0))
+		stat_lbl.add_theme_font_size_override("font_size", 12)
+		stat_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
 		info_vbox.add_child(stat_lbl)
+
+		var desc_lbl := Label.new()
+		desc_lbl.text = incoming_weapon.description
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+		desc_lbl.add_theme_font_size_override("font_size", 11)
+		desc_lbl.add_theme_color_override("font_color", Color(0.85, 0.92, 1.0, 0.9))
+		info_vbox.add_child(desc_lbl)
 
 		hbox.add_child(info_vbox)
 		_incoming_box.add_child(hbox)
+
 
 	if not is_instance_valid(current_player):
 		return
@@ -208,7 +271,7 @@ func _refresh_display() -> void:
 
 func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContainer:
 	var pc := PanelContainer.new()
-	pc.custom_minimum_size = Vector2(170, 240)
+	pc.custom_minimum_size = Vector2(195, 290)
 	pc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var w_rarity := inst.weapon_data.rarity if inst.weapon_data else Enums.Rarity.COMMON
@@ -226,27 +289,39 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	pc.add_theme_stylebox_override("panel", csb)
 
 	var card_vbox := VBoxContainer.new()
-	card_vbox.add_theme_constant_override("separation", 6)
+	card_vbox.add_theme_constant_override("separation", 5)
 	pc.add_child(card_vbox)
 
 	var is_base_weapon: bool = (slot_idx == 0)
 
 	var slot_title := Label.new()
-	slot_title.text = "🔒 RANURA #1 — ARMA INSIGNIA" if is_base_weapon else ("[Tecla %d] RANURA #%d" % [slot_idx + 1, slot_idx + 1])
+	slot_title.text = "🔒 RANURA #1 (FIJA)" if is_base_weapon else ("[Tecla %d] RANURA #%d" % [slot_idx + 1, slot_idx + 1])
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	slot_title.add_theme_font_size_override("font_size", 12)
 	slot_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2) if is_base_weapon else Color(0.2, 0.9, 1.0))
 	card_vbox.add_child(slot_title)
 
-	var icon_center := CenterContainer.new()
+	# Marco de icono grande 80x80
+	var icon_panel := PanelContainer.new()
+	icon_panel.custom_minimum_size = Vector2(88, 88)
+	icon_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var icon_sb := StyleBoxFlat.new()
+	icon_sb.bg_color = Color(0.02, 0.04, 0.07, 0.95)
+	icon_sb.border_color = border_col
+	icon_sb.set_border_width_all(2)
+	icon_sb.set_corner_radius_all(6)
+	icon_panel.add_theme_stylebox_override("panel", icon_sb)
+
 	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(64, 64)
+	icon_rect.custom_minimum_size = Vector2(80, 80)
+	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if inst.weapon_data and inst.weapon_data.icon:
 		icon_rect.texture = inst.weapon_data.icon
-	icon_center.add_child(icon_rect)
-	card_vbox.add_child(icon_center)
+	icon_panel.add_child(icon_rect)
+	card_vbox.add_child(icon_panel)
 
 	var w_name := inst.weapon_data.weapon_name if inst.weapon_data else "Arma"
 	var name_lbl := Label.new()
@@ -257,27 +332,55 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	name_lbl.add_theme_color_override("font_color", Color.WHITE)
 	card_vbox.add_child(name_lbl)
 
-	var level_lbl := Label.new()
-	level_lbl.text = "Nivel Actual: ★%d" % inst.level
-	level_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	level_lbl.add_theme_font_size_override("font_size", 11)
-	level_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	card_vbox.add_child(level_lbl)
+	# Stats e información métrica comparativa
+	var stats_p_vbox := VBoxContainer.new()
+	stats_p_vbox.set("theme_override_constants/separation", 2)
 
-	var inherit_lbl := Label.new()
-	inherit_lbl.text = "◈ ARMA BASE FIJA ◈" if is_base_weapon else ("➔ Heredará Nivel: ★%d" % inst.level)
-	inherit_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	inherit_lbl.add_theme_font_size_override("font_size", 11)
-	inherit_lbl.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2) if is_base_weapon else Color(0.2, 1.0, 0.6))
-	card_vbox.add_child(inherit_lbl)
+	var cur_dmg: float = inst.get_effective_damage()
+	var cur_cd: float = inst.get_effective_cooldown()
+
+	var stat_dmg_lbl := Label.new()
+	stat_dmg_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stat_dmg_lbl.add_theme_font_size_override("font_size", 10)
+	if incoming_weapon and not is_base_weapon:
+		var in_dmg: float = incoming_weapon.base_damage
+		if in_dmg > cur_dmg:
+			stat_dmg_lbl.text = "⚡ Daño: %.0f (➔ %.0f ▲)" % [cur_dmg, in_dmg]
+			stat_dmg_lbl.add_theme_color_override("font_color", Color("#00FF9D"))
+		elif in_dmg < cur_dmg:
+			stat_dmg_lbl.text = "⚡ Daño: %.0f (➔ %.0f ▼)" % [cur_dmg, in_dmg]
+			stat_dmg_lbl.add_theme_color_override("font_color", Color("#FF6677"))
+		else:
+			stat_dmg_lbl.text = "⚡ Daño: %.0f (=)" % cur_dmg
+			stat_dmg_lbl.add_theme_color_override("font_color", Color.WHITE)
+	else:
+		stat_dmg_lbl.text = "⚡ Daño Actual: %.0f" % cur_dmg
+		stat_dmg_lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	stats_p_vbox.add_child(stat_dmg_lbl)
+
+	var stat_cd_lbl := Label.new()
+	stat_cd_lbl.text = "⏱️ Enfriamiento: %.2fs" % cur_cd
+	stat_cd_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stat_cd_lbl.add_theme_font_size_override("font_size", 10)
+	stat_cd_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+	stats_p_vbox.add_child(stat_cd_lbl)
+
+	var level_lbl := Label.new()
+	level_lbl.text = "★ Nivel: %d %s" % [inst.level, ("" if is_base_weapon else "(➔ Hereda: ★%d)" % inst.level)]
+	level_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_lbl.add_theme_font_size_override("font_size", 10)
+	level_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
+	stats_p_vbox.add_child(level_lbl)
 
 	var recycle_credits: int = WeaponController.calculate_recycle_credits(inst.level)
 	var recycle_lbl := Label.new()
-	recycle_lbl.text = "No sustituible" if is_base_weapon else ("Reciclaje: +%d 🪙" % recycle_credits)
+	recycle_lbl.text = "◈ NO SUSTITUIBLE ◈" if is_base_weapon else ("Reciclaje: +%d 🪙" % recycle_credits)
 	recycle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	recycle_lbl.add_theme_font_size_override("font_size", 11)
-	recycle_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6) if is_base_weapon else Color(1.0, 0.75, 0.15))
-	card_vbox.add_child(recycle_lbl)
+	recycle_lbl.add_theme_font_size_override("font_size", 10)
+	recycle_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.7) if is_base_weapon else Color(1.0, 0.78, 0.2))
+	stats_p_vbox.add_child(recycle_lbl)
+
+	card_vbox.add_child(stats_p_vbox)
 
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -289,13 +392,16 @@ func _create_slot_card(slot_idx: int, inst: WeaponInstanceData) -> PanelContaine
 	rep_btn.custom_minimum_size = Vector2(0, 32)
 	rep_btn.disabled = is_base_weapon
 	if is_base_weapon:
+		rep_btn.focus_mode = Control.FOCUS_NONE
 		rep_btn.modulate = Color(0.6, 0.6, 0.6, 0.7)
 	else:
+		rep_btn.focus_mode = Control.FOCUS_ALL
 		UIFocusHelper.apply_cyber_focus(rep_btn)
 		rep_btn.pressed.connect(func(): _on_replace_slot_pressed(slot_idx))
 	card_vbox.add_child(rep_btn)
 
 	return pc
+
 
 func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:

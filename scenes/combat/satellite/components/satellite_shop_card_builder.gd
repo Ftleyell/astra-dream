@@ -221,83 +221,114 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 
 	hbox.add_child(info_vbox)
 
-	# 3. Columna derecha: Indicador de precio moderno (sin botones legacy)
-	var price_vbox := VBoxContainer.new()
-	price_vbox.custom_minimum_size = Vector2(100, 0)
-	price_vbox.size_flags_horizontal = Control.SIZE_SHRINK_END
-	price_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	price_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	price_vbox.set("theme_override_constants/separation", 4)
+	# 3. Columna derecha: Atajo y Botón de compra interactivo (Estilo Level Up)
+	var btn_vbox := VBoxContainer.new()
+	btn_vbox.custom_minimum_size = Vector2(130, 0)
+	btn_vbox.size_flags_horizontal = Control.SIZE_SHRINK_END
+	btn_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_vbox.set("theme_override_constants/separation", 4)
 
 	var hotkey_lbl := Label.new()
 	hotkey_lbl.text = "[ TECLA %d ]" % (index + 1)
-	hotkey_lbl.modulate = Color(0.45, 0.82, 1.0, 0.85)
+	hotkey_lbl.modulate = Color(1.0, 0.9, 0.35, 0.95)
 	hotkey_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hotkey_lbl.add_theme_font_size_override("font_size", 10)
-	price_vbox.add_child(hotkey_lbl)
+	btn_vbox.add_child(hotkey_lbl)
 
 	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
-	var price_panel := PanelContainer.new()
-	var price_sb := StyleBoxFlat.new()
-	price_sb.bg_color = Color(0.04, 0.07, 0.12, 0.88)
-	price_sb.border_color = Color(1.0, 0.82, 0.2, 0.8)
-	price_sb.set_border_width_all(1)
-	price_sb.set_corner_radius_all(14)
-	price_sb.set_content_margin_all(0.0)
-	price_panel.add_theme_stylebox_override("panel", price_sb)
-	price_panel.custom_minimum_size = Vector2(96, 30)
-	price_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-	var price_margin := MarginContainer.new()
-	price_margin.add_theme_constant_override("margin_left", 8)
-	price_margin.add_theme_constant_override("margin_right", 10)
-	price_margin.add_theme_constant_override("margin_top", 2)
-	price_margin.add_theme_constant_override("margin_bottom", 2)
-	price_panel.add_child(price_margin)
+	var buy_btn := Button.new()
+	buy_btn.custom_minimum_size = Vector2(130, 36)
+	buy_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	buy_btn.focus_mode = Control.FOCUS_ALL
 
-	var price_hbox := HBoxContainer.new()
-	price_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	price_hbox.set("theme_override_constants/separation", 6)
-	price_margin.add_child(price_hbox)
+	var buy_btn_normal := StyleBoxFlat.new()
+	buy_btn_normal.bg_color = Color(0.08, 0.12, 0.20, 0.92)
+	buy_btn_normal.set_border_width_all(1)
+	buy_btn_normal.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.7)
+	buy_btn_normal.set_corner_radius_all(6)
+	buy_btn_normal.set_content_margin_all(4.0)
+	buy_btn.add_theme_stylebox_override("normal", buy_btn_normal)
+
+	var buy_btn_hover := StyleBoxFlat.new()
+	buy_btn_hover.bg_color = Color(0.14, 0.22, 0.35, 1.0)
+	buy_btn_hover.set_border_width_all(2)
+	buy_btn_hover.border_color = rarity_color
+	buy_btn_hover.set_corner_radius_all(6)
+	buy_btn_hover.set_content_margin_all(4.0)
+	buy_btn.add_theme_stylebox_override("hover", buy_btn_hover)
+
+	var buy_btn_focus := buy_btn_hover.duplicate() as StyleBoxFlat
+	buy_btn_focus.border_color = Color(0.0, 0.95, 1.0, 1.0)
+	buy_btn.add_theme_stylebox_override("focus", buy_btn_focus)
+
+	var buy_btn_disabled := StyleBoxFlat.new()
+	buy_btn_disabled.bg_color = Color(0.04, 0.05, 0.08, 0.7)
+	buy_btn_disabled.border_color = Color(0.3, 0.3, 0.3, 0.5)
+	buy_btn_disabled.set_border_width_all(1)
+	buy_btn_disabled.set_corner_radius_all(6)
+	buy_btn_disabled.set_content_margin_all(4.0)
+	buy_btn.add_theme_stylebox_override("disabled", buy_btn_disabled)
+
+	# Contenido interno del botón: Icono de crédito + Cifra de precio
+	var btn_margin := MarginContainer.new()
+	btn_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	btn_margin.add_theme_constant_override("margin_left", 8)
+	btn_margin.add_theme_constant_override("margin_right", 8)
+	btn_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	buy_btn.add_child(btn_margin)
+
+	var btn_hbox := HBoxContainer.new()
+	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_hbox.set("theme_override_constants/separation", 6)
+	btn_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn_margin.add_child(btn_hbox)
 
 	var credit_icon := TextureRect.new()
-	credit_icon.custom_minimum_size = Vector2(20, 20)
+	credit_icon.custom_minimum_size = Vector2(18, 18)
 	credit_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	credit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	credit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	credit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var coin_tex: Texture2D = load("res://assets/sprites/ui/credit_coin_icon.png") as Texture2D
 	if coin_tex:
 		credit_icon.texture = coin_tex
 	credit_icon.modulate = Color(1.0, 0.85, 0.2, 1.0)
-	price_hbox.add_child(credit_icon)
+	btn_hbox.add_child(credit_icon)
 
 	var price_lbl := Label.new()
 	price_lbl.text = "%d" % cost
 	price_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	price_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	price_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25, 1.0))
-	price_lbl.add_theme_font_size_override("font_size", 14)
-	price_hbox.add_child(price_lbl)
+	price_lbl.add_theme_font_size_override("font_size", 13)
+	price_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn_hbox.add_child(price_lbl)
 
-	price_vbox.add_child(price_panel)
-	hbox.add_child(price_vbox)
+	btn_vbox.add_child(buy_btn)
+	hbox.add_child(btn_vbox)
 
 	_set_mouse_filter_ignore_recursive(card_margin)
 
 	card.set_meta(&"cost", cost)
 	card.set_meta(&"price_label", price_lbl)
 	card.set_meta(&"credit_icon", credit_icon)
-	card.set_meta(&"price_panel", price_panel)
-	card.set_meta(&"price_stylebox", price_sb)
+	card.set_meta(&"buy_button", buy_btn)
 	card.set_meta(&"hotkey_label", hotkey_lbl)
 
 	# Verificar asequibilidad inicial si el shop tiene créditos
 	if "current_credits" in shop:
 		update_card_affordability(card, shop.current_credits)
 
+	buy_btn.pressed.connect(func() -> void:
+		shop.handle_item_purchase(entry, cost, card)
+	)
+
 	card.pressed.connect(func() -> void:
 		shop.handle_item_purchase(entry, cost, card)
 	)
+
 
 	# Hover & Focus connections for stat preview
 	if target_stat_for_hover != &"":
@@ -324,26 +355,20 @@ static func mark_card_purchased(card: Button) -> void:
 		return
 	card.disabled = true
 	card.text = "¡Adquirido!"
+	var buy_btn: Button = card.get_meta(&"buy_button", null) as Button
+	if buy_btn:
+		buy_btn.disabled = true
 	var p_lbl: Label = card.get_meta(&"price_label", null) as Label
 	if p_lbl:
-		p_lbl.text = "ADQUIRIDO"
+		p_lbl.text = "COMPRADO"
 		p_lbl.add_theme_color_override("font_color", Color(0.25, 1.0, 0.6, 1.0))
-		p_lbl.add_theme_font_size_override("font_size", 10)
+		p_lbl.add_theme_font_size_override("font_size", 11)
 	var c_icon: TextureRect = card.get_meta(&"credit_icon", null) as TextureRect
 	if c_icon:
 		c_icon.visible = false
-	var price_panel: PanelContainer = card.get_meta(&"price_panel", null) as PanelContainer
-	if price_panel:
-		var bought_sb := StyleBoxFlat.new()
-		bought_sb.bg_color = Color(0.04, 0.16, 0.08, 0.85)
-		bought_sb.border_color = Color(0.2, 0.95, 0.55, 0.9)
-		bought_sb.set_border_width_all(1)
-		bought_sb.set_corner_radius_all(14)
-		bought_sb.set_content_margin_all(0.0)
-		price_panel.add_theme_stylebox_override("panel", bought_sb)
 	var h_lbl: Label = card.get_meta(&"hotkey_label", null) as Label
 	if h_lbl:
-		h_lbl.text = "[ COMPRADO ]"
+		h_lbl.text = "[ ADQUIRIDO ]"
 		h_lbl.modulate = Color(0.4, 0.5, 0.45, 0.5)
 
 static func update_card_affordability(card: Button, player_credits: int) -> void:
@@ -351,22 +376,25 @@ static func update_card_affordability(card: Button, player_credits: int) -> void
 		return
 	var cost: int = int(card.get_meta(&"cost", 0))
 	var can_afford: bool = (player_credits >= cost)
+	var buy_btn: Button = card.get_meta(&"buy_button", null) as Button
+	if buy_btn and not card.disabled:
+		buy_btn.disabled = not can_afford
 	var p_lbl: Label = card.get_meta(&"price_label", null) as Label
 	var c_icon: TextureRect = card.get_meta(&"credit_icon", null) as TextureRect
-	var p_sb: StyleBoxFlat = card.get_meta(&"price_stylebox", null) as StyleBoxFlat
 
 	if p_lbl:
 		p_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25, 1.0) if can_afford else Color(0.9, 0.45, 0.45, 0.85))
 	if c_icon:
 		c_icon.modulate = Color(1.0, 0.85, 0.2, 1.0) if can_afford else Color(0.9, 0.45, 0.45, 0.8)
-	if p_sb:
-		p_sb.border_color = Color(1.0, 0.82, 0.2, 0.85) if can_afford else Color(0.75, 0.3, 0.3, 0.6)
 
 static func _set_mouse_filter_ignore_recursive(node: Node) -> void:
 	for child: Node in node.get_children():
 		if child is Control:
-			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var c := child as Control
+			if not (c is Button):
+				c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_set_mouse_filter_ignore_recursive(child)
+
 
 static func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:
