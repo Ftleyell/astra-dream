@@ -584,10 +584,9 @@ func on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	if hud and hud.has_method("hide_boss"):
 		hud.hide_boss()
 	if hud and hud.has_method("show_rival_defeated_banner"):
-		hud.show_rival_defeated_banner(p_id, r_name, weapon)
+		hud.show_rival_defeated_banner(p_id, r_name)
 	elif hud and hud.has_method("show_character_unlock_banner"):
-		var w_name: String = weapon.weapon_name if weapon else "Arma Insignia"
-		hud.show_character_unlock_banner(p_id, "RIVAL ELIMINADA: " + r_name.to_upper(), "Has abatido a " + r_name + ". ¡Arma insignia " + w_name + " obtenida!")
+		hud.show_character_unlock_banner(p_id, "RIVAL ELIMINADA: " + r_name.to_upper(), "Has neutralizado a " + r_name + ". Amenaza táctica disipada.")
 
 	var spawner: Node = main_game.get("enemy_spawner")
 	if spawner and spawner.has_method("set_spawning_paused"):

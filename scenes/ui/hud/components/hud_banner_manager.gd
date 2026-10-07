@@ -158,7 +158,7 @@ const PILOT_COLORS: Dictionary = {
 	&"nyx": Color(0.85, 0.0, 0.95),
 }
 
-func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon: WeaponData, hud_node: CanvasLayer) -> void:
+func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, _weapon: WeaponData = null, hud_node: CanvasLayer = null) -> void:
 	if not _rival_banner_node:
 		_create_rival_defeated_banner_ui(hud_node)
 	if not _rival_banner_node:
@@ -188,20 +188,6 @@ func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon
 	if name_lbl:
 		name_lbl.text = pilot_name.to_upper()
 		name_lbl.add_theme_color_override("font_color", theme_col)
-
-	var weapon_icon_rect: TextureRect = _rival_banner_node.find_child("WeaponIcon", true, false) as TextureRect
-	var weapon_name_lbl: Label = _rival_banner_node.find_child("WeaponName", true, false) as Label
-	if weapon:
-		if weapon_icon_rect:
-			weapon_icon_rect.texture = weapon.icon
-			weapon_icon_rect.visible = (weapon.icon != null)
-		if weapon_name_lbl:
-			weapon_name_lbl.text = weapon.weapon_name
-	else:
-		if weapon_icon_rect:
-			weapon_icon_rect.visible = false
-		if weapon_name_lbl:
-			weapon_name_lbl.text = "Arma Insignia Reclamada"
 
 	if _rival_banner_tween and _rival_banner_tween.is_valid():
 		_rival_banner_tween.kill()
@@ -238,13 +224,13 @@ func _create_rival_defeated_banner_ui(hud_node: CanvasLayer) -> void:
 	banner_box.anchors_preset = Control.PRESET_CENTER_TOP
 	banner_box.anchor_left = 0.5
 	banner_box.anchor_right = 0.5
-	banner_box.offset_left = -330.0
+	banner_box.offset_left = -270.0
 	banner_box.offset_top = 120.0
-	banner_box.offset_right = 330.0
-	banner_box.offset_bottom = 230.0
+	banner_box.offset_right = 270.0
+	banner_box.offset_bottom = 215.0
 	banner_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	banner_box.custom_minimum_size = Vector2(660, 110)
-	banner_box.pivot_offset = Vector2(330, 55)
+	banner_box.custom_minimum_size = Vector2(540, 95)
+	banner_box.pivot_offset = Vector2(270, 47)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.04, 0.03, 0.08, 0.94)
@@ -305,45 +291,6 @@ func _create_rival_defeated_banner_ui(hud_node: CanvasLayer) -> void:
 	center_vbox.add_child(status_lbl)
 
 	hbox.add_child(center_vbox)
-
-	# Separador vertical fino
-	var vsep := VSeparator.new()
-	vsep.modulate.a = 0.5
-	hbox.add_child(vsep)
-
-	# 3. Drop de Arma Insignia a la derecha
-	var weapon_vbox := VBoxContainer.new()
-	weapon_vbox.custom_minimum_size = Vector2(170, 0)
-	weapon_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	weapon_vbox.add_theme_constant_override("separation", 4)
-
-	var weapon_tag := Label.new()
-	weapon_tag.text = "ARMA INSIGNIA"
-	weapon_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	weapon_tag.add_theme_font_size_override("font_size", 10)
-	weapon_tag.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0, 0.9))
-	weapon_vbox.add_child(weapon_tag)
-
-	var weapon_hbox := HBoxContainer.new()
-	weapon_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	weapon_hbox.add_theme_constant_override("separation", 6)
-
-	var weapon_icon := TextureRect.new()
-	weapon_icon.name = "WeaponIcon"
-	weapon_icon.custom_minimum_size = Vector2(36, 36)
-	weapon_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	weapon_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	weapon_hbox.add_child(weapon_icon)
-
-	var weapon_name := Label.new()
-	weapon_name.name = "WeaponName"
-	weapon_name.text = "Arma"
-	weapon_name.add_theme_font_size_override("font_size", 13)
-	weapon_name.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8, 1.0))
-	weapon_hbox.add_child(weapon_name)
-
-	weapon_vbox.add_child(weapon_hbox)
-	hbox.add_child(weapon_vbox)
 
 	banner_box.add_child(hbox)
 	hud_node.add_child(banner_box)

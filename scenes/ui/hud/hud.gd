@@ -347,7 +347,7 @@ func show_character_unlock_banner(char_id: StringName, title_text: String, desc_
 	if _banner_mgr:
 		_banner_mgr.show_character_unlock_banner(char_id, title_text, desc_text, self)
 
-func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon: WeaponData) -> void:
+func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, weapon: WeaponData = null) -> void:
 	if _banner_mgr and _banner_mgr.has_method("show_rival_defeated_banner"):
 		_banner_mgr.show_rival_defeated_banner(pilot_id, pilot_name, weapon, self)
 
