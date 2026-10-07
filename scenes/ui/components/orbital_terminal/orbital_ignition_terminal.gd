@@ -12,7 +12,7 @@ const COMMIT_TELEMETRY: String = ">>> IGNICIÓN DE HIPERESPACIO: COMPROMETIDA <<
 
 @export_group("Tipografía y Telemetría")
 @export var terminal_font: Font
-@export var font_size: int = 13
+@export var font_size: int = 15
 @export var base_speed: float = 38.0
 @export var hover_speed: float = 85.0
 @export var focus_speed: float = 55.0
@@ -51,7 +51,7 @@ var current_chassis_color: Color = Color(0.20, 0.45, 0.55, 0.85)
 var active_tween: Tween = null
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(720, 36)
+	custom_minimum_size = Vector2(860, 52)
 	focus_mode = FOCUS_ALL
 	
 	_configure_label(label_a)

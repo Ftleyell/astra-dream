@@ -899,7 +899,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="OrbitalIgnitionTerminal" parent="DockContainer/TerminalCenter" instance=ExtResource("13_orbital_terminal")]
-custom_minimum_size = Vector2(720, 36)
+custom_minimum_size = Vector2(860, 52)
 layout_mode = 2
 
 [node name="DockMargin" type="MarginContainer" parent="DockContainer" unique_id=775487468]
