@@ -504,6 +504,11 @@ func suppress_bomb_input(duration: float = 0.35) -> void:
 		bomb_controller.suppress_bomb_input(duration)
 
 
+func clear_bomb_suppression(grace_period: float = 0.35) -> void:
+	if bomb_controller:
+		bomb_controller.clear_suppression_lock(grace_period)
+
+
 func is_any_menu_or_modal_active() -> bool:
 	return bomb_controller.is_any_menu_or_modal_active(self) if bomb_controller else false
 

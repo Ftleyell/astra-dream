@@ -28,7 +28,10 @@ var bomb_overlay: ColorRect
 var bomb_pip_1: Panel
 var bomb_pip_2: Panel
 var bomb_pip_3: Panel
+var bomb_pip_4: Panel
+var bomb_pip_5: Panel
 var bomb_label: Label
+var bomb_count_label: Label
 
 var aim_mode_label: Label
 
@@ -58,7 +61,10 @@ func setup(elements: Dictionary) -> void:
 	bomb_pip_1 = elements.get("bomb_pip_1") as Panel
 	bomb_pip_2 = elements.get("bomb_pip_2") as Panel
 	bomb_pip_3 = elements.get("bomb_pip_3") as Panel
+	bomb_pip_4 = elements.get("bomb_pip_4") as Panel
+	bomb_pip_5 = elements.get("bomb_pip_5") as Panel
 	bomb_label = elements.get("bomb_label") as Label
+	bomb_count_label = elements.get("bomb_count_label") as Label
 
 	aim_mode_label = elements.get("aim_mode_label") as Label
 
@@ -180,11 +186,19 @@ func update_bomb_count(remaining: int) -> void:
 		bomb_pip_2.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 2 else _bomb_pip_dim_style)
 	if bomb_pip_3:
 		bomb_pip_3.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 3 else _bomb_pip_dim_style)
+	if bomb_pip_4:
+		bomb_pip_4.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 4 else _bomb_pip_dim_style)
+	if bomb_pip_5:
+		bomb_pip_5.add_theme_stylebox_override("panel", _bomb_pip_lit_style if remaining >= 5 else _bomb_pip_dim_style)
 
 	if bomb_overlay:
 		bomb_overlay.visible = (remaining <= 0)
 		if remaining <= 0:
 			bomb_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	if bomb_count_label:
+		bomb_count_label.text = "x%d" % remaining
+		bomb_count_label.modulate = Color(0.6, 0.6, 0.6, 0.7) if remaining <= 0 else Color(1.0, 1.0, 1.0, 1.0)
 
 	if bomb_label:
 		bomb_label.text = "x%d" % remaining

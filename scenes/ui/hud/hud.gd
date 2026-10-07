@@ -57,6 +57,9 @@ const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.
 @onready var bomb_pip_1: Panel = find_child("BombPip1", true, false) as Panel
 @onready var bomb_pip_2: Panel = find_child("BombPip2", true, false) as Panel
 @onready var bomb_pip_3: Panel = find_child("BombPip3", true, false) as Panel
+@onready var bomb_pip_4: Panel = find_child("BombPip4", true, false) as Panel
+@onready var bomb_pip_5: Panel = find_child("BombPip5", true, false) as Panel
+@onready var bomb_count_label: Label = find_child("BombCountLabel", true, false) as Label
 
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
@@ -250,7 +253,10 @@ func _init_subcontrollers() -> void:
 		"bomb_pip_1": bomb_pip_1,
 		"bomb_pip_2": bomb_pip_2,
 		"bomb_pip_3": bomb_pip_3,
+		"bomb_pip_4": bomb_pip_4,
+		"bomb_pip_5": bomb_pip_5,
 		"bomb_label": bomb_label,
+		"bomb_count_label": bomb_count_label,
 		"aim_mode_label": aim_mode_label
 	})
 
@@ -487,15 +493,25 @@ func set_player(p: Player) -> void:
 	player = p
 	if not is_inside_tree():
 		return
-	if satellite_tracker and is_instance_valid(player):
+	if satellite_tracker and is_instance_valid(player) and satellite_tracker.has_method("set_player"):
 		satellite_tracker.set_player(player)
-	if arcana_tracker and is_instance_valid(player):
+	if arcana_tracker and is_instance_valid(player) and arcana_tracker.has_method("set_player"):
 		arcana_tracker.set_player(player)
 	if boss_tracker and is_instance_valid(player):
-		boss_tracker.set_player(player)
+		if boss_tracker.has_method("set_player"):
+			boss_tracker.set_player(player)
+		elif "player" in boss_tracker:
+			boss_tracker.player = player
 	if chest_tracker and is_instance_valid(player) and chest_tracker.has_method("set_player"):
 		chest_tracker.set_player(player)
 	if is_instance_valid(player):
+		if not player.bomb_used.is_connected(_on_bomb_used):
+			player.bomb_used.connect(_on_bomb_used)
+		_on_bomb_used(player.bomb_count)
+		if not player.health_changed.is_connected(_on_health_changed):
+			player.health_changed.connect(_on_health_changed)
+		_on_health_changed(player.current_health, player.stats.get_stat(&"max_health") if player.stats else 100.0)
+
 		var target_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
 		if target_stats:
 			if not target_stats.stat_changed.is_connected(_on_stat_changed):

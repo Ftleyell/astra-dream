@@ -21,7 +21,7 @@ static func setup_cinematic_duel(main_game: Node2D, cin_zoom: float = 1.0) -> Di
 			if "current_facing_angle" in player:
 				player.set("current_facing_angle", 0.0)
 		if player.has_method("suppress_bomb_input"):
-			player.suppress_bomb_input(999.0)
+			player.suppress_bomb_input(1.0)
 
 	freeze_combat_environment(main_game)
 
@@ -44,8 +44,11 @@ static func setup_cinematic_duel(main_game: Node2D, cin_zoom: float = 1.0) -> Di
 static func restore_combat_after_emergence(main_game: Node2D, cam: GameCamera2D, player: Node2D) -> void:
 	if cam and cam.has_method("clear_cinematic_focus"):
 		cam.clear_cinematic_focus()
-	if is_instance_valid(player) and player.has_method("resume_movement_control"):
-		player.resume_movement_control()
+	if is_instance_valid(player):
+		if player.has_method("clear_bomb_suppression"):
+			player.clear_bomb_suppression(0.4)
+		elif player.has_method("resume_movement_control"):
+			player.resume_movement_control()
 	unfreeze_combat_environment(main_game)
 	main_game.set("is_boss_transmission_active", false)
 	PauseArbitrator.release_pause(&"dialogue")

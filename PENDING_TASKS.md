@@ -44,13 +44,13 @@ Estado y registro de tareas pendientes organizadas por niveles de prioridad y co
 
 ---
 
-## 🔴 Nivel 4 — Investigación de Bugs & Comportamientos Complejos
-1. **Diálogos de Navegadoras In-Game:**
-   - Investigar inconsistencias en la carga del avatar/icono de la navegadora en el diálogo in-game.
-   - Corregir discrepancia de colores de texto/nombre entre distintos eventos de diálogo.
-2. **Sistema de Bombas:**
-   - Resolver bug donde las bombas quedan bloqueadas tras ciertos eventos.
-   - Auditar sincronización entre el indicador visual derecho del HUD y el valor real/máximo de bombas.
+## 🔴 Nivel 4 — Investigación de Bugs & Comportamientos Complejos (COMPLETADO)
+- [x] **Diálogos de Navegadoras In-Game (`navigator_comms_widget.gd`):**
+  - Corregida la carga del avatar táctico: unificada en `_update_navigator_profile()`, garantizando que para la skin base se utilice `nav_data.get_portrait_texture()` o `portrait_texture` y no material/shader cosmético vacío.
+  - Estandarizados los colores y tipografía de nombres y textos en prólogo, transmisiones de objetivos y activación de buffs (`Color(0.9, 0.95, 1.0)` para texto, `nav_data.theme_color` para nombre y ciber-estilo).
+- [x] **Sistema de Bombas (`player_bomb_controller.gd`, `player.gd`, `boss_cinematic_presenter.gd`, `hud.tscn`, `hud.gd`, `hud_tactical_abilities_controller.gd`):**
+  - Resuelto bug crítico de bloqueo de bombas (999.0s) tras secuencias cinemáticas de emergencia de jefes (`boss_cinematic_presenter.gd`): implementado `clear_suppression_lock()` / `clear_bomb_suppression()`, soporte de reseteo automático de temporizadores anormales (`> 5.0s`), y detección dinámica en `is_any_menu_or_modal_active()` de `is_cinematic_or_death_active()` y `PauseArbitrator.is_paused()`.
+  - Sincronizado el HUD táctico derecho con el valor real y máximo de bombas (hasta 5): añadidos `BombPip4` y `BombPip5` (altura 14px, separación 4px dentro del contenedor de 88px), incorporado `BombCountLabel` visible (`xN`) en la esquina inferior derecha del botón de bomba con modulación al agotarse, y conectada reactivamente la señal `player.bomb_used` en `set_player()`.
 - [x] **Selección de Personajes (Regresiones Recientes):**
-   - Restaurado comportamiento de tecla `ESC` directamente en `_input()` para volver al hub de manera inmediata cuando no hay modales abiertos, evitando que el foco de los controles de UI la consuma.
-   - Corregido el descentrado del icono de arma: eliminado el override erróneo de posición `position = Vector2.ZERO` sobre el hijo del `VBoxContainer` e implementado recorte simétrico estricto 1:1 en `_apply_weapon_optical_centering()` para centrado perfecto con cualquier skin.
+  - Restaurado comportamiento de tecla `ESC` directamente en `_input()` para volver al hub de manera inmediata cuando no hay modales abiertos, evitando que el foco de los controles de UI la consuma.
+  - Corregido el descentrado del icono de arma: eliminado el override erróneo de posición `position = Vector2.ZERO` sobre el hijo del `VBoxContainer` e implementado recorte simétrico estricto 1:1 en `_apply_weapon_optical_centering()` para centrado perfecto con cualquier skin.

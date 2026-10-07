@@ -464,6 +464,19 @@ visible = false
 layout_mode = 2
 color = Color(0.02, 0.04, 0.08, 0.82)
 
+[node name="BombCountLabel" type="Label" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombButtonBody"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 16
+text = "x2"
+horizontal_alignment = 2
+vertical_alignment = 2
+
 [node name="BombPipsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox"]
 custom_minimum_size = Vector2(8, 88)
 layout_mode = 2
@@ -471,17 +484,27 @@ theme_override_constants/separation = 4
 alignment = 1
 
 [node name="BombPip1" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
-custom_minimum_size = Vector2(8, 26)
+custom_minimum_size = Vector2(8, 14)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
 
 [node name="BombPip2" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
-custom_minimum_size = Vector2(8, 26)
+custom_minimum_size = Vector2(8, 14)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
 
 [node name="BombPip3" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
-custom_minimum_size = Vector2(8, 26)
+custom_minimum_size = Vector2(8, 14)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
+
+[node name="BombPip4" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
+custom_minimum_size = Vector2(8, 14)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
+
+[node name="BombPip5" type="Panel" parent="MarginContainer/VBoxContainer/TacticalAbilitiesRow/BombModule/HBox/BombPipsVBox"]
+custom_minimum_size = Vector2(8, 14)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bomb_pip_lit")
 

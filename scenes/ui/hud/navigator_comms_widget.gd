@@ -73,23 +73,13 @@ func show_prologue_transmission(nav_data: Resource, message_text: String, on_con
 	_waiting_for_input = true
 	_on_prologue_continue = on_continue
 
-	if portrait_rect:
-		var nav_id_str: String = String(nav_data.navigator_id).to_lower() if "navigator_id" in nav_data else (String(nav_data.nav_id).to_lower() if "nav_id" in nav_data else "")
-		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
-		if not equipped_nav_skin.is_empty():
-			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
-			CosmeticsManager.apply_skin_to_canvas_item(portrait_rect, equipped_nav_skin, stars)
-		else:
-			portrait_rect.texture = nav_data.get_portrait_texture()
-			portrait_rect.material = null
-	if name_label:
-		name_label.text = "%s // OFICIAL TÁCTICA" % nav_data.display_name.to_upper()
-		name_label.modulate = nav_data.theme_color
+	_update_navigator_profile(nav_data)
 	if badge_label:
 		badge_label.text = "[CANAL TÁCTICO EN LÍNEA]"
 		badge_label.modulate = Color(0.2, 0.9, 1.0)
 	if message_label:
 		message_label.text = message_text
+		message_label.modulate = Color(0.9, 0.95, 1.0)
 	if buff_hint_label:
 		buff_hint_label.text = "✦ Pulsa [ESPACIO] o [CLICK] para despegar"
 		buff_hint_label.modulate = Color(1.0, 0.88, 0.2)
@@ -117,23 +107,13 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 	if not nav_data:
 		return
 
-	if portrait_rect:
-		var nav_id_str: String = String(nav_data.navigator_id).to_lower() if "navigator_id" in nav_data else (String(nav_data.nav_id).to_lower() if "nav_id" in nav_data else "")
-		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
-		if not equipped_nav_skin.is_empty():
-			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
-			CosmeticsManager.apply_skin_to_canvas_item(portrait_rect, equipped_nav_skin, stars)
-		else:
-			portrait_rect.texture = nav_data.get_portrait_texture()
-			portrait_rect.material = null
-	if name_label:
-		name_label.text = "%s // OFICIAL TÁCTICA" % nav_data.display_name.to_upper()
-		name_label.modulate = nav_data.theme_color
+	_update_navigator_profile(nav_data)
 	if badge_label:
 		badge_label.text = "[OBJETIVO DETECTADO]"
 		badge_label.modulate = Color(0.3, 1.0, 0.7)
 	if message_label:
 		message_label.text = message_text
+		message_label.modulate = Color(0.9, 0.95, 1.0)
 	if buff_hint_label:
 		if target_hint.is_empty():
 			buff_hint_label.text = "✦ Sincroniza el punto: %s" % nav_data.buff_name
@@ -154,22 +134,51 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 func show_buff_activated(nav_data: Resource) -> void:
 	if not nav_data:
 		return
+
+	_update_navigator_profile(nav_data)
 	if badge_label:
 		badge_label.text = "¡ENLACE SINCRONIZADO!"
 		badge_label.modulate = Color(1.0, 0.85, 0.2)
 	if message_label:
 		message_label.text = "¡Objetivo alcanzado! Buff de navegación activado: %s." % nav_data.buff_name
+		message_label.modulate = Color(0.9, 0.95, 1.0)
 	if buff_hint_label:
 		buff_hint_label.text = "⚡ %s" % nav_data.buff_desc
 		buff_hint_label.modulate = Color(0.2, 1.0, 0.6)
 
-	_apply_cyber_style(Color(0.2, 1.0, 0.6))
+	_apply_cyber_style(nav_data.theme_color)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.6)
 
 	slide_in(4.0)
+
+func _update_navigator_profile(nav_data: Resource) -> void:
+	if not nav_data:
+		return
+
+	if portrait_rect:
+		var nav_id_str: String = String(nav_data.navigator_id).to_lower() if "navigator_id" in nav_data else (String(nav_data.nav_id).to_lower() if "nav_id" in nav_data else "")
+		var equipped_nav_skin: String = SaveManager.get_equipped_skin("navigator:" + nav_id_str)
+		var skin_applied: bool = false
+		if not equipped_nav_skin.is_empty() and equipped_nav_skin != "base":
+			var stars: int = SaveManager.get_skin_stars(equipped_nav_skin)
+			CosmeticsManager.apply_skin_to_canvas_item(portrait_rect, equipped_nav_skin, stars)
+			if portrait_rect.texture != null:
+				skin_applied = true
+
+		if not skin_applied:
+			if nav_data.has_method("get_portrait_texture"):
+				portrait_rect.texture = nav_data.get_portrait_texture()
+			elif "portrait_texture" in nav_data and nav_data.portrait_texture != null:
+				portrait_rect.texture = nav_data.portrait_texture
+			portrait_rect.material = null
+
+	if name_label:
+		var nav_name: String = nav_data.display_name if "display_name" in nav_data else "NAVEGANTE"
+		name_label.text = "%s // OFICIAL TÁCTICA" % nav_name.to_upper()
+		name_label.modulate = nav_data.theme_color if "theme_color" in nav_data else Color(0.0, 0.94, 1.0)
 
 func slide_in(display_time: float = VISIBLE_DURATION) -> void:
 	_hide_timer = display_time

@@ -87,7 +87,53 @@ func _ready() -> void:
 		assert("join echo (Flipped)" in content, "Timeline %s must join echo (Flipped)" % t_path)
 		print("  ✓ Timeline %s has 'join echo (Flipped)'" % t_path.get_file())
 
+	# 6. Test Bomb Controller Suppression Lockout Recovery
+	player.suppress_bomb_input(999.0)
+	assert(player._can_trigger_bomb() == false, "Player bomb must be blocked during 999.0s suppression")
+	player.clear_bomb_suppression(0.0)
+	assert(player._can_trigger_bomb() == true, "Player bomb must immediately recover after clear_bomb_suppression")
+	
+	player.suppress_bomb_input(999.0)
+	player.suppress_bomb_input(0.35)
+	assert(player.bomb_controller.menu_close_suppress_timer <= 0.35, "Standard modal close must override stuck high suppression timer")
+	player.bomb_controller.update_suppression(0.4)
+	assert(player._can_trigger_bomb() == true, "Player bomb must become available once 0.35s modal close expires")
+	print("  ✓ Bomb suppression recovery verified (no 999.0s lockouts after events)")
+
+	# 7. Test HUD 5-pip and Bomb Count Badge Synchronization
+	var hud_scene: PackedScene = load("res://scenes/ui/hud/hud.tscn")
+	assert(hud_scene != null, "hud.tscn must be loadable")
+	var hud: CanvasLayer = hud_scene.instantiate() as CanvasLayer
+	add_child(hud)
+	hud.set_player(player)
+
+	var pip1: Panel = hud.find_child("BombPip1", true, false) as Panel
+	var pip2: Panel = hud.find_child("BombPip2", true, false) as Panel
+	var pip3: Panel = hud.find_child("BombPip3", true, false) as Panel
+	var pip4: Panel = hud.find_child("BombPip4", true, false) as Panel
+	var pip5: Panel = hud.find_child("BombPip5", true, false) as Panel
+	var count_label: Label = hud.find_child("BombCountLabel", true, false) as Label
+	var overlay: ColorRect = hud.find_child("BombOverlay", true, false) as ColorRect
+
+	assert(pip1 != null and pip2 != null and pip3 != null and pip4 != null and pip5 != null, "HUD must contain all 5 bomb pips")
+	assert(count_label != null, "HUD must contain BombCountLabel badge")
+
+	# Test 5 bombs
+	hud._on_bomb_used(5)
+	assert(count_label.text == "x5", "BombCountLabel must show 'x5' when 5 bombs available")
+	assert(overlay.visible == false, "Overlay must be hidden when bombs > 0")
+
+	# Test 3 bombs
+	hud._on_bomb_used(3)
+	assert(count_label.text == "x3", "BombCountLabel must show 'x3' when 3 bombs available")
+
+	# Test 0 bombs
+	hud._on_bomb_used(0)
+	assert(count_label.text == "x0", "BombCountLabel must show 'x0' when empty")
+	assert(overlay.visible == true, "Overlay must be visible when empty")
+	print("  ✓ HUD 5 pips and BombCountLabel badge synchronize accurately with 0..5 bombs")
+
 	print("\n==========================================")
-	print("[PASS] ALL BOMB VFX & DIALOGUE ORIENTATION CHECKS PASSED (100%)!")
+	print("[PASS] ALL BOMB VFX, HUD SYNC & LOCKOUT TESTS PASSED (100%)!")
 	print("==========================================\n")
 	get_tree().quit(0)

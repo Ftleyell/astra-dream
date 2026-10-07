@@ -17,8 +17,15 @@ var was_bomb_pressed_during_menu: bool = false
 var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
 
 func suppress_bomb_input(duration: float = 0.35) -> void:
-	menu_close_suppress_timer = maxf(menu_close_suppress_timer, duration)
+	if menu_close_suppress_timer > 5.0 and duration <= 2.0:
+		menu_close_suppress_timer = duration
+	else:
+		menu_close_suppress_timer = maxf(menu_close_suppress_timer, duration)
 	was_bomb_pressed_during_menu = true
+
+func clear_suppression_lock(grace_period: float = 0.35) -> void:
+	menu_close_suppress_timer = maxf(0.0, grace_period)
+	was_bomb_pressed_during_menu = false
 
 func update_suppression(delta: float) -> void:
 	if menu_close_suppress_timer > 0.0:
@@ -42,6 +49,8 @@ func is_any_menu_or_modal_active(player: Node2D) -> bool:
 		if parent_node.has_method("is_character_stats_active") and parent_node.is_character_stats_active():
 			return true
 		if parent_node.has_method("is_dialogue_active") and parent_node.is_dialogue_active():
+			return true
+		if parent_node.has_method("is_cinematic_or_death_active") and parent_node.is_cinematic_or_death_active():
 			return true
 
 	var tree: SceneTree = player.get_tree()
@@ -69,6 +78,8 @@ func can_trigger_bomb(player: Node2D) -> bool:
 	if bomb_count <= 0 and not inf_consumables:
 		return false
 	if tree and tree.paused:
+		return false
+	if PauseArbitrator.is_paused():
 		return false
 	if menu_close_suppress_timer > 0.0:
 		return false
