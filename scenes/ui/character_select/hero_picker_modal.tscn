@@ -64,7 +64,6 @@ color = Color(0.015, 0.02, 0.04, 0.9)
 
 [node name="LeftDossierPanel" type="PanelContainer" parent="DimOverlay" unique_id=184029101]
 custom_minimum_size = Vector2(430, 0)
-custom_maximum_size = Vector2(-1, 449)
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
@@ -93,7 +92,6 @@ theme_override_font_sizes/font_size = 13
 text = "// SISTEMAS DE COMBATE:"
 
 [node name="WeaponBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029105]
-custom_maximum_size = Vector2(-1, 130)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
@@ -141,7 +139,6 @@ theme_override_font_sizes/font_size = 10
 autowrap_mode = 2
 
 [node name="TacticalBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029113]
-custom_maximum_size = Vector2(-1, 130)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
@@ -189,7 +186,6 @@ theme_override_font_sizes/font_size = 10
 autowrap_mode = 2
 
 [node name="DashBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029121]
-custom_maximum_size = Vector2(-1, 130)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")
@@ -237,7 +233,6 @@ theme_override_font_sizes/font_size = 10
 autowrap_mode = 2
 
 [node name="PassiveBlock" type="PanelContainer" parent="DimOverlay/LeftDossierPanel/DossierMargin/DossierVBox" unique_id=184029129]
-custom_maximum_size = Vector2(-1, 130)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_abilitycard")

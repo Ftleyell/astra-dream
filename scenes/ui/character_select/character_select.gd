@@ -36,7 +36,7 @@ var is_debug_active: bool:
 
 # Vista Principal Unificada (2 Columnas)
 @onready var loadout_view: VBoxContainer = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView
-@onready var abilities_view: VBoxContainer = (get_node_or_null("AbilitiesView") as VBoxContainer) if get_node_or_null("AbilitiesView") else ($MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView if has_node("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView") else null)
+@onready var abilities_view: VBoxContainer = $MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView
 
 # Tarjetas de Equipamiento (Columna Loadout)
 @onready var ship_card: PanelContainer = $MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/ChassisWeaponRow/ShipCard
@@ -179,10 +179,12 @@ var tab_stats_btn: Button:
 
 
 func _resolve_ability_node(rel_path: String) -> Node:
-	var path_a: String = "AbilitiesView/" + rel_path
+	if abilities_view and abilities_view.has_node(rel_path):
+		return abilities_view.get_node(rel_path)
+	var path_a: String = "MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/" + rel_path
 	if has_node(path_a):
 		return get_node(path_a)
-	var path_b: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/AbilitiesView/" + rel_path
+	var path_b: String = "AbilitiesView/" + rel_path
 	if has_node(path_b):
 		return get_node(path_b)
 	return null
@@ -228,7 +230,7 @@ func _ready() -> void:
 	if launch_button:
 		launch_button.visible = false
 	if dock_container:
-		dock_container.visible = true
+		dock_container.visible = false
 	if back_button:
 		back_button.text = "← [ESC] ELEGIR PILOTO"
 
@@ -251,12 +253,6 @@ func _ready() -> void:
 		hero_picker_modal.hero_cancelled.connect(_on_hero_cancelled)
 		if main_margin_container:
 			main_margin_container.visible = false
-		if root_vbox:
-			root_vbox.visible = false
-		if abilities_view:
-			abilities_view.visible = false
-		if dock_container:
-			dock_container.visible = false
 		hero_picker_modal.open_picker(roster_ordered, current_character_id, true)
 
 
@@ -397,6 +393,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if arsenal_banlist_modal and arsenal_banlist_modal.get("is_open"):
 		return
 	if character_skill_tree_modal and character_skill_tree_modal.visible:
+		return
+	if hero_picker_modal and hero_picker_modal.get("is_open"):
 		return
 
 	if event.is_action_pressed("ui_cancel"):
@@ -1132,10 +1130,6 @@ func _on_dock_unified_button_pressed() -> void:
 	if hero_picker_modal:
 		if main_margin_container:
 			main_margin_container.visible = false
-		if root_vbox:
-			root_vbox.visible = false
-		if abilities_view:
-			abilities_view.visible = false
 		if dock_container:
 			dock_container.visible = false
 		hero_picker_modal.open_picker(roster_ordered, current_character_id, false)
@@ -1144,10 +1138,10 @@ func _on_dock_unified_button_pressed() -> void:
 func _on_hero_confirmed(char_id: StringName) -> void:
 	if main_margin_container:
 		main_margin_container.visible = true
-	if root_vbox:
-		root_vbox.visible = true
 	if abilities_view:
 		abilities_view.visible = true
+	if dock_container:
+		dock_container.visible = true
 	if dock_margin:
 		dock_margin.visible = false
 	if dock_unified_button:
@@ -1160,8 +1154,6 @@ func _on_hero_confirmed(char_id: StringName) -> void:
 			launch_button.visible = false
 	elif launch_button:
 		launch_button.visible = true
-	if dock_container:
-		dock_container.visible = true
 	_select_character(char_id)
 	if ship_button and ship_button.is_inside_tree() and ship_button.is_visible_in_tree():
 		ship_button.call_deferred("grab_focus")
@@ -1172,8 +1164,12 @@ func _on_hero_confirmed(char_id: StringName) -> void:
 
 
 func _on_hero_cancelled() -> void:
-	if abilities_view:
-		abilities_view.visible = false
+	if hero_picker_modal and not hero_picker_modal.is_initial_entry:
+		if main_margin_container:
+			main_margin_container.visible = true
+		if dock_container:
+			dock_container.visible = true
+		return
 	_exit_to_hub()
 
 

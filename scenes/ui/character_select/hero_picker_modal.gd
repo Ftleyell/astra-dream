@@ -199,7 +199,12 @@ func _cancel_selection() -> void:
 
 
 func _build_dock_cards() -> void:
+	if not _card_buttons.is_empty():
+		_update_card_highlights()
+		return
+
 	for child in cards_container.get_children():
+		cards_container.remove_child(child)
 		child.queue_free()
 	_card_buttons.clear()
 
@@ -219,6 +224,8 @@ func _build_dock_cards() -> void:
 		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 		btn.tooltip_text = c_data.display_name.to_upper()
 		btn.pivot_offset = Vector2(52, 52)
+		btn.set_meta(&"char_data", c_data)
+		btn.set_meta(&"roster_index", i)
 
 		var card_idx: int = i
 		btn.pressed.connect(func() -> void:
@@ -235,11 +242,23 @@ func _build_dock_cards() -> void:
 
 		btn.mouse_entered.connect(func() -> void:
 			if is_instance_valid(btn) and card_idx != _current_index:
-				btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(btn, "scale", Vector2(1.06, 1.06), 0.12)
+				if btn.has_meta(&"hover_tw"):
+					var tw: Tween = btn.get_meta(&"hover_tw") as Tween
+					if tw and tw.is_valid():
+						tw.kill()
+				var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+				tw.tween_property(btn, "scale", Vector2(1.06, 1.06), 0.12)
+				btn.set_meta(&"hover_tw", tw)
 		)
 		btn.mouse_exited.connect(func() -> void:
 			if is_instance_valid(btn) and card_idx != _current_index:
-				btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
+				if btn.has_meta(&"hover_tw"):
+					var tw: Tween = btn.get_meta(&"hover_tw") as Tween
+					if tw and tw.is_valid():
+						tw.kill()
+				var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
+				btn.set_meta(&"hover_tw", tw)
 		)
 
 		cards_container.add_child(btn)
@@ -253,8 +272,13 @@ func _update_card_highlights() -> void:
 		var btn: Button = _card_buttons[i]
 		if not is_instance_valid(btn):
 			continue
-		var c_data: CharacterData = _roster[i]
-		var is_selected: bool = (i == _current_index)
+		var c_data: CharacterData = (btn.get_meta(&"char_data") as CharacterData) if btn.has_meta(&"char_data") else null
+		var roster_idx: int = (btn.get_meta(&"roster_index") as int) if btn.has_meta(&"roster_index") else i
+		if not c_data and i < _roster.size():
+			c_data = _roster[i]
+		if not c_data:
+			continue
+		var is_selected: bool = (roster_idx == _current_index)
 		var is_unlocked: bool = SaveManager.is_character_unlocked(c_data.character_id)
 
 		var sb := StyleBoxFlat.new()
@@ -263,6 +287,11 @@ func _update_card_highlights() -> void:
 		sb.content_margin_top = 6
 		sb.content_margin_right = 6
 		sb.content_margin_bottom = 6
+
+		if btn.has_meta(&"hover_tw"):
+			var hover_tw: Tween = btn.get_meta(&"hover_tw") as Tween
+			if hover_tw and hover_tw.is_valid():
+				hover_tw.kill()
 
 		if is_selected:
 			sb.border_width_left = 3

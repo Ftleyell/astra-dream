@@ -11,9 +11,9 @@
 [ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
 [ext_resource type="PackedScene" uid="uid://n7y8dbscg6uu" path="res://scenes/ui/cosmetics/cosmetic_carousel_modal.tscn" id="11_cosmeticmodal"]
 [ext_resource type="PackedScene" uid="uid://23nq0fqrpq85" path="res://scenes/ui/character_select/hero_picker_modal.tscn" id="12_heromodal"]
-[ext_resource type="PackedScene" uid="uid://tapemarqueebtn01" path="res://scenes/ui/components/tape_marquee_button.tscn" id="13_tapemarquee"]
-[ext_resource type="PackedScene" path="res://scenes/ui/character_select/weapon_selection_modal.tscn" id="14_wpnmodal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/character_select/arsenal_banlist_modal.tscn" id="15_arsenalmodal"]
+[ext_resource type="PackedScene" uid="uid://nr4uv8batage" path="res://scenes/ui/components/tape_marquee_button.tscn" id="13_tapemarquee"]
+[ext_resource type="PackedScene" uid="uid://cafxeilp0rlqe" path="res://scenes/ui/character_select/weapon_selection_modal.tscn" id="14_wpnmodal"]
+[ext_resource type="PackedScene" uid="uid://c6we3hrtqnufg" path="res://scenes/ui/character_select/arsenal_banlist_modal.tscn" id="15_arsenalmodal"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tabpanel"]
 bg_color = Color(0.02, 0.035, 0.06, 0.88)
@@ -104,6 +104,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_charsel")
+metadata/_edit_horizontal_guides_ = [924.0]
 
 [node name="DeploymentSpaceBackground" parent="." unique_id=621644380 instance=ExtResource("2_spacebg")]
 layout_mode = 1
@@ -167,16 +168,14 @@ size_flags_vertical = 3
 theme_override_constants/separation = 24
 
 [node name="LeftCommandPanel" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace" unique_id=1445150585]
-custom_maximum_size = Vector2(451, -1)
+custom_minimum_size = Vector2(451, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 size_flags_vertical = 0
-size_flags_stretch_ratio = 1.3
 theme_override_constants/separation = 10
 
 [node name="TabContentPanel" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel" unique_id=1423977783]
 custom_minimum_size = Vector2(0, 851)
-custom_maximum_size = Vector2(-1, 851)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tabpanel")
@@ -190,6 +189,7 @@ theme_override_constants/margin_bottom = 14
 
 [node name="TwoColumnWorkspace" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin" unique_id=1969261607]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
@@ -626,6 +626,220 @@ theme_override_styles/disabled = SubResource("StyleBoxEmpty_pilot")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_pilot")
 flat = true
 
+[node name="AbilitiesView" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=1972780375]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -462.0
+offset_right = 644.0
+offset_bottom = -38.0
+grow_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="AbilitiesHeader" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView" unique_id=770646581]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "// SISTEMAS DE COMBATE:"
+
+[node name="WeaponBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView" unique_id=208461896]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="WeaponMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock" unique_id=1139428644]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="WeaponRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin" unique_id=589300450]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WeaponBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1886694112]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeaponBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1002511668]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="WeaponBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=17250328]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 10
+text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
+
+[node name="WeaponBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1623966223]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Riel Magnético Dual"
+
+[node name="WeaponBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1352615989]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Proyectiles balísticos gemelos de alta cadencia y penetración cinética frontal."
+autowrap_mode = 2
+
+[node name="TacticalBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView" unique_id=1356360077]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="TacticalMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock" unique_id=1149683704]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="TacticalRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin" unique_id=1224630819]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TacticalBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=549937699]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TacticalBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=969561904]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TacticalBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=1873053874]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[CLIC DER] // HABILIDAD TÁCTICA"
+
+[node name="TacticalBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=236556135]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Láser Focalizado de Vanguardia"
+
+[node name="TacticalBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=86475781]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Haz continuo que acelera su tiempo de carga con la velocidad de movimiento (hasta 1.2s)."
+autowrap_mode = 2
+
+[node name="DashBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView" unique_id=584089526]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="DashMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock" unique_id=43093670]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="DashRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin" unique_id=1215704142]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DashBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=787940949]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DashBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=155082826]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="DashBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1325364599]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "[SHIFT] // PROPULSIÓN EVASIVA"
+
+[node name="DashBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1381096391]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Omega Spin"
+
+[node name="DashBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=2120577095]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Giro evasivo de 360° que aniquila proyectiles hostiles e inflige corte radial limpio."
+autowrap_mode = 2
+
+[node name="PassiveBlock" type="PanelContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView" unique_id=696502152]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
+
+[node name="PassiveMargin" type="MarginContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock" unique_id=270591989]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="PassiveRow" type="HBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin" unique_id=493893658]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PassiveBlockIcon" type="TextureRect" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1408619236]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PassiveBlockVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1858672520]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="PassiveBlockTag" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1410307546]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "[INNATA] // AFINIDAD DE TOMO"
+
+[node name="PassiveBlockTitle" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1112701718]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Sobrecarga de Vanguardia"
+
+[node name="PassiveBlockDesc" type="Label" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1442248241]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Favorece Tomo de Velocidad: cada +10% de velocidad otorga +6% de Daño a quemarropa (<120px)."
+autowrap_mode = 2
+
 [node name="HeroIdentityBox" type="VBoxContainer" parent="MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea" unique_id=2087499941]
 layout_mode = 1
 anchors_preset = 3
@@ -663,6 +877,7 @@ theme_override_font_sizes/font_size = 12
 text = "// MODIFICAR ASPECTO"
 
 [node name="DockContainer" type="PanelContainer" parent="." unique_id=965393716]
+visible = false
 custom_minimum_size = Vector2(0, 114)
 layout_mode = 1
 anchors_preset = 12
@@ -675,14 +890,12 @@ grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dock")
 
 [node name="CommandBar" type="HBoxContainer" parent="DockContainer" unique_id=328411041]
-custom_maximum_size = Vector2(-1, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="TapeMarqueeButton" parent="DockContainer/CommandBar" unique_id=534846599 instance=ExtResource("13_tapemarquee")]
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="LaunchButton" type="Button" parent="DockContainer/CommandBar" unique_id=434846598]
 visible = false
@@ -715,219 +928,6 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 flat = true
 
-[node name="AbilitiesView" type="VBoxContainer" parent="." unique_id=1972780375]
-visible = false
-layout_mode = 0
-offset_left = 503.0
-offset_top = 495.0
-offset_right = 1131.0
-offset_bottom = 919.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="AbilitiesHeader" type="Label" parent="AbilitiesView" unique_id=770646581]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 12
-text = "// SISTEMAS DE COMBATE:"
-
-[node name="WeaponBlock" type="PanelContainer" parent="AbilitiesView" unique_id=208461896]
-custom_maximum_size = Vector2(-1, 130)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="WeaponMargin" type="MarginContainer" parent="AbilitiesView/WeaponBlock" unique_id=1139428644]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="WeaponRow" type="HBoxContainer" parent="AbilitiesView/WeaponBlock/WeaponMargin" unique_id=589300450]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="WeaponBlockIcon" type="TextureRect" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1886694112]
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="WeaponBlockVBox" type="VBoxContainer" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow" unique_id=1002511668]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="WeaponBlockTag" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=17250328]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 10
-text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
-
-[node name="WeaponBlockTitle" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1623966223]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Riel Magnético Dual"
-
-[node name="WeaponBlockDesc" type="Label" parent="AbilitiesView/WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox" unique_id=1352615989]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Proyectiles balísticos gemelos de alta cadencia y penetración cinética frontal."
-autowrap_mode = 2
-
-[node name="TacticalBlock" type="PanelContainer" parent="AbilitiesView" unique_id=1356360077]
-custom_maximum_size = Vector2(-1, 130)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="TacticalMargin" type="MarginContainer" parent="AbilitiesView/TacticalBlock" unique_id=1149683704]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="TacticalRow" type="HBoxContainer" parent="AbilitiesView/TacticalBlock/TacticalMargin" unique_id=1224630819]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="TacticalBlockIcon" type="TextureRect" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=549937699]
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TacticalBlockVBox" type="VBoxContainer" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow" unique_id=969561904]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="TacticalBlockTag" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=1873053874]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 10
-text = "[CLIC DER] // HABILIDAD TÁCTICA"
-
-[node name="TacticalBlockTitle" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=236556135]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Láser Focalizado de Vanguardia"
-
-[node name="TacticalBlockDesc" type="Label" parent="AbilitiesView/TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox" unique_id=86475781]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Haz continuo que acelera su tiempo de carga con la velocidad de movimiento (hasta 1.2s)."
-autowrap_mode = 2
-
-[node name="DashBlock" type="PanelContainer" parent="AbilitiesView" unique_id=584089526]
-custom_maximum_size = Vector2(-1, 130)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="DashMargin" type="MarginContainer" parent="AbilitiesView/DashBlock" unique_id=43093670]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="DashRow" type="HBoxContainer" parent="AbilitiesView/DashBlock/DashMargin" unique_id=1215704142]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="DashBlockIcon" type="TextureRect" parent="AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=787940949]
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="DashBlockVBox" type="VBoxContainer" parent="AbilitiesView/DashBlock/DashMargin/DashRow" unique_id=155082826]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="DashBlockTag" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1325364599]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 1, 0.7, 1)
-theme_override_font_sizes/font_size = 10
-text = "[SHIFT] // PROPULSIÓN EVASIVA"
-
-[node name="DashBlockTitle" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=1381096391]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Omega Spin"
-
-[node name="DashBlockDesc" type="Label" parent="AbilitiesView/DashBlock/DashMargin/DashRow/DashBlockVBox" unique_id=2120577095]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Giro evasivo de 360° que aniquila proyectiles hostiles e inflige corte radial limpio."
-autowrap_mode = 2
-
-[node name="PassiveBlock" type="PanelContainer" parent="AbilitiesView" unique_id=696502152]
-custom_maximum_size = Vector2(-1, 130)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_equipcard")
-
-[node name="PassiveMargin" type="MarginContainer" parent="AbilitiesView/PassiveBlock" unique_id=270591989]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="PassiveRow" type="HBoxContainer" parent="AbilitiesView/PassiveBlock/PassiveMargin" unique_id=493893658]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="PassiveBlockIcon" type="TextureRect" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1408619236]
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PassiveBlockVBox" type="VBoxContainer" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow" unique_id=1858672520]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="PassiveBlockTag" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1410307546]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
-theme_override_font_sizes/font_size = 10
-text = "[INNATA] // AFINIDAD DE TOMO"
-
-[node name="PassiveBlockTitle" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1112701718]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Sobrecarga de Vanguardia"
-
-[node name="PassiveBlockDesc" type="Label" parent="AbilitiesView/PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox" unique_id=1442248241]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 0.98, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Favorece Tomo de Velocidad: cada +10% de velocidad otorga +6% de Daño a quemarropa (<120px)."
-autowrap_mode = 2
-
 [node name="DebugMenuModal" parent="." unique_id=765611395 instance=ExtResource("4_debug")]
 visible = false
 
@@ -956,4 +956,3 @@ visible = false
 visible = false
 
 [node name="ArsenalBanlistModal" parent="." unique_id=1106035111 instance=ExtResource("15_arsenalmodal")]
-visible = false
