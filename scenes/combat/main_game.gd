@@ -28,10 +28,16 @@ const CombatNarrativeDirector = preload("res://scenes/combat/directors/combat_na
 const CombatBossCoordinator = preload("res://scenes/combat/directors/combat_boss_coordinator.gd")
 const CombatTelemetryRecorder = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
 const PlanetSpawnerHelper = preload("res://scenes/combat/environment/planet_spawner_helper.gd")
+const CombatEndRunController = preload("res://scenes/combat/controllers/combat_end_run_controller.gd")
+const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
+const CombatWavePipelineScript = preload("res://scenes/combat/directors/combat_wave_pipeline.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
 var boss_coordinator: CombatBossCoordinator = CombatBossCoordinator.new()
+var end_run_controller: CombatEndRunController = CombatEndRunController.new()
+var combat_context: CombatContextScript = null
+var wave_pipeline: CombatWavePipelineScript = null
 
 
 @onready var player: Player = $Player
@@ -122,11 +128,46 @@ var crisis_banner: CanvasLayer = null
 var _last_player_hp: float = 100.0
 var _exp_batch_timer: float = 0.0
 
-var current_wave: int = 1
-var is_pre_round: bool = true
+var _current_wave_fallback: int = 1
+var current_wave: int:
+	get:
+		return wave_pipeline.current_wave if wave_pipeline else _current_wave_fallback
+	set(val):
+		_current_wave_fallback = val
+		if wave_pipeline:
+			wave_pipeline.current_wave = val
+		if combat_context:
+			combat_context.current_wave = val
+
+var _is_pre_round_fallback: bool = true
+var is_pre_round: bool:
+	get:
+		return wave_pipeline.is_pre_round if wave_pipeline else _is_pre_round_fallback
+	set(val):
+		_is_pre_round_fallback = val
+		if wave_pipeline:
+			wave_pipeline.is_pre_round = val
+
 const PRE_ROUND_DURATION: float = 30.0
-var pre_round_timer: float = PRE_ROUND_DURATION
-var wave_timer: float = WAVE_DURATION
+var _pre_round_timer_fallback: float = PRE_ROUND_DURATION
+var pre_round_timer: float:
+	get:
+		return wave_pipeline.pre_round_timer if wave_pipeline else _pre_round_timer_fallback
+	set(val):
+		_pre_round_timer_fallback = val
+		if wave_pipeline:
+			wave_pipeline.pre_round_timer = val
+
+var _wave_timer_fallback: float = WAVE_DURATION
+var wave_timer: float:
+	get:
+		return wave_pipeline.wave_timer if wave_pipeline else _wave_timer_fallback
+	set(val):
+		_wave_timer_fallback = val
+		if wave_pipeline:
+			wave_pipeline.wave_timer = val
+		if combat_context:
+			combat_context.wave_timer = val
 
 var rival_queue: Array[StringName] = []
 var rivals_spared: Array[StringName] = []
@@ -265,7 +306,23 @@ func _ready() -> void:
 	modal_coordinator.satellite_shop = satellite_shop
 	modal_coordinator.pause_menu = pause_menu
 	modal_coordinator.game_over_modal = game_over_modal
-	modal_coordinator.resume_encounters_requested.connect(_resume_pending_encounters_after_modal)
+	end_run_controller.setup(self, game_over_modal)
+
+	# Inicializar Contexto de Combate y Pipeline de Oleadas
+	combat_context = CombatContextScript.new()
+	combat_context.initialize(player, camera, hud, bullet_server, enemy_spawner, space_object_spawner, chest_director)
+
+	wave_pipeline = CombatWavePipelineScript.new()
+	wave_pipeline.name = "CombatWavePipeline"
+	add_child(wave_pipeline)
+	wave_pipeline.setup_pipeline(
+		combat_context,
+		Callable(self, "_on_wave_pipeline_advanced"),
+		Callable(self, "_on_wave_pipeline_hud_update")
+	)
+	wave_pipeline.wave_completed.connect(func(_idx: int) -> void:
+		_on_wave_completed()
+	)
 
 	# 1. Sistema de Cofres Espaciales
 	chest_director = ChestDirector.new()
@@ -695,52 +752,10 @@ func _process(delta: float) -> void:
 		if is_instance_valid(player):
 			ExpBlob.batch_distant_blobs_if_needed(get_tree(), player.global_position)
 
-	# Lógica de Pre-Ronda (Fase de Despliegue de 30s) o Temporizador de Oleada regular
-	if is_pre_round:
-		pre_round_timer -= delta
-		if hud and is_instance_valid(hud):
-			hud.update_pre_round_status(pre_round_timer)
-		if pre_round_timer <= 0.0:
-			is_pre_round = false
-			current_wave = 1
-			wave_timer = WAVE_DURATION
-			wave_satellites_spawned = 0
-			_wave_encounter_checked_for_wave = 0
-			if enemy_spawner and enemy_spawner.has_method("set_wave"):
-				enemy_spawner.set_wave(1)
-			_spawn_next_satellite_for_wave()
-			if chest_director:
-				var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
-				chest_director.on_new_wave(current_wave, green_cards)
-			_spawn_wave_chests()
-			save_current_run_state()
-	else:
-		# Congelar el temporizador de oleada si hay un combate mayor activo (Jefe de Dominio o Rival en cualquier estado)
-		var is_major_combat_active: bool = _has_active_boss_or_rival()
-
-		if not is_major_combat_active:
-			wave_timer -= delta
-			if wave_timer <= 0.0:
-				_on_wave_completed()
-				current_wave += 1
-				wave_timer = WAVE_DURATION
-				wave_satellites_spawned = 0
-				if enemy_spawner and enemy_spawner.has_method("set_wave"):
-					enemy_spawner.set_wave(current_wave)
-				_wave_encounter_checked_for_wave = current_wave
-				_wave_encounter_pending = true
-				_wave_encounter_timer = 2.0
-				save_current_run_state()
-				_spawn_next_satellite_for_wave()
-				if chest_director:
-					var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
-					chest_director.on_new_wave(current_wave, green_cards)
-				_spawn_wave_chests()
-				if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
-					space_object_spawner.notify_wave_started(current_wave)
-
-		if is_instance_valid(hud):
-			hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+	# Lógica del ciclo de vida de oleadas desacoplada en CombatWavePipeline
+	var is_major_combat_active: bool = _has_active_boss_or_rival()
+	if wave_pipeline:
+		wave_pipeline.tick(delta, is_major_combat_active)
 
 	if satellite_coordinator:
 		satellite_coordinator.update_satellite_lifecycle()
@@ -769,6 +784,33 @@ func _has_active_boss_or_rival() -> bool:
 		if is_instance_valid(r) and not r.is_queued_for_deletion():
 			return true
 	return false
+
+
+func _on_wave_pipeline_advanced(wave_idx: int) -> void:
+	wave_satellites_spawned = 0
+	if enemy_spawner and enemy_spawner.has_method("set_wave"):
+		enemy_spawner.set_wave(wave_idx)
+	_wave_encounter_checked_for_wave = wave_idx
+	_wave_encounter_pending = true
+	_wave_encounter_timer = 2.0
+	save_current_run_state()
+	_spawn_next_satellite_for_wave()
+	if chest_director:
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+		chest_director.on_new_wave(wave_idx, green_cards)
+	_spawn_wave_chests()
+	if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
+		space_object_spawner.notify_wave_started(wave_idx)
+
+
+func _on_wave_pipeline_hud_update(is_pre: bool, wave_idx: int, timer: float) -> void:
+	if not is_instance_valid(hud):
+		return
+	if is_pre:
+		hud.update_pre_round_status(timer)
+	else:
+		hud.update_wave_status(wave_idx, timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
+
 
 func _check_wave_encounters() -> void:
 	if _wave_encounter_spawned_for_wave == current_wave:
@@ -1097,82 +1139,28 @@ func _on_enemy_killed(_enemy_type: String) -> void:
 	enemies_killed_count += 1
 
 func _on_player_died() -> void:
-	if level_up_modal and level_up_modal.has_method("clear_pending_levels"):
-		level_up_modal.clear_pending_levels()
-	if arcana_modal and arcana_modal.has_method("clear_pending_arcanas"):
-		arcana_modal.clear_pending_arcanas()
-	_pending_arcana_picks = 0
-	_pending_satellite_credits = -1
-	_pending_satellite_index = -1
+	if end_run_controller:
+		end_run_controller.on_player_died()
 
-	# Pausar la generación de nuevos enemigos
-	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
-		enemy_spawner.set_spawning_paused(true)
-
-	var game_over_data: Dictionary = CombatTelemetryRecorder.build_end_of_run_data(self, false)
-	get_tree().create_timer(1.0, true, false, true).timeout.connect(func():
-		_show_game_over_screen(game_over_data)
-	)
 
 func _show_game_over_screen(data: Dictionary) -> void:
-	if not game_over_modal:
-		game_over_modal = game_over_scene.instantiate() as GameOverModal
-		add_child(game_over_modal)
+	if end_run_controller:
+		end_run_controller.show_game_over_screen(data)
 
-	if not game_over_modal.restart_requested.is_connected(_on_game_over_restart):
-		game_over_modal.restart_requested.connect(_on_game_over_restart)
-	if not game_over_modal.hub_requested.is_connected(_on_game_over_hub):
-		game_over_modal.hub_requested.connect(_on_game_over_hub)
-	if not game_over_modal.endless_requested.is_connected(_on_game_over_endless):
-		game_over_modal.endless_requested.connect(_on_game_over_endless)
-
-	PauseArbitrator.acquire_pause(&"game_over")
-	game_over_modal.show_game_over(data)
 
 func _on_game_over_endless() -> void:
-	is_endless_mode = true
-	PauseArbitrator.release_pause(&"game_over")
-	Engine.time_scale = 1.0
-	save_current_run_state()
+	if end_run_controller:
+		end_run_controller.handle_game_over_endless()
 
-	if hud and hud.has_method("show_tactical_alert"):
-		hud.show_tactical_alert("MODO SIN FIN // ENDLESS DESBLOQUEADO", "Las fuerzas del abismo escalan sin límite. ¡Sobrevive cuanto puedas!", Color(0.2, 1.0, 0.75, 1.0))
-
-	# Reanudar la siguiente oleada de combate sin límite
-	current_wave += 1
-	wave_timer = WAVE_DURATION
-	wave_satellites_spawned = 0
-	if enemy_spawner and enemy_spawner.has_method("set_wave"):
-		enemy_spawner.set_wave(current_wave)
-	_wave_encounter_checked_for_wave = current_wave
-	_wave_encounter_pending = false
-	save_current_run_state()
-	_spawn_next_satellite_for_wave()
-	if chest_director:
-		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
-		chest_director.on_new_wave(current_wave, green_cards)
-	_spawn_wave_chests()
-	if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
-		space_object_spawner.notify_wave_started(current_wave)
 
 func _on_game_over_restart() -> void:
-	is_exiting_run = true
-	SaveManager.clear_active_run()
-	PauseArbitrator.force_unpause_all()
-	Engine.time_scale = 1.0
-	get_tree().reload_current_scene()
+	if end_run_controller:
+		end_run_controller.handle_game_over_restart()
+
 
 func _on_game_over_hub() -> void:
-	is_exiting_run = true
-	SaveManager.clear_active_run()
-	PauseArbitrator.force_unpause_all()
-	Engine.time_scale = 1.0
-	SaveManager.set_game_speed(1.0)
-	var st: SceneTransitionClass = get_node_or_null("/root/SceneTransition") as SceneTransitionClass
-	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
-	else:
-		get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	if end_run_controller:
+		end_run_controller.handle_game_over_hub()
 
 
 # ==============================================================================

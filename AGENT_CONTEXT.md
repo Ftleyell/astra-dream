@@ -86,20 +86,21 @@ en `core/systems/persistence/`.
 
 ---
 
-## 🧪 Cómo Correr Tests
+## 🧪 Cómo Correr Tests (Iteración Rápida)
 
 ```powershell
-# Regresión rápida — 21 suites críticas (~5-7 min)
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
-
-# Suite específica
+# 1. EN ITERACIÓN ACTIVA: Suite específica del módulo tocado (2-3 segundos)
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_weapons_runner.tscn"
 
-# Todas las suites (~25-30 min)
+# 2. AL FINALIZAR TAREA: Regresión Core completa (21 suites, ~80 seg)
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
+
+# 3. Solo para CI / validación total (~25 min)
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1
 ```
 
-Correr `-CoreOnly` después de cualquier cambio en combat, persistencia o modales.
+> **Regla de Oro:** Durante el desarrollo, **NUNCA** correr `-CoreOnly` en bucle repetitivo. Usar `-Test <suite>` correspondiente para tener feedback instantáneo de 2 segundos. Correr `-CoreOnly` solo una vez antes del commit final.
+
 
 ---
 

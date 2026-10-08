@@ -28,6 +28,8 @@ extends Control
 const CharacterPilotShowcase = preload("res://scenes/ui/character_select/components/character_pilot_showcase.gd")
 const CharacterEquipmentCards = preload("res://scenes/ui/character_select/components/character_equipment_cards.gd")
 const CharacterSpeedSelector = preload("res://scenes/ui/character_select/components/character_speed_selector.gd")
+const CharacterSkinCoordinator = preload("res://scenes/ui/character_select/components/character_skin_coordinator.gd")
+const CharacterFocusRouter = preload("res://scenes/ui/character_select/components/character_focus_router.gd")
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SkinSelectionModalScript = preload("res://scenes/ui/cosmetics/skin_selection_modal.gd")
@@ -146,6 +148,8 @@ var favored_tome_desc: Label = null
 var pilot_showcase: CharacterPilotShowcase = null
 var equipment_cards: CharacterEquipmentCards = null
 var speed_selector: CharacterSpeedSelector = null
+var skin_coordinator: CharacterSkinCoordinator = null
+var focus_router: CharacterFocusRouter = null
 
 var current_game_speed: float:
 	get:
@@ -217,6 +221,8 @@ func _ready() -> void:
 	pilot_showcase = CharacterPilotShowcase.new()
 	equipment_cards = CharacterEquipmentCards.new()
 	speed_selector = CharacterSpeedSelector.new()
+	skin_coordinator = CharacterSkinCoordinator.new()
+	focus_router = CharacterFocusRouter.new()
 
 	_setup_subcomponents()
 	_setup_tabs()
@@ -224,6 +230,16 @@ func _ready() -> void:
 	_setup_speed_buttons()
 
 	roster_dict = CharacterData.load_roster()
+	skin_coordinator.setup(
+		cosmetic_carousel_modal,
+		skin_selection_modal,
+		gacha_modal,
+		roster_dict,
+		Callable(self, "_select_character"),
+		Callable(self, "_save_current_focus"),
+		Callable(self, "_restore_last_focus")
+	)
+
 	roster_ordered = roster_dict.values()
 	roster_ordered.sort_custom(func(a: CharacterData, b: CharacterData):
 		return a.sort_order < b.sort_order
@@ -750,15 +766,14 @@ func _on_tomes_pool_pressed() -> void:
 		tome_selection_modal.open_modal(current_character_id)
 
 
+func _save_current_focus() -> void:
+	if focus_router:
+		focus_router.save_focus(get_viewport())
+
+
 func _on_ship_card_pressed() -> void:
-	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	if cosmetic_carousel_modal and char_data:
-		cosmetic_carousel_modal.open_modal("ship", current_character_id, char_data)
-	elif skin_selection_modal:
-		var char_name: String = char_data.display_name if char_data else "Exo-Traje"
-		var preview_tex: Texture2D = char_data.get_ship_texture() if char_data else null
-		skin_selection_modal.open_skin_modal("ship", String(current_character_id), "%s - Exo-Traje" % char_name, preview_tex)
+	if skin_coordinator:
+		skin_coordinator.open_ship_customization(current_character_id)
 
 
 func _on_ship_skin_pressed() -> void:
@@ -770,24 +785,20 @@ func _on_pilot_skin_pressed() -> void:
 
 
 func _on_weapon_card_pressed() -> void:
-	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	if cosmetic_carousel_modal and char_data:
-		cosmetic_carousel_modal.open_modal("weapon", current_character_id, char_data)
-	elif skin_selection_modal:
-		var wpn_name: String = char_data.starting_weapon.weapon_name if char_data and char_data.starting_weapon else "Arma"
-		var preview_tex: Texture2D = char_data.get_weapon_texture() if char_data else null
-		skin_selection_modal.open_skin_modal("weapon", String(current_character_id), "%s - Armamento" % wpn_name, preview_tex)
+	if skin_coordinator:
+		skin_coordinator.open_weapon_customization(current_character_id)
 
 
 func _on_pet_card_pressed() -> void:
-	_last_focused_control = pet_button if pet_button else get_viewport().gui_get_focus_owner()
+	if focus_router:
+		focus_router.set_last_focused(pet_button if pet_button else get_viewport().gui_get_focus_owner())
 	if pet_selection_modal and pet_selection_modal.has_method("open_modal"):
 		pet_selection_modal.open_modal()
 
 
 func _on_navigator_card_pressed() -> void:
-	_last_focused_control = navigator_button if navigator_button else get_viewport().gui_get_focus_owner()
+	if focus_router:
+		focus_router.set_last_focused(navigator_button if navigator_button else get_viewport().gui_get_focus_owner())
 	if navigator_selection_modal and navigator_selection_modal.has_method("open_modal"):
 		navigator_selection_modal.open_modal()
 
@@ -795,47 +806,27 @@ func _on_navigator_card_pressed() -> void:
 func _on_pet_modal_closed() -> void:
 	if equipment_cards:
 		equipment_cards.refresh_pet_display(current_character_id)
-	var target_focus: Control = null
-	if is_instance_valid(pet_button) and pet_button.is_visible_in_tree():
-		target_focus = pet_button
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		target_focus = orbital_terminal
-
-	if target_focus:
-		target_focus.call_deferred("grab_focus")
+	if focus_router:
+		focus_router.restore_companion_modal_focus(pet_button, orbital_terminal)
 
 
 func _on_navigator_modal_closed() -> void:
 	if equipment_cards:
 		equipment_cards.refresh_navigator_display(current_character_id)
-	var target_focus: Control = null
-	if is_instance_valid(navigator_button) and navigator_button.is_visible_in_tree():
-		target_focus = navigator_button
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		target_focus = orbital_terminal
-
-	if target_focus:
-		target_focus.call_deferred("grab_focus")
+	if focus_router:
+		focus_router.restore_companion_modal_focus(navigator_button, orbital_terminal)
 
 
 func _on_pet_selected(pet_id: StringName) -> void:
-	SaveManager.set_selected_pet(pet_id)
-	# Guardar en el loadout de la heroína actual
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
-	loadout["selected_pet"] = String(pet_id)
-	SaveManager.set_character_loadout(current_character_id, loadout)
+	if skin_coordinator:
+		skin_coordinator.handle_pet_selected(pet_id, current_character_id)
 	if equipment_cards:
 		equipment_cards.refresh_pet_display(current_character_id)
 
 
 func _on_pet_skin_equipped(_slot_key: String, skin_id: String) -> void:
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
-	loadout["equipped_pet_skin"] = skin_id
-	SaveManager.set_character_loadout(current_character_id, loadout)
+	if skin_coordinator:
+		skin_coordinator.handle_pet_skin_equipped(skin_id, current_character_id)
 	if equipment_cards:
 		equipment_cards.refresh_pet_display(current_character_id)
 
@@ -851,19 +842,15 @@ func _refresh_navigator_display() -> void:
 
 
 func _on_navigator_selected(nav_id: StringName) -> void:
-	SaveManager.set_selected_navigator(nav_id)
-	# Guardar en el loadout de la heroína actual
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
-	loadout["selected_navigator"] = String(nav_id)
-	SaveManager.set_character_loadout(current_character_id, loadout)
+	if skin_coordinator:
+		skin_coordinator.handle_navigator_selected(nav_id, current_character_id)
 	if equipment_cards:
 		equipment_cards.refresh_navigator_display(current_character_id)
 
 
 func _on_navigator_skin_equipped(_slot_key: String, skin_id: String) -> void:
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
-	loadout["equipped_navigator_skin"] = skin_id
-	SaveManager.set_character_loadout(current_character_id, loadout)
+	if skin_coordinator:
+		skin_coordinator.handle_navigator_skin_equipped(skin_id, current_character_id)
 	if equipment_cards:
 		equipment_cards.refresh_navigator_display(current_character_id)
 
@@ -871,74 +858,28 @@ func _on_navigator_skin_equipped(_slot_key: String, skin_id: String) -> void:
 func _open_skin_modal(category: String, target_id: String, target_name: String, preview_texture: Texture2D = null) -> void:
 	if not skin_selection_modal:
 		return
-	_last_focused_control = get_viewport().gui_get_focus_owner()
+	_save_current_focus()
 	skin_selection_modal.open_skin_modal(category, target_id, target_name, preview_texture)
 
 
 func _on_skins_button_pressed() -> void:
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	var data: CharacterData = roster_dict.get(current_character_id, null)
-	if cosmetic_carousel_modal and data:
-		cosmetic_carousel_modal.open_modal("pilot", current_character_id, data)
-	elif data:
-		var fb: Texture2D = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
-		if not fb:
-			fb = data.get_portrait_texture()
-		if skin_selection_modal:
-			skin_selection_modal.open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
-	elif gacha_modal:
-		gacha_modal.open_gacha_modal()
+	if skin_coordinator:
+		skin_coordinator.open_pilot_customization(current_character_id)
 
 
 func _on_cosmetic_carousel_closed(category: String, _target_id: StringName, skin_id: String) -> void:
-	var target_char: StringName = _target_id if not _target_id.is_empty() else current_character_id
-	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
-	match category:
-		"ship":
-			loadout["equipped_ship_skin"] = skin_id
-			loadout["ship_skin"] = skin_id
-		"weapon":
-			loadout["equipped_weapon_skin"] = skin_id
-			loadout["weapon_skin"] = skin_id
-		"pilot":
-			loadout["equipped_pilot_skin"] = skin_id
-			loadout["pilot_skin"] = skin_id
-	SaveManager.set_character_loadout(target_char, loadout)
-	
-	_select_character(target_char)
-	_restore_last_focus()
+	if skin_coordinator:
+		skin_coordinator.handle_cosmetic_carousel_closed(category, _target_id, skin_id, current_character_id)
 
 
 func _open_gacha_from_skins() -> void:
-	if not gacha_modal:
-		return
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	gacha_modal.open_gacha_modal()
-	gacha_modal._switch_tab(0)
+	if skin_coordinator:
+		skin_coordinator.open_gacha_from_skins()
 
 
 func _on_skin_selected(slot_key: String, skin_id: String) -> void:
-	var target_char: StringName = current_character_id
-	var parts := slot_key.split(":")
-	if parts.size() > 1 and roster_dict.has(StringName(parts[1])):
-		target_char = StringName(parts[1])
-
-	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
-	if slot_key.begins_with("ship:"):
-		loadout["equipped_ship_skin"] = skin_id
-		loadout["ship_skin"] = skin_id
-	elif slot_key.begins_with("weapon:"):
-		loadout["equipped_weapon_skin"] = skin_id
-		loadout["weapon_skin"] = skin_id
-	elif slot_key.begins_with("pilot:"):
-		loadout["equipped_pilot_skin"] = skin_id
-		loadout["pilot_skin"] = skin_id
-	elif slot_key.begins_with("pet:"):
-		loadout["equipped_pet_skin"] = skin_id
-	elif slot_key.begins_with("navigator:"):
-		loadout["equipped_navigator_skin"] = skin_id
-	SaveManager.set_character_loadout(target_char, loadout)
-	_select_character(target_char)
+	if skin_coordinator:
+		skin_coordinator.handle_skin_selected(slot_key, skin_id, current_character_id)
 
 
 func _on_gacha_skin_equipped(slot_key: String, skin_id: String) -> void:
@@ -956,10 +897,8 @@ func _on_gacha_modal_closed() -> void:
 
 
 func _restore_last_focus() -> void:
-	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control != pilot_button and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		_last_focused_control.grab_focus()
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		orbital_terminal.grab_focus()
+	if focus_router:
+		focus_router.restore_focus(pilot_button, orbital_terminal)
 
 
 func _on_launch_committed() -> void:
@@ -1080,92 +1019,12 @@ func _setup_speed_buttons() -> void:
 
 
 func _setup_focus_mesh() -> void:
-	# 1. Back button
-	if back_button:
-		back_button.focus_neighbor_top = orbital_terminal.get_path() if orbital_terminal else NodePath()
-		back_button.focus_neighbor_bottom = ship_button.get_path() if ship_button else NodePath()
-		back_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-
-	# 2. Equipment row (Ship & Weapon)
-	if ship_button:
-		ship_button.focus_neighbor_top = back_button.get_path() if back_button else NodePath()
-		ship_button.focus_neighbor_right = weapon_button.get_path() if weapon_button else NodePath()
-		ship_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath()
-
-	if weapon_button:
-		weapon_button.focus_neighbor_top = back_button.get_path() if back_button else NodePath()
-		weapon_button.focus_neighbor_left = ship_button.get_path() if ship_button else NodePath()
-		weapon_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		weapon_button.focus_neighbor_bottom = pet_button.get_path() if pet_button else NodePath()
-
-	# 3. Companions (Pet & Navigator)
-	if pet_button:
-		pet_button.focus_neighbor_top = ship_button.get_path() if ship_button else NodePath()
-		pet_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		pet_button.focus_neighbor_bottom = navigator_button.get_path() if navigator_button else NodePath()
-
-	if navigator_button:
-		navigator_button.focus_neighbor_top = pet_button.get_path() if pet_button else NodePath()
-		navigator_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		navigator_button.focus_neighbor_bottom = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
-
-	# 4. Talents and Tomes / Arsenal
-	var eff_pool_btn: Control = arsenal_banlist_btn if (arsenal_banlist_btn and arsenal_banlist_btn.is_visible_in_tree()) else tomes_pool_btn
-	var eff_pool_path: NodePath = eff_pool_btn.get_path() if eff_pool_btn else NodePath()
-
-	if expand_talents_btn:
-		expand_talents_btn.focus_neighbor_top = navigator_button.get_path() if navigator_button else NodePath()
-		expand_talents_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		expand_talents_btn.focus_neighbor_bottom = eff_pool_path
-
-	if arsenal_banlist_btn:
-		arsenal_banlist_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
-		arsenal_banlist_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		arsenal_banlist_btn.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-
-	if tomes_pool_btn:
-		tomes_pool_btn.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
-		tomes_pool_btn.focus_neighbor_right = loadout_button.get_path() if loadout_button else (pilot_skin_btn.get_path() if pilot_skin_btn else NodePath())
-		tomes_pool_btn.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-
-	if loadout_button:
-		loadout_button.focus_neighbor_top = expand_talents_btn.get_path() if expand_talents_btn else NodePath()
-		loadout_button.focus_neighbor_left = tomes_pool_btn.get_path() if tomes_pool_btn else NodePath()
-		loadout_button.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		loadout_button.focus_neighbor_bottom = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-
-	# 5. Speed Buttons (1x, 2x, 4x)
-	var eff_launch: Control = orbital_terminal as Control if (orbital_terminal and orbital_terminal.is_visible_in_tree()) else null
-	var eff_launch_path: NodePath = eff_launch.get_path() if eff_launch else NodePath()
-
-	if speed_1x_btn:
-		speed_1x_btn.focus_neighbor_top = eff_pool_path
-		speed_1x_btn.focus_neighbor_right = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
-		speed_1x_btn.focus_neighbor_bottom = eff_launch_path
-
-	if speed_2x_btn:
-		speed_2x_btn.focus_neighbor_top = eff_pool_path
-		speed_2x_btn.focus_neighbor_left = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-		speed_2x_btn.focus_neighbor_right = speed_4x_btn.get_path() if speed_4x_btn else NodePath()
-		speed_2x_btn.focus_neighbor_bottom = eff_launch_path
-
-	if speed_4x_btn:
-		speed_4x_btn.focus_neighbor_top = eff_pool_path
-		speed_4x_btn.focus_neighbor_left = speed_2x_btn.get_path() if speed_2x_btn else NodePath()
-		speed_4x_btn.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		speed_4x_btn.focus_neighbor_bottom = eff_launch_path
-
-
-	# 6. Launch Button (Orbital Terminal)
-	if eff_launch:
-		eff_launch.focus_neighbor_top = speed_1x_btn.get_path() if speed_1x_btn else NodePath()
-		eff_launch.focus_neighbor_right = pilot_skin_btn.get_path() if pilot_skin_btn else NodePath()
-		eff_launch.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
-
-	# 7. Pilot Skin Button (derecha)
-	if pilot_skin_btn:
-		pilot_skin_btn.focus_neighbor_left = weapon_button.get_path() if weapon_button else NodePath()
-		pilot_skin_btn.focus_neighbor_bottom = back_button.get_path() if back_button else NodePath()
+	if focus_router:
+		focus_router.setup_focus_mesh(
+			back_button, ship_button, weapon_button, pet_button, navigator_button,
+			expand_talents_btn, arsenal_banlist_btn, tomes_pool_btn, loadout_button,
+			speed_1x_btn, speed_2x_btn, speed_4x_btn, pilot_skin_btn, orbital_terminal
+		)
 
 
 func _on_dock_unified_button_pressed() -> void:

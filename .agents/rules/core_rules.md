@@ -13,7 +13,13 @@ trigger: always_on
    - En inspecciones de código, acotar obligatoriamente las lecturas a rangos precisos con `view_file` (máx. 100-200 líneas pertinentes) evitando lecturas masivas.
    - Respuestas concisas y de alta densidad técnica: evitar repetir bloques de código ya mostrados en diffs o resumir contenido obvio.
 6. **Cuestionarios Interactivos (`ask_question`):** Toda aclaración, bifurcación de diseño o confirmación de commit debe realizarse a través de la herramienta interactiva de cuestionarios `ask_question`, nunca con preguntas en texto plano.
-7. **Verificación Pragmática con Arnés Anti-Cuelgues:** Prohibido ejecutar comandos directos de `godot --headless` sin timeout para verificar suites. Utilizar siempre `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` (o `-Test <ruta>`). Toda nueva suite de prueba debe heredar de `BaseTestSuite` (`tests/base_test_suite.gd`) para garantizar inmunidad a cuelgues por pausas del árbol.
+7. **Verificación Pragmática con Arnés Anti-Cuelgues y Test Aislado:**
+   - Durante la iteración activa de desarrollo, **usar exclusivamente el test específico del sistema tocado**: `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "<suite_runner.tscn>"` (latencia de 2 segundos).
+   - Prohibido ejecutar `-CoreOnly` de forma repetitiva en pasos intermedios. Reservar `-CoreOnly` únicamente para la verificación integral final antes de dar por concluida la tarea.
+   - Prohibido ejecutar comandos directos de `godot --headless` sin timeout para verificar suites. Toda nueva suite de prueba debe heredar de `BaseTestSuite` (`tests/base_test_suite.gd`).
 8. **Punto de Entrada Obligatorio (`AGENT_CONTEXT.md`):** Al iniciar cualquier sesión de trabajo en este proyecto, leer `AGENT_CONTEXT.md` (raíz del proyecto) antes de explorar cualquier otro archivo. Este documento contiene el mapa completo de sistemas → archivos, zonas de exploración prohibida, autoloads, contratos de arquitectura y estado actual del proyecto. Está diseñado para eliminar la fase de orientación ciega en cada sesión.
    - **Zonas explícitamente prohibidas de exploración:** `addons/`, `.godot/`, `.godot_ai_update/`, `scratch/`, `sandbox/`, `preprocess/`. Si el agente necesita orientarse sobre qué archivo buscar, consultar primero `AGENT_CONTEXT.md`, luego `docs/DOMAIN_MAP.md`. Nunca explorar el árbol de carpetas directamente.
+9. **Higiene de Sesiones Atómicas y Economía de Tokens:**
+   - Cumplir el principio de "1 Tarea / Bugfix = 1 Conversación". Al completar una tarea o superar 12-15 turnos, abrir un nuevo chat para evitar el arrastre de contextos de más de 80.000 tokens.
+   - Los comandos de test deben correr con salida filtrada/resumida sin volcar decenas de líneas verdes innecesarias al contexto.
 
