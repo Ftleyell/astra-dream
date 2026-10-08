@@ -19,6 +19,10 @@ Game asset sprite, pure top-down perspective, strictly 90-degree bird's-eye over
 2. **Sin Sombras de Suelo:** `no shadows on background floor` evita que el suelo proyecte sombras semitransparentes difíciles de recortar.
 3. **Iluminación Uniforme:** `even ambient lighting, no extreme directional rim light from background`.
 
+### 1.1. Hojas Turnaround Multi-Pose de Pilotos (4-en-1)
+Para personajes humanos y pilotos, generar en un solo lienzo 16:9 las 4 vistas requeridas por el juego (Vuelo Cenital, Hangar Espalda, Hangar Frente y Heroic Selection Splash Art). Consultar la guía maestra validada:
+👉 [`docs/art/Character Turnaround Prompt Engineering.md`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/art/Character%20Turnaround%20Prompt%20Engineering.md) para la técnica de **secuenciación progresiva de zonas (Zona 1 a 4)** y el uso de **croma magenta puro (`#FF00FF`) sin luz ambiental**.
+
 ---
 
 ## 2. Selección Estratégica del Fondo Chroma Key

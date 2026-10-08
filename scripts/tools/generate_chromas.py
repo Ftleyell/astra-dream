@@ -147,9 +147,9 @@ def main():
         out_filename = f"{base_name}_{pal_name}.png"
         out_path = os.path.join(args.output_dir, out_filename)
         chroma_img.save(out_path, "PNG")
-        print(f"  ✓ [{pal_name.upper()}]: {out_path} ({pal['desc']})")
+        print(f"  [OK] [{pal_name.upper()}]: {out_path} ({pal['desc']})")
 
-    print("\n¡Generación en lote completada con éxito!")
+    print("\nGeneracion en lote completada con exito!")
 
 if __name__ == "__main__":
     main()
