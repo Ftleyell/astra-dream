@@ -39,7 +39,7 @@ El mayor error al generar con IA es usar siempre verde chillón (`#00FF00`). Si 
 
 ## 3. Eliminación Automatizada de Fondo (`chroma_remover.py`)
 
-El script [`scripts/tools/chroma_remover.py`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scripts/tools/chroma_remover.py) analiza los píxeles en el espacio de color cilíndrico **HSV** (Hue, Saturation, Value), lo que permite separar el fondo incluso si la IA generó pequeñas variaciones de tono o brillo. Además, aplica un filtro de **despill** para limpiar el halo residual en los bordes.
+El script [`scripts/tools/chroma_remover.py`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scripts/tools/chroma_remover.py) analiza los píxeles en el espacio de color cilíndrico **HSV** (Hue, Saturation, Value), lo que permite separar el fondo incluso si la IA generó pequeñas variaciones de tono o brillo. Además, aplica un filtro de **despill** para limpiar el halo residual en los bordes.
 
 ### Uso Básico: Un solo archivo
 ```powershell
@@ -57,7 +57,7 @@ python scripts/tools/chroma_remover.py -i scratch/raw_ai_renders/ -o scratch/cle
 
 Astra Dream utiliza el concepto de **Chromas** (variantes de coloración alternativas) desbloqueables en la Máquina de Gacha del Hangar 3D. 
 
-A partir de **una única ilustración base transparente** (ej. `fullbody_nova.png`), el script [`scripts/tools/generate_chromas.py`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scripts/tools/generate_chromas.py):
+A partir de **una única ilustración base transparente** (ej. `fullbody_nova.png`), el script [`scripts/tools/generate_chromas.py`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scripts/tools/generate_chromas.py):
 1. **Aísla y Protege:** Detecta automáticamente los rangos cromáticos de piel humana / anime (matices cálidos anaranjados y melocotón) y las zonas neutras de ojos y pupilas, dejándolos 100% intactos.
 2. **Recolorea Blindajes y Ropa:** Modula el matiz (*Hue Shift*), la saturación y el valor de las partes metálicas, ropaje, alerones y efectos de luz.
 3. **Genera Variantes:** Produce en 1 segundo las variantes canónicas de Astra Dream:

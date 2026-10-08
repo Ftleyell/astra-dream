@@ -1,5 +1,5 @@
 # GUÍA Y AUDITORÍA MAESTRA DE SISTEMAS: ASTRA DREAM
-**Versión del Proyecto:** 0.4.1-prealpha  
+**Versión del Proyecto:** Alpha 0.1  
 **Motor:** Godot Engine 4.7.2 Forward Mobile (Vulkan 1.4)  
 **Arquitectura:** Modular, Data-Driven (.tres), Zero-Allocation Danmaku (SoA BulletServer)
 

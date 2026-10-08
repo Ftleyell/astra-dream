@@ -3,7 +3,7 @@
 > **Regla de Oro:** El balance numérico de Astra Dream es 100% Data-Driven. 
 > **NUNCA** modifiques scripts `.gd` para alterar daño, vida, precios o cadencias. 
 > Todo cambio se realiza editando archivos de recursos `.tres` con Godot o cualquier editor de texto.
-> Consulta también [`docs/DOMAIN_MAP.md`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/docs/DOMAIN_MAP.md) para el mapa completo de archivos autoridad.
+> Consulta también [`docs/DOMAIN_MAP.md`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/DOMAIN_MAP.md) para el mapa completo de archivos autoridad.
 
 ---
 

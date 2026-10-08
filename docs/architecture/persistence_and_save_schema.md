@@ -20,10 +20,10 @@ flowchart TD
 
 | Archivo | Formato | Módulo Responsable | Ciclo de Vida |
 | :--- | :--- | :--- | :--- |
-| `user://profile_data.json` | JSON UTF-8 con sangría | [`ProfileStorage`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/profile_storage.gd) | Persistente permanente entre sesiones. Contiene toda la meta-progresión. |
-| `user://active_run.json` | JSON UTF-8 | [`ActiveRunStorage`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/active_run_storage.gd) | Efímero. Se crea al suspender/pausar una run; se elimina al morir o ganar la partida. |
-| `user://highscores.json` | JSON UTF-8 | [`ActiveRunStorage`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/active_run_storage.gd) | Persistente. Top 10 de mejores marcas históricas. |
-| `user://settings.cfg` | INI/ConfigFile | [`SettingsManager`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/settings_manager.gd) | Persistente. Volumen, resolución de pantalla, deadzone y remapeo de teclas. |
+| `user://profile_data.json` | JSON UTF-8 con sangría | [`ProfileStorage`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/profile_storage.gd) | Persistente permanente entre sesiones. Contiene toda la meta-progresión. |
+| `user://active_run.json` | JSON UTF-8 | [`ActiveRunStorage`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/active_run_storage.gd) | Efímero. Se crea al suspender/pausar una run; se elimina al morir o ganar la partida. |
+| `user://highscores.json` | JSON UTF-8 | [`ActiveRunStorage`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/active_run_storage.gd) | Persistente. Top 10 de mejores marcas históricas. |
+| `user://settings.cfg` | INI/ConfigFile | [`SettingsManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/settings_manager.gd) | Persistente. Volumen, resolución de pantalla, deadzone y remapeo de teclas. |
 
 ---
 
@@ -128,7 +128,7 @@ flowchart TD
 
 ## 3. Protocolo de Validación y Migración Hacia Adelante
 
-El método [`ProfileStorage.clean_and_validate_data()`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/profile_storage.gd#L264-L372) implementa un algoritmo de saneamiento tolerante a fallos:
+El método [`ProfileStorage.clean_and_validate_data()`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/profile_storage.gd#L264-L372) implementa un algoritmo de saneamiento tolerante a fallos:
 
 1. **Retrocompatibilidad con Esquema V1:** Si un archivo guardado antiguo omite campos nuevos (como `gacha_pity`, `unlocked_navigators` o `trophies_unlocked`), el validador inyecta los valores predeterminados de la versión actual sin sobrescribir los datos preexistentes del jugador.
 2. **Coerción Fuerte de Tipos:** Todos los identificadores serializados como `String` en JSON son convertidos a `StringName` en memoria para alinearse con los contratos de Godot 4.7 y zero-allocations en comparaciones.
@@ -138,7 +138,7 @@ El método [`ProfileStorage.clean_and_validate_data()`](file:///c:/Users/Aimol/O
 
 ## 4. Reglas del Sistema Gacha y Progresión de Estrellas
 
-Gestionado mediante [`SaveSkinsModule`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/save_modules/save_skins_module.gd):
+Gestionado mediante [`SaveSkinsModule`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/save_modules/save_skins_module.gd):
 
 ```mermaid
 stateDiagram-v2
@@ -181,13 +181,13 @@ stateDiagram-v2
 ### Maestría de Trofeos (`trophies_unlocked`):
 - Los trofeos se desbloquean al derrotar jefes en condiciones específicas o superar oleadas clave (Nivel 1).
 - Subir de nivel de maestría (Nivel 2 a 5) requiere inversión de **Materia Oscura** (`dark_matter`).
-- Los trofeos otorgan bonificaciones pasivas globales (porcentaje de vida, daño o velocidad de proyectiles) que se inyectan en [`MetaProgressionState.get_trophy_passive_bonuses()`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/meta_progression_state.gd).
+- Los trofeos otorgan bonificaciones pasivas globales (porcentaje de vida, daño o velocidad de proyectiles) que se inyectan en [`MetaProgressionState.get_trophy_passive_bonuses()`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/meta_progression_state.gd).
 
 ---
 
 ## 6. Persistencia de Partida en Curso (`user://active_run.json`)
 
-Manejado por [`ActiveRunStorage`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/systems/persistence/active_run_storage.gd):
+Manejado por [`ActiveRunStorage`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/systems/persistence/active_run_storage.gd):
 
 Permite reanudar una partida interrumpida por salida del juego o pausa:
 ```json
@@ -209,7 +209,7 @@ Permite reanudar una partida interrumpida por salida del juego o pausa:
 }
 ```
 
-- Al cargar [`MainGame`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/main_game.gd), si `SaveManager.is_resuming_run` es `true`, se reconstituyen los atributos, armas e ítems de este archivo y luego se destruye mediante `clear_active_run()`.
+- Al cargar [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd), si `SaveManager.is_resuming_run` es `true`, se reconstituyen los atributos, armas e ítems de este archivo y luego se destruye mediante `clear_active_run()`.
 
 ---
 

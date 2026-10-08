@@ -8,20 +8,20 @@ Este documento proporciona una referencia exhaustiva y de contexto cero (Zero-Co
 
 En Astra Dream, los Autoloads se restringen exclusivamente a **servicios de infraestructura puros** y orquestación global sin estado acoplado a entidades de combate. Toda lógica de juego local reside en controladores y componentes instanciados.
 
-Definidos en [`project.godot`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/project.godot):
+Definidos en [`project.godot`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/project.godot):
 
 | Nombre Autoload | Script / UID | Modo de Proceso | Responsabilidad Principal |
 | :--- | :--- | :--- | :--- |
-| **`PauseArbitrator`** | [`res://core/autoloads/pause_arbitrator.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/pause_arbitrator.gd) | `PROCESS_MODE_ALWAYS` | Árbitro central de pausa del SceneTree mediante tokens (`StringName`). Previene pause leaks y sobreescrituras concurrentes. |
-| **`SettingsManager`** | [`res://core/autoloads/settings_manager.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/settings_manager.gd) | `PROCESS_MODE_ALWAYS` | Configuración de audio, gráficos/pantalla, deadzones e input mappings persistentes en `.cfg`. |
-| **`SaveManager`** | [`res://core/autoloads/save_manager.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/save_manager.gd) | Inherit | Fachada centralizada para perfil meta, run activa, cosméticos, talentos y récords. |
-| **`DebugManager`** | [`res://core/autoloads/debug_manager.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/debug_manager.gd) | Inherit | Flags de testing, God Mode, economía infinita y overrides numéricos de estadísticas. |
-| **`EventBus`** | [`res://core/autoloads/event_bus.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/event_bus.gd) | Inherit | Bus pub-sub global de eventos de alto nivel de combate, oleadas y progreso. |
-| **`AudioManager`** | [`res://core/autoloads/audio_manager.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/audio_manager.gd) | Inherit | Voice pooling (24 voces), modulación anti-fatiga, arpegios pentatónicos y reproducción BGM. |
+| **`PauseArbitrator`** | [`res://core/autoloads/pause_arbitrator.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/pause_arbitrator.gd) | `PROCESS_MODE_ALWAYS` | Árbitro central de pausa del SceneTree mediante tokens (`StringName`). Previene pause leaks y sobreescrituras concurrentes. |
+| **`SettingsManager`** | [`res://core/autoloads/settings_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/settings_manager.gd) | `PROCESS_MODE_ALWAYS` | Configuración de audio, gráficos/pantalla, deadzones e input mappings persistentes en `.cfg`. |
+| **`SaveManager`** | [`res://core/autoloads/save_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/save_manager.gd) | Inherit | Fachada centralizada para perfil meta, run activa, cosméticos, talentos y récords. |
+| **`DebugManager`** | [`res://core/autoloads/debug_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/debug_manager.gd) | Inherit | Flags de testing, God Mode, economía infinita y overrides numéricos de estadísticas. |
+| **`EventBus`** | [`res://core/autoloads/event_bus.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/event_bus.gd) | Inherit | Bus pub-sub global de eventos de alto nivel de combate, oleadas y progreso. |
+| **`AudioManager`** | [`res://core/autoloads/audio_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/audio_manager.gd) | Inherit | Voice pooling (24 voces), modulación anti-fatiga, arpegios pentatónicos y reproducción BGM. |
 | **`Dialogic`** | `uid://ds2q0uclmolvu` | Always | Motor narrativo para diálogos de personajes (`.dch`) y timelines de bosses/alertas (`.dtl`). |
 
 > [!NOTE]
-> **Servicio de Balas (`BulletServer`):** Reside en [`res://core/autoloads/bullet_server.gd`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/bullet_server.gd) como `class_name BulletServer extends MultiMeshInstance2D`. No está instanciado como autoload global para evitar consumo de memoria en menús; se instancia en la escena de combate [`MainGame`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/main_game.gd) y se registra en el grupo `"bullet_server"`.
+> **Servicio de Balas (`BulletServer`):** Reside en [`res://core/autoloads/bullet_server.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/bullet_server.gd) como `class_name BulletServer extends MultiMeshInstance2D`. No está instanciado como autoload global para evitar consumo de memoria en menús; se instancia en la escena de combate [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd) y se registra en el grupo `"bullet_server"`.
 
 ---
 
@@ -55,7 +55,7 @@ Definidos en [`project.godot`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/
   - **In-Game (`scenes/ui/debug/ingame_debug_modal.gd`):** Accesible con **`F1`** en pleno combate; pausa el árbol de juego (`PROCESS_MODE_ALWAYS`) y ofrece 4 pestañas: Spawns/Entidades (Monolitos directos frente al jugador a ~200px, Jefes con toggle de cinemática, Rivales, Tragaperras, Limpieza), Cheats/Stats (God Mode, Créditos 999k, Bombas 5, Sliders de estadísticas en vivo), Arsenal/Items (Inyección de armas, upgrades de nivel, selector de pactos) y Oleadas/Crisis (Salto de oleada, disparo de Tormenta Solar y eventos de crisis).
 - **Flags principales:** `infinite_hp`, `infinite_credits`, `infinite_consumables`, `pending_debug_route`.
 - **Diccionario de Estadísticas (`stat_overrides`):**
-  - Permite sustituir en caliente cualquier estadística de [`CharacterStats`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/types/character_stats.gd) (`max_health`, `move_speed`, `base_damage`, `crit_chance`, `exp_multiplier`, etc.).
+  - Permite sustituir en caliente cualquier estadística de [`CharacterStats`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/types/character_stats.gd) (`max_health`, `move_speed`, `base_damage`, `crit_chance`, `exp_multiplier`, etc.).
   - Configuración declarativa en `STAT_CONFIGS` con mínimos, máximos y formatos de visualización para las interfaces de depuración.
 
 ### 2.4 AudioManager
@@ -83,7 +83,7 @@ Definidos en [`project.godot`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/
 
 ## 3. Diccionario del Bus de Eventos (`EventBus`)
 
-[`EventBus`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/event_bus.gd) desacopla emisores de receptores mediante el patrón Publicador-Suscriptor, garantizando que el combate, el HUD y los directores no dependan de referencias cruzadas directas.
+[`EventBus`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/event_bus.gd) desacopla emisores de receptores mediante el patrón Publicador-Suscriptor, garantizando que el combate, el HUD y los directores no dependan de referencias cruzadas directas.
 
 ```mermaid
 flowchart TD
@@ -103,7 +103,7 @@ flowchart TD
 
 #### 1. `level_up_offered(level: int)`
 - **Emisor:** Sistema de nivel del jugador / experiencia.
-- **Receptor:** [`HUD`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/hud/hud.gd), Gestor de selección de cartas / mejoras.
+- **Receptor:** [`HUD`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hud/hud.gd), Gestor de selección de cartas / mejoras.
 - **Propósito:** Notificar que el jugador acumuló suficiente experiencia para subir de nivel y pausar/desplegar la interfaz de recompensa.
 
 #### 2. `level_up_selected(stat_card: StatCardData)`
@@ -112,38 +112,38 @@ flowchart TD
 - **Propósito:** Aplicar las estadísticas del recurso seleccionado al jugador y reanudar el flujo del juego.
 
 #### 3. `satellite_planted(satellite_index: int, position: Vector2)`
-- **Emisor:** [`SatelliteStation`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/satellite/satellite_station.gd).
-- **Receptor:** [`EncounterDirector`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/directors/encounter_director.gd), [`HUD`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/hud/hud.gd).
+- **Emisor:** [`SatelliteStation`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/satellite/satellite_station.gd).
+- **Receptor:** [`EncounterDirector`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/encounter_director.gd), [`HUD`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hud/hud.gd).
 - **Propósito:** Informar el despliegue del satélite de suministros/tienda, alterando la presión de oleadas enemigas y habilitando la baliza de extracción o recarga.
 
 #### 4. `satellite_exited(satellite_index: int)`
-- **Emisor:** [`SatelliteShop`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/satellite/satellite_shop.gd).
+- **Emisor:** [`SatelliteShop`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/satellite/satellite_shop.gd).
 - **Receptor:** Director de encuentros, reanudando la cadencia de oleadas de combate.
 
 #### 5. `run_currency_changed(new_amount: int)`
 - **Emisor:** Jugador al recolectar créditos o gastarlos en la tienda satelital.
-- **Receptor:** [`HUD`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/hud/hud.gd) (actualización de display numérico).
+- **Receptor:** [`HUD`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hud/hud.gd) (actualización de display numérico).
 
 #### 6. `boss_spawn_requested(timeline_id: String, boss_id: String, is_secret: bool)`
-- **Emisor:** [`EncounterDirector`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/directors/encounter_director.gd).
-- **Receptor:** [`CombatBossCoordinator`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/directors/combat_boss_coordinator.gd), [`CombatNarrativeDirector`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/directors/combat_narrative_director.gd).
+- **Emisor:** [`EncounterDirector`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/encounter_director.gd).
+- **Receptor:** [`CombatBossCoordinator`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_boss_coordinator.gd), [`CombatNarrativeDirector`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_narrative_director.gd).
 - **Propósito:** Iniciar alerta cinemática de jefe (Dialogic alert, barras de vida dedicadas, música temática).
 
 #### 7. `boss_defeated(boss_id: String)`
 - **Emisor:** Entidad del Boss al agotar su vida y reproducir su efecto de explosión.
-- **Receptor:** [`CombatBossCoordinator`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/directors/combat_boss_coordinator.gd), [`SaveManager`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/autoloads/save_manager.gd), estadísticas de carrera.
+- **Receptor:** [`CombatBossCoordinator`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/directors/combat_boss_coordinator.gd), [`SaveManager`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/save_manager.gd), estadísticas de carrera.
 - **Propósito:** Registrar muerte de jefe, desbloquear trofeos asociados y habilitar portales o transiciones de fase.
 
 #### 8. `player_died()`
-- **Emisor:** [`Player`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/player/player.gd) al agotar su barra de salud.
-- **Receptor:** [`MainGame`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/main_game.gd), [`GameOverModal`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/ui/game_over/game_over_modal.gd), audio ambiental de derrota.
+- **Emisor:** [`Player`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/player/player.gd) al agotar su barra de salud.
+- **Receptor:** [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd), [`GameOverModal`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/game_over/game_over_modal.gd), audio ambiental de derrota.
 - **Propósito:** Detener spawn de enemigos, calcular recompensas de la partida y presentar pantalla de Game Over.
 
 #### 9. `enemy_killed(enemy_type: String)`
-- **Emisor:** [`HurtboxComponent`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/core/components/hurtbox_component.gd) / scripts de enemigos comunes y élites.
+- **Emisor:** [`HurtboxComponent`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/components/hurtbox_component.gd) / scripts de enemigos comunes y élites.
 - **Receptor:** Registro de estadísticas de partida (`CombatRunStats`), desbloqueo de logros y misiones.
 
 #### 10. `arcana_orb_collected(orb: Node2D)`
 - **Emisor:** Orbes arcanos especiales generados en campo de batalla.
-- **Receptor:** [`MainGame`](file:///c:/Users/Aimol/OneDrive/Escritorio/Astra/scenes/combat/main_game.gd) / Modal de cartas arcanas (`ArcanaSelectionModal`).
+- **Receptor:** [`MainGame`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd) / Modal de cartas arcanas (`ArcanaSelectionModal`).
 - **Propósito:** Abrir la interfaz de cartas de tarot/arcana para seleccionar mutadores pasivos únicos de la partida.

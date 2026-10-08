@@ -1,4 +1,4 @@
-# Astra Dream (Pre-Alpha v0.5.0)
+# Astra Dream (Alpha 0.1)
 
 Roguelite de acción híbrido desarrollado en **Godot 4.7+ (GDScript)** que combina combate Danmaku 360°, acumulación sinérgica de artefactos espaciales, mazo dinámico de mejoras de atributos in-run, filtrado estratégico de suministros en el Hangar y narrativa reactiva con modulación acústica dinámica (*Dialogic 2.0*).
 
