@@ -557,17 +557,17 @@ func _select_character(char_id: StringName) -> void:
 		SaveManager.unequip_skin("navigator:" + cur_nav_str)
 
 	var cid_str: String = String(char_id).to_lower()
-	var ship_skin: String = str(loadout.get("equipped_ship_skin", "base"))
+	var ship_skin: String = str(loadout.get("equipped_ship_skin", loadout.get("ship_skin", "base")))
 	if ship_skin.is_empty():
 		ship_skin = "base"
 	SaveManager.equip_skin("ship:" + cid_str, ship_skin)
 
-	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", "base"))
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", "base")))
 	if weapon_skin.is_empty():
 		weapon_skin = "base"
 	SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
 
-	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", "base"))
+	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "base")))
 	if pilot_skin.is_empty():
 		pilot_skin = "base"
 	SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
@@ -891,7 +891,8 @@ func _on_skins_button_pressed() -> void:
 
 
 func _on_cosmetic_carousel_closed(category: String, _target_id: StringName, skin_id: String) -> void:
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	var target_char: StringName = _target_id if not _target_id.is_empty() else current_character_id
+	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
 	match category:
 		"ship":
 			loadout["equipped_ship_skin"] = skin_id
@@ -902,9 +903,9 @@ func _on_cosmetic_carousel_closed(category: String, _target_id: StringName, skin
 		"pilot":
 			loadout["equipped_pilot_skin"] = skin_id
 			loadout["pilot_skin"] = skin_id
-	SaveManager.set_character_loadout(current_character_id, loadout)
+	SaveManager.set_character_loadout(target_char, loadout)
 	
-	_select_character(current_character_id)
+	_select_character(target_char)
 	_restore_last_focus()
 
 
@@ -917,7 +918,12 @@ func _open_gacha_from_skins() -> void:
 
 
 func _on_skin_selected(slot_key: String, skin_id: String) -> void:
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
+	var target_char: StringName = current_character_id
+	var parts := slot_key.split(":")
+	if parts.size() > 1 and roster_dict.has(StringName(parts[1])):
+		target_char = StringName(parts[1])
+
+	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
 	if slot_key.begins_with("ship:"):
 		loadout["equipped_ship_skin"] = skin_id
 		loadout["ship_skin"] = skin_id
@@ -931,8 +937,8 @@ func _on_skin_selected(slot_key: String, skin_id: String) -> void:
 		loadout["equipped_pet_skin"] = skin_id
 	elif slot_key.begins_with("navigator:"):
 		loadout["equipped_navigator_skin"] = skin_id
-	SaveManager.set_character_loadout(current_character_id, loadout)
-	_select_character(current_character_id)
+	SaveManager.set_character_loadout(target_char, loadout)
+	_select_character(target_char)
 
 
 func _on_gacha_skin_equipped(slot_key: String, skin_id: String) -> void:

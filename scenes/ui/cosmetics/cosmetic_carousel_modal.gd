@@ -403,10 +403,13 @@ func _auto_equip_if_unlocked() -> void:
 		match current_category:
 			"pilot":
 				loadout["pilot_skin"] = sid
+				loadout["equipped_pilot_skin"] = sid
 			"ship":
 				loadout["ship_skin"] = sid
+				loadout["equipped_ship_skin"] = sid
 			"weapon":
 				loadout["weapon_skin"] = sid
+				loadout["equipped_weapon_skin"] = sid
 		SaveManager.set_character_loadout(current_target_id, loadout)
 
 		skin_selected.emit(slot_key, sid)

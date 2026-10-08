@@ -2,6 +2,7 @@ shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_opaque;
 
 uniform sampler2D texture_albedo : source_color, filter_linear_mipmap;
+uniform sampler2D skin_mask : hint_default_white, filter_linear_mipmap;
 uniform int star_level : hint_range(1, 3) = 1;
 uniform vec4 glow_color : source_color = vec4(0.0, 0.94, 1.0, 1.0);
 uniform vec4 accent_color : source_color = vec4(1.0, 0.0, 0.5, 1.0);
@@ -59,17 +60,18 @@ void fragment() {
 		float inner_rim = accum * (1.0 - smoothstep(0.65, 0.98, accum));
 
 		vec3 final_rgb = tex_color.rgb;
+		float mask_val = texture(skin_mask, UV).r;
 
 		if (star_level == 2) {
 			// 2★: Rim-light sutil en contorno exterior sin tapar la textura central
-			final_rgb += glow_color.rgb * (inner_rim * 0.65 * pulse * glow_intensity);
+			final_rgb += glow_color.rgb * (inner_rim * mask_val * 0.65 * pulse * glow_intensity);
 		} else {
 			// 3★: Rim-light cromático + micro-destellos puntuales
 			float shimmer = 0.5 + 0.5 * sin((UV.x + UV.y) * 6.0 + TIME * 3.5);
 			vec3 aura_color = mix(glow_color.rgb, accent_color.rgb, shimmer);
-			final_rgb += aura_color * (inner_rim * 0.85 * pulse * glow_intensity);
+			final_rgb += aura_color * (inner_rim * mask_val * 0.85 * pulse * glow_intensity);
 
-			// Micro-chispas (sparks) flotantes
+			// Micro-chispas (sparks) flotantes respetando la máscara de rostro
 			vec2 grid_uv = UV * 40.0;
 			vec2 grid_id = floor(grid_uv);
 			vec2 grid_pos = fract(grid_uv) - vec2(0.5);
@@ -79,7 +81,7 @@ void fragment() {
 			float spark_shape = smoothstep(0.25, 0.03, length(grid_pos));
 			float spark_val = spark_shape * spark_blink * (spark_seed > 0.75 ? 1.0 : 0.0);
 			vec3 spark_color = mix(vec3(1.0), accent_color.rgb, 0.4);
-			final_rgb += spark_color * (spark_val * 0.75);
+			final_rgb += spark_color * (spark_val * mask_val * 0.75);
 		}
 
 		ALBEDO = final_rgb;

@@ -140,7 +140,7 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 		return
 
 	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
-	var pilot_skin_id: String = str(loadout.get("equipped_pilot_skin", "base"))
+	var pilot_skin_id: String = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "base")))
 	if pilot_skin_id.is_empty():
 		pilot_skin_id = "base"
 

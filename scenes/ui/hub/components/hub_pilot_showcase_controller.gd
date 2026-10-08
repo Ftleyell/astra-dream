@@ -258,6 +258,11 @@ func collect_and_verify_sprites(roster: Array[Dictionary]) -> void:
 						var mat := ShaderMaterial.new()
 						mat.shader = spatial_shader
 						mat.set_shader_parameter("texture_albedo", sprite.texture)
+						var mask_path := ("res://assets/characters/fullbody/%sBack_skin_mask.jpg" % char_id.capitalize()) if is_right_side else ("res://assets/characters/fullbody/%s_skin_mask.jpg" % char_id.capitalize())
+						if ResourceLoader.exists(mask_path):
+							var mask_tex = load(mask_path)
+							if mask_tex:
+								mat.set_shader_parameter("skin_mask", mask_tex)
 						mat.set_shader_parameter("star_level", stars)
 						var glow_hex: String = skin_info.get("glow_hex", "#00F0FF")
 						var accent_hex: String = skin_info.get("accent_hex", "#FF007F")
@@ -355,6 +360,11 @@ func refresh_pedestal_skins(roster: Array[Dictionary]) -> void:
 					var mat := ShaderMaterial.new()
 					mat.shader = spatial_shader
 					mat.set_shader_parameter("texture_albedo", sprite.texture)
+					var mask_path := ("res://assets/characters/fullbody/%sBack_skin_mask.jpg" % cid.capitalize()) if is_right_side else ("res://assets/characters/fullbody/%s_skin_mask.jpg" % cid.capitalize())
+					if ResourceLoader.exists(mask_path):
+						var mask_tex = load(mask_path)
+						if mask_tex:
+							mat.set_shader_parameter("skin_mask", mask_tex)
 					mat.set_shader_parameter("star_level", stars)
 					var glow_hex: String = skin_info.get("glow_hex", "#00F0FF")
 					var accent_hex: String = skin_info.get("accent_hex", "#FF007F")

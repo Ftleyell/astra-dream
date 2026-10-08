@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_nyx_skins_runner_01"]
+
+[ext_resource type="Script" path="res://tests/test_nyx_skins_and_hub_shader_suite.gd" id="1_suite"]
+
+[node name="TestNyxSkinsRunner" type="Node"]
+script = ExtResource("1_suite")
