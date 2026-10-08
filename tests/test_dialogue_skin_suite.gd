@@ -1,13 +1,10 @@
-extends Node
+extends BaseTestSuite
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 
 func _ready() -> void:
-	# Watchdog timeout
-	get_tree().create_timer(15.0).timeout.connect(func():
-		print("[TEST WATCHDOG] Timeout en test de skins de diálogo.")
-		get_tree().quit(1)
-	)
+	super._ready()
+	timeout_seconds = 14.0
 
 	print("\n=======================================================")
 	print("🧪 VERIFICACIÓN COMPLETA: SKINS Y SHADERS EN DIÁLOGOS (DIALOGIC)")
@@ -22,7 +19,7 @@ func _ready() -> void:
 
 	# 1. Test 1★: Recolor limpio, sin material de shader
 	print("\n[1/5] Verificando Skin 1★ en Diálogo (Recolor Puro)...")
-	var skin_nova := "pilot_nova_crimson_void"
+	var skin_nova := "pilot_nova_gotica"
 	if not SaveManager.is_skin_unlocked(skin_nova):
 		SaveManager.unlock_or_upgrade_skin(skin_nova)
 	SaveManager.equip_skin("pilot:nova", skin_nova)
@@ -46,7 +43,7 @@ func _ready() -> void:
 	assert(sprite != null, "Sprite2D Portrait debe existir")
 	
 	print("  Textura actual del retrato: ", sprite.texture.resource_path)
-	assert(sprite.texture.resource_path.ends_with("portrait_nova_crimson_void.png"), "Debe usar la textura recolor de la skin")
+	assert(sprite.texture.resource_path.ends_with("portrait_nova_gotica.png"), "Debe usar la textura recolor de la skin")
 	var stars := SaveManager.get_skin_stars(skin_nova)
 	if stars <= 1:
 		assert(sprite.material == null, "A 1★ el material debe ser null (recolor limpio)")
@@ -98,7 +95,7 @@ func _ready() -> void:
 	sprite = def_portrait.get_node("Portrait")
 
 	print("  Textura flipped del retrato: ", sprite.texture.resource_path)
-	assert(sprite.texture.resource_path.ends_with("portrait_nova_crimson_void_flipped.png"), "Debe usar la textura flipped de la skin")
+	assert(sprite.texture.resource_path.ends_with("portrait_nova_gotica_flipped.png"), "Debe usar la textura flipped de la skin")
 	assert(sprite.material is ShaderMaterial, "El retrato flipped debe conservar el shader de la skin")
 	print("  ✓ Retrato Flipped refleja textura y shader correctamente")
 

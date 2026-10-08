@@ -1,106 +1,123 @@
 {
   "palettes": {
-    "crimson_void": {
-      "name": "Carmesí del Vacío",
-      "description": "Fusión de plasma carmesí y energía del vacío.",
+    "gotica": {
+      "name": "Gótica",
+      "description": "Estética oscura victoriana con cuero burdeos, plata fría y destellos rubí.",
       "tint_rgb": [
-        255,
-        42,
-        85
+        65,
+        30,
+        50
       ],
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
       "secondary_rgb": [
-        138,
-        0,
-        34
+        160,
+        165,
+        175
+      ],
+      "rarity": "epic"
+    },
+    "soft_pastel": {
+      "name": "Pastel Dream",
+      "description": "Armadura en rosa pastel suave, paneles menta y reflejos celestiales.",
+      "tint_rgb": [
+        245,
+        180,
+        200
+      ],
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
+      "secondary_rgb": [
+        180,
+        235,
+        220
       ],
       "rarity": "rare"
     },
-    "cyber_neon": {
-      "name": "Ciberneón",
-      "description": "Luminiscencia cian eléctrica y pulsos cyberpunk.",
+    "poison": {
+      "name": "Tóxica (Poison)",
+      "description": "Bio-blindaje violeta ciruela con paneles de advertencia en verde ácido fluorescente.",
       "tint_rgb": [
-        0,
+        130,
+        40,
+        160
+      ],
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
+      "secondary_rgb": [
+        57,
+        255,
+        20
+      ],
+      "rarity": "rare"
+    },
+    "solar_valkyrie": {
+      "name": "Valquiria Solar",
+      "description": "Blindaje en oro solar templado, titanio perlado blanco y sensores ámbar sagrado.",
+      "tint_rgb": [
+        255,
+        200,
+        40
+      ],
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
+      "secondary_rgb": [
+        245,
+        245,
+        250
+      ],
+      "rarity": "legendary"
+    },
+    "glacial": {
+      "name": "Glaciar Ártico",
+      "description": "Cero absoluto en azul glaciar profundo con placas de escarcha perlada y zafiro.",
+      "tint_rgb": [
+        40,
+        140,
+        200
+      ],
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
+      "secondary_rgb": [
+        210,
         240,
         255
       ],
-      "glow_hex": "#70FFFF",
+      "rarity": "common"
+    },
+    "cyber_mecha": {
+      "name": "Ciber Mecha",
+      "description": "Estética arcade táctica con cian eléctrico, contrastes magenta y circuitos neón.",
+      "tint_rgb": [
+        0,
+        225,
+        255
+      ],
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "secondary_rgb": [
-        0,
-        85,
-        170
+        255,
+        20,
+        147
       ],
       "rarity": "rare"
     },
-    "solar_gold": {
-      "name": "Oro Solar",
-      "description": "Blindaje forjado con radiación y oro estelar.",
+    "crimson_blood": {
+      "name": "Sangre Carmesí",
+      "description": "Blindaje de combate samurái en rojo sangre coagulada, placas de obsidiana y rubí puro.",
       "tint_rgb": [
-        255,
-        215,
-        0
+        220,
+        25,
+        50
       ],
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
       "secondary_rgb": [
-        204,
-        136,
-        0
+        25,
+        25,
+        30
       ],
-      "rarity": "epic"
-    },
-    "glacial_frost": {
-      "name": "Glaciar Ártico",
-      "description": "Cristales de hielo cósmico a cero absoluto.",
-      "tint_rgb": [
-        165,
-        243,
-        252
-      ],
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
-      "secondary_rgb": [
-        2,
-        132,
-        199
-      ],
-      "rarity": "common"
-    },
-    "royal_amethyst": {
-      "name": "Amatista Real",
-      "description": "Resonancia mística de cuarzo púrpura profundo.",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "secondary_rgb": [
-        107,
-        33,
-        168
-      ],
-      "rarity": "epic"
-    },
-    "emerald_matrix": {
-      "name": "Matriz Esmeralda",
-      "description": "Nanomáquinas bio-sintéticas de flujo esmeralda.",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "secondary_rgb": [
-        6,
-        95,
-        70
-      ],
-      "rarity": "common"
+      "rarity": "rare"
     }
   }
 }

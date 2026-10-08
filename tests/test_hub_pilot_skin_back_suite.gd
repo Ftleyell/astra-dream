@@ -1,12 +1,14 @@
-extends Node
+extends BaseTestSuite
 
 func _ready() -> void:
+	super._ready()
+	timeout_seconds = 10.0
 	print("\n==========================================")
 	print("[TEST] Testing Hub3D Pilot Skin Back/Front Dynamic Recolors & Shaders...")
 	print("==========================================")
 
 	var pilot_ids: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
-	var test_palettes := ["cyber_neon", "crimson_void", "solar_gold"]
+	var test_palettes := ["gotica", "cyber_mecha", "solar_valkyrie"]
 
 	# 1. Verificar existencia de los assets de espalda recoloreados en disco
 	for pid in pilot_ids:
@@ -25,7 +27,7 @@ func _ready() -> void:
 	for pid in pilot_ids:
 		var slot_key := "pilot:" + String(pid).to_lower()
 		var original_skin := SaveManager.get_equipped_skin(slot_key)
-		var test_skin := "pilot_%s_cyber_neon" % String(pid).to_lower()
+		var test_skin := "pilot_%s_gotica" % String(pid).to_lower()
 
 		# Desbloquear skin con 2 estrellas para probar shader neón
 		SaveManager.unlock_or_upgrade_skin(test_skin)
@@ -35,8 +37,8 @@ func _ready() -> void:
 		controller.set_character(pid)
 		assert(controller.active_character_id == pid, "Piloto activo debe ser %s" % pid)
 
-		var expected_skin_front := "res://assets/recolors/pilots/fullbody_%s_cyber_neon.png" % String(pid).to_lower()
-		var expected_skin_back := "res://assets/recolors/pilots/fullbody_%s_cyber_neon_back.png" % String(pid).to_lower()
+		var expected_skin_front := "res://assets/recolors/pilots/fullbody_%s_gotica.png" % String(pid).to_lower()
+		var expected_skin_back := "res://assets/recolors/pilots/fullbody_%s_gotica_back.png" % String(pid).to_lower()
 
 		# A. Mirando al frente con skin equipado
 		assert(controller.visual_sprite.texture.resource_path == expected_skin_front, "%s frente debe mostrar skin cyber_neon" % pid)

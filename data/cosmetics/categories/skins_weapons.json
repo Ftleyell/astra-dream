@@ -1,761 +1,887 @@
 {
   "category": "weapon",
   "skins": {
-    "weapon_nova_crimson_void": {
-      "id": "weapon_nova_crimson_void",
+    "weapon_nova_gotica": {
+      "id": "weapon_nova_gotica",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Gótica.",
+      "rarity": "epic",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
       "tint_rgb": [
-        255,
-        42,
-        85
+        65,
+        30,
+        50
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_crimson_void.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_gotica.png"
     },
-    "weapon_nova_cyber_neon": {
-      "id": "weapon_nova_cyber_neon",
+    "weapon_nova_soft_pastel": {
+      "id": "weapon_nova_soft_pastel",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Pastel Dream.",
       "rarity": "rare",
-      "glow_hex": "#70FFFF",
-      "accent_hex": "#FF007F",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
       "tint_rgb": [
-        0,
-        240,
-        255
+        245,
+        180,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_soft_pastel.png"
     },
-    "weapon_nova_solar_gold": {
-      "id": "weapon_nova_solar_gold",
+    "weapon_nova_poison": {
+      "id": "weapon_nova_poison",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
-      "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
       "tint_rgb": [
-        255,
-        215,
-        0
+        130,
+        40,
+        160
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_poison.png"
     },
-    "weapon_nova_glacial_frost": {
-      "id": "weapon_nova_glacial_frost",
+    "weapon_nova_solar_valkyrie": {
+      "id": "weapon_nova_solar_valkyrie",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
-        165,
-        243,
-        252
+        255,
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_solar_valkyrie.png"
     },
-    "weapon_nova_royal_amethyst": {
-      "id": "weapon_nova_royal_amethyst",
+    "weapon_nova_glacial": {
+      "id": "weapon_nova_glacial",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
       "tint_rgb": [
-        192,
-        132,
-        252
+        40,
+        140,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_glacial.png"
     },
-    "weapon_nova_emerald_matrix": {
-      "id": "weapon_nova_emerald_matrix",
+    "weapon_nova_cyber_mecha": {
+      "id": "weapon_nova_cyber_mecha",
       "category": "weapon",
       "target_id": "nova",
       "target_name": "Arma de Nova",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Nova",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nova_emerald_matrix.png"
-    },
-    "weapon_valentina_crimson_void": {
-      "id": "weapon_valentina_crimson_void",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_crimson_void.png"
-    },
-    "weapon_valentina_cyber_neon": {
-      "id": "weapon_valentina_cyber_neon",
-      "category": "weapon",
-      "target_id": "valentina",
-      "target_name": "Arma de Valentina",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_cyber_mecha.png"
     },
-    "weapon_valentina_solar_gold": {
-      "id": "weapon_valentina_solar_gold",
+    "weapon_nova_crimson_blood": {
+      "id": "weapon_nova_crimson_blood",
+      "category": "weapon",
+      "target_id": "nova",
+      "target_name": "Arma de Nova",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Nova",
+      "description": "Aspecto cosmetico para el cañon de Nova en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nova_crimson_blood.png"
+    },
+    "weapon_valentina_gotica": {
+      "id": "weapon_valentina_gotica",
       "category": "weapon",
       "target_id": "valentina",
       "target_name": "Arma de Valentina",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
       "tint_rgb": [
-        255,
-        215,
-        0
+        65,
+        30,
+        50
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_gotica.png"
     },
-    "weapon_valentina_glacial_frost": {
-      "id": "weapon_valentina_glacial_frost",
+    "weapon_valentina_soft_pastel": {
+      "id": "weapon_valentina_soft_pastel",
       "category": "weapon",
       "target_id": "valentina",
       "target_name": "Arma de Valentina",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
       "tint_rgb": [
-        165,
-        243,
-        252
+        245,
+        180,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_soft_pastel.png"
     },
-    "weapon_valentina_royal_amethyst": {
-      "id": "weapon_valentina_royal_amethyst",
+    "weapon_valentina_poison": {
+      "id": "weapon_valentina_poison",
       "category": "weapon",
       "target_id": "valentina",
       "target_name": "Arma de Valentina",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
       "tint_rgb": [
-        192,
-        132,
-        252
+        130,
+        40,
+        160
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_poison.png"
     },
-    "weapon_valentina_emerald_matrix": {
-      "id": "weapon_valentina_emerald_matrix",
+    "weapon_valentina_solar_valkyrie": {
+      "id": "weapon_valentina_solar_valkyrie",
       "category": "weapon",
       "target_id": "valentina",
       "target_name": "Arma de Valentina",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Valentina",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_valentina_emerald_matrix.png"
-    },
-    "weapon_kira_crimson_void": {
-      "id": "weapon_kira_crimson_void",
-      "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        42,
-        85
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_crimson_void.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_solar_valkyrie.png"
     },
-    "weapon_kira_cyber_neon": {
-      "id": "weapon_kira_cyber_neon",
+    "weapon_valentina_glacial": {
+      "id": "weapon_valentina_glacial",
       "category": "weapon",
-      "target_id": "kira",
-      "target_name": "Arma de Kira",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
+      "tint_rgb": [
+        40,
+        140,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_glacial.png"
+    },
+    "weapon_valentina_cyber_mecha": {
+      "id": "weapon_valentina_cyber_mecha",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_cyber_mecha.png"
     },
-    "weapon_kira_solar_gold": {
-      "id": "weapon_kira_solar_gold",
+    "weapon_valentina_crimson_blood": {
+      "id": "weapon_valentina_crimson_blood",
+      "category": "weapon",
+      "target_id": "valentina",
+      "target_name": "Arma de Valentina",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Valentina",
+      "description": "Aspecto cosmetico para el cañon de Valentina en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_valentina_crimson_blood.png"
+    },
+    "weapon_kira_gotica": {
+      "id": "weapon_kira_gotica",
       "category": "weapon",
       "target_id": "kira",
       "target_name": "Arma de Kira",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
       "tint_rgb": [
-        255,
-        215,
-        0
+        65,
+        30,
+        50
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_gotica.png"
     },
-    "weapon_kira_glacial_frost": {
-      "id": "weapon_kira_glacial_frost",
+    "weapon_kira_soft_pastel": {
+      "id": "weapon_kira_soft_pastel",
       "category": "weapon",
       "target_id": "kira",
       "target_name": "Arma de Kira",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
-      "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
       "tint_rgb": [
-        165,
-        243,
-        252
+        245,
+        180,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_soft_pastel.png"
     },
-    "weapon_kira_royal_amethyst": {
-      "id": "weapon_kira_royal_amethyst",
+    "weapon_kira_poison": {
+      "id": "weapon_kira_poison",
       "category": "weapon",
       "target_id": "kira",
       "target_name": "Arma de Kira",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
       "tint_rgb": [
-        192,
-        132,
-        252
+        130,
+        40,
+        160
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_poison.png"
     },
-    "weapon_kira_emerald_matrix": {
-      "id": "weapon_kira_emerald_matrix",
+    "weapon_kira_solar_valkyrie": {
+      "id": "weapon_kira_solar_valkyrie",
       "category": "weapon",
       "target_id": "kira",
       "target_name": "Arma de Kira",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Kira",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_kira_emerald_matrix.png"
-    },
-    "weapon_selene_crimson_void": {
-      "id": "weapon_selene_crimson_void",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
-      "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        42,
-        85
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_crimson_void.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_solar_valkyrie.png"
     },
-    "weapon_selene_cyber_neon": {
-      "id": "weapon_selene_cyber_neon",
+    "weapon_kira_glacial": {
+      "id": "weapon_kira_glacial",
       "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Glaciar Ártico.",
+      "rarity": "common",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
+      "tint_rgb": [
+        40,
+        140,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_glacial.png"
+    },
+    "weapon_kira_cyber_mecha": {
+      "id": "weapon_kira_cyber_mecha",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_cyber_mecha.png"
     },
-    "weapon_selene_solar_gold": {
-      "id": "weapon_selene_solar_gold",
+    "weapon_kira_crimson_blood": {
+      "id": "weapon_kira_crimson_blood",
+      "category": "weapon",
+      "target_id": "kira",
+      "target_name": "Arma de Kira",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Kira",
+      "description": "Aspecto cosmetico para el cañon de Kira en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_kira_crimson_blood.png"
+    },
+    "weapon_selene_gotica": {
+      "id": "weapon_selene_gotica",
       "category": "weapon",
       "target_id": "selene",
       "target_name": "Arma de Selene",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
+      "tint_rgb": [
+        65,
+        30,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_gotica.png"
+    },
+    "weapon_selene_soft_pastel": {
+      "id": "weapon_selene_soft_pastel",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
+      "tint_rgb": [
+        245,
+        180,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_soft_pastel.png"
+    },
+    "weapon_selene_poison": {
+      "id": "weapon_selene_poison",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
+      "tint_rgb": [
+        130,
+        40,
+        160
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_poison.png"
+    },
+    "weapon_selene_solar_valkyrie": {
+      "id": "weapon_selene_solar_valkyrie",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        215,
-        0
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_solar_valkyrie.png"
     },
-    "weapon_selene_glacial_frost": {
-      "id": "weapon_selene_glacial_frost",
+    "weapon_selene_glacial": {
+      "id": "weapon_selene_glacial",
       "category": "weapon",
       "target_id": "selene",
       "target_name": "Arma de Selene",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Glaciar Ártico.",
       "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
       "tint_rgb": [
-        165,
-        243,
-        252
+        40,
+        140,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_glacial.png"
     },
-    "weapon_selene_royal_amethyst": {
-      "id": "weapon_selene_royal_amethyst",
+    "weapon_selene_cyber_mecha": {
+      "id": "weapon_selene_cyber_mecha",
       "category": "weapon",
       "target_id": "selene",
       "target_name": "Arma de Selene",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_royal_amethyst.png"
-    },
-    "weapon_selene_emerald_matrix": {
-      "id": "weapon_selene_emerald_matrix",
-      "category": "weapon",
-      "target_id": "selene",
-      "target_name": "Arma de Selene",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Selene",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_selene_emerald_matrix.png"
-    },
-    "weapon_roxy_crimson_void": {
-      "id": "weapon_roxy_crimson_void",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_crimson_void.png"
-    },
-    "weapon_roxy_cyber_neon": {
-      "id": "weapon_roxy_cyber_neon",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_cyber_mecha.png"
     },
-    "weapon_roxy_solar_gold": {
-      "id": "weapon_roxy_solar_gold",
+    "weapon_selene_crimson_blood": {
+      "id": "weapon_selene_crimson_blood",
+      "category": "weapon",
+      "target_id": "selene",
+      "target_name": "Arma de Selene",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Selene",
+      "description": "Aspecto cosmetico para el cañon de Selene en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_selene_crimson_blood.png"
+    },
+    "weapon_roxy_gotica": {
+      "id": "weapon_roxy_gotica",
       "category": "weapon",
       "target_id": "roxy",
       "target_name": "Arma de Roxy",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
+      "tint_rgb": [
+        65,
+        30,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_gotica.png"
+    },
+    "weapon_roxy_soft_pastel": {
+      "id": "weapon_roxy_soft_pastel",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
+      "tint_rgb": [
+        245,
+        180,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_soft_pastel.png"
+    },
+    "weapon_roxy_poison": {
+      "id": "weapon_roxy_poison",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
+      "tint_rgb": [
+        130,
+        40,
+        160
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_poison.png"
+    },
+    "weapon_roxy_solar_valkyrie": {
+      "id": "weapon_roxy_solar_valkyrie",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        215,
-        0
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_solar_valkyrie.png"
     },
-    "weapon_roxy_glacial_frost": {
-      "id": "weapon_roxy_glacial_frost",
+    "weapon_roxy_glacial": {
+      "id": "weapon_roxy_glacial",
       "category": "weapon",
       "target_id": "roxy",
       "target_name": "Arma de Roxy",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Glaciar Ártico.",
       "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
       "tint_rgb": [
-        165,
-        243,
-        252
+        40,
+        140,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_glacial.png"
     },
-    "weapon_roxy_royal_amethyst": {
-      "id": "weapon_roxy_royal_amethyst",
+    "weapon_roxy_cyber_mecha": {
+      "id": "weapon_roxy_cyber_mecha",
       "category": "weapon",
       "target_id": "roxy",
       "target_name": "Arma de Roxy",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_royal_amethyst.png"
-    },
-    "weapon_roxy_emerald_matrix": {
-      "id": "weapon_roxy_emerald_matrix",
-      "category": "weapon",
-      "target_id": "roxy",
-      "target_name": "Arma de Roxy",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Roxy",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_roxy_emerald_matrix.png"
-    },
-    "weapon_echo_crimson_void": {
-      "id": "weapon_echo_crimson_void",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_crimson_void.png"
-    },
-    "weapon_echo_cyber_neon": {
-      "id": "weapon_echo_cyber_neon",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_cyber_mecha.png"
     },
-    "weapon_echo_solar_gold": {
-      "id": "weapon_echo_solar_gold",
+    "weapon_roxy_crimson_blood": {
+      "id": "weapon_roxy_crimson_blood",
+      "category": "weapon",
+      "target_id": "roxy",
+      "target_name": "Arma de Roxy",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Roxy",
+      "description": "Aspecto cosmetico para el cañon de Roxy en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_roxy_crimson_blood.png"
+    },
+    "weapon_echo_gotica": {
+      "id": "weapon_echo_gotica",
       "category": "weapon",
       "target_id": "echo",
       "target_name": "Arma de Echo",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
+      "tint_rgb": [
+        65,
+        30,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_gotica.png"
+    },
+    "weapon_echo_soft_pastel": {
+      "id": "weapon_echo_soft_pastel",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
+      "tint_rgb": [
+        245,
+        180,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_soft_pastel.png"
+    },
+    "weapon_echo_poison": {
+      "id": "weapon_echo_poison",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
+      "tint_rgb": [
+        130,
+        40,
+        160
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_poison.png"
+    },
+    "weapon_echo_solar_valkyrie": {
+      "id": "weapon_echo_solar_valkyrie",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        215,
-        0
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_solar_valkyrie.png"
     },
-    "weapon_echo_glacial_frost": {
-      "id": "weapon_echo_glacial_frost",
+    "weapon_echo_glacial": {
+      "id": "weapon_echo_glacial",
       "category": "weapon",
       "target_id": "echo",
       "target_name": "Arma de Echo",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Glaciar Ártico.",
       "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
       "tint_rgb": [
-        165,
-        243,
-        252
+        40,
+        140,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_glacial.png"
     },
-    "weapon_echo_royal_amethyst": {
-      "id": "weapon_echo_royal_amethyst",
+    "weapon_echo_cyber_mecha": {
+      "id": "weapon_echo_cyber_mecha",
       "category": "weapon",
       "target_id": "echo",
       "target_name": "Arma de Echo",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
-      "tint_rgb": [
-        192,
-        132,
-        252
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_royal_amethyst.png"
-    },
-    "weapon_echo_emerald_matrix": {
-      "id": "weapon_echo_emerald_matrix",
-      "category": "weapon",
-      "target_id": "echo",
-      "target_name": "Arma de Echo",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Echo",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
-      "tint_rgb": [
-        52,
-        211,
-        153
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_echo_emerald_matrix.png"
-    },
-    "weapon_nyx_crimson_void": {
-      "id": "weapon_nyx_crimson_void",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "crimson_void",
-      "skin_name": "Carmesí del Vacío - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Carmesí del Vacío.",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Ciber Mecha.",
       "rarity": "rare",
-      "glow_hex": "#FF6B8B",
-      "accent_hex": "#FFA8B8",
-      "tint_rgb": [
-        255,
-        42,
-        85
-      ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_crimson_void.png"
-    },
-    "weapon_nyx_cyber_neon": {
-      "id": "weapon_nyx_cyber_neon",
-      "category": "weapon",
-      "target_id": "nyx",
-      "target_name": "Arma de Nyx",
-      "palette_id": "cyber_neon",
-      "skin_name": "Ciberneón - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Ciberneón.",
-      "rarity": "rare",
-      "glow_hex": "#70FFFF",
+      "glow_hex": "#00F0FF",
       "accent_hex": "#FF007F",
       "tint_rgb": [
         0,
-        240,
+        225,
         255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_cyber_neon.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_cyber_mecha.png"
     },
-    "weapon_nyx_solar_gold": {
-      "id": "weapon_nyx_solar_gold",
+    "weapon_echo_crimson_blood": {
+      "id": "weapon_echo_crimson_blood",
+      "category": "weapon",
+      "target_id": "echo",
+      "target_name": "Arma de Echo",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Echo",
+      "description": "Aspecto cosmetico para el cañon de Echo en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
+      "tint_rgb": [
+        220,
+        25,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_echo_crimson_blood.png"
+    },
+    "weapon_nyx_gotica": {
+      "id": "weapon_nyx_gotica",
       "category": "weapon",
       "target_id": "nyx",
       "target_name": "Arma de Nyx",
-      "palette_id": "solar_gold",
-      "skin_name": "Oro Solar - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Oro Solar.",
+      "palette_id": "gotica",
+      "skin_name": "Gótica - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Gótica.",
       "rarity": "epic",
-      "glow_hex": "#FFF275",
-      "accent_hex": "#FF9900",
+      "glow_hex": "#9B51E0",
+      "accent_hex": "#FF3366",
+      "tint_rgb": [
+        65,
+        30,
+        50
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_gotica.png"
+    },
+    "weapon_nyx_soft_pastel": {
+      "id": "weapon_nyx_soft_pastel",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "soft_pastel",
+      "skin_name": "Pastel Dream - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Pastel Dream.",
+      "rarity": "rare",
+      "glow_hex": "#FFB6C1",
+      "accent_hex": "#7FFFD4",
+      "tint_rgb": [
+        245,
+        180,
+        200
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_soft_pastel.png"
+    },
+    "weapon_nyx_poison": {
+      "id": "weapon_nyx_poison",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "poison",
+      "skin_name": "Tóxica (Poison) - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Tóxica (Poison).",
+      "rarity": "rare",
+      "glow_hex": "#39FF14",
+      "accent_hex": "#BF00FF",
+      "tint_rgb": [
+        130,
+        40,
+        160
+      ],
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_poison.png"
+    },
+    "weapon_nyx_solar_valkyrie": {
+      "id": "weapon_nyx_solar_valkyrie",
+      "category": "weapon",
+      "target_id": "nyx",
+      "target_name": "Arma de Nyx",
+      "palette_id": "solar_valkyrie",
+      "skin_name": "Valquiria Solar - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Valquiria Solar.",
+      "rarity": "legendary",
+      "glow_hex": "#FFD700",
+      "accent_hex": "#FFF8DC",
       "tint_rgb": [
         255,
-        215,
-        0
+        200,
+        40
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_solar_gold.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_solar_valkyrie.png"
     },
-    "weapon_nyx_glacial_frost": {
-      "id": "weapon_nyx_glacial_frost",
+    "weapon_nyx_glacial": {
+      "id": "weapon_nyx_glacial",
       "category": "weapon",
       "target_id": "nyx",
       "target_name": "Arma de Nyx",
-      "palette_id": "glacial_frost",
-      "skin_name": "Glaciar Ártico - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Glaciar Ártico.",
+      "palette_id": "glacial",
+      "skin_name": "Glaciar Ártico - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Glaciar Ártico.",
       "rarity": "common",
-      "glow_hex": "#E0F2FE",
-      "accent_hex": "#38BDF8",
+      "glow_hex": "#00E5FF",
+      "accent_hex": "#E0F7FA",
       "tint_rgb": [
-        165,
-        243,
-        252
+        40,
+        140,
+        200
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_glacial_frost.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_glacial.png"
     },
-    "weapon_nyx_royal_amethyst": {
-      "id": "weapon_nyx_royal_amethyst",
+    "weapon_nyx_cyber_mecha": {
+      "id": "weapon_nyx_cyber_mecha",
       "category": "weapon",
       "target_id": "nyx",
       "target_name": "Arma de Nyx",
-      "palette_id": "royal_amethyst",
-      "skin_name": "Amatista Real - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Amatista Real.",
-      "rarity": "epic",
-      "glow_hex": "#F3E8FF",
-      "accent_hex": "#E879F9",
+      "palette_id": "cyber_mecha",
+      "skin_name": "Ciber Mecha - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Ciber Mecha.",
+      "rarity": "rare",
+      "glow_hex": "#00F0FF",
+      "accent_hex": "#FF007F",
       "tint_rgb": [
-        192,
-        132,
-        252
+        0,
+        225,
+        255
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_royal_amethyst.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_cyber_mecha.png"
     },
-    "weapon_nyx_emerald_matrix": {
-      "id": "weapon_nyx_emerald_matrix",
+    "weapon_nyx_crimson_blood": {
+      "id": "weapon_nyx_crimson_blood",
       "category": "weapon",
       "target_id": "nyx",
       "target_name": "Arma de Nyx",
-      "palette_id": "emerald_matrix",
-      "skin_name": "Matriz Esmeralda - Fuego de Nyx",
-      "description": "Modifica el chasis, proyectiles y partículas del arma a Matriz Esmeralda.",
-      "rarity": "common",
-      "glow_hex": "#A7F3D0",
-      "accent_hex": "#10B981",
+      "palette_id": "crimson_blood",
+      "skin_name": "Sangre Carmesí - Arma Nyx",
+      "description": "Aspecto cosmetico para el cañon de Nyx en acabado Sangre Carmesí.",
+      "rarity": "rare",
+      "glow_hex": "#FF1744",
+      "accent_hex": "#B71C1C",
       "tint_rgb": [
-        52,
-        211,
-        153
+        220,
+        25,
+        50
       ],
-      "texture_path": "res://assets/recolors/weapons/weapon_nyx_emerald_matrix.png"
+      "texture_path": "res://assets/recolors/weapons/weapon_nyx_crimson_blood.png"
     }
   }
 }

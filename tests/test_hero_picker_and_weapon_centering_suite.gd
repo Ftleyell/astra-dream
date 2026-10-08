@@ -142,13 +142,13 @@ func _test_dock_hover_and_focus_flow() -> void:
 		assert_true(is_equal_approx(initial_region.size.x, initial_region.size.y), "La región recortada del arma debe ser perfectamente cuadrada para no descentrarse.")
 
 		# Cambiar skin de piloto
-		ui._on_skin_selected("pilot:nova", "pilot_nova_cyber_neon")
+		ui._on_skin_selected("pilot:nova", "pilot_nova_cyber_mecha")
 		await get_tree().process_frame
 		var after_pilot_skin_region: Rect2 = (ui.weapon_icon.texture as AtlasTexture).region
 		assert_true(is_equal_approx(after_pilot_skin_region.size.x, after_pilot_skin_region.size.y), "Tras cambiar skin de piloto, la región del arma debe mantenerse cuadrada y centrada.")
 
 		# Cambiar skin de arma
-		ui._on_skin_selected("weapon:nova", "weapon_nova_cyber_neon")
+		ui._on_skin_selected("weapon:nova", "weapon_nova_cyber_mecha")
 		await get_tree().process_frame
 		var after_weapon_skin_region: Rect2 = (ui.weapon_icon.texture as AtlasTexture).region
 		assert_true(is_equal_approx(after_weapon_skin_region.size.x, after_weapon_skin_region.size.y), "Tras cambiar skin de arma, la región del arma debe ser cuadrada y simétrica.")

@@ -75,7 +75,7 @@ func test_save_manager_gacha_and_skin_progression() -> void:
 	test_assert(not spend_fail, "spend_gacha_tokens con cantidad excesiva debe fallar")
 
 	# Progresión de Estrellas
-	var test_skin_id := "ship_nova_crimson_void"
+	var test_skin_id := "ship_nova_gotica"
 	
 	# 1st pull: Desbloqueo a 1★
 	var res1 := SaveManager.unlock_or_upgrade_skin(test_skin_id)
@@ -231,7 +231,7 @@ func test_hub_gacha_modal_and_pulls() -> void:
 	test_assert(gacha_modal._hide_locked_check != null, "El CheckBox _hide_locked_check debe existir")
 
 	# Desbloquear una skin de prueba
-	var test_ship_skin := "ship_nova_crimson_void"
+	var test_ship_skin := "ship_nova_gotica"
 	SaveManager.unlock_or_upgrade_skin(test_ship_skin)
 	SaveManager.equip_skin("ship:nova", test_ship_skin)
 	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_ship_skin, "Debe estar equipada la skin de prueba")
@@ -260,7 +260,7 @@ func test_hub_gacha_modal_and_pulls() -> void:
 func test_cosmetics_canvas_item_and_shader_application() -> void:
 	print("[7/8] Verificando Aplicación de Materiales, Shaders y Estrellas en CanvasItems...")
 	var test_sprite := Sprite2D.new()
-	var test_skin_id := "ship_nova_crimson_void"
+	var test_skin_id := "ship_nova_gotica"
 	
 	# 1★: Solo textura recoloreada, material nulo
 	CosmeticsManager.apply_skin_to_canvas_item(test_sprite, test_skin_id, 1)

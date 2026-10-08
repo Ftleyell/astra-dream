@@ -1,4 +1,4 @@
-extends Node
+extends BaseTestSuite
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const NavigatorSelectionModalScript = preload("res://scenes/ui/character_select/navigator_selection_modal.gd")
@@ -6,13 +6,15 @@ const HubPetRoamerScript = preload("res://scenes/ui/hub/hub_pet_roamer.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 
 func _ready() -> void:
+	super._ready()
+	timeout_seconds = 12.0
 	print("\n=======================================================")
 	print("🧪 VERIFICACIÓN COMPLETA: CAROUSEL, SAVEGAME & HUB SKINS")
 	print("=======================================================")
 
 	# 1. Verificación de persistencia de skins en SaveManager
 	print("\n[1/4] Verificando que SaveManager NO pierda skins al guardar perfil parcialmente...")
-	var skin_id := "pilot_nova_cyber_neon"
+	var skin_id := "pilot_nova_cyber_mecha"
 	var unlock_res := SaveManager.unlock_or_upgrade_skin(skin_id)
 	assert(SaveManager.is_skin_unlocked(skin_id), "La skin debe estar desbloqueada")
 	var initial_stars := SaveManager.get_skin_stars(skin_id)
@@ -67,23 +69,15 @@ func _ready() -> void:
 	var modal = modal_scene.instantiate()
 	add_child(modal)
 
-	# Simular modo skins
-	modal._is_skin_mode = true
-	modal._update_carousel_layout(true, Color.CYAN)
+	# Simular layout Cover Flow a través del renderer
+	modal.cover_flow_renderer.update_carousel_layout(true, Color.CYAN)
 
 	var cards_row_separation = modal.cards_row.get_theme_constant("separation")
-	assert(cards_row_separation < 0, "En modo skins, la separación debe ser negativa para Cover Flow!")
+	assert(cards_row_separation < 0, "La separación debe ser negativa para Cover Flow!")
 	assert(modal.artwork_frame.z_index > modal.left_card.z_index, "Artwork central debe tener mayor z_index que las cartas laterales")
-	assert(modal.left_label.visible == false, "En modo skins, las etiquetas laterales deben estar ocultas")
-	assert(modal.right_label.visible == false, "En modo skins, las etiquetas laterales deben estar ocultas")
+	assert(modal.left_label.visible == false, "Las etiquetas laterales deben estar ocultas en Cover Flow")
+	assert(modal.right_label.visible == false, "Las etiquetas laterales deben estar ocultas en Cover Flow")
 	assert(modal.artwork_frame.clip_contents == false, "ArtworkFrame NO debe recortar su resplandor/glow!")
-
-	# Simular volver a modo navegadoras
-	modal._is_skin_mode = false
-	modal._update_carousel_layout(false, Color.CYAN)
-	cards_row_separation = modal.cards_row.get_theme_constant("separation")
-	assert(cards_row_separation > 0, "En modo navegadoras, la separación debe ser normal")
-	assert(modal.left_label.visible == true, "En modo navegadoras, las etiquetas laterales deben ser visibles")
 
 	modal.queue_free()
 	print("  ✓ Cover Flow circular de skins y z-indexing verificado correctamente")

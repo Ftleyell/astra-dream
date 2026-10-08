@@ -15,7 +15,7 @@ func _ready() -> void:
 
 	# 1. Verificar existencia de ambos sets de texturas (selection y fullbody) en la base de datos de cosméticos
 	for pid in pilot_ids:
-		var skin_id := "pilot_%s_crimson_void" % String(pid).to_lower()
+		var skin_id := "pilot_%s_gotica" % String(pid).to_lower()
 		var skin_data := CosmeticsManager.get_skin(skin_id)
 		_assert_check(not skin_data.is_empty(), "Skin no encontrada: %s" % skin_id)
 
@@ -55,13 +55,16 @@ func _ready() -> void:
 	_assert_check(base_tex_path.find("fullbody_valentina") == -1, "Valentina base en selección NO debe usar asset de fullbody")
 	print("  ✓ Valentina base en Selección muestra asset de selección: %s" % base_tex_path.get_file())
 
-	# 2b. Valentina CON skin equipada: debe mostrar selection_valentina_crimson_void
-	var test_skin_id := "pilot_valentina_crimson_void"
+	# 2b. Valentina CON skin equipada: debe mostrar selection_valentina_gotica
+	var test_skin_id := "pilot_valentina_gotica"
 	SaveManager.equip_skin(test_slot, test_skin_id)
+	var val_loadout: Dictionary = SaveManager.get_character_loadout(&"valentina")
+	val_loadout["equipped_pilot_skin"] = test_skin_id
+	SaveManager.set_character_loadout(&"valentina", val_loadout)
 	cs.call("_select_character", &"valentina")
 	var equipped_tex_path: String = fullbody_tex_rect.texture.resource_path
-	_assert_check(equipped_tex_path.find("selection_valentina_crimson_void") != -1, "Valentina con skin debe usar splash recolor de selección (actual: %s)" % equipped_tex_path)
-	_assert_check(equipped_tex_path.find("fullbody_valentina_crimson_void") == -1, "Valentina con skin NO debe usar fullbody en pantalla de selección")
+	_assert_check(equipped_tex_path.find("selection_valentina_gotica") != -1, "Valentina con skin debe usar splash recolor de selección (actual: %s)" % equipped_tex_path)
+	_assert_check(equipped_tex_path.find("fullbody_valentina_gotica") == -1, "Valentina con skin NO debe usar fullbody en pantalla de selección")
 	print("  ✓ Valentina con skin en Selección muestra splash recolor: %s" % equipped_tex_path.get_file())
 
 	# 3. Verificar que en el Hub 3D se usa el fullbody (frente y espalda), NO el splash de selección
@@ -83,14 +86,14 @@ func _ready() -> void:
 	hub_controller._is_facing_back = false
 	hub_controller._update_character_texture()
 	var hub_front_path: String = hub_controller.visual_sprite.texture.resource_path
-	_assert_check(hub_front_path.find("fullbody_valentina_crimson_void.png") != -1, "Hub3D de frente debe usar fullbody recolor (actual: %s)" % hub_front_path)
+	_assert_check(hub_front_path.find("fullbody_valentina_gotica.png") != -1, "Hub3D de frente debe usar fullbody recolor (actual: %s)" % hub_front_path)
 	_assert_check(hub_front_path.find("selection_") == -1, "Hub3D NO debe usar splash de selección")
 
 	# Espalda
 	hub_controller._is_facing_back = true
 	hub_controller._update_character_texture()
 	var hub_back_path: String = hub_controller.visual_sprite.texture.resource_path
-	_assert_check(hub_back_path.find("fullbody_valentina_crimson_void_back.png") != -1, "Hub3D de espalda debe usar fullbody back recolor (actual: %s)" % hub_back_path)
+	_assert_check(hub_back_path.find("fullbody_valentina_gotica_back.png") != -1, "Hub3D de espalda debe usar fullbody back recolor (actual: %s)" % hub_back_path)
 	_assert_check(hub_back_path.find("selection_") == -1, "Hub3D de espalda NO debe usar splash de selección")
 	print("  ✓ Hub 3D usa fullbody correctamente de frente (%s) y espalda (%s)" % [hub_front_path.get_file(), hub_back_path.get_file()])
 
