@@ -42,7 +42,7 @@ static func get_default_profile() -> Dictionary:
 			&"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
 		] as Array[StringName],
 		"unlocked_characters": [
-			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"
+			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
 		] as Array[StringName],
 		"character_banlists": {
 			&"nova": [&"escudo"] as Array[StringName],
@@ -399,7 +399,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		for ch in raw["unlocked_characters"]:
 			cleaned["unlocked_characters"].append(StringName(ch))
 	else:
-		cleaned["unlocked_characters"] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
+		cleaned["unlocked_characters"] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
 
 	if raw.has("character_banlists"):
 		for char_id in raw["character_banlists"].keys():
