@@ -1,6 +1,27 @@
 class_name MainGame
 extends Node2D
 
+## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
+## PRELOADS & CONST               → L.25  - L.40
+## VARIABLES (@onready + estado)  → L.41  - L.220
+## LIFECYCLE: _ready / _setup_*   → L.221 - L.606
+## NARRATIVE: diálogos / radio    → L.607 - L.622
+## PROCESS: wave timer loop       → L.623 - L.751
+## SATELLITES: spawn / despawn    → L.752 - L.772
+## ENCOUNTERS: waves/slots/elites → L.773 - L.833
+## BOSSES & RIVALS: spawn/defeat  → L.834 - L.879
+## DEBUG JUMPS (jump_to_*)        → L.864 - L.879
+## INPUT                          → L.880 - L.916
+## SATELLITE EVENT HANDLERS       → L.917 - L.943
+## MODALS: level-up / arcana      → L.944 - L.972
+## CHESTS & TRANSMUTATION         → L.973 - L.1029
+## STATE QUERIES (is_*_active)    → L.1030 - L.1098
+## GAME OVER: _on_player_died     → L.1099 - L.1190
+## PET & NAVIGATOR spawn          → L.1191 - L.1216
+## DEBUG MODAL                    → L.1217 - L.1233
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 const RunStateSerializer = preload("res://scenes/combat/systems/run_state_serializer.gd")
 const CombatModalCoordinator = preload("res://scenes/combat/ui/combat_modal_coordinator.gd")
 const CombatNarrativeDirector = preload("res://scenes/combat/directors/combat_narrative_director.gd")

@@ -1,6 +1,29 @@
 class_name HubWorld
 extends Node3D
 
+## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
+## VARIABLES & @ONREADY NODES     → L.25  - L.117
+## LIFECYCLE: _ready              → L.118 - L.175
+## PROCESS                        → L.176 - L.188
+## INPUT: _unhandled_input        → L.189 - L.218
+## CAMERA SETUP                   → L.219 - L.229
+## HUB PETS SETUP                 → L.230 - L.254
+## TOP BUTTONS & SETTINGS         → L.255 - L.292
+## MODAL STATE                    → L.293 - L.311
+## INTERACTABLES                  → L.312 - L.332
+## PSYCHOPOP STYLES               → L.324 - L.332
+## PILOT SELECTOR buttons         → L.333 - L.381
+## SKILL TREE integration         → L.338 - L.381
+## PILOT SELECTION: _select_pilot → L.382 - L.423
+## MATERIALS DISPLAY              → L.414 - L.430
+## NAVIGATION                     → L.424 - L.460
+## ENTRANCE ANIMATION             → L.461 - L.482
+## ENVIRONMENT: collisions/hangar → L.511 - L.554
+## MISSION TERMINAL               → L.555 - L.570
+## NEW RUN: _start_new_run        → L.571 - end
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 const HubHangarBuilder3D = preload("res://scenes/ui/hub/components/hub_hangar_builder_3d.gd")
 const HubTerminalManager = preload("res://scenes/ui/hub/components/hub_terminal_manager.gd")
 const HubPilotShowcaseController = preload("res://scenes/ui/hub/components/hub_pilot_showcase_controller.gd")

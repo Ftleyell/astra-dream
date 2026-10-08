@@ -1,6 +1,29 @@
 class_name GameHUD
 extends CanvasLayer
 
+## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
+## VARIABLES & @ONREADY NODES     → L.25  - L.151
+## LIFECYCLE: _ready              → L.152 - L.236
+## HELPERS: keybind labels        → L.237 - L.257
+## SETUP: _init_subcontrollers    → L.258 - L.297
+## VISIBILITY: set_hud_visible    → L.298 - L.303
+## PROCESS                        → L.304 - L.340
+## WAVE STATUS updates            → L.341 - L.374
+## BANNERS: satellite / character → L.375 - L.387
+## LASER / ABILITIES / WEAPONS    → L.388 - L.399
+## TOMES & COOLDOWN SWEEPS        → L.400 - L.410
+## ECONOMY: credits / biomass     → L.411 - L.418
+## EXP                            → L.419 - L.425
+## HEALTH & BOMBS & ITEMS         → L.426 - L.442
+## QUANTUM KEYS                   → L.443 - L.463
+## BOSS TRACKING                  → L.464 - L.490
+## DASH & AIM & OSP               → L.491 - L.514
+## PLAYER SETUP: set_player       → L.515 - L.543
+## CURSE BADGE                    → L.544 - L.617
+## COMBAT STATS DOCK              → L.618 - L.652
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 const TacticalAbilitiesControllerClass = preload("res://scenes/ui/hud/components/hud_tactical_abilities_controller.gd")
 const InventoryBarControllerClass = preload("res://scenes/ui/hud/components/hud_inventory_bar_controller.gd")
 const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_manager.gd")

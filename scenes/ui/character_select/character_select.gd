@@ -1,6 +1,30 @@
 class_name CharacterSelectUI
 extends Control
 
+## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
+## VARIABLES & @ONREADY NODES      → L.30  - L.200
+## _resolve_ability_node (util)    → L.203
+## LIFECYCLE: _ready / _setup_*   → L.215 - L.395
+## INPUT: _input                  → L.396 - L.415
+## INPUT: _has_any_modal_open     → L.416 - L.441
+## INPUT: _unhandled_input        → L.442 - L.453
+## ROSTER: _populate_roster       → L.454 - L.526
+## ROSTER: _select_character      → L.527 - L.673
+## DISPLAY: abilities / telemetry → L.674 - L.719
+## MODALS: talents / banlist      → L.720 - L.752
+## MODALS: skins / ship / pilot   → L.753 - L.877
+## MODALS: gacha / cosmetics      → L.878 - L.958
+## LAUNCH: _on_launch_committed   → L.959 - L.1008
+## LOADOUT: _on_loadout_pressed   → L.1009 - L.1031
+## SIGNALS: modal closed handlers → L.1018 - L.1070
+## SPEED SELECTOR                 → L.1071 - L.1075
+## FOCUS MESH: _setup_focus_mesh  → L.1076 - L.1164
+## HERO PICKER                    → L.1165 - L.1207
+## SPEED: _set_game_speed         → L.1208 - L.1217
+## DEBUG                          → L.1218 - L.1236
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 const CharacterPilotShowcase = preload("res://scenes/ui/character_select/components/character_pilot_showcase.gd")
 const CharacterEquipmentCards = preload("res://scenes/ui/character_select/components/character_equipment_cards.gd")
 const CharacterSpeedSelector = preload("res://scenes/ui/character_select/components/character_speed_selector.gd")

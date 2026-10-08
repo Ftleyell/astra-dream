@@ -1,6 +1,28 @@
 class_name Player
 extends CharacterBody2D
 
+## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
+## VARIABLES & @ONREADY NODES     → L.25  - L.201
+## LIFECYCLE: _ready              → L.202 - L.275
+## THEME & HITBOX VISUALS         → L.276 - L.312
+## PROCESS: hitbox visibility     → L.313 - L.348
+## PHYSICS: _physics_process      → L.349 - L.420
+## PILOT SHADER update            → L.421 - L.425
+## MOVEMENT: _handle_movement     → L.426 - L.451
+## CINEMATIC DUEL: facing         → L.452 - L.474
+## DASH SETUP & EXECUTE           → L.475 - L.524
+## BOMB: suppress / can_trigger   → L.525 - L.547
+## INPUT: _unhandled_input        → L.548 - L.556
+## ACTIONS: _handle_actions       → L.557 - L.569
+## ECONOMY: heal/credits/biomass  → L.570 - L.599
+## EXP: add_exp                   → L.600 - L.614
+## DAMAGE: take_damage / death    → L.615 - L.671
+## HEALTH REGEN                   → L.672 - L.689
+## ARCANAS: apply_arcana          → L.690 - L.718
+## DARK MATTER                    → L.719 - L.728
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 ## Player.gd
 ## Controlador principal del jugador y nave de combate en Astra Dream.
 ## Coordina cinemática de vuelo 360°, entradas de movimiento, experiencia/niveles y economía de la run.
