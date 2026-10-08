@@ -42,7 +42,7 @@ static func get_default_profile() -> Dictionary:
 			&"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
 		] as Array[StringName],
 		"unlocked_characters": [
-			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
+			&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"
 		] as Array[StringName],
 		"character_banlists": {
 			&"nova": [&"escudo"] as Array[StringName],
@@ -341,7 +341,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 
 	var raw_loadouts: Dictionary = raw.get("character_loadouts", {})
 	var clean_loadouts: Dictionary = {}
-	for c_name in [&"nova", &"echo", &"valentina", &"roxy"]:
+	for c_name in [&"nova", &"echo", &"valentina", &"roxy", &"kira", &"selene", &"nyx"]:
 		var c_str := String(c_name)
 		var c_loadout: Dictionary = raw_loadouts.get(c_str, {}).duplicate() if raw_loadouts.has(c_str) else {}
 		if not c_loadout.has("selected_pet") or str(c_loadout["selected_pet"]).is_empty():
@@ -399,7 +399,7 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 		for ch in raw["unlocked_characters"]:
 			cleaned["unlocked_characters"].append(StringName(ch))
 	else:
-		cleaned["unlocked_characters"] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
+		cleaned["unlocked_characters"] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo", &"nyx"]
 
 	if raw.has("character_banlists"):
 		for char_id in raw["character_banlists"].keys():

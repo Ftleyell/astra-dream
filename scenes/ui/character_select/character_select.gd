@@ -437,8 +437,6 @@ func _populate_roster() -> void:
 	for char_data in roster_ordered:
 		var cid: StringName = char_data.character_id
 		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
-		if not is_unlocked and cid == &"nyx":
-			continue
 
 		var card_btn := Button.new()
 		card_btn.name = "PilotCard_%s" % cid

@@ -212,8 +212,6 @@ func _build_dock_cards() -> void:
 		var c_data: CharacterData = _roster[i]
 		var cid: StringName = c_data.character_id
 		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
-		if not is_unlocked and cid == &"nyx":
-			continue
 
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(104, 104)

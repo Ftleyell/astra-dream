@@ -201,5 +201,5 @@ interact={
 [rendering]
 
 renderer/rendering_method="mobile"
-viewport/hdr_2d=true
+viewport/hdr_2d=false
 environment/defaults/default_clear_color=Color(0.025, 0.025, 0.055, 1)
