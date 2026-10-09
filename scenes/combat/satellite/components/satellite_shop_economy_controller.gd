@@ -16,6 +16,19 @@ var active_satellite_id: int = -1
 var purchased_slots: Array[int] = []
 var current_offered_items: Array[Resource] = []
 
+static func calculate_item_cost(entry: Resource, player: Player = null) -> int:
+	if entry is WeaponData and is_instance_valid(player):
+		var w_ctrl: WeaponController = player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl and w_ctrl.get_weapon_instance((entry as WeaponData).weapon_id):
+			return 100
+	var cost_val: Variant = entry.get("cost")
+	if cost_val != null and int(cost_val) > 0:
+		return int(cost_val)
+	return 50
+
+func can_purchase(cost: int) -> bool:
+	return current_credits >= cost
+
 func can_reroll() -> bool:
 	return rerolls_used_this_visit < max_rerolls_per_satellite and current_credits >= reroll_cost
 

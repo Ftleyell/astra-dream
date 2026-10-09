@@ -403,7 +403,7 @@ func _roll_shop_items() -> void:
 
 
 func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
-	if current_credits < cost:
+	if not _economy.can_purchase(cost):
 		return
 
 	if entry is WeaponData:

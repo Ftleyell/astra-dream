@@ -236,7 +236,7 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	hotkey_lbl.add_theme_font_size_override("font_size", 10)
 	btn_vbox.add_child(hotkey_lbl)
 
-	var cost: int = 100 if is_weapon_upgrade else (entry.get("cost") if entry.get("cost") != null and entry.get("cost") > 0 else 50)
+	var cost: int = SatelliteShopEconomyController.calculate_item_cost(entry, player)
 
 	var buy_btn := Button.new()
 	buy_btn.custom_minimum_size = Vector2(130, 36)
