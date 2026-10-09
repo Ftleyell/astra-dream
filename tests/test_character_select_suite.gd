@@ -14,6 +14,7 @@ func _ready() -> void:
 	assert(scene_res != null, "character_select.tscn debe cargar")
 
 	SaveManager.unlock_character(&"nyx")
+	SaveManager.set_selected_character(&"nova")
 	var ui: CharacterSelectUI = scene_res.instantiate()
 	add_child(ui)
 

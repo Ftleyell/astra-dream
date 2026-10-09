@@ -28,7 +28,6 @@ const CharacterSelectDisplayManager = preload("res://scenes/ui/character_select/
 const CharacterSelectModalRouter = preload("res://scenes/ui/character_select/components/character_select_modal_router.gd")
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
-const SkinSelectionModalScript = preload("res://scenes/ui/cosmetics/skin_selection_modal.gd")
 const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
 const DebugMenuModalScript = preload("res://scenes/ui/debug/debug_menu_modal.gd")
 
@@ -132,7 +131,6 @@ var favored_tome_desc: Label = null
 @onready var debug_menu_modal = get_node_or_null("DebugMenuModal")
 @onready var pet_selection_modal = get_node_or_null("PetSelectionModal")
 @onready var navigator_selection_modal = get_node_or_null("NavigatorSelectionModal")
-@onready var skin_selection_modal = get_node_or_null("SkinSelectionModal")
 @onready var gacha_modal = get_node_or_null("GachaModal")
 @onready var tome_selection_modal = get_node_or_null("TomeSelectionModal")
 @onready var weapon_selection_modal = get_node_or_null("WeaponSelectionModal")
@@ -234,7 +232,6 @@ func _ready() -> void:
 	roster_dict = CharacterData.load_roster()
 	skin_coordinator.setup(
 		cosmetic_carousel_modal,
-		skin_selection_modal,
 		gacha_modal,
 		roster_dict,
 		Callable(self, "_select_character"),
@@ -330,7 +327,7 @@ func _setup_subcomponents() -> void:
 
 	if modal_router:
 		modal_router.setup_modals(
-			debug_menu_modal, pet_selection_modal, navigator_selection_modal, skin_selection_modal,
+			debug_menu_modal, pet_selection_modal, navigator_selection_modal,
 			gacha_modal, tome_selection_modal, weapon_selection_modal, character_skill_tree_modal,
 			cosmetic_carousel_modal, hero_picker_modal, arsenal_banlist_modal
 		)
@@ -401,14 +398,6 @@ func _setup_signals() -> void:
 			cosmetic_carousel_modal.skin_modal_closed.connect(_on_cosmetic_carousel_closed)
 		if cosmetic_carousel_modal.has_signal("skin_selected"):
 			cosmetic_carousel_modal.skin_selected.connect(_on_skin_selected)
-
-	if skin_selection_modal:
-		if skin_selection_modal.has_signal("skin_selected"):
-			skin_selection_modal.skin_selected.connect(_on_skin_selected)
-		if skin_selection_modal.has_signal("closed"):
-			skin_selection_modal.closed.connect(_on_skin_modal_closed)
-		if skin_selection_modal.has_signal("open_gacha_requested"):
-			skin_selection_modal.open_gacha_requested.connect(_open_gacha_from_skins)
 
 	if gacha_modal:
 		if gacha_modal.has_signal("skin_equipped"):
@@ -742,13 +731,6 @@ func _on_navigator_skin_equipped(_slot_key: String, skin_id: String) -> void:
 		equipment_cards.refresh_navigator_display(current_character_id)
 
 
-func _open_skin_modal(category: String, target_id: String, target_name: String, preview_texture: Texture2D = null) -> void:
-	if not skin_selection_modal:
-		return
-	_save_current_focus()
-	skin_selection_modal.open_skin_modal(category, target_id, target_name, preview_texture)
-
-
 func _on_skins_button_pressed() -> void:
 	if skin_coordinator:
 		skin_coordinator.open_pilot_customization(current_character_id)
@@ -771,11 +753,6 @@ func _on_skin_selected(slot_key: String, skin_id: String) -> void:
 
 func _on_gacha_skin_equipped(slot_key: String, skin_id: String) -> void:
 	_on_skin_selected(slot_key, skin_id)
-
-
-func _on_skin_modal_closed() -> void:
-	_restore_last_focus()
-	_select_character(current_character_id)
 
 
 func _on_gacha_modal_closed() -> void:

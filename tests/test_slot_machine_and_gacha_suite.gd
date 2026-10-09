@@ -294,20 +294,21 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	test_assert(charsel.weapon_button != null, "WeaponButton debe existir en CharacterSelect cubriendo toda la tarjeta")
 	test_assert(charsel.pet_button != null, "PetButton debe existir en CharacterSelect cubriendo toda la tarjeta")
 	test_assert(charsel.navigator_button != null, "NavigatorButton debe existir en CharacterSelect cubriendo toda la tarjeta")
-	test_assert(charsel.skin_selection_modal != null, "SkinSelectionModal debe estar instanciado en CharacterSelect")
+	test_assert(charsel.cosmetic_carousel_modal != null, "CosmeticCarouselModal debe estar instanciado en CharacterSelect")
 
 	# Probar apertura del selector de skins para la nave desde el botón completo de tarjeta
 	charsel._on_ship_skin_pressed()
 	await get_tree().process_frame
-	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse al presionar ShipButton")
-	test_assert(charsel.skin_selection_modal.visible == true, "SkinSelectionModal debe estar visible")
+	test_assert(charsel.cosmetic_carousel_modal.is_open == true, "CosmeticCarouselModal debe abrirse al presionar ShipButton")
+	test_assert(charsel.cosmetic_carousel_modal.visible == true, "CosmeticCarouselModal debe estar visible")
 
-	# Equipar una skin de prueba desde el modal
+	# Equipar una skin de prueba desde el modal unificado
 	var test_skin_id := "ship_nova_crimson_void"
 	SaveManager.unlock_or_upgrade_skin(test_skin_id)
 	SaveManager.unlock_or_upgrade_skin(test_skin_id) # 2 estrellas (Glow)
-	charsel.skin_selection_modal._selected_skin_id = test_skin_id
-	charsel.skin_selection_modal._on_equip_pressed()
+	charsel.cosmetic_carousel_modal.select_skin_by_id_for_test(test_skin_id)
+	charsel.cosmetic_carousel_modal.set_stars_for_test(2)
+	charsel.cosmetic_carousel_modal.equip_current_for_test()
 	await get_tree().process_frame
 
 	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_skin_id, "SaveManager debe registrar la skin equipada para ship:nova")
@@ -315,22 +316,21 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	test_assert(charsel.ship_icon.material is ShaderMaterial, "ship_icon debe tener el shader aplicado para la skin 2★")
 
 	# Probar equipar por defecto (desequipar)
-	charsel.skin_selection_modal._on_default_pressed()
+	charsel.cosmetic_carousel_modal.unequip_to_default_for_test()
 	await get_tree().process_frame
-	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "SaveManager no debe tener skin equipada tras _on_default_pressed")
+	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "SaveManager no debe tener skin equipada tras unequip_to_default")
 	charsel._select_character(&"nova")
 	test_assert(charsel.ship_icon.material == null, "ship_icon debe volver a material nulo tras desequipar")
 
 	# Probar carrusel de skins de piloto
 	charsel._on_pilot_skin_pressed()
 	await get_tree().process_frame
-	test_assert(charsel.skin_selection_modal.is_open == true, "SkinSelectionModal debe abrirse para piloto")
-	test_assert(charsel.skin_selection_modal._category == "pilot", "Categoría debe ser pilot")
-	test_assert(charsel.skin_selection_modal._skins.size() > 0, "Debe haber skins de piloto cargadas en el carrusel")
-	test_assert(charsel.skin_selection_modal._fullbody_texture.flip_h == true, "Piloto fullbody en modal debe tener flip_h activado")
+	test_assert(charsel.cosmetic_carousel_modal.is_open == true, "CosmeticCarouselModal debe abrirse para piloto")
+	test_assert(charsel.cosmetic_carousel_modal.current_category == "pilot", "Categoría debe ser pilot")
+	test_assert(charsel.cosmetic_carousel_modal.get_available_skins_count() > 0, "Debe haber skins de piloto cargadas en el carrusel")
 
 	# Probar modal de navegadoras: Fullbody majestuoso en selector y carrusel redondo en skins
-	charsel.skin_selection_modal.close_modal()
+	charsel.cosmetic_carousel_modal.close_modal()
 	charsel._on_navigator_card_pressed()
 	await get_tree().process_frame
 	test_assert(charsel.navigator_selection_modal.is_open == true, "NavigatorSelectionModal debe abrirse")

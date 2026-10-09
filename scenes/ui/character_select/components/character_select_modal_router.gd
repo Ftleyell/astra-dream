@@ -8,7 +8,6 @@ const CharacterFocusRouter = preload("res://scenes/ui/character_select/component
 var debug_menu_modal: Node = null
 var pet_selection_modal: Node = null
 var navigator_selection_modal: Node = null
-var skin_selection_modal: Node = null
 var gacha_modal: Node = null
 var tome_selection_modal: Node = null
 var weapon_selection_modal: Node = null
@@ -22,7 +21,6 @@ func setup_modals(
 	p_debug: Node,
 	p_pet: Node,
 	p_nav: Node,
-	p_skin: Node,
 	p_gacha: Node,
 	p_tome: Node,
 	p_weapon: Node,
@@ -34,7 +32,6 @@ func setup_modals(
 	debug_menu_modal = p_debug
 	pet_selection_modal = p_pet
 	navigator_selection_modal = p_nav
-	skin_selection_modal = p_skin
 	gacha_modal = p_gacha
 	tome_selection_modal = p_tome
 	weapon_selection_modal = p_weapon
@@ -54,8 +51,6 @@ func has_any_modal_open() -> bool:
 	if pet_selection_modal and pet_selection_modal.get("is_open"):
 		return true
 	if navigator_selection_modal and navigator_selection_modal.get("is_open"):
-		return true
-	if skin_selection_modal and skin_selection_modal.get("is_open"):
 		return true
 	if gacha_modal and gacha_modal.visible:
 		return true

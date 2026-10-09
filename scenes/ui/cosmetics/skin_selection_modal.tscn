@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7k6m8x2y1skin"]
-
-[ext_resource type="Script" path="res://scenes/ui/cosmetics/skin_selection_modal.gd" id="1_skinmodal"]
-
-[node name="SkinSelectionModal" type="CanvasLayer"]
-process_mode = 3
-layer = 126
-visible = false
-script = ExtResource("1_skinmodal")

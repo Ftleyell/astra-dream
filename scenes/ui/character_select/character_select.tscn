@@ -5,7 +5,6 @@
 [ext_resource type="PackedScene" uid="uid://cdebugmodal01" path="res://scenes/ui/debug/debug_menu_modal.tscn" id="4_debug"]
 [ext_resource type="PackedScene" uid="uid://wiwqlm1t25f5" path="res://scenes/ui/character_select/pet_selection_modal.tscn" id="5_petmodal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_select/navigator_selection_modal.tscn" id="6_navmodal"]
-[ext_resource type="PackedScene" uid="uid://dxyvij3owqokj" path="res://scenes/ui/cosmetics/skin_selection_modal.tscn" id="7_skinmodal"]
 [ext_resource type="PackedScene" uid="uid://cewlokq3pe5aa" path="res://scenes/ui/gacha/gacha_modal.tscn" id="8_gachamodal"]
 [ext_resource type="PackedScene" uid="uid://x0uvp61ixs1u" path="res://scenes/ui/character_select/tome_selection_modal.tscn" id="9_tomemodal"]
 [ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
@@ -928,8 +927,6 @@ visible = false
 
 [node name="NavigatorSelectionModal" parent="." unique_id=635182371 instance=ExtResource("6_navmodal")]
 visible = false
-
-[node name="SkinSelectionModal" parent="." unique_id=1646937470 instance=ExtResource("7_skinmodal")]
 
 [node name="GachaModal" parent="." unique_id=91174855 instance=ExtResource("8_gachamodal")]
 

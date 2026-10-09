@@ -284,7 +284,7 @@ Siguiendo la **Regla 9 de Higiene de Sesiones Atómicas** (cumplir el principio 
 | Sesión | Foco / Misión Principal | Archivos Involucrados | Suite de Verificación |
 |---|---|---|---|
 | **Sesión 1** | ✅ **Higiene Inmediata & Sincronización (Resuelta)** | `git add *.uid`, `docs/ProblemsToSolve.md`, `docs/ProblemSolutions.md`, `docs/architecture/TODO.md` | `tools/run_unit_fast.ps1` (PASS) |
-| **Sesión 2** | **Unificación de Sistema de Skins** | Modificar `character_skin_coordinator.gd`, eliminar `skin_selection_modal.gd` y `.tscn` | `test_nyx_skins_and_hub_shader_suite.gd` |
+| **Sesión 2** | ✅ **Unificación de Sistema de Skins (Resuelta)** | Modificar `character_skin_coordinator.gd`, eliminar `skin_selection_modal.gd` y `.tscn` | `test_slot_machine_and_gacha_runner.tscn`, `test_character_select_runner.tscn` (PASS) |
 | **Sesión 3** | **Modales Gemelos: Grimorios & Weapon Swap** | Crear `TomeCardRenderer.gd`, `TomePoolDataController.gd`; reutilizar `WeaponCardRenderer.gd` en `weapon_swap_modal.gd` | `test_banlist_rules_unit.gd`, `test_weapon_pool_rules_unit.gd` |
 | **Sesión 4** | **Modales Gemelos: Navegantes & Mascotas** | Crear `NavigatorCardRenderer.gd` y `PetCardRenderer.gd`; desacoplar sus modales | `tools/run_unit_fast.ps1` |
 | **Sesión 5** | **Monolito MainGame (Parte 1: Telemetría & Satélite)** | Extraer `CombatTelemetryCoordinator.gd` y `CombatSatelliteCoordinator.gd` de `main_game.gd` | `test_combat_runner.tscn` |

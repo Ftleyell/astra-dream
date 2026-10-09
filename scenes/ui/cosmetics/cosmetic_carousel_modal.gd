@@ -586,3 +586,45 @@ func cycle_skins_for_test(dir: int) -> void:
 func cycle_stars_for_test(dir: int) -> void:
 	_cycle_stars(dir)
 
+
+func select_skin_by_id_for_test(skin_id: String) -> bool:
+	for i in range(_available_skins.size()):
+		if _available_skins[i].get("id", "") == skin_id:
+			_skin_index = i
+			var cur: Dictionary = _available_skins[i]
+			_max_unlocked_stars = cur.get("unlocked_stars", 1)
+			_star_level = clampi(cur.get("stars", 1), 1, 3)
+			_refresh_display()
+			_build_dots()
+			return true
+	return false
+
+
+func set_stars_for_test(stars: int) -> void:
+	_star_level = clampi(stars, 1, 3)
+	_refresh_display()
+
+
+func equip_current_for_test() -> void:
+	_confirm_equip()
+
+
+func unequip_to_default_for_test() -> void:
+	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
+	SaveManager.unequip_skin(slot_key)
+	var loadout: Dictionary = SaveManager.get_character_loadout(current_target_id)
+	match current_category:
+		"pilot":
+			loadout["pilot_skin"] = ""
+			loadout["equipped_pilot_skin"] = ""
+		"ship":
+			loadout["ship_skin"] = ""
+			loadout["equipped_ship_skin"] = ""
+		"weapon":
+			loadout["weapon_skin"] = ""
+			loadout["equipped_weapon_skin"] = ""
+	SaveManager.set_character_loadout(current_target_id, loadout)
+	_last_valid_equipped_skin = ""
+	skin_selected.emit(slot_key, "")
+	_refresh_display()
+

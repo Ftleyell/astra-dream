@@ -9,7 +9,6 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const CharacterDataScript = preload("res://data/characters/character_data.gd")
 
 var cosmetic_carousel_modal: Node = null
-var skin_selection_modal: Node = null
 var gacha_modal: Node = null
 
 var roster_dict: Dictionary = {} # Dictionary[StringName, CharacterData]
@@ -21,7 +20,6 @@ var on_focus_restore_needed: Callable = Callable()
 
 func setup(
 	p_cosmetic_carousel: Node,
-	p_skin_selection: Node,
 	p_gacha_modal: Node,
 	p_roster_dict: Dictionary,
 	p_on_refresh: Callable,
@@ -29,7 +27,6 @@ func setup(
 	p_on_restore_focus: Callable
 ) -> void:
 	cosmetic_carousel_modal = p_cosmetic_carousel
-	skin_selection_modal = p_skin_selection
 	gacha_modal = p_gacha_modal
 	roster_dict = p_roster_dict
 	on_character_refresh_needed = p_on_refresh
@@ -42,10 +39,6 @@ func open_ship_customization(current_character_id: StringName) -> void:
 	_save_focus()
 	if cosmetic_carousel_modal and char_data:
 		cosmetic_carousel_modal.open_modal("ship", current_character_id, char_data)
-	elif skin_selection_modal:
-		var char_name: String = char_data.display_name if char_data else "Exo-Traje"
-		var preview_tex: Texture2D = char_data.get_ship_texture() if char_data else null
-		skin_selection_modal.open_skin_modal("ship", String(current_character_id), "%s - Exo-Traje" % char_name, preview_tex)
 
 
 func open_weapon_customization(current_character_id: StringName) -> void:
@@ -53,10 +46,6 @@ func open_weapon_customization(current_character_id: StringName) -> void:
 	_save_focus()
 	if cosmetic_carousel_modal and char_data:
 		cosmetic_carousel_modal.open_modal("weapon", current_character_id, char_data)
-	elif skin_selection_modal:
-		var wpn_name: String = char_data.starting_weapon.weapon_name if char_data and char_data.starting_weapon else "Arma"
-		var preview_tex: Texture2D = char_data.get_weapon_texture() if char_data else null
-		skin_selection_modal.open_skin_modal("weapon", String(current_character_id), "%s - Armamento" % wpn_name, preview_tex)
 
 
 func open_pilot_customization(current_character_id: StringName) -> void:
@@ -64,12 +53,6 @@ func open_pilot_customization(current_character_id: StringName) -> void:
 	var data: CharacterData = roster_dict.get(current_character_id, null)
 	if cosmetic_carousel_modal and data:
 		cosmetic_carousel_modal.open_modal("pilot", current_character_id, data)
-	elif data:
-		var fb: Texture2D = data.get_selection_texture(false) if data.has_method("get_selection_texture") else data.get_fullbody_texture(false)
-		if not fb:
-			fb = data.get_portrait_texture()
-		if skin_selection_modal:
-			skin_selection_modal.open_skin_modal("pilot", String(current_character_id), data.display_name, fb)
 	elif gacha_modal:
 		gacha_modal.open_gacha_modal()
 
