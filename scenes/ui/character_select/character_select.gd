@@ -2,26 +2,19 @@ class_name CharacterSelectUI
 extends Control
 
 ## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
-## VARIABLES & @ONREADY NODES      → L.30  - L.200
-## _resolve_ability_node (util)    → L.203
-## LIFECYCLE: _ready / _setup_*   → L.215 - L.395
-## INPUT: _input                  → L.396 - L.415
-## INPUT: _has_any_modal_open     → L.416 - L.441
-## INPUT: _unhandled_input        → L.442 - L.453
-## ROSTER: _populate_roster       → L.454 - L.526
-## ROSTER: _select_character      → L.527 - L.673
-## DISPLAY: abilities / telemetry → L.674 - L.719
-## MODALS: talents / banlist      → L.720 - L.752
-## MODALS: skins / ship / pilot   → L.753 - L.877
-## MODALS: gacha / cosmetics      → L.878 - L.958
-## LAUNCH: _on_launch_committed   → L.959 - L.1008
-## LOADOUT: _on_loadout_pressed   → L.1009 - L.1031
-## SIGNALS: modal closed handlers → L.1018 - L.1070
-## SPEED SELECTOR                 → L.1071 - L.1075
-## FOCUS MESH: _setup_focus_mesh  → L.1076 - L.1164
-## HERO PICKER                    → L.1165 - L.1207
-## SPEED: _set_game_speed         → L.1208 - L.1217
-## DEBUG                          → L.1218 - L.1236
+## VARIABLES & @ONREADY NODES      → L.30  - L.220
+## _resolve_ability_node (util)    → L.222
+## LIFECYCLE: _ready / _setup_*   → L.234 - L.445
+## INPUT: _input / _has_any_modal → L.447 - L.475  [modal_router]
+## INPUT: _unhandled_input        → L.476 - L.487  [speed_selector]
+## ROSTER: _populate_roster       → L.488 - L.560
+## ROSTER: _select_character      → L.561 - L.670  [display_manager]
+## DISPLAY: abilities / telemetry → L.671 - L.705  [display_manager]
+## MODALS: talents / banlist      → L.706 - L.727  [modal_router]
+## MODALS: skins / pet / nav      → L.728 - L.820  [skin_coordinator]
+## LAUNCH: committed / exit hub   → L.821 - L.840  [launch_controller]
+## HERO PICKER & FOCUS MESH       → L.841 - L.875  [focus_router]
+## SPEED & DEBUG & CLEANUP        → L.876 - L.922
 ## ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -30,6 +23,9 @@ const CharacterEquipmentCards = preload("res://scenes/ui/character_select/compon
 const CharacterSpeedSelector = preload("res://scenes/ui/character_select/components/character_speed_selector.gd")
 const CharacterSkinCoordinator = preload("res://scenes/ui/character_select/components/character_skin_coordinator.gd")
 const CharacterFocusRouter = preload("res://scenes/ui/character_select/components/character_focus_router.gd")
+const CharacterSelectLaunchController = preload("res://scenes/ui/character_select/components/character_select_launch_controller.gd")
+const CharacterSelectDisplayManager = preload("res://scenes/ui/character_select/components/character_select_display_manager.gd")
+const CharacterSelectModalRouter = preload("res://scenes/ui/character_select/components/character_select_modal_router.gd")
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SkinSelectionModalScript = preload("res://scenes/ui/cosmetics/skin_selection_modal.gd")
@@ -150,6 +146,9 @@ var equipment_cards: CharacterEquipmentCards = null
 var speed_selector: CharacterSpeedSelector = null
 var skin_coordinator: CharacterSkinCoordinator = null
 var focus_router: CharacterFocusRouter = null
+var launch_controller: CharacterSelectLaunchController = null
+var display_manager: CharacterSelectDisplayManager = null
+var modal_router: CharacterSelectModalRouter = null
 
 var current_game_speed: float:
 	get:
@@ -223,6 +222,9 @@ func _ready() -> void:
 	speed_selector = CharacterSpeedSelector.new()
 	skin_coordinator = CharacterSkinCoordinator.new()
 	focus_router = CharacterFocusRouter.new()
+	launch_controller = CharacterSelectLaunchController.new()
+	display_manager = CharacterSelectDisplayManager.new()
+	modal_router = CharacterSelectModalRouter.new()
 
 	_setup_subcomponents()
 	_setup_tabs()
@@ -311,6 +313,26 @@ func _setup_subcomponents() -> void:
 			Callable(self, "_on_pet_card_pressed"),
 			navigator_card, navigator_icon, navigator_name, navigator_desc, navigator_button,
 			Callable(self, "_on_navigator_card_pressed")
+		)
+
+	if display_manager:
+		display_manager.setup_identity_and_telemetry(
+			name_label, title_label, biomass_label, antimatter_label, dark_matter_label,
+			expand_talents_btn, talents_metrics_label, loadout_button, orbital_terminal
+		)
+		display_manager.setup_abilities_blocks(
+			weapon_block_icon, weapon_block_tag, weapon_block_title, weapon_block_desc,
+			tactical_block_icon, tactical_block_tag, tactical_block_title, tactical_block_desc,
+			dash_block_icon, dash_block_tag, dash_block_title, dash_block_desc,
+			passive_block_icon, passive_block_tag, passive_block_title, passive_block_desc,
+			favored_tome_desc
+		)
+
+	if modal_router:
+		modal_router.setup_modals(
+			debug_menu_modal, pet_selection_modal, navigator_selection_modal, skin_selection_modal,
+			gacha_modal, tome_selection_modal, weapon_selection_modal, character_skill_tree_modal,
+			cosmetic_carousel_modal, hero_picker_modal, arsenal_banlist_modal
 		)
 
 
@@ -430,28 +452,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _has_any_modal_open() -> bool:
-	if cosmetic_carousel_modal and cosmetic_carousel_modal.get("is_open"):
-		return true
-	if hero_picker_modal and hero_picker_modal.get("is_open"):
-		return true
-	if debug_menu_modal and debug_menu_modal.get("is_open"):
-		return true
-	if pet_selection_modal and pet_selection_modal.get("is_open"):
-		return true
-	if navigator_selection_modal and navigator_selection_modal.get("is_open"):
-		return true
-	if skin_selection_modal and skin_selection_modal.get("is_open"):
-		return true
-	if gacha_modal and gacha_modal.visible:
-		return true
-	if tome_selection_modal and tome_selection_modal.get("is_open"):
-		return true
-	if weapon_selection_modal and weapon_selection_modal.get("is_open"):
-		return true
-	if arsenal_banlist_modal and arsenal_banlist_modal.get("is_open"):
-		return true
-	if character_skill_tree_modal and character_skill_tree_modal.visible:
-		return true
+	if modal_router:
+		return modal_router.has_any_modal_open()
 	return false
 
 
@@ -588,45 +590,10 @@ func _select_character(char_id: StringName) -> void:
 		pilot_skin = "base"
 	SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
 
-	# Dossier táctico sin emojis
-	name_label.text = data.display_name.to_upper()
-	name_label.modulate = data.color
-	title_label.text = data.title
-
-	# Actualizar bloques de la pestaña de Habilidades
-	var kit: Dictionary = data.get_kit_dossier() if data.has_method("get_kit_dossier") else {}
-	if not kit.is_empty():
-		if weapon_block_title:
-			weapon_block_title.text = kit.weapon_name
-		if weapon_block_desc:
-			weapon_block_desc.text = kit.weapon_desc
-		if tactical_block_title:
-			tactical_block_title.text = kit.tactical_name
-		if tactical_block_desc:
-			tactical_block_desc.text = kit.tactical_desc
-		if dash_block_title:
-			dash_block_title.text = kit.dash_name
-		if dash_block_desc:
-			dash_block_desc.text = kit.dash_desc
-		if passive_block_title:
-			passive_block_title.text = kit.passive_name
-		if passive_block_desc:
-			passive_block_desc.text = kit.passive_desc
-		if favored_tome_desc:
-			var f_tome: StringName = kit.get("favored_tome", &"")
-			var p_desc: String = kit.get("passive_desc", "")
-			favored_tome_desc.text = "%s — Sinergia: %s" % [String(f_tome), p_desc]
-
-	if weapon_block_icon:
-		weapon_block_icon.texture = data.get_weapon_skill_texture()
-	if tactical_block_icon:
-		tactical_block_icon.texture = data.get_tactical_texture()
-	if dash_block_icon:
-		dash_block_icon.texture = data.get_dash_texture()
-	if passive_block_icon:
-		passive_block_icon.texture = data.get_passive_texture()
-
-	_refresh_talents_summary(char_id)
+	# Dossier táctico y habilidades
+	if display_manager:
+		display_manager.update_character_identity(data)
+		display_manager.update_character_abilities(data)
 
 	var is_unlocked: bool = SaveManager.is_character_unlocked(char_id)
 
@@ -635,108 +602,39 @@ func _select_character(char_id: StringName) -> void:
 	if pilot_showcase:
 		pilot_showcase.update_pilot_display(data, char_id, is_unlocked)
 
-	# Actualizar resaltados en el dock inferior
-	for cid: StringName in _dock_card_buttons.keys():
-		var btn: Button = _dock_card_buttons[cid]
-		var is_current := (cid == char_id)
-		var c_data: CharacterData = roster_dict.get(cid, null)
-		var c_unlocked := SaveManager.is_character_unlocked(cid)
-		var sb := btn.get_theme_stylebox("normal")
-		if sb is StyleBoxFlat:
-			var dup := sb.duplicate() as StyleBoxFlat
-			dup.border_width_left = 2
-			dup.border_width_top = 2
-			dup.border_width_right = 2
-			dup.border_width_bottom = 2
-			if is_current:
-				dup.border_color = c_data.color if c_data else Color(0, 1, 0.85, 1)
-				dup.bg_color = Color(0.04, 0.08, 0.12, 0.96)
-				dup.shadow_color = (c_data.color * Color(1, 1, 1, 0.4)) if c_data else Color(0, 0.8, 1, 0.3)
-				dup.shadow_size = 6
-			else:
-				dup.border_color = (c_data.color * Color(1, 1, 1, 0.4) if c_unlocked else Color(0.2, 0.25, 0.3, 0.5)) if c_data else Color(0.2, 0.4, 0.6, 0.5)
-				dup.bg_color = Color(0.025, 0.04, 0.07, 0.92)
-				dup.shadow_size = 0
-			btn.add_theme_stylebox_override("normal", dup)
-			var hover_dup := dup.duplicate() as StyleBoxFlat
-			if not is_current and c_data:
-				hover_dup.border_color = c_data.color * Color(1, 1, 1, 0.85)
-				hover_dup.bg_color = Color(0.035, 0.065, 0.1, 0.95)
-			btn.add_theme_stylebox_override("hover", hover_dup)
-			btn.add_theme_stylebox_override("pressed", dup)
+	# Actualizar resaltados en el dock inferior y estado de terminal
+	if display_manager:
+		display_manager.update_dock_highlights(char_id, _dock_card_buttons, roster_dict)
+		display_manager.update_terminal_lock_state(is_unlocked)
+		display_manager.refresh_telemetry_ui()
+		display_manager.refresh_talents_summary(char_id)
+		display_manager.update_ability_tags()
 
-	# Estado de lanzamiento
-	if not is_unlocked:
-		if orbital_terminal:
-			orbital_terminal.focus_mode = Control.FOCUS_NONE
-			orbital_terminal.active_telemetry_text = "/// PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN DE FLOTA /// PROTOCOLO RESTRINGIDO /// "
-			orbital_terminal._update_telemetry_metrics()
-		if loadout_button:
-			loadout_button.disabled = true
-	else:
-		if orbital_terminal:
-			orbital_terminal.focus_mode = Control.FOCUS_ALL
-			orbital_terminal.active_telemetry_text = OrbitalIgnitionTerminal.BASE_TELEMETRY
-			orbital_terminal._update_telemetry_metrics()
-		if loadout_button:
-			loadout_button.disabled = false
-
-	_refresh_telemetry_ui()
-	_refresh_talents_summary(char_id)
-	_update_ability_tags()
 	_setup_focus_mesh()
 
 
 func _get_action_key_text(act: StringName) -> String:
-	var events := InputMap.action_get_events(act)
-	for ev in events:
-		if ev is InputEventKey:
-			var txt: String = ev.as_text_physical_keycode() if ev.physical_keycode != 0 else ev.as_text_keycode()
-			return txt.to_upper()
-		elif ev is InputEventMouseButton:
-			match ev.button_index:
-				MOUSE_BUTTON_LEFT: return "CLIC IZQ"
-				MOUSE_BUTTON_RIGHT: return "CLIC DER"
-				MOUSE_BUTTON_MIDDLE: return "CLIC CEN"
-				_: return "RATÓN %d" % ev.button_index
-	return "N/A"
+	return display_manager.get_action_key_text(act) if display_manager else "N/A"
 
 
 func _update_ability_tags() -> void:
-	if weapon_block_tag:
-		weapon_block_tag.text = "[AUTO / PASIVO] // ARMA PRINCIPAL"
-	if tactical_block_tag:
-		tactical_block_tag.text = "[%s] // HABILIDAD TÁCTICA" % _get_action_key_text(&"fire_active")
-	if dash_block_tag:
-		dash_block_tag.text = "[%s] // PROPULSIÓN EVASIVA" % _get_action_key_text(&"dash")
-	if passive_block_tag:
-		passive_block_tag.text = "[INNATA] // AFINIDAD DE TOMO"
+	if display_manager:
+		display_manager.update_ability_tags()
 
 
 func _refresh_telemetry_ui() -> void:
-	if biomass_label:
-		biomass_label.text = "BIOMASA: %s" % String.num_int64(SaveManager.get_biomass())
-	if antimatter_label:
-		antimatter_label.text = "ANTIMATERIA: %s" % String.num_int64(SaveManager.get_antimatter())
-	if dark_matter_label:
-		dark_matter_label.text = "MATERIA OSCURA: %s" % String.num_int64(SaveManager.get_dark_matter())
+	if display_manager:
+		display_manager.refresh_telemetry_ui()
 
 
 func _refresh_talents_summary(char_id: StringName) -> void:
-	var unlocked_nodes := SaveManager.get_character_unlocked_nodes(char_id)
-	if expand_talents_btn:
-		expand_talents_btn.text = "[ÁRBOL DE TALENTOS] (%d/24)" % unlocked_nodes.size()
-	if talents_metrics_label:
-		talents_metrics_label.text = "NODOS ACTIVOS: %d / 24 | BIOMASA DISPONIBLE: %s" % [
-			unlocked_nodes.size(),
-			String.num_int64(SaveManager.get_biomass())
-		]
+	if display_manager:
+		display_manager.refresh_talents_summary(char_id)
 
 
 func _on_expand_talents_pressed() -> void:
-	if character_skill_tree_modal and character_skill_tree_modal.has_method("open_for_character"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		character_skill_tree_modal.open_for_character(current_character_id)
+	if modal_router:
+		modal_router.open_talents(current_character_id, get_viewport(), focus_router)
 
 
 func _on_skill_tree_closed() -> void:
@@ -746,24 +644,13 @@ func _on_skill_tree_closed() -> void:
 
 
 func _on_arsenal_banlist_pressed(default_tab: int = 0) -> void:
-	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		arsenal_banlist_modal.open_modal(current_character_id, default_tab)
-	elif default_tab == 1 and tome_selection_modal and tome_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		tome_selection_modal.open_modal(current_character_id)
-	elif weapon_selection_modal and weapon_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		weapon_selection_modal.open_modal(current_character_id)
+	if modal_router:
+		modal_router.open_arsenal_banlist(current_character_id, default_tab, get_viewport(), focus_router)
 
 
 func _on_tomes_pool_pressed() -> void:
-	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		arsenal_banlist_modal.open_modal(current_character_id, 1)
-	elif tome_selection_modal and tome_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		tome_selection_modal.open_modal(current_character_id)
+	if modal_router:
+		modal_router.open_tomes_pool(current_character_id, get_viewport(), focus_router)
 
 
 func _save_current_focus() -> void:
@@ -902,115 +789,40 @@ func _restore_last_focus() -> void:
 
 
 func _on_launch_committed() -> void:
-	if not SaveManager.is_character_unlocked(current_character_id):
-		return
-	SaveManager.set_selected_character(current_character_id)
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_character_id)
-	if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
-		SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
-	if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
-		SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
-
-	var cur_pet_str: String = String(SaveManager.get_selected_pet()).to_lower()
-	var pet_skin: String = str(loadout.get("equipped_pet_skin", ""))
-	if not pet_skin.is_empty():
-		SaveManager.equip_skin("pet:" + cur_pet_str, pet_skin)
-	else:
-		SaveManager.unequip_skin("pet:" + cur_pet_str)
-
-	var cur_nav_str: String = String(SaveManager.get_selected_navigator()).to_lower()
-	var nav_skin: String = str(loadout.get("equipped_navigator_skin", ""))
-	if not nav_skin.is_empty():
-		SaveManager.equip_skin("navigator:" + cur_nav_str, nav_skin)
-	else:
-		SaveManager.unequip_skin("navigator:" + cur_nav_str)
-
-	var cid_str: String = String(current_character_id).to_lower()
-	var ship_skin: String = str(loadout.get("equipped_ship_skin", ""))
-	if not ship_skin.is_empty():
-		SaveManager.equip_skin("ship:" + cid_str, ship_skin)
-	else:
-		SaveManager.unequip_skin("ship:" + cid_str)
-
-	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", ""))
-	if not weapon_skin.is_empty():
-		SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
-	else:
-		SaveManager.unequip_skin("weapon:" + cid_str)
-
-	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", ""))
-	if not pilot_skin.is_empty():
-		SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
-	else:
-		SaveManager.unequip_skin("pilot:" + cid_str)
-
-	var st = get_node_or_null("/root/SceneTransition")
-	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/combat/main_game.tscn")
-	else:
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/combat/main_game.tscn")
+	if launch_controller:
+		launch_controller.commit_launch(current_character_id, get_tree())
 
 
 func _on_loadout_pressed() -> void:
-	if arsenal_banlist_modal and arsenal_banlist_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		arsenal_banlist_modal.open_modal(current_character_id, 0)
-	if weapon_selection_modal and weapon_selection_modal.has_method("open_modal"):
-		_last_focused_control = get_viewport().gui_get_focus_owner()
-		weapon_selection_modal.open_modal(current_character_id)
+	if modal_router:
+		modal_router.open_loadout(current_character_id, get_viewport(), focus_router)
 
 
 func _on_arsenal_banlist_modal_closed() -> void:
-	var target_focus: Control = null
-	if arsenal_banlist_btn and arsenal_banlist_btn.is_visible_in_tree():
-		target_focus = arsenal_banlist_btn
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		target_focus = orbital_terminal
-
-	if target_focus:
-		target_focus.grab_focus()
-
+	if modal_router:
+		modal_router.restore_modal_closed_focus(arsenal_banlist_btn, focus_router, orbital_terminal)
 
 
 func _on_weapon_modal_closed() -> void:
-	var target_focus: Control = null
-	if loadout_button and loadout_button.is_visible_in_tree():
-		target_focus = loadout_button
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		target_focus = orbital_terminal
-
-	if target_focus:
-		target_focus.grab_focus()
+	if modal_router:
+		modal_router.restore_modal_closed_focus(loadout_button, focus_router, orbital_terminal)
 
 
 func _on_tome_modal_closed() -> void:
-	var target_focus: Control = null
-	if tomes_pool_btn and tomes_pool_btn.is_visible_in_tree():
-		target_focus = tomes_pool_btn
-	elif _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
-		target_focus = _last_focused_control
-	elif orbital_terminal and orbital_terminal.is_visible_in_tree():
-		target_focus = orbital_terminal
-
-	if target_focus:
-		target_focus.grab_focus()
+	if modal_router:
+		modal_router.restore_modal_closed_focus(tomes_pool_btn, focus_router, orbital_terminal)
 
 
 func _on_back_pressed() -> void:
-	_exit_to_hub()
+	if hero_picker_modal and not hero_picker_modal.is_open:
+		_on_dock_unified_button_pressed()
+	else:
+		_exit_to_hub()
 
 
 func _exit_to_hub() -> void:
-	_set_game_speed(1.0)
-	var st = get_node_or_null("/root/SceneTransition")
-	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
-	else:
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+	if launch_controller:
+		launch_controller.exit_to_hub(get_tree(), speed_selector)
 
 
 func _setup_speed_buttons() -> void:
@@ -1031,6 +843,8 @@ func _on_dock_unified_button_pressed() -> void:
 	if hero_picker_modal:
 		if main_margin_container:
 			main_margin_container.visible = false
+		if abilities_view:
+			abilities_view.visible = false
 		if dock_container:
 			dock_container.visible = false
 		hero_picker_modal.open_picker(roster_ordered, current_character_id, false)
@@ -1083,9 +897,8 @@ func _refresh_speed_buttons_ui() -> void:
 func _on_debug_pressed() -> void:
 	if not is_debug_active or not debug_menu_modal:
 		return
-	_last_focused_control = get_viewport().gui_get_focus_owner()
-	var char_data: CharacterData = roster_dict.get(current_character_id, null)
-	debug_menu_modal.open_menu(char_data)
+	if modal_router:
+		modal_router.open_debug(roster_dict.get(current_character_id, null), get_viewport(), focus_router)
 
 
 func _on_debug_modal_closed() -> void:

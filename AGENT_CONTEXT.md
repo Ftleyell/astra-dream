@@ -12,9 +12,12 @@
 > Leer solo el rango indicado mediante `view_file` con `StartLine` y `EndLine` — no el archivo completo.
 
 | Si el cambio/bug está en... | Archivo | Rango clave |
-|---|---|---|
-| Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Input: L396, Skin modals: L753, select_char: L527 |
-| HUD in-game (armas, bomba, dash, salud, stats) | `scenes/ui/hud/hud.gd` | Weapons: L388, Player setup: L515, Curse: L544 |
+| Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: L234, Input: L447, Roster: L488 |
+| Enrutamiento de modales CharacterSelect | `scenes/ui/character_select/components/character_select_modal_router.gd` | — |
+| Presentación visual y habilidades CharacterSelect | `scenes/ui/character_select/components/character_select_display_manager.gd` | — |
+| Secuencia de lanzamiento y retorno Hub | `scenes/ui/character_select/components/character_select_launch_controller.gd` | — |
+| Coordinador de skins / companion / gacha | `scenes/ui/character_select/components/character_skin_coordinator.gd` | — |
+| Malla y router de foco teclado/gamepad | `scenes/ui/character_select/components/character_focus_router.gd` | — |
 | Combate (oleadas, bosses, rivales, modales in-run) | `scenes/combat/main_game.gd` | Encounters: L773, Bosses: L834, Game over: L1099 |
 | Pipeline y ciclo de vida de oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | State machine & subsystem dispatch |
 | Contexto desacoplado de combate | `scenes/combat/systems/combat_context.gd` | Inyección de actores centrales |

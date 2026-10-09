@@ -21,6 +21,14 @@ func get_last_focused() -> Control:
 	return _last_focused_control
 
 
+func has_valid_saved_focus() -> bool:
+	return _last_focused_control != null and is_instance_valid(_last_focused_control) and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree()
+
+
+func get_saved_focus() -> Control:
+	return _last_focused_control
+
+
 func restore_focus(pilot_button: Button, orbital_terminal: Control) -> void:
 	if _last_focused_control and is_instance_valid(_last_focused_control) and _last_focused_control != pilot_button and _last_focused_control.is_inside_tree() and _last_focused_control.is_visible_in_tree():
 		_last_focused_control.grab_focus()
