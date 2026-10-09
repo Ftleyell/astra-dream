@@ -29,10 +29,12 @@ const InventoryBarControllerClass = preload("res://scenes/ui/hud/components/hud_
 const BannerManagerClass = preload("res://scenes/ui/hud/components/hud_banner_manager.gd")
 const CombatStatsDock = preload("res://scenes/ui/hud/components/combat_stats_dock.gd")
 const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
+const WeaponCooldownBarClass = preload("res://scenes/ui/hud/components/hud_weapon_cooldown_bar.gd")
+const HealthShieldDisplayClass = preload("res://scenes/ui/hud/components/hud_health_shield_display.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
-## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController y HUDBannerManager.
+## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController, HudWeaponCooldownBar, HudHealthShieldDisplay y HUDBannerManager.
 
 @export var player: Player
 
@@ -103,6 +105,8 @@ var pre_round_time_left: float = 30.0
 var _abilities_ctrl: RefCounted = null
 var _inventory_ctrl: RefCounted = null
 var _banner_mgr: RefCounted = null
+var _weapon_bar: RefCounted = null
+var _health_shield_display: RefCounted = null
 
 var _inventory_chips: Dictionary:
 	get:
@@ -293,6 +297,17 @@ func _init_subcontrollers() -> void:
 		"credit_icon": credit_icon
 	})
 
+	_weapon_bar = WeaponCooldownBarClass.new()
+	_weapon_bar.setup(weapon_slots_row)
+
+	_health_shield_display = HealthShieldDisplayClass.new()
+	_health_shield_display.setup({
+		"health_bar": health_bar,
+		"health_label": health_label,
+		"exp_bar": exp_bar,
+		"level_label": level_label
+	})
+
 	_banner_mgr = BannerManagerClass.new()
 
 func set_hud_visible(p_visible: bool) -> void:
@@ -394,7 +409,9 @@ func update_pilot_abilities(data: CharacterData) -> void:
 		_abilities_ctrl.update_ability_icons(data)
 
 func update_weapon_slots(weapons: Array) -> void:
-	if _inventory_ctrl:
+	if _weapon_bar:
+		_weapon_bar.update_weapon_slots(weapons, player.stats if is_instance_valid(player) else null)
+	elif _inventory_ctrl:
 		_inventory_ctrl.update_weapon_slots(weapons, player.stats if is_instance_valid(player) else null)
 
 func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
@@ -402,10 +419,14 @@ func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
 		_inventory_ctrl.update_tome_slots(tomes, levels)
 
 func _update_weapon_cooldown_sweeps() -> void:
-	if not is_instance_valid(player) or not _inventory_ctrl:
+	if not is_instance_valid(player):
 		return
 	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-	if w_ctrl:
+	if not w_ctrl:
+		return
+	if _weapon_bar:
+		_weapon_bar.update_weapon_cooldown_sweeps(w_ctrl.equipped_weapons, player.stats if player else null)
+	elif _inventory_ctrl:
 		_inventory_ctrl.update_weapon_cooldown_sweeps(w_ctrl.equipped_weapons, player.stats if player else null)
 
 func update_credits(amount: int) -> void:
@@ -417,18 +438,29 @@ func update_biomass(run_amount: int, total_persistent: int) -> void:
 		_inventory_ctrl.update_biomass(run_amount, total_persistent)
 
 func update_exp(current: float, max_val: float, level: int) -> void:
-	if exp_bar:
-		exp_bar.max_value = max_val
-		exp_bar.value = current
-	if level_label:
-		level_label.text = "NV. %d" % level
+	if _health_shield_display:
+		_health_shield_display.update_exp(current, max_val, level, get_tree())
+	else:
+		if exp_bar:
+			exp_bar.max_value = max_val
+			exp_bar.value = current
+		if level_label:
+			level_label.text = "NV. %d" % level
 
 func _on_health_changed(current: float, max_val: float) -> void:
-	if health_bar:
-		health_bar.max_value = max_val
-		health_bar.value = current
-	if health_label:
-		health_label.text = "%d / %d" % [int(current), int(max_val)]
+	if _health_shield_display:
+		var shield_val: float = 0.0
+		var max_sh: float = 0.0
+		if is_instance_valid(player) and "shield_controller" in player and player.shield_controller:
+			shield_val = player.shield_controller.get("current_shield") if "current_shield" in player.shield_controller else 0.0
+			max_sh = player.shield_controller.get("max_shield") if "max_shield" in player.shield_controller else 0.0
+		_health_shield_display.update_health(current, max_val, shield_val, max_sh, get_tree())
+	else:
+		if health_bar:
+			health_bar.max_value = max_val
+			health_bar.value = current
+		if health_label:
+			health_label.text = "%d / %d" % [int(current), int(max_val)]
 
 func _on_bomb_used(remaining: int) -> void:
 	if _abilities_ctrl:
@@ -498,18 +530,8 @@ func _on_aim_mode_changed(is_manual: bool) -> void:
 		_abilities_ctrl.update_aim_mode(is_manual)
 
 func _on_osp_triggered(_remaining_hp: float) -> void:
-	var flash := ColorRect.new()
-	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	flash.color = Color(0.2, 0.9, 1.0, 0.45)
-	add_child(flash)
-	var tw := create_tween()
-	if tw:
-		tw.tween_property(flash, "color:a", 0.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tw.tween_callback(flash.queue_free)
-	else:
-		flash.queue_free()
-
+	if _health_shield_display:
+		_health_shield_display.trigger_osp_effect(self)
 	show_tactical_alert("🛡️ PROTOCOLO OSP ACTIVADO", "¡Impacto letal absorbido! 1.0s de inmunidad concedida", Color(0.2, 0.9, 1.0))
 
 func set_player(p: Player) -> void:

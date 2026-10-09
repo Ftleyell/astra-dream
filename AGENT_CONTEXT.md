@@ -13,6 +13,7 @@
 
 | Si el cambio/bug está en... | Archivo | Rango clave |
 | Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: L234, Input: L447, Roster: L488 |
+| Tabs (Loadout ↔ Habilidades) en CharacterSelect | `scenes/ui/character_select/components/character_select_tab_controller.gd` | — |
 | Enrutamiento de modales CharacterSelect | `scenes/ui/character_select/components/character_select_modal_router.gd` | — |
 | Presentación visual y habilidades CharacterSelect | `scenes/ui/character_select/components/character_select_display_manager.gd` | — |
 | Secuencia de lanzamiento y retorno Hub | `scenes/ui/character_select/components/character_select_launch_controller.gd` | — |
@@ -46,7 +47,9 @@
 | Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | — |
 | Transición entre escenas | `core/autoloads/scene_transition.gd` | — |
 | Pausa (tokens de pausa) | `core/autoloads/pause_arbitrator.gd` | — |
-| Audio y música | `core/autoloads/audio_manager.gd` | — |
+| HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | — |
+| Ranuras de armas y barridos CD del HUD | `scenes/ui/hud/components/hud_weapon_cooldown_bar.gd` | — |
+| Salud, escudo, EXP y OSP del HUD | `scenes/ui/hud/components/hud_health_shield_display.gd` | — |
 | Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | — |
 | Debug de metajuego (Character Select) | `scenes/ui/debug/debug_menu_modal.gd` | — |
 

@@ -4,10 +4,10 @@ extends CharacterBody2D
 ## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
 ## VARIABLES & @ONREADY NODES     → L.25  - L.201
 ## LIFECYCLE: _ready              → L.202 - L.275
-## THEME & HITBOX VISUALS         → L.276 - L.312
+## THEME & HITBOX VISUALS         → L.276 - L.312  [delegado a PlayerVisualBuilder]
 ## PROCESS: hitbox visibility     → L.313 - L.348
 ## PHYSICS: _physics_process      → L.349 - L.420
-## PILOT SHADER update            → L.421 - L.425
+## PILOT SHADER update            → L.421 - L.425  [delegado a PlayerVisualBuilder]
 ## MOVEMENT: _handle_movement     → L.426 - L.451
 ## CINEMATIC DUEL: facing         → L.452 - L.474
 ## DASH SETUP & EXECUTE           → L.475 - L.524
@@ -16,10 +16,10 @@ extends CharacterBody2D
 ## ACTIONS: _handle_actions       → L.557 - L.569
 ## ECONOMY: heal/credits/biomass  → L.570 - L.599
 ## EXP: add_exp                   → L.600 - L.614
-## DAMAGE: take_damage / death    → L.615 - L.671
-## HEALTH REGEN                   → L.672 - L.689
-## ARCANAS: apply_arcana          → L.690 - L.718
-## DARK MATTER                    → L.719 - L.728
+## DAMAGE: take_damage / death    → L.615 - L.635  [delegado a PlayerShieldController]
+## HEALTH REGEN                   → L.636 - L.652  [delegado a PlayerShieldController]
+## ARCANAS: apply_arcana          → L.653 - L.681
+## DARK MATTER                    → L.682 - L.691
 ## ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -329,36 +329,8 @@ func _apply_visual_theme() -> void:
 		visual_builder.apply_visual_theme(self, character_data)
 
 func _setup_hitbox_core_visuals() -> void:
-	if not hitbox_core:
-		return
-	hitbox_core.z_index = 25
-	hitbox_core.z_as_relative = true
-	hitbox_core.modulate = Color(1.0, 1.0, 1.0, 0.0)
-
-	if hitbox_core is Polygon2D:
-		var poly := hitbox_core as Polygon2D
-		poly.color = Color(1.0, 0.2, 0.5, 0.95)
-		var points: PackedVector2Array = PackedVector2Array()
-		const SEGMENTS: int = 16
-		const RADIUS: float = 4.5
-		for i in range(SEGMENTS):
-			var a: float = float(i) * TAU / float(SEGMENTS)
-			points.append(Vector2(cos(a) * RADIUS, sin(a) * RADIUS))
-		poly.polygon = points
-
-		if not poly.get_node_or_null("CoreRing"):
-			var ring := Line2D.new()
-			ring.name = "CoreRing"
-			ring.width = 1.5
-			ring.default_color = Color(0.2, 0.95, 1.0, 0.9)
-			var ring_points: PackedVector2Array = PackedVector2Array()
-			const RING_SEGMENTS: int = 20
-			const RING_RADIUS: float = 6.5
-			for i in range(RING_SEGMENTS + 1):
-				var a: float = float(i % RING_SEGMENTS) * TAU / float(RING_SEGMENTS)
-				ring_points.append(Vector2(cos(a) * RING_RADIUS, sin(a) * RING_RADIUS))
-			ring.points = ring_points
-			poly.add_child(ring)
+	if visual_builder:
+		visual_builder.setup_hitbox_core_visuals(hitbox_core)
 
 
 func _process(delta: float) -> void:
@@ -456,18 +428,9 @@ func _execute_character_dash() -> void:
 func update_omega_spin_rotation(angle: float) -> void:
 	if dash_controller:
 		dash_controller.omega_spin_angle = angle
-	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-	if ship_spr and ship_spr.visible:
-		ship_spr.rotation = angle + PI / 2.0
-	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
-	if exo_spr:
-		exo_spr.rotation = angle + PI / 2.0
-	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
-	if placeholder and placeholder.visible:
-		placeholder.rotation = angle
-	var w_ctrl := get_node_or_null("WeaponController") as Node2D
-	if w_ctrl:
-		w_ctrl.rotation = angle
+	if visual_builder:
+		visual_builder.update_omega_spin_rotation(self, angle)
+
 
 
 func consume_guaranteed_crit() -> bool:

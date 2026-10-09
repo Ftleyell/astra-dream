@@ -2,19 +2,20 @@ class_name CharacterSelectUI
 extends Control
 
 ## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
-## VARIABLES & @ONREADY NODES      → L.30  - L.220
-## _resolve_ability_node (util)    → L.222
-## LIFECYCLE: _ready / _setup_*   → L.234 - L.445
-## INPUT: _input / _has_any_modal → L.447 - L.475  [modal_router]
-## INPUT: _unhandled_input        → L.476 - L.487  [speed_selector]
-## ROSTER: _populate_roster       → L.488 - L.560
-## ROSTER: _select_character      → L.561 - L.670  [display_manager]
-## DISPLAY: abilities / telemetry → L.671 - L.705  [display_manager]
-## MODALS: talents / banlist      → L.706 - L.727  [modal_router]
-## MODALS: skins / pet / nav      → L.728 - L.820  [skin_coordinator]
-## LAUNCH: committed / exit hub   → L.821 - L.840  [launch_controller]
-## HERO PICKER & FOCUS MESH       → L.841 - L.875  [focus_router]
-## SPEED & DEBUG & CLEANUP        → L.876 - L.922
+## VARIABLES & @ONREADY NODES      → L.31  - L.222
+## _resolve_ability_node (util)    → L.224
+## LIFECYCLE: _ready / _setup_*   → L.236 - L.448
+## INPUT: _input / _has_any_modal → L.450 - L.477  [modal_router]
+## INPUT: _unhandled_input        → L.478 - L.490  [speed_selector]
+## ROSTER: _populate_roster       → L.491 - L.562
+## ROSTER: _select_character      → L.563 - L.672  [display_manager]
+## DISPLAY: abilities / telemetry → L.673 - L.710  [display_manager]
+## MODALS: talents / banlist      → L.711 - L.733  [modal_router]
+## MODALS: skins / pet / nav      → L.734 - L.830  [skin_coordinator]
+## TABS: switch / setup           → delegado a CharacterSelectTabController
+## LAUNCH: committed / exit hub   → L.831 - L.850  [launch_controller]
+## HERO PICKER & FOCUS MESH       → L.851 - L.887  [focus_router]
+## SPEED & DEBUG & CLEANUP        → L.888 - L.934
 ## ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -26,6 +27,7 @@ const CharacterFocusRouter = preload("res://scenes/ui/character_select/component
 const CharacterSelectLaunchController = preload("res://scenes/ui/character_select/components/character_select_launch_controller.gd")
 const CharacterSelectDisplayManager = preload("res://scenes/ui/character_select/components/character_select_display_manager.gd")
 const CharacterSelectModalRouter = preload("res://scenes/ui/character_select/components/character_select_modal_router.gd")
+const CharacterSelectTabController = preload("res://scenes/ui/character_select/components/character_select_tab_controller.gd")
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
@@ -147,6 +149,7 @@ var focus_router: CharacterFocusRouter = null
 var launch_controller: CharacterSelectLaunchController = null
 var display_manager: CharacterSelectDisplayManager = null
 var modal_router: CharacterSelectModalRouter = null
+var tab_controller: CharacterSelectTabController = null
 
 var current_game_speed: float:
 	get:
@@ -223,6 +226,7 @@ func _ready() -> void:
 	launch_controller = CharacterSelectLaunchController.new()
 	display_manager = CharacterSelectDisplayManager.new()
 	modal_router = CharacterSelectModalRouter.new()
+	tab_controller = CharacterSelectTabController.new()
 
 	_setup_subcomponents()
 	_setup_tabs()
@@ -334,18 +338,20 @@ func _setup_subcomponents() -> void:
 
 
 func _setup_tabs() -> void:
-	if tab_loadout_btn:
-		tab_loadout_btn.pressed.connect(func(): _switch_tab(0))
-	if tab_abilities_btn:
-		tab_abilities_btn.pressed.connect(func(): _switch_tab(1))
+	if tab_controller:
+		tab_controller.setup(tab_loadout_btn, tab_abilities_btn, loadout_view, abilities_view)
 
 
 func _switch_tab(index: int) -> void:
 	_current_tab_index = index
-	if loadout_view:
-		loadout_view.visible = true
-	if abilities_view:
-		abilities_view.visible = true
+	if tab_controller:
+		tab_controller.switch_tab(index)
+	else:
+		# Fallback sin controlador: mantener ambas vistas visibles.
+		if loadout_view:
+			loadout_view.visible = true
+		if abilities_view:
+			abilities_view.visible = true
 
 
 func _setup_signals() -> void:

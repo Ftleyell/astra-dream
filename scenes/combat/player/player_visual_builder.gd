@@ -174,6 +174,58 @@ func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) 
 				var target_scale: float = target_weapon_pixel_size / maxf(tex_dim, 1.0)
 				w_spr.scale = Vector2(target_scale, target_scale)
 
+## Construye proceduralmente el visual del hitbox central (Polygon2D + CoreRing).
+## Extraído de Player._setup_hitbox_core_visuals().
+func setup_hitbox_core_visuals(hitbox_core: Node2D) -> void:
+	if not hitbox_core:
+		return
+	hitbox_core.z_index = 25
+	hitbox_core.z_as_relative = true
+	hitbox_core.modulate = Color(1.0, 1.0, 1.0, 0.0)
+
+	if hitbox_core is Polygon2D:
+		var poly := hitbox_core as Polygon2D
+		poly.color = Color(1.0, 0.2, 0.5, 0.95)
+		var points: PackedVector2Array = PackedVector2Array()
+		const SEGMENTS: int = 16
+		const RADIUS: float = 4.5
+		for i: int in range(SEGMENTS):
+			var a: float = float(i) * TAU / float(SEGMENTS)
+			points.append(Vector2(cos(a) * RADIUS, sin(a) * RADIUS))
+		poly.polygon = points
+
+		if not poly.get_node_or_null("CoreRing"):
+			var ring := Line2D.new()
+			ring.name = "CoreRing"
+			ring.width = 1.5
+			ring.default_color = Color(0.2, 0.95, 1.0, 0.9)
+			var ring_points: PackedVector2Array = PackedVector2Array()
+			const RING_SEGMENTS: int = 20
+			const RING_RADIUS: float = 6.5
+			for i: int in range(RING_SEGMENTS + 1):
+				var a: float = float(i % RING_SEGMENTS) * TAU / float(RING_SEGMENTS)
+				ring_points.append(Vector2(cos(a) * RING_RADIUS, sin(a) * RING_RADIUS))
+			ring.points = ring_points
+			poly.add_child(ring)
+
+
+## Sincroniza la rotación de todos los sprites del jugador durante el Omega Spin.
+## Extraído de Player.update_omega_spin_rotation().
+func update_omega_spin_rotation(player: CharacterBody2D, angle: float) -> void:
+	var ship_spr := player.get_node_or_null("ShipSprite") as Sprite2D
+	if ship_spr and ship_spr.visible:
+		ship_spr.rotation = angle + PI / 2.0
+	var exo_spr := player.get_node_or_null("ExoArmorSprite") as Sprite2D
+	if exo_spr:
+		exo_spr.rotation = angle + PI / 2.0
+	var placeholder := player.get_node_or_null("VisualPlaceholder") as Polygon2D
+	if placeholder and placeholder.visible:
+		placeholder.rotation = angle
+	var w_ctrl := player.get_node_or_null("WeaponController") as Node2D
+	if w_ctrl:
+		w_ctrl.rotation = angle
+
+
 func update_pilot_shader(player: CharacterBody2D, delta: float, is_moving: bool) -> void:
 	var ship_spr: Sprite2D = player.get_node_or_null("ShipSprite") as Sprite2D
 	if not ship_spr or not (ship_spr.material is ShaderMaterial):
