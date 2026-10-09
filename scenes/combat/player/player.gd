@@ -41,6 +41,8 @@ const PlayerBombControllerClass = preload("res://scenes/combat/player/player_bom
 const PlayerShieldControllerClass = preload("res://scenes/combat/player/player_shield_controller.gd")
 const PlayerProgressionApplierClass = preload("res://scenes/combat/player/player_progression_applier.gd")
 const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
+const PlayerLocomotionControllerClass = preload("res://scenes/combat/player/player_locomotion_controller.gd")
+const PlayerEconomyComponentClass = preload("res://scenes/combat/player/player_economy_component.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -63,6 +65,8 @@ var bomb_controller: RefCounted = PlayerBombControllerClass.new()
 var shield_controller: RefCounted = PlayerShieldControllerClass.new()
 var progression_applier: RefCounted = PlayerProgressionApplierClass.new()
 var dash_controller: PlayerDashController = PlayerDashController.new()
+var locomotion_controller: RefCounted = PlayerLocomotionControllerClass.new()
+var economy_component: Node = PlayerEconomyComponentClass.new()
 
 # Propiedades delegadas de Movilidad y Dash (PlayerDashController)
 var is_dashing: bool:
@@ -154,33 +158,78 @@ var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/playe
 var is_dead: bool = false
 var current_health: float = 100.0
 
-# Economía de la Run
-var run_credits: int = 40
-var run_biomass: int = 0
-var run_dark_matter: int = 0
-var is_movement_suppressed: bool = false
+# Economía de la Run delegada a PlayerEconomyComponent
+var run_credits: int:
+	get: return economy_component.run_credits if economy_component else 40
+	set(val):
+		if economy_component: economy_component.run_credits = val
+
+var run_biomass: int:
+	get: return economy_component.run_biomass if economy_component else 0
+	set(val):
+		if economy_component: economy_component.run_biomass = val
+
+var run_dark_matter: int:
+	get: return economy_component.run_dark_matter if economy_component else 0
+	set(val):
+		if economy_component: economy_component.run_dark_matter = val
+
+var is_movement_suppressed: bool:
+	get: return locomotion_controller.is_movement_suppressed if locomotion_controller else false
+	set(val):
+		if locomotion_controller: locomotion_controller.is_movement_suppressed = val
+
 var is_invulnerable: bool = false
 
-# Experiencia y Progresión en Run
-var current_level: int = 1
-var current_exp: float = 0.0
-var exp_to_next: float = 40.0
+# Experiencia y Progresión en Run delegada a PlayerEconomyComponent
+var current_level: int:
+	get: return economy_component.current_level if economy_component else 1
+	set(val):
+		if economy_component: economy_component.current_level = val
+
+var current_exp: float:
+	get: return economy_component.current_exp if economy_component else 0.0
+	set(val):
+		if economy_component: economy_component.current_exp = val
+
+var exp_to_next: float:
+	get: return economy_component.exp_to_next if economy_component else 40.0
+	set(val):
+		if economy_component: economy_component.exp_to_next = val
+
 var chosen_stat_cards: Array[StatCardData] = []
 var active_arcanas: Array[ArcanaData] = []
 
-# Cinemática de Vuelo y Shaders
-var current_facing_angle: float = -PI / 2.0
-var last_facing_direction: Vector2 = Vector2.UP
-var current_bank_tilt: float = 0.0
-var idle_bob_timer: float = 0.0
+# Cinemática de Vuelo y Shaders delegados a PlayerLocomotionController
+var current_facing_angle: float:
+	get: return locomotion_controller.current_facing_angle if locomotion_controller else -PI / 2.0
+	set(val):
+		if locomotion_controller: locomotion_controller.current_facing_angle = val
+
+var last_facing_direction: Vector2:
+	get: return locomotion_controller.last_facing_direction if locomotion_controller else Vector2.UP
+	set(val):
+		if locomotion_controller: locomotion_controller.last_facing_direction = val
+
+var current_bank_tilt: float:
+	get: return locomotion_controller.current_bank_tilt if locomotion_controller else 0.0
+	set(val):
+		if locomotion_controller: locomotion_controller.current_bank_tilt = val
+
+var idle_bob_timer: float:
+	get: return locomotion_controller.idle_bob_timer if locomotion_controller else 0.0
+	set(val):
+		if locomotion_controller: locomotion_controller.idle_bob_timer = val
+
 var hit_flash_timer: float = 0.0
 const ROTATION_SMOOTH_SPEED: float = 14.0
 const BANK_SMOOTH_SPEED: float = 8.0
 const TACTICAL_FOCUS_SPEED: float = 280.0
 
-var is_tactical_focus_active: bool = false
-var _threat_check_timer: float = 0.0
-var _is_threat_nearby: bool = false
+var is_tactical_focus_active: bool:
+	get: return locomotion_controller.is_tactical_focus_active if locomotion_controller else false
+	set(val):
+		if locomotion_controller: locomotion_controller.is_tactical_focus_active = val
 
 @onready var hitbox_core: Node2D = get_node_or_null("HitboxCore")
 @onready var weapon_controller: Node2D = get_node_or_null("WeaponController")
@@ -227,14 +276,17 @@ func _ready() -> void:
 		progression_applier.apply_skill_tree_bonuses(self, stats, character_data)
 		progression_applier.apply_trophy_bonuses(stats)
 
+	if not economy_component.is_inside_tree():
+		add_child(economy_component)
+	economy_component.credits_changed.connect(func(amt: int) -> void: credits_changed.emit(amt))
+	economy_component.biomass_changed.connect(func(amt: int, tot: int) -> void: biomass_changed.emit(amt, tot))
+	economy_component.dark_matter_changed.connect(func(amt: int, tot: int) -> void: dark_matter_changed.emit(amt, tot))
+	economy_component.exp_changed.connect(func(c: float, m: float, lvl: int) -> void: exp_changed.emit(c, m, lvl))
+	economy_component.level_up_requested.connect(func(lvl: int) -> void: level_up_requested.emit(lvl))
+
 	current_health = stats.get_stat(&"max_health")
 	health_changed.emit(current_health, current_health)
-	credits_changed.emit(run_credits)
-	var persistent_bio := SaveManager.get_biomass()
-	biomass_changed.emit(run_biomass, persistent_bio)
-	var persistent_dm := SaveManager.get_dark_matter()
-	dark_matter_changed.emit(run_dark_matter, persistent_dm)
-	exp_changed.emit(current_exp, exp_to_next, current_level)
+	economy_component.initialize_economy()
 	if not inventory.is_inside_tree():
 		add_child(inventory)
 	inventory.character_stats = stats
@@ -310,39 +362,12 @@ func _setup_hitbox_core_visuals() -> void:
 
 
 func _process(delta: float) -> void:
-	_update_hitbox_core_visibility(delta)
-
-
-func _update_hitbox_core_visibility(delta: float) -> void:
-	if not hitbox_core:
-		return
-	_threat_check_timer -= delta
-	if _threat_check_timer <= 0.0:
-		_threat_check_timer = 0.12
-		_is_threat_nearby = _check_hostile_threat()
-
-	var settings_mgr = get_node_or_null("/root/SettingsManager")
-	var always_on: bool = settings_mgr.is_core_hitbox_always_visible() if settings_mgr and settings_mgr.has_method("is_core_hitbox_always_visible") else false
-
-	var target_alpha: float = 1.0 if (always_on or is_tactical_focus_active or _is_threat_nearby) else 0.0
-	hitbox_core.modulate.a = move_toward(hitbox_core.modulate.a, target_alpha, delta / 0.1)
+	if locomotion_controller:
+		locomotion_controller.update_hitbox_core_visibility(self, hitbox_core, delta)
 
 
 func _check_hostile_threat() -> bool:
-	var tree := get_tree()
-	if not tree:
-		return false
-	if not tree.get_nodes_in_group("bosses").is_empty() or not tree.get_nodes_in_group("rivals").is_empty():
-		return true
-	var chargers := tree.get_nodes_in_group("chargers")
-	for c in chargers:
-		if is_instance_valid(c) and c.get("is_preparing_charge") == true:
-			return true
-	var enemies := tree.get_nodes_in_group("enemies")
-	for e in enemies:
-		if is_instance_valid(e) and e is Node2D and (e as Node2D).global_position.distance_squared_to(global_position) < 14400.0:
-			return true
-	return false
+	return locomotion_controller._check_hostile_threat(self) if locomotion_controller else false
 
 
 func _physics_process(delta: float) -> void:
@@ -364,8 +389,6 @@ func _physics_process(delta: float) -> void:
 	_handle_actions()
 	_handle_health_regen(delta)
 
-	# Cinemática de Vuelo 360° orientada hacia el vector de movimiento
-	idle_bob_timer += delta
 	if hit_flash_timer > 0.0:
 		hit_flash_timer = maxf(0.0, hit_flash_timer - delta)
 
@@ -378,37 +401,9 @@ func _physics_process(delta: float) -> void:
 			var audio_mgr := get_node_or_null("/root/AudioManager")
 			if audio_mgr and audio_mgr.has_method("play_sfx"):
 				audio_mgr.play_sfx("laser", 1.8, 2.5)
-	var target_bank: float = 0.0
 
-	# Durante el Omega Spin de Nova, la rotación la conduce sincronizadamente el rayo láser
-	if not is_omega_spinning:
-		if is_moving:
-			var move_angle := velocity.angle()
-			last_facing_direction = velocity.normalized()
-			var angle_diff := wrapf(move_angle - current_facing_angle, -PI, PI)
-			current_facing_angle = lerp_angle(current_facing_angle, move_angle, ROTATION_SMOOTH_SPEED * delta)
-			target_bank = clampf(angle_diff * 1.8, -1.0, 1.0)
-		else:
-			target_bank = 0.0
-
-		current_bank_tilt = move_toward(current_bank_tilt, target_bank, BANK_SMOOTH_SPEED * delta)
-
-		var visual_rotation := current_facing_angle + PI / 2.0
-		var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-		if ship_spr and ship_spr.visible:
-			ship_spr.rotation = visual_rotation
-			if not is_moving and not is_dashing:
-				ship_spr.position.y = sin(idle_bob_timer * 3.5) * 1.5
-			else:
-				ship_spr.position.y = move_toward(ship_spr.position.y, 0.0, 8.0 * delta)
-
-		var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
-		if exo_spr:
-			exo_spr.rotation = visual_rotation
-
-		var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
-		if placeholder and placeholder.visible:
-			placeholder.rotation = current_facing_angle
+	if locomotion_controller:
+		locomotion_controller.update_flight_kinematics(self, is_omega_spinning, is_dashing, delta)
 
 	_update_pilot_shader(delta, is_moving)
 
@@ -423,48 +418,18 @@ func _update_pilot_shader(delta: float, is_moving: bool) -> void:
 
 
 func _handle_movement(delta: float) -> void:
-	if is_movement_suppressed:
-		velocity = Vector2.ZERO
-		move_and_slide()
-		return
-
-	if is_dashing:
-		velocity = dash_direction * (stats.get_stat(&"move_speed") * 2.5)
-		move_and_slide()
-		return
-
-	var input_vector := Vector2(
-		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
-		Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
-	).normalized()
-
-	is_tactical_focus_active = Input.is_key_pressed(KEY_CTRL) or (InputMap.has_action(&"tactical_focus") and Input.is_action_pressed(&"tactical_focus"))
-
-	var speed: float = stats.get_stat(&"move_speed")
-	if is_tactical_focus_active:
-		speed = minf(speed, TACTICAL_FOCUS_SPEED)
-
-	velocity = velocity.move_toward(input_vector * speed, speed * 8.0 * delta)
-	move_and_slide()
+	if locomotion_controller:
+		locomotion_controller.handle_movement(self, stats, is_dashing, dash_direction, delta)
 
 
 func set_cinematic_duel_facing() -> void:
-	is_movement_suppressed = true
-	velocity = Vector2.ZERO
-	current_facing_angle = 0.0
-	var ship_spr := get_node_or_null("ShipSprite") as Sprite2D
-	if ship_spr:
-		ship_spr.rotation = PI / 2.0
-	var exo_spr := get_node_or_null("ExoArmorSprite") as Sprite2D
-	if exo_spr:
-		exo_spr.rotation = PI / 2.0
-	var placeholder := get_node_or_null("VisualPlaceholder") as Polygon2D
-	if placeholder:
-		placeholder.rotation = 0.0
+	if locomotion_controller:
+		locomotion_controller.set_cinematic_duel_facing(self)
 
 
 func resume_movement_control() -> void:
-	is_movement_suppressed = false
+	if locomotion_controller:
+		locomotion_controller.resume_movement_control()
 
 
 func _on_dash_controller_updated(c: int, m: int, p: float, f: bool) -> void:
@@ -576,39 +541,18 @@ func heal(amount: float) -> void:
 
 
 func add_credits(amount: int) -> void:
-	if amount <= 0:
-		return
-	var mult: float = stats.get_stat(&"credits_multiplier") if stats else 1.0
-	var curse: float = stats.get_stat(&"curse") if stats else 0.0
-	var curse_bonus: float = maxf(0.0, 1.0 + (curse * 0.01))
-	var effective := int(round(float(amount) * maxf(0.1, mult) * curse_bonus))
-	run_credits += effective
-	credits_changed.emit(run_credits)
+	if economy_component:
+		economy_component.add_credits(amount, stats)
 
 
 func add_biomass(amount: int) -> void:
-	if amount <= 0:
-		return
-	var mult: float = stats.get_stat(&"biomass_multiplier") if stats else 1.0
-	var effective := int(round(float(amount) * maxf(0.1, mult)))
-	run_biomass += effective
-	var total_persistent := SaveManager.add_biomass(effective)
-	biomass_changed.emit(run_biomass, total_persistent)
+	if economy_component:
+		economy_component.add_biomass(amount, stats)
 
 
 func add_exp(amount: float) -> void:
-	var exp_mult: float = stats.get_stat(&"exp_multiplier") if stats else 1.0
-	var effective_amount: float = amount * maxf(0.1, exp_mult)
-	if inventory and inventory.has_method("get_item_count") and inventory.get_item_count(&"alchemical_converter") > 0:
-		var cred_gain: int = maxi(1, int(round(effective_amount * 0.15)))
-		add_credits(cred_gain)
-	current_exp += effective_amount
-	while current_exp >= exp_to_next:
-		current_exp -= exp_to_next
-		current_level += 1
-		exp_to_next *= 1.35
-		level_up_requested.emit(current_level)
-	exp_changed.emit(current_exp, exp_to_next, current_level)
+	if economy_component:
+		economy_component.add_exp(amount, stats, inventory)
 
 
 func take_damage(arg: Variant) -> void:
@@ -716,11 +660,8 @@ func apply_arcana(arcana: ArcanaData) -> void:
 
 
 func add_dark_matter(amount: int) -> void:
-	if amount <= 0:
-		return
-	run_dark_matter += amount
-	var total_persistent := SaveManager.add_dark_matter(amount)
-	dark_matter_changed.emit(run_dark_matter, total_persistent)
+	if economy_component:
+		economy_component.add_dark_matter(amount)
 
 func _on_inventory_item_added(_it: ItemData, _cnt: int) -> void:
 	_update_conversion_core_stats()

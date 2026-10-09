@@ -27,7 +27,9 @@
 | Contexto desacoplado de combate | `scenes/combat/systems/combat_context.gd` | Inyección de actores centrales |
 | Interfaz base de subsistemas Plug&Play | `scenes/combat/systems/combat_subsystem.gd` | Contrato virtual CombatSubsystem |
 | Fin de partida y derrota | `scenes/combat/controllers/combat_end_run_controller.gd` | Telemetría y modal de game over |
-| Jugador (movimiento, dash, bomba, daño, muerte) | `scenes/combat/player/player.gd` | Movement: L426, Dash: L475, Damage: L615 |
+| Jugador (orquestador raíz) | `scenes/combat/player/player.gd` | Orquestador: L250, Damage: L540 |
+| Locomoción y cinemática 360° del jugador | `scenes/combat/player/player_locomotion_controller.gd` | Vuelo, bank tilt, tactical focus, core hitbox |
+| Economía y experiencia in-run del jugador | `scenes/combat/player/player_economy_component.gd` | Exp, levels, credits, biomass, dark matter |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
 | Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | — |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
