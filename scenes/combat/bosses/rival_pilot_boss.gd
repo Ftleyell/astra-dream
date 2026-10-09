@@ -3,14 +3,20 @@ extends CharacterBody2D
 
 ## Jefe y Encuentro Rival: Piloto de la Flota Astra
 ## Aparece en oleadas impares (1, 3, 5, 7, 9) proyectando un perímetro de advertencia.
-## Si el jugador se aleja pacíficamente por >4 segundos (>1400 px), salta al hiperespacio (Perdonada / Spared).
-## Si el jugador cruza el perímetro (<720 px) o ataca, comienza un intenso dogfight 1v1.
-## Al ser derrotada, suelta su arma básica insignia en una cápsula recolectable.
+## Si el jugador se aleja pacíficamente por >5 segundos (>1450 px), salta al hiperespacio (Perdonada / Spared).
+## Si el jugador cruza el perímetro (<480 px) o ataca, comienza un intenso dogfight 1v1.
+## Delega máquina de estados en RivalEngagementBehavior y cinemática en RivalFlightMotor.
 
 signal rival_spared(pilot_id: StringName)
 signal rival_engaged(pilot_id: StringName)
 signal rival_defeated(pilot_id: StringName, weapon: WeaponData)
 signal health_changed(current: float, max_val: float)
+
+const RivalEngagementBehaviorScript = preload("res://scenes/combat/bosses/components/rival_engagement_behavior.gd")
+const RivalFlightMotorScript = preload("res://scenes/combat/bosses/components/rival_flight_motor.gd")
+const RivalWarpPresenterScript = preload("res://scenes/combat/bosses/rival_warp_presenter.gd")
+const RivalCombatPatternExecutorScript = preload("res://scenes/combat/bosses/rival_combat_pattern_executor.gd")
+const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
 
 enum State {
 	WARPING_IN,
@@ -20,40 +26,59 @@ enum State {
 	DYING
 }
 
-const WARNING_RADIUS: float = 650.0
-const COMBAT_TRIGGER_RADIUS: float = 480.0
-const ESCAPE_RADIUS: float = 1450.0
-const SPARED_REQUIRED_TIME: float = 5.0
-const CHALLENGE_REQUIRED_TIME: float = 2.0
+const WARNING_RADIUS: float = RivalEngagementBehaviorScript.WARNING_RADIUS
+const COMBAT_TRIGGER_RADIUS: float = RivalEngagementBehaviorScript.COMBAT_TRIGGER_RADIUS
+const ESCAPE_RADIUS: float = RivalEngagementBehaviorScript.ESCAPE_RADIUS
+const SPARED_REQUIRED_TIME: float = RivalEngagementBehaviorScript.SPARED_REQUIRED_TIME
+const CHALLENGE_REQUIRED_TIME: float = RivalEngagementBehaviorScript.CHALLENGE_REQUIRED_TIME
+
+const PILOT_THEME_COLORS: Dictionary = {
+	&"nova": Color(0.0, 0.9, 1.0),
+	&"valentina": Color(1.0, 0.84, 0.0),
+	&"kira": Color(1.0, 0.55, 0.0),
+	&"selene": Color(0.0, 0.9, 0.45),
+	&"roxy": Color(1.0, 0.1, 0.25),
+	&"echo": Color(0.5, 0.3, 1.0),
+	&"nyx": Color(0.85, 0.0, 0.95),
+}
 
 @export var pilot_id: StringName = &"nova"
 @export var pilot_name: String = "Nova"
 @export var max_health: float = 1600.0
 
 var current_health: float = 1600.0
-var current_state: State = State.WARPING_IN
 var character_data: CharacterData = null
 var weapon_data: WeaponData = null
 
 var player: Player = null
 var bullet_server: BulletServer = null
 var elapsed_time: float = 0.0
-var spared_timer: float = 0.0
-var challenge_timer: float = 0.0
 var attack_timer: float = 0.0
-var dash_timer: float = 0.0
-var is_dashing: bool = false
-var dash_velocity: Vector2 = Vector2.ZERO
-var previous_rotation: float = 0.0
-var current_bank_tilt: float = 0.0
+
+# Subcomponentes desacoplados
+var behavior: RivalEngagementBehaviorScript = RivalEngagementBehaviorScript.new()
+var flight_motor: RivalFlightMotorScript = RivalFlightMotorScript.new()
+
+var current_state: State:
+	get: return behavior.current_state as State
+	set(val): behavior.current_state = val as RivalEngagementBehaviorScript.State
+
+var spared_timer: float:
+	get: return behavior.spared_timer
+	set(val): behavior.spared_timer = val
+
+var challenge_timer: float:
+	get: return behavior.challenge_timer
+	set(val): behavior.challenge_timer = val
 
 # Componentes visuales
 var ship_sprite: Sprite2D = null
 var combat_danger_ring: Sprite2D = null
-var engine_trail: Line2D = null
 var warning_ring_color: Color = Color(1.0, 0.8, 0.1, 0.5)
 var warning_ring_pulse: float = 0.0
 var warning_label: Label = null
+var _warp_portal: Node2D = null
+var _warp_target_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -66,29 +91,19 @@ func _ready() -> void:
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
+	_bind_behavior()
 	health_changed.emit(current_health, max_health)
 
 	if current_state == State.WARPING_IN:
 		prepare_warp_in()
 
+func _bind_behavior() -> void:
+	behavior.setup(pilot_id, pilot_name)
+	behavior.combat_engaged.connect(_on_behavior_combat_engaged)
+	behavior.warped_out_peacefully.connect(_on_behavior_warped_out_peacefully)
+
 func is_peaceful() -> bool:
-	return current_state != State.DOGFIGHT
-
-const PILOT_THEME_COLORS: Dictionary = {
-	&"nova": Color(0.0, 0.9, 1.0),
-	&"valentina": Color(1.0, 0.84, 0.0),
-	&"kira": Color(1.0, 0.55, 0.0),
-	&"selene": Color(0.0, 0.9, 0.45),
-	&"roxy": Color(1.0, 0.1, 0.25),
-	&"echo": Color(0.5, 0.3, 1.0),
-	&"nyx": Color(0.85, 0.0, 0.95),
-}
-
-const RivalWarpPresenterScript = preload("res://scenes/combat/bosses/rival_warp_presenter.gd")
-const RivalCombatPatternExecutorScript = preload("res://scenes/combat/bosses/rival_combat_pattern_executor.gd")
-
-var _warp_portal: Node2D = null
-var _warp_target_pos: Vector2 = Vector2.ZERO
+	return behavior.is_peaceful()
 
 func _exit_tree() -> void:
 	if _warp_portal and is_instance_valid(_warp_portal):
@@ -103,11 +118,9 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 		pilot_name = character_data.display_name
 		weapon_data = character_data.starting_weapon
 
-	# Color temático del anillo de advertencia según la piloto
+	behavior.setup(pilot_id, pilot_name)
 	var theme_col: Color = PILOT_THEME_COLORS.get(p_id, Color(0.0, 0.9, 1.0))
 	warning_ring_color = Color(theme_col.r, theme_col.g, theme_col.b, 0.5)
-
-	# Escalamiento por oleada
 	max_health = 1600.0 + float(p_wave) * 280.0
 	current_health = max_health
 
@@ -136,10 +149,8 @@ func start_encounter() -> void:
 		_warp_portal.start_collapse()
 	if _warp_target_pos != Vector2.ZERO:
 		global_position = _warp_target_pos
-	current_state = State.PEACEFUL_WARN
+	behavior.start_encounter()
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	spared_timer = 0.0
-	challenge_timer = 0.0
 	if ship_sprite:
 		ship_sprite.scale = Vector2(0.42, 0.42)
 		ship_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
@@ -175,21 +186,15 @@ func _setup_visuals() -> void:
 		ship_sprite.z_index = 2
 		add_child(ship_sprite)
 
-	if character_data:
-		var tex := character_data.get_ship_texture()
-		if tex:
-			ship_sprite.texture = tex
-	else:
-		# Textura de fallback
+	var tex: Texture2D = character_data.get_ship_texture() if character_data else null
+	if not tex:
 		var fb_path := "res://assets/characters/ships/ship_nova.png"
 		if ResourceLoader.exists(fb_path):
-			ship_sprite.texture = load(fb_path) as Texture2D
+			tex = load(fb_path) as Texture2D
+	ship_sprite.texture = tex
 
-	# Shader maestro de vuelo procedimental
-	var flight_shader: Shader = preload("res://shaders/exo_pilot_flight.gdshader")
 	var flight_mat := ShaderMaterial.new()
-	flight_mat.shader = flight_shader
-
+	flight_mat.shader = preload("res://shaders/exo_pilot_flight.gdshader")
 	var theme_col: Color = PILOT_THEME_COLORS.get(pilot_id, Color(0.0, 0.9, 1.0))
 	var sec_col: Color = Color.from_hsv(wrapf(theme_col.h + 0.15, 0.0, 1.0), 0.7, 1.1)
 	flight_mat.set_shader_parameter("primary_color", theme_col)
@@ -217,10 +222,8 @@ func _setup_visuals() -> void:
 	else:
 		flight_mat.set_shader_parameter("has_mask", false)
 		flight_mat.set_shader_parameter("enable_thrusters", false)
-
 	ship_sprite.material = flight_mat
 
-	# Colisión de la nave entera (escala 0.42 de nave ~36px -> radio 18.0)
 	var existing_col := get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if existing_col and existing_col.shape is CircleShape2D:
 		(existing_col.shape as CircleShape2D).radius = 18.0
@@ -231,7 +234,6 @@ func _setup_visuals() -> void:
 		col.shape = circle
 		add_child(col)
 
-	# Label de advertencia
 	warning_label = Label.new()
 	warning_label.name = "WarningLabel"
 	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -242,7 +244,6 @@ func _setup_visuals() -> void:
 	warning_label.add_theme_font_size_override("font_size", 13)
 	add_child(warning_label)
 
-	# Proyección holográfica de suelo DANGER estilo Mega Man X5 (radio 480px)
 	if not combat_danger_ring:
 		combat_danger_ring = Sprite2D.new()
 		combat_danger_ring.name = "CombatDangerRing"
@@ -257,12 +258,9 @@ func _setup_visuals() -> void:
 				if img.load(global_path) == OK:
 					ring_tex = ImageTexture.create_from_image(img)
 		combat_danger_ring.texture = ring_tex
-
-		# Material con mezcla aditiva para resplandor holográfico neón
 		var mat := CanvasItemMaterial.new()
 		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 		combat_danger_ring.material = mat
-
 		var target_scale: float = (COMBAT_TRIGGER_RADIUS * 2.0) / (906.0 * scale.x)
 		combat_danger_ring.scale = Vector2(target_scale, target_scale)
 		combat_danger_ring.modulate = Color(1.0, 0.25, 0.3, 0.65)
@@ -274,23 +272,8 @@ func _setup_visuals() -> void:
 func _update_warning_label() -> void:
 	if not warning_label:
 		return
-	if current_state == State.PEACEFUL_WARN:
-		if challenge_timer > 0.0:
-			var remaining := maxf(0.0, CHALLENGE_REQUIRED_TIME - challenge_timer)
-			warning_label.text = "⚔️ RETANDO A %s (%.1fs)...\n[ Permanece en el anillo para iniciar combate ]" % [pilot_name.to_upper(), remaining]
-			warning_label.modulate = Color(1.0, 0.45, 0.2, 0.95)
-		elif spared_timer > 0.0:
-			var remaining := maxf(0.0, SPARED_REQUIRED_TIME - spared_timer)
-			warning_label.text = "⚠️ %s: RETIRÁNDOSE (%.1fs)...\n(Mantén distancia para perdonar)" % [pilot_name.to_upper(), remaining]
-			warning_label.modulate = Color(0.3, 1.0, 0.5, 0.95)
-		else:
-			warning_label.text = "⚠️ PERÍMETRO DE COMBATE — %s\n[ Entra al anillo para retar | Aléjate para perdonar ]" % pilot_name.to_upper()
-			warning_label.modulate = Color(1.0, 0.75, 0.2, 0.95)
-	elif current_state == State.DOGFIGHT:
-		warning_label.text = "⚔️ EN DUELO: PILOTO %s" % pilot_name.to_upper()
-		warning_label.modulate = Color(1.0, 0.2, 0.2, 0.95)
-	else:
-		warning_label.text = ""
+	warning_label.text = behavior.get_warning_text()
+	warning_label.modulate = behavior.get_warning_color()
 
 func _process(delta: float) -> void:
 	if get_tree() and get_tree().paused:
@@ -301,30 +284,25 @@ func _process(delta: float) -> void:
 		if current_state == State.PEACEFUL_WARN:
 			combat_danger_ring.visible = true
 			var base_scale: float = (COMBAT_TRIGGER_RADIUS * 2.0) / (906.0 * scale.x)
-			var pulse := 1.0 + sin(elapsed_time * 2.2) * 0.015
+			var pulse: float = 1.0 + sin(elapsed_time * 2.2) * 0.015
 			combat_danger_ring.scale = Vector2(base_scale * pulse, base_scale * pulse)
-
-			# Giro lento continuo:
 			combat_danger_ring.rotation += delta * 0.12
 
-			# Titileo entre su color base y uno más brillante (estilo alerta Mega Man X5)
 			var osc: float = sin(elapsed_time * 3.8) * 0.5 + 0.5
 			var micro_flicker: float = sin(elapsed_time * 18.0) * 0.08
 			var intensity: float = clampf(osc + micro_flicker, 0.0, 1.0)
-
 			var col_base := Color(1.0, 0.25, 0.3, 0.65)
 			var col_bright := Color(1.85, 0.65, 0.7, 0.98)
-			var active_color := col_base.lerp(col_bright, intensity)
+			var active_color: Color = col_base.lerp(col_bright, intensity)
 
 			if challenge_timer > 0.0:
-				var c_ratio := clampf(challenge_timer / CHALLENGE_REQUIRED_TIME, 0.0, 1.0)
+				var c_ratio: float = clampf(challenge_timer / CHALLENGE_REQUIRED_TIME, 0.0, 1.0)
 				var fast_flicker: float = sin(elapsed_time * (18.0 + c_ratio * 16.0)) * 0.15
 				var intense_intensity: float = clampf(intensity + c_ratio * 0.45 + fast_flicker, 0.0, 1.0)
 				active_color = col_base.lerp(Color(2.5, 0.9, 0.9, 1.0), intense_intensity)
 			elif spared_timer > 0.0:
-				var s_ratio := clampf(spared_timer / SPARED_REQUIRED_TIME, 0.0, 1.0)
+				var s_ratio: float = clampf(spared_timer / SPARED_REQUIRED_TIME, 0.0, 1.0)
 				active_color.a *= maxf(0.15, 1.0 - s_ratio * 0.7)
-
 			combat_danger_ring.modulate = active_color
 		elif combat_danger_ring.visible:
 			combat_danger_ring.visible = false
@@ -333,12 +311,10 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var sx: float = scale.x if scale.x > 0.0 else 1.0
 	if current_state == State.PEACEFUL_WARN:
-		var alpha := 0.35 + sin(warning_ring_pulse) * 0.15
-		var col := Color(1.0, 0.8, 0.15, alpha)
-		# Anillo de advertencia exterior
-		draw_arc(Vector2.ZERO, WARNING_RADIUS / sx, 0, TAU, 64, col, 2.5, true)
+		var alpha: float = 0.35 + sin(warning_ring_pulse) * 0.15
+		draw_arc(Vector2.ZERO, WARNING_RADIUS / sx, 0, TAU, 64, Color(1.0, 0.8, 0.15, alpha), 2.5, true)
 	elif current_state == State.DOGFIGHT:
-		var alpha := 0.5 + sin(warning_ring_pulse * 1.5) * 0.25
+		var alpha: float = 0.5 + sin(warning_ring_pulse * 1.5) * 0.25
 		draw_arc(Vector2.ZERO, COMBAT_TRIGGER_RADIUS / sx, 0, TAU, 48, Color(1.0, 0.15, 0.2, alpha), 2.5, true)
 
 func _physics_process(delta: float) -> void:
@@ -350,134 +326,42 @@ func _physics_process(delta: float) -> void:
 		if not is_instance_valid(player):
 			return
 
-	var dist_to_player := global_position.distance_to(player.global_position)
-
+	var dist_to_player: float = global_position.distance_to(player.global_position)
 	match current_state:
 		State.PEACEFUL_WARN:
 			_process_peaceful_warn(delta, dist_to_player)
 		State.DOGFIGHT:
 			_process_dogfight(delta, dist_to_player)
 
-	_update_flight_shader(delta)
-
-func _update_flight_shader(delta: float) -> void:
-	if not ship_sprite or not (ship_sprite.material is ShaderMaterial):
-		return
-	var mat := ship_sprite.material as ShaderMaterial
-
-	var rot_diff: float = wrapf(rotation - previous_rotation, -PI, PI)
-	previous_rotation = rotation
-	var angular_rate: float = rot_diff / maxf(0.001, delta)
-	var target_bank: float = clampf(angular_rate * 0.12, -1.0, 1.0)
-	current_bank_tilt = move_toward(current_bank_tilt, target_bank, 8.0 * delta)
-
-	mat.set_shader_parameter("bank_tilt", current_bank_tilt)
-	var leg_bend_val: float = clampf(-current_bank_tilt * 0.22, -0.22, 0.22)
-	mat.set_shader_parameter("leg_bend", leg_bend_val)
-
-	var spd: float = velocity.length()
-	var spd_ratio: float = clampf(spd / 600.0, 0.0, 1.0)
-	mat.set_shader_parameter("speed_ratio", spd_ratio)
-
-	if is_dashing:
-		mat.set_shader_parameter("thrust_intensity", 2.2)
-		mat.set_shader_parameter("thruster_length", 0.75)
-		mat.set_shader_parameter("thruster_speed", 90.0)
-		mat.set_shader_parameter("thruster_width", 0.075)
-	elif current_state == State.DOGFIGHT:
-		mat.set_shader_parameter("thrust_intensity", lerpf(0.7, 1.4, spd_ratio))
-		mat.set_shader_parameter("thruster_length", lerpf(0.42, 0.58, spd_ratio))
-		mat.set_shader_parameter("thruster_speed", lerpf(50.0, 75.0, spd_ratio))
-		mat.set_shader_parameter("thruster_width", lerpf(0.045, 0.06, spd_ratio))
-	else:
-		mat.set_shader_parameter("thrust_intensity", 0.45)
-		mat.set_shader_parameter("thruster_length", 0.35 + 0.04 * sin(elapsed_time * 4.0))
-		mat.set_shader_parameter("thruster_speed", 40.0)
-		mat.set_shader_parameter("thruster_width", 0.04)
+	flight_motor.update_flight_shader(self, ship_sprite, current_state == State.DOGFIGHT, delta, elapsed_time)
 
 func _process_peaceful_warn(delta: float, dist: float) -> void:
-	if is_instance_valid(player):
-		# Rotar mirando al jugador con cautela
-		var dir := (player.global_position - global_position).normalized()
-		rotation = lerp_angle(rotation, dir.angle() + PI / 2.0, 5.0 * delta)
-
-		# Suave flotación orbital
-		velocity = Vector2(-dir.y, dir.x) * sin(elapsed_time * 1.5) * 45.0
-		move_and_slide()
-
-	# Condición de combate: entrar y permanecer en la zona de desafío durante CHALLENGE_REQUIRED_TIME
-	if dist <= COMBAT_TRIGGER_RADIUS:
-		challenge_timer += delta
-		spared_timer = 0.0
-		_update_warning_label()
-		if challenge_timer >= CHALLENGE_REQUIRED_TIME:
-			engage_combat()
-		return
-	else:
-		challenge_timer = maxf(0.0, challenge_timer - delta * 1.5)
-
-	# Condición de perdón: el jugador se aleja (> ESCAPE_RADIUS)
-	if dist >= ESCAPE_RADIUS:
-		spared_timer += delta
-		_update_warning_label()
-		if spared_timer >= SPARED_REQUIRED_TIME:
-			_warp_out_peacefully()
-	else:
-		spared_timer = maxf(0.0, spared_timer - delta * 0.8)
-		_update_warning_label()
-
-func engage_combat() -> void:
-	if current_state == State.DOGFIGHT:
-		return
-	current_state = State.DOGFIGHT
-	process_mode = Node.PROCESS_MODE_PAUSABLE
+	flight_motor.process_peaceful_flight(self, player, delta, elapsed_time)
+	behavior.process_peaceful_warn(delta, dist)
 	_update_warning_label()
 
-	# Disipar proyección holográfica de combate con desvanecimiento limpio
+func engage_combat() -> void:
+	behavior.engage_combat()
+
+func _on_behavior_combat_engaged(p_id: StringName) -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	_update_warning_label()
 	if combat_danger_ring and is_instance_valid(combat_danger_ring):
 		var tw_ring := create_tween()
 		tw_ring.tween_property(combat_danger_ring, "modulate:a", 0.0, 0.3)
 		tw_ring.chain().tween_callback(combat_danger_ring.queue_free)
 		combat_danger_ring = null
 
-	# Alarma sonora y feedback
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("warning", 1.0, 1.0)
+	rival_engaged.emit(p_id)
 
-	rival_engaged.emit(pilot_id)
-
-func _warp_out_peacefully() -> void:
-	current_state = State.WARPING_OUT
-	RivalWarpPresenterScript.warp_out_peacefully(self, pilot_id, pilot_name)
+func _on_behavior_warped_out_peacefully(p_id: StringName, p_name: String) -> void:
+	RivalWarpPresenterScript.warp_out_peacefully(self, p_id, p_name)
 
 func _process_dogfight(delta: float, dist: float) -> void:
-	if not is_instance_valid(player):
-		return
-	var to_player := (player.global_position - global_position).normalized()
-	rotation = lerp_angle(rotation, to_player.angle() + PI / 2.0, 8.0 * delta)
-
-	# IA de movimiento: maniobra en espiral / órbita táctica a ~400 px
-	var ideal_dist := 400.0
-	var radial_speed := (dist - ideal_dist) * 1.5
-	var orbit_dir := Vector2(-to_player.y, to_player.x)
-	var target_vel := (to_player * radial_speed) + (orbit_dir * 310.0)
-
-	# Micro-dash evasivo
-	dash_timer -= delta
-	if dash_timer <= 0.0:
-		dash_timer = randf_range(2.5, 4.0)
-		is_dashing = true
-		dash_velocity = orbit_dir * (randf_range(500.0, 650.0) * (1.0 if randf() > 0.5 else -1.0))
-		create_tween().tween_callback(func(): is_dashing = false).set_delay(0.35)
-
-	if is_dashing:
-		velocity = dash_velocity
-	else:
-		velocity = velocity.move_toward(target_vel, 700.0 * delta)
-	move_and_slide()
-
-	# Ataques insignia según el piloto
+	flight_motor.process_dogfight_flight(self, player, delta, dist)
 	attack_timer -= delta
 	if attack_timer <= 0.0:
 		attack_timer = randf_range(1.4, 2.2)
@@ -489,12 +373,7 @@ func _execute_signature_attack() -> void:
 	RivalCombatPatternExecutorScript.execute_signature_attack(bullet_server, pilot_id, global_position, player.global_position, rotation, Callable(self, "_play_sfx"))
 
 func take_damage(arg: Variant) -> void:
-	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN:
-		return
-
-	# Si está en fase pacífica, la rival es invulnerable y no se activa por fuego cruzado accidental
-	# (solo se reta permaneciendo dentro de su perímetro de combate):
-	if current_state == State.PEACEFUL_WARN:
+	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN or current_state == State.PEACEFUL_WARN:
 		return
 
 	var dmg: float = 0.0
@@ -514,7 +393,6 @@ func take_damage(arg: Variant) -> void:
 	if dmg_acc:
 		dmg_acc.register_hit(dmg, is_crit)
 
-	# Flash de impacto
 	if ship_sprite:
 		var orig_mod := ship_sprite.modulate
 		ship_sprite.modulate = Color(3.0, 3.0, 3.0, 1.0)
@@ -527,37 +405,24 @@ func take_damage(arg: Variant) -> void:
 	if current_health <= 0.0:
 		_die()
 
-const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
-
 func _die() -> void:
 	if current_state == State.DYING:
 		return
 	current_state = State.DYING
 	set_physics_process(false)
 	set_process(false)
-
-	# Limpiar indicadores y etiquetas de advertencia en pantalla
 	if warning_label and is_instance_valid(warning_label):
 		warning_label.visible = false
 	if combat_danger_ring and is_instance_valid(combat_danger_ring):
 		combat_danger_ring.visible = false
 	queue_redraw()
-
-	# Ejecutar secuencia cinematográfica estilizada con paleta de color propia de la piloto
 	CinematicDeathSequenceScript.play_for_boss(self, _finish_death)
 
 func _finish_death() -> void:
-	# Emisión de evento y recompensas
 	rival_defeated.emit(pilot_id, weapon_data)
-
-	# Spawning de la cápsula de armamento
 	if weapon_data:
-		_drop_weapon_pickup()
-
+		RivalCombatPatternExecutorScript.drop_weapon_pickup(get_tree(), get_parent(), global_position, weapon_data, pilot_name)
 	queue_free()
-
-func _drop_weapon_pickup() -> void:
-	RivalCombatPatternExecutorScript.drop_weapon_pickup(get_tree(), get_parent(), global_position, weapon_data, pilot_name)
 
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

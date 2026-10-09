@@ -3,11 +3,12 @@ extends Node2D
 
 ## WeaponController.gd
 ## Controlador maestro de armas, ranuras de equipo y cadencia de disparo en Astra Dream.
-## Coordina la capa de disparo activo (armas tácticas y carga de láser) y la capa pasiva automática.
-## Delega adquisición de blancos a WeaponAutoAimCoordinator y la instanciación de proyectiles a WeaponProjectileFactory.
+## Coordina la adquisición de blancos (CombatTargetingSystem), cadencia/carga (WeaponCooldownTracker)
+## y la instanciación de proyectiles (WeaponProjectileFactory).
 
-const WeaponAutoAimCoordinator = preload("res://scenes/combat/weapons/weapon_auto_aim_coordinator.gd")
-const WeaponProjectileFactory = preload("res://scenes/combat/weapons/weapon_projectile_factory.gd")
+const CombatTargetingSystemScript = preload("res://scenes/combat/player/combat_targeting_system.gd")
+const WeaponCooldownTrackerScript = preload("res://scenes/combat/player/weapon_cooldown_tracker.gd")
+const WeaponProjectileFactoryScript = preload("res://scenes/combat/weapons/weapon_projectile_factory.gd")
 
 signal laser_cooldown_updated(current: float, max_val: float)
 signal laser_charge_updated(current: float, max_val: float, is_full: bool, is_memorized: bool)
@@ -23,40 +24,61 @@ signal swap_requested(incoming_weapon: WeaponData, on_replaced: Callable, on_can
 const MAX_WEAPON_SLOTS: int = 4
 
 var equipped_weapons: Array[WeaponInstanceData] = []
+var projectile_factory: WeaponProjectileFactory = WeaponProjectileFactoryScript.new()
+var targeting: CombatTargetingSystemScript = CombatTargetingSystemScript.new()
+var cooldown_tracker: WeaponCooldownTrackerScript = WeaponCooldownTrackerScript.new()
 
-# Subcontrolador de Proyectiles
-var projectile_factory: WeaponProjectileFactory = WeaponProjectileFactory.new()
+var is_manual_aim: bool:
+	get: return targeting.is_manual_aim
+	set(val): targeting.is_manual_aim = val
 
-# Modo de apuntado de la capa pasiva
-var is_manual_aim: bool = false
-var current_locked_target: Node2D = null
+var current_locked_target: Node2D:
+	get: return targeting.current_locked_target
+	set(val): targeting.current_locked_target = val
 
-# Carga de la capa activa unificada
-var is_charging: bool = false
-var charge_timer: float = 0.0
-var max_charge_time: float = 3.0
-var is_fully_charged: bool = false
+var is_charging: bool:
+	get: return cooldown_tracker.is_charging
+	set(val): cooldown_tracker.is_charging = val
 
-# Memoria de carga en pausa (Charge Memory)
-var has_charge_memory: bool = false
-var memory_charge_timer: float = 0.0
-var memory_is_fully_charged: bool = false
-var memory_grace_timer: float = 0.0
-const MEMORY_GRACE_MAX: float = 6.0
+var charge_timer: float:
+	get: return cooldown_tracker.charge_timer
+	set(val): cooldown_tracker.charge_timer = val
 
-var last_known_target_dir: Vector2 = Vector2.UP
-var _stutter_slowed_enemies: Array[Node2D] = []
+var max_charge_time: float:
+	get: return cooldown_tracker.max_charge_time
+	set(val): cooldown_tracker.max_charge_time = val
+
+var is_fully_charged: bool:
+	get: return cooldown_tracker.is_fully_charged
+	set(val): cooldown_tracker.is_fully_charged = val
+
+var has_charge_memory: bool:
+	get: return cooldown_tracker.has_charge_memory
+	set(val): cooldown_tracker.has_charge_memory = val
+
+var memory_charge_timer: float:
+	get: return cooldown_tracker.memory_charge_timer
+	set(val): cooldown_tracker.memory_charge_timer = val
+
+var memory_is_fully_charged: bool:
+	get: return cooldown_tracker.memory_is_fully_charged
+	set(val): cooldown_tracker.memory_is_fully_charged = val
+
+var memory_grace_timer: float:
+	get: return cooldown_tracker.memory_grace_timer
+	set(val): cooldown_tracker.memory_grace_timer = val
 
 var active_drones: Array[Node2D]:
 	get: return projectile_factory.active_drones if projectile_factory else []
 	set(val):
 		if projectile_factory: projectile_factory.active_drones = val
 
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if not player and get_parent() is Player:
 		player = get_parent() as Player
+
+	_bind_subsystems()
 
 	if weapon_data:
 		add_weapon(weapon_data)
@@ -70,42 +92,31 @@ func _ready() -> void:
 		default_w.passive_search_radius = 520.0
 		add_weapon(default_w)
 
+func _bind_subsystems() -> void:
+	targeting.aim_mode_changed.connect(func(manual: bool) -> void: aim_mode_changed.emit(manual))
+	cooldown_tracker.laser_cooldown_updated.connect(func(c: float, m: float) -> void: laser_cooldown_updated.emit(c, m))
+	cooldown_tracker.laser_charge_updated.connect(func(c: float, m: float, full: bool, mem: bool) -> void: laser_charge_updated.emit(c, m, full, mem))
+	cooldown_tracker.laser_charge_ended.connect(func() -> void: laser_charge_ended.emit())
+	cooldown_tracker.dispatch_active_requested.connect(_dispatch_weapon_active_fire)
+	cooldown_tracker.dispatch_passive_requested.connect(_dispatch_weapon_passive_fire)
 
 func clear_equipped_weapons() -> void:
 	equipped_weapons.clear()
 	weapons_updated.emit(equipped_weapons)
 
-
-## ─── Nova Omega Spin API ────────────────────────────────────────────────────
 func is_laser_fully_charged() -> bool:
-	return is_fully_charged or memory_is_fully_charged
-
+	return cooldown_tracker.is_laser_fully_charged()
 
 func consume_laser_charge() -> void:
-	is_charging = false
-	charge_timer = 0.0
-	is_fully_charged = false
-	has_charge_memory = false
-	memory_charge_timer = 0.0
-	memory_is_fully_charged = false
-	memory_grace_timer = 0.0
-	laser_charge_ended.emit()
-
+	cooldown_tracker.consume_laser_charge()
 
 func get_effective_max_charge_time() -> float:
-	var base_time: float = max_charge_time
-	if is_instance_valid(player) and "stats" in player and player.stats:
-		var cur_speed: float = player.stats.get_stat(&"move_speed")
-		return clampf(base_time * (340.0 / maxf(100.0, cur_speed)), 1.2, base_time)
-	return base_time
+	return cooldown_tracker.get_effective_max_charge_time(player)
 
-
-## ─── Gestión de Ranuras y Equipamiento ──────────────────────────────────────
 func add_weapon(data: WeaponData) -> bool:
 	if not data:
 		return false
-
-	for inst in equipped_weapons:
+	for inst: WeaponInstanceData in equipped_weapons:
 		if inst.weapon_data.weapon_id == data.weapon_id:
 			return upgrade_weapon(data.weapon_id)
 
@@ -114,21 +125,16 @@ func add_weapon(data: WeaponData) -> bool:
 		equipped_weapons.append(new_inst)
 		weapons_updated.emit(equipped_weapons)
 		return true
-
 	return false
-
 
 func equip_weapon(data: WeaponData) -> bool:
 	return add_weapon(data)
 
-
 func is_full() -> bool:
 	return equipped_weapons.size() >= MAX_WEAPON_SLOTS
 
-
 static func calculate_recycle_credits(weapon_level: int) -> int:
 	return 35 + maxi(0, weapon_level - 1) * 15
-
 
 func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level: bool = true) -> bool:
 	if not new_weapon_data or slot_index <= 0 or slot_index >= equipped_weapons.size():
@@ -145,62 +151,58 @@ func replace_weapon(slot_index: int, new_weapon_data: WeaponData, preserve_level
 	equipped_weapons[slot_index] = new_inst
 	weapons_updated.emit(equipped_weapons)
 	weapon_replaced.emit(slot_index, new_inst)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = Engine.get_main_loop().root.get_node_or_null("/root/AudioManager") if Engine.get_main_loop() else null
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("upgrade_obtained", 1.0, 1.2)
 	return true
 
-
 func upgrade_weapon(weapon_id: StringName, tier: Enums.Tier = Enums.Tier.TIER_2) -> bool:
-	for inst in equipped_weapons:
+	for inst: WeaponInstanceData in equipped_weapons:
 		if inst.weapon_data.weapon_id == weapon_id:
 			inst.level += 1
 			inst.upgrade_tier = tier
 			match tier:
-				Enums.Tier.TIER_1:
-					inst.tier_damage_multiplier = 0.85
-				Enums.Tier.TIER_2:
-					inst.tier_damage_multiplier = 1.00
-				Enums.Tier.TIER_3:
-					inst.tier_damage_multiplier = 1.20
-				Enums.Tier.TIER_4:
-					inst.tier_damage_multiplier = 1.45
-				_:
-					inst.tier_damage_multiplier = 1.00
+				Enums.Tier.TIER_1: inst.tier_damage_multiplier = 0.85
+				Enums.Tier.TIER_2: inst.tier_damage_multiplier = 1.00
+				Enums.Tier.TIER_3: inst.tier_damage_multiplier = 1.20
+				Enums.Tier.TIER_4: inst.tier_damage_multiplier = 1.45
+				_: inst.tier_damage_multiplier = 1.00
 			weapons_updated.emit(equipped_weapons)
-			var audio_mgr := get_node_or_null("/root/AudioManager")
+			var audio_mgr: Node = Engine.get_main_loop().root.get_node_or_null("/root/AudioManager") if Engine.get_main_loop() else null
 			if audio_mgr and audio_mgr.has_method("play_sfx"):
 				audio_mgr.play_sfx("ui_click", 1.8, 4.0)
 			return true
 	return false
 
-
 func get_weapon_instance(weapon_id: StringName) -> WeaponInstanceData:
-	for inst in equipped_weapons:
+	for inst: WeaponInstanceData in equipped_weapons:
 		if inst.weapon_data.weapon_id == weapon_id:
 			return inst
 	return null
 
-
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PAUSED:
-		if is_charging and charge_timer > 0.05:
-			has_charge_memory = true
-			memory_charge_timer = charge_timer
-			memory_is_fully_charged = is_fully_charged
-			memory_grace_timer = MEMORY_GRACE_MAX
-
+		cooldown_tracker.save_charge_memory_on_pause()
 
 func _process(delta: float) -> void:
 	if player and (player.is_dead or player.is_movement_suppressed):
 		return
 	_handle_toggle_input()
-	_update_locked_target()
+	targeting.update_locked_target(global_position, player, get_tree())
 	_handle_aim(delta)
+
 	_handle_active_fire(delta)
 	_handle_passive_fire(delta)
-	_handle_stutter_field(delta)
+	targeting.handle_stutter_field(equipped_weapons, global_position, get_tree())
 
+func _handle_active_fire(delta: float) -> void:
+	var aim_dir: Vector2 = (get_global_mouse_position() - global_position).normalized()
+	if aim_dir.length_squared() < 0.001:
+		aim_dir = Vector2.RIGHT
+	cooldown_tracker.process_active_fire(equipped_weapons, player, aim_dir, delta)
+
+func _handle_passive_fire(delta: float) -> void:
+	cooldown_tracker.process_passive_fire(equipped_weapons, player, delta)
 
 func _handle_toggle_input() -> void:
 	if Input.is_action_just_pressed("toggle_aim_mode"):
@@ -208,198 +210,35 @@ func _handle_toggle_input() -> void:
 			return
 		toggle_aim_mode()
 
-
 func toggle_aim_mode() -> void:
-	is_manual_aim = not is_manual_aim
-	aim_mode_changed.emit(is_manual_aim)
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 1.6 if is_manual_aim else 1.2, 0.0)
-
-
-func _update_locked_target() -> void:
-	if is_manual_aim:
-		current_locked_target = null
-	else:
-		current_locked_target = _find_closest_enemy_in_pickup_radius()
-
+	targeting.toggle_aim_mode()
 
 func get_autoaim_range() -> float:
-	return WeaponAutoAimCoordinator.get_autoaim_range(player)
-
-
-func _find_closest_enemy_in_pickup_radius() -> Node2D:
-	return WeaponAutoAimCoordinator.find_closest_enemy_in_pickup_radius(global_position, get_autoaim_range(), get_tree())
-
-
-func _get_passive_aim_info() -> Dictionary:
-	var info := WeaponAutoAimCoordinator.get_passive_aim_info(
-		is_manual_aim,
-		global_position,
-		get_global_mouse_position(),
-		current_locked_target,
-		last_known_target_dir,
-		player,
-		rotation,
-		get_autoaim_range(),
-		get_tree()
-	)
-	last_known_target_dir = info.get("last_known_dir", last_known_target_dir)
-	return info
-
+	return targeting.get_autoaim_range(player)
 
 func _handle_aim(delta: float = 0.0) -> void:
 	if player and player.is_omega_spinning:
 		return
-
-	var is_fire_pressed := Input.is_action_pressed("fire_active")
-	var target_angle := WeaponAutoAimCoordinator.calculate_aim_angle(
-		is_manual_aim,
+	var is_fire_pressed: bool = Input.is_action_pressed("fire_active")
+	var target_angle: float = targeting.calculate_aim_angle(
 		global_position,
 		get_global_mouse_position(),
-		current_locked_target,
-		_get_passive_aim_info(),
-		is_fire_pressed
+		player,
+		rotation,
+		is_fire_pressed,
+		get_tree()
 	)
-
 	if delta > 0.0:
 		rotation = lerp_angle(rotation, target_angle, 20.0 * delta)
 	else:
 		rotation = target_angle
 
-
-func _handle_active_fire(delta: float) -> void:
-	for inst in equipped_weapons:
-		if inst.active_cooldown > 0.0:
-			inst.active_cooldown -= delta
-
-	var laser_inst: WeaponInstanceData = null
-	for inst in equipped_weapons:
-		if inst.weapon_data and inst.weapon_data.active_behavior_type == &"laser":
-			laser_inst = inst
-			break
-
-	if laser_inst:
-		var max_cd := laser_inst.get_effective_cooldown(player.stats if player else null)
-		laser_cooldown_updated.emit(maxf(0.0, laser_inst.active_cooldown), max_cd)
-	elif not equipped_weapons.is_empty():
-		var primary := equipped_weapons[0]
-		var max_cd := primary.get_effective_cooldown(player.stats if player else null)
-		laser_cooldown_updated.emit(maxf(0.0, primary.active_cooldown), max_cd)
-
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.RIGHT
-
-	# Disparo instantáneo para armas no láser
-	if Input.is_action_pressed("fire_active"):
-		for inst in equipped_weapons:
-			if inst.weapon_data and inst.weapon_data.active_behavior_type != &"laser":
-				if inst.active_cooldown <= 0.0:
-					_dispatch_weapon_active_fire(inst, aim_dir, false, 0.0)
-					inst.active_cooldown = inst.get_effective_cooldown(player.stats if player else null)
-
-	# Mecánica de carga exclusiva para el láser
-	if laser_inst:
-		var effective_max_charge := get_effective_max_charge_time()
-		if has_charge_memory:
-			memory_grace_timer -= delta
-			if memory_grace_timer <= 0.0:
-				has_charge_memory = false
-				laser_charge_ended.emit()
-			else:
-				laser_charge_updated.emit(memory_charge_timer, effective_max_charge, memory_is_fully_charged, true)
-
-		if Input.is_action_pressed("fire_active"):
-			if laser_inst.active_cooldown <= 0.0:
-				if not is_charging:
-					is_charging = true
-					charge_timer = 0.0
-					is_fully_charged = false
-
-				charge_timer += delta
-				if charge_timer >= effective_max_charge:
-					charge_timer = effective_max_charge
-					if not is_fully_charged:
-						is_fully_charged = true
-						var audio_mgr := get_node_or_null("/root/AudioManager")
-						if audio_mgr and audio_mgr.has_method("play_sfx"):
-							audio_mgr.play_sfx("ui_click", 2.0, -2.0)
-
-				laser_charge_updated.emit(charge_timer, effective_max_charge, is_fully_charged, false)
-			else:
-				if is_charging:
-					is_charging = false
-					charge_timer = 0.0
-					laser_charge_ended.emit()
-
-		elif Input.is_action_just_released("fire_active"):
-			var ready_to_fire := false
-			var charge_to_use := 0.0
-			var full_to_use := false
-
-			if is_charging:
-				charge_to_use = charge_timer
-				full_to_use = is_fully_charged
-				ready_to_fire = true
-			elif has_charge_memory:
-				charge_to_use = memory_charge_timer
-				full_to_use = memory_is_fully_charged
-				ready_to_fire = true
-			elif laser_inst.active_cooldown <= 0.0:
-				ready_to_fire = true
-
-			if ready_to_fire:
-				for inst in equipped_weapons:
-					if inst.weapon_data and inst.weapon_data.active_behavior_type == &"laser":
-						if inst.active_cooldown <= 0.0:
-							_dispatch_weapon_active_fire(inst, aim_dir, full_to_use, charge_to_use)
-							inst.active_cooldown = inst.get_effective_cooldown(player.stats if player else null)
-
-			is_charging = false
-			charge_timer = 0.0
-			is_fully_charged = false
-			has_charge_memory = false
-			laser_charge_ended.emit()
-		else:
-			if is_charging:
-				if charge_timer > 0.05:
-					has_charge_memory = true
-					memory_charge_timer = charge_timer
-					memory_is_fully_charged = is_fully_charged
-					memory_grace_timer = MEMORY_GRACE_MAX
-				is_charging = false
-				charge_timer = 0.0
-				is_fully_charged = false
-				if not has_charge_memory:
-					laser_charge_ended.emit()
-	else:
-		if is_charging or has_charge_memory:
-			is_charging = false
-			charge_timer = 0.0
-			is_fully_charged = false
-			has_charge_memory = false
-			laser_charge_ended.emit()
-
-
 func trigger_instant_salvo() -> void:
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
+	var aim_dir: Vector2 = (get_global_mouse_position() - global_position).normalized()
 	if aim_dir.length_squared() < 0.001:
 		aim_dir = Vector2.RIGHT
-	for inst in equipped_weapons:
+	for inst: WeaponInstanceData in equipped_weapons:
 		_dispatch_weapon_active_fire(inst, aim_dir, false, 0.0)
-
-
-func _fire_all_active_weapons(is_focused: bool, charge_amount: float) -> void:
-	var aim_dir := (get_global_mouse_position() - global_position).normalized()
-	if aim_dir.length_squared() < 0.001:
-		aim_dir = Vector2.RIGHT
-
-	for inst in equipped_weapons:
-		if inst.active_cooldown <= 0.0:
-			_dispatch_weapon_active_fire(inst, aim_dir, is_focused, charge_amount)
-			inst.active_cooldown = inst.get_effective_cooldown(player.stats if player else null)
-
 
 func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is_focused: bool, charge_ratio: float) -> void:
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
@@ -415,21 +254,13 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 		spawn_parent
 	)
 
-
-func _handle_passive_fire(delta: float) -> void:
-	for inst in equipped_weapons:
-		inst.passive_timer -= delta
-		if inst.passive_timer <= 0.0:
-			inst.passive_timer = inst.get_effective_passive_interval(player.stats if player else null)
-			_dispatch_weapon_passive_fire(inst)
-
-
 func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
+	var p_aim_info: Dictionary = targeting.get_passive_aim_info(global_position, get_global_mouse_position(), player, rotation, get_tree())
 	projectile_factory.dispatch_passive_fire(
 		inst,
-		_get_passive_aim_info(),
-		is_manual_aim,
+		p_aim_info,
+		targeting.is_manual_aim,
 		get_global_mouse_position(),
 		get_autoaim_range(),
 		player,
@@ -438,62 +269,5 @@ func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 		spawn_parent
 	)
 
-
 func _exit_tree() -> void:
-	_clear_stutter_field()
-
-
-func _handle_stutter_field(_delta: float) -> void:
-	var is_active := false
-	for inst in equipped_weapons:
-		if inst.weapon_data:
-			var wid: StringName = inst.weapon_data.weapon_id
-			if (wid == &"singularity_pulsar" or wid == &"void_siphon") and inst.active_cooldown > 0.0:
-				is_active = true
-				break
-
-	var tree := get_tree()
-	if not tree:
-		return
-
-	if not is_active:
-		_clear_stutter_field()
-		return
-
-	var enemies := tree.get_nodes_in_group("enemies")
-	var current_slowed: Array[Node2D] = []
-	var center := global_position
-
-	for node in enemies:
-		if not is_instance_valid(node) or not (node is Node2D):
-			continue
-		var enemy := node as Node2D
-		if center.distance_to(enemy.global_position) <= 140.0:
-			current_slowed.append(enemy)
-			if not enemy.has_meta("is_stutter_slowed"):
-				if "move_speed" in enemy:
-					var orig_spd: float = float(enemy.move_speed)
-					enemy.set_meta("stutter_orig_speed", orig_spd)
-					enemy.move_speed = orig_spd * 0.75
-				enemy.set_meta("is_stutter_slowed", true)
-
-	for enemy in _stutter_slowed_enemies:
-		if is_instance_valid(enemy) and not current_slowed.has(enemy):
-			if enemy.has_meta("is_stutter_slowed"):
-				if enemy.has_meta("stutter_orig_speed") and "move_speed" in enemy:
-					enemy.move_speed = float(enemy.get_meta("stutter_orig_speed"))
-					enemy.remove_meta("stutter_orig_speed")
-				enemy.remove_meta("is_stutter_slowed")
-
-	_stutter_slowed_enemies = current_slowed
-
-
-func _clear_stutter_field() -> void:
-	for enemy in _stutter_slowed_enemies:
-		if is_instance_valid(enemy):
-			if enemy.has_meta("is_stutter_slowed"):
-				if enemy.has_meta("stutter_orig_speed") and "move_speed" in enemy:
-					enemy.move_speed = float(enemy.get_meta("stutter_orig_speed"))
-					enemy.remove_meta("stutter_orig_speed")
-				enemy.remove_meta("is_stutter_slowed")
-	_stutter_slowed_enemies.clear()
+	targeting.clear_stutter_field()

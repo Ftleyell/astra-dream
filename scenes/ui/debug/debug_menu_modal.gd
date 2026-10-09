@@ -283,3 +283,13 @@ func _on_reset_career_pressed() -> void:
 
 func reset_to_defaults() -> void:
 	_refresh_gacha_stats_labels()
+
+func _on_jump_pacifist_pressed() -> void:
+	DebugManager.set_pending_debug_route("pacifist")
+
+func _on_jump_slayer_pressed() -> void:
+	DebugManager.set_pending_debug_route("slayer")
+
+func _on_jump_neutral_pressed() -> void:
+	DebugManager.set_pending_debug_route("neutral")
+

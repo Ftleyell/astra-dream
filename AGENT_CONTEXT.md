@@ -34,7 +34,14 @@
 | Procesador de daño y OSP del jugador | `scenes/combat/player/player_damage_processor.gd` | Mitigación, One-Shot Protection, invulnerabilidad |
 | Inventario de arcanas del jugador | `scenes/combat/player/player_arcana_inventory.gd` | Registro y aplicación de modificadores de arcanas |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
-| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
+| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Spawner: BossEncounterSpawner, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
+| Spawner y escalado de colosos y rivales | `scenes/combat/directors/boss_encounter_spawner.gd` | Instanciación y escalado de vida adaptativo |
+| Jefe rival y duelos 1v1 (Flota Astra) | `scenes/combat/bosses/rival_pilot_boss.gd` | Orquestador de duelo rival |
+| Máquina de estados de rival (reto vs perdón) | `scenes/combat/bosses/components/rival_engagement_behavior.gd` | Radios de advertencia, challenge timer y spared timer |
+| Cinemática y motor de vuelo rival | `scenes/combat/bosses/components/rival_flight_motor.gd` | Vuelo orbital, micro-dashes y bank tilt shader |
+| Controlador maestro de armas | `scenes/combat/player/weapon_controller.gd` | Orquestador de arsenal y equipamiento |
+| Autoaim y adquisición de blancos 2D | `scenes/combat/player/combat_targeting_system.gd` | Priorización de blancos, toggle manual y stutter field |
+| Tracker de cooldowns y carga láser | `scenes/combat/player/weapon_cooldown_tracker.gd` | Cooldowns activos/pasivos, carga continua y memoria |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
 | Satélites orbitales y estaciones (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | Orquestador satelital |
 | Odómetro de vuelo espacial | `scenes/combat/satellite/components/satellite_odometer.gd` | Tracking de distancia pura |
