@@ -55,7 +55,10 @@ func play_wave_boss_sequence(
 		250.0,
 		750.0,
 		func(next_step: Callable) -> void:
-			if is_instance_valid(main_game) and main_game.has_method("_trigger_pet_boss_alert"):
+			var nar = main_game.get("narrative_director") if main_game else null
+			if nar and nar.has_method("trigger_pet_boss_alert"):
+				nar.trigger_pet_boss_alert(boss_name, next_step)
+			elif is_instance_valid(main_game) and main_game.has_method("_trigger_pet_boss_alert"):
 				main_game.call("_trigger_pet_boss_alert", boss_name, next_step)
 			elif next_step.is_valid():
 				next_step.call(),
@@ -99,7 +102,10 @@ func play_final_boss_sequence(
 		280.0,
 		850.0,
 		func(next_step: Callable) -> void:
-			if is_instance_valid(main_game) and main_game.has_method("_trigger_climax_dialogue"):
+			var nar = main_game.get("narrative_director") if main_game else null
+			if nar and nar.has_method("trigger_climax_dialogue"):
+				nar.trigger_climax_dialogue(route, next_step)
+			elif is_instance_valid(main_game) and main_game.has_method("_trigger_climax_dialogue"):
 				main_game.call("_trigger_climax_dialogue", route, next_step)
 			elif next_step.is_valid():
 				next_step.call(),
@@ -157,7 +163,16 @@ func play_rival_warp_sequence(
 			rival_node.open_warp_portal(func() -> void:
 				if not is_instance_valid(rival_node) or not is_instance_valid(main_game):
 					return
-				main_game.call("_trigger_pet_rival_jump_warning", rival_node, func() -> void:
+				var nar = main_game.get("narrative_director") if main_game else null
+				var trigger_warning := func(on_warn_fin: Callable) -> void:
+					if nar and nar.has_method("trigger_pet_rival_jump_warning"):
+						nar.trigger_pet_rival_jump_warning(rival_node, on_warn_fin)
+					elif is_instance_valid(main_game) and main_game.has_method("_trigger_pet_rival_jump_warning"):
+						main_game.call("_trigger_pet_rival_jump_warning", rival_node, on_warn_fin)
+					elif on_warn_fin.is_valid():
+						on_warn_fin.call()
+
+				trigger_warning.call(func() -> void:
 					if not is_instance_valid(rival_node) or not is_instance_valid(main_game):
 						return
 					var pl: Node2D = main_game.get("player") as Node2D
@@ -169,14 +184,21 @@ func play_rival_warp_sequence(
 						if not is_instance_valid(rival_node) or not is_instance_valid(main_game):
 							return
 						rival_node.process_mode = Node.PROCESS_MODE_PAUSABLE
-						main_game.call("_trigger_rival_face_to_face_dialogue", rival_node)
+						if nar and nar.has_method("trigger_rival_face_to_face_dialogue"):
+							nar.trigger_rival_face_to_face_dialogue(rival_node)
+						elif main_game.has_method("_trigger_rival_face_to_face_dialogue"):
+							main_game.call("_trigger_rival_face_to_face_dialogue", rival_node)
 						if on_completed.is_valid():
 							on_completed.call()
 					)
 				)
 			)
 		else:
-			main_game.call("_trigger_rival_face_to_face_dialogue", rival_node)
+			var nar = main_game.get("narrative_director") if main_game else null
+			if nar and nar.has_method("trigger_rival_face_to_face_dialogue"):
+				nar.trigger_rival_face_to_face_dialogue(rival_node)
+			elif main_game.has_method("_trigger_rival_face_to_face_dialogue"):
+				main_game.call("_trigger_rival_face_to_face_dialogue", rival_node)
 			if on_completed.is_valid():
 				on_completed.call()
 	)

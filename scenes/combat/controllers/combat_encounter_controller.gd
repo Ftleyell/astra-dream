@@ -82,13 +82,22 @@ func check_wave_encounters(current_wave: int) -> void:
 		return
 
 	if current_wave >= 16:
-		if main_game.has_method("_spawn_final_boss"):
+		var b_coord = main_game.get("boss_coordinator")
+		if b_coord and b_coord.has_method("spawn_final_boss"):
+			b_coord.spawn_final_boss()
+		elif main_game.has_method("_spawn_final_boss"):
 			main_game._spawn_final_boss()
 	elif current_wave in [1, 4, 7, 10, 13]:
-		if main_game.has_method("_spawn_rival_pilot"):
+		var b_coord = main_game.get("boss_coordinator")
+		if b_coord and b_coord.has_method("spawn_rival_pilot"):
+			b_coord.spawn_rival_pilot()
+		elif main_game.has_method("_spawn_rival_pilot"):
 			main_game._spawn_rival_pilot()
 	elif current_wave in [2, 5, 8, 11, 14]:
-		if main_game.has_method("_spawn_wave_boss"):
+		var b_coord = main_game.get("boss_coordinator")
+		if b_coord and b_coord.has_method("spawn_wave_boss"):
+			b_coord.spawn_wave_boss()
+		elif main_game.has_method("_spawn_wave_boss"):
 			main_game._spawn_wave_boss()
 	elif current_wave in [3, 6, 9, 12, 15]:
 		evaluate_slot_machine_spawn(current_wave)

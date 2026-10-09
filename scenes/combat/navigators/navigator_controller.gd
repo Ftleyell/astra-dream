@@ -230,8 +230,10 @@ func _find_best_target_for_navigator() -> Node2D:
 		&"monolith":
 			candidate = _find_nearest_in_groups([&"monolith", &"monoliths", &"astral_geodes", &"astral_geode", &"destructibles"])
 		&"satellite":
-			if main_game and "current_satellite" in main_game and is_instance_valid(main_game.current_satellite) and not main_game.current_satellite.is_queued_for_deletion():
-				candidate = main_game.current_satellite
+			var sat_coord = main_game.get("satellite_coordinator") if main_game else null
+			var active_sat: Node2D = sat_coord.current_satellite if (sat_coord and "current_satellite" in sat_coord) else (main_game.current_satellite if (main_game and "current_satellite" in main_game) else null)
+			if is_instance_valid(active_sat) and not active_sat.is_queued_for_deletion():
+				candidate = active_sat
 			else:
 				candidate = _find_nearest_in_groups([&"satellite_beacon", &"satellite_beacons", &"satellite_shops"])
 		&"anomaly":
@@ -314,7 +316,12 @@ func _spawn_fallback_target_for_navigator() -> Node2D:
 				spawned_node = geode
 
 		&"satellite":
-			if main_game.has_method("_spawn_next_satellite"):
+			var sat_coord = main_game.get("satellite_coordinator") if main_game else null
+			if sat_coord and sat_coord.has_method("spawn_next_satellite"):
+				sat_coord.spawn_next_satellite(spawn_pos)
+				if "current_satellite" in sat_coord and is_instance_valid(sat_coord.current_satellite):
+					spawned_node = sat_coord.current_satellite
+			elif main_game.has_method("_spawn_next_satellite"):
 				main_game._spawn_next_satellite(spawn_pos)
 				if "current_satellite" in main_game and is_instance_valid(main_game.current_satellite):
 					spawned_node = main_game.current_satellite

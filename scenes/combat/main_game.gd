@@ -56,32 +56,24 @@ var wave_pipeline: CombatWavePipelineScript = null
 @onready var hud: GameHUD = $HUD
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
 var space_object_spawner: SpaceObjectSpawner:
-	get:
-		return space_debris_manager.space_object_spawner if space_debris_manager else null
+	get: return space_debris_manager.space_object_spawner if space_debris_manager else null
 	set(val):
-		if space_debris_manager:
-			space_debris_manager.space_object_spawner = val
+		if space_debris_manager: space_debris_manager.space_object_spawner = val
 var arcana_modal: ArcanaSelectionModal = null
 var _pending_arcana_picks: int:
-	get:
-		return modal_coordinator.pending_arcana_picks if modal_coordinator else 0
+	get: return modal_coordinator.pending_arcana_picks if modal_coordinator else 0
 	set(val):
-		if modal_coordinator:
-			modal_coordinator.pending_arcana_picks = val
+		if modal_coordinator: modal_coordinator.pending_arcana_picks = val
 
 var _pending_satellite_credits: int:
-	get:
-		return modal_coordinator.pending_satellite_credits if modal_coordinator else -1
+	get: return modal_coordinator.pending_satellite_credits if modal_coordinator else -1
 	set(val):
-		if modal_coordinator:
-			modal_coordinator.pending_satellite_credits = val
+		if modal_coordinator: modal_coordinator.pending_satellite_credits = val
 
 var _pending_satellite_index: int:
-	get:
-		return modal_coordinator.pending_satellite_index if modal_coordinator else -1
+	get: return modal_coordinator.pending_satellite_index if modal_coordinator else -1
 	set(val):
-		if modal_coordinator:
-			modal_coordinator.pending_satellite_index = val
+		if modal_coordinator: modal_coordinator.pending_satellite_index = val
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
@@ -91,16 +83,11 @@ var _pending_satellite_index: int:
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
 @onready var game_over_modal: GameOverModal = get_node_or_null("GameOverModal") as GameOverModal
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
-var _bosses_defeated_count_fallback: int = 0
 var bosses_defeated_count: int:
-	get:
-		return telemetry_coordinator.bosses_defeated_count if telemetry_coordinator else _bosses_defeated_count_fallback
+	get: return telemetry_coordinator.bosses_defeated_count if telemetry_coordinator else 0
 	set(val):
-		_bosses_defeated_count_fallback = val
-		if telemetry_coordinator:
-			telemetry_coordinator.bosses_defeated_count = val
-		if combat_context:
-			combat_context.bosses_defeated_count = val
+		if telemetry_coordinator: telemetry_coordinator.bosses_defeated_count = val
+		if combat_context: combat_context.bosses_defeated_count = val
 
 var chest_director: ChestDirector = null
 var chest_reward_modal: ChestRewardModal = null
@@ -118,46 +105,34 @@ const DISTANCE_INCREMENT_PER_SAT: float = 250.0
 const SPAWN_AHEAD_DISTANCE: float = 1100.0
 
 var satellite_scene: PackedScene:
-	get:
-		return satellite_coordinator.satellite_scene if satellite_coordinator else null
+	get: return satellite_coordinator.satellite_scene if satellite_coordinator else null
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.satellite_scene = val
+		if satellite_coordinator: satellite_coordinator.satellite_scene = val
 
 var current_satellite: Node2D:
-	get:
-		return satellite_coordinator.current_satellite if satellite_coordinator else null
+	get: return satellite_coordinator.current_satellite if satellite_coordinator else null
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.current_satellite = val
+		if satellite_coordinator: satellite_coordinator.current_satellite = val
 
 var current_satellite_idx: int:
-	get:
-		return satellite_coordinator.current_satellite_idx if satellite_coordinator else 1
+	get: return satellite_coordinator.current_satellite_idx if satellite_coordinator else 1
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.current_satellite_idx = val
+		if satellite_coordinator: satellite_coordinator.current_satellite_idx = val
 
 var wave_satellites_spawned: int:
-	get:
-		return satellite_coordinator.wave_satellites_spawned if satellite_coordinator else 0
+	get: return satellite_coordinator.wave_satellites_spawned if satellite_coordinator else 0
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.wave_satellites_spawned = val
+		if satellite_coordinator: satellite_coordinator.wave_satellites_spawned = val
 
 var satellites_collected_total: int:
-	get:
-		return satellite_coordinator.satellites_collected_total if satellite_coordinator else 0
+	get: return satellite_coordinator.satellites_collected_total if satellite_coordinator else 0
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.satellites_collected_total = val
+		if satellite_coordinator: satellite_coordinator.satellites_collected_total = val
 
 var last_anchor_pos: Vector2:
-	get:
-		return satellite_coordinator.last_anchor_pos if satellite_coordinator else Vector2.ZERO
+	get: return satellite_coordinator.last_anchor_pos if satellite_coordinator else Vector2.ZERO
 	set(val):
-		if satellite_coordinator:
-			satellite_coordinator.last_anchor_pos = val
+		if satellite_coordinator: satellite_coordinator.last_anchor_pos = val
 
 var crisis_event_manager_scene: PackedScene = preload("res://scenes/combat/events/crisis_event_manager.tscn")
 var crisis_alert_banner_scene: PackedScene = preload("res://scenes/ui/hud/crisis_alert_banner.tscn")
@@ -170,67 +145,43 @@ var crisis_banner: CanvasLayer = null
 var _last_player_hp: float = 100.0
 var _exp_batch_timer: float = 0.0
 
-var _current_wave_fallback: int = 1
 var current_wave: int:
-	get:
-		return wave_pipeline.current_wave if wave_pipeline else _current_wave_fallback
+	get: return wave_pipeline.current_wave if wave_pipeline else 1
 	set(val):
-		_current_wave_fallback = val
-		if wave_pipeline:
-			wave_pipeline.current_wave = val
-		if combat_context:
-			combat_context.current_wave = val
+		if wave_pipeline: wave_pipeline.current_wave = val
+		if combat_context: combat_context.current_wave = val
 
-var _is_pre_round_fallback: bool = true
 var is_pre_round: bool:
-	get:
-		return wave_pipeline.is_pre_round if wave_pipeline else _is_pre_round_fallback
+	get: return wave_pipeline.is_pre_round if wave_pipeline else false
 	set(val):
-		_is_pre_round_fallback = val
-		if wave_pipeline:
-			wave_pipeline.is_pre_round = val
+		if wave_pipeline: wave_pipeline.is_pre_round = val
 
 const PRE_ROUND_DURATION: float = 30.0
-var _pre_round_timer_fallback: float = PRE_ROUND_DURATION
 var pre_round_timer: float:
-	get:
-		return wave_pipeline.pre_round_timer if wave_pipeline else _pre_round_timer_fallback
+	get: return wave_pipeline.pre_round_timer if wave_pipeline else PRE_ROUND_DURATION
 	set(val):
-		_pre_round_timer_fallback = val
-		if wave_pipeline:
-			wave_pipeline.pre_round_timer = val
+		if wave_pipeline: wave_pipeline.pre_round_timer = val
 
-var _wave_timer_fallback: float = WAVE_DURATION
 var wave_timer: float:
-	get:
-		return wave_pipeline.wave_timer if wave_pipeline else _wave_timer_fallback
+	get: return wave_pipeline.wave_timer if wave_pipeline else WAVE_DURATION
 	set(val):
-		_wave_timer_fallback = val
-		if wave_pipeline:
-			wave_pipeline.wave_timer = val
-		if combat_context:
-			combat_context.wave_timer = val
+		if wave_pipeline: wave_pipeline.wave_timer = val
+		if combat_context: combat_context.wave_timer = val
 
 var rival_queue: Array[StringName]:
-	get:
-		return encounter_controller.rival_queue if encounter_controller else []
+	get: return encounter_controller.rival_queue if encounter_controller else []
 	set(val):
-		if encounter_controller:
-			encounter_controller.rival_queue = val
+		if encounter_controller: encounter_controller.rival_queue = val
 
 var rivals_spared: Array[StringName]:
-	get:
-		return encounter_controller.rivals_spared if encounter_controller else []
+	get: return encounter_controller.rivals_spared if encounter_controller else []
 	set(val):
-		if encounter_controller:
-			encounter_controller.rivals_spared = val
+		if encounter_controller: encounter_controller.rivals_spared = val
 
 var rivals_killed: Array[StringName]:
-	get:
-		return encounter_controller.rivals_killed if encounter_controller else []
+	get: return encounter_controller.rivals_killed if encounter_controller else []
 	set(val):
-		if encounter_controller:
-			encounter_controller.rivals_killed = val
+		if encounter_controller: encounter_controller.rivals_killed = val
 
 var is_wave_11_cleared: bool = false
 var is_endless_mode: bool = false
@@ -245,64 +196,47 @@ var is_briefing_active: bool:
 			narrative_director.is_briefing_active = val
 
 var is_cockpit_active: bool:
-	get:
-		return narrative_director.is_cockpit_active if narrative_director else false
+	get: return narrative_director.is_cockpit_active if narrative_director else false
 	set(val):
-		if narrative_director:
-			narrative_director.is_cockpit_active = val
+		if narrative_director: narrative_director.is_cockpit_active = val
 
 var is_boss_transmission_active: bool:
-	get:
-		return narrative_director.is_boss_transmission_active if narrative_director else false
+	get: return narrative_director.is_boss_transmission_active if narrative_director else false
 	set(val):
-		if narrative_director:
-			narrative_director.is_boss_transmission_active = val
+		if narrative_director: narrative_director.is_boss_transmission_active = val
 
 var is_victory_dialogue_active: bool:
-	get:
-		return narrative_director.is_victory_dialogue_active if narrative_director else false
+	get: return narrative_director.is_victory_dialogue_active if narrative_director else false
 	set(val):
-		if narrative_director:
-			narrative_director.is_victory_dialogue_active = val
+		if narrative_director: narrative_director.is_victory_dialogue_active = val
 
 var is_rival_cinematic_active: bool:
-	get:
-		return narrative_director.is_rival_cinematic_active if narrative_director else false
+	get: return narrative_director.is_rival_cinematic_active if narrative_director else false
 	set(val):
-		if narrative_director:
-			narrative_director.is_rival_cinematic_active = val
+		if narrative_director: narrative_director.is_rival_cinematic_active = val
+
 var _pending_victory_data: Dictionary:
-	get:
-		return narrative_director.pending_victory_data if narrative_director else {}
+	get: return narrative_director.pending_victory_data if narrative_director else {}
 	set(val):
-		if narrative_director:
-			narrative_director.pending_victory_data = val
+		if narrative_director: narrative_director.pending_victory_data = val
+
 var _on_dialogue_finished_callback: Callable = Callable()
 var prologue_bonus_chosen: bool:
-	get:
-		return narrative_director.prologue_bonus_chosen if narrative_director else false
+	get: return narrative_director.prologue_bonus_chosen if narrative_director else false
 	set(val):
-		if narrative_director:
-			narrative_director.prologue_bonus_chosen = val
-var _run_time_elapsed_fallback: float = 0.0
-var run_time_elapsed: float:
-	get:
-		return telemetry_coordinator.run_time_elapsed if telemetry_coordinator else _run_time_elapsed_fallback
-	set(val):
-		_run_time_elapsed_fallback = val
-		if telemetry_coordinator:
-			telemetry_coordinator.run_time_elapsed = val
+		if narrative_director: narrative_director.prologue_bonus_chosen = val
 
-var _enemies_killed_count_fallback: int = 0
-var enemies_killed_count: int:
-	get:
-		return telemetry_coordinator.enemies_killed_count if telemetry_coordinator else _enemies_killed_count_fallback
+var run_time_elapsed: float:
+	get: return telemetry_coordinator.run_time_elapsed if telemetry_coordinator else 0.0
 	set(val):
-		_enemies_killed_count_fallback = val
-		if telemetry_coordinator:
-			telemetry_coordinator.enemies_killed_count = val
-		if combat_context:
-			combat_context.enemies_killed_count = val
+		if telemetry_coordinator: telemetry_coordinator.run_time_elapsed = val
+
+var enemies_killed_count: int:
+	get: return telemetry_coordinator.enemies_killed_count if telemetry_coordinator else 0
+	set(val):
+		if telemetry_coordinator: telemetry_coordinator.enemies_killed_count = val
+		if combat_context: combat_context.enemies_killed_count = val
+
 var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
@@ -313,47 +247,35 @@ const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emer
 
 var loot_coordinator: CombatLootCoordinator = null
 var current_slot_machine: Node2D:
-	get:
-		return loot_coordinator.current_slot_machine if loot_coordinator else null
+	get: return loot_coordinator.current_slot_machine if loot_coordinator else null
 var slot_machine_modal: CanvasLayer:
-	get:
-		return loot_coordinator.slot_machine_modal if loot_coordinator else null
+	get: return loot_coordinator.slot_machine_modal if loot_coordinator else null
 var slot_machine_reward_modal: CanvasLayer:
-	get:
-		return loot_coordinator.slot_machine_reward_modal if loot_coordinator else null
+	get: return loot_coordinator.slot_machine_reward_modal if loot_coordinator else null
 var _slot_machine_pity_chance: float:
-	get:
-		return loot_coordinator.pity_chance if loot_coordinator else 0.25
+	get: return loot_coordinator.pity_chance if loot_coordinator else 0.25
 	set(val):
-		if loot_coordinator:
-			loot_coordinator.pity_chance = val
+		if loot_coordinator: loot_coordinator.pity_chance = val
+
 var _wave_encounter_checked_for_wave: int:
-	get:
-		return encounter_controller.wave_encounter_checked_for_wave if encounter_controller else 0
+	get: return encounter_controller.wave_encounter_checked_for_wave if encounter_controller else 0
 	set(val):
-		if encounter_controller:
-			encounter_controller.wave_encounter_checked_for_wave = val
+		if encounter_controller: encounter_controller.wave_encounter_checked_for_wave = val
 
 var _wave_encounter_spawned_for_wave: int:
-	get:
-		return encounter_controller.wave_encounter_spawned_for_wave if encounter_controller else 0
+	get: return encounter_controller.wave_encounter_spawned_for_wave if encounter_controller else 0
 	set(val):
-		if encounter_controller:
-			encounter_controller.wave_encounter_spawned_for_wave = val
+		if encounter_controller: encounter_controller.wave_encounter_spawned_for_wave = val
 
 var _wave_encounter_timer: float:
-	get:
-		return encounter_controller.wave_encounter_timer if encounter_controller else 0.0
+	get: return encounter_controller.wave_encounter_timer if encounter_controller else 0.0
 	set(val):
-		if encounter_controller:
-			encounter_controller.wave_encounter_timer = val
+		if encounter_controller: encounter_controller.wave_encounter_timer = val
 
 var _wave_encounter_pending: bool:
-	get:
-		return encounter_controller.wave_encounter_pending if encounter_controller else false
+	get: return encounter_controller.wave_encounter_pending if encounter_controller else false
 	set(val):
-		if encounter_controller:
-			encounter_controller.wave_encounter_pending = val
+		if encounter_controller: encounter_controller.wave_encounter_pending = val
 
 var _pending_rival_for_dialogue: Node2D:
 	get:
@@ -504,35 +426,9 @@ func _finish_prologue_and_start_run() -> void:
 		is_briefing_active = false
 		PauseArbitrator.force_unpause_all()
 
-func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
-	return narrative_director.get_rival_dialogue(rival_pid, player_pid)
-
-func _trigger_pet_rival_jump_warning(rival: Node2D, on_finished: Callable = Callable()) -> void:
-	narrative_director.trigger_pet_rival_jump_warning(rival, on_finished)
-
-func _trigger_rival_face_to_face_dialogue(rival: Node2D) -> void:
-	narrative_director.trigger_rival_face_to_face_dialogue(rival)
-
-func _trigger_pet_rival_encounter(rival: Node2D) -> void:
-	narrative_director.trigger_pet_rival_encounter(rival)
-
 func _trigger_cockpit_interlude() -> void:
-	narrative_director.trigger_cockpit_interlude()
-
-func _trigger_pet_rival_alert(pilot_name: String) -> void:
-	narrative_director.trigger_pet_rival_alert(pilot_name)
-
-func _trigger_pet_boss_alert(boss_name: String, on_finished: Callable = Callable()) -> void:
-	narrative_director.trigger_pet_boss_alert(boss_name, on_finished)
-
-func _trigger_climax_dialogue(route: String, on_finished: Callable = Callable()) -> void:
-	narrative_director.trigger_climax_dialogue(route, on_finished)
-
-func _trigger_pet_climax_alert(route: String) -> void:
-	narrative_director.trigger_pet_climax_alert(route)
-
-func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary) -> void:
-	narrative_director.trigger_post_boss_victory_dialogue(route, victory_data)
+	if narrative_director:
+		narrative_director.trigger_cockpit_interlude()
 
 
 func _process(delta: float) -> void:
@@ -587,16 +483,13 @@ func _process(delta: float) -> void:
 		wave_pipeline.tick(delta, is_major_combat_active)
 
 func _check_satellite_despawn() -> void:
-	if satellite_coordinator:
-		satellite_coordinator.check_satellite_despawn()
+	if satellite_coordinator: satellite_coordinator.check_satellite_despawn()
 
 func _despawn_current_satellite() -> void:
-	if satellite_coordinator:
-		satellite_coordinator.despawn_current_satellite()
+	if satellite_coordinator: satellite_coordinator.despawn_current_satellite()
 
 func _spawn_next_satellite_for_wave() -> void:
-	if satellite_coordinator:
-		satellite_coordinator.spawn_next_satellite_for_wave()
+	if satellite_coordinator: satellite_coordinator.spawn_next_satellite_for_wave()
 
 func _has_active_boss_or_rival() -> bool:
 	if is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
@@ -656,40 +549,31 @@ func _spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> void:
 		_wave_encounter_pending = false
 
 func _spawn_elite_herald() -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_elite_herald()
+	if boss_coordinator: boss_coordinator.spawn_elite_herald()
 
 func _spawn_rival_pilot(override_id: StringName = &"") -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_rival_pilot(override_id)
+	if boss_coordinator: boss_coordinator.spawn_rival_pilot(override_id)
 
 func _on_rival_spared(p_id: StringName) -> void:
-	if boss_coordinator:
-		boss_coordinator.on_rival_spared(p_id)
+	if boss_coordinator: boss_coordinator.on_rival_spared(p_id)
 
 func _on_rival_engaged(p_id: StringName) -> void:
-	if boss_coordinator:
-		boss_coordinator.on_rival_engaged(p_id)
+	if boss_coordinator: boss_coordinator.on_rival_engaged(p_id)
 
 func _on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
-	if boss_coordinator:
-		boss_coordinator.on_rival_defeated(p_id, weapon)
+	if boss_coordinator: boss_coordinator.on_rival_defeated(p_id, weapon)
 
 func _spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_wave_boss(target_scene_override)
+	if boss_coordinator: boss_coordinator.spawn_wave_boss(target_scene_override)
 
 func _spawn_final_boss(force_spawn: bool = false) -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_final_boss(force_spawn)
+	if boss_coordinator: boss_coordinator.spawn_final_boss(force_spawn)
 
 func _spawn_allied_wingmen() -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_allied_wingmen()
+	if boss_coordinator: boss_coordinator.spawn_allied_wingmen()
 
 func _on_boss_defeated(boss_id: String) -> void:
-	if boss_coordinator:
-		boss_coordinator.on_boss_defeated(boss_id)
+	if boss_coordinator: boss_coordinator.on_boss_defeated(boss_id)
 
 func _on_final_boss_defeated(route: String) -> void:
 	if telemetry_coordinator:
@@ -709,20 +593,16 @@ func _on_final_boss_defeated(route: String) -> void:
 	)
 
 func jump_to_boss(boss_id: String) -> void:
-	if boss_coordinator:
-		boss_coordinator.jump_to_boss(boss_id)
+	if boss_coordinator: boss_coordinator.jump_to_boss(boss_id)
 
 func jump_to_wave_11(route: String = "neutral") -> void:
-	if boss_coordinator:
-		boss_coordinator.jump_to_wave_16(route)
+	if boss_coordinator: boss_coordinator.jump_to_wave_16(route)
 
 func jump_to_wave_16(route: String = "neutral") -> void:
-	if boss_coordinator:
-		boss_coordinator.jump_to_wave_16(route)
+	if boss_coordinator: boss_coordinator.jump_to_wave_16(route)
 
 func spawn_next_rival_pilot() -> void:
-	if boss_coordinator:
-		boss_coordinator.spawn_rival_pilot()
+	if boss_coordinator: boss_coordinator.spawn_rival_pilot()
 
 func _input(event: InputEvent) -> void:
 	if input_dispatcher:
@@ -742,7 +622,8 @@ func _on_satellite_exited(index: int) -> void:
 
 func trigger_boss_transmission(speaker: String = "CENTINELA TITÁN", _text: String = "") -> void:
 	var b_name := speaker if not speaker.is_empty() else "CENTINELA TITÁN"
-	_trigger_pet_boss_alert(b_name)
+	if narrative_director:
+		narrative_director.trigger_pet_boss_alert(b_name)
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
 	if satellite_coordinator:
