@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+sector_name = "Aurora Boreal Cósmica"
+space_color = Color(0.005, 0.015, 0.022, 1)
+nebula_primary = Color(0.08, 0.88, 0.65, 1)
+nebula_secondary = Color(0.12, 0.45, 0.92, 1)
+nebula_density = 1.25
+nebula_scale = 0.00032
+star_density = 105.0
+star_brightness_cutoff = 0.960
+chromatic_aberration = 0.001

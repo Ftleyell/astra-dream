@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+sector_name = "Nebulosa Violeta Mística"
+space_color = Color(0.012, 0.006, 0.024, 1)
+nebula_primary = Color(0.55, 0.12, 0.85, 1)
+nebula_secondary = Color(0.24, 0.45, 0.95, 1)
+nebula_density = 1.15
+nebula_scale = 0.00038
+star_density = 95.0
+star_brightness_cutoff = 0.962
+chromatic_aberration = 0.002

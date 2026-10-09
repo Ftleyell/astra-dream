@@ -57,11 +57,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			global_position = Vector2.ZERO
 			velocity = Vector2.ZERO
 			_target_zoom = 1.0
-		elif event.keycode == KEY_1:
-			_target_zoom = 0.5
-		elif event.keycode == KEY_2:
-			_target_zoom = 1.0
-		elif event.keycode == KEY_3:
-			_target_zoom = 1.75
 		elif event.keycode == KEY_ESCAPE:
 			get_tree().quit()
+

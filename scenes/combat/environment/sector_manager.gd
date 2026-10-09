@@ -40,6 +40,9 @@ var _cur_star_density: float = 90.0
 var _cur_star_cutoff: float = 0.965
 var _cur_aberration: float = 0.0
 
+var _forced_biome: BiomeData = null
+
+
 
 func _ready() -> void:
 	if is_instance_valid(cosmic_quad) and cosmic_quad.material is ShaderMaterial:
@@ -108,6 +111,20 @@ func _setup_neutral_baseline() -> void:
 	_cur_aberration = neutral_biome.chromatic_aberration
 
 
+func force_biome(biome: BiomeData) -> void:
+	_forced_biome = biome
+
+
+func clear_forced_biome() -> void:
+	_forced_biome = null
+
+
+func get_active_biome_name() -> String:
+	if _forced_biome != null:
+		return _forced_biome.sector_name
+	return "Modo Espacial Libre"
+
+
 func _process(delta: float) -> void:
 	if not is_instance_valid(_shader_material):
 		if is_instance_valid(cosmic_quad) and cosmic_quad.material is ShaderMaterial:
@@ -115,17 +132,31 @@ func _process(delta: float) -> void:
 		else:
 			return
 
-	if not is_instance_valid(ship_reference):
-		var vp: Viewport = get_viewport()
-		if is_instance_valid(vp):
-			var cam: Camera2D = vp.get_camera_2d()
-			if is_instance_valid(cam):
-				ship_reference = cam
+	var target: Dictionary
+	if _forced_biome != null:
+		target = {
+			"space_color": _forced_biome.space_color,
+			"nebula_primary": _forced_biome.nebula_primary,
+			"nebula_secondary": _forced_biome.nebula_secondary,
+			"nebula_density": _forced_biome.nebula_density,
+			"nebula_scale": _forced_biome.nebula_scale,
+			"star_density": _forced_biome.star_density,
+			"star_cutoff": _forced_biome.star_brightness_cutoff,
+			"chromatic_aberration": _forced_biome.chromatic_aberration
+		}
+	else:
 		if not is_instance_valid(ship_reference):
-			return
+			var vp: Viewport = get_viewport()
+			if is_instance_valid(vp):
+				var cam: Camera2D = vp.get_camera_2d()
+				if is_instance_valid(cam):
+					ship_reference = cam
+			if not is_instance_valid(ship_reference):
+				return
 
-	var target: Dictionary = _sample_spatial_biome(ship_reference.global_position)
+		target = _sample_spatial_biome(ship_reference.global_position)
 	var t: float = clampf(delta * blend_speed, 0.0, 1.0)
+
 
 	_cur_space_color = _cur_space_color.lerp(target.space_color as Color, t)
 	_cur_neb_primary = _cur_neb_primary.lerp(target.nebula_primary as Color, t)
@@ -155,6 +186,8 @@ func get_current_space_color() -> Color:
 
 
 func get_sector_influence_by_name(target_name: String) -> float:
+	if _forced_biome != null:
+		return 1.0 if _forced_biome.sector_name == target_name else 0.0
 	if not is_instance_valid(ship_reference):
 		return 0.0
 	var ship_pos: Vector2 = ship_reference.global_position
@@ -169,6 +202,7 @@ func get_sector_influence_by_name(target_name: String) -> float:
 				# Curva quíntica C2 de Perlin
 				return factor * factor * factor * (factor * (factor * 6.0 - 15.0) + 10.0)
 	return 0.0
+
 
 
 func get_graveyard_influence() -> float:
