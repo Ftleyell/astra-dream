@@ -11,6 +11,7 @@ extends CanvasLayer
 const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
 const SatelliteShopInventoryPanelClass = preload("res://scenes/combat/satellite/components/satellite_shop_inventory_panel.gd")
 const SatelliteShopCardBuilderClass = preload("res://scenes/combat/satellite/components/satellite_shop_card_builder.gd")
+const SatelliteShopEconomyControllerClass = preload("res://scenes/combat/satellite/components/satellite_shop_economy_controller.gd")
 
 signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
@@ -18,18 +19,51 @@ signal shop_closed()
 @export var available_items_pool: Array[Resource] = []
 @export var player: Player
 
-var current_credits: int = 100
 @export var base_reroll_cost: int = 30
 @export var max_rerolls_per_satellite: int = 1
-var reroll_cost: int = 30
-var rerolls_used_this_visit: int = 0
-var active_satellite_id: int = -1
-var purchased_slots: Array[int] = []
-var current_offered_items: Array[Resource] = []
-var buy_buttons: Array[Button] = []
 
 # Sub-Controllers
 var _inventory_panel: RefCounted
+var _economy: RefCounted
+
+# Backwards Compatibility Facades
+var current_credits: int:
+	get:
+		return _economy.current_credits if _economy else 100
+	set(val):
+		if _economy:
+			_economy.current_credits = val
+
+var reroll_cost: int:
+	get:
+		return _economy.reroll_cost if _economy else 30
+	set(val):
+		if _economy:
+			_economy.reroll_cost = val
+
+var rerolls_used_this_visit: int:
+	get:
+		return _economy.rerolls_used_this_visit if _economy else 0
+	set(val):
+		if _economy:
+			_economy.rerolls_used_this_visit = val
+
+var active_satellite_id: int:
+	get:
+		return _economy.active_satellite_id if _economy else -1
+	set(val):
+		if _economy:
+			_economy.active_satellite_id = val
+
+var purchased_slots: Array[int]:
+	get:
+		return _economy.purchased_slots if _economy else []
+
+var current_offered_items: Array[Resource]:
+	get:
+		return _economy.current_offered_items if _economy else []
+
+var buy_buttons: Array[Button] = []
 
 # Node References
 @onready var panel: Panel = $ShopPanel
@@ -50,7 +84,7 @@ var stat_ui_entries: Dictionary:
 		return _inventory_panel.stat_ui_entries if _inventory_panel else {}
 
 func can_reroll() -> bool:
-	return rerolls_used_this_visit < max_rerolls_per_satellite and current_credits >= reroll_cost
+	return _economy.can_reroll() if _economy else false
 
 
 func _ready() -> void:
@@ -60,6 +94,7 @@ func _ready() -> void:
 	# Sub-controller setup
 	_inventory_panel = SatelliteShopInventoryPanelClass.new()
 	_inventory_panel.setup(stats_list, weapons_list, items_list, inventory_summary_label)
+	_economy = SatelliteShopEconomyControllerClass.new()
 
 	# Estilos translúcidos de alta tecnología
 	var shop_style := StyleBoxFlat.new()
@@ -108,16 +143,10 @@ func _generate_default_shop_items() -> void:
 
 
 func open_shop(credits: int, satellite_id: int = -1) -> void:
-	current_credits = credits
 	_ensure_player()
-
-	var is_same_satellite: bool = (satellite_id != -1 and satellite_id == active_satellite_id and not current_offered_items.is_empty())
+	var is_same_satellite: bool = _economy.open_visit(credits, satellite_id, base_reroll_cost, max_rerolls_per_satellite)
 
 	if not is_same_satellite:
-		active_satellite_id = satellite_id
-		reroll_cost = base_reroll_cost
-		rerolls_used_this_visit = 0
-		purchased_slots.clear()
 		_roll_shop_items()
 	else:
 		_restore_existing_shop_view()
@@ -321,14 +350,7 @@ func _buy_item_by_index(index: int) -> void:
 
 
 func _can_afford_any_option() -> bool:
-	if can_reroll():
-		return true
-	for btn: Button in buy_buttons:
-		if is_instance_valid(btn) and not btn.disabled:
-			var cost: int = int(btn.get_meta(&"cost", 999999))
-			if current_credits >= cost:
-				return true
-	return false
+	return _economy.can_afford_any(buy_buttons) if _economy else false
 
 
 func _update_credits_display() -> void:
@@ -367,51 +389,12 @@ func _roll_shop_items() -> void:
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	buy_buttons.clear()
-	current_offered_items.clear()
 
 	if available_items_pool.is_empty():
 		_generate_default_shop_items()
 
-	var selected_items: Array[Resource] = []
-	var pool_copy: Array[Resource] = available_items_pool.duplicate()
-	pool_copy.shuffle()
-
-	# Slot 0: Arma garantizada si está disponible en el pool
 	_ensure_player()
-	var w_ctrl: WeaponController = player.get_node_or_null("WeaponController") as WeaponController if is_instance_valid(player) else null
-	for res: Resource in pool_copy:
-		if res is WeaponData:
-			selected_items.append(res)
-			break
-
-	# Slots 1 y 2: Ítems filtrados por max_stacks del jugador
-	var eligible_items: Array[ItemData] = []
-	for res: Resource in pool_copy:
-		if res is ItemData:
-			var it: ItemData = res as ItemData
-			var count: int = 0
-			if is_instance_valid(player) and player.inventory:
-				count = player.inventory.get_item_count(it.item_id)
-			if count < it.max_stacks:
-				eligible_items.append(it)
-
-	for it: ItemData in eligible_items:
-		if selected_items.size() >= 3:
-			break
-		if not selected_items.has(it):
-			selected_items.append(it)
-
-	# Fallback si el pool no alcanza a llenar 3 ranuras
-	for res: Resource in pool_copy:
-		if selected_items.size() >= 3:
-			break
-		if not selected_items.has(res):
-			selected_items.append(res)
-
-	while selected_items.size() < 3 and not pool_copy.is_empty():
-		selected_items.append(pool_copy[randi() % pool_copy.size()])
-
-	current_offered_items = selected_items
+	var selected_items: Array[Resource] = _economy.roll_shop_items(available_items_pool, player)
 
 	for i: int in range(selected_items.size()):
 		SatelliteShopCardBuilderClass.create_item_card_ui(selected_items[i], i, self)
@@ -431,12 +414,10 @@ func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
 				_open_shop_weapon_swap(entry as WeaponData, cost, buy_btn)
 				return
 
-	current_credits -= cost
+	var btn_idx: int = buy_buttons.find(buy_btn)
+	_economy.record_purchase(btn_idx, cost, player)
 	_update_credits_display()
 	SatelliteShopCardBuilderClass.mark_card_purchased(buy_btn)
-	var btn_idx: int = buy_buttons.find(buy_btn)
-	if btn_idx != -1 and not purchased_slots.has(btn_idx):
-		purchased_slots.append(btn_idx)
 	item_purchased.emit(entry, cost)
 
 	call_deferred("_refresh_inventory_display")
@@ -494,18 +475,12 @@ func _focus_next_available_buy_button() -> void:
 func _on_reroll_pressed() -> void:
 	if not can_reroll():
 		return
-	current_credits -= reroll_cost
-	rerolls_used_this_visit += 1
 	_ensure_player()
-	if is_instance_valid(player):
-		player.run_credits = current_credits
-		if player.has_signal("credits_changed"):
-			player.credits_changed.emit(player.run_credits)
+	_economy.execute_reroll(player)
 	var hud: Node = get_tree().get_first_node_in_group("hud")
 	if hud and hud.has_method("update_credits"):
 		hud.update_credits(current_credits)
 	_update_credits_display()
-	purchased_slots.clear()
 	_roll_shop_items()
 
 
@@ -514,22 +489,14 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 	get_tree().root.add_child(swap_modal)
 	swap_modal.prompt_swap(player, w_data,
 		func(_idx: int, _new_w: WeaponData) -> void:
-			if is_instance_valid(player):
-				player.run_credits = maxi(0, player.run_credits - cost)
-				current_credits = player.run_credits
-				if player.has_signal("credits_changed"):
-					player.credits_changed.emit(player.run_credits)
-			else:
-				current_credits = maxi(0, current_credits - cost)
+			var btn_idx: int = buy_buttons.find(buy_btn)
+			_economy.record_purchase(btn_idx, cost, player)
 			var hud: Node = get_tree().get_first_node_in_group("hud")
 			if hud and hud.has_method("update_credits"):
 				hud.update_credits(current_credits)
 			_update_credits_display()
 			if is_instance_valid(buy_btn):
 				SatelliteShopCardBuilderClass.mark_card_purchased(buy_btn)
-				var btn_idx: int = buy_buttons.find(buy_btn)
-				if btn_idx != -1 and not purchased_slots.has(btn_idx):
-					purchased_slots.append(btn_idx)
 			item_purchased.emit(w_data, cost)
 			call_deferred("_refresh_inventory_display")
 			call_deferred("_refresh_stats_display")

@@ -15,6 +15,7 @@ const GachaDomeWidgetClass = preload("res://scenes/ui/gacha/gacha_dome_widget.gd
 const GachaPullCoordinatorClass = preload("res://scenes/ui/gacha/components/gacha_pull_coordinator.gd")
 const GachaRevealTheaterClass = preload("res://scenes/ui/gacha/components/gacha_reveal_theater.gd")
 const GachaWardrobeControllerClass = preload("res://scenes/ui/gacha/components/gacha_wardrobe_controller.gd")
+const GachaBannerEngineClass = preload("res://scenes/ui/gacha/components/gacha_banner_engine.gd")
 
 signal skin_unlocked(skin_id: String, stars: int)
 signal skin_equipped(slot_key: String, skin_id: String)
@@ -24,26 +25,7 @@ var is_animating: bool = false
 var _active_tab: int = 0 # 0 = Gacha, 1 = Wardrobe
 var _active_banner_id: String = "general"
 
-const BANNERS_CONFIG := {
-	"general": {
-		"title": "🌌 BANNER ESTELAR GENERAL",
-		"desc": "Todo el repertorio del cosmos: naves, pilotos, armas y mascotas con 15% de épico.",
-		"color": Color(0.0, 0.94, 1.0, 1.0),
-		"featured_badge": "★ POOL COMPLETO"
-	},
-	"ships": {
-		"title": "🚀 HANGAR DE NAVES Y ARMAS",
-		"desc": "Especialización táctica. Mayor probabilidad de skins para naves de asalto y armamento.",
-		"color": Color(1.0, 0.5, 0.1, 1.0),
-		"featured_badge": "★ TÁCTICO NAVAL"
-	},
-	"pilots": {
-		"title": "👩‍✈️ ACADEMIA DE PILOTOS Y TRAJES",
-		"desc": "Uniformes, trajes de combate y aspectos para tus heroínas y navegantes estelares.",
-		"color": Color(1.0, 0.25, 0.7, 1.0),
-		"featured_badge": "★ HEROÍNAS VIP"
-	}
-}
+const BANNERS_CONFIG := GachaBannerEngineClass.BANNERS_CONFIG
 
 # Sub-Controllers
 var _pull_coordinator: RefCounted

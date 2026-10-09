@@ -11,6 +11,7 @@ const NavigatorDataScript = preload("res://data/navigators/navigator_data.gd")
 const NavigatorCoverFlowRenderer = preload("res://scenes/ui/character_select/components/navigator_cover_flow_renderer.gd")
 const NavigatorDossierController = preload("res://scenes/ui/character_select/components/navigator_dossier_controller.gd")
 const NavigatorDataController = preload("res://scenes/ui/character_select/components/navigator_data_controller.gd")
+const CompanionModalNavigationHelper = preload("res://scenes/ui/character_select/components/companion_modal_navigation_helper.gd")
 
 signal navigator_selected(nav_id: StringName)
 signal skin_equipped(slot_key: String, skin_id: String)
@@ -122,14 +123,7 @@ func _ready() -> void:
 		close_btn.pressed.connect(close_modal)
 		close_btn.focus_mode = Control.FOCUS_NONE
 
-	if carousel_panel:
-		carousel_panel.focus_mode = Control.FOCUS_ALL
-		carousel_panel.focus_neighbor_left = carousel_panel.get_path()
-		carousel_panel.focus_neighbor_right = carousel_panel.get_path()
-		carousel_panel.focus_neighbor_top = carousel_panel.get_path()
-		carousel_panel.focus_neighbor_bottom = carousel_panel.get_path()
-		carousel_panel.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-
+	CompanionModalNavigationHelper.setup_carousel_focus(carousel_panel)
 	_setup_focus_neighbors()
 
 
@@ -200,69 +194,27 @@ func _input(event: InputEvent) -> void:
 	if not is_open:
 		return
 
-	# 1. Consumir siempre navegación Tab (focus next/prev) para que nunca escape al fondo
 	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
 		get_viewport().set_input_as_handled()
 		return
 
-	# 2. Confirmación y cierre con Escape
-	if event.is_action("ui_cancel") or (event is InputEventKey and event.keycode == KEY_ESCAPE):
+	var handled: bool = CompanionModalNavigationHelper.handle_input(
+		event,
+		Callable(self, "_cycle_horizontal"),
+		Callable(self, "_cycle_vertical"),
+		Callable(self, "_confirm_and_close"),
+		Callable(self, "close_modal")
+	)
+	if handled:
 		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_confirm_and_close()
-		return
-
-	# 3. Confirmación y selección con Espacio / Enter
-	if event.is_action("ui_accept") or (event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
-		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_confirm_and_close()
-		return
-
-	# 4. Navegación horizontal (A / D / Izquierda / Derecha)
-	if event.is_action("ui_left") or (event is InputEventKey and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
-		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_cycle_horizontal(-1)
-		return
-	elif event.is_action("ui_right") or (event is InputEventKey and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
-		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_cycle_horizontal(1)
-		return
-
-	# 5. Navegación vertical (W / S / Arriba / Abajo)
-	if event.is_action("ui_up") or (event is InputEventKey and (event.keycode == KEY_W or event.keycode == KEY_UP)):
-		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_cycle_vertical(-1)
-		return
-	elif event.is_action("ui_down") or (event is InputEventKey and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
-		get_viewport().set_input_as_handled()
-		if event.is_pressed() and not event.is_echo():
-			_cycle_vertical(1)
-		return
-
-	# 6. Rueda del ratón para navegación vertical
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			get_viewport().set_input_as_handled()
-			_cycle_vertical(-1)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			get_viewport().set_input_as_handled()
-			_cycle_vertical(1)
 
 
 func _on_dim_overlay_gui_input(event: InputEvent) -> void:
 	if not is_open:
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if root_hbox:
-			var mouse_pos := root_hbox.get_local_mouse_position()
-			var bounds := Rect2(Vector2.ZERO, root_hbox.size)
-			if not bounds.has_point(mouse_pos):
-				get_viewport().set_input_as_handled()
-				_confirm_and_close()
+	if CompanionModalNavigationHelper.is_click_outside(root_hbox, event):
+		get_viewport().set_input_as_handled()
+		_confirm_and_close()
 
 
 func _on_artwork_frame_gui_input(event: InputEvent) -> void:

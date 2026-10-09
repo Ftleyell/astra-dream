@@ -59,8 +59,14 @@
 | Run activa (armas, ítems, estado de partida) | `core/systems/persistence/active_run_storage.gd` | — |
 | Items y loot pool | `core/types/item_pool_manager.gd` | — |
 | Satélite orbital (tienda in-run) | `scenes/combat/satellite/satellite_shop.gd` | — |
+| Economía y ofertas de tienda satelital | `scenes/combat/satellite/components/satellite_shop_economy_controller.gd` | Rerolls, límites de stacks y roll algorithm |
 | Tarjetas de tienda | `scenes/combat/satellite/components/satellite_shop_card_builder.gd` | — |
-| Gacha modal | `scenes/ui/cosmetics/gacha_modal.gd` | — |
+| Gacha modal | `scenes/ui/gacha/gacha_modal.gd` | — |
+| Motor probabilístico y banners de gacha | `scenes/ui/gacha/components/gacha_banner_engine.gd` | Pity garantizado, pools temáticos y rarezas |
+| Matriz de stats en pausa | `scenes/ui/pause_menu/components/build_stats_matrix_presenter.gd` | Renderizado y formateo de atributos |
+| Sinergias de build en pausa | `scenes/ui/pause_menu/components/build_synergy_calculator.gd` | Arsenal, grimorios y chips de equipo |
+| Pedestales 3D y materiales del Hub | `scenes/ui/hub/components/pedestal_visual_presenter.gd` | Mallas 3D, halos, shaders y skins de pilotos |
+| Navegación de modales de compañeros | `scenes/ui/character_select/components/companion_modal_navigation_helper.gd` | Inputs, trampas de foco y bounds click |
 | Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | — |
 | Transición entre escenas | `core/autoloads/scene_transition.gd` | — |
 | Pausa (tokens de pausa) | `core/autoloads/pause_arbitrator.gd` | — |
