@@ -31,6 +31,9 @@ Este documento es el mapa de búsqueda rápida ("Single Source of Truth") para d
 | **Persistencia & Perfil** | [`core/autoloads/save_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/save_manager.gd) | Guardado modular (perfil, run activa, estadísticas, cosméticos) en `user://`. |
 | **Audio Anti-Fatiga** | [`core/autoloads/audio_manager.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/audio_manager.gd) | Concurrencia de SFX, pitch aleatorizado y atenuación dinámica. |
 | **Buses de Eventos** | [`core/autoloads/event_bus.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/core/autoloads/event_bus.gd) | Desacoplamiento de señales globales de combate y metajuego. |
+| **Coordinador de Modales** | [`scenes/combat/ui/combat_modal_coordinator.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/ui/combat_modal_coordinator.gd) | Cola FIFO reactiva de modales (LevelUp, Tienda, Arcanas, Cofres). |
+| **Ensamblado de Escena** | [`scenes/combat/systems/combat_scene_assembler.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/systems/combat_scene_assembler.gd) | Inyección y cableado de señales desacoplado de `main_game.gd`. |
+
 
 ---
 
