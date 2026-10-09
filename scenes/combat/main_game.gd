@@ -29,6 +29,10 @@ const CombatBossCoordinator = preload("res://scenes/combat/directors/combat_boss
 const CombatTelemetryRecorder = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
 const PlanetSpawnerHelper = preload("res://scenes/combat/environment/planet_spawner_helper.gd")
 const CombatEndRunController = preload("res://scenes/combat/controllers/combat_end_run_controller.gd")
+const CombatEncounterControllerScript = preload("res://scenes/combat/controllers/combat_encounter_controller.gd")
+const CombatInputDispatcherScript = preload("res://scenes/combat/controllers/combat_input_dispatcher.gd")
+const CombatTacticalInteractionsScript = preload("res://scenes/combat/systems/combat_tactical_interactions.gd")
+const CombatBootstrapperScript = preload("res://scenes/combat/systems/combat_bootstrapper.gd")
 const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
 const CombatWavePipelineScript = preload("res://scenes/combat/directors/combat_wave_pipeline.gd")
 
@@ -36,6 +40,8 @@ var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
 var boss_coordinator: CombatBossCoordinator = CombatBossCoordinator.new()
 var end_run_controller: CombatEndRunController = CombatEndRunController.new()
+var encounter_controller: CombatEncounterControllerScript = CombatEncounterControllerScript.new()
+var input_dispatcher: CombatInputDispatcherScript = CombatInputDispatcherScript.new()
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null
 
@@ -169,9 +175,27 @@ var wave_timer: float:
 		if combat_context:
 			combat_context.wave_timer = val
 
-var rival_queue: Array[StringName] = []
-var rivals_spared: Array[StringName] = []
-var rivals_killed: Array[StringName] = []
+var rival_queue: Array[StringName]:
+	get:
+		return encounter_controller.rival_queue if encounter_controller else []
+	set(val):
+		if encounter_controller:
+			encounter_controller.rival_queue = val
+
+var rivals_spared: Array[StringName]:
+	get:
+		return encounter_controller.rivals_spared if encounter_controller else []
+	set(val):
+		if encounter_controller:
+			encounter_controller.rivals_spared = val
+
+var rivals_killed: Array[StringName]:
+	get:
+		return encounter_controller.rivals_killed if encounter_controller else []
+	set(val):
+		if encounter_controller:
+			encounter_controller.rivals_killed = val
+
 var is_wave_11_cleared: bool = false
 var is_endless_mode: bool = false
 
@@ -250,11 +274,41 @@ var _slot_machine_pity_chance: float:
 	set(val):
 		if loot_coordinator:
 			loot_coordinator.pity_chance = val
-var _wave_encounter_checked_for_wave: int = 0
-var _wave_encounter_spawned_for_wave: int = 0
-var _wave_encounter_timer: float = 0.0
-var _wave_encounter_pending: bool = false
-var _pending_rival_for_dialogue: Node2D = null
+var _wave_encounter_checked_for_wave: int:
+	get:
+		return encounter_controller.wave_encounter_checked_for_wave if encounter_controller else 0
+	set(val):
+		if encounter_controller:
+			encounter_controller.wave_encounter_checked_for_wave = val
+
+var _wave_encounter_spawned_for_wave: int:
+	get:
+		return encounter_controller.wave_encounter_spawned_for_wave if encounter_controller else 0
+	set(val):
+		if encounter_controller:
+			encounter_controller.wave_encounter_spawned_for_wave = val
+
+var _wave_encounter_timer: float:
+	get:
+		return encounter_controller.wave_encounter_timer if encounter_controller else 0.0
+	set(val):
+		if encounter_controller:
+			encounter_controller.wave_encounter_timer = val
+
+var _wave_encounter_pending: bool:
+	get:
+		return encounter_controller.wave_encounter_pending if encounter_controller else false
+	set(val):
+		if encounter_controller:
+			encounter_controller.wave_encounter_pending = val
+
+var _pending_rival_for_dialogue: Node2D:
+	get:
+		return encounter_controller.pending_rival_for_dialogue if encounter_controller else null
+	set(val):
+		if encounter_controller:
+			encounter_controller.pending_rival_for_dialogue = val
+
 var encounter_director: EncounterDirector = null
 
 const AUTO_SAVE_INTERVAL: float = 5.0
@@ -269,31 +323,24 @@ func _ready() -> void:
 	add_to_group("main_game")
 
 	# Sincronización estricta del loadout del personaje seleccionado
-	var sel_char: StringName = SaveManager.get_selected_character()
-	if not sel_char.is_empty():
-		var loadout: Dictionary = SaveManager.get_character_loadout(sel_char)
-		if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
-			SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
-		if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
-			SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
-		var cur_p_str: String = String(SaveManager.get_selected_pet()).to_lower()
-		var p_skin: String = str(loadout.get("equipped_pet_skin", ""))
-		if not p_skin.is_empty():
-			SaveManager.equip_skin("pet:" + cur_p_str, p_skin)
-		else:
-			SaveManager.unequip_skin("pet:" + cur_p_str)
-		var cur_n_str: String = String(SaveManager.get_selected_navigator()).to_lower()
-		var n_skin: String = str(loadout.get("equipped_navigator_skin", ""))
-		if not n_skin.is_empty():
-			SaveManager.equip_skin("navigator:" + cur_n_str, n_skin)
-		else:
-			SaveManager.unequip_skin("navigator:" + cur_n_str)
+	CombatBootstrapperScript.sync_character_loadout()
 
 	encounter_director = get_node_or_null("EncounterDirector") as EncounterDirector
 	if not encounter_director:
 		encounter_director = EncounterDirector.new()
 		encounter_director.name = "EncounterDirector"
 		add_child(encounter_director)
+
+	if not encounter_controller.is_inside_tree():
+		encounter_controller.name = "CombatEncounterController"
+		add_child(encounter_controller)
+	encounter_controller.setup(self)
+
+	if not input_dispatcher.is_inside_tree():
+		input_dispatcher.name = "CombatInputDispatcher"
+		add_child(input_dispatcher)
+	input_dispatcher.setup(self)
+
 	_setup_rival_queue()
 	_spawn_companion_pet()
 	_spawn_navigator_controller()
@@ -488,88 +535,8 @@ func _ready() -> void:
 		space_object_spawner.name = "SpaceObjectSpawner"
 		add_child(space_object_spawner)
 
-	# Chequeo de inicio debug directo contra un jefe específico
-	var debug_boss: String = DebugManager.consume_pending_debug_boss() if (DebugManager and DebugManager.has_method("consume_pending_debug_boss")) else ""
-	var auto_die: bool = DebugManager.consume_pending_auto_trigger_death() if (DebugManager and DebugManager.has_method("consume_pending_auto_trigger_death")) else false
-	if debug_boss != "":
-		is_briefing_active = false
-		prologue_bonus_chosen = true
-		PauseArbitrator.force_unpause_all()
-		if skip_badge_layer:
-			skip_badge_layer.hide()
-		jump_to_boss(debug_boss)
-		if auto_die:
-			var tw := create_tween()
-			tw.tween_interval(0.35)
-			tw.tween_callback(func():
-				if current_boss and is_instance_valid(current_boss):
-					current_boss._die()
-			)
-		return
-
-	# Chequeo de inicio debug directo a Wave Final (Rutas Pacifista, Genocida, Neutral)
-	var debug_route: String = DebugManager.consume_pending_debug_route() if (DebugManager and DebugManager.has_method("consume_pending_debug_route")) else ""
-	if debug_route != "":
-		is_briefing_active = false
-		prologue_bonus_chosen = true
-		PauseArbitrator.force_unpause_all()
-		if skip_badge_layer:
-			skip_badge_layer.hide()
-		jump_to_wave_16(debug_route)
-		return
-
-	# Chequeo de inicio debug directo para encuentro de Piloto Rival
-	var debug_rival: bool = DebugManager.consume_pending_rival_spawn() if (DebugManager and DebugManager.has_method("consume_pending_rival_spawn")) else false
-	if debug_rival:
-		is_briefing_active = false
-		prologue_bonus_chosen = true
-		is_pre_round = false
-		PauseArbitrator.force_unpause_all()
-		if skip_badge_layer:
-			skip_badge_layer.hide()
-		get_tree().create_timer(0.5, false).timeout.connect(func() -> void:
-			spawn_next_rival_pilot()
-		)
-		return
-
-	# Chequeo de reanudación de partida activa (Mid-Run Resume)
-	if SaveManager.is_resuming_run:
-		SaveManager.is_resuming_run = false
-		var active_data := SaveManager.load_active_run()
-		if not active_data.is_empty():
-			restore_run_state(active_data)
-			return
-
-	# Chequeo de inicio debug para test de tragamonedas (arranque sobre la máquina con abundantes créditos)
-	var is_slot_test: bool = DebugManager.consume_pending_slot_machine_test() if (DebugManager and DebugManager.has_method("consume_pending_slot_machine_test")) else false
-	if is_slot_test:
-		is_briefing_active = false
-		prologue_bonus_chosen = true
-		PauseArbitrator.force_unpause_all()
-		if skip_badge_layer:
-			skip_badge_layer.hide()
-		player.run_credits = maxi(int(player.run_credits), 25000)
-		if hud:
-			hud.update_credits(player.run_credits)
-		_spawn_next_satellite_for_wave()
-		call_deferred("_spawn_slot_machine", player.global_position + Vector2(0, -35.0))
-		return
-
-	# Chequeo de inicio debug para test de planetas (run sin enemigos, 3 planetas inmediatos)
-	var is_planet_test: bool = DebugManager.consume_pending_planet_test() if (DebugManager and DebugManager.has_method("consume_pending_planet_test")) else false
-	if is_planet_test:
-		is_briefing_active = false
-		prologue_bonus_chosen = true
-		PauseArbitrator.force_unpause_all()
-		if skip_badge_layer:
-			skip_badge_layer.hide()
-		if enemy_spawner:
-			enemy_spawner.process_mode = Node.PROCESS_MODE_DISABLED
-		# Ajustar estadísticas del jugador para pruebas cómodas
-		if player and player.stats:
-			player.stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"planet_test_speed", 150.0, false, self))
-			player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"planet_test_damage", 50.0, false, self))
-		call_deferred("_spawn_debug_test_planets")
+	# Chequeos de inicio debug (jefes, rutas, rivales, mid-run resume, slots, planetas)
+	if CombatBootstrapperScript.handle_debug_jump_requests(self):
 		return
 
 	# Generar el primer satélite de la oleada para que el radar lo indique de inmediato
@@ -585,31 +552,14 @@ func _ready() -> void:
 	_start_prologue_briefing()
 
 func _setup_rival_queue() -> void:
-	rival_queue.clear()
 	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	if player_pid == &"nyx":
-		var base_6: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
-		base_6.shuffle()
-		for i in range(5):
-			rival_queue.append(base_6[i])
-	else:
-		var all_pilots: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
-		var available: Array[StringName] = []
-		for pid in all_pilots:
-			if pid != player_pid:
-				available.append(pid)
-		for pid in all_pilots:
-			if available.has(pid) and rival_queue.size() < 5:
-				rival_queue.append(pid)
+	if encounter_controller:
+		encounter_controller.setup_rival_queue(player_pid)
 
 func _get_genocide_escort_pilot_id() -> StringName:
 	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
-	if player_pid == &"nyx":
-		var base_6: Array[StringName] = [&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"]
-		for pid in base_6:
-			if not rivals_killed.has(pid):
-				return pid
-		return &"nova"
+	if encounter_controller:
+		return encounter_controller.get_genocide_escort_pilot_id(player_pid)
 	return &"nyx"
 
 
@@ -715,17 +665,9 @@ func _process(delta: float) -> void:
 	# Cronómetro de tiempo total de la run
 	run_time_elapsed += delta
 
-	# Chequeo de inicio de encuentro para la oleada (ej. Oleada 1 tras pre-ronda)
-	if not is_pre_round and _wave_encounter_checked_for_wave != current_wave:
-		_wave_encounter_checked_for_wave = current_wave
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 2.0
-
-	if _wave_encounter_pending:
-		_wave_encounter_timer -= delta
-		if _wave_encounter_timer <= 0.0:
-			_wave_encounter_pending = false
-			_check_wave_encounters()
+	# Chequeo de inicio de encuentro para la oleada y temporizadores
+	if encounter_controller:
+		encounter_controller.process_tick(delta, is_pre_round, current_wave)
 
 	# Chequeo de desbloqueo de Mascota Secreta Cosmo (10 Minutos = 600s de supervivencia)
 	if run_time_elapsed >= 600.0 and not SaveManager.is_pet_unlocked(&"cosmo"):
@@ -799,9 +741,8 @@ func _on_wave_pipeline_advanced(wave_idx: int) -> void:
 	wave_satellites_spawned = 0
 	if enemy_spawner and enemy_spawner.has_method("set_wave"):
 		enemy_spawner.set_wave(wave_idx)
-	_wave_encounter_checked_for_wave = wave_idx
-	_wave_encounter_pending = true
-	_wave_encounter_timer = 2.0
+	if encounter_controller:
+		encounter_controller.on_wave_advanced(wave_idx)
 	save_current_run_state()
 	_spawn_next_satellite_for_wave()
 	if chest_director:
@@ -822,36 +763,13 @@ func _on_wave_pipeline_hud_update(is_pre: bool, wave_idx: int, timer: float) -> 
 
 
 func _check_wave_encounters() -> void:
-	if _wave_encounter_spawned_for_wave == current_wave:
-		_wave_encounter_pending = false
-		return
-	if is_any_combat_modal_active() or has_pending_upgrades():
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 0.5
-		return
-	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 1.0
-		return
-
-	if current_wave >= 16:
-		_spawn_final_boss()
-	elif current_wave in [1, 4, 7, 10, 13]:
-		_spawn_rival_pilot()
-	elif current_wave in [2, 5, 8, 11, 14]:
-		_spawn_wave_boss()
-	elif current_wave in [3, 6, 9, 12, 15]:
-		_evaluate_slot_machine_spawn()
+	if encounter_controller:
+		encounter_controller.check_wave_encounters(current_wave)
 
 func _evaluate_slot_machine_spawn() -> void:
-	if _wave_encounter_spawned_for_wave == current_wave:
-		_wave_encounter_pending = false
-		return
-	if _has_active_boss_or_rival() or is_cinematic_or_death_active():
-		_wave_encounter_pending = true
-		_wave_encounter_timer = 1.0
-		return
-	if loot_coordinator:
+	if encounter_controller:
+		encounter_controller.evaluate_slot_machine_spawn(current_wave)
+	elif loot_coordinator:
 		loot_coordinator.evaluate_slot_machine_spawn(true)
 		_wave_encounter_spawned_for_wave = current_wave
 		_wave_encounter_pending = false
@@ -929,37 +847,8 @@ func spawn_next_rival_pilot() -> void:
 		boss_coordinator.spawn_rival_pilot()
 
 func _input(event: InputEvent) -> void:
-	# Durante secuencias cinemáticas o diálogos, consumir ESC para evitar desincronizar pausa
-	if is_rival_cinematic_active or is_briefing_active or is_cockpit_active or is_boss_transmission_active or is_victory_dialogue_active:
-		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			get_viewport().set_input_as_handled()
-			return
-
-	if DebugManager.is_debug_enabled() and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
-		get_viewport().set_input_as_handled()
-		_toggle_ingame_debug()
-		return
-
-	if event is InputEventKey and event.pressed and not event.echo:
-		# Tecla B para invocar al jefe de la oleada
-		if event.keycode == KEY_B:
-			if current_boss == null:
-				_spawn_wave_boss()
-		# Tecla R para invocar o testear a la siguiente piloto rival
-		elif event.keycode == KEY_R:
-			spawn_next_rival_pilot()
-		# Tecla P para saltar a la Oleada Final en Ruta Pacifista (5 perdonadas)
-		elif event.keycode == KEY_P:
-			jump_to_wave_16("pacifist")
-		# Tecla K para saltar a la Oleada Final en Ruta Exterminadora / Slayer (5 eliminadas)
-		elif event.keycode == KEY_K:
-			jump_to_wave_16("slayer")
-		# Tecla N para saltar a la Oleada Final en Ruta Neutral
-		elif event.keycode == KEY_N:
-			jump_to_wave_16("neutral")
-		# Tecla T para testear transmisión
-		elif event.keycode == KEY_T:
-			trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión! Tus armas no perforarán nuestro núcleo planetario. Prepárate para el impacto.")
+	if input_dispatcher:
+		input_dispatcher.handle_input(event)
 
 func _spawn_next_satellite(target_pos: Vector2) -> void:
 	if satellite_coordinator:
@@ -1033,32 +922,11 @@ func _on_wave_completed() -> void:
 	apply_chronos_bank_interest()
 
 func apply_chronos_bank_interest() -> void:
-	if not is_instance_valid(player) or not player.inventory:
-		return
-	if player.inventory.get_item_count(&"chronos_bank") > 0:
-		var unspent: int = player.run_credits
-		if unspent > 0:
-			var interest: int = mini(50, int(floor(float(unspent) * 0.10)))
-			if interest > 0:
-				player.run_credits += interest
-				if player.has_signal("credits_changed"):
-					player.credits_changed.emit(player.run_credits)
-				if is_instance_valid(hud) and hud.has_method("show_tactical_alert"):
-					hud.show_tactical_alert("⏳ BANCO CRONOS", "+%d créditos generados" % interest, Color(1.0, 0.85, 0.2))
+	CombatTacticalInteractionsScript.apply_chronos_bank_interest(player, hud)
 
 func on_salvage_capsule_opened(player_ref: Player = null) -> void:
 	var target_player: Player = player_ref if player_ref else player
-	if is_instance_valid(target_player) and target_player.inventory and target_player.inventory.get_item_count(&"heavy_salvager") > 0:
-		if target_player.character_stats:
-			var cur_base_hp: float = target_player.character_stats.get_base_stat(&"max_health")
-			target_player.character_stats.set_base_stat(&"max_health", cur_base_hp + 2.0)
-		if target_player.has_method("heal"):
-			target_player.heal(2.0)
-		target_player.run_credits += 3
-		if target_player.has_signal("credits_changed"):
-			target_player.credits_changed.emit(target_player.run_credits)
-		if is_instance_valid(hud) and hud.has_method("show_tactical_alert"):
-			hud.show_tactical_alert("📦 RECUPERADOR PESADO", "+2 HP Máxima • +3 créditos", Color(0.4, 1.0, 0.6))
+	CombatTacticalInteractionsScript.on_salvage_capsule_opened(target_player, hud)
 
 
 func open_transmutation_modal(station: TransmutationStation) -> void:
@@ -1066,17 +934,8 @@ func open_transmutation_modal(station: TransmutationStation) -> void:
 		transmutation_modal.open_for_station(player, station)
 
 func _resume_pending_encounters_after_modal() -> void:
-	if _pending_rival_for_dialogue != null and is_instance_valid(_pending_rival_for_dialogue):
-		var target_rival: Node2D = _pending_rival_for_dialogue
-		_pending_rival_for_dialogue = null
-		get_tree().create_timer(0.5, true, false, true).timeout.connect(func() -> void:
-			if is_instance_valid(target_rival) and not is_upgrade_or_shop_modal_active():
-				_trigger_pet_rival_encounter(target_rival)
-			elif is_instance_valid(target_rival):
-				_pending_rival_for_dialogue = target_rival
-		)
-	elif _wave_encounter_pending:
-		_wave_encounter_timer = 0.5
+	if encounter_controller:
+		encounter_controller.resume_pending_encounters_after_modal()
 
 func is_level_up_modal_active() -> bool:
 	return modal_coordinator.is_level_up_modal_active() if modal_coordinator else (level_up_modal != null and level_up_modal.visible)

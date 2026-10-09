@@ -18,7 +18,11 @@
 | Secuencia de lanzamiento y retorno Hub | `scenes/ui/character_select/components/character_select_launch_controller.gd` | — |
 | Coordinador de skins / companion / gacha | `scenes/ui/character_select/components/character_skin_coordinator.gd` | — |
 | Malla y router de foco teclado/gamepad | `scenes/ui/character_select/components/character_focus_router.gd` | — |
-| Combate (oleadas, bosses, rivales, modales in-run) | `scenes/combat/main_game.gd` | Encounters: L773, Bosses: L834, Game over: L1099 |
+| Combate (orquestador raíz) | `scenes/combat/main_game.gd` | Orquestador: L320, Handlers: L860 |
+| Orquestación de encuentros y rivales | `scenes/combat/controllers/combat_encounter_controller.gd` | — |
+| Despacho de inputs y hotkeys de combate | `scenes/combat/controllers/combat_input_dispatcher.gd` | — |
+| Interacciones tácticas de campo (Chronos/Salvage) | `scenes/combat/systems/combat_tactical_interactions.gd` | — |
+| Bootstrap de loadouts y branches debug | `scenes/combat/systems/combat_bootstrapper.gd` | — |
 | Pipeline y ciclo de vida de oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | State machine & subsystem dispatch |
 | Contexto desacoplado de combate | `scenes/combat/systems/combat_context.gd` | Inyección de actores centrales |
 | Interfaz base de subsistemas Plug&Play | `scenes/combat/systems/combat_subsystem.gd` | Contrato virtual CombatSubsystem |
