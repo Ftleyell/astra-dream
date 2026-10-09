@@ -33,10 +33,12 @@ const WeaponCooldownBarClass = preload("res://scenes/ui/hud/components/hud_weapo
 const HealthShieldDisplayClass = preload("res://scenes/ui/hud/components/hud_health_shield_display.gd")
 const HUDCurseBadgeControllerClass = preload("res://scenes/ui/hud/components/hud_curse_badge_controller.gd")
 const HUDCombatStatsDockControllerClass = preload("res://scenes/ui/hud/components/hud_combat_stats_dock_controller.gd")
+const HUDSatelliteRadarControllerClass = preload("res://scenes/ui/hud/components/hud_satellite_radar_controller.gd")
+const HUDEdgeTrackerManagerClass = preload("res://scenes/ui/hud/components/hud_edge_tracker_manager.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
-## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController, HudWeaponCooldownBar, HudHealthShieldDisplay y HUDBannerManager.
+## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController, HudWeaponCooldownBar, HudHealthShieldDisplay, HUDBannerManager, HUDSatelliteRadarController y HUDEdgeTrackerManager.
 
 @export var player: Player
 
@@ -91,19 +93,6 @@ const HUDCombatStatsDockControllerClass = preload("res://scenes/ui/hud/component
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
 
-var run_time: float = 0.0
-var active_satellite_pos: Vector2 = Vector2.ZERO
-var has_satellite: bool = false
-var satellite_index: int = 1
-var current_wave: int = 1
-var wave_time_left: float = 60.0
-var wave_satellites_spawned: int = 0
-var max_wave_satellites: int = 3
-var current_travel_dist: float = 0.0
-var required_travel_dist: float = 600.0
-var is_pre_round_active: bool = false
-var pre_round_time_left: float = 30.0
-
 var _abilities_ctrl: RefCounted = null
 var _inventory_ctrl: RefCounted = null
 var _banner_mgr: RefCounted = null
@@ -111,6 +100,68 @@ var _weapon_bar: RefCounted = null
 var _health_shield_display: RefCounted = null
 var _curse_ctrl: RefCounted = HUDCurseBadgeControllerClass.new()
 var _stats_dock_ctrl: RefCounted = HUDCombatStatsDockControllerClass.new()
+var _radar_ctrl: RefCounted = HUDSatelliteRadarControllerClass.new()
+var _edge_tracker_mgr: RefCounted = HUDEdgeTrackerManagerClass.new()
+
+var run_time: float:
+	get: return _radar_ctrl.run_time if _radar_ctrl else 0.0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.run_time = val
+
+var active_satellite_pos: Vector2:
+	get: return _radar_ctrl.active_satellite_pos if _radar_ctrl else Vector2.ZERO
+	set(val):
+		if _radar_ctrl: _radar_ctrl.active_satellite_pos = val
+
+var has_satellite: bool:
+	get: return _radar_ctrl.has_satellite if _radar_ctrl else false
+	set(val):
+		if _radar_ctrl: _radar_ctrl.has_satellite = val
+
+var satellite_index: int:
+	get: return _radar_ctrl.satellite_index if _radar_ctrl else 1
+	set(val):
+		if _radar_ctrl: _radar_ctrl.satellite_index = val
+
+var current_wave: int:
+	get: return _radar_ctrl.current_wave if _radar_ctrl else 1
+	set(val):
+		if _radar_ctrl: _radar_ctrl.current_wave = val
+
+var wave_time_left: float:
+	get: return _radar_ctrl.wave_time_left if _radar_ctrl else 60.0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.wave_time_left = val
+
+var wave_satellites_spawned: int:
+	get: return _radar_ctrl.wave_satellites_spawned if _radar_ctrl else 0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.wave_satellites_spawned = val
+
+var max_wave_satellites: int:
+	get: return _radar_ctrl.max_wave_satellites if _radar_ctrl else 3
+	set(val):
+		if _radar_ctrl: _radar_ctrl.max_wave_satellites = val
+
+var current_travel_dist: float:
+	get: return _radar_ctrl.current_travel_dist if _radar_ctrl else 0.0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.current_travel_dist = val
+
+var required_travel_dist: float:
+	get: return _radar_ctrl.required_travel_dist if _radar_ctrl else 600.0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.required_travel_dist = val
+
+var is_pre_round_active: bool:
+	get: return _radar_ctrl.is_pre_round_active if _radar_ctrl else false
+	set(val):
+		if _radar_ctrl: _radar_ctrl.is_pre_round_active = val
+
+var pre_round_time_left: float:
+	get: return _radar_ctrl.pre_round_time_left if _radar_ctrl else 30.0
+	set(val):
+		if _radar_ctrl: _radar_ctrl.pre_round_time_left = val
 
 var _inventory_chips: Dictionary:
 	get:
@@ -181,14 +232,8 @@ func _ready() -> void:
 
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Player
-	if satellite_tracker and is_instance_valid(player):
-		satellite_tracker.set_player(player)
-	if arcana_tracker and is_instance_valid(player):
-		arcana_tracker.set_player(player)
-	if boss_tracker and is_instance_valid(player):
-		boss_tracker.set_player(player)
-	if chest_tracker and is_instance_valid(player) and chest_tracker.has_method("set_player"):
-		chest_tracker.set_player(player)
+	if is_instance_valid(player) and _edge_tracker_mgr:
+		_edge_tracker_mgr.set_player(player)
 
 	# Ocultar barra rectangular superior para priorizar el anillo diegético bajo la nave
 	if health_bar:
@@ -330,6 +375,18 @@ func _init_subcontrollers() -> void:
 
 	_banner_mgr = BannerManagerClass.new()
 
+	_radar_ctrl.setup({
+		"timer_label": timer_label,
+		"satellite_radar_label": satellite_radar_label
+	})
+
+	_edge_tracker_mgr.setup({
+		"satellite_tracker": satellite_tracker,
+		"arcana_tracker": arcana_tracker,
+		"boss_tracker": boss_tracker,
+		"chest_tracker": chest_tracker
+	})
+
 func set_hud_visible(p_visible: bool) -> void:
 	visible = p_visible
 	var tracker_layer := get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
@@ -347,60 +404,32 @@ func _process(delta: float) -> void:
 
 	_update_weapon_cooldown_sweeps()
 
-	run_time += delta
-	if is_pre_round_active:
-		var s: int = int(ceil(maxf(0.0, pre_round_time_left)))
-		timer_label.text = "PRE-RONDA [00:%02d] | FASE DE DESPLIEGUE" % s
-		timer_label.add_theme_color_override("font_color", Color(0.2, 0.95, 1.0))
-	else:
-		timer_label.remove_theme_color_override("font_color")
-		var wave_m: int = int(float(wave_time_left) / 60.0)
-		var wave_s: int = int(wave_time_left) % 60
-		timer_label.text = "Oleada %d [%02d:%02d] | Satélites: %d/%d" % [current_wave, wave_m, wave_s, wave_satellites_spawned, max_wave_satellites]
-
-	if has_satellite and player:
-		var dist: float = player.global_position.distance_to(active_satellite_pos)
-		var dir := (active_satellite_pos - player.global_position).normalized()
-		var arrow := "↑"
-		if abs(dir.x) > abs(dir.y):
-			arrow = "→" if dir.x > 0 else "←"
-		else:
-			arrow = "↓" if dir.y > 0 else "↑"
-		satellite_radar_label.text = "Satélite #%d: %d m [%s]" % [satellite_index, int(dist), arrow]
-	else:
-		if wave_satellites_spawned < max_wave_satellites:
-			satellite_radar_label.text = "Buscando satélite: %d / %d m" % [int(current_travel_dist), int(required_travel_dist)]
-		else:
-			satellite_radar_label.text = "Satélites de oleada agotados. Resiste hasta la prox. oleada"
+	if _radar_ctrl:
+		_radar_ctrl.process_frame(delta, player)
 
 func update_pre_round_status(time_left: float) -> void:
-	is_pre_round_active = true
-	pre_round_time_left = time_left
+	if _radar_ctrl:
+		_radar_ctrl.update_pre_round_status(time_left)
 
 func update_wave_status(wave: int, time_left: float, satellites_spawned: int, max_satellites: int) -> void:
-	is_pre_round_active = false
-	current_wave = wave
-	wave_time_left = time_left
-	wave_satellites_spawned = satellites_spawned
-	max_wave_satellites = max_satellites
+	if _radar_ctrl:
+		_radar_ctrl.update_wave_status(wave, time_left, satellites_spawned, max_satellites)
 
 func update_satellite_travel_dist(current_d: float, req_d: float) -> void:
-	current_travel_dist = current_d
-	required_travel_dist = req_d
+	if _radar_ctrl:
+		_radar_ctrl.update_satellite_travel_dist(current_d, req_d)
 
 func clear_satellite() -> void:
-	has_satellite = false
-	if satellite_tracker:
-		satellite_tracker.clear_target()
+	if _radar_ctrl:
+		_radar_ctrl.clear_satellite()
+	if _edge_tracker_mgr:
+		_edge_tracker_mgr.clear_satellite_tracking()
 
 func set_active_satellite(pos: Vector2, index: int) -> void:
-	active_satellite_pos = pos
-	satellite_index = index
-	has_satellite = true
-	if satellite_tracker:
-		if is_instance_valid(player):
-			satellite_tracker.set_player(player)
-		satellite_tracker.set_target(pos, index)
+	if _radar_ctrl:
+		_radar_ctrl.set_active_satellite(pos, index)
+	if _edge_tracker_mgr:
+		_edge_tracker_mgr.track_satellite(pos, index, player)
 	show_satellite_banner(index)
 
 func show_satellite_banner(index: int) -> void:
@@ -526,14 +555,12 @@ func set_boss_phase(new_phase: int) -> void:
 		boss_health_bar.set_phase(new_phase)
 
 func track_boss(target: Node2D, title: String = "JEFE") -> void:
-	if boss_tracker:
-		if is_instance_valid(player):
-			boss_tracker.set_player(player)
-		boss_tracker.set_target_node(target, title)
+	if _edge_tracker_mgr:
+		_edge_tracker_mgr.track_boss(target, title, player)
 
 func clear_boss_tracking() -> void:
-	if boss_tracker:
-		boss_tracker.clear_target()
+	if _edge_tracker_mgr:
+		_edge_tracker_mgr.clear_boss_tracking()
 
 func hide_boss() -> void:
 	if boss_health_bar:
@@ -558,17 +585,8 @@ func set_player(p: Player) -> void:
 	player = p
 	if not is_inside_tree():
 		return
-	if satellite_tracker and is_instance_valid(player) and satellite_tracker.has_method("set_player"):
-		satellite_tracker.set_player(player)
-	if arcana_tracker and is_instance_valid(player) and arcana_tracker.has_method("set_player"):
-		arcana_tracker.set_player(player)
-	if boss_tracker and is_instance_valid(player):
-		if boss_tracker.has_method("set_player"):
-			boss_tracker.set_player(player)
-		elif "player" in boss_tracker:
-			boss_tracker.player = player
-	if chest_tracker and is_instance_valid(player) and chest_tracker.has_method("set_player"):
-		chest_tracker.set_player(player)
+	if is_instance_valid(player) and _edge_tracker_mgr:
+		_edge_tracker_mgr.set_player(player)
 	if is_instance_valid(player):
 		if not player.bomb_used.is_connected(_on_bomb_used):
 			player.bomb_used.connect(_on_bomb_used)

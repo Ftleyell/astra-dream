@@ -79,6 +79,8 @@
 | Salud, escudo, EXP y OSP del HUD | `scenes/ui/hud/components/hud_health_shield_display.gd` | — |
 | Dock lateral de estadísticas de combate | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` | Tab toggle y modales |
 | Indicador de maldición del HUD | `scenes/ui/hud/components/hud_curse_badge_controller.gd` | Badge y escalado dinámico |
+| Radar y timer de oleada del HUD | `scenes/ui/hud/components/hud_satellite_radar_controller.gd` | Formato temporal y proyección satelital |
+| Administrador de trackers de borde (Edge Trackers) | `scenes/ui/hud/components/hud_edge_tracker_manager.gd` | Satélite, arcana, jefes y cofres perimetrales |
 | Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | — |
 | Debug de metajuego (Character Select) | `scenes/ui/debug/debug_menu_modal.gd` | — |
 
