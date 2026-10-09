@@ -43,6 +43,8 @@ const PlayerProgressionApplierClass = preload("res://scenes/combat/player/player
 const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
 const PlayerLocomotionControllerClass = preload("res://scenes/combat/player/player_locomotion_controller.gd")
 const PlayerEconomyComponentClass = preload("res://scenes/combat/player/player_economy_component.gd")
+const PlayerDamageProcessorClass = preload("res://scenes/combat/player/player_damage_processor.gd")
+const PlayerArcanaInventoryClass = preload("res://scenes/combat/player/player_arcana_inventory.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -67,6 +69,8 @@ var progression_applier: RefCounted = PlayerProgressionApplierClass.new()
 var dash_controller: PlayerDashController = PlayerDashController.new()
 var locomotion_controller: RefCounted = PlayerLocomotionControllerClass.new()
 var economy_component: Node = PlayerEconomyComponentClass.new()
+var damage_processor: RefCounted = PlayerDamageProcessorClass.new()
+var arcana_inventory: Node = PlayerArcanaInventoryClass.new()
 
 # Propiedades delegadas de Movilidad y Dash (PlayerDashController)
 var is_dashing: bool:
@@ -198,7 +202,10 @@ var exp_to_next: float:
 		if economy_component: economy_component.exp_to_next = val
 
 var chosen_stat_cards: Array[StatCardData] = []
-var active_arcanas: Array[ArcanaData] = []
+var active_arcanas: Array[ArcanaData]:
+	get: return arcana_inventory.active_arcanas if arcana_inventory else []
+	set(val):
+		if arcana_inventory: arcana_inventory.active_arcanas = val
 
 # Cinemática de Vuelo y Shaders delegados a PlayerLocomotionController
 var current_facing_angle: float:
@@ -283,6 +290,11 @@ func _ready() -> void:
 	economy_component.dark_matter_changed.connect(func(amt: int, tot: int) -> void: dark_matter_changed.emit(amt, tot))
 	economy_component.exp_changed.connect(func(c: float, m: float, lvl: int) -> void: exp_changed.emit(c, m, lvl))
 	economy_component.level_up_requested.connect(func(lvl: int) -> void: level_up_requested.emit(lvl))
+
+	if not arcana_inventory.is_inside_tree():
+		add_child(arcana_inventory)
+	if not arcana_inventory.arcana_applied.is_connected(func(a: ArcanaData) -> void: arcana_applied.emit(a)):
+		arcana_inventory.arcana_applied.connect(func(a: ArcanaData) -> void: arcana_applied.emit(a))
 
 	current_health = stats.get_stat(&"max_health")
 	health_changed.emit(current_health, current_health)
@@ -519,50 +531,8 @@ func add_exp(amount: float) -> void:
 
 
 func take_damage(arg: Variant) -> void:
-	if is_invulnerable:
-		return
-	var ctx: HitContext
-	if arg is HitContext:
-		ctx = arg as HitContext
-	elif arg is float or arg is int:
-		ctx = HitContext.create_direct_hit(float(arg))
-	else:
-		return
-
-	var current_shield_val: float = float(shield_controller.current_shield) if (shield_controller and "current_shield" in shield_controller) else 0.0
-	var max_shield_val: float = float(shield_controller.max_shield) if (shield_controller and "max_shield" in shield_controller) else 0.0
-	var current_combined: float = current_health + current_shield_val
-	var max_hp_val: float = stats.get_stat(&"max_health") if stats else 100.0
-	var max_combined: float = max_hp_val + max_shield_val
-
-	var osp_threshold: float = 0.90
-	if (stats and stats.has_method("has_modifier") and stats.has_modifier(&"max_health", &"glass_cannon")) or has_meta("glass_cannon"):
-		osp_threshold = 0.95
-
-	var osp_did_trigger := false
-	if not ctx.bypass_osp and current_combined >= (max_combined * osp_threshold):
-		if ctx.final_damage >= current_combined:
-			ctx.final_damage = maxf(0.0, current_combined - 1.0)
-			osp_did_trigger = true
-
-	if osp_did_trigger:
-		set_meta(&"osp_active_frame", true)
-
-	if shield_controller:
-		shield_controller.take_damage(self, ctx.final_damage, stats, inventory)
-
-	if osp_did_trigger:
-		if has_meta(&"osp_active_frame"):
-			remove_meta(&"osp_active_frame")
-		current_health = maxf(1.0, current_health)
-		is_invulnerable = true
-		var tree := get_tree()
-		if tree:
-			tree.create_timer(0.5, false, false, true).timeout.connect(func() -> void:
-				if is_instance_valid(self):
-					is_invulnerable = false
-			)
-		osp_triggered.emit(current_health)
+	if damage_processor:
+		damage_processor.process_incoming_damage(self, arg, shield_controller, stats, inventory)
 
 
 func _trigger_death_sequence() -> void:
@@ -594,32 +564,12 @@ func _on_bullet_grazed(_bullet_pos: Vector2) -> void:
 
 
 func get_arcana_ids() -> Array[String]:
-	var ids: Array[String] = []
-	for arc in active_arcanas:
-		if arc:
-			ids.append(arc.id)
-	return ids
+	return arcana_inventory.get_arcana_ids() if arcana_inventory else []
 
 
 func apply_arcana(arcana: ArcanaData) -> void:
-	if not arcana or active_arcanas.has(arcana):
-		return
-	active_arcanas.append(arcana)
-
-	for key in arcana.stat_modifiers.keys():
-		var val: float = float(arcana.stat_modifiers[key])
-		var s_key := String(key)
-		var stat_name := StringName(s_key.trim_suffix("_pct"))
-		var is_pct := s_key.ends_with("_pct")
-
-		var mod_id := StringName("arcana_" + arcana.id + "_" + s_key)
-		stats.add_modifier(stat_name, CharacterStats.StatModifier.new(mod_id, val, is_pct, arcana))
-
-	var max_hp := maxf(1.0, stats.get_stat(&"max_health"))
-	current_health = clampf(current_health, 1.0, max_hp)
-	health_changed.emit(current_health, max_hp)
-
-	arcana_applied.emit(arcana)
+	if arcana_inventory:
+		arcana_inventory.apply_arcana(arcana, self, stats)
 
 
 func add_dark_matter(amount: int) -> void:

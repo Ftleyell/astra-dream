@@ -31,6 +31,8 @@
 | Jugador (orquestador raíz) | `scenes/combat/player/player.gd` | Orquestador: L250, Damage: L540 |
 | Locomoción y cinemática 360° del jugador | `scenes/combat/player/player_locomotion_controller.gd` | Vuelo, bank tilt, tactical focus, core hitbox |
 | Economía y experiencia in-run del jugador | `scenes/combat/player/player_economy_component.gd` | Exp, levels, credits, biomass, dark matter |
+| Procesador de daño y OSP del jugador | `scenes/combat/player/player_damage_processor.gd` | Mitigación, One-Shot Protection, invulnerabilidad |
+| Inventario de arcanas del jugador | `scenes/combat/player/player_arcana_inventory.gd` | Registro y aplicación de modificadores de arcanas |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
 | Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
@@ -50,6 +52,8 @@
 | HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | — |
 | Ranuras de armas y barridos CD del HUD | `scenes/ui/hud/components/hud_weapon_cooldown_bar.gd` | — |
 | Salud, escudo, EXP y OSP del HUD | `scenes/ui/hud/components/hud_health_shield_display.gd` | — |
+| Dock lateral de estadísticas de combate | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` | Tab toggle y modales |
+| Indicador de maldición del HUD | `scenes/ui/hud/components/hud_curse_badge_controller.gd` | Badge y escalado dinámico |
 | Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | — |
 | Debug de metajuego (Character Select) | `scenes/ui/debug/debug_menu_modal.gd` | — |
 

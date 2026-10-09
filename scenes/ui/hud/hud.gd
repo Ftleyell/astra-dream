@@ -31,6 +31,8 @@ const CombatStatsDock = preload("res://scenes/ui/hud/components/combat_stats_doc
 const TomeControllerClass = preload("res://scenes/combat/player/tome_controller.gd")
 const WeaponCooldownBarClass = preload("res://scenes/ui/hud/components/hud_weapon_cooldown_bar.gd")
 const HealthShieldDisplayClass = preload("res://scenes/ui/hud/components/hud_health_shield_display.gd")
+const HUDCurseBadgeControllerClass = preload("res://scenes/ui/hud/components/hud_curse_badge_controller.gd")
+const HUDCombatStatsDockControllerClass = preload("res://scenes/ui/hud/components/hud_combat_stats_dock_controller.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
@@ -107,6 +109,8 @@ var _inventory_ctrl: RefCounted = null
 var _banner_mgr: RefCounted = null
 var _weapon_bar: RefCounted = null
 var _health_shield_display: RefCounted = null
+var _curse_ctrl: RefCounted = HUDCurseBadgeControllerClass.new()
+var _stats_dock_ctrl: RefCounted = HUDCombatStatsDockControllerClass.new()
 
 var _inventory_chips: Dictionary:
 	get:
@@ -135,9 +139,25 @@ var _tactical_alert_node: Control:
 		if _banner_mgr:
 			_banner_mgr._tactical_alert_node = val
 
-var curse_badge: Control = null
-var curse_label: Label = null
-var combat_stats_dock: CombatStatsDock = null
+var curse_badge: Control:
+	get: return _curse_ctrl.curse_badge if _curse_ctrl else null
+	set(val):
+		if _curse_ctrl: _curse_ctrl.curse_badge = val
+
+var curse_label: Label:
+	get: return _curse_ctrl.curse_label if _curse_ctrl else null
+	set(val):
+		if _curse_ctrl: _curse_ctrl.curse_label = val
+
+var combat_stats_dock: CombatStatsDock:
+	get: return _stats_dock_ctrl.combat_stats_dock if _stats_dock_ctrl else null
+	set(val):
+		if _stats_dock_ctrl: _stats_dock_ctrl.combat_stats_dock = val
+
+var stats_dock_layer: CanvasLayer:
+	get: return _stats_dock_ctrl.stats_dock_layer if _stats_dock_ctrl else null
+	set(val):
+		if _stats_dock_ctrl: _stats_dock_ctrl.stats_dock_layer = val
 
 var current_credits: int:
 	get:
@@ -564,111 +584,28 @@ func set_player(p: Player) -> void:
 			update_curse(target_stats.get_stat(&"curse"))
 
 func _setup_curse_badge() -> void:
-	var key_container: BoxContainer = find_child("KeyBadgeContainer", true, false) as BoxContainer
-	if not key_container:
-		return
-	curse_badge = key_container.find_child("CurseBadge", true, false) as Control
-	if not curse_badge:
-		var panel := PanelContainer.new()
-		panel.name = "CurseBadge"
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.12, 0.02, 0.05, 0.85)
-		style.border_color = Color(1.0, 0.25, 0.35, 0.9)
-		style.set_border_width_all(1)
-		style.set_corner_radius_all(10)
-		style.content_margin_left = 12.0
-		style.content_margin_right = 12.0
-		style.content_margin_top = 3.0
-		style.content_margin_bottom = 3.0
-		style.shadow_color = Color(0.9, 0.1, 0.2, 0.25)
-		style.shadow_size = 4
-		panel.add_theme_stylebox_override("panel", style)
-
-		var hbox := HBoxContainer.new()
-		hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		hbox.add_theme_constant_override("separation", 4)
-
-		var lbl := Label.new()
-		lbl.name = "CurseLabel"
-		lbl.text = "MALDICIÓN +0"
-		lbl.add_theme_font_size_override("font_size", 11)
-		lbl.add_theme_color_override("font_color", Color(1.0, 0.4, 0.48))
-		lbl.add_theme_color_override("font_shadow_color", Color(0.8, 0.05, 0.15, 0.6))
-		lbl.add_theme_constant_override("shadow_outline_size", 4)
-		hbox.add_child(lbl)
-
-		panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		panel.add_child(hbox)
-		key_container.add_child(panel)
-
-		key_container.move_child(panel, 0)
-		curse_badge = panel
-		curse_label = lbl
-	else:
-		curse_badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		key_container.move_child(curse_badge, 0)
-		curse_label = curse_badge.find_child("CurseLabel", true, false) as Label
-
-	curse_badge.visible = false
+	if _curse_ctrl:
+		_curse_ctrl.setup_curse_badge(self)
 
 func update_curse(curse_val: float) -> void:
-	if not curse_badge:
-		_setup_curse_badge()
-	if not curse_badge or not curse_label:
-		return
-	if curse_val > 0.0:
-		curse_badge.visible = true
-		curse_label.text = "MALDICIÓN +%d PTS" % int(curse_val)
-		curse_badge.pivot_offset = curse_badge.size * 0.5
-		var tw := create_tween()
-		if tw:
-			tw.tween_property(curse_badge, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK)
-			tw.tween_property(curse_badge, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE)
-	else:
-		curse_badge.visible = false
+	if _curse_ctrl:
+		_curse_ctrl.update_curse(self, curse_val)
 
 func _on_stat_changed(stat_name: StringName, new_val: float) -> void:
 	if stat_name == &"curse":
 		update_curse(new_val)
-	if is_instance_valid(combat_stats_dock) and combat_stats_dock.visible and is_instance_valid(player):
-		combat_stats_dock.refresh_stats(player)
-
-var stats_dock_layer: CanvasLayer = null
+	if _stats_dock_ctrl:
+		_stats_dock_ctrl.refresh_if_visible(player)
 
 func _setup_combat_stats_dock() -> void:
-	if combat_stats_dock:
-		return
-	stats_dock_layer = CanvasLayer.new()
-	stats_dock_layer.name = "StatsDockLayer"
-	stats_dock_layer.layer = 130
-	stats_dock_layer.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(stats_dock_layer)
-
-	combat_stats_dock = CombatStatsDock.new()
-	combat_stats_dock.name = "CombatStatsDock"
-	combat_stats_dock.process_mode = Node.PROCESS_MODE_ALWAYS
-	combat_stats_dock.position = Vector2(24.0, 240.0)
-	combat_stats_dock.visible = false
-	stats_dock_layer.add_child(combat_stats_dock)
+	if _stats_dock_ctrl:
+		_stats_dock_ctrl.setup_combat_stats_dock(self)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.is_pressed() and not event.is_echo():
-		if event.keycode == KEY_TAB:
-			if not combat_stats_dock:
-				_setup_combat_stats_dock()
-			if not is_instance_valid(player):
-				player = get_tree().get_first_node_in_group("player") as Player
-			if is_instance_valid(combat_stats_dock) and is_instance_valid(player):
-				combat_stats_dock.toggle_tab_dock(player)
-				get_viewport().set_input_as_handled()
+	if _stats_dock_ctrl:
+		_stats_dock_ctrl.handle_input(self, player, event)
 
 func set_stats_dock_requested(requester_id: StringName, requested: bool) -> void:
-	if not combat_stats_dock:
-		_setup_combat_stats_dock()
-	if is_instance_valid(combat_stats_dock):
-		if not is_instance_valid(player):
-			player = get_tree().get_first_node_in_group("player") as Player
-		combat_stats_dock.set_dock_requested(requester_id, requested, player)
+	if _stats_dock_ctrl:
+		_stats_dock_ctrl.set_stats_dock_requested(self, player, requester_id, requested)
 
