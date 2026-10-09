@@ -119,6 +119,17 @@ func on_level_up_requested(level: int) -> void:
 	if main_game and main_game.has_method("save_current_run_state"):
 		main_game.save_current_run_state()
 
+func queue_satellite_shop(credits: int, sat_idx: int) -> void:
+	if is_any_combat_modal_active():
+		pending_satellite_credits = credits
+		pending_satellite_index = sat_idx
+	else:
+		if satellite_shop and satellite_shop.has_method("open_shop"):
+			satellite_shop.open_shop(credits, sat_idx)
+		else:
+			pending_satellite_credits = credits
+			pending_satellite_index = sat_idx
+
 func on_level_up_modal_closed() -> void:
 	modal_closed.emit(&"level_up")
 	_step_next_modal()
@@ -129,6 +140,14 @@ func on_satellite_shop_closed() -> void:
 
 func on_arcana_modal_closed() -> void:
 	modal_closed.emit(&"arcana")
+	_step_next_modal()
+
+func on_chest_reward_modal_closed() -> void:
+	modal_closed.emit(&"chest_reward")
+	_step_next_modal()
+
+func on_transmutation_modal_closed() -> void:
+	modal_closed.emit(&"transmutation")
 	_step_next_modal()
 
 func on_arcana_orb_collected(_orb: Node2D) -> void:
@@ -153,6 +172,9 @@ func open_next_pending_arcana() -> void:
 		arcana_modal.show_arcana_selection(player)
 
 func _step_next_modal() -> void:
+	if is_any_combat_modal_active():
+		return
+
 	if arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.get("pending_arcanas_queue") > 0:
 		arcana_modal.call("show_next_arcana")
 	elif pending_arcana_picks > 0:
@@ -167,7 +189,8 @@ func _step_next_modal() -> void:
 		pending_satellite_index = -1
 		if satellite_shop.has_method("open_shop"):
 			satellite_shop.open_shop(creds, sat_idx)
-	elif not is_any_combat_modal_active():
+	else:
 		if main_game and main_game.get_tree():
 			main_game.get_tree().paused = false
 		resume_encounters_requested.emit()
+

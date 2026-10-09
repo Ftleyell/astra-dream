@@ -34,6 +34,7 @@ const CombatEncounterControllerScript = preload("res://scenes/combat/controllers
 const CombatInputDispatcherScript = preload("res://scenes/combat/controllers/combat_input_dispatcher.gd")
 const CombatTacticalInteractionsScript = preload("res://scenes/combat/systems/combat_tactical_interactions.gd")
 const CombatBootstrapperScript = preload("res://scenes/combat/systems/combat_bootstrapper.gd")
+const CombatSceneAssemblerScript = preload("res://scenes/combat/systems/combat_scene_assembler.gd")
 const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
 const CombatWavePipelineScript = preload("res://scenes/combat/directors/combat_wave_pipeline.gd")
 const CombatSpaceDebrisManagerScript = preload("res://scenes/combat/systems/combat_space_debris_manager.gd")
@@ -61,9 +62,26 @@ var space_object_spawner: SpaceObjectSpawner:
 		if space_debris_manager:
 			space_debris_manager.space_object_spawner = val
 var arcana_modal: ArcanaSelectionModal = null
-var _pending_arcana_picks: int = 0
-var _pending_satellite_credits: int = -1
-var _pending_satellite_index: int = -1
+var _pending_arcana_picks: int:
+	get:
+		return modal_coordinator.pending_arcana_picks if modal_coordinator else 0
+	set(val):
+		if modal_coordinator:
+			modal_coordinator.pending_arcana_picks = val
+
+var _pending_satellite_credits: int:
+	get:
+		return modal_coordinator.pending_satellite_credits if modal_coordinator else -1
+	set(val):
+		if modal_coordinator:
+			modal_coordinator.pending_satellite_credits = val
+
+var _pending_satellite_index: int:
+	get:
+		return modal_coordinator.pending_satellite_index if modal_coordinator else -1
+	set(val):
+		if modal_coordinator:
+			modal_coordinator.pending_satellite_index = val
 @onready var satellite_shop: SatelliteShop = $SatelliteShop
 @onready var stat_deck_manager: StatDeckManager = $StatDeckManager
 @onready var audio_duck_manager: AudioDuckManager = $AudioDuckManager
@@ -360,95 +378,12 @@ func _ready() -> void:
 	# Sincronización estricta del loadout del personaje seleccionado
 	CombatBootstrapperScript.sync_character_loadout()
 
-	encounter_director = get_node_or_null("EncounterDirector") as EncounterDirector
-	if not encounter_director:
-		encounter_director = EncounterDirector.new()
-		encounter_director.name = "EncounterDirector"
-		add_child(encounter_director)
-
-	if not encounter_controller.is_inside_tree():
-		encounter_controller.name = "CombatEncounterController"
-		add_child(encounter_controller)
-	encounter_controller.setup(self)
-
-	if not input_dispatcher.is_inside_tree():
-		input_dispatcher.name = "CombatInputDispatcher"
-		add_child(input_dispatcher)
-	input_dispatcher.setup(self)
-
 	_setup_rival_queue()
-	_spawn_companion_pet()
-	_spawn_navigator_controller()
 
-	if not modal_coordinator.is_inside_tree():
-		modal_coordinator.name = "CombatModalCoordinator"
-		add_child(modal_coordinator)
-	modal_coordinator.setup(self, player)
-	modal_coordinator.level_up_modal = level_up_modal
-	modal_coordinator.satellite_shop = satellite_shop
-	modal_coordinator.pause_menu = pause_menu
-	modal_coordinator.game_over_modal = game_over_modal
-	end_run_controller.setup(self, game_over_modal)
+	# Ensamblado modular de directores, modales, controladores y cableado inicial
+	CombatSceneAssemblerScript.assemble(self, player, hud)
 
-	# 1. Sistema de Cofres Espaciales
-	chest_director = ChestDirector.new()
-	chest_director.name = "ChestDirector"
-	add_child(chest_director)
-	var chest_cfg = load("res://data/balance/default_chest_economy.tres") as ChestEconomyConfig
-	chest_director.initialize(chest_cfg, 0)
-	chest_director.chest_opened.connect(_on_chest_opened_from_director)
-
-	var sel_char_id: StringName = SaveManager.get_selected_character()
-	var banned_items: Array[StringName] = SaveManager.get_character_banlist(sel_char_id)
-	var unlocked_items: Array[StringName] = SaveManager.get_unlocked_items()
-	var char_data: CharacterData = player.character_data if is_instance_valid(player) else null
-	if chest_director and chest_director.item_pool_manager:
-		chest_director.item_pool_manager.rebuild_run_pool(char_data, unlocked_items, banned_items)
-
-	var c_modal_scene: PackedScene = preload("res://scenes/ui/modals/chest_reward_modal.tscn")
-	chest_reward_modal = c_modal_scene.instantiate() as ChestRewardModal
-	add_child(chest_reward_modal)
-	modal_coordinator.chest_reward_modal = chest_reward_modal
-
-	# 2. Forja Cuántica (Microondas)
-	var t_modal_scene: PackedScene = preload("res://scenes/ui/modals/transmutation_modal.tscn")
-	transmutation_modal = t_modal_scene.instantiate() as TransmutationModal
-	add_child(transmutation_modal)
-	modal_coordinator.transmutation_modal = transmutation_modal
-
-	# 3. Macro-objetos tácticos
-	if space_debris_manager:
-		space_debris_manager.setup(self)
-
-	# 4. Subsistemas y coordinadores de combate
-	if not narrative_director.is_inside_tree():
-		narrative_director.name = "CombatNarrativeDirector"
-		add_child(narrative_director)
-	narrative_director.setup(self, player, hud, skip_badge_layer, audio_duck_manager)
-	narrative_director.active_navigator_controller = active_navigator_controller
-	narrative_director.victory_screen_requested.connect(_show_game_over_screen)
-
-	if not boss_coordinator.is_inside_tree():
-		boss_coordinator.name = "CombatBossCoordinator"
-		add_child(boss_coordinator)
-	boss_coordinator.setup(self)
-
-	loot_coordinator = CombatLootCoordinator.new()
-	loot_coordinator.name = "CombatLootCoordinator"
-	add_child(loot_coordinator)
-	loot_coordinator.initialize(self, player, camera)
-
-	if not satellite_coordinator.is_inside_tree():
-		satellite_coordinator.name = "CombatSatelliteCoordinator"
-		add_child(satellite_coordinator)
-	satellite_coordinator.setup(self)
-
-	if not telemetry_coordinator.is_inside_tree():
-		telemetry_coordinator.name = "CombatTelemetryCoordinator"
-		add_child(telemetry_coordinator)
-	telemetry_coordinator.setup(self, hud)
-
-	# 5. Inicializar Contexto de Combate y Pipeline de Oleadas
+	# Inicializar Contexto de Combate y Pipeline de Oleadas
 	combat_context = CombatContextScript.new()
 	combat_context.initialize(player, camera, hud, bullet_server, enemy_spawner, space_object_spawner, chest_director, satellite_shop, self)
 
@@ -469,53 +404,8 @@ func _ready() -> void:
 	wave_pipeline.register_subsystem(satellite_coordinator)
 	wave_pipeline.register_subsystem(loot_coordinator)
 	wave_pipeline.register_subsystem(narrative_director)
-	# Conexión del HUD con el jugador
-	if hud:
-		player.exp_changed.connect(hud.update_exp)
-		if not player.credits_changed.is_connected(hud.update_credits):
-			player.credits_changed.connect(hud.update_credits)
-		if not player.biomass_changed.is_connected(hud.update_biomass):
-			player.biomass_changed.connect(hud.update_biomass)
-		if player.character_data and hud.has_method("update_pilot_abilities"):
-			hud.update_pilot_abilities(player.character_data)
-	player.level_up_requested.connect(_on_level_up_requested)
-	player.bomb_used.connect(_on_player_bomb_used)
-	player.health_changed.connect(_on_player_health_changed)
-	player.player_died.connect(_on_player_died)
-	# Conexión con EventBus
-	var bus := get_node_or_null("/root/EventBus")
-	if bus:
-		if bus.has_signal("enemy_killed"):
-			bus.enemy_killed.connect(_on_enemy_killed)
-		if bus.has_signal("arcana_orb_collected"):
-			bus.arcana_orb_collected.connect(_on_arcana_orb_collected)
-
-	# Instanciar modal de selección de Arcana si no existe en el árbol
-	arcana_modal = get_node_or_null("ArcanaSelectionModal") as ArcanaSelectionModal
-	if not arcana_modal:
-		var arc_scene := load("res://scenes/ui/arcana/arcana_selection_modal.tscn") as PackedScene
-		if arc_scene:
-			arcana_modal = arc_scene.instantiate() as ArcanaSelectionModal
-			add_child(arcana_modal)
-	if arcana_modal:
-		arcana_modal.modal_closed.connect(_on_arcana_modal_closed)
-		if modal_coordinator:
-			modal_coordinator.arcana_modal = arcana_modal
-
-	# Inicializar sistema de eventos de crisis dinámicas y banners
-	if not crisis_banner and crisis_alert_banner_scene:
-		crisis_banner = crisis_alert_banner_scene.instantiate() as CanvasLayer
-		add_child(crisis_banner)
-
-	if not crisis_manager and crisis_event_manager_scene:
-		crisis_manager = crisis_event_manager_scene.instantiate() as Node2D
-		add_child(crisis_manager)
 
 	_last_player_hp = player.current_health
-
-	# Conexión de la tienda
-	satellite_shop.item_purchased.connect(_on_item_purchased)
-	satellite_shop.shop_closed.connect(_on_satellite_shop_closed)
 
 	# Inicializar ancla de distancia al spawn del jugador
 	last_anchor_pos = player.global_position
@@ -529,32 +419,11 @@ func _ready() -> void:
 		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 		hud.update_wave_status(current_wave, wave_timer, wave_satellites_spawned, MAX_SATELLITES_PER_WAVE)
 
-	# Asegurar que MainGame y Dialogic procesen durante la pausa
+	# Asegurar que MainGame procese durante la pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	var dialogic_node: Node = narrative_director.get_dialogic() if narrative_director else null
-	if dialogic_node:
-		dialogic_node.process_mode = Node.PROCESS_MODE_ALWAYS
-		if dialogic_node.has_signal("signal_event"):
-			dialogic_node.signal_event.connect(_on_dialogic_signal)
-		if dialogic_node.has_signal("timeline_ended"):
-			dialogic_node.timeline_ended.connect(_on_dialogic_timeline_ended)
-		if dialogic_node.has_signal("timeline_started"):
-			dialogic_node.timeline_started.connect(_on_dialogic_timeline_started)
-
-	# Instanciar capa cinematográfica de fondo y efectos para diálogos
-	var backdrop_scene := preload("res://scenes/ui/dialogue/dialogue_backdrop_layer.tscn")
-	if backdrop_scene:
-		var backdrop := backdrop_scene.instantiate()
-		backdrop.name = "DialogueBackdropLayer"
-		if backdrop.has_method("set_hud_reference") and hud:
-			backdrop.set_hud_reference(hud)
-		add_child(backdrop)
-
-	if skip_badge_layer and skip_badge_layer.has_signal("skip_requested"):
-		skip_badge_layer.skip_requested.connect(_on_dialogue_skip_requested)
 
 	# Iniciar música de combate
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("combat")
 
@@ -670,27 +539,9 @@ func _process(delta: float) -> void:
 	if get_tree().paused or is_cinematic_or_death_active():
 		return
 
-	if not is_any_combat_modal_active():
-		if level_up_modal and level_up_modal.has_pending_levels():
-			level_up_modal.show_next_level_up()
-			return
-		elif arcana_modal and arcana_modal.has_method("has_pending_arcanas") and arcana_modal.pending_arcanas_queue > 0:
-			arcana_modal.show_next_arcana()
-			return
-		elif _pending_arcana_picks > 0:
-			_pending_arcana_picks -= 1
-			_open_next_pending_arcana()
-			return
-		elif _pending_satellite_credits >= 0:
-			var creds: int = _pending_satellite_credits
-			var idx_to_open: int = _pending_satellite_index
-			_pending_satellite_credits = -1
-			_pending_satellite_index = -1
-			satellite_shop.open_shop(creds, idx_to_open)
-			return
-
 	# Telemetría y cronómetro de la run
 	if telemetry_coordinator:
+
 		telemetry_coordinator.tick(delta)
 	else:
 		run_time_elapsed += delta
@@ -1076,26 +927,6 @@ func save_current_run_state() -> void:
 
 func restore_run_state(run_data: Dictionary) -> void:
 	RunStateSerializer.restore_run_state(self, run_data)
-
-func _spawn_companion_pet() -> void:
-	var pet_scene: PackedScene = preload("res://scenes/combat/pets/companion_pet.tscn")
-	if not pet_scene or not is_instance_valid(player):
-		return
-	var pet_id := SaveManager.get_selected_pet()
-	const PetDataScript := preload("res://data/pets/pet_data.gd")
-	var p_data = PetDataScript.get_pet(pet_id)
-	active_pet = pet_scene.instantiate() as CompanionPet
-	add_child(active_pet)
-	active_pet.setup(p_data, player)
-
-func _spawn_navigator_controller() -> void:
-	const NavControllerScript := preload("res://scenes/combat/navigators/navigator_controller.gd")
-	if not NavControllerScript or not is_instance_valid(player):
-		return
-	active_navigator_controller = NavControllerScript.new()
-	active_navigator_controller.name = "NavigatorController"
-	add_child(active_navigator_controller)
-	active_navigator_controller.setup(self, player, hud)
 
 func _spawn_debug_test_planets() -> void:
 	if space_debris_manager:

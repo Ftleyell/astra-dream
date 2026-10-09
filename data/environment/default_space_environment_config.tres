@@ -1,0 +1,67 @@
+[gd_resource type="Resource" script_class="SpaceEnvironmentConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/resources/space_environment_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+planet_spawn_interval = 7000.0
+planet_min_distance = 2000.0
+planet_max_active = 3
+planet_projection_distance = 1800.0
+station_base_distance = 2500.0
+station_distance_increment = 400.0
+station_min_distance_to_planet = 2500.0
+parallax_layer0_nebula_scroll = Vector2(0.02, 0.02)
+parallax_layer0_drift_factor = 0.2
+parallax_layer1_deep_scroll = Vector2(0.1, 0.1)
+parallax_layer1_drift_factor = 0.5
+parallax_layer2_mid_scroll = Vector2(0.3, 0.3)
+parallax_layer2_drift_factor = 1.0
+parallax_layer3_near_scroll = Vector2(0.55, 0.55)
+parallax_layer3_drift_factor = 1.6
+galaxy_scale_min = 2.4
+galaxy_scale_max = 4.2
+galaxy_overall_brightness = 0.92
+galaxy_radial_fade_start = 0.38
+galaxy_radial_fade_end = 0.5
+galaxy_spawn_interval = 4800.0
+galaxy_macro_chance = 0.85
+galaxy_scroll_scale = 0.02
+base_drift_speed = 16.0
+drift_direction = Vector2(-0.894427, -0.447214)
+solar_socket_spacing = 12000.0
+binary_system_chance = 0.2
+planets_per_sun_min = 1
+planets_per_sun_max = 3
+planet_orbit_min_radius = 1800.0
+planet_orbit_max_radius = 4200.0
+planet_min_angular_separation_deg = 60.0
+stations_per_socket_min = 1
+stations_per_socket_max = 2
+station_orbit_min_radius = 800.0
+station_orbit_max_radius = 1600.0
+orbit_period_min_sec = 180.0
+orbit_period_max_sec = 480.0
+sun_scale_min = 2.0
+sun_scale_max = 3.0
+sun_z_depth = 0.15
+planet_scale_min = 1.6
+planet_scale_max = 2.6
+planet_z_depth_min = 0.2
+planet_z_depth_max = 0.35
+station_scale_min = 0.45
+station_scale_max = 0.65
+station_z_depth_min = 0.45
+station_z_depth_max = 0.65
+singularity_scale_min = 0.3
+singularity_scale_max = 0.48
+singularity_z_depth_min = 0.03
+singularity_z_depth_max = 0.05
+galaxy_z_depth = 0.02
+rayleigh_deep_absorption = 0.55
+rayleigh_foreground_contrast = 1.2
+viewport_margin_factor = 1.2
+max_visible_galaxies = 1
+max_visible_singularities = 1
+max_visible_same_variant_planets = 1
+

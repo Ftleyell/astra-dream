@@ -21,44 +21,23 @@ const BIOME_AURORA = preload("res://assets/environments/parallax_space/biomes/co
 
 
 
-@onready var station_0: Sprite2D = get_node_or_null("ParallaxStations/Station0")
-@onready var station_1: Sprite2D = get_node_or_null("ParallaxStations/Station1")
-@onready var station_2: Sprite2D = get_node_or_null("ParallaxStations/Station2")
+@onready var cosmic_pool: CosmicObjectPool = get_node_or_null("CosmicObjectPool") as CosmicObjectPool
+@onready var cosmic_director: Node2D = get_node_or_null("CosmicSocketDirector") as Node2D
+@onready var cosmic_virtualizer: Node2D = get_node_or_null("CosmicSocketDirector") as Node2D
 
-@onready var planet_0: Sprite2D = get_node_or_null("ParallaxPlanets/Planet0")
-@onready var planet_1: Sprite2D = get_node_or_null("ParallaxPlanets/Planet1")
-@onready var planet_2: Sprite2D = get_node_or_null("ParallaxPlanets/Planet2")
-@onready var planet_3: Sprite2D = get_node_or_null("ParallaxPlanets/Planet3")
-@onready var galaxy_sprite: Sprite2D = get_node_or_null("ParallaxGalaxy/GalaxySprite")
 
-var _station_nodes: Array[Sprite2D] = []
 
-var _planet_nodes: Array[Sprite2D] = []
-var _station_base_rotations: PackedFloat32Array = PackedFloat32Array([-0.28, 0.31, -0.16])
-var _station_wobble_speeds: PackedFloat32Array = PackedFloat32Array([0.22, 0.18, 0.25])
-var _station_wobble_phases: PackedFloat32Array = PackedFloat32Array([0.0, 1.8, 3.5])
+const SpaceEnvironmentConfigScript = preload("res://core/resources/space_environment_config.gd")
+@export var env_config: Resource = preload("res://data/environment/default_space_environment_config.tres")
+
 var _time_accumulator: float = 0.0
+var _accum_drift: Vector2 = Vector2.ZERO
 
 var _rotating_debris: Array[Sprite2D] = []
 var _debris_spin_speeds: PackedFloat32Array = PackedFloat32Array()
 
 
 func _ready() -> void:
-	if is_instance_valid(station_0):
-		_station_nodes.append(station_0)
-	if is_instance_valid(station_1):
-		_station_nodes.append(station_1)
-	if is_instance_valid(station_2):
-		_station_nodes.append(station_2)
-
-	if is_instance_valid(planet_0):
-		_planet_nodes.append(planet_0)
-	if is_instance_valid(planet_1):
-		_planet_nodes.append(planet_1)
-	if is_instance_valid(planet_2):
-		_planet_nodes.append(planet_2)
-	if is_instance_valid(planet_3):
-		_planet_nodes.append(planet_3)
 
 
 	if not sector_manager:
@@ -83,6 +62,17 @@ func _ready() -> void:
 
 	_populate_debris_field()
 
+	if is_instance_valid(env_config):
+		if is_instance_valid(parallax_debris_deep):
+			parallax_debris_deep.scroll_scale = env_config.parallax_layer1_deep_scroll
+		if is_instance_valid(parallax_debris_mid):
+			parallax_debris_mid.scroll_scale = env_config.parallax_layer2_mid_scroll
+		var init_veil: Parallax2D = get_node_or_null("ParallaxCosmicVeil") as Parallax2D
+		if is_instance_valid(init_veil):
+			init_veil.scroll_scale = env_config.parallax_layer3_near_scroll
+		if is_instance_valid(cosmic_quad) and cosmic_quad.material is ShaderMaterial:
+			(cosmic_quad.material as ShaderMaterial).set_shader_parameter("nebula_scroll_scale", env_config.parallax_layer0_nebula_scroll.x)
+
 	if is_instance_valid(parallax_debris_deep):
 		parallax_debris_deep.modulate = Color(0.9, 0.9, 1.0, 0.14)
 	if is_instance_valid(parallax_debris_mid):
@@ -95,27 +85,23 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time_accumulator += delta
 
-	# 1. Micro-oscilación orgánica de alabeo en estaciones espaciales (±1.5° en ciclos lentos de ~25s)
-	var station_count: int = _station_nodes.size()
-	for i: int in range(station_count):
-		var st := _station_nodes[i]
-		if is_instance_valid(st):
-			var base_rot: float = _station_base_rotations[i]
-			var w_spd: float = _station_wobble_speeds[i]
-			var w_phase: float = _station_wobble_phases[i]
-			st.rotation = base_rot + sin(_time_accumulator * w_spd + w_phase) * 0.026
+	# 0. Deriva cósmica continua multi-capa
+	if is_instance_valid(env_config):
+		_accum_drift += env_config.drift_direction * (env_config.base_drift_speed * delta)
+		if is_instance_valid(parallax_debris_deep):
+			parallax_debris_deep.scroll_offset = _accum_drift * env_config.parallax_layer1_drift_factor
+		if is_instance_valid(parallax_debris_mid):
+			parallax_debris_mid.scroll_offset = _accum_drift * env_config.parallax_layer2_drift_factor
+		var cur_veil: Parallax2D = get_node_or_null("ParallaxCosmicVeil") as Parallax2D
+		if is_instance_valid(cur_veil):
+			cur_veil.scroll_offset = _accum_drift * env_config.parallax_layer3_drift_factor
 
-	# 2. Rotación continua de fragmentos de asteroides y chatarra fina
+	# 1. Rotación continua de fragmentos de asteroides y chatarra fina
 	var total_debris: int = _rotating_debris.size()
 	for i: int in range(total_debris):
 		_rotating_debris[i].rotation += _debris_spin_speeds[i] * delta
 
-	# 2b. Rotación suave y continua de la galaxia profunda sobre su propio eje central (~120s por vuelta)
-	if is_instance_valid(galaxy_sprite):
-		galaxy_sprite.rotation += 0.05 * delta
-
-
-	# 3. Sincronización de perspectiva aérea cósmica y velo intermedio con el bioma activo
+	# 2. Sincronización de perspectiva aérea cósmica y velo intermedio con el bioma activo
 	if is_instance_valid(sector_manager):
 		var neb_color: Color = sector_manager.get_current_nebula_primary()
 
@@ -125,20 +111,16 @@ func _process(delta: float) -> void:
 			if is_instance_valid(v_sprite):
 				v_sprite.modulate = Color(neb_color.r, neb_color.g, neb_color.b, 0.22)
 
-		for st: Sprite2D in _station_nodes:
-			if is_instance_valid(st) and st.material is ShaderMaterial:
-				(st.material as ShaderMaterial).set_shader_parameter("ambient_haze_color", neb_color)
-
-		for pl: Sprite2D in _planet_nodes:
-			if is_instance_valid(pl) and pl.material is ShaderMaterial:
-				var sm := pl.material as ShaderMaterial
-				sm.set_shader_parameter("biome_tint_color", neb_color)
-
-		if is_instance_valid(galaxy_sprite) and galaxy_sprite.material is ShaderMaterial:
-			var g_mat := galaxy_sprite.material as ShaderMaterial
-			var target_tint: Color = Color(0.92, 0.90, 1.0, 0.95).lerp(neb_color, 0.35)
-			g_mat.set_shader_parameter("tint_color", target_tint)
-
+		# 3. Actualización de Generación Cósmica de Zócalos Solares y Pooling
+		var cam_pos: Vector2 = ship.global_position if is_instance_valid(ship) else Vector2.ZERO
+		if is_instance_valid(cosmic_director):
+			cosmic_director.update_camera_position(cam_pos)
+		if is_instance_valid(cosmic_pool):
+			cosmic_pool.update_parallax_positions(cam_pos, delta, neb_color)
+		if is_instance_valid(cosmic_director):
+			var vp_size: Vector2 = get_viewport_rect().size
+			var cam_zoom: Vector2 = ship.camera.zoom if is_instance_valid(ship) and is_instance_valid(ship.camera) else Vector2.ONE
+			cosmic_director.apply_viewport_arbitration(cam_pos, vp_size, cam_zoom)
 
 
 		# 4. Modulación reactiva de densidad y tono de chatarra según proximidad al Cementerio Mecánico
@@ -200,20 +182,36 @@ func _update_hud_display() -> void:
 		return
 
 	var active_name: String = sector_manager.get_active_biome_name()
-	var mode_text: String = "TRANSICIÓN SUAVE EN CURSO"
-	_hud_label.text = "[FONDOS Y BIOMAS ESPACIALES]\n" + \
+	var pool_info: String = ""
+	if is_instance_valid(cosmic_pool):
+		pool_info = "Objetos Cósmicos Activos: %d / %d (Disponibles: %d)\n" % [
+			cosmic_pool.get_active_count(),
+			cosmic_pool.pool_capacity,
+			cosmic_pool.get_available_count()
+		]
+
+	var coords_info: String = ""
+	if is_instance_valid(ship) and is_instance_valid(cosmic_director):
+		var ship_pos: Vector2 = ship.global_position
+		var sock_c: Vector2i = cosmic_director.get_socket_coord(ship_pos)
+		var active_sockets: int = cosmic_director.get_active_sockets_count()
+		coords_info = "Pos: (%.0f, %.0f) | Zócalo Solar: (%d, %d) [Activos: %d]\n" % [
+			ship_pos.x, ship_pos.y, sock_c.x, sock_c.y, active_sockets
+		]
+
+	var fps_info: String = "FPS: %d\n" % Engine.get_frames_per_second()
+
+	_hud_label.text = "[FONDOS Y ZÓCALOS SOLARES CÓSMICOS]\n" + \
+		fps_info + coords_info + pool_info + \
 		"Bioma Activo: %s\n" % active_name + \
 		"-----------------------------------------\n" + \
-		"[1] Nebulosa Violeta Mística (Púrpura/Azul)\n" + \
-		"[2] Aurora Boreal Cósmica (Esmeralda/Cian)\n" + \
-		"[3] Nebulosa Ionizada (Carmesí/Dorado)\n" + \
-		"[4] Corona Solar (Ámbar/Fuego Estelar)\n" + \
-		"[5] Cementerio Mecánico (Verde Industrial/Chatarra)\n" + \
-		"[6] Abismo Cuántico (Magenta/Neón Profundo)\n" + \
-		"[0] Modo Exploración Libre (Coordenadas Mundo)\n" + \
+		"[1] Nebulosa Violeta Mística | [2] Aurora Boreal\n" + \
+		"[3] Nebulosa Ionizada        | [4] Corona Solar\n" + \
+		"[5] Cementerio Mecánico      | [6] Abismo Cuántico\n" + \
+		"[S] Salto Sol Zócalo         | [B] Agujero Negro | [P] Púlsar | [G] Galaxia\n" + \
+		"[0] Modo Libre (Mundo)\n" + \
 		"-----------------------------------------\n" + \
-		"Rueda Ratón: Zoom | WASD/Flechas: Mover nave\n" + \
-		"Shift: Turbo | R: Reset Posición"
+		"WASD: Nave | Shift: Turbo (1600px/s) | Rueda: Zoom | R: Reset"
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -224,6 +222,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	match event.keycode:
+		KEY_S:
+			if is_instance_valid(ship) and is_instance_valid(cosmic_director):
+				var cur_coord: Vector2i = cosmic_director.get_socket_coord(ship.global_position)
+				var sun_pos: Vector2 = cosmic_director.get_socket_center_pos(cur_coord)
+				ship.global_position = sun_pos
+				ship.velocity = Vector2.ZERO
+		KEY_G:
+			if is_instance_valid(ship) and is_instance_valid(cosmic_director):
+				var gal_pos: Vector2 = cosmic_director.find_nearest_phenomenon("galaxy", ship.global_position, 25)
+				if gal_pos != Vector2.ZERO:
+					ship.global_position = gal_pos
+					ship.velocity = Vector2.ZERO
+		KEY_P:
+			if is_instance_valid(ship) and is_instance_valid(cosmic_director):
+				var pulsar_pos: Vector2 = cosmic_director.find_nearest_phenomenon("pulsar", ship.global_position, 25)
+				if pulsar_pos != Vector2.ZERO:
+					ship.global_position = pulsar_pos
+					ship.velocity = Vector2.ZERO
+		KEY_B:
+			if is_instance_valid(ship) and is_instance_valid(cosmic_director):
+				var bh_pos: Vector2 = cosmic_director.find_nearest_phenomenon("black_hole", ship.global_position, 25)
+				if bh_pos != Vector2.ZERO:
+					ship.global_position = bh_pos
+					ship.velocity = Vector2.ZERO
+
 		KEY_1:
 			sector_manager.blend_speed = 1.0 # Transición suave tipo caminata
 			sector_manager.force_biome(BIOME_VIOLET)

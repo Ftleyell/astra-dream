@@ -8,6 +8,9 @@ extends "res://scenes/combat/systems/combat_subsystem.gd"
 const SatelliteOdometerClass = preload("res://scenes/combat/satellite/components/satellite_odometer.gd")
 const SatelliteSpawnSelectorClass = preload("res://scenes/combat/satellite/components/satellite_spawn_selector.gd")
 
+const BASE_SPAWN_DISTANCE: float = 1200.0
+const DISTANCE_INCREMENT_PER_SAT: float = 400.0
+
 var odometer: RefCounted = null
 var spawn_selector: RefCounted = null
 
@@ -251,11 +254,15 @@ func _on_satellite_planted(index: int, _pos: Vector2) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
 	satellites_collected_total += 1
-	if main_game.is_arcana_modal_active() or main_game.is_level_up_modal_active() or (main_game.level_up_modal and main_game.level_up_modal.has_pending_levels()) or main_game.is_dialogue_active():
-		main_game._pending_satellite_credits = main_game.player.run_credits
+	var credits: int = main_game.player.run_credits if is_instance_valid(main_game.player) else 0
+	if main_game.modal_coordinator:
+		main_game.modal_coordinator.queue_satellite_shop(credits, index)
+	elif main_game.is_arcana_modal_active() or main_game.is_level_up_modal_active() or (main_game.level_up_modal and main_game.level_up_modal.has_pending_levels()) or main_game.is_dialogue_active():
+		main_game._pending_satellite_credits = credits
 		main_game._pending_satellite_index = index
 	else:
-		main_game.satellite_shop.open_shop(main_game.player.run_credits, index)
+		main_game.satellite_shop.open_shop(credits, index)
+
 
 
 func on_item_purchased(item_or_weapon: Resource, cost: int) -> void:

@@ -238,9 +238,13 @@ func skip_dialogue() -> void:
 
 	PauseArbitrator.release_pause(&"dialogue")
 	PauseArbitrator.release_pause(&"briefing")
-	var lvl_modal = main_game.get("level_up_modal") if main_game else null
-	if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
-		lvl_modal.show_next_level_up()
+	if main_game and main_game.get("modal_coordinator"):
+		main_game.modal_coordinator._step_next_modal()
+	else:
+		var lvl_modal = main_game.get("level_up_modal") if main_game else null
+		if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
+			lvl_modal.show_next_level_up()
+
 
 func on_timeline_started() -> void:
 	PauseArbitrator.acquire_pause(&"dialogue")
@@ -363,11 +367,15 @@ func on_timeline_ended() -> void:
 	if main_game and main_game.has_method("notify_menu_closed"):
 		main_game.notify_menu_closed(0.4)
 
-	var lvl_modal = main_game.get("level_up_modal") if main_game else null
-	if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
-		lvl_modal.show_next_level_up()
+	if main_game and main_game.get("modal_coordinator"):
+		main_game.modal_coordinator._step_next_modal()
+	else:
+		var lvl_modal = main_game.get("level_up_modal") if main_game else null
+		if lvl_modal and lvl_modal.has_method("has_pending_levels") and lvl_modal.has_pending_levels():
+			lvl_modal.show_next_level_up()
 
 	dialogue_ended.emit()
+
 
 func _finish_prologue_and_start_run() -> void:
 	is_briefing_active = false
