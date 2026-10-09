@@ -16,10 +16,16 @@
 | Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Input: L396, Skin modals: L753, select_char: L527 |
 | HUD in-game (armas, bomba, dash, salud, stats) | `scenes/ui/hud/hud.gd` | Weapons: L388, Player setup: L515, Curse: L544 |
 | Combate (oleadas, bosses, rivales, modales in-run) | `scenes/combat/main_game.gd` | Encounters: L773, Bosses: L834, Game over: L1099 |
+| Pipeline y ciclo de vida de oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | State machine & subsystem dispatch |
+| Contexto desacoplado de combate | `scenes/combat/systems/combat_context.gd` | Inyección de actores centrales |
+| Interfaz base de subsistemas Plug&Play | `scenes/combat/systems/combat_subsystem.gd` | Contrato virtual CombatSubsystem |
+| Fin de partida y derrota | `scenes/combat/controllers/combat_end_run_controller.gd` | Telemetría y modal de game over |
 | Jugador (movimiento, dash, bomba, daño, muerte) | `scenes/combat/player/player.gd` | Movement: L426, Dash: L475, Damage: L615 |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
-| Coordinación de jefes y colosos | `scenes/combat/directors/combat_boss_coordinator.gd` | — |
-| Narrativa, radio, diálogos in-run | `scenes/combat/directors/combat_narrative_director.gd` | — |
+| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | — |
+| Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
+| Satélites orbitales y odómetro (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | — |
+| Recompensas y tragamonedas (CombatSubsystem) | `scenes/combat/systems/combat_loot_coordinator.gd` | — |
 | Skins / cosméticos / recolors | `core/systems/cosmetics_manager.gd` | DB load: L1 |
 | Sistema de save y persistencia | `core/autoloads/save_manager.gd` | Fachada estática → delega en core/systems/persistence/ |
 | Perfil del jugador (biomasa, trofeos, unlocks) | `core/systems/persistence/meta_progression_state.gd` | — |
