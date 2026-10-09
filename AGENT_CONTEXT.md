@@ -20,7 +20,7 @@
 | Secuencia de lanzamiento y retorno Hub | `scenes/ui/character_select/components/character_select_launch_controller.gd` | — |
 | Coordinador de skins / companion / gacha | `scenes/ui/character_select/components/character_skin_coordinator.gd` | — |
 | Malla y router de foco teclado/gamepad | `scenes/ui/character_select/components/character_focus_router.gd` | — |
-| Combate (orquestador raíz) | `scenes/combat/main_game.gd` | Orquestador: L320, Handlers: L860 |
+| Combate (orquestador raíz) | `scenes/combat/main_game.gd` | Orquestador: L420 |
 | Ensamblado e inicialización de escena de combate | `scenes/combat/systems/combat_scene_assembler.gd` | Bootstrap de modales, directores y cableado reactivo |
 | Coordinador de modales y colas reactivas | `scenes/combat/ui/combat_modal_coordinator.gd` | Cola FIFO de modales, LevelUp, Tienda y Arcanas |
 | Orquestación de encuentros y rivales | `scenes/combat/controllers/combat_encounter_controller.gd` | — |

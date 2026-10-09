@@ -435,3 +435,23 @@ func trigger_pet_climax_alert(route: String) -> void:
 
 func trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary) -> void:
 	CombatRadioFeedControllerScript.trigger_post_boss_victory_dialogue(self, route, victory_data)
+
+func on_dialogic_signal(arg: Variant) -> void:
+	match str(arg):
+		"briefing_credits":
+			prologue_bonus_chosen = true
+			if is_instance_valid(player):
+				player.run_credits += 50
+				if hud and hud.has_method("update_credits"):
+					hud.update_credits(player.run_credits)
+		"briefing_speed":
+			prologue_bonus_chosen = true
+			if is_instance_valid(player) and player.stats:
+				player.stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"briefing_speed", 0.15, true, main_game))
+		"briefing_hull":
+			prologue_bonus_chosen = true
+			if is_instance_valid(player) and player.stats:
+				player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"briefing_hull", 25.0, false, main_game))
+				player.current_health = player.stats.get_stat(&"max_health")
+				player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
+

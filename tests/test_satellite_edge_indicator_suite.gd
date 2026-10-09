@@ -35,9 +35,9 @@ func _ready() -> void:
 	print("[1/5] Testing Rendering Layer Hierarchy (Underneath UI Texts)...")
 	var tracker_layer: CanvasLayer = hud.get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
 	assert(tracker_layer != null, "SatelliteTrackerLayer debe existir en el HUD")
-	assert(tracker_layer.layer == 8, "SatelliteTrackerLayer debe estar en layer 8 (por debajo de HUD layer 10)")
-	assert(hud.layer == 10, "GameHUD debe estar en layer 10 para superponer textos y barras sobre el cuadradito")
-	print("  ✓ Jerarquía de capas validada: SatelliteTrackerLayer (layer 8) < GameHUD UI (layer 10).")
+	assert(tracker_layer.layer == 4, "SatelliteTrackerLayer debe estar en layer 4 (por debajo de HUD layer 5)")
+	assert(hud.layer == 5, "GameHUD debe estar en layer 5 para superponer textos y barras sobre el cuadradito")
+	print("  ✓ Jerarquía de capas validada: SatelliteTrackerLayer (layer 4) < GameHUD UI (layer 5).")
 
 	var tracker: SatelliteEdgeIndicator = tracker_layer.get_node_or_null("SatelliteEdgeIndicator") as SatelliteEdgeIndicator
 	assert(tracker != null, "SatelliteEdgeIndicator debe existir")

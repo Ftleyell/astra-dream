@@ -125,8 +125,63 @@ static func handle_debug_jump_requests(main_game: Node2D) -> bool:
 		var player: Player = main_game.get("player") as Player
 		if is_instance_valid(player) and player.stats:
 			player.stats.add_modifier(&"move_speed", CharacterStats.StatModifier.new(&"planet_test_speed", 150.0, false, main_game))
-			player.stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"planet_test_damage", 50.0, false, main_game))
-		main_game.call_deferred("_spawn_debug_test_planets")
+		var sdm = main_game.get("space_debris_manager")
+		if sdm:
+			sdm.call_deferred("spawn_debug_planets", main_game, player)
 		return true
 
 	return false
+
+static func initialize_session(main_game: Node2D, player: Player, hud: GameHUD) -> void:
+	var debug_mgr: Node = main_game.get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
+		player.run_credits = 999999
+	if hud:
+		hud.update_credits(player.run_credits)
+		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
+		hud.update_wave_status(main_game.get("current_wave"), main_game.get("wave_timer"), main_game.get("wave_satellites_spawned"), 1)
+
+static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) -> void:
+	var ctx_script := load("res://scenes/combat/systems/combat_context.gd")
+	var pipeline_script := load("res://scenes/combat/directors/combat_wave_pipeline.gd")
+
+	main_game.combat_context = ctx_script.new()
+	main_game.combat_context.initialize(player, main_game.camera, hud, main_game.bullet_server, main_game.enemy_spawner, main_game.space_object_spawner, main_game.chest_director, main_game.satellite_shop, main_game)
+
+	var pipe = pipeline_script.new()
+	pipe.name = "CombatWavePipeline"
+	main_game.add_child(pipe)
+	main_game.wave_pipeline = pipe
+	pipe.setup_pipeline(
+		main_game.combat_context,
+		Callable(main_game, "_on_wave_pipeline_advanced"),
+		Callable(main_game, "_on_wave_pipeline_hud_update")
+	)
+	pipe.wave_completed.connect(func(_idx: int) -> void:
+		main_game._on_wave_completed()
+	)
+
+	pipe.register_subsystem(main_game.boss_coordinator)
+	pipe.register_subsystem(main_game.satellite_coordinator)
+	pipe.register_subsystem(main_game.loot_coordinator)
+	pipe.register_subsystem(main_game.narrative_director)
+
+	main_game.last_anchor_pos = player.global_position
+	main_game.process_mode = Node.PROCESS_MODE_ALWAYS
+	initialize_session(main_game, player, hud)
+
+	if main_game.space_debris_manager:
+		main_game.space_debris_manager.spawn_environment_actors(main_game)
+
+	if handle_debug_jump_requests(main_game):
+		return
+
+	main_game._spawn_next_satellite_for_wave()
+
+	if main_game.chest_director:
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
+		main_game.chest_director.on_new_wave(main_game.current_wave, green_cards)
+	main_game._spawn_wave_chests()
+	main_game._start_prologue_briefing()
+
+
