@@ -2,12 +2,14 @@ class_name TransmutationModal
 extends BaseModal
 
 ## TransmutationModal.gd
-## Interfaz de usuario para la Forja Cuántica (Microondas espacial).
-## Permite duplicar ítems mediante sacrificio molecular de misma rareza.
+## Orquestador desacoplado de la interfaz de usuario para la Forja Cuántica.
+## Permite duplicar ítems mediante sacrificio molecular de la misma rareza.
 
 signal modal_closed()
 
-const TransmutationRewardChestClass = preload("res://scenes/combat/satellite/transmutation_reward_chest.gd")
+const TransmutationDataControllerClass = preload("res://scenes/ui/modals/transmutation_data_controller.gd")
+const TransmutationChoiceViewClass = preload("res://scenes/ui/modals/transmutation_choice_view.gd")
+const TransmutationCardBuilderClass = preload("res://scenes/ui/modals/transmutation_card_builder.gd")
 
 @export var transmutation_cost: int = 50
 
@@ -26,12 +28,14 @@ var _close_btn: Button
 var _item_buttons: Array[Button] = []
 var _last_focused_item_btn: Button = null
 
+
 func _ready() -> void:
 	layer = 126
 	modal_token = &"transmutation"
 	add_to_group("transmutation_modal")
 	_build_ui()
 	super._ready()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -80,6 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 						b.emit_signal("pressed")
 						get_viewport().set_input_as_handled()
 						return
+
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -167,6 +172,7 @@ func _build_ui() -> void:
 	vbox.add_child(_close_btn)
 	UIFocusHelper.apply_cyber_focus(_close_btn)
 
+
 func open_for_station(player: Player, station: TransmutationStation) -> void:
 	current_player = player
 	current_station = station
@@ -183,6 +189,7 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 		_close_btn.show()
 	_feedback_label.text = ""
 	_refresh_ui()
+
 	var initial_btn: Button = null
 	for b in _item_buttons:
 		if is_instance_valid(b) and not b.disabled:
@@ -197,6 +204,7 @@ func open_for_station(player: Player, station: TransmutationStation) -> void:
 	elif _close_btn:
 		_close_btn.grab_focus()
 
+
 func close_modal() -> void:
 	if _choice_container:
 		_choice_container.hide()
@@ -207,21 +215,17 @@ func close_modal() -> void:
 	super.close_modal()
 	modal_closed.emit()
 
+
+# Compatibilidad directa con suites de test
 static func is_item_eligible_for_transmutation(it: ItemData) -> bool:
-	if not it:
-		return false
-	if it.item_id == &"quantum_key":
-		return false
-	if it.tags.has(&"consumable") or it.tags.has(&"key"):
-		return false
-	return true
+	return TransmutationDataControllerClass.is_item_eligible_for_transmutation(it)
+
 
 func _refresh_ui() -> void:
 	if not current_station:
 		return
 	_uses_label.text = "USOS DISPONIBLES: %d / %d" % [current_station.uses_remaining, current_station.max_uses]
 
-	# Limpiar catálogo anterior
 	_item_buttons.clear()
 	for child in _items_container.get_children():
 		child.queue_free()
@@ -229,13 +233,7 @@ func _refresh_ui() -> void:
 	if not is_instance_valid(current_player) or not current_player.inventory:
 		return
 
-	var all_items := current_player.inventory.get_all_items()
-	var eligible_items: Array[Dictionary] = []
-	for entry in all_items:
-		var it: ItemData = entry["data"]
-		if is_item_eligible_for_transmutation(it):
-			eligible_items.append(entry)
-
+	var eligible_items := TransmutationDataControllerClass.get_eligible_items(current_player.inventory)
 	if eligible_items.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.text = "No posees ítems transmutables en tu inventario."
@@ -243,7 +241,6 @@ func _refresh_ui() -> void:
 		_items_container.add_child(empty_lbl)
 		return
 
-	# Agrupar ítems por rareza
 	var rarity_order: Array[Enums.Rarity] = [
 		Enums.Rarity.COMMON,
 		Enums.Rarity.UNCOMMON,
@@ -268,10 +265,9 @@ func _refresh_ui() -> void:
 		if group.is_empty():
 			continue
 
-		var r_color := _get_rarity_color(r)
-		var r_name := _get_rarity_short_name(r).to_upper()
+		var r_color: Color = TransmutationCardBuilderClass.get_rarity_color(r)
+		var r_name: String = TransmutationCardBuilderClass.get_rarity_short_name(r).to_upper()
 
-		# Encabezado de la categoría de rareza
 		var header_lbl := Label.new()
 		header_lbl.text = "─── %s (%d) ───" % [r_name, group.size()]
 		header_lbl.add_theme_font_size_override("font_size", 12)
@@ -279,7 +275,6 @@ func _refresh_ui() -> void:
 		header_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_items_container.add_child(header_lbl)
 
-		# Sub-lista de filas horizontales para los ítems de esta rareza
 		var group_vbox := VBoxContainer.new()
 		group_vbox.add_theme_constant_override("separation", 8)
 		group_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -288,22 +283,16 @@ func _refresh_ui() -> void:
 		for entry in group:
 			var it: ItemData = entry["data"]
 			var count: int = entry["count"]
+			var has_sac: bool = TransmutationDataControllerClass.has_sacrifice_available(it, eligible_items)
 
-			# Comprobar si existe al menos otro ítem (o copia adicional) de esta misma rareza para sacrificar
-			var has_sacrifice: bool = false
-			for other_entry in eligible_items:
-				var other_it: ItemData = other_entry["data"]
-				var other_count: int = other_entry["count"]
-				if other_it.rarity == it.rarity:
-					if other_it.item_id != it.item_id or other_count > 1:
-						has_sacrifice = true
-						break
-
-			var btn := _create_item_card_button(it, count, has_sacrifice)
+			var btn: Button = TransmutationCardBuilderClass.create_item_card_button(
+				it, count, has_sac, func(): _on_item_selected_to_clone(it)
+			)
 			group_vbox.add_child(btn)
 			_item_buttons.append(btn)
 
 	_setup_forge_navigation()
+
 
 func _setup_forge_navigation() -> void:
 	if _item_buttons.is_empty():
@@ -315,11 +304,8 @@ func _setup_forge_navigation() -> void:
 		var prev_btn := _item_buttons[(i - 1 + count) % count]
 		var next_btn := _item_buttons[(i + 1) % count]
 
-		# Navegación vertical: recorre todos los ítems secuencialmente sin saltar a salir
 		btn.focus_neighbor_top = prev_btn.get_path()
 		btn.focus_neighbor_bottom = next_btn.get_path()
-
-		# Navegación horizontal: saltar directamente a salir
 		if _close_btn:
 			btn.focus_neighbor_left = _close_btn.get_path()
 			btn.focus_neighbor_right = _close_btn.get_path()
@@ -337,147 +323,15 @@ func _setup_forge_navigation() -> void:
 		_close_btn.focus_neighbor_top = target_item.get_path()
 		_close_btn.focus_neighbor_bottom = target_item.get_path()
 
-func _create_item_card_button(item: ItemData, count: int, has_sacrifice: bool = true) -> Button:
-	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(0, 74)
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn.focus_mode = Control.FOCUS_ALL
-
-	var r_col := _get_rarity_color(item.rarity)
-	if not has_sacrifice:
-		btn.disabled = true
-		btn.modulate = Color(0.6, 0.6, 0.6, 0.45)
-		btn.tooltip_text = "Sin material de sacrificio disponible (se requiere otro ítem de esta rareza)"
-	else:
-		btn.tooltip_text = "%s (x%d)\n%s" % [item.item_name, count, item.description]
-
-	# Borde con el color de rareza
-	var normal_box := StyleBoxFlat.new()
-	normal_box.bg_color = Color(0.08, 0.08, 0.14, 0.9) if has_sacrifice else Color(0.05, 0.05, 0.08, 0.7)
-	normal_box.border_color = r_col if has_sacrifice else Color(0.3, 0.3, 0.3, 0.5)
-	normal_box.set_border_width_all(2)
-	normal_box.set_corner_radius_all(6)
-	normal_box.set_content_margin_all(8.0)
-	btn.add_theme_stylebox_override("normal", normal_box)
-
-	if has_sacrifice:
-		var hover_box := normal_box.duplicate() as StyleBoxFlat
-		hover_box.bg_color = Color(r_col.r * 0.25, r_col.g * 0.25, r_col.b * 0.25, 0.95)
-		hover_box.border_color = Color.WHITE
-		btn.add_theme_stylebox_override("hover", hover_box)
-		UIFocusHelper.apply_cyber_focus(btn)
-		btn.pressed.connect(func(): _on_item_selected_to_clone(item))
-
-	# Estructura interna visual en fila horizontal
-	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn.add_child(margin)
-
-	var hbox := HBoxContainer.new()
-	hbox.set("theme_override_constants/separation", 12)
-	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_child(hbox)
-
-	# 1. Icono con marco de rareza (56x56 px)
-	var icon_panel := PanelContainer.new()
-	icon_panel.custom_minimum_size = Vector2(62, 62)
-	icon_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var icon_style := StyleBoxFlat.new()
-	icon_style.bg_color = Color(0.02, 0.04, 0.08, 0.95)
-	icon_style.set_border_width_all(1)
-	icon_style.border_color = r_col
-	icon_style.set_corner_radius_all(6)
-	icon_panel.add_theme_stylebox_override("panel", icon_style)
-
-	var icon_rect := TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(56, 56)
-	icon_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	icon_rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if item.icon:
-		icon_rect.texture = item.icon
-	icon_panel.add_child(icon_rect)
-	hbox.add_child(icon_panel)
-
-	# 2. Información central
-	var info_vbox := VBoxContainer.new()
-	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	info_vbox.add_theme_constant_override("separation", 2)
-	info_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var title_lbl := Label.new()
-	title_lbl.text = "%s  (x%d)" % [item.item_name, count]
-	title_lbl.add_theme_font_size_override("font_size", 14)
-	title_lbl.add_theme_color_override("font_color", r_col if has_sacrifice else Color(0.6, 0.6, 0.6))
-	title_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	info_vbox.add_child(title_lbl)
-
-	var desc_lbl := Label.new()
-	desc_lbl.text = item.description
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9, 0.85) if has_sacrifice else Color(0.5, 0.5, 0.5, 0.6))
-	desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	info_vbox.add_child(desc_lbl)
-
-	hbox.add_child(info_vbox)
-
-	# 3. Badge indicador de acción a la derecha
-	var action_lbl := Label.new()
-	action_lbl.text = "[ CLONAR ]" if has_sacrifice else "[ BLOQUEADO ]"
-	action_lbl.add_theme_font_size_override("font_size", 12)
-	action_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6) if has_sacrifice else Color(0.8, 0.4, 0.4))
-	action_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	action_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox.add_child(action_lbl)
-
-	return btn
 
 func _on_item_selected_to_clone(target_item: ItemData) -> void:
 	if not current_player or not current_station or current_station.uses_remaining <= 0:
 		return
 
-	if current_player.run_credits < transmutation_cost:
-		_show_feedback("¡Créditos insuficientes! Se requieren %dc." % transmutation_cost, Color(1.0, 0.3, 0.3, 1.0))
+	var result := TransmutationDataControllerClass.execute_transmutation(current_player, target_item, transmutation_cost)
+	if not result["success"]:
+		_show_feedback(result["error"], Color(1.0, 0.3, 0.3, 1.0))
 		return
-
-	# Buscar material de sacrificio de la misma rareza
-	var all_items := current_player.inventory.get_all_items()
-	var sacrifice_candidates: Array[ItemData] = []
-
-	for entry in all_items:
-		var it: ItemData = entry["data"]
-		var cnt: int = entry["count"]
-		if not is_item_eligible_for_transmutation(it):
-			continue
-		if it.rarity == target_item.rarity:
-			if it.item_id != target_item.item_id:
-				sacrifice_candidates.append(it)
-			elif cnt > 1:
-				# Si es el mismo ítem pero tiene múltiples copias, se puede usar
-				sacrifice_candidates.append(it)
-
-	if sacrifice_candidates.is_empty():
-		_show_feedback("¡Sin material de sacrificio! Necesitas otro ítem de rareza %s." % _get_rarity_short_name(target_item.rarity), Color(1.0, 0.3, 0.3, 1.0))
-		return
-
-	# Iniciar proceso de transmutación autónomo en la estación
-	var sacrifice_item: ItemData = sacrifice_candidates.pick_random()
-	current_player.run_credits -= transmutation_cost
-	if current_player.has_signal("credits_changed"):
-		current_player.credits_changed.emit(current_player.run_credits)
-
-	current_player.inventory.remove_item_stacks(sacrifice_item.item_id, 1)
 
 	var station_ref := current_station
 	var player_ref := current_player
@@ -486,7 +340,7 @@ func _on_item_selected_to_clone(target_item: ItemData) -> void:
 	if is_instance_valid(station_ref) and station_ref.has_method("start_processing"):
 		station_ref.start_processing(target_item, player_ref)
 
-## Abre el diálogo interactivo para Aceptar o Rechazar el ítem forjado por créditos (idéntico a SlotMachineRewardModal)
+
 func open_choice(item: ItemData, on_decision: Callable) -> void:
 	open_modal()
 	if _close_btn:
@@ -502,131 +356,21 @@ func open_choice(item: ItemData, on_decision: Callable) -> void:
 	_uses_label.modulate = Color(0.75, 0.75, 0.85, 1.0)
 	_feedback_label.text = ""
 
-	for child in _choice_container.get_children():
-		child.queue_free()
-
-	_choice_container.show()
-
-	# Item Card Frame idéntico a SlotMachineRewardModal
-	var card_frame := PanelContainer.new()
-	var csb := StyleBoxFlat.new()
-	csb.bg_color = Color(0.12, 0.09, 0.22, 0.9)
-	csb.border_color = Color(0.8, 0.6, 1.0, 0.6)
-	csb.set_border_width_all(2)
-	csb.set_corner_radius_all(8)
-	csb.content_margin_left = 20
-	csb.content_margin_right = 20
-	csb.content_margin_top = 16
-	csb.content_margin_bottom = 16
-	card_frame.add_theme_stylebox_override("panel", csb)
-	_choice_container.add_child(card_frame)
-
-	var card_vbox := VBoxContainer.new()
-	card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	card_vbox.add_theme_constant_override("separation", 8)
-	card_frame.add_child(card_vbox)
-
-	var icon_center := CenterContainer.new()
-	card_vbox.add_child(icon_center)
-
-	var item_icon := TextureRect.new()
-	item_icon.custom_minimum_size = Vector2(110, 110)
-	item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	item_icon.texture = item.icon
-	icon_center.add_child(item_icon)
-
-	var item_name_label := Label.new()
-	item_name_label.text = item.item_name
-	item_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	item_name_label.add_theme_font_size_override("font_size", 18)
-	item_name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	card_vbox.add_child(item_name_label)
-
-	var rarity_label := Label.new()
-	var r_text: String = "COMÚN"
-	var r_color: Color = Color(0.7, 0.7, 0.7, 1.0)
-	match item.rarity:
-		Enums.Rarity.UNCOMMON:
-			r_text = "POCO COMÚN"
-			r_color = Color(0.2, 0.8, 0.4, 1.0)
-		Enums.Rarity.RARE:
-			r_text = "RARO"
-			r_color = Color(0.2, 0.6, 1.0, 1.0)
-		Enums.Rarity.EPIC:
-			r_text = "ÉPICO"
-			r_color = Color(0.8, 0.3, 1.0, 1.0)
-		Enums.Rarity.LEGENDARY:
-			r_text = "LEGENDARIO"
-			r_color = Color(1.0, 0.8, 0.1, 1.0)
-	rarity_label.text = r_text
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 12)
-	rarity_label.add_theme_color_override("font_color", r_color)
-	card_vbox.add_child(rarity_label)
-
-	var item_desc_label := Label.new()
-	item_desc_label.text = item.description
-	item_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	item_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	item_desc_label.add_theme_font_size_override("font_size", 14)
-	item_desc_label.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95, 1.0))
-	card_vbox.add_child(item_desc_label)
-
-	# Fila de botones Aceptar y Rechazar
-	var refund: int = TransmutationRewardChestClass.get_refund_credits_for_rarity(item.rarity)
-	var btn_box := HBoxContainer.new()
-	btn_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_box.add_theme_constant_override("separation", 20)
-
-	var take_button := Button.new()
-	take_button.text = "✨ [1] TOMAR ÍTEM"
-	take_button.custom_minimum_size = Vector2(200, 46)
-	UIFocusHelper.apply_cyber_focus(take_button)
-	take_button.pressed.connect(func():
-		close_modal()
-		on_decision.call(true)
+	var take_btn: Button = TransmutationChoiceViewClass.build_choice_panel(
+		_choice_container,
+		item,
+		func():
+			close_modal()
+			on_decision.call(true),
+		func():
+			close_modal()
+			on_decision.call(false)
 	)
-	btn_box.add_child(take_button)
-
-	var reject_button := Button.new()
-	reject_button.text = "♻️ [2] RECHAZAR (+%d Créditos)" % refund
-	reject_button.custom_minimum_size = Vector2(230, 46)
-	UIFocusHelper.apply_cyber_focus(reject_button)
-	reject_button.pressed.connect(func():
-		close_modal()
-		on_decision.call(false)
-	)
-	btn_box.add_child(reject_button)
-
-	_choice_container.set_meta("choice_take_btn", take_button)
-	_choice_container.set_meta("choice_reject_btn", reject_button)
-
-	_choice_container.add_child(btn_box)
 
 	show()
-	take_button.grab_focus()
+	take_btn.grab_focus()
+
 
 func _show_feedback(msg: String, col: Color) -> void:
 	_feedback_label.text = msg
 	_feedback_label.modulate = col
-
-func _get_rarity_short_name(rarity: Enums.Rarity) -> String:
-	match rarity:
-		Enums.Rarity.COMMON: return "Común"
-		Enums.Rarity.UNCOMMON: return "Poco Común"
-		Enums.Rarity.RARE: return "Raro"
-		Enums.Rarity.EPIC: return "Épico"
-		Enums.Rarity.LEGENDARY: return "Legendario"
-		_: return "Base"
-
-func _get_rarity_color(rarity: Enums.Rarity) -> Color:
-	match rarity:
-		Enums.Rarity.COMMON: return Color(0.6, 0.9, 0.6)
-		Enums.Rarity.UNCOMMON: return Color(0.3, 0.7, 1.0)
-		Enums.Rarity.RARE: return Color(0.8, 0.4, 1.0)
-		Enums.Rarity.EPIC: return Color(1.0, 0.3, 0.8)
-		Enums.Rarity.LEGENDARY: return Color(1.0, 0.85, 0.2)
-		_: return Color.WHITE
-
-
