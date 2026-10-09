@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+sector_name = "Cementerio Mecánico"
+space_color = Color(0.006, 0.022, 0.018, 1)
+nebula_primary = Color(0.08, 0.42, 0.32, 1)
+nebula_secondary = Color(0.35, 0.48, 0.22, 1)
+nebula_density = 0.55
+nebula_scale = 0.00030
+star_density = 130.0
+star_brightness_cutoff = 0.945
+chromatic_aberration = 0.001

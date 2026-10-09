@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+sector_name = "Abismo Cuántico"
+space_color = Color(0.018, 0.005, 0.035, 1)
+nebula_primary = Color(0.65, 0.06, 0.78, 1)
+nebula_secondary = Color(0.12, 0.72, 0.95, 1)
+nebula_density = 1.40
+nebula_scale = 0.00045
+star_density = 110.0
+star_brightness_cutoff = 0.955
+chromatic_aberration = 0.005

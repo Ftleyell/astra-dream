@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://boa6fe3edffc7"]
+
+[ext_resource type="Script" path="res://tests/test_space_biome_sandbox_suite.gd" id="1_test_script"]
+
+[node name="TestSpaceBiomeSandboxRunner" type="Node"]
+script = ExtResource("1_test_script")

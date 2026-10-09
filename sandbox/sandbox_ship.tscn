@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://sandbox/sandbox_ship.gd" id="1_ship"]
+[ext_resource type="Texture2D" path="res://assets/recolors/ships/ship_nova_cyber_neon.png" id="2_texture"]
+
+[node name="SandboxShip" type="CharacterBody2D"]
+script = ExtResource("1_ship")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("2_texture")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
