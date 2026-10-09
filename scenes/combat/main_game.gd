@@ -38,6 +38,8 @@ const CombatSceneAssemblerScript = preload("res://scenes/combat/systems/combat_s
 const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
 const CombatWavePipelineScript = preload("res://scenes/combat/directors/combat_wave_pipeline.gd")
 const CombatSpaceDebrisManagerScript = preload("res://scenes/combat/systems/combat_space_debris_manager.gd")
+const CombatPlayerFeedbackCoordinatorScript = preload("res://scenes/combat/systems/combat_player_feedback_coordinator.gd")
+const CombatExpBatchOptimizerScript = preload("res://scenes/combat/systems/combat_exp_batch_optimizer.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -47,6 +49,8 @@ var telemetry_coordinator: CombatTelemetryCoordinatorScript = CombatTelemetryCoo
 var encounter_controller: CombatEncounterControllerScript = CombatEncounterControllerScript.new()
 var input_dispatcher: CombatInputDispatcherScript = CombatInputDispatcherScript.new()
 var space_debris_manager: RefCounted = CombatSpaceDebrisManagerScript.new()
+var feedback_coordinator: RefCounted = CombatPlayerFeedbackCoordinatorScript.new()
+var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null
 
@@ -142,8 +146,6 @@ var current_rival: Node2D = null
 var current_genocide_escort: Node2D = null
 var crisis_manager: Node2D = null
 var crisis_banner: CanvasLayer = null
-var _last_player_hp: float = 100.0
-var _exp_batch_timer: float = 0.0
 
 var current_wave: int:
 	get: return wave_pipeline.current_wave if wave_pipeline else 1
@@ -327,8 +329,6 @@ func _ready() -> void:
 	wave_pipeline.register_subsystem(loot_coordinator)
 	wave_pipeline.register_subsystem(narrative_director)
 
-	_last_player_hp = player.current_health
-
 	# Inicializar ancla de distancia al spawn del jugador
 	last_anchor_pos = player.global_position
 
@@ -471,11 +471,10 @@ func _process(delta: float) -> void:
 				chest_director.refresh_all_chest_prices(current_green_cards)
 
 	# Compactación periódica de cristales de EXP lejanos en Mega-Cristales (Optimización)
-	_exp_batch_timer -= delta
-	if _exp_batch_timer <= 0.0:
-		_exp_batch_timer = 2.5
-		if is_instance_valid(player):
-			ExpBlob.batch_distant_blobs_if_needed(get_tree(), player.global_position)
+	if exp_batch_optimizer:
+		exp_batch_optimizer.tick(delta, get_tree(), player)
+	elif is_instance_valid(player):
+		ExpBlob.batch_distant_blobs_if_needed(get_tree(), player.global_position)
 
 	# Lógica del ciclo de vida de oleadas desacoplada en CombatWavePipeline
 	var is_major_combat_active: bool = _has_active_boss_or_rival()
@@ -755,15 +754,15 @@ func _resume_pending_systems_after_cinematics() -> void:
 	if modal_coordinator:
 		modal_coordinator._step_next_modal()
 
-func _on_player_bomb_used(_remaining: int) -> void:
-	if camera:
+func _on_player_bomb_used(remaining: int) -> void:
+	if feedback_coordinator:
+		feedback_coordinator.on_player_bomb_used(remaining)
+	elif camera:
 		camera.add_trauma(0.6)
 
-func _on_player_health_changed(current: float, _max_val: float) -> void:
-	if current < _last_player_hp:
-		if camera:
-			camera.add_trauma(0.4)
-	_last_player_hp = current
+func _on_player_health_changed(current: float, max_val: float) -> void:
+	if feedback_coordinator:
+		feedback_coordinator.on_player_health_changed(current, max_val)
 
 func _on_enemy_killed(_enemy_type: String) -> void:
 	if telemetry_coordinator:
@@ -772,7 +771,9 @@ func _on_enemy_killed(_enemy_type: String) -> void:
 		enemies_killed_count += 1
 
 func _on_player_died() -> void:
-	if end_run_controller:
+	if feedback_coordinator:
+		feedback_coordinator.on_player_died()
+	elif end_run_controller:
 		end_run_controller.on_player_died()
 
 
@@ -815,22 +816,11 @@ func _spawn_debug_test_planets() -> void:
 	else:
 		PlanetSpawnerHelper.spawn_debug_planets(self, player)
 
-const IngameDebugModalScript := preload("res://scenes/ui/debug/ingame_debug_modal.gd")
-var ingame_debug_modal: CanvasLayer = null
+var ingame_debug_modal: CanvasLayer:
+	get: return input_dispatcher.ingame_debug_modal if input_dispatcher else null
+	set(val):
+		if input_dispatcher: input_dispatcher.ingame_debug_modal = val
 
 func _toggle_ingame_debug() -> void:
-	if not DebugManager.is_debug_enabled():
-		return
-	if not ingame_debug_modal:
-		var scene := load("res://scenes/ui/debug/ingame_debug_modal.tscn") as PackedScene
-		if scene:
-			ingame_debug_modal = scene.instantiate() as CanvasLayer
-			add_child(ingame_debug_modal)
-			if ingame_debug_modal.has_method("setup"):
-				ingame_debug_modal.setup(self)
-
-	if ingame_debug_modal:
-		if ingame_debug_modal.is_open:
-			ingame_debug_modal.close()
-		else:
-			ingame_debug_modal.open()
+	if input_dispatcher:
+		input_dispatcher.toggle_ingame_debug()

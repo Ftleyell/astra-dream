@@ -5,9 +5,27 @@ extends Node
 ## Extraído de MainGame para modularidad y separación de responsabilidades.
 
 var main_game: Node2D = null
+var ingame_debug_modal: CanvasLayer = null
 
 func setup(p_main_game: Node2D) -> void:
 	main_game = p_main_game
+
+func toggle_ingame_debug() -> void:
+	if not DebugManager.is_debug_enabled() or not is_instance_valid(main_game):
+		return
+	if not ingame_debug_modal:
+		var scene := load("res://scenes/ui/debug/ingame_debug_modal.tscn") as PackedScene
+		if scene:
+			ingame_debug_modal = scene.instantiate() as CanvasLayer
+			main_game.add_child(ingame_debug_modal)
+			if ingame_debug_modal.has_method("setup"):
+				ingame_debug_modal.setup(main_game)
+
+	if ingame_debug_modal:
+		if ingame_debug_modal.is_open:
+			ingame_debug_modal.close()
+		else:
+			ingame_debug_modal.open()
 
 func handle_input(event: InputEvent) -> void:
 	if not is_instance_valid(main_game):
@@ -22,8 +40,7 @@ func handle_input(event: InputEvent) -> void:
 	if DebugManager.is_debug_enabled() and event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F1:
 			main_game.get_viewport().set_input_as_handled()
-			if main_game.has_method("_toggle_ingame_debug"):
-				main_game._toggle_ingame_debug()
+			toggle_ingame_debug()
 			return
 
 		# Hotkeys de depuración para combate

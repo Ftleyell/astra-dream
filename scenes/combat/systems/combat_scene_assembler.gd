@@ -58,6 +58,9 @@ static func _setup_directors_and_controllers(game: MainGame, hud: GameHUD) -> vo
 		game.add_child(game.input_dispatcher)
 	game.input_dispatcher.setup(game)
 
+	if game.feedback_coordinator:
+		game.feedback_coordinator.setup(game, game.camera, game.end_run_controller)
+
 	if game.space_debris_manager:
 		game.space_debris_manager.setup(game)
 

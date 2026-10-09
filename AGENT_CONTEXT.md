@@ -24,7 +24,9 @@
 | Coordinador de modales y colas reactivas | `scenes/combat/ui/combat_modal_coordinator.gd` | Cola FIFO de modales, LevelUp, Tienda y Arcanas |
 | Orquestación de encuentros y rivales | `scenes/combat/controllers/combat_encounter_controller.gd` | — |
 
-| Despacho de inputs y hotkeys de combate | `scenes/combat/controllers/combat_input_dispatcher.gd` | — |
+| Feedback sensorial y trauma de cámara | `scenes/combat/systems/combat_player_feedback_coordinator.gd` | Shake, daño y enrutamiento de muerte |
+| Optimizador de gemas y batching de EXP | `scenes/combat/systems/combat_exp_batch_optimizer.gd` | Agrupación periódica de cristales distantes |
+| Despacho de inputs y hotkeys de combate | `scenes/combat/controllers/combat_input_dispatcher.gd` | Toggle de debug F1 y hotkeys |
 | Interacciones tácticas de campo (Chronos/Salvage) | `scenes/combat/systems/combat_tactical_interactions.gd` | — |
 | Bootstrap de loadouts y branches debug | `scenes/combat/systems/combat_bootstrapper.gd` | — |
 | Pipeline y ciclo de vida de oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | State machine & subsystem dispatch |
