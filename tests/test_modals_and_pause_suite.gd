@@ -1,6 +1,7 @@
 extends BaseTestSuite
 
 func _ready() -> void:
+	timeout_seconds = 12.0
 	super._ready()
 
 	print("\n==========================================")
@@ -217,4 +218,6 @@ func _ready() -> void:
 	print("\n==========================================")
 	print("[PASS] ALL MODAL, SETTINGS & PAUSE TESTS PASSED (100%)!")
 	print("==========================================\n")
-	get_tree().quit(0)
+	main_game.queue_free()
+	await get_tree().process_frame
+	pass_suite("TestModalsAndPauseSuite: Modales, Ajustes y Pausa pasaron al 100%.")

@@ -37,6 +37,24 @@ func assert_true(condition: bool, failure_message: String = "Assertion failed") 
 		printerr("[ASSERTION FAILURE] %s" % failure_message)
 		_cleanup_and_quit(1)
 
+## Espera una señal específica o aborta por timeout si la señal no se dispara.
+## Retorna true si la señal se emitió a tiempo, o false si ocurrió un timeout.
+func await_signal_or_timeout(target_signal: Signal, timeout: float = 3.0) -> bool:
+	var received: Array[bool] = [false]
+	var on_emitted := func(_arg1 = null, _arg2 = null, _arg3 = null, _arg4 = null) -> void:
+		received[0] = true
+
+	target_signal.connect(on_emitted, CONNECT_ONE_SHOT)
+	var timer := get_tree().create_timer(timeout, true, false, true)
+	
+	while not received[0] and timer.time_left > 0.0:
+		await get_tree().process_frame
+	
+	if target_signal.is_connected(on_emitted):
+		target_signal.disconnect(on_emitted)
+
+	return received[0]
+
 func pass_suite(summary_message: String = "") -> void:
 	if _is_finished:
 		return
