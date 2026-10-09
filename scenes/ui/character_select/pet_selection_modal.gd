@@ -10,6 +10,7 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 const PetCoverFlowRenderer = preload("res://scenes/ui/character_select/components/pet_cover_flow_renderer.gd")
 const PetDossierController = preload("res://scenes/ui/character_select/components/pet_dossier_controller.gd")
+const PetDataController = preload("res://scenes/ui/character_select/components/pet_data_controller.gd")
 
 signal pet_selected(pet_id: StringName)
 signal skin_equipped(slot_key: String, skin_id: String)
@@ -18,6 +19,7 @@ signal closed()
 # Componentes Modulares
 var cover_flow_renderer: PetCoverFlowRenderer = null
 var dossier_controller: PetDossierController = null
+var data_controller: PetDataController = null
 
 # Nodos de la escena accesibles para suites de tests y dependencias externas
 @onready var dim_overlay: ColorRect = $DimOverlay
@@ -64,10 +66,33 @@ var next_btn: Button = null
 @onready var close_btn: Button = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/ActionsRow/CloseButton
 
 var is_open: bool = false
-var current_index: int = 0
-var _pets: Array[PetData] = []
-var _available_skins: Array[Dictionary] = []
-var _skin_index: int = 0
+var current_index: int:
+	get:
+		return data_controller.current_index if data_controller else 0
+	set(value):
+		if data_controller:
+			data_controller.current_index = value
+
+var _pets: Array[PetData]:
+	get:
+		return data_controller.pets if data_controller else []
+	set(value):
+		if data_controller:
+			data_controller.pets = value
+
+var _available_skins: Array[Dictionary]:
+	get:
+		return data_controller.available_skins if data_controller else []
+	set(value):
+		if data_controller:
+			data_controller.available_skins = value
+
+var _skin_index: int:
+	get:
+		return data_controller.skin_index if data_controller else 0
+	set(value):
+		if data_controller:
+			data_controller.skin_index = value
 
 var _nav_buttons: Array[Button]:
 	get:
@@ -106,6 +131,7 @@ func _ready() -> void:
 
 
 func _init_components() -> void:
+	data_controller = PetDataController.new()
 	cover_flow_renderer = PetCoverFlowRenderer.new()
 	cover_flow_renderer.setup(
 		prev_btn,
@@ -249,69 +275,16 @@ func _confirm_and_close() -> void:
 
 
 func _populate_pets() -> void:
-	_pets = PetDataScript.load_roster_ordered()
-
-	var selected_pid := SaveManager.get_selected_pet()
-	var initial_index: int = 0
-	for i in range(_pets.size()):
-		if _pets[i].pet_id == selected_pid:
-			initial_index = i
-			break
-	current_index = initial_index
-
-	_load_available_skins()
+	if not data_controller:
+		return
+	data_controller.load_roster()
 	_build_dots(_pets.size(), current_index)
 	_display_current_pet(false, 0, 0)
 
 
 func _load_available_skins() -> void:
-	_available_skins.clear()
-	if _pets.is_empty() or current_index < 0 or current_index >= _pets.size():
-		return
-	var cur_pet := _pets[current_index]
-	var pid_str: String = String(cur_pet.pet_id).to_lower()
-	var slot_key: String = "pet:" + pid_str
-
-	# Slot 0: Aspecto base/estándar
-	var base_skin: Dictionary = {
-		"id": "",
-		"skin_name": "Aspecto Estándar",
-		"texture": cur_pet.get_icon_texture(),
-		"is_base": true,
-		"is_unlocked": true,
-		"stars": 0,
-		"glow_hex": "#FF9900"
-	}
-	_available_skins.append(base_skin)
-
-	# Slots 1..N: Aspectos alternativos
-	var raw_skins: Array[Dictionary] = CosmeticsManager.get_skins_for_target("pet", pid_str)
-	for s in raw_skins:
-		var sid: String = s.get("id", "")
-		var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
-		var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
-		var tex: Texture2D = CosmeticsManager.load_texture(s.get("texture_path", ""))
-		if not tex:
-			tex = cur_pet.get_icon_texture()
-		var skin_entry: Dictionary = {
-			"id": sid,
-			"skin_name": s.get("name", "Aspecto"),
-			"texture": tex,
-			"is_base": false,
-			"is_unlocked": is_unlocked,
-			"stars": stars,
-			"glow_hex": s.get("glow_hex", "#FF9900"),
-			"desc": s.get("desc", "")
-		}
-		_available_skins.append(skin_entry)
-
-	var equipped_sid: String = SaveManager.get_equipped_skin(slot_key)
-	_skin_index = 0
-	if not equipped_sid.is_empty():
-		for i in range(1, _available_skins.size()):
-			if _available_skins[i].get("id", "") == equipped_sid:
-				_skin_index = i
-				break
+	if data_controller:
+		data_controller.load_available_skins()
 
 
 func _build_dots(count: int, active_idx: int) -> void:
@@ -331,43 +304,46 @@ func _cycle(direction: int) -> void:
 
 
 func _cycle_horizontal(direction: int) -> void:
-	if _pets.is_empty():
+	if not data_controller:
 		return
-	var count: int = _pets.size()
-	var next_idx: int = (current_index + direction) % count
-	if next_idx < 0:
-		next_idx += count
-	_set_index(next_idx, direction)
+	var prev_idx: int = current_index
+	var new_idx: int = data_controller.cycle_horizontal(direction)
+	if new_idx != prev_idx:
+		_on_pet_index_changed(direction)
 
 
 func _cycle_vertical(direction: int) -> void:
-	if _available_skins.size() <= 1:
+	if not data_controller:
 		return
-	var count: int = _available_skins.size()
-	var next_idx: int = (_skin_index + direction) % count
-	if next_idx < 0:
-		next_idx += count
-	_set_skin_index(next_idx, direction)
+	var prev_sidx: int = _skin_index
+	var new_sidx: int = data_controller.cycle_vertical(direction)
+	if new_sidx != prev_sidx:
+		_on_skin_index_changed(direction)
 
 
 func _set_index(new_idx: int, slide_direction: int = 0) -> void:
-	if new_idx == current_index:
+	if not data_controller or new_idx == current_index:
 		return
-	current_index = new_idx
-	_load_available_skins()
-	_display_current_pet(true, slide_direction, 0)
+	data_controller.set_index(new_idx)
+	_on_pet_index_changed(slide_direction)
 
+
+func _set_skin_index(new_skin_idx: int, slide_v: int = 0) -> void:
+	if not data_controller or new_skin_idx == _skin_index:
+		return
+	data_controller.set_skin_index(new_skin_idx)
+	_on_skin_index_changed(slide_v)
+
+
+func _on_pet_index_changed(slide_direction: int = 0) -> void:
+	_display_current_pet(true, slide_direction, 0)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
 
 
-func _set_skin_index(new_skin_idx: int, slide_v: int = 0) -> void:
-	if new_skin_idx == _skin_index:
-		return
-	_skin_index = new_skin_idx
+func _on_skin_index_changed(slide_v: int = 0) -> void:
 	_display_current_pet(true, 0, slide_v)
-
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.2)
@@ -378,10 +354,12 @@ func _display_current_pet(animate: bool = true, slide_h: int = 0, slide_v: int =
 		return
 
 	var count: int = _pets.size()
-	var pet_data: PetData = _pets[current_index]
+	var pet_data: PetData = data_controller.get_current_pet()
+	if not pet_data:
+		return
 	var pid: StringName = pet_data.pet_id
-	var is_unlocked: bool = SaveManager.is_pet_unlocked(pid)
-	var is_selected: bool = (pid == SaveManager.get_selected_pet())
+	var is_unlocked: bool = data_controller.is_current_unlocked()
+	var is_selected: bool = data_controller.is_current_selected()
 
 	var left_idx: int = (current_index - 1 + count) % count
 	var right_idx: int = (current_index + 1) % count
@@ -420,33 +398,23 @@ func _animate_center_card(animate: bool, slide_direction: int, p_is_unlocked: bo
 
 
 func _on_select_pressed() -> void:
-	if _pets.is_empty() or current_index < 0 or current_index >= _pets.size():
+	if not data_controller:
 		return
-	var pet_data = _pets[current_index]
-	var pid: StringName = pet_data.pet_id
-	if not SaveManager.is_pet_unlocked(pid):
+
+	var res: Dictionary = data_controller.confirm_selection()
+	if not res.get("success", false):
 		return
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.25)
 
-	# 1. Fijar mascota seleccionada
-	SaveManager.set_selected_pet(pid)
-	pet_selected.emit(pid)
+	var pid: StringName = res.get("pet_id", &"")
+	var slot_key: String = res.get("slot_key", "")
+	var skin_id: String = res.get("skin_id", "")
 
-	# 2. Equipar skin activa (o desequipar si es Slot 0)
-	var pid_str: String = String(pid).to_lower()
-	var slot_key: String = "pet:" + pid_str
-	if _skin_index > 0 and _skin_index < _available_skins.size():
-		var cur_skin: Dictionary = _available_skins[_skin_index]
-		var sid: String = cur_skin.get("id", "")
-		if SaveManager.is_skin_unlocked(sid):
-			SaveManager.equip_skin(slot_key, sid)
-			skin_equipped.emit(slot_key, sid)
-	else:
-		SaveManager.unequip_skin(slot_key)
-		skin_equipped.emit(slot_key, "")
+	pet_selected.emit(pid)
+	skin_equipped.emit(slot_key, skin_id)
 
 	close_modal()
 

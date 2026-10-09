@@ -10,6 +10,7 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const NavigatorDataScript = preload("res://data/navigators/navigator_data.gd")
 const NavigatorCoverFlowRenderer = preload("res://scenes/ui/character_select/components/navigator_cover_flow_renderer.gd")
 const NavigatorDossierController = preload("res://scenes/ui/character_select/components/navigator_dossier_controller.gd")
+const NavigatorDataController = preload("res://scenes/ui/character_select/components/navigator_data_controller.gd")
 
 signal navigator_selected(nav_id: StringName)
 signal skin_equipped(slot_key: String, skin_id: String)
@@ -18,6 +19,7 @@ signal closed()
 # Componentes Modulares
 var cover_flow_renderer: NavigatorCoverFlowRenderer = null
 var dossier_controller: NavigatorDossierController = null
+var data_controller: NavigatorDataController = null
 
 # Nodos de la escena accesibles para suites de tests y dependencias externas
 @onready var dim_overlay: ColorRect = $DimOverlay
@@ -67,10 +69,33 @@ var next_btn: Button = null
 @onready var close_btn: Button = $DimOverlay/CenterContainer/RootHBox/FloatingDossier/ButtonsContainer/CloseButton
 
 var is_open: bool = false
-var current_index: int = 0
-var _navigators: Array = []
-var _available_skins: Array[Dictionary] = []
-var _skin_index: int = 0
+var current_index: int:
+	get:
+		return data_controller.current_index if data_controller else 0
+	set(value):
+		if data_controller:
+			data_controller.current_index = value
+
+var _navigators: Array:
+	get:
+		return data_controller.navigators if data_controller else []
+	set(value):
+		if data_controller:
+			data_controller.navigators = value
+
+var _available_skins: Array[Dictionary]:
+	get:
+		return data_controller.available_skins if data_controller else []
+	set(value):
+		if data_controller:
+			data_controller.available_skins = value
+
+var _skin_index: int:
+	get:
+		return data_controller.skin_index if data_controller else 0
+	set(value):
+		if data_controller:
+			data_controller.skin_index = value
 
 var _nav_buttons: Array[Button]:
 	get:
@@ -109,6 +134,7 @@ func _ready() -> void:
 
 
 func _init_components() -> void:
+	data_controller = NavigatorDataController.new()
 	cover_flow_renderer = NavigatorCoverFlowRenderer.new()
 	cover_flow_renderer.setup(
 		prev_btn,
@@ -255,70 +281,16 @@ func _confirm_and_close() -> void:
 
 
 func _populate_navigators() -> void:
-	_navigators = NavigatorDataScript.load_roster_ordered()
-
-	var selected_nid := SaveManager.get_selected_navigator()
-	var initial_index: int = 0
-	for i in range(_navigators.size()):
-		if _navigators[i].navigator_id == selected_nid:
-			initial_index = i
-			break
-	current_index = initial_index
-
-	_load_available_skins()
+	if not data_controller:
+		return
+	data_controller.load_roster()
 	_build_dots(_navigators.size(), current_index)
 	_display_current_navigator(false, 0, 0)
 
 
 func _load_available_skins() -> void:
-	_available_skins.clear()
-	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
-		return
-	var cur_nav = _navigators[current_index]
-	var nid_str: String = String(cur_nav.navigator_id).to_lower()
-	var slot_key: String = "navigator:" + nid_str
-
-	# Slot 0: Aspecto original/base
-	var base_skin: Dictionary = {
-		"id": "",
-		"skin_name": "Aspecto Estándar",
-		"texture": cur_nav.get_portrait_texture(),
-		"is_base": true,
-		"is_unlocked": true,
-		"stars": 0,
-		"glow_hex": "#00F0FF"
-	}
-	_available_skins.append(base_skin)
-
-	# Slots 1..N: Aspectos alternativos desbloqueables
-	var raw_skins: Array[Dictionary] = CosmeticsManager.get_skins_for_target("navigator", nid_str)
-	for s in raw_skins:
-		var sid: String = s.get("id", "")
-		var is_unlocked: bool = bool(SaveManager.is_skin_unlocked(sid))
-		var stars: int = SaveManager.get_skin_stars(sid) if is_unlocked else 1
-		var tex: Texture2D = CosmeticsManager.load_texture(s.get("texture_path", ""))
-		if not tex:
-			tex = cur_nav.get_portrait_texture()
-		var skin_entry: Dictionary = {
-			"id": sid,
-			"skin_name": s.get("name", "Aspecto"),
-			"texture": tex,
-			"is_base": false,
-			"is_unlocked": is_unlocked,
-			"stars": stars,
-			"glow_hex": s.get("glow_hex", "#00F0FF"),
-			"desc": s.get("desc", "")
-		}
-		_available_skins.append(skin_entry)
-
-	# Sintonizar skin_index según lo equipado en SaveManager
-	var equipped_sid: String = SaveManager.get_equipped_skin(slot_key)
-	_skin_index = 0
-	if not equipped_sid.is_empty():
-		for i in range(1, _available_skins.size()):
-			if _available_skins[i].get("id", "") == equipped_sid:
-				_skin_index = i
-				break
+	if data_controller:
+		data_controller.load_available_skins()
 
 
 func _build_dots(count: int, active_idx: int) -> void:
@@ -338,43 +310,46 @@ func _cycle(direction: int) -> void:
 
 
 func _cycle_horizontal(direction: int) -> void:
-	if _navigators.is_empty():
+	if not data_controller:
 		return
-	var count: int = _navigators.size()
-	var next_idx: int = (current_index + direction) % count
-	if next_idx < 0:
-		next_idx += count
-	_set_index(next_idx, direction)
+	var prev_idx: int = current_index
+	var new_idx: int = data_controller.cycle_horizontal(direction)
+	if new_idx != prev_idx:
+		_on_navigator_index_changed(direction)
 
 
 func _cycle_vertical(direction: int) -> void:
-	if _available_skins.size() <= 1:
+	if not data_controller:
 		return
-	var count: int = _available_skins.size()
-	var next_idx: int = (_skin_index + direction) % count
-	if next_idx < 0:
-		next_idx += count
-	_set_skin_index(next_idx, direction)
+	var prev_sidx: int = _skin_index
+	var new_sidx: int = data_controller.cycle_vertical(direction)
+	if new_sidx != prev_sidx:
+		_on_skin_index_changed(direction)
 
 
 func _set_index(new_idx: int, slide_direction: int = 0) -> void:
-	if new_idx == current_index:
+	if not data_controller or new_idx == current_index:
 		return
-	current_index = new_idx
-	_load_available_skins()
-	_display_current_navigator(true, slide_direction, 0)
+	data_controller.set_index(new_idx)
+	_on_navigator_index_changed(slide_direction)
 
+
+func _set_skin_index(new_skin_idx: int, slide_v: int = 0) -> void:
+	if not data_controller or new_skin_idx == _skin_index:
+		return
+	data_controller.set_skin_index(new_skin_idx)
+	_on_skin_index_changed(slide_v)
+
+
+func _on_navigator_index_changed(slide_direction: int = 0) -> void:
+	_display_current_navigator(true, slide_direction, 0)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
 
 
-func _set_skin_index(new_skin_idx: int, slide_v: int = 0) -> void:
-	if new_skin_idx == _skin_index:
-		return
-	_skin_index = new_skin_idx
+func _on_skin_index_changed(slide_v: int = 0) -> void:
 	_display_current_navigator(true, 0, slide_v)
-
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.2)
@@ -385,10 +360,12 @@ func _display_current_navigator(animate: bool = true, slide_h: int = 0, slide_v:
 		return
 
 	var count: int = _navigators.size()
-	var nav_data = _navigators[current_index]
+	var nav_data = data_controller.get_current_navigator()
+	if not nav_data:
+		return
 	var nid: StringName = nav_data.navigator_id
-	var is_unlocked: bool = SaveManager.is_navigator_unlocked(nid)
-	var is_selected: bool = (nid == SaveManager.get_selected_navigator())
+	var is_unlocked: bool = data_controller.is_current_unlocked()
+	var is_selected: bool = data_controller.is_current_selected()
 
 	var left_idx: int = (current_index - 1 + count) % count
 	var right_idx: int = (current_index + 1) % count
@@ -432,33 +409,23 @@ func _animate_center_card(animate: bool, slide_direction: int, p_is_unlocked: bo
 
 
 func _on_select_pressed() -> void:
-	if _navigators.is_empty() or current_index < 0 or current_index >= _navigators.size():
+	if not data_controller:
 		return
-	var nav_data = _navigators[current_index]
-	var nid: StringName = nav_data.navigator_id
-	if not SaveManager.is_navigator_unlocked(nid):
+
+	var res: Dictionary = data_controller.confirm_selection()
+	if not res.get("success", false):
 		return
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.25)
 
-	# 1. Fijar navegante seleccionada
-	SaveManager.set_selected_navigator(nid)
-	navigator_selected.emit(nid)
+	var nid: StringName = res.get("navigator_id", &"")
+	var slot_key: String = res.get("slot_key", "")
+	var skin_id: String = res.get("skin_id", "")
 
-	# 2. Equipar skin activa (o desequipar si es Slot 0)
-	var nid_str: String = String(nid).to_lower()
-	var slot_key: String = "navigator:" + nid_str
-	if _skin_index > 0 and _skin_index < _available_skins.size():
-		var cur_skin: Dictionary = _available_skins[_skin_index]
-		var sid: String = cur_skin.get("id", "")
-		if SaveManager.is_skin_unlocked(sid):
-			SaveManager.equip_skin(slot_key, sid)
-			skin_equipped.emit(slot_key, sid)
-	else:
-		SaveManager.unequip_skin(slot_key)
-		skin_equipped.emit(slot_key, "")
+	navigator_selected.emit(nid)
+	skin_equipped.emit(slot_key, skin_id)
 
 	close_modal()
 
