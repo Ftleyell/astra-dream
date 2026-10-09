@@ -42,7 +42,11 @@
 | Contrato base de estación interactuable | `scenes/combat/satellite/components/base_space_station.gd` | Contrato polimórfico de estación |
 | Administrador de debris espacial y macro-objetos | `scenes/combat/systems/combat_space_debris_manager.gd` | Asteroides, planetas y monolitos |
 | Recompensas y tragamonedas (CombatSubsystem) | `scenes/combat/systems/combat_loot_coordinator.gd` | — |
-| Skins / cosméticos / recolors | `core/systems/cosmetics_manager.gd` | DB load: L1 |
+| Fábrica balística extensible (Strategy Pattern) | `scenes/combat/weapons/weapon_projectile_factory.gd` | Registro abierto de proyectiles |
+| Estrategias de disparo activo y pasivo | `scenes/combat/weapons/behaviors/` | `standard_active_behaviors.gd`, `standard_passive_behaviors.gd` |
+| Gestor de crisis extensible (Event Registry) | `scenes/combat/events/crisis_event_manager.gd` | Registro de anomalías espaciales |
+| Definición modular de crisis espacial | `scenes/combat/events/definitions/crisis_event_definition.gd` | Contrato data-driven de anomalías |
+| Skins / cosméticos / autodescubrimiento | `core/systems/cosmetics_manager.gd` | DB load & discovery: L1 |
 | Sistema de save y persistencia | `core/autoloads/save_manager.gd` | Fachada estática → delega en core/systems/persistence/ |
 | Perfil del jugador (biomasa, trofeos, unlocks) | `core/systems/persistence/meta_progression_state.gd` | — |
 | Run activa (armas, ítems, estado de partida) | `core/systems/persistence/active_run_storage.gd` | — |

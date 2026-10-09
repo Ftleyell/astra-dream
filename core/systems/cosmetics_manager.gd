@@ -15,6 +15,35 @@ const GLOW_SHADER := preload("res://shaders/skin_glow_vfx.gdshader")
 
 static var _cached_database: Dictionary = {}
 static var _is_loaded: bool = false
+static var _discovered_category_files: Dictionary = {}
+
+static func discover_category_files() -> Dictionary:
+	var files: Dictionary = {}
+	# Registrar archivos base conocidos por retrocompatibilidad
+	for cat in CATEGORY_FILES.keys():
+		files[cat] = CATEGORY_FILES[cat]
+
+	# Escanear CATEGORIES_DIR dinámicamente para descubrir archivos nuevos de mods o categorías
+	if DirAccess.dir_exists_absolute(CATEGORIES_DIR):
+		var dir := DirAccess.open(CATEGORIES_DIR)
+		if dir:
+			dir.list_dir_begin()
+			var file_name := dir.get_next()
+			while not file_name.is_empty():
+				if not dir.current_is_dir() and file_name.ends_with(".json") and file_name != "palettes.json":
+					var full_path := CATEGORIES_DIR.path_join(file_name)
+					# Inferir nombre de categoría del archivo: skins_ships.json -> ship, etc.
+					var cat_name := file_name.trim_suffix(".json")
+					if cat_name.begins_with("skins_"):
+						cat_name = cat_name.trim_prefix("skins_")
+					# Normalizar plural a singular conocido
+					if cat_name.ends_with("s") and files.has(cat_name.trim_suffix("s")):
+						cat_name = cat_name.trim_suffix("s")
+					files[cat_name] = full_path
+				file_name = dir.get_next()
+			dir.list_dir_end()
+	_discovered_category_files = files
+	return files
 
 static func load_database() -> Dictionary:
 	if _is_loaded and not _cached_database.is_empty():
@@ -30,7 +59,8 @@ static func load_database() -> Dictionary:
 				merged_db["palettes"] = p_data.get("palettes", {})
 			pal_file.close()
 
-		for cat_path in CATEGORY_FILES.values():
+		var category_files := discover_category_files()
+		for cat_path in category_files.values():
 			if FileAccess.file_exists(cat_path):
 				var c_file := FileAccess.open(cat_path, FileAccess.READ)
 				if c_file:
@@ -62,7 +92,8 @@ static func load_database() -> Dictionary:
 	return {}
 
 static func get_category_skins(category: String) -> Dictionary:
-	var path: String = CATEGORY_FILES.get(category, "")
+	var category_files := discover_category_files()
+	var path: String = category_files.get(category, "")
 	if path != "" and FileAccess.file_exists(path):
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:

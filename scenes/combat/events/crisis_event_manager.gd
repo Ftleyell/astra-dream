@@ -2,11 +2,8 @@ class_name CrisisEventManager
 extends Node2D
 
 ## Gestor y Director de Eventos de Crisis de Oleada:
-## Orquesta los 4 eventos dinámicos espaciales del juego:
-## 1. Tormenta Solar (Ceguera térmica periférica + buff de +30% Attack Speed al jugador por 18s)
-## 2. Ráfaga de Micro-Drones (Wedges geométricos de EnemyMicroFlock)
-## 3. Invasión Mitótica (Células de división de EnemySplitter)
-## 4. Arena de Contención (Anillo de 14 nodos de ResonanceContainmentNode conectados por arcos)
+## Orquesta los eventos dinámicos espaciales del juego mediante un registro abierto
+## de CrisisEventDefinition extensible por datos y mods.
 
 signal crisis_started(crisis_id: String)
 signal crisis_ended(crisis_id: String)
@@ -18,6 +15,7 @@ const CrisisAlertBannerClass = preload("res://scenes/ui/hud/crisis_alert_banner.
 const EnemyMicroFlockClass = preload("res://scenes/combat/enemies/enemy_micro_flock.gd")
 const EnemySplitterClass = preload("res://scenes/combat/enemies/enemy_splitter.gd")
 const ResonanceContainmentNodeClass = preload("res://scenes/combat/enemies/resonance_containment_node.gd")
+const CrisisEventDefinitionClass = preload("res://scenes/combat/events/definitions/crisis_event_definition.gd")
 
 var player: Node2D = null
 var banner: CrisisAlertBannerClass = null
@@ -39,10 +37,56 @@ var solar_canvas_layer: CanvasLayer = null
 # Temporizador para eventos automáticos
 var crisis_cooldown: float = 35.0
 
+# Registro abierto de definiciones de crisis
+var _crisis_registry: Dictionary = {}
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_setup_solar_storm_overlay()
+	_register_default_crises()
 	_acquire_references()
+
+func register_crisis(def: RefCounted) -> void:
+	if "id" in def and not String(def.id).is_empty():
+		_crisis_registry[def.id] = def
+
+func get_registered_crises() -> Array:
+	return _crisis_registry.values()
+
+func _register_default_crises() -> void:
+	var solar := CrisisEventDefinitionClass.new()
+	solar.id = "solar_storm"
+	solar.title = "TORMENTA DE RADIACIÓN SOLAR"
+	solar.subtitle = "Ceguera térmica exterior detectada. Sensores sobrecargados (+30% Cadencia de Fuego)."
+	solar.tint = Color(1.0, 0.5, 0.1)
+	solar.duration = 18.0
+	solar.on_execute = Callable(self, "_start_solar_storm")
+	solar.on_end = Callable(self, "_end_solar_storm")
+	register_crisis(solar)
+
+	var flock := CrisisEventDefinitionClass.new()
+	flock.id = "flock_rush"
+	flock.title = "ENJAMBRE DE MICRO-DRONES"
+	flock.subtitle = "Múltiples formaciones en cuña a hiper-velocidad interceptando el vector."
+	flock.tint = Color(0.2, 0.9, 1.0)
+	flock.on_execute = Callable(self, "_spawn_flock_rush")
+	register_crisis(flock)
+
+	var mitosis := CrisisEventDefinitionClass.new()
+	mitosis.id = "mitosis_invasion"
+	mitosis.title = "INVASIÓN DE CÉLULAS MITÓTICAS"
+	mitosis.subtitle = "Especímenes de fisión biológica detectados. Destruye ambas mitades antes de su fusión."
+	mitosis.tint = Color(0.3, 1.0, 0.5)
+	mitosis.on_execute = Callable(self, "_spawn_mitosis_invasion")
+	register_crisis(mitosis)
+
+	var arena := CrisisEventDefinitionClass.new()
+	arena.id = "containment_arena"
+	arena.title = "CERCO DE RESONANCIA ELECTRÓNICA"
+	arena.subtitle = "Generadores de cerco electromagnético desplegados. Destruye los nodos o resiste 25s."
+	arena.tint = Color(0.9, 0.2, 0.8)
+	arena.on_execute = Callable(self, "_spawn_containment_arena")
+	register_crisis(arena)
 
 func _acquire_references() -> void:
 	if not is_instance_valid(player):
@@ -108,33 +152,23 @@ func _process(delta: float) -> void:
 			_trigger_random_crisis()
 
 func _trigger_random_crisis() -> void:
-	var options := ["solar_storm", "flock_rush", "mitosis_invasion", "containment_arena"]
-	var choice: String = options[randi() % options.size()]
+	var keys := _crisis_registry.keys()
+	if keys.is_empty():
+		return
+	var choice: String = keys[randi() % keys.size()]
 	trigger_crisis(choice)
 
 func trigger_crisis(crisis_id: String) -> void:
 	_acquire_references()
+	var def = _crisis_registry.get(crisis_id, null)
 	var title := "ANOMALÍA DETECTADA"
 	var subtitle := "Condiciones operacionales extremas en el sector."
 	var tint := Color(1.0, 0.4, 0.1)
 
-	match crisis_id:
-		"solar_storm":
-			title = "TORMENTA DE RADIACIÓN SOLAR"
-			subtitle = "Ceguera térmica exterior detectada. Sensores sobrecargados (+30% Cadencia de Fuego)."
-			tint = Color(1.0, 0.5, 0.1)
-		"flock_rush":
-			title = "ENJAMBRE DE MICRO-DRONES"
-			subtitle = "Múltiples formaciones en cuña a hiper-velocidad interceptando el vector."
-			tint = Color(0.2, 0.9, 1.0)
-		"mitosis_invasion":
-			title = "INVASIÓN DE CÉLULAS MITÓTICAS"
-			subtitle = "Especímenes de fisión biológica detectados. Destruye ambas mitades antes de su fusión."
-			tint = Color(0.3, 1.0, 0.5)
-		"containment_arena":
-			title = "CERCO DE RESONANCIA ELECTRÓNICA"
-			subtitle = "Generadores de cerco electromagnético desplegados. Destruye los nodos o resiste 25s."
-			tint = Color(0.9, 0.2, 0.8)
+	if def:
+		title = def.title
+		subtitle = def.subtitle
+		tint = def.tint
 
 	if banner:
 		banner.show_crisis_alert(crisis_id, title, subtitle, tint)
@@ -146,15 +180,9 @@ func _on_banner_alert_finished(crisis_id: String) -> void:
 
 func _execute_crisis(crisis_id: String) -> void:
 	current_active_crisis = crisis_id
-	match crisis_id:
-		"solar_storm":
-			_start_solar_storm()
-		"flock_rush":
-			_spawn_flock_rush()
-		"mitosis_invasion":
-			_spawn_mitosis_invasion()
-		"containment_arena":
-			_spawn_containment_arena()
+	var def = _crisis_registry.get(crisis_id, null)
+	if def and def.on_execute.is_valid():
+		def.on_execute.call()
 	crisis_started.emit(crisis_id)
 
 func dismiss_for_boss_encounter() -> void:
@@ -171,7 +199,6 @@ func _start_solar_storm() -> void:
 	if solar_overlay:
 		solar_overlay.visible = true
 
-	# Posicionar inmediatamente el shader en el centro de la pantalla relativo al jugador
 	if is_instance_valid(player) and solar_shader_mat:
 		var screen_pos := player.get_viewport_transform() * player.global_position
 		solar_shader_mat.set_shader_parameter("player_screen_pos", screen_pos)
@@ -180,14 +207,12 @@ func _start_solar_storm() -> void:
 		solar_shader_mat.set_shader_parameter("inner_radius", 280.0 * zoom_factor)
 		solar_shader_mat.set_shader_parameter("outer_radius", 620.0 * zoom_factor)
 
-	# Transición suave de intensidad del shader
 	var tw := create_tween()
 	tw.tween_method(func(v: float):
 		if solar_shader_mat:
 			solar_shader_mat.set_shader_parameter("intensity", v)
 	, 0.0, 1.0, 1.5)
 
-	# Buff al jugador: +30% attack_speed
 	if is_instance_valid(player) and player.stats:
 		player.stats.add_modifier(&"attack_speed", CharacterStats.StatModifier.new(&"solar_storm_frenzy", 0.30, true, self))
 
@@ -217,7 +242,6 @@ func _spawn_flock_rush() -> void:
 	if not parent_node:
 		return
 
-	# Generar 3 cuñas de 5 drones cada una (15 en total)
 	for w in range(3):
 		var base_angle := randf_range(-PI, PI)
 		var spawn_origin := player.global_position + Vector2(cos(base_angle), sin(base_angle)) * 620.0
@@ -225,7 +249,6 @@ func _spawn_flock_rush() -> void:
 
 		for i in range(5):
 			var drone: EnemyMicroFlockClass = flock_scene.instantiate() as EnemyMicroFlockClass
-			# Formación de cuña (V-shape)
 			var row := absi(i - 2)
 			var lateral := (i - 2) * 32.0
 			var forward_off := float(row) * -28.0
@@ -241,7 +264,6 @@ func _spawn_mitosis_invasion() -> void:
 	if not parent_node:
 		return
 
-	# Generar 4 células dividibles en las 4 direcciones
 	for i in range(4):
 		var angle := (TAU / 4.0) * float(i) + randf_range(-0.2, 0.2)
 		var spawn_pos := player.global_position + Vector2(cos(angle), sin(angle)) * 520.0
@@ -270,7 +292,6 @@ func _spawn_containment_arena() -> void:
 		parent_node.add_child(node_inst)
 		nodes.append(node_inst)
 
-	# Conectar vecinos para dibujar el perímetro eléctrico
 	for i in range(count):
 		var next_idx := (i + 1) % count
 		nodes[i].set_neighbor(nodes[next_idx])

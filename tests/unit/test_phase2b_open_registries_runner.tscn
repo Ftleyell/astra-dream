@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_phase2b_open_registries_runner_01"]
+
+[ext_resource type="Script" path="res://tests/unit/test_phase2b_open_registries_suite.gd" id="1_test"]
+
+[node name="TestPhase2BOpenRegistriesRunner" type="Node"]
+script = ExtResource("1_test")
