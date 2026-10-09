@@ -28,6 +28,8 @@ const HubHangarBuilder3D = preload("res://scenes/ui/hub/components/hub_hangar_bu
 const HubTerminalManager = preload("res://scenes/ui/hub/components/hub_terminal_manager.gd")
 const HubPilotShowcaseController = preload("res://scenes/ui/hub/components/hub_pilot_showcase_controller.gd")
 const HubTrophyRoomManager = preload("res://scenes/ui/hub/components/hub_trophy_room_manager.gd")
+const HubCameraController3D = preload("res://scenes/ui/hub/components/hub_camera_controller_3d.gd")
+const HubInputDispatcher = preload("res://scenes/ui/hub/components/hub_input_dispatcher.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 const HubPetRoamerScript = preload("res://scenes/ui/hub/hub_pet_roamer.gd")
 
@@ -173,8 +175,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if camera and is_instance_valid(camera) and hangar_builder:
-		hangar_builder.update_parallax(camera.global_position)
+	HubCameraController3D.update_parallax(camera, hangar_builder)
 
 	_idle_time += delta
 	if terminal_manager:
@@ -186,44 +187,11 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _is_modal_active():
-		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
-			if terminal_manager and terminal_manager.handle_esc_input():
-				get_viewport().set_input_as_handled()
-				return
-			if trophy_manager and trophy_manager.is_modal_active():
-				trophy_manager.close_modal()
-				get_viewport().set_input_as_handled()
-				return
-			if skill_tree_modal and skill_tree_modal.visible:
-				if skill_tree_modal.has_method("close_modal"):
-					skill_tree_modal.close_modal()
-				else:
-					skill_tree_modal.visible = false
-					_on_skill_tree_closed()
-				get_viewport().set_input_as_handled()
-				return
-		return
-
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_ESCAPE:
-				_open_settings()
-				get_viewport().set_input_as_handled()
-			KEY_Q:
-				_quit_game()
-				get_viewport().set_input_as_handled()
+	HubInputDispatcher.handle_unhandled_input(event, self)
 
 
 func _setup_camera() -> void:
-	if player_controller and player_controller.camera:
-		camera = player_controller.camera
-	elif not camera:
-		camera = get_node_or_null("Camera3D")
-		if camera:
-			camera.fov = 85.0
-			camera.position = Vector3(0.0, 3.2, 5.0)
-			camera.look_at(Vector3.ZERO, Vector3.UP)
+	camera = HubCameraController3D.setup_camera(player_controller, camera, self)
 
 
 func _setup_hub_pets() -> void:
