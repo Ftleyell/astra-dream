@@ -308,22 +308,6 @@ func _ready() -> void:
 	modal_coordinator.game_over_modal = game_over_modal
 	end_run_controller.setup(self, game_over_modal)
 
-	# Inicializar Contexto de Combate y Pipeline de Oleadas
-	combat_context = CombatContextScript.new()
-	combat_context.initialize(player, camera, hud, bullet_server, enemy_spawner, space_object_spawner, chest_director)
-
-	wave_pipeline = CombatWavePipelineScript.new()
-	wave_pipeline.name = "CombatWavePipeline"
-	add_child(wave_pipeline)
-	wave_pipeline.setup_pipeline(
-		combat_context,
-		Callable(self, "_on_wave_pipeline_advanced"),
-		Callable(self, "_on_wave_pipeline_hud_update")
-	)
-	wave_pipeline.wave_completed.connect(func(_idx: int) -> void:
-		_on_wave_completed()
-	)
-
 	# 1. Sistema de Cofres Espaciales
 	chest_director = ChestDirector.new()
 	chest_director.name = "ChestDirector"
@@ -350,6 +334,12 @@ func _ready() -> void:
 	add_child(transmutation_modal)
 	modal_coordinator.transmutation_modal = transmutation_modal
 
+	# 3. Macro-objetos tácticos
+	space_object_spawner = SpaceObjectSpawner.new()
+	space_object_spawner.name = "SpaceObjectSpawner"
+	add_child(space_object_spawner)
+
+	# 4. Subsistemas y coordinadores de combate
 	if not narrative_director.is_inside_tree():
 		narrative_director.name = "CombatNarrativeDirector"
 		add_child(narrative_director)
@@ -361,6 +351,38 @@ func _ready() -> void:
 		boss_coordinator.name = "CombatBossCoordinator"
 		add_child(boss_coordinator)
 	boss_coordinator.setup(self)
+
+	loot_coordinator = CombatLootCoordinator.new()
+	loot_coordinator.name = "CombatLootCoordinator"
+	add_child(loot_coordinator)
+	loot_coordinator.initialize(self, player, camera)
+
+	if not satellite_coordinator.is_inside_tree():
+		satellite_coordinator.name = "CombatSatelliteCoordinator"
+		add_child(satellite_coordinator)
+	satellite_coordinator.setup(self)
+
+	# 5. Inicializar Contexto de Combate y Pipeline de Oleadas
+	combat_context = CombatContextScript.new()
+	combat_context.initialize(player, camera, hud, bullet_server, enemy_spawner, space_object_spawner, chest_director, satellite_shop, self)
+
+	wave_pipeline = CombatWavePipelineScript.new()
+	wave_pipeline.name = "CombatWavePipeline"
+	add_child(wave_pipeline)
+	wave_pipeline.setup_pipeline(
+		combat_context,
+		Callable(self, "_on_wave_pipeline_advanced"),
+		Callable(self, "_on_wave_pipeline_hud_update")
+	)
+	wave_pipeline.wave_completed.connect(func(_idx: int) -> void:
+		_on_wave_completed()
+	)
+
+	# Registro de subsistemas en el pipeline
+	wave_pipeline.register_subsystem(boss_coordinator)
+	wave_pipeline.register_subsystem(satellite_coordinator)
+	wave_pipeline.register_subsystem(loot_coordinator)
+	wave_pipeline.register_subsystem(narrative_director)
 	# Conexión del HUD con el jugador
 	if hud:
 		player.exp_changed.connect(hud.update_exp)
@@ -394,12 +416,6 @@ func _ready() -> void:
 		if modal_coordinator:
 			modal_coordinator.arcana_modal = arcana_modal
 
-	# Inicializar coordinador de botín (máquina tragamonedas in-run y cofres)
-	loot_coordinator = CombatLootCoordinator.new()
-	loot_coordinator.name = "CombatLootCoordinator"
-	add_child(loot_coordinator)
-	loot_coordinator.initialize(self, player, camera)
-
 	# Inicializar sistema de eventos de crisis dinámicas y banners
 	if not crisis_banner and crisis_alert_banner_scene:
 		crisis_banner = crisis_alert_banner_scene.instantiate() as CanvasLayer
@@ -408,11 +424,6 @@ func _ready() -> void:
 	if not crisis_manager and crisis_event_manager_scene:
 		crisis_manager = crisis_event_manager_scene.instantiate() as Node2D
 		add_child(crisis_manager)
-
-	if not satellite_coordinator.is_inside_tree():
-		satellite_coordinator.name = "CombatSatelliteCoordinator"
-		add_child(satellite_coordinator)
-	satellite_coordinator.setup(self)
 
 	_last_player_hp = player.current_health
 
@@ -472,9 +483,10 @@ func _ready() -> void:
 	add_child(planet_spawner)
 
 	# Inyección dinámica de macro-objetos espaciales tácticos (Monolitos, Cápsulas, Geodas, Capullos)
-	space_object_spawner = SpaceObjectSpawner.new()
-	space_object_spawner.name = "SpaceObjectSpawner"
-	add_child(space_object_spawner)
+	if not space_object_spawner:
+		space_object_spawner = SpaceObjectSpawner.new()
+		space_object_spawner.name = "SpaceObjectSpawner"
+		add_child(space_object_spawner)
 
 	# Chequeo de inicio debug directo contra un jefe específico
 	var debug_boss: String = DebugManager.consume_pending_debug_boss() if (DebugManager and DebugManager.has_method("consume_pending_debug_boss")) else ""
@@ -756,9 +768,6 @@ func _process(delta: float) -> void:
 	var is_major_combat_active: bool = _has_active_boss_or_rival()
 	if wave_pipeline:
 		wave_pipeline.tick(delta, is_major_combat_active)
-
-	if satellite_coordinator:
-		satellite_coordinator.update_satellite_lifecycle()
 
 func _check_satellite_despawn() -> void:
 	if satellite_coordinator:

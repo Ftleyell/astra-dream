@@ -18,6 +18,8 @@ var bullet_server: Node = null
 var enemy_spawner: Node = null
 var space_object_spawner: Node = null
 var chest_director: Node = null
+var satellite_shop: Node = null
+var main_game: Node = null
 
 # Estado global de la run
 var current_wave: int = 1
@@ -37,7 +39,9 @@ func initialize(
 	p_bullet_server: Node,
 	p_enemy_spawner: Node,
 	p_space_object_spawner: Node = null,
-	p_chest_director: Node = null
+	p_chest_director: Node = null,
+	p_satellite_shop: Node = null,
+	p_main_game: Node = null
 ) -> void:
 	player = p_player
 	camera = p_camera
@@ -46,6 +50,8 @@ func initialize(
 	enemy_spawner = p_enemy_spawner
 	space_object_spawner = p_space_object_spawner
 	chest_director = p_chest_director
+	satellite_shop = p_satellite_shop
+	main_game = p_main_game
 
 
 func notify_wave_started(wave_idx: int) -> void:

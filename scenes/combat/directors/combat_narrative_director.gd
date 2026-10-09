@@ -1,5 +1,5 @@
 class_name CombatNarrativeDirector
-extends Node
+extends "res://scenes/combat/systems/combat_subsystem.gd"
 
 ## Director modular de secuencias narrativas, diálogos (Dialogic) y cinemáticas de combate.
 ## Gestiona el prólogo táctico, advertencias de mascotas/navegadoras, duelos de rivales y victorias.
@@ -30,12 +30,22 @@ var prologue_bonus_chosen: bool = false
 var pending_victory_data: Dictionary = {}
 var on_dialogue_finished_callback: Callable = Callable()
 
+func setup_subsystem(p_context: CombatContextScript) -> void:
+	super.setup_subsystem(p_context)
+	if context:
+		main_game = context.main_game
+		player = context.player
+		hud = context.hud
+
 func setup(p_main_game: Node, p_player: CharacterBody2D, p_hud: Node, p_skip_badge: CanvasLayer, p_audio_duck: Node) -> void:
 	main_game = p_main_game
 	player = p_player
 	hud = p_hud
 	skip_badge_layer = p_skip_badge
 	audio_duck_manager = p_audio_duck
+
+func is_blocking_combat() -> bool:
+	return is_dialogue_active()
 
 func get_dialogic() -> Node:
 	if not is_inside_tree():

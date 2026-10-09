@@ -1,5 +1,5 @@
 class_name CombatLootCoordinator
-extends Node
+extends "res://scenes/combat/systems/combat_subsystem.gd"
 
 ## Coordinador desacoplado del sistema de botín y recompensas in-run.
 ## Administra la aparición de máquinas tragamonedas (bumper arcade),
@@ -21,6 +21,12 @@ var pity_chance: float = 0.25
 var combat_root: Node2D = null
 var player_ref: Node2D = null
 var camera_ref: GameCamera2D = null
+
+func setup_subsystem(p_context: CombatContextScript) -> void:
+	super.setup_subsystem(p_context)
+	if context:
+		var cam_2d: GameCamera2D = context.camera as GameCamera2D if context.camera is GameCamera2D else null
+		initialize(context.main_game as Node2D, context.player, cam_2d)
 
 func initialize(combat_main: Node2D, player_node: Node2D, cam: GameCamera2D) -> void:
 	combat_root = combat_main

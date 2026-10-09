@@ -1,5 +1,5 @@
 class_name CombatBossCoordinator
-extends Node
+extends "res://scenes/combat/systems/combat_subsystem.gd"
 
 ## Coordinador especializado de colosos, jefes de dominio, Astra Prime y pilotos rivales.
 ## Gestiona la puesta en escena cinemática horizontal (1920x1080), telemetría de duelos,
@@ -27,9 +27,32 @@ const BOSS_CATCHUP_COOLDOWN: float = 2.5
 var main_game: Node2D = null
 var _catchup_timer: float = 0.0
 
+func setup_subsystem(p_context: CombatContextScript) -> void:
+	super.setup_subsystem(p_context)
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if context and context.main_game:
+		main_game = context.main_game as Node2D
+
 func setup(game: Node2D) -> void:
 	main_game = game
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+
+func is_blocking_combat() -> bool:
+	if not main_game or not is_instance_valid(main_game):
+		return false
+	if main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
+		return true
+	var current_boss: Node2D = main_game.get("current_boss") as Node2D
+	if is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
+		return true
+	var current_rival: Node2D = main_game.get("current_rival") as Node2D
+	if is_instance_valid(current_rival) and not current_rival.is_queued_for_deletion():
+		return true
+	if is_inside_tree():
+		for b: Node in get_tree().get_nodes_in_group("bosses"):
+			if is_instance_valid(b) and not b.is_queued_for_deletion():
+				return true
+	return false
 
 func _physics_process(delta: float) -> void:
 	if not main_game or not is_instance_valid(main_game) or not main_game.is_inside_tree():

@@ -43,6 +43,9 @@ func setup_pipeline(
 		wave_duration = context.wave_duration
 		wave_timer = wave_duration
 		current_wave = context.current_wave
+		for sub: CombatSubsystemScript in subsystems:
+			if is_instance_valid(sub):
+				sub.setup_subsystem(context)
 
 
 func register_subsystem(subsystem: CombatSubsystemScript) -> void:
@@ -50,6 +53,14 @@ func register_subsystem(subsystem: CombatSubsystemScript) -> void:
 		subsystems.append(subsystem)
 		if context:
 			subsystem.setup_subsystem(context)
+
+
+func register_child_subsystems(root_node: Node) -> void:
+	if not root_node or not is_instance_valid(root_node):
+		return
+	for child: Node in root_node.get_children():
+		if child is CombatSubsystemScript:
+			register_subsystem(child as CombatSubsystemScript)
 
 
 func unregister_subsystem(subsystem: CombatSubsystemScript) -> void:
@@ -63,7 +74,7 @@ func is_subsystem_blocking() -> bool:
 	return false
 
 
-func tick(delta: float, is_major_combat_active: bool) -> void:
+func tick(delta: float, is_major_combat_active: bool = false) -> void:
 	if is_pre_round:
 		_tick_pre_round(delta)
 	else:

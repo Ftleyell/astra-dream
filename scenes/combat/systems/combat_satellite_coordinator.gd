@@ -1,5 +1,5 @@
 class_name CombatSatelliteCoordinator
-extends Node
+extends "res://scenes/combat/systems/combat_subsystem.gd"
 
 const BASE_SPAWN_DISTANCE: float = 1200.0
 const DISTANCE_INCREMENT_PER_SAT: float = 400.0
@@ -25,6 +25,17 @@ var last_anchor_pos: Vector2:
 
 var main_game: MainGame = null
 
+func setup_subsystem(p_context: CombatContextScript) -> void:
+	super.setup_subsystem(p_context)
+	if context:
+		if context.main_game:
+			main_game = context.main_game as MainGame
+		if is_instance_valid(context.player):
+			last_player_pos = context.player.global_position
+			has_last_player_pos = true
+		if context.satellite_shop and not context.satellite_shop.shop_closed.is_connected(_on_shop_closed):
+			context.satellite_shop.shop_closed.connect(_on_shop_closed)
+
 func setup(p_main_game: MainGame) -> void:
 	main_game = p_main_game
 	if main_game:
@@ -33,6 +44,14 @@ func setup(p_main_game: MainGame) -> void:
 			has_last_player_pos = true
 		if main_game.satellite_shop and not main_game.satellite_shop.shop_closed.is_connected(_on_shop_closed):
 			main_game.satellite_shop.shop_closed.connect(_on_shop_closed)
+
+func on_wave_started(_wave_idx: int) -> void:
+	reset_wave_satellite_count()
+
+func _process(_delta: float) -> void:
+	if not is_inside_tree() or get_tree().paused:
+		return
+	update_satellite_lifecycle()
 
 func get_required_distance_for_next_sat() -> float:
 	return BASE_SPAWN_DISTANCE + (float(satellites_collected_total) * DISTANCE_INCREMENT_PER_SAT)
