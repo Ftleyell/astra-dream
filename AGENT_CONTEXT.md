@@ -55,6 +55,7 @@
 | Definición modular de crisis espacial | `scenes/combat/events/definitions/crisis_event_definition.gd` | Contrato data-driven de anomalías |
 | Skins / cosméticos / autodescubrimiento | `core/systems/cosmetics_manager.gd` | DB load & discovery: L1 |
 | Sistema de save y persistencia | `core/autoloads/save_manager.gd` | Fachada estática → delega en core/systems/persistence/ |
+| Schemas DTO de persistencia (Roster, Economía, Settings) | `core/systems/persistence/schemas/` | DTOs fuertemente tipados y validación modular |
 | Perfil del jugador (biomasa, trofeos, unlocks) | `core/systems/persistence/meta_progression_state.gd` | — |
 | Run activa (armas, ítems, estado de partida) | `core/systems/persistence/active_run_storage.gd` | — |
 | Items y loot pool | `core/types/item_pool_manager.gd` | — |

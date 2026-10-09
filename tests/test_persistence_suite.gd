@@ -149,7 +149,46 @@ func _ready() -> void:
 	var highscores := SaveManager.get_top_highscores()
 	assert(highscores.size() <= 10, "La lista de highscores no debe superar los 10 registros")
 	assert(highscores[0].get("wave_reached") >= highscores[1].get("wave_reached"), "Los récords deben estar ordenados descendentemente por oleada")
-	print("  ✓ Highscores Top 10 y ordenamiento multicriterio verificados exitosamente")
+	# --- TEST 6: DTO SCHEMA RETROCOMPATIBILITY & MIGRATION (V1 -> V2) ---
+	print("\n[6/6] Testing DTO Schemas, Legacy Save Sanitization and Round-trip Serialization...")
+	var legacy_v1_payload: Dictionary = {
+		"version": 1,
+		"biomass": 1250,
+		"antimatter": 45,
+		"game_speed": 1.5,
+		"unlocked_characters": ["nova", "echo"],
+		"character_banlists": {"nova": ["escudo"]},
+		"selected_character": "echo"
+	}
+
+	var sanitized: Dictionary = ProfileStorage.clean_and_validate_data(legacy_v1_payload)
+	assert(sanitized.get("biomass") == 1250, "Biomasa legacy debe mantenerse en 1250")
+	assert(sanitized.get("antimatter") == 45, "Antimateria legacy debe mantenerse en 45")
+	assert(is_equal_approx(float(sanitized.get("game_speed")), 1.5), "Velocidad de juego legacy debe mantenerse en 1.5")
+	assert(sanitized.get("selected_character") == &"echo", "Personaje seleccionado debe ser &echo")
+	
+	# Verificar inyección segura de defaults para campos inexistentes en V1
+	assert(sanitized.has("gacha_pity"), "Debe inyectar gacha_pity en saves legacy")
+	assert(sanitized["gacha_pity"].get("general") == 0, "Pity general por defecto debe ser 0")
+	assert(sanitized.has("trophies_unlocked"), "Debe inyectar trophies_unlocked en saves legacy")
+	assert(sanitized.has("character_loadouts"), "Debe inyectar character_loadouts en saves legacy")
+	assert(sanitized.get("unlocked_pets").size() >= 4, "Debe asegurar pets por defecto")
+	assert(sanitized.get("unlocked_navigators").size() >= 4, "Debe asegurar navegadoras por defecto")
+
+	# Sanitización ante datos corruptos / tipos anómalos
+	var corrupt_payload: Dictionary = {
+		"game_speed": -2.0,
+		"selected_character": "",
+		"selected_pet": "",
+		"selected_navigator": "",
+		"biomass": 300
+	}
+	var repaired: Dictionary = ProfileStorage.clean_and_validate_data(corrupt_payload)
+	assert(is_equal_approx(float(repaired.get("game_speed")), 1.0), "Velocidad corrupta <= 0 debe resetearse a 1.0")
+	assert(repaired.get("selected_character") == &"nova", "selected_character vacio debe resetearse a &nova")
+	assert(repaired.get("selected_pet") == &"mochi", "selected_pet vacio debe resetearse a &mochi")
+	assert(repaired.get("selected_navigator") == &"lyra", "selected_navigator vacio debe resetearse a &lyra")
+	print("  ✓ Retrocompatibilidad V1->V2, sanitización robusta y DTOs modulares verificados exitosamente")
 
 	print("\n==========================================")
 	print(">>> ALL PERSISTENCE TESTS PASSED (100%) <<<")
