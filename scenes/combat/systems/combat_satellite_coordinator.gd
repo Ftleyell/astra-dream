@@ -230,6 +230,30 @@ func _on_satellite_planted(index: int, _pos: Vector2) -> void:
 	else:
 		main_game.satellite_shop.open_shop(main_game.player.run_credits, index)
 
+func on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
+	if not main_game or not is_instance_valid(main_game.player):
+		return
+	var player = main_game.player
+	var hud = main_game.hud
+	var debug_mgr = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
+		player.run_credits = 999999
+	else:
+		var is_free: bool = debug_mgr and debug_mgr.has_method("is_free_shopping_enabled") and debug_mgr.is_free_shopping_enabled()
+		if not is_free:
+			player.run_credits = maxi(0, player.run_credits - cost)
+
+	if item_or_weapon is WeaponData:
+		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+		if w_ctrl:
+			w_ctrl.add_weapon(item_or_weapon as WeaponData)
+	elif item_or_weapon is ItemData and player.inventory:
+		player.inventory.add_item(item_or_weapon as ItemData, 1, "TIENDA DE SATÉLITE")
+	if is_instance_valid(hud):
+		hud.update_credits(player.run_credits)
+	if main_game.has_method("save_current_run_state"):
+		main_game.save_current_run_state()
+
 func _on_shop_closed() -> void:
 	# Al cerrar la tienda, NO se destruye el satélite ni se borra del mapa.
 	# Permanece en el mundo para que el piloto pueda reabrirla con bumpeo.
@@ -244,3 +268,4 @@ func _on_satellite_exited(_index: int) -> void:
 func reset_wave_satellite_count() -> void:
 	# Desacoplado de oleadas: no se resetea por wave
 	pass
+

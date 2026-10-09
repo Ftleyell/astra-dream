@@ -29,6 +29,7 @@ const CombatBossCoordinator = preload("res://scenes/combat/directors/combat_boss
 const CombatTelemetryRecorder = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
 const PlanetSpawnerHelper = preload("res://scenes/combat/environment/planet_spawner_helper.gd")
 const CombatEndRunController = preload("res://scenes/combat/controllers/combat_end_run_controller.gd")
+const CombatTelemetryCoordinatorScript = preload("res://scenes/combat/systems/combat_telemetry_coordinator.gd")
 const CombatEncounterControllerScript = preload("res://scenes/combat/controllers/combat_encounter_controller.gd")
 const CombatInputDispatcherScript = preload("res://scenes/combat/controllers/combat_input_dispatcher.gd")
 const CombatTacticalInteractionsScript = preload("res://scenes/combat/systems/combat_tactical_interactions.gd")
@@ -40,6 +41,7 @@ var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
 var boss_coordinator: CombatBossCoordinator = CombatBossCoordinator.new()
 var end_run_controller: CombatEndRunController = CombatEndRunController.new()
+var telemetry_coordinator: CombatTelemetryCoordinatorScript = CombatTelemetryCoordinatorScript.new()
 var encounter_controller: CombatEncounterControllerScript = CombatEncounterControllerScript.new()
 var input_dispatcher: CombatInputDispatcherScript = CombatInputDispatcherScript.new()
 var combat_context: CombatContextScript = null
@@ -64,7 +66,16 @@ var _pending_satellite_index: int = -1
 @onready var skip_badge_layer: CanvasLayer = get_node_or_null("SkipBadgeLayer")
 @onready var game_over_modal: GameOverModal = get_node_or_null("GameOverModal") as GameOverModal
 var game_over_scene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
-var bosses_defeated_count: int = 0
+var _bosses_defeated_count_fallback: int = 0
+var bosses_defeated_count: int:
+	get:
+		return telemetry_coordinator.bosses_defeated_count if telemetry_coordinator else _bosses_defeated_count_fallback
+	set(val):
+		_bosses_defeated_count_fallback = val
+		if telemetry_coordinator:
+			telemetry_coordinator.bosses_defeated_count = val
+		if combat_context:
+			combat_context.bosses_defeated_count = val
 
 var chest_director: ChestDirector = null
 var chest_reward_modal: ChestRewardModal = null
@@ -248,8 +259,25 @@ var prologue_bonus_chosen: bool:
 	set(val):
 		if narrative_director:
 			narrative_director.prologue_bonus_chosen = val
-var run_time_elapsed: float = 0.0
-var enemies_killed_count: int = 0
+var _run_time_elapsed_fallback: float = 0.0
+var run_time_elapsed: float:
+	get:
+		return telemetry_coordinator.run_time_elapsed if telemetry_coordinator else _run_time_elapsed_fallback
+	set(val):
+		_run_time_elapsed_fallback = val
+		if telemetry_coordinator:
+			telemetry_coordinator.run_time_elapsed = val
+
+var _enemies_killed_count_fallback: int = 0
+var enemies_killed_count: int:
+	get:
+		return telemetry_coordinator.enemies_killed_count if telemetry_coordinator else _enemies_killed_count_fallback
+	set(val):
+		_enemies_killed_count_fallback = val
+		if telemetry_coordinator:
+			telemetry_coordinator.enemies_killed_count = val
+		if combat_context:
+			combat_context.enemies_killed_count = val
 var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var active_pet: CompanionPet = null
@@ -408,6 +436,11 @@ func _ready() -> void:
 		satellite_coordinator.name = "CombatSatelliteCoordinator"
 		add_child(satellite_coordinator)
 	satellite_coordinator.setup(self)
+
+	if not telemetry_coordinator.is_inside_tree():
+		telemetry_coordinator.name = "CombatTelemetryCoordinator"
+		add_child(telemetry_coordinator)
+	telemetry_coordinator.setup(self, hud)
 
 	# 5. Inicializar Contexto de Combate y Pipeline de Oleadas
 	combat_context = CombatContextScript.new()
@@ -662,18 +695,15 @@ func _process(delta: float) -> void:
 			satellite_shop.open_shop(creds, idx_to_open)
 			return
 
-	# Cronómetro de tiempo total de la run
-	run_time_elapsed += delta
+	# Telemetría y cronómetro de la run
+	if telemetry_coordinator:
+		telemetry_coordinator.tick(delta)
+	else:
+		run_time_elapsed += delta
 
 	# Chequeo de inicio de encuentro para la oleada y temporizadores
 	if encounter_controller:
 		encounter_controller.process_tick(delta, is_pre_round, current_wave)
-
-	# Chequeo de desbloqueo de Mascota Secreta Cosmo (10 Minutos = 600s de supervivencia)
-	if run_time_elapsed >= 600.0 and not SaveManager.is_pet_unlocked(&"cosmo"):
-		var newly_unlocked := SaveManager.unlock_pet(&"cosmo")
-		if newly_unlocked and hud and hud.has_method("show_character_unlock_banner"):
-			hud.show_character_unlock_banner(&"cosmo", "¡NUEVA MASCOTA DESBLOQUEADA: COSMO!", "Has sobrevivido 10 minutos. El Gatito Astral se ha unido a tu flota.")
 
 	# Temporizador de auto-guardado periódico en segundo plano
 	_auto_save_timer += delta
@@ -817,7 +847,10 @@ func _on_boss_defeated(boss_id: String) -> void:
 		boss_coordinator.on_boss_defeated(boss_id)
 
 func _on_final_boss_defeated(route: String) -> void:
-	bosses_defeated_count += 1
+	if telemetry_coordinator:
+		telemetry_coordinator.record_boss_defeated("final_boss")
+	else:
+		bosses_defeated_count += 1
 	current_boss = null
 	if current_genocide_escort and is_instance_valid(current_genocide_escort):
 		current_genocide_escort.queue_free()
@@ -825,7 +858,7 @@ func _on_final_boss_defeated(route: String) -> void:
 	hud.hide_boss()
 	is_wave_11_cleared = true
 
-	var victory_data: Dictionary = CombatTelemetryRecorder.build_end_of_run_data(self, true, route)
+	var victory_data: Dictionary = telemetry_coordinator.build_end_of_run_data(true, route) if telemetry_coordinator else CombatTelemetryRecorder.build_end_of_run_data(self, true, route)
 	get_tree().create_timer(1.2, true, false, true).timeout.connect(func():
 		_show_game_over_screen(victory_data)
 	)
@@ -867,19 +900,22 @@ func trigger_boss_transmission(speaker: String = "CENTINELA TITÁN", _text: Stri
 	_trigger_pet_boss_alert(b_name)
 
 func _on_item_purchased(item_or_weapon: Resource, cost: int) -> void:
-	var debug_mgr = get_node_or_null("/root/DebugManager")
-	if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
-		player.run_credits = 999999
+	if satellite_coordinator:
+		satellite_coordinator.on_item_purchased(item_or_weapon, cost)
 	else:
-		player.run_credits -= cost
-	if item_or_weapon is WeaponData:
-		var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-		if w_ctrl:
-			w_ctrl.add_weapon(item_or_weapon as WeaponData)
-	elif item_or_weapon is ItemData:
-		player.inventory.add_item(item_or_weapon as ItemData, 1, "TIENDA DE SATÉLITE")
-	hud.update_credits(player.run_credits)
-	save_current_run_state()
+		var debug_mgr = get_node_or_null("/root/DebugManager")
+		if debug_mgr and debug_mgr.has_method("is_infinite_credits_active") and debug_mgr.is_infinite_credits_active():
+			player.run_credits = 999999
+		else:
+			player.run_credits -= cost
+		if item_or_weapon is WeaponData:
+			var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+			if w_ctrl:
+				w_ctrl.add_weapon(item_or_weapon as WeaponData)
+		elif item_or_weapon is ItemData:
+			player.inventory.add_item(item_or_weapon as ItemData, 1, "TIENDA DE SATÉLITE")
+		hud.update_credits(player.run_credits)
+		save_current_run_state()
 
 func _on_level_up_requested(level: int) -> void:
 	if modal_coordinator:
@@ -1004,7 +1040,10 @@ func _on_player_health_changed(current: float, _max_val: float) -> void:
 	_last_player_hp = current
 
 func _on_enemy_killed(_enemy_type: String) -> void:
-	enemies_killed_count += 1
+	if telemetry_coordinator:
+		telemetry_coordinator.record_enemy_killed(_enemy_type)
+	else:
+		enemies_killed_count += 1
 
 func _on_player_died() -> void:
 	if end_run_controller:
