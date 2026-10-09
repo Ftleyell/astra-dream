@@ -256,3 +256,19 @@ func plant_satellite() -> void:
 	visual_core.modulate = Color(0.4, 1.2, 0.6, 1.0)
 	radius_visual.default_color = Color(0.2, 1.0, 0.4, 0.4)
 	planted.emit(satellite_index, global_position)
+
+
+func is_station_busy() -> bool:
+	return false
+
+
+func is_station_charging() -> bool:
+	return current_charge > 0.0 and not is_planted
+
+
+func is_station_ready() -> bool:
+	return is_ready or is_planted
+
+
+func can_be_replaced() -> bool:
+	return true

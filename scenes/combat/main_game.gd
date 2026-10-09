@@ -36,6 +36,7 @@ const CombatTacticalInteractionsScript = preload("res://scenes/combat/systems/co
 const CombatBootstrapperScript = preload("res://scenes/combat/systems/combat_bootstrapper.gd")
 const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
 const CombatWavePipelineScript = preload("res://scenes/combat/directors/combat_wave_pipeline.gd")
+const CombatSpaceDebrisManagerScript = preload("res://scenes/combat/systems/combat_space_debris_manager.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -44,6 +45,7 @@ var end_run_controller: CombatEndRunController = CombatEndRunController.new()
 var telemetry_coordinator: CombatTelemetryCoordinatorScript = CombatTelemetryCoordinatorScript.new()
 var encounter_controller: CombatEncounterControllerScript = CombatEncounterControllerScript.new()
 var input_dispatcher: CombatInputDispatcherScript = CombatInputDispatcherScript.new()
+var space_debris_manager: RefCounted = CombatSpaceDebrisManagerScript.new()
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null
 
@@ -52,7 +54,12 @@ var wave_pipeline: CombatWavePipelineScript = null
 @onready var bullet_server: BulletServer = $BulletServer
 @onready var hud: GameHUD = $HUD
 @onready var level_up_modal: LevelUpModal = $LevelUpModal
-var space_object_spawner: SpaceObjectSpawner = null
+var space_object_spawner: SpaceObjectSpawner:
+	get:
+		return space_debris_manager.space_object_spawner if space_debris_manager else null
+	set(val):
+		if space_debris_manager:
+			space_debris_manager.space_object_spawner = val
 var arcana_modal: ArcanaSelectionModal = null
 var _pending_arcana_picks: int = 0
 var _pending_satellite_credits: int = -1
@@ -410,9 +417,8 @@ func _ready() -> void:
 	modal_coordinator.transmutation_modal = transmutation_modal
 
 	# 3. Macro-objetos tácticos
-	space_object_spawner = SpaceObjectSpawner.new()
-	space_object_spawner.name = "SpaceObjectSpawner"
-	add_child(space_object_spawner)
+	if space_debris_manager:
+		space_debris_manager.setup(self)
 
 	# 4. Subsistemas y coordinadores de combate
 	if not narrative_director.is_inside_tree():
@@ -552,21 +558,9 @@ func _ready() -> void:
 	if audio_mgr and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("combat")
 
-	# Inyección dinámica de objetos espaciales y asteroides periódicos
-	var asteroid_spawner := AsteroidSpawner.new()
-	asteroid_spawner.name = "AsteroidSpawner"
-	add_child(asteroid_spawner)
-
-	# Inyección dinámica de macro-planetas y nidos de exploración
-	var planet_spawner := PlanetSpawner.new()
-	planet_spawner.name = "PlanetSpawner"
-	add_child(planet_spawner)
-
-	# Inyección dinámica de macro-objetos espaciales tácticos (Monolitos, Cápsulas, Geodas, Capullos)
-	if not space_object_spawner:
-		space_object_spawner = SpaceObjectSpawner.new()
-		space_object_spawner.name = "SpaceObjectSpawner"
-		add_child(space_object_spawner)
+	# Inyección dinámica de objetos espaciales, asteroides periódicos y planetas
+	if space_debris_manager:
+		space_debris_manager.spawn_environment_actors(self)
 
 	# Chequeos de inicio debug (jefes, rutas, rivales, mid-run resume, slots, planetas)
 	if CombatBootstrapperScript.handle_debug_jump_requests(self):
@@ -779,8 +773,8 @@ func _on_wave_pipeline_advanced(wave_idx: int) -> void:
 		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
 		chest_director.on_new_wave(wave_idx, green_cards)
 	_spawn_wave_chests()
-	if space_object_spawner and space_object_spawner.has_method("notify_wave_started"):
-		space_object_spawner.notify_wave_started(wave_idx)
+	if space_debris_manager:
+		space_debris_manager.notify_wave_started(wave_idx)
 
 
 func _on_wave_pipeline_hud_update(is_pre: bool, wave_idx: int, timer: float) -> void:
@@ -1104,7 +1098,10 @@ func _spawn_navigator_controller() -> void:
 	active_navigator_controller.setup(self, player, hud)
 
 func _spawn_debug_test_planets() -> void:
-	PlanetSpawnerHelper.spawn_debug_planets(self, player)
+	if space_debris_manager:
+		space_debris_manager.spawn_debug_planets(self, player)
+	else:
+		PlanetSpawnerHelper.spawn_debug_planets(self, player)
 
 const IngameDebugModalScript := preload("res://scenes/ui/debug/ingame_debug_modal.gd")
 var ingame_debug_modal: CanvasLayer = null

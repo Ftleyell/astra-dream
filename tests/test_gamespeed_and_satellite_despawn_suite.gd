@@ -46,30 +46,30 @@ func _test_loadout_gamespeed_buttons() -> void:
 	assert(deploy.speed_4x_btn != null, "Botón 4x debe existir en el Menú de Despliegue (CharacterSelect)")
 
 	# Inicialmente en 1x
-	assert(deploy.speed_1x_btn.text.contains("●"), "Botón 1x debe estar activo por defecto")
-	assert(deploy.speed_2x_btn.text.contains("○"), "Botón 2x debe estar inactivo")
-	assert(deploy.speed_4x_btn.text.contains("○"), "Botón 4x debe estar inactivo")
+	assert(deploy.speed_1x_btn.text.contains("[ 1.0x ]"), "Botón 1x debe estar activo por defecto")
+	assert(not deploy.speed_2x_btn.text.contains("["), "Botón 2x debe estar inactivo")
+	assert(not deploy.speed_4x_btn.text.contains("["), "Botón 4x debe estar inactivo")
 
 	# Click en botón 2x
 	deploy.speed_2x_btn.emit_signal("pressed")
 	assert(is_equal_approx(SaveManager.get_game_speed(), 2.0), "Debe cambiar a 2x tras click")
-	assert(deploy.speed_1x_btn.text.contains("○"), "Botón 1x debe quedar inactivo")
-	assert(deploy.speed_2x_btn.text.contains("●"), "Botón 2x debe ser el único activo")
-	assert(deploy.speed_4x_btn.text.contains("○"), "Botón 4x debe quedar inactivo")
+	assert(not deploy.speed_1x_btn.text.contains("["), "Botón 1x debe quedar inactivo")
+	assert(deploy.speed_2x_btn.text.contains("[ 2.0x ]"), "Botón 2x debe ser el único activo")
+	assert(not deploy.speed_4x_btn.text.contains("["), "Botón 4x debe quedar inactivo")
 
 	# Click en botón 4x
 	deploy.speed_4x_btn.emit_signal("pressed")
 	assert(is_equal_approx(SaveManager.get_game_speed(), 4.0), "Debe cambiar a 4x tras click")
-	assert(deploy.speed_1x_btn.text.contains("○"), "Botón 1x debe estar inactivo")
-	assert(deploy.speed_2x_btn.text.contains("○"), "Botón 2x debe estar inactivo")
-	assert(deploy.speed_4x_btn.text.contains("●"), "Botón 4x debe ser el único activo")
+	assert(not deploy.speed_1x_btn.text.contains("["), "Botón 1x debe estar inactivo")
+	assert(not deploy.speed_2x_btn.text.contains("["), "Botón 2x debe estar inactivo")
+	assert(deploy.speed_4x_btn.text.contains("[ 4.0x ]"), "Botón 4x debe ser el único activo")
 
 	# Click en botón 1x
 	deploy.speed_1x_btn.emit_signal("pressed")
 	assert(is_equal_approx(SaveManager.get_game_speed(), 1.0), "Debe volver a 1x")
-	assert(deploy.speed_1x_btn.text.contains("●"), "Botón 1x activo")
-	assert(deploy.speed_2x_btn.text.contains("○"), "Botón 2x inactivo")
-	assert(deploy.speed_4x_btn.text.contains("○"), "Botón 4x inactivo")
+	assert(deploy.speed_1x_btn.text.contains("[ 1.0x ]"), "Botón 1x activo")
+	assert(not deploy.speed_2x_btn.text.contains("["), "Botón 2x inactivo")
+	assert(not deploy.speed_4x_btn.text.contains("["), "Botón 4x inactivo")
 
 	deploy.queue_free()
 	await get_tree().process_frame

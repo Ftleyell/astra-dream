@@ -295,3 +295,20 @@ func deplete_station() -> void:
 	var tw := create_tween()
 	tw.tween_property(visual_root, "modulate", Color(0.5, 0.5, 0.6, 0.4), 0.8)
 
+
+func is_station_busy() -> bool:
+	return is_processing or is_instance_valid(active_reward_chest)
+
+
+func is_station_charging() -> bool:
+	return false
+
+
+func is_station_ready() -> bool:
+	return not is_depleted and uses_remaining > 0
+
+
+func can_be_replaced() -> bool:
+	return is_depleted or uses_remaining <= 0
+
+

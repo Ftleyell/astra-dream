@@ -36,7 +36,11 @@
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
 | Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
-| Satélites orbitales y odómetro (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | — |
+| Satélites orbitales y estaciones (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | Orquestador satelital |
+| Odómetro de vuelo espacial | `scenes/combat/satellite/components/satellite_odometer.gd` | Tracking de distancia pura |
+| Selector de estaciones orbitales | `scenes/combat/satellite/components/satellite_spawn_selector.gd` | Selección y proyección extensible |
+| Contrato base de estación interactuable | `scenes/combat/satellite/components/base_space_station.gd` | Contrato polimórfico de estación |
+| Administrador de debris espacial y macro-objetos | `scenes/combat/systems/combat_space_debris_manager.gd` | Asteroides, planetas y monolitos |
 | Recompensas y tragamonedas (CombatSubsystem) | `scenes/combat/systems/combat_loot_coordinator.gd` | — |
 | Skins / cosméticos / recolors | `core/systems/cosmetics_manager.gd` | DB load: L1 |
 | Sistema de save y persistencia | `core/autoloads/save_manager.gd` | Fachada estática → delega en core/systems/persistence/ |
