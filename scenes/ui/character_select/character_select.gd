@@ -28,6 +28,7 @@ const CharacterSelectLaunchController = preload("res://scenes/ui/character_selec
 const CharacterSelectDisplayManager = preload("res://scenes/ui/character_select/components/character_select_display_manager.gd")
 const CharacterSelectModalRouter = preload("res://scenes/ui/character_select/components/character_select_modal_router.gd")
 const CharacterSelectTabController = preload("res://scenes/ui/character_select/components/character_select_tab_controller.gd")
+const CharacterRosterGridBuilder = preload("res://scenes/ui/character_select/components/character_roster_grid_builder.gd")
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const GachaModalScript = preload("res://scenes/ui/gacha/gacha_modal.gd")
@@ -465,73 +466,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _populate_roster() -> void:
-	for child in char_list_container.get_children():
-		child.queue_free()
-	_dock_card_buttons.clear()
-
-	var first_btn: Button = null
-
-	for char_data in roster_ordered:
-		var cid: StringName = char_data.character_id
-		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
-
-		var card_btn := Button.new()
-		card_btn.name = "PilotCard_%s" % cid
-		card_btn.custom_minimum_size = Vector2(76, 76)
-		card_btn.focus_mode = Control.FOCUS_NONE
-
-		var card_style := StyleBoxFlat.new()
-		card_style.bg_color = Color(0.025, 0.04, 0.07, 0.92)
-		card_style.border_width_left = 2
-		card_style.border_width_top = 2
-		card_style.border_width_right = 2
-		card_style.border_width_bottom = 2
-		card_style.border_color = char_data.color if is_unlocked else Color(0.3, 0.35, 0.4, 0.5)
-		card_style.set_corner_radius_all(6)
-		card_style.content_margin_left = 4
-		card_style.content_margin_top = 4
-		card_style.content_margin_right = 4
-		card_style.content_margin_bottom = 4
-		card_btn.add_theme_stylebox_override("normal", card_style)
-		card_btn.add_theme_stylebox_override("hover", card_style)
-		card_btn.add_theme_stylebox_override("pressed", card_style)
-
-		# Icono del avatar con expand_icon = true para encajar exactamente en el botón cuadrado
-		card_btn.icon = char_data.get_avatar_texture()
-		card_btn.expand_icon = true
-		card_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		card_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		card_btn.tooltip_text = char_data.display_name.to_upper()
-		card_btn.text = ""
-
-		card_btn.pivot_offset = Vector2(38, 38)
-		card_btn.pressed.connect(func():
+	CharacterRosterGridBuilder.populate_roster(
+		char_list_container,
+		roster_ordered,
+		_dock_card_buttons,
+		func(cid: StringName) -> void:
 			_select_character(cid)
 			if hero_picker_modal:
 				if main_margin_container:
 					main_margin_container.visible = false
 				hero_picker_modal.open_picker(roster_ordered, cid, false)
-		)
-
-		# Hover feedback: escala suave 1.08x centrada (sin perder fondo)
-		card_btn.mouse_entered.connect(func():
-			card_btn.pivot_offset = card_btn.size * 0.5
-			var tw := card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			tw.tween_property(card_btn, "scale", Vector2(1.08, 1.08), 0.12)
-		)
-		card_btn.mouse_exited.connect(func():
-			card_btn.pivot_offset = card_btn.size * 0.5
-			var tw := card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			tw.tween_property(card_btn, "scale", Vector2(1.0, 1.0), 0.12)
-		)
-
-		UIFocusHelper.apply_cyber_focus(card_btn)
-		char_list_container.add_child(card_btn)
-		_dock_card_buttons[cid] = card_btn
-
-		if not first_btn:
-			first_btn = card_btn
-
+	)
 	_setup_focus_mesh()
 
 	# El foco inicial lo gestiona HeroPickerModal (o ship_button tras confirmar selección).
