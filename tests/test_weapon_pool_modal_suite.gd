@@ -13,6 +13,7 @@ const WeaponCatalog = preload("res://data/weapons/weapon_catalog.gd")
 const WeaponSelectionModalScript = preload("res://scenes/ui/character_select/weapon_selection_modal.gd")
 const WeaponSelectionModalScene = preload("res://scenes/ui/character_select/weapon_selection_modal.tscn")
 const CharacterSelectScene = preload("res://scenes/ui/character_select/character_select.tscn")
+const BossCinematicPresenter = preload("res://scenes/combat/bosses/boss_cinematic_presenter.gd")
 
 
 func _ready() -> void:
@@ -108,6 +109,73 @@ func _run_tests() -> void:
 
 	char_select.queue_free()
 	print("  ✓ [PASS] Test 5 y 6: Botón [POOL ARMAS], panel lateral flotante y cuadrícula de iconos cuadrados validados")
+
+	# 7. Restricción de armas base de otros pilotos en LevelUpRewardGenerator (Bug 2)
+	var test_player := CharacterBody2D.new()
+	var char_data := CharacterData.new()
+	char_data.character_id = &"selene"
+	var selene_wpn: WeaponData = WeaponCatalog.get_weapon_by_id(&"tesla_arc")
+	char_data.starting_weapon = selene_wpn
+	test_player.set("character_data", char_data)
+
+	var options: Array[LevelUpRewardOption] = LevelUpRewardGenerator.generate_reward_options(
+		test_player,
+		[],
+		20
+	)
+	var offered_w_ids: Array[StringName] = []
+	for opt in options:
+		if opt.weapon_data:
+			offered_w_ids.append(opt.weapon_data.weapon_id)
+
+	# Ninguna de las 6 armas iniciales de las otras pilotos debe aparecer para Selene
+	for base_id: StringName in WeaponCatalog.PILOT_STARTING_WEAPON_IDS:
+		if base_id != &"tesla_arc":
+			assert_true(not offered_w_ids.has(base_id), "Arma base ajena %s no debe aparecer para Selene" % str(base_id))
+	test_player.queue_free()
+	print("  ✓ [PASS] Test 7: Armas base de otros pilotos correctamente excluidas como nuevas opciones")
+
+	# 8. BossCinematicPresenter restauración de ambos componentes (bomb suppression y movement) (Bug 3)
+	var mock_player := CharacterBody2D.new()
+	var dummy_cam := GameCamera2D.new()
+	var mock_main := Node2D.new()
+	add_child(mock_main)
+	add_child(dummy_cam)
+	dummy_cam.add_to_group("camera")
+
+	var mock_script := GDScript.new()
+	mock_script.source_code = """extends CharacterBody2D
+var bomb_cleared: bool = false
+var movement_resumed: bool = false
+func clear_bomb_suppression(_t: float = 0.4) -> void:
+	bomb_cleared = true
+func resume_movement_control() -> void:
+	movement_resumed = true
+"""
+	mock_script.reload()
+	mock_player.set_script(mock_script)
+	add_child(mock_player)
+
+	BossCinematicPresenter.restore_combat_after_emergence(mock_main, dummy_cam, mock_player)
+	assert_true(mock_player.get("bomb_cleared") == true, "clear_bomb_suppression debe ejecutarse")
+	assert_true(mock_player.get("movement_resumed") == true, "resume_movement_control debe ejecutarse (no ignorado por elif)")
+	mock_player.queue_free()
+	dummy_cam.queue_free()
+	mock_main.queue_free()
+	print("  ✓ [PASS] Test 8: BossCinematicPresenter restaura tanto bomb suppression como control de movimiento")
+
+	# 9. Retorno al Hub directo con ESC / Back Button en CharacterSelect (Bug 1)
+	var char_select_esc: Control = CharacterSelectScene.instantiate() as Control
+	add_child(char_select_esc)
+	assert_true(char_select_esc.has_method("_on_back_pressed"), "_on_back_pressed debe existir")
+	# Tras confirmar heroína, el jugador está en la pantalla de equipamiento principal
+	char_select_esc._on_hero_confirmed(&"nova")
+	assert_true(not char_select_esc.hero_picker_modal.is_open, "hero_picker_modal debe estar cerrado tras confirmar héroe")
+	# Presionar Back / ESC debe ir al Hub sin volver a abrir hero_picker_modal
+	char_select_esc._on_back_pressed()
+	assert_true(not char_select_esc.hero_picker_modal.is_open, "_on_back_pressed no debe reabrir hero_picker_modal")
+	char_select_esc.queue_free()
+	print("  ✓ [PASS] Test 9: _on_back_pressed en CharacterSelect sale al Hub sin reabrir hero_picker_modal")
 
 	print("--- TEST WEAPON POOL MODAL SUITE FINISHED: ALL PASS ---")
 	pass_suite("TestWeaponPoolModalSuite completely passed")

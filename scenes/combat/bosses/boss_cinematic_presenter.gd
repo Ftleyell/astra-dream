@@ -47,7 +47,7 @@ static func restore_combat_after_emergence(main_game: Node2D, cam: GameCamera2D,
 	if is_instance_valid(player):
 		if player.has_method("clear_bomb_suppression"):
 			player.clear_bomb_suppression(0.4)
-		elif player.has_method("resume_movement_control"):
+		if player.has_method("resume_movement_control"):
 			player.resume_movement_control()
 	unfreeze_combat_environment(main_game)
 	main_game.set("is_boss_transmission_active", false)

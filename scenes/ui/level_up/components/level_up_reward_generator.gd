@@ -78,9 +78,18 @@ static func generate_reward_options(
 			if inst and inst.weapon_data:
 				equipped_ids.append(inst.weapon_data.weapon_id)
 
+		var owner_weapon_id: StringName = &""
+		if "character_data" in player and player.character_data and player.character_data.starting_weapon:
+			owner_weapon_id = player.character_data.starting_weapon.weapon_id
+			if not equipped_ids.has(owner_weapon_id):
+				all_weapons.append(player.character_data.starting_weapon)
+
 		for w in all_weapons:
 			if not equipped_ids.has(w.weapon_id):
-				if not active_weapon_ids.is_empty() and not active_weapon_ids.has(w.weapon_id):
+				if WeaponCatalog.PILOT_STARTING_WEAPON_IDS.has(w.weapon_id):
+					if w.weapon_id != owner_weapon_id:
+						continue
+				elif not active_weapon_ids.is_empty() and not active_weapon_ids.has(w.weapon_id):
 					continue
 				var opt := LevelUpRewardOption.new()
 				opt.type = LevelUpRewardOption.OptionType.WEAPON_NEW

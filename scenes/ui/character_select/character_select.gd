@@ -797,10 +797,7 @@ func _on_tome_modal_closed() -> void:
 
 
 func _on_back_pressed() -> void:
-	if hero_picker_modal and not hero_picker_modal.is_open:
-		_on_dock_unified_button_pressed()
-	else:
-		_exit_to_hub()
+	_exit_to_hub()
 
 
 func _exit_to_hub() -> void:
