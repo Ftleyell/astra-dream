@@ -13,6 +13,7 @@
 
 | Si el cambio/bug está en... | Archivo | Rango clave |
 | Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: L234, Input: L447, Roster: L488 |
+| Constructor de tarjetas del elenco (CharacterSelect) | `scenes/ui/character_select/components/character_roster_grid_builder.gd` | Grilla procedural, avatares, bordes y hover |
 | Tabs (Loadout ↔ Habilidades) en CharacterSelect | `scenes/ui/character_select/components/character_select_tab_controller.gd` | — |
 | Enrutamiento de modales CharacterSelect | `scenes/ui/character_select/components/character_select_modal_router.gd` | — |
 | Presentación visual y habilidades CharacterSelect | `scenes/ui/character_select/components/character_select_display_manager.gd` | — |
@@ -39,6 +40,8 @@
 | Procesador de daño y OSP del jugador | `scenes/combat/player/player_damage_processor.gd` | Mitigación, One-Shot Protection, invulnerabilidad |
 | Inventario de arcanas del jugador | `scenes/combat/player/player_arcana_inventory.gd` | Registro y aplicación de modificadores de arcanas |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
+| Cinemática y paralaje de cámara Hub 3D | `scenes/ui/hub/components/hub_camera_controller_3d.gd` | FOV, posicionamiento y paralaje estelar |
+| Despacho de atajos e inputs del Hub | `scenes/ui/hub/components/hub_input_dispatcher.gd` | ESC en modales, Q quit y settings |
 | Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Spawner: BossEncounterSpawner, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
 | Spawner y escalado de colosos y rivales | `scenes/combat/directors/boss_encounter_spawner.gd` | Instanciación y escalado de vida adaptativo |
 | Jefe rival y duelos 1v1 (Flota Astra) | `scenes/combat/bosses/rival_pilot_boss.gd` | Orquestador de duelo rival |
