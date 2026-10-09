@@ -32,7 +32,7 @@
 | Locomoción y cinemática 360° del jugador | `scenes/combat/player/player_locomotion_controller.gd` | Vuelo, bank tilt, tactical focus, core hitbox |
 | Economía y experiencia in-run del jugador | `scenes/combat/player/player_economy_component.gd` | Exp, levels, credits, biomass, dark matter |
 | Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
-| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | — |
+| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
 | Satélites orbitales y odómetro (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | — |
 | Recompensas y tragamonedas (CombatSubsystem) | `scenes/combat/systems/combat_loot_coordinator.gd` | — |

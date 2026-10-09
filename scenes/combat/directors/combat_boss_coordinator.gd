@@ -9,6 +9,8 @@ const CosmicRealityTearScript := preload("res://scenes/combat/bosses/cosmic_real
 const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emergence_helper.gd")
 const BossCinematicPresenterScript := preload("res://scenes/combat/bosses/boss_cinematic_presenter.gd")
 const CombatBossDebugJumperScript := preload("res://scenes/combat/directors/combat_boss_debug_jumper.gd")
+const BossCinematicSequenceScript := preload("res://scenes/combat/directors/boss_cinematic_sequence.gd")
+const BossHealthBarManagerScript := preload("res://scenes/combat/directors/boss_health_bar_manager.gd")
 
 var boss_mothership_scene: PackedScene = preload("res://scenes/combat/bosses/boss_mothership.tscn")
 var boss_hermit_scene: PackedScene = preload("res://scenes/combat/bosses/boss_hermit_void.tscn")
@@ -27,15 +29,22 @@ const BOSS_CATCHUP_COOLDOWN: float = 2.5
 var main_game: Node2D = null
 var _catchup_timer: float = 0.0
 
+var health_bar_manager: BossHealthBarManagerScript = BossHealthBarManagerScript.new()
+var cinematic_sequence: BossCinematicSequenceScript = BossCinematicSequenceScript.new()
+
 func setup_subsystem(p_context: CombatContextScript) -> void:
 	super.setup_subsystem(p_context)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if context and context.main_game:
 		main_game = context.main_game as Node2D
+		health_bar_manager.setup(main_game)
+		cinematic_sequence.setup(main_game, health_bar_manager)
 
 func setup(game: Node2D) -> void:
 	main_game = game
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	health_bar_manager.setup(main_game)
+	cinematic_sequence.setup(main_game, health_bar_manager)
 
 func is_blocking_combat() -> bool:
 	if not main_game or not is_instance_valid(main_game):
@@ -158,7 +167,7 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 			_:
 				target_scene = boss_mothership_scene
 
-	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var duel_ctx: Dictionary = cinematic_sequence.setup_cinematic_duel(1.0)
 	var cam: GameCamera2D = duel_ctx.get("cam") as GameCamera2D
 	var boss_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
@@ -184,30 +193,8 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
 	var b_id: String = String(boss_node.get("boss_id")) if "boss_id" in boss_node else "boss_wave"
 
-	var hud = main_game.get("hud")
-	if boss_node.has_signal("health_changed") and hud:
-		boss_node.connect("health_changed", hud.update_boss_health)
-	if boss_node.has_signal("phase_changed") and hud:
-		boss_node.connect("phase_changed", hud.set_boss_phase)
-	if boss_node.has_signal("boss_defeated"):
-		boss_node.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
-
-	var domain_col: Color = CosmicRealityTearScript.get_boss_domain_color(b_id)
-	BossCinematicPresenterScript.play_reality_tear_emergence(
-		main_game,
-		boss_node,
-		boss_target_pos,
-		domain_col,
-		250.0,
-		750.0,
-		func(next_step: Callable) -> void: main_game.call("_trigger_pet_boss_alert", b_name, next_step),
-		func() -> void:
-			if hud:
-				hud.show_boss(b_name, b_hp)
-				if hud.has_method("track_boss"):
-					hud.track_boss(boss_node, "JEFE")
-			BossCinematicPresenterScript.restore_combat_after_emergence(main_game, cam, player)
-	)
+	health_bar_manager.bind_boss(boss_node)
+	cinematic_sequence.play_wave_boss_sequence(boss_node, boss_target_pos, b_id, b_name, b_hp, cam, player)
 
 func _apply_adaptive_hp(boss_node: Node2D, player: Node2D, current_wave: int) -> void:
 	if not ("max_health" in boss_node):
@@ -279,7 +266,7 @@ func spawn_final_boss(force_spawn: bool = false) -> void:
 	elif rivals_killed.size() >= 5:
 		route = "slayer"
 
-	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var duel_ctx: Dictionary = cinematic_sequence.setup_cinematic_duel(1.0)
 	var cam: GameCamera2D = duel_ctx.get("cam") as GameCamera2D
 	var boss_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
@@ -300,40 +287,14 @@ func spawn_final_boss(force_spawn: bool = false) -> void:
 	main_game.set("_wave_encounter_pending", false)
 	_apply_adaptive_hp(prime, player, current_wave)
 
-	var hud = main_game.get("hud")
-	if hud:
-		prime.health_changed.connect(hud.update_boss_health)
-		prime.phase_changed.connect(hud.set_boss_phase)
-	prime.boss_defeated.connect(func(_b_id): main_game.call("_on_final_boss_defeated", route))
-
-	var domain_col: Color = Color(1.0, 0.15, 0.25, 1.0) if route == "slayer" else CosmicRealityTearScript.get_boss_domain_color("boss_astra_prime")
-	BossCinematicPresenterScript.play_reality_tear_emergence(
-		main_game,
+	health_bar_manager.bind_boss(prime, func(_b_id): main_game.call("_on_final_boss_defeated", route))
+	cinematic_sequence.play_final_boss_sequence(
 		prime,
 		boss_target_pos,
-		domain_col,
-		280.0,
-		850.0,
-		func(next_step: Callable) -> void: main_game.call("_trigger_climax_dialogue", route, next_step),
-		func() -> void:
-			if hud:
-				hud.show_boss(prime.boss_name, prime.max_health)
-				if hud.has_method("track_boss"):
-					hud.track_boss(prime, "JEFE FINAL")
-			BossCinematicPresenterScript.restore_combat_after_emergence(main_game, cam, player)
-
-			if route == "pacifist":
-				spawn_allied_wingmen()
-			elif route == "slayer":
-				var p_stats = player.get("stats")
-				if p_stats:
-					p_stats.add_modifier(&"base_damage", CharacterStats.StatModifier.new(&"slayer_overload", 0.35, true, main_game))
-				var escort = nyx_boss_escort_scene.instantiate()
-				var escort_pid: StringName = main_game.call("_get_genocide_escort_pilot_id")
-				escort.global_position = boss_target_pos + Vector2(0.0, 110.0)
-				escort.setup(escort_pid, prime)
-				main_game.add_child(escort)
-				main_game.set("current_genocide_escort", escort)
+		route,
+		Callable(self, "spawn_allied_wingmen"),
+		cam,
+		player
 	)
 
 func spawn_rival_pilot(override_id: StringName = &"") -> void:
@@ -382,7 +343,7 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if bullet_srv:
 		bullet_srv.bomb_clear_all()
 
-	var duel_ctx: Dictionary = BossCinematicPresenterScript.setup_cinematic_duel(main_game, 1.0)
+	var duel_ctx: Dictionary = cinematic_sequence.setup_cinematic_duel(1.0)
 	var rival_target_pos: Vector2 = duel_ctx.get("boss_target_pos", Vector2.ZERO)
 
 	var rival = rival_pilot_scene.instantiate()
@@ -398,46 +359,13 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	main_game.set("_wave_encounter_spawned_for_wave", current_wave)
 	main_game.set("_wave_encounter_pending", false)
 
-	rival.rival_spared.connect(Callable(main_game, "_on_rival_spared"))
-	rival.rival_engaged.connect(Callable(main_game, "_on_rival_engaged"))
-	rival.rival_defeated.connect(Callable(main_game, "_on_rival_defeated"))
-
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("track_boss"):
-		hud.track_boss(rival, "RIVAL")
-
-	main_game.get_tree().create_timer(0.45, true, false, true).timeout.connect(func() -> void:
-		if not is_instance_valid(rival) or main_game.get("is_rival_cinematic_active") != true:
-			return
-		if rival.has_method("open_warp_portal"):
-			rival.open_warp_portal(func() -> void:
-				if not is_instance_valid(rival):
-					return
-				main_game.call("_trigger_pet_rival_jump_warning", rival, func() -> void:
-					if not is_instance_valid(rival):
-						return
-					var pl: Node2D = main_game.get("player") as Node2D
-					if is_instance_valid(pl) and "is_movement_suppressed" in pl:
-						pl.set("is_movement_suppressed", true)
-						pl.set("velocity", Vector2.ZERO)
-					# Salir del portal directamente
-					rival.emerge_from_portal(func() -> void:
-						if not is_instance_valid(rival):
-							return
-						rival.process_mode = Node.PROCESS_MODE_PAUSABLE
-						main_game.call("_trigger_rival_face_to_face_dialogue", rival)
-					)
-				)
-			)
-		else:
-			main_game.call("_trigger_rival_face_to_face_dialogue", rival)
+	health_bar_manager.bind_rival(
+		rival,
+		Callable(main_game, "_on_rival_spared"),
+		Callable(main_game, "_on_rival_engaged"),
+		Callable(main_game, "_on_rival_defeated")
 	)
-
-	main_game.get_tree().create_timer(18.0, true, false, true).timeout.connect(func() -> void:
-		if main_game.get("is_rival_cinematic_active") == true:
-			push_warning("[CINEMATIC WATCHDOG] Rival cinematic sequence timed out; recovering and starting encounter.")
-			main_game.call("_on_dialogue_skip_requested")
-	)
+	cinematic_sequence.play_rival_warp_sequence(rival)
 
 func spawn_allied_wingmen() -> void:
 	if not main_game or not is_instance_valid(main_game):
@@ -474,15 +402,8 @@ func spawn_elite_herald() -> void:
 	main_game.set("current_boss", herald)
 	main_game.add_child(herald)
 
-	var hud = main_game.get("hud")
-	var b_name: String = herald.boss_name
-	var b_hp: float = herald.max_health
-	if hud:
-		hud.show_boss(b_name, b_hp)
-	if herald.has_signal("health_changed") and hud:
-		herald.connect("health_changed", hud.update_boss_health)
-	if herald.has_signal("boss_defeated"):
-		herald.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
+	health_bar_manager.bind_boss(herald)
+	health_bar_manager.show_boss_bar(herald, herald.boss_name, herald.max_health)
 
 func jump_to_boss(boss_id: String) -> void:
 	CombatBossDebugJumperScript.jump_to_boss(main_game, self, boss_id)
@@ -529,17 +450,8 @@ func spawn_boss_by_id(boss_id: String, play_intro: bool = true) -> void:
 		main_game.set("current_boss", boss_node)
 		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
 		var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
-		var hud = main_game.get("hud")
-		if hud:
-			hud.show_boss(b_name, b_hp)
-			if hud.has_method("track_boss"):
-				hud.track_boss(boss_node, "JEFE")
-		if boss_node.has_signal("health_changed") and hud:
-			boss_node.connect("health_changed", hud.update_boss_health)
-		if boss_node.has_signal("phase_changed") and hud:
-			boss_node.connect("phase_changed", hud.set_boss_phase)
-		if boss_node.has_signal("boss_defeated"):
-			boss_node.connect("boss_defeated", Callable(main_game, "_on_boss_defeated"))
+		health_bar_manager.bind_boss(boss_node)
+		health_bar_manager.show_boss_bar(boss_node, b_name, b_hp, "JEFE")
 
 func jump_to_wave_16(route: String = "neutral") -> void:
 	CombatBossDebugJumperScript.jump_to_wave_16(main_game, self, route)
@@ -556,11 +468,8 @@ func on_rival_spared(p_id: StringName) -> void:
 		r_name = cur_rival.pilot_name
 	main_game.set("current_rival", null)
 
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("hide_boss"):
-		hud.hide_boss()
-	if hud and hud.has_method("show_character_unlock_banner"):
-		hud.show_character_unlock_banner(p_id, "PILOTO RESPETADA: " + r_name.to_upper(), "Has permitido que la piloto escape pacíficamente. Decisión registrada.")
+	health_bar_manager.hide_boss_bar()
+	health_bar_manager.show_character_unlock_banner(p_id, "PILOTO RESPETADA: " + r_name.to_upper(), "Has permitido que la piloto escape pacíficamente. Decisión registrada.")
 
 	var spawner: Node = main_game.get("enemy_spawner")
 	if spawner and spawner.has_method("set_spawning_paused"):
@@ -585,11 +494,7 @@ func on_rival_engaged(p_id: StringName) -> void:
 	if cur_rival:
 		var r_name: String = "DUELO: " + (cur_rival.pilot_name if "pilot_name" in cur_rival else String(p_id).to_upper())
 		var r_hp: float = float(cur_rival.get("max_health")) if "max_health" in cur_rival else 950.0
-		var hud = main_game.get("hud")
-		if hud:
-			hud.show_boss(r_name, r_hp)
-		if cur_rival.has_signal("health_changed") and hud:
-			cur_rival.connect("health_changed", hud.update_boss_health)
+		health_bar_manager.show_rival_duel(cur_rival, r_name, r_hp)
 
 func on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 	if not main_game or not is_instance_valid(main_game):
@@ -603,13 +508,8 @@ func on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
 		r_name = cur_rival.pilot_name
 	main_game.set("current_rival", null)
 
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("hide_boss"):
-		hud.hide_boss()
-	if hud and hud.has_method("show_rival_defeated_banner"):
-		hud.show_rival_defeated_banner(p_id, r_name)
-	elif hud and hud.has_method("show_character_unlock_banner"):
-		hud.show_character_unlock_banner(p_id, "RIVAL ELIMINADA: " + r_name.to_upper(), "Has neutralizado a " + r_name + ". Amenaza táctica disipada.")
+	health_bar_manager.hide_boss_bar()
+	health_bar_manager.show_rival_defeated_banner(p_id, r_name)
 
 	var spawner: Node = main_game.get("enemy_spawner")
 	if spawner and spawner.has_method("set_spawning_paused"):
@@ -624,13 +524,11 @@ func on_boss_defeated(_boss_id: String) -> void:
 	main_game.set("bosses_defeated_count", b_def_count)
 	main_game.set("current_boss", null)
 
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("hide_boss"):
-		hud.hide_boss()
+	health_bar_manager.hide_boss_bar()
 
 	var just_unlocked_nyx: bool = SaveManager.record_boss_kill()
-	if just_unlocked_nyx and hud and hud.has_method("show_character_unlock_banner"):
-		hud.show_character_unlock_banner(&"nyx", "¡NUEVO PILOTO DESBLOQUEADO: NYX!", "Has derrotado a 10 Jefes Titanes en tu Carrera espacial.")
+	if just_unlocked_nyx:
+		health_bar_manager.show_character_unlock_banner(&"nyx", "¡NUEVO PILOTO DESBLOQUEADO: NYX!", "Has derrotado a 10 Jefes Titanes en tu Carrera espacial.")
 
 	var spawner: Node = main_game.get("enemy_spawner")
 	if spawner and spawner.has_method("set_spawning_paused"):
