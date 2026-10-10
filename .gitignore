@@ -46,7 +46,6 @@ release/
 *.apk
 *.aab
 *.exe
-!AstraLauncher.exe
 *.pck
 *.dll
 *.so
