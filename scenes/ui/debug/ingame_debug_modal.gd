@@ -198,37 +198,13 @@ func _setup_spawns_tab() -> void:
 		spawn_monolith_btn.pressed.connect(_on_spawn_monolith_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_monolith_btn)
 
-	if boss_select_option:
-		boss_select_option.clear()
-		boss_select_option.add_item("Hermit Void (Cangrejo Ermitaño)", 0)
-		boss_select_option.set_item_metadata(0, "boss_hermit_void")
-		boss_select_option.add_item("Broken Mirror (Espejo Roto)", 1)
-		boss_select_option.set_item_metadata(1, "boss_broken_mirror")
-		boss_select_option.add_item("Ash Clockwork (Reloj de Ceniza)", 2)
-		boss_select_option.set_item_metadata(2, "boss_ash_clock")
-		boss_select_option.add_item("Overflow Vortex (Vórtice)", 3)
-		boss_select_option.set_item_metadata(3, "boss_overflow_vortex")
-		boss_select_option.add_item("Nave Nodriza (Mothership)", 4)
-		boss_select_option.set_item_metadata(4, "boss_mothership")
-		boss_select_option.add_item("Astra Prime (Coloso Final)", 5)
-		boss_select_option.set_item_metadata(5, "boss_astra_prime")
-		boss_select_option.add_item("Heraldo de Élite (Herald)", 6)
-		boss_select_option.set_item_metadata(6, "elite_herald")
+	IngameDebugLayoutBuilder.populate_boss_options(boss_select_option)
 
 	if spawn_boss_btn:
 		spawn_boss_btn.pressed.connect(_on_spawn_boss_pressed)
 		UIFocusHelper.apply_cyber_focus(spawn_boss_btn)
 
-	if rival_select_option:
-		rival_select_option.clear()
-		rival_select_option.add_item("Siguiente en Cola Narrativa", 0)
-		rival_select_option.set_item_metadata(0, "")
-		rival_select_option.add_item("Aethelgard", 1)
-		rival_select_option.set_item_metadata(1, "aethelgard")
-		rival_select_option.add_item("Valkyrie", 2)
-		rival_select_option.set_item_metadata(2, "valkyrie")
-		rival_select_option.add_item("Seraph", 3)
-		rival_select_option.set_item_metadata(3, "seraph")
+	IngameDebugLayoutBuilder.populate_rival_options(rival_select_option)
 
 	if spawn_rival_btn:
 		spawn_rival_btn.pressed.connect(_on_spawn_rival_pressed)

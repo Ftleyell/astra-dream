@@ -17,6 +17,7 @@ const RivalFlightMotorScript = preload("res://scenes/combat/bosses/components/ri
 const RivalWarpPresenterScript = preload("res://scenes/combat/bosses/rival_warp_presenter.gd")
 const RivalCombatPatternExecutorScript = preload("res://scenes/combat/bosses/rival_combat_pattern_executor.gd")
 const CinematicDeathSequenceScript = preload("res://scenes/combat/bosses/cinematic_death_sequence.gd")
+const RivalVisualBuilderScript = preload("res://scenes/combat/bosses/rival_visual_builder.gd")
 
 enum State {
 	WARPING_IN,
@@ -179,94 +180,10 @@ func _acquire_references() -> void:
 			bullet_server = get_parent().get_node_or_null("BulletServer") as BulletServer
 
 func _setup_visuals() -> void:
-	if not ship_sprite:
-		ship_sprite = Sprite2D.new()
-		ship_sprite.name = "ShipSprite"
-		ship_sprite.scale = Vector2(0.42, 0.42)
-		ship_sprite.z_index = 2
-		add_child(ship_sprite)
-
-	var tex: Texture2D = character_data.get_ship_texture() if character_data else null
-	if not tex:
-		var fb_path := "res://assets/characters/ships/ship_nova.png"
-		if ResourceLoader.exists(fb_path):
-			tex = load(fb_path) as Texture2D
-	ship_sprite.texture = tex
-
-	var flight_mat := ShaderMaterial.new()
-	flight_mat.shader = preload("res://shaders/exo_pilot_flight.gdshader")
-	var theme_col: Color = PILOT_THEME_COLORS.get(pilot_id, Color(0.0, 0.9, 1.0))
-	var sec_col: Color = Color.from_hsv(wrapf(theme_col.h + 0.15, 0.0, 1.0), 0.7, 1.1)
-	flight_mat.set_shader_parameter("primary_color", theme_col)
-	flight_mat.set_shader_parameter("secondary_color", sec_col)
-	flight_mat.set_shader_parameter("thrust_intensity", 0.5)
-
-	var noise_res: Resource = preload("res://shaders/flame_noise.tres")
-	if noise_res:
-		flight_mat.set_shader_parameter("noise_texture", noise_res)
-
-	var mask_tex: Texture2D = character_data.get_ship_mask() if character_data and character_data.has_method("get_ship_mask") else null
-	if not mask_tex:
-		var mask_path := "res://assets/characters/ships/ship_%s_mask.png" % str(pilot_id).to_lower()
-		if ResourceLoader.exists(mask_path):
-			mask_tex = load(mask_path) as Texture2D
-
-	if mask_tex:
-		flight_mat.set_shader_parameter("has_mask", true)
-		flight_mat.set_shader_parameter("mask_texture", mask_tex)
-		if character_data:
-			flight_mat.set_shader_parameter("hair_dir", character_data.hair_direction)
-			flight_mat.set_shader_parameter("wave_freq", character_data.hair_wave_frequency)
-			flight_mat.set_shader_parameter("hair_amp", character_data.hair_amplitude)
-		flight_mat.set_shader_parameter("enable_thrusters", true)
-	else:
-		flight_mat.set_shader_parameter("has_mask", false)
-		flight_mat.set_shader_parameter("enable_thrusters", false)
-	ship_sprite.material = flight_mat
-
-	var existing_col := get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if existing_col and existing_col.shape is CircleShape2D:
-		(existing_col.shape as CircleShape2D).radius = 18.0
-	elif not existing_col:
-		var col := CollisionShape2D.new()
-		var circle := CircleShape2D.new()
-		circle.radius = 18.0
-		col.shape = circle
-		add_child(col)
-
-	warning_label = Label.new()
-	warning_label.name = "WarningLabel"
-	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	warning_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	warning_label.position = Vector2(-200, -85)
-	warning_label.size = Vector2(400, 30)
-	warning_label.z_index = 3
-	warning_label.add_theme_font_size_override("font_size", 13)
-	add_child(warning_label)
-
-	if not combat_danger_ring:
-		combat_danger_ring = Sprite2D.new()
-		combat_danger_ring.name = "CombatDangerRing"
-		var ring_path := "res://assets/sprites/effects/rival_danger_projection.png"
-		var ring_tex: Texture2D = null
-		if ResourceLoader.exists(ring_path):
-			ring_tex = load(ring_path) as Texture2D
-		if not ring_tex:
-			var global_path := ProjectSettings.globalize_path(ring_path)
-			if FileAccess.file_exists(global_path):
-				var img := Image.new()
-				if img.load(global_path) == OK:
-					ring_tex = ImageTexture.create_from_image(img)
-		combat_danger_ring.texture = ring_tex
-		var mat := CanvasItemMaterial.new()
-		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-		combat_danger_ring.material = mat
-		var target_scale: float = (COMBAT_TRIGGER_RADIUS * 2.0) / (906.0 * scale.x)
-		combat_danger_ring.scale = Vector2(target_scale, target_scale)
-		combat_danger_ring.modulate = Color(1.0, 0.25, 0.3, 0.65)
-		combat_danger_ring.z_index = -2
-		add_child(combat_danger_ring)
-
+	ship_sprite = RivalVisualBuilderScript.setup_ship_sprite(self, character_data, pilot_id, PILOT_THEME_COLORS)
+	RivalVisualBuilderScript.setup_collision_shape(self)
+	warning_label = RivalVisualBuilderScript.setup_warning_label(self)
+	combat_danger_ring = RivalVisualBuilderScript.setup_danger_ring(self, COMBAT_TRIGGER_RADIUS)
 	_update_warning_label()
 
 func _update_warning_label() -> void:

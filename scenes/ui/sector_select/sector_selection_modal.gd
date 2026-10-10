@@ -7,6 +7,7 @@ extends CanvasLayer
 
 signal sector_selected(sector_id: StringName)
 signal closed()
+const SectorDossierPresenter = preload("res://scenes/ui/sector_select/sector_dossier_presenter.gd")
 
 const COLOR_DEEP_BLACK := Color("#0A0A0E")
 const COLOR_HOT_PINK := Color("#FF1493")
@@ -289,74 +290,22 @@ func _display_current_sector(animate: bool = true, slide_direction: int = 0) -> 
 			center_frame.add_theme_stylebox_override("panel", sb_dup)
 
 	# 4. Dossier Identity
-	if sector_name_label:
-		sector_name_label.text = sector.display_name.to_upper()
-		sector_name_label.add_theme_color_override("font_color", theme_col if is_unlocked else Color(0.6, 0.65, 0.75))
-		if animate:
-			sector_name_label.pivot_offset = Vector2(0, sector_name_label.size.y * 0.5)
-			var tw_name := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tw_name.tween_property(sector_name_label, "scale", Vector2(1.08, 1.08), 0.06)
-			tw_name.tween_property(sector_name_label, "scale", Vector2.ONE, 0.12)
-
-	if title_label:
-		title_label.text = sector.title.to_upper()
-
-	if status_badge:
-		if is_selected:
-			status_badge.text = "[✓ RUTA ACTIVA]"
-			status_badge.add_theme_color_override("font_color", COLOR_EMERALD)
-		elif is_unlocked:
-			status_badge.text = "[DISPONIBLE]"
-			status_badge.add_theme_color_override("font_color", COLOR_CYAN)
-		else:
-			status_badge.text = "[🔒 BLOQUEADO]"
-			status_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
-
-	if desc_label:
-		desc_label.text = sector.description
+	SectorDossierPresenter.update_dossier_identity(
+		sector, is_unlocked, is_selected,
+		sector_name_label, title_label, status_badge, desc_label, animate
+	)
 
 	# 5. Modifiers Grid
-	if density_val:
-		density_val.text = "x%.2f" % sector.enemy_density_mult
-		density_val.add_theme_color_override("font_color", COLOR_HOT_PINK if sector.enemy_density_mult > 1.2 else COLOR_CYAN)
-	if biomass_val:
-		biomass_val.text = "+%.0f%%" % ((sector.biomass_mult - 1.0) * 100.0) if sector.biomass_mult != 1.0 else "Estándar (1.0x)"
-		biomass_val.add_theme_color_override("font_color", COLOR_EMERALD)
-	if dark_matter_val:
-		dark_matter_val.text = "+%.0f%%" % ((sector.dark_matter_mult - 1.0) * 100.0) if sector.dark_matter_mult != 1.0 else "Estándar (1.0x)"
-		dark_matter_val.add_theme_color_override("font_color", COLOR_DARK_MATTER)
-	if credits_val:
-		credits_val.text = "+%.0f%%" % ((sector.credits_mult - 1.0) * 100.0) if sector.credits_mult != 1.0 else "Estándar (1.0x)"
-		credits_val.add_theme_color_override("font_color", COLOR_AMBER)
-	if arcana_val:
-		arcana_val.text = "+%.0f%%" % ((sector.arcana_chance_mult - 1.0) * 100.0) if sector.arcana_chance_mult != 1.0 else "Normal (1.0x)"
-		arcana_val.add_theme_color_override("font_color", COLOR_CYAN)
-	if hazard_val:
-		hazard_val.text = "Alerta Rival Nv. %d" % sector.rival_encounter_wave
-	if hazard_warning:
-		hazard_warning.text = sector.rival_warning_subtitle
+	SectorDossierPresenter.update_modifiers_grid(
+		sector,
+		density_val, biomass_val, dark_matter_val,
+		credits_val, arcana_val, hazard_val, hazard_warning
+	)
 
-	# 6. Rival Pilot Intelligence
-	if rival_name:
-		rival_name.text = String(sector.rival_pilot_id).to_upper()
-	if rival_wave_alert:
-		rival_wave_alert.text = "Intercepción programada: Oleada %d" % sector.rival_encounter_wave
-
-	if rival_portrait:
-		var roster := CharacterData.load_roster()
-		var rival_char: CharacterData = roster.get(sector.rival_pilot_id, null)
-		if rival_char and rival_char.has_method("get_portrait_texture"):
-			rival_portrait.texture = rival_char.get_portrait_texture()
-		elif rival_char and rival_char.portrait_texture:
-			rival_portrait.texture = rival_char.portrait_texture
-
-	# 7. Stellar Rewards
-	if currencies_label:
-		currencies_label.text = "+%d BioMasa | +%d Mat. Oscura | +%d Antimateria" % [
-			sector.reward_biomass,
-			sector.reward_dark_matter,
-			sector.reward_antimatter
-		]
+	# 6. Rival Pilot Intelligence & 7. Stellar Rewards
+	SectorDossierPresenter.update_rival_and_rewards(
+		sector, rival_name, rival_wave_alert, rival_portrait, currencies_label
+	)
 
 	# 8. Action Buttons
 	if select_btn:

@@ -1,6 +1,8 @@
 class_name SatelliteShopCardBuilder
 extends RefCounted
 
+const SatelliteShopStyleProvider = preload("res://scenes/combat/satellite/components/satellite_shop_style_provider.gd")
+
 ## SatelliteShopCardBuilder.gd
 ## Creador procedural de cartas de ítems y armas en la tienda de satélites:
 ## - Aplica estilos translúcidos cyberpunk según la rareza.
@@ -8,30 +10,12 @@ extends RefCounted
 ## - Conecta hover y focus con el panel de estadísticas para previsualización inmediata.
 
 static func apply_panel_styles(panel: Panel, inventory_side_panel: PanelContainer) -> void:
-	if panel:
-		var shop_style := StyleBoxFlat.new()
-		shop_style.bg_color = Color(0.04, 0.06, 0.1, 0.96)
-		shop_style.set_border_width_all(2)
-		shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
-		shop_style.set_corner_radius_all(12)
-		shop_style.set_content_margin_all(14.0)
-		panel.add_theme_stylebox_override("panel", shop_style)
-
-	if inventory_side_panel:
-		var inv_style := StyleBoxFlat.new()
-		inv_style.bg_color = Color(0.02, 0.03, 0.06, 0.98)
-		inv_style.set_border_width_all(1)
-		inv_style.border_width_right = 3
-		inv_style.border_color = Color(0.2, 0.7, 1.0, 0.9)
-		inv_style.set_corner_radius_all(8)
-		inv_style.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
-		inv_style.shadow_size = 8
-		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
+	SatelliteShopStyleProvider.apply_panel_styles(panel, inventory_side_panel)
 
 
 static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop) -> Control:
 	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
-	var rarity_color: Color = _get_rarity_color(entry_rarity)
+	var rarity_color: Color = SatelliteShopStyleProvider.get_rarity_color(entry_rarity)
 
 	var player: Player = shop.player
 	var is_weapon_upgrade: bool = false
@@ -57,34 +41,12 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	card.add_theme_color_override("font_pressed_color", Color.TRANSPARENT)
 	card.add_theme_color_override("font_disabled_color", Color.TRANSPARENT)
 
-	var base_style := StyleBoxFlat.new()
-	base_style.bg_color = Color(0.06, 0.08, 0.13, 0.92)
-	base_style.set_border_width_all(2)
-	base_style.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.6)
-	base_style.set_corner_radius_all(8)
-	base_style.set_content_margin_all(8.0)
-	card.add_theme_stylebox_override("normal", base_style)
-
-	var hover_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
-	hover_style.bg_color = Color(0.10, 0.14, 0.22, 0.96)
-	hover_style.border_color = rarity_color.lightened(0.25)
-	card.add_theme_stylebox_override("hover", hover_style)
-
-	var pressed_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
-	pressed_style.bg_color = Color(0.04, 0.05, 0.08, 0.98)
-	pressed_style.border_color = rarity_color
-	card.add_theme_stylebox_override("pressed", pressed_style)
-
-	var focus_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
-	focus_style.border_color = Color(0.0, 0.95, 1.0, 0.95)
-	focus_style.set_border_width_all(2)
-	card.add_theme_stylebox_override("focus", focus_style)
-
-	var disabled_style: StyleBoxFlat = base_style.duplicate() as StyleBoxFlat
-	disabled_style.bg_color = Color(0.03, 0.04, 0.06, 0.6)
-	disabled_style.border_color = Color(0.3, 0.3, 0.3, 0.4)
-	disabled_style.set_border_width_all(1)
-	card.add_theme_stylebox_override("disabled", disabled_style)
+	var card_styles: Dictionary = SatelliteShopStyleProvider.create_card_button_styles(rarity_color)
+	card.add_theme_stylebox_override("normal", card_styles["normal"])
+	card.add_theme_stylebox_override("hover", card_styles["hover"])
+	card.add_theme_stylebox_override("pressed", card_styles["pressed"])
+	card.add_theme_stylebox_override("focus", card_styles["focus"])
+	card.add_theme_stylebox_override("disabled", card_styles["disabled"])
 
 	var card_margin := MarginContainer.new()
 	card_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -265,33 +227,11 @@ static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop
 	buy_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	buy_btn.focus_mode = Control.FOCUS_ALL
 
-	var buy_btn_normal := StyleBoxFlat.new()
-	buy_btn_normal.bg_color = Color(0.08, 0.12, 0.20, 0.92)
-	buy_btn_normal.set_border_width_all(1)
-	buy_btn_normal.border_color = rarity_color * Color(1.0, 1.0, 1.0, 0.7)
-	buy_btn_normal.set_corner_radius_all(6)
-	buy_btn_normal.set_content_margin_all(4.0)
-	buy_btn.add_theme_stylebox_override("normal", buy_btn_normal)
-
-	var buy_btn_hover := StyleBoxFlat.new()
-	buy_btn_hover.bg_color = Color(0.14, 0.22, 0.35, 1.0)
-	buy_btn_hover.set_border_width_all(2)
-	buy_btn_hover.border_color = rarity_color
-	buy_btn_hover.set_corner_radius_all(6)
-	buy_btn_hover.set_content_margin_all(4.0)
-	buy_btn.add_theme_stylebox_override("hover", buy_btn_hover)
-
-	var buy_btn_focus := buy_btn_hover.duplicate() as StyleBoxFlat
-	buy_btn_focus.border_color = Color(0.0, 0.95, 1.0, 1.0)
-	buy_btn.add_theme_stylebox_override("focus", buy_btn_focus)
-
-	var buy_btn_disabled := StyleBoxFlat.new()
-	buy_btn_disabled.bg_color = Color(0.04, 0.05, 0.08, 0.7)
-	buy_btn_disabled.border_color = Color(0.3, 0.3, 0.3, 0.5)
-	buy_btn_disabled.set_border_width_all(1)
-	buy_btn_disabled.set_corner_radius_all(6)
-	buy_btn_disabled.set_content_margin_all(4.0)
-	buy_btn.add_theme_stylebox_override("disabled", buy_btn_disabled)
+	var buy_styles: Dictionary = SatelliteShopStyleProvider.create_buy_button_styles(rarity_color)
+	buy_btn.add_theme_stylebox_override("normal", buy_styles["normal"])
+	buy_btn.add_theme_stylebox_override("hover", buy_styles["hover"])
+	buy_btn.add_theme_stylebox_override("focus", buy_styles["focus"])
+	buy_btn.add_theme_stylebox_override("disabled", buy_styles["disabled"])
 
 	# Contenido interno del botón: Icono de crédito + Cifra de precio
 	var btn_margin := MarginContainer.new()
@@ -469,17 +409,3 @@ static func _set_mouse_filter_ignore_recursive(node: Node) -> void:
 			if not (c is Button):
 				c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_set_mouse_filter_ignore_recursive(child)
-
-
-static func _get_rarity_color(rarity: Enums.Rarity) -> Color:
-	match rarity:
-		Enums.Rarity.COMMON:
-			return Color(0.5, 0.8, 1.0, 0.95)
-		Enums.Rarity.UNCOMMON:
-			return Color(0.2, 0.95, 0.4, 0.95)
-		Enums.Rarity.RARE:
-			return Color(1.0, 0.8, 0.15, 1.0)
-		Enums.Rarity.LEGENDARY:
-			return Color(0.9, 0.3, 1.0, 1.0)
-		_:
-			return Color.WHITE

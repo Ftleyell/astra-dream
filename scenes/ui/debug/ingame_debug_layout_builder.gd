@@ -99,3 +99,37 @@ static func populate_wave_jump_buttons(
 		)
 		UIFocusHelperScript.apply_cyber_focus(btn)
 		parent_container.add_child(btn)
+
+
+static func populate_boss_options(boss_option: OptionButton) -> void:
+	if not boss_option:
+		return
+	boss_option.clear()
+	boss_option.add_item("Hermit Void (Cangrejo Ermitaño)", 0)
+	boss_option.set_item_metadata(0, "boss_hermit_void")
+	boss_option.add_item("Broken Mirror (Espejo Roto)", 1)
+	boss_option.set_item_metadata(1, "boss_broken_mirror")
+	boss_option.add_item("Ash Clockwork (Reloj de Ceniza)", 2)
+	boss_option.set_item_metadata(2, "boss_ash_clock")
+	boss_option.add_item("Overflow Vortex (Vórtice)", 3)
+	boss_option.set_item_metadata(3, "boss_overflow_vortex")
+	boss_option.add_item("Nave Nodriza (Mothership)", 4)
+	boss_option.set_item_metadata(4, "boss_mothership")
+	boss_option.add_item("Astra Prime (Coloso Final)", 5)
+	boss_option.set_item_metadata(5, "boss_astra_prime")
+	boss_option.add_item("Heraldo de Élite (Herald)", 6)
+	boss_option.set_item_metadata(6, "elite_herald")
+
+
+static func populate_rival_options(rival_option: OptionButton) -> void:
+	if not rival_option:
+		return
+	rival_option.clear()
+	rival_option.add_item("Siguiente en Cola Narrativa", 0)
+	rival_option.set_item_metadata(0, "")
+	rival_option.add_item("Aethelgard", 1)
+	rival_option.set_item_metadata(1, "aethelgard")
+	rival_option.add_item("Valkyrie", 2)
+	rival_option.set_item_metadata(2, "valkyrie")
+	rival_option.add_item("Seraph", 3)
+	rival_option.set_item_metadata(3, "seraph")
