@@ -49,16 +49,16 @@ Este documento organiza la refactorización en **sesiones atómicas independient
 
 **Objetivo:** Reducir `slot_machine_beacon.gd` (~450 líneas) separando la física de bumper del display arcade y del cálculo de premios.
 
-- [ ] **Paso 3.1:** Crear `scenes/combat/satellite/components/slot_machine_marquee_display.gd` (`class_name SlotMachineMarqueeDisplay`):
+- [X] **Paso 3.1:** Crear `scenes/combat/satellite/components/slot_machine_marquee_display.gd` (`class_name SlotMachineMarqueeDisplay`):
   - Encapsular la creación de labels flotantes del marquee, los tweens de animación de los 3 rodillos y los efectos de texto/flash.
-- [ ] **Paso 3.2:** Crear `scenes/combat/satellite/components/slot_machine_payout_engine.gd` (`class_name SlotMachinePayoutEngine`):
+- [X] **Paso 3.2:** Crear `scenes/combat/satellite/components/slot_machine_payout_engine.gd` (`class_name SlotMachinePayoutEngine`):
   - Lógica pura de evaluación de resultados (3 iguales, pares, combinaciones de símbolos) y spawneo de recompensas (blobs de exp, ítems, curación).
-- [ ] **Paso 3.3:** Refactorizar `scenes/combat/satellite/slot_machine_beacon.gd`:
+- [X] **Paso 3.3:** Refactorizar `scenes/combat/satellite/slot_machine_beacon.gd`:
   - Queda como un nodo físico de ~100-120 líneas: colisión `bump`, radio de activación y despacho de eventos.
-- [ ] **Paso 3.4:** Validar en runtime/tests que la interacción bumper siga funcionando idénticamente.
-- [ ] **Paso 3.5:** Marcar esta sesión como `[X] RESUELTO` y realizar commit atómico.
+- [X] **Paso 3.4:** Validar en runtime/tests que la interacción bumper siga funcionando idénticamente.
+- [X] **Paso 3.5:** Marcar esta sesión como `[X] RESUELTO` y realizar commit atómico.
 
-**Estado Sesión 3:** `PENDIENTE`
+**Estado Sesión 3:** `RESUELTO`
 
 ---
 
