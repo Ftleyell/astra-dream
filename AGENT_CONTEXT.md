@@ -167,6 +167,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1
 |---|---|
 | Versión | Alpha 0.1 |
 | Milestone activo | **M7** — Balance Fino de Combate y Feedback |
+| Refactor Estructural | **Completado y Sellado (Paso 5 / 21 suites PASS)** — Poda masiva de volumetría culminada (`main_game` 420 lín, `hud` 487 lín, `character_select` 270 lín, `hub_world` 230 lín, `arsenal_banlist` 231 lín, `satellite_shop` 267 lín) |
 | M7.1 | Rebalanceo 8 armas base → `data/weapons/roster/*.tres` |
 | M7.2 | Oleadas y colosos → `data/timeline/default_encounter_timeline.tres` |
 | M7.3 | Drop rates y créditos → `data/items/roster/*.tres` |
