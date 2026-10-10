@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/ui/sandbox_telemetry_hud.gd" id="1_hud"]
+
+[node name="SandboxTelemetryHud" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_hud")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 380.0
+offset_bottom = 220.0
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="MetricsLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "=== SANDBOX COSMIC TELEMETRY ===
+FPS: 60  |  Draw Calls: 0  |  VRAM: 0 MB
+--------------------------------
+Logical Pos: (0.0, 0.0)
+Floating Origin: (0.0, 0.0)
+Local Actor Pos: (0.0, 0.0) | Speed: 0.0 u/s
+--------------------------------
+Sector Coords: [0, 0] (Active Sectors: 0)
+Active Celestial Systems: 0
+GPU Debris Count (1 Call): 0"
+
+[node name="ControlsLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.85, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "[WASD / Flechas] Piloto  |  [SHIFT] Turbo
+[Rueda Ratón] Zoom  |  [R] Reset  |  [ESC] Salir"
