@@ -39,17 +39,28 @@ var _is_transitioning: bool = false
 var _idle_time: float = 0.0
 
 # Acceso delegado para tests
-var sprite_nodes: Array[Sprite3D]: get: return showcase_controller.sprite_nodes if showcase_controller else []
-var pilot_vfx_data: Array[Dictionary]: get: return showcase_controller.pilot_vfx_data if showcase_controller else []
-var interactable_nodes: Array[HubInteractable3D]: get: return showcase_controller.interactable_nodes if showcase_controller else []
-var trophy_modal: TrophyDetailsModal: get: return trophy_manager.trophy_modal if trophy_manager else null
-var trophy_holo_nodes: Array[MeshInstance3D]: get: return trophy_manager.trophy_holo_nodes if trophy_manager else []
-var gacha_modal: CanvasLayer: get: return terminal_manager.gacha_modal if terminal_manager else null
-var highscores_modal: CanvasLayer: get: return terminal_manager.highscores_modal if terminal_manager else null
-var mission_interactable: HubInteractable3D: get: return terminal_manager.mission_interactable if terminal_manager else null
-var highscores_interactable: HubInteractable3D: get: return terminal_manager.highscores_interactable if terminal_manager else null
-var gacha_holo: MeshInstance3D: get: return terminal_manager.gacha_holo if terminal_manager else null
-var gacha_interactable: HubInteractable3D: get: return terminal_manager.gacha_interactable if terminal_manager else null
+var sprite_nodes: Array[Sprite3D]:
+	get: return showcase_controller.sprite_nodes if showcase_controller else []
+var pilot_vfx_data: Array[Dictionary]:
+	get: return showcase_controller.pilot_vfx_data if showcase_controller else []
+var interactable_nodes: Array[HubInteractable3D]:
+	get: return showcase_controller.interactable_nodes if showcase_controller else []
+var trophy_modal: TrophyDetailsModal:
+	get: return trophy_manager.trophy_modal if trophy_manager else null
+var trophy_holo_nodes: Array[MeshInstance3D]:
+	get: return trophy_manager.trophy_holo_nodes if trophy_manager else []
+var gacha_modal: CanvasLayer:
+	get: return terminal_manager.gacha_modal if terminal_manager else null
+var highscores_modal: CanvasLayer:
+	get: return terminal_manager.highscores_modal if terminal_manager else null
+var mission_interactable: HubInteractable3D:
+	get: return terminal_manager.mission_interactable if terminal_manager else null
+var highscores_interactable: HubInteractable3D:
+	get: return terminal_manager.highscores_interactable if terminal_manager else null
+var gacha_holo: MeshInstance3D:
+	get: return terminal_manager.gacha_holo if terminal_manager else null
+var gacha_interactable: HubInteractable3D:
+	get: return terminal_manager.gacha_interactable if terminal_manager else null
 
 @onready var parallax_near: MeshInstance3D = get_node_or_null("SpaceParallax/Layer2_Near")
 @onready var parallax_mid: MeshInstance3D = get_node_or_null("SpaceParallax/Layer1_Mid")

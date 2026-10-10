@@ -22,6 +22,7 @@ const CombatPlayerFeedbackCoordinatorScript = preload("res://scenes/combat/syste
 const CombatExpBatchOptimizerScript = preload("res://scenes/combat/systems/combat_exp_batch_optimizer.gd")
 const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_satellite_coordinator.gd")
 const CombatLootCoordinator = preload("res://scenes/combat/systems/combat_loot_coordinator.gd")
+const SpaceEnvironmentHostScript = preload("res://scenes/combat/environment/space_environment_host.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -34,6 +35,7 @@ var space_debris_manager: RefCounted = CombatSpaceDebrisManagerScript.new()
 var feedback_coordinator: RefCounted = CombatPlayerFeedbackCoordinatorScript.new()
 var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
+var environment_host: Node = SpaceEnvironmentHostScript.new()
 var loot_coordinator: CombatLootCoordinator = null
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null

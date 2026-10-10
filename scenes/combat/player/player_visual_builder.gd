@@ -209,6 +209,17 @@ func setup_hitbox_core_visuals(hitbox_core: Node2D) -> void:
 			poly.add_child(ring)
 
 
+func setup_aim_mode_indicator(player: CharacterBody2D) -> void:
+	if not player or player.get_node_or_null("AimModeIndicator"):
+		return
+	var aim_ind_scene := preload("res://scenes/combat/player/aim_mode_indicator.tscn")
+	if aim_ind_scene:
+		var ind: Node2D = aim_ind_scene.instantiate() as Node2D
+		ind.name = "AimModeIndicator"
+		ind.position = Vector2(0, 26)
+		player.add_child(ind)
+
+
 ## Sincroniza la rotación de todos los sprites del jugador durante el Omega Spin.
 ## Extraído de Player.update_omega_spin_rotation().
 func update_omega_spin_rotation(player: CharacterBody2D, angle: float) -> void:

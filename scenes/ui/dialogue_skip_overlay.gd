@@ -95,13 +95,13 @@ func _execute_skip() -> void:
 	if CinematicDeathSequence.is_sequence_active:
 		return
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 1.8, 1.2)
 
 	skip_requested.emit()
 
-	var dialogic = get_node_or_null("/root/Dialogic")
+	var dialogic: Node = get_node_or_null("/root/Dialogic")
 	if dialogic and dialogic.has_method("end_timeline"):
 		dialogic.end_timeline(true)
 

@@ -165,6 +165,11 @@ static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) ->
 	pipe.register_subsystem(main_game.satellite_coordinator)
 	pipe.register_subsystem(main_game.loot_coordinator)
 	pipe.register_subsystem(main_game.narrative_director)
+	if main_game.environment_host:
+		if not main_game.environment_host.is_inside_tree():
+			main_game.environment_host.name = "SpaceEnvironmentHost"
+			main_game.add_child(main_game.environment_host)
+		pipe.register_subsystem(main_game.environment_host)
 
 	main_game.last_anchor_pos = player.global_position
 	main_game.process_mode = Node.PROCESS_MODE_ALWAYS

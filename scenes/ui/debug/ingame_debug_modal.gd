@@ -470,68 +470,34 @@ func _sync_toggles_with_state() -> void:
 
 
 func _populate_stats_sliders() -> void:
-	if not stats_scroll_list or not _stat_sliders.is_empty():
-		return
+	IngameDebugLayoutBuilder.populate_stats_sliders(
+		stats_scroll_list,
+		_stat_sliders,
+		DebugManager.STAT_CONFIGS,
+		_on_stat_slider_changed
+	)
 
-	for stat_name in DebugManager.STAT_CONFIGS.keys():
-		var cfg: Dictionary = DebugManager.STAT_CONFIGS[stat_name]
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 12)
 
-		var lbl := Label.new()
-		lbl.text = cfg.name
-		lbl.custom_minimum_size = Vector2(170, 24)
-		lbl.add_theme_font_size_override("font_size", 12)
-		row.add_child(lbl)
-
-		var slider := HSlider.new()
-		slider.min_value = cfg.min
-		slider.max_value = cfg.max
-		slider.step = cfg.step
-		slider.value = cfg.default
-		slider.custom_minimum_size = Vector2(200, 24)
-		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(slider)
-
-		var val_lbl := Label.new()
-		val_lbl.custom_minimum_size = Vector2(60, 24)
-		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		val_lbl.add_theme_font_size_override("font_size", 12)
-		val_lbl.text = cfg.format % slider.value
-		row.add_child(val_lbl)
-
-		var current_stat: StringName = stat_name
-		slider.value_changed.connect(func(new_val: float):
-			val_lbl.text = cfg.format % new_val
-			DebugManager.set_stat_override(current_stat, new_val)
-			if main_game and is_instance_valid(main_game.get("player")):
-				var p: Player = main_game.player
-				if p.stats:
-					p.stats._base_stats[current_stat] = new_val
-					p.stats._is_dirty[current_stat] = true
-					if current_stat == &"max_health":
-						p.current_health = new_val
-						p.health_changed.emit(p.current_health, new_val)
-		)
-
-		_stat_sliders[stat_name] = { "slider": slider, "label": val_lbl }
-		stats_scroll_list.add_child(row)
+func _on_stat_slider_changed(current_stat: StringName, new_val: float) -> void:
+	DebugManager.set_stat_override(current_stat, new_val)
+	if main_game and is_instance_valid(main_game.get("player")):
+		var p: Player = main_game.player
+		if p.stats:
+			p.stats._base_stats[current_stat] = new_val
+			p.stats._is_dirty[current_stat] = true
+			if current_stat == &"max_health":
+				p.current_health = new_val
+				p.health_changed.emit(p.current_health, new_val)
 
 
 # ─── PESTAÑA 3: ARSENAL & ITEMS ───────────────────────────────────────────────
 
 func _setup_arsenal_tab() -> void:
-	if weapons_grid:
-		for wep in AVAILABLE_WEAPONS:
-			var btn := Button.new()
-			btn.text = "+ " + wep.name
-			btn.custom_minimum_size = Vector2(180, 36)
-			btn.add_theme_font_size_override("font_size", 12)
-			var wep_path: String = wep.path
-			var wep_name: String = wep.name
-			btn.pressed.connect(func(): _inject_weapon(wep_path, wep_name))
-			UIFocusHelper.apply_cyber_focus(btn)
-			weapons_grid.add_child(btn)
+	IngameDebugLayoutBuilder.populate_weapon_buttons(
+		weapons_grid,
+		AVAILABLE_WEAPONS,
+		_inject_weapon
+	)
 
 	if upgrade_all_weps_btn:
 		upgrade_all_weps_btn.pressed.connect(_on_upgrade_all_weapons_pressed)
@@ -604,17 +570,12 @@ func _on_open_arcana_modal_pressed() -> void:
 # ─── PESTAÑA 4: OLEADAS & CRISIS ──────────────────────────────────────────────
 
 func _setup_waves_tab() -> void:
-	var milestone_waves := [1, 3, 5, 8, 11, 14, 16, 20]
-	if wave_btns_container:
-		for w in milestone_waves:
-			var btn := Button.new()
-			btn.text = "Oleada %d" % w
-			btn.custom_minimum_size = Vector2(85, 34)
-			btn.add_theme_font_size_override("font_size", 12)
-			var wave_num: int = w
-			btn.pressed.connect(func(): _jump_to_wave(wave_num))
-			UIFocusHelper.apply_cyber_focus(btn)
-			wave_btns_container.add_child(btn)
+	var milestone_waves: Array[int] = [1, 3, 5, 8, 11, 14, 16, 20]
+	IngameDebugLayoutBuilder.populate_wave_jump_buttons(
+		wave_btns_container,
+		milestone_waves,
+		_jump_to_wave
+	)
 
 	if add_30s_btn:
 		add_30s_btn.pressed.connect(func():

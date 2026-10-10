@@ -50,6 +50,9 @@
 | Controlador maestro de armas | `scenes/combat/player/weapon_controller.gd` | Orquestador de arsenal y equipamiento |
 | Autoaim y adquisición de blancos 2D | `scenes/combat/player/combat_targeting_system.gd` | Priorización de blancos, toggle manual y stutter field |
 | Tracker de cooldowns y carga láser | `scenes/combat/player/weapon_cooldown_tracker.gd` | Cooldowns activos/pasivos, carga continua y memoria |
+| Secuencia cinemática de muerte de jugador | `scenes/combat/player/player_death_sequence_controller.gd` | Explosiones escalonadas, VFX y despacho de fin de partida |
+| Host y backend desacoplado de fondo cósmico | `scenes/combat/environment/space_environment_host.gd` | Subsistema CombatSubsystem Plug & Play de fondo espacial |
+| Contrato base de entorno cósmico | `scenes/combat/environment/base_space_environment.gd` | Contrato polimórfico para backends espaciales |
 | Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
 | Satélites orbitales y estaciones (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | Orquestador satelital |
 | Odómetro de vuelo espacial | `scenes/combat/satellite/components/satellite_odometer.gd` | Tracking de distancia pura |
@@ -73,13 +76,15 @@
 | Navegación y hotkeys de tienda satelital | `scenes/combat/satellite/components/satellite_shop_navigation_controller.gd` | Despacho de inputs, teclado/pad y atajos numéricos |
 | Economía y ofertas de tienda satelital | `scenes/combat/satellite/components/satellite_shop_economy_controller.gd` | Rerolls, límites de stacks y roll algorithm |
 | Tarjetas de tienda | `scenes/combat/satellite/components/satellite_shop_card_builder.gd` | — |
-| Gacha modal | `scenes/ui/gacha/gacha_modal.gd` | — |
+| Gacha modal | `scenes/ui/gacha/gacha_modal.gd` | Orquestador de gacha desacoplado |
+| Layout de modal de gacha | `scenes/ui/gacha/components/gacha_modal_layout_builder.gd` | Construcción de banners, viewport 3D y botones |
 | Motor probabilístico y banners de gacha | `scenes/ui/gacha/components/gacha_banner_engine.gd` | Pity garantizado, pools temáticos y rarezas |
 | Matriz de stats en pausa | `scenes/ui/pause_menu/components/build_stats_matrix_presenter.gd` | Renderizado y formateo de atributos |
 | Sinergias de build en pausa | `scenes/ui/pause_menu/components/build_synergy_calculator.gd` | Arsenal, grimorios y chips de equipo |
 | Pedestales 3D y materiales del Hub | `scenes/ui/hub/components/pedestal_visual_presenter.gd` | Mallas 3D, halos, shaders y skins de pilotos |
 | Navegación de modales de compañeros | `scenes/ui/character_select/components/companion_modal_navigation_helper.gd` | Inputs, trampas de foco y bounds click |
-| Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | — |
+| Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | Orquestador de carrusel |
+| Layout builder de carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_layout_builder.gd` | Tarjetas de skins, paginación y dots |
 | Transición entre escenas | `core/autoloads/scene_transition.gd` | — |
 | Pausa (tokens de pausa) | `core/autoloads/pause_arbitrator.gd` | — |
 | HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | Orquestador: L487 (reducido de 630 a 487) |
@@ -89,7 +94,8 @@
 | Indicador de maldición del HUD | `scenes/ui/hud/components/hud_curse_badge_controller.gd` | Badge y escalado dinámico |
 | Radar y timer de oleada del HUD | `scenes/ui/hud/components/hud_satellite_radar_controller.gd` | Formato temporal y proyección satelital |
 | Administrador de trackers de borde (Edge Trackers) | `scenes/ui/hud/components/hud_edge_tracker_manager.gd` | Satélite, arcana, jefes y cofres perimetrales |
-| Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | — |
+| Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | Orquestador de depuración in-game |
+| Layout builder de depuración in-game | `scenes/ui/debug/ingame_debug_layout_builder.gd` | Sliders de stats, armas y botones de oleada |
 | Debug de metajuego (Character Select) | `scenes/ui/debug/debug_menu_modal.gd` | — |
 
 ---
@@ -168,6 +174,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1
 | Versión | Alpha 0.1 |
 | Milestone activo | **M7** — Balance Fino de Combate y Feedback |
 | Refactor Estructural | **Completado y Sellado (Paso 5 / 21 suites PASS)** — Poda masiva de volumetría culminada (`main_game` 420 lín, `hud` 487 lín, `character_select` 270 lín, `hub_world` 230 lín, `arsenal_banlist` 231 lín, `satellite_shop` 267 lín) |
+| Arquitectura Prístina | **Plan Activo** (`docs/refactoring/pristine_architecture_purification_plan.md`) — 3 sesiones atómicas: 1) Purificación de `Player`, 2) Entorno Cósmico a Producción, 3) Desacoplamiento de Modales |
 | M7.1 | Rebalanceo 8 armas base → `data/weapons/roster/*.tres` |
 | M7.2 | Oleadas y colosos → `data/timeline/default_encounter_timeline.tres` |
 | M7.3 | Drop rates y créditos → `data/items/roster/*.tres` |

@@ -35,7 +35,7 @@ static func _on_focus_entered(control: Control, play_sound: bool) -> void:
 	tw.tween_property(control, "scale", Vector2(1.035, 1.035), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 	if play_sound:
-		var audio_mgr := control.get_node_or_null("/root/AudioManager")
+		var audio_mgr: Node = control.get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
 			audio_mgr.play_sfx("ui_click")
 

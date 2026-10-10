@@ -82,6 +82,19 @@ func handle_movement(player: CharacterBody2D, stats: CharacterStats, is_dashing:
 	player.move_and_slide()
 
 
+func update_static_charge(player: CharacterBody2D, inventory: Node, delta: float) -> void:
+	if not is_instance_valid(player) or not inventory:
+		return
+	if player.velocity.length_squared() > 10.0 and inventory.has_method("get_item_count") and inventory.get_item_count(&"static_cell") > 0:
+		player._static_charge += player.velocity.length() * delta * 0.25
+		if player._static_charge >= 100.0:
+			player._static_charge = 0.0
+			player.has_guaranteed_crit = true
+			var audio_mgr := player.get_node_or_null("/root/AudioManager")
+			if audio_mgr and audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("laser", 1.8, 2.5)
+
+
 func update_flight_kinematics(player: CharacterBody2D, is_omega_spinning: bool, is_dashing: bool, delta: float) -> void:
 	if not is_instance_valid(player):
 		return

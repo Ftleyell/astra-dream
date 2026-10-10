@@ -11,7 +11,7 @@ z_index = -100
 script = ExtResource("1_space_bg")
 
 [node name="ParallaxNebula" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.08, 0.08)
+scroll_scale = Vector2(0.02, 0.02)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
@@ -20,7 +20,7 @@ position = Vector2(960, 540)
 texture = ExtResource("2_nebula")
 
 [node name="ParallaxDeepStars" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.2, 0.2)
+scroll_scale = Vector2(0.1, 0.1)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
@@ -29,7 +29,7 @@ position = Vector2(960, 540)
 texture = ExtResource("3_stars_deep")
 
 [node name="ParallaxMidStars" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.45, 0.45)
+scroll_scale = Vector2(0.3, 0.3)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 
@@ -38,7 +38,7 @@ position = Vector2(960, 540)
 texture = ExtResource("4_stars_mid")
 
 [node name="ParallaxNearDust" type="Parallax2D" parent="."]
-scroll_scale = Vector2(0.75, 0.75)
+scroll_scale = Vector2(0.55, 0.55)
 repeat_size = Vector2(1920, 1080)
 repeat_times = 3
 

@@ -5,9 +5,11 @@ extends Node2D
 ## Generador dinámico de macro-planetas cada 4000 unidades de exploración del jugador.
 ## Proyecta la aparición en el vector de avance de la nave espacial.
 
-@export var spawn_distance_interval: float = 4000.0
-@export var spawn_projection_distance: float = 1600.0
-@export var max_active_planets: int = 5
+const SpaceEnvironmentConfigScript = preload("res://core/resources/space_environment_config.gd")
+@export var env_config: Resource = preload("res://data/environment/default_space_environment_config.tres")
+@export var spawn_distance_interval: float = 7000.0
+@export var spawn_projection_distance: float = 1800.0
+@export var max_active_planets: int = 3
 @export var initial_discovery_bonus: bool = true
 @export var min_planet_distance: float = 2000.0
 
@@ -20,6 +22,12 @@ var active_planets: Array[Node2D] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if is_instance_valid(env_config):
+		spawn_distance_interval = env_config.planet_spawn_interval
+		min_planet_distance = env_config.planet_min_distance
+		max_active_planets = env_config.planet_max_active
+		spawn_projection_distance = env_config.planet_projection_distance
+
 	_acquire_player()
 	if is_instance_valid(player):
 		last_player_pos = player.global_position
@@ -130,6 +138,14 @@ func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0) -> bool
 		for node in group_planets:
 			if is_instance_valid(node) and node is Node2D and not node.is_queued_for_deletion():
 				if (node as Node2D).global_position.distance_squared_to(pos) < check_dist_sq:
+					return false
+
+		var group_satellites := tree.get_nodes_in_group("satellites")
+		var min_sat_dist: float = env_config.station_min_distance_to_planet if is_instance_valid(env_config) else 2500.0
+		var min_sat_sq: float = min_sat_dist * min_sat_dist
+		for sat in group_satellites:
+			if is_instance_valid(sat) and sat is Node2D and not sat.is_queued_for_deletion():
+				if (sat as Node2D).global_position.distance_squared_to(pos) < min_sat_sq:
 					return false
 
 	# Comprobar también la lista de active_planets por si alguno aún no ha entrado al grupo

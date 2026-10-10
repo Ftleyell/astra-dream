@@ -175,176 +175,45 @@ func _on_dim_overlay_gui_input(event: InputEvent) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not is_open:
-		return
-
+	if not is_open: return
 	if event.is_action("ui_focus_next") or event.is_action("ui_focus_prev"):
 		get_viewport().set_input_as_handled()
 		return
-
 	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
-		get_viewport().set_input_as_handled()
-		close_modal()
-		return
+		get_viewport().set_input_as_handled(); close_modal(); return
 
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_A, KEY_LEFT:
-				_cycle_skin(-1)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_D, KEY_RIGHT:
-				_cycle_skin(1)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_W, KEY_UP:
-				_cycle_stars(-1)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_S, KEY_DOWN:
-				_cycle_stars(1)
-				get_viewport().set_input_as_handled()
-				return
-			KEY_SPACE, KEY_ENTER:
-				_confirm_equip()
-				get_viewport().set_input_as_handled()
-				return
+	if event.is_action_pressed("move_left") or event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_A, KEY_LEFT]):
+		get_viewport().set_input_as_handled(); _cycle_skin(-1); return
+	if event.is_action_pressed("move_right") or event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_D, KEY_RIGHT]):
+		get_viewport().set_input_as_handled(); _cycle_skin(1); return
+	if event.is_action_pressed("move_up") or event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_W, KEY_UP]):
+		get_viewport().set_input_as_handled(); _cycle_stars(-1); return
+	if event.is_action_pressed("move_down") or event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_S, KEY_DOWN]):
+		get_viewport().set_input_as_handled(); _cycle_stars(1); return
+	if event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_SPACE, KEY_ENTER]):
+		get_viewport().set_input_as_handled(); _confirm_equip(); return
 
-	if event.is_action_pressed("ui_accept"):
-		_confirm_equip()
-		get_viewport().set_input_as_handled()
-		return
 
-	if event.is_action_pressed("move_left") or event.is_action_pressed("ui_left"):
-		_cycle_skin(-1)
-		get_viewport().set_input_as_handled()
-		return
-	elif event.is_action_pressed("move_right") or event.is_action_pressed("ui_right"):
-		_cycle_skin(1)
-		get_viewport().set_input_as_handled()
-		return
-	elif event.is_action_pressed("move_up") or event.is_action_pressed("ui_up"):
-		_cycle_stars(-1)
-		get_viewport().set_input_as_handled()
-		return
-	elif event.is_action_pressed("move_down") or event.is_action_pressed("ui_down"):
-		_cycle_stars(1)
-		get_viewport().set_input_as_handled()
-		return
+const CosmeticCarouselLayoutBuilderScript = preload("res://scenes/ui/cosmetics/cosmetic_carousel_layout_builder.gd")
+var layout_builder: RefCounted = CosmeticCarouselLayoutBuilderScript.new()
 
 
 func _setup_frame_dimensions() -> void:
-	carousel_panel.custom_minimum_size = Vector2(580, 640)
-	match current_category:
-		"pilot":
-			center_slot.custom_minimum_size = Vector2(360, 500)
-			artwork_frame.custom_minimum_size = Vector2(360, 500)
-			category_label.text = "HEROÍNA // PILOTO ESTELAR"
-			hint_footer_label.text = "✦ [A / D] ASPECTOS  ✦  [W / S] ESTRELLAS  ✦  [ESPACIO] EQUIPAR  ✦  [ESC] SALIR"
-			_apply_artwork_transform(Vector2.ZERO, Vector2.ONE)
-		"ship":
-			center_slot.custom_minimum_size = Vector2(320, 320)
-			artwork_frame.custom_minimum_size = Vector2(320, 320)
-			category_label.text = "EXO-TRAJE // AERONAVE DE COMBATE"
-			hint_footer_label.text = "✦ [A / D] ASPECTOS  ✦  [W / S] ESTRELLAS  ✦  [ESPACIO] EQUIPAR  ✦  [ESC] SALIR"
-			_apply_artwork_transform(Vector2.ZERO, Vector2.ONE)
-		"weapon":
-			center_slot.custom_minimum_size = Vector2(320, 320)
-			artwork_frame.custom_minimum_size = Vector2(320, 320)
-			category_label.text = "ARMAMENTO // SISTEMA BALÍSTICO"
-			hint_footer_label.text = "✦ [A / D] ASPECTOS  ✦  [W / S] ESTRELLAS  ✦  [ESPACIO] EQUIPAR  ✦  [ESC] SALIR"
-			# Centrado óptico compensado: los sprites 256x256 están cargados a la derecha (X: 88..247)
-			_apply_artwork_transform(Vector2(-38.0, 0.0), Vector2(1.15, 1.15))
+	if layout_builder:
+		layout_builder.setup_frame_dimensions(
+			current_category, carousel_panel, center_slot, artwork_frame,
+			category_label, hint_footer_label, artwork_texture, silhouette_overlay
+		)
 
 
 func _apply_artwork_transform(offset_pos: Vector2, target_scale: Vector2) -> void:
-	if artwork_texture:
-		artwork_texture.pivot_offset = artwork_texture.size * 0.5
-		artwork_texture.position = offset_pos
-		artwork_texture.scale = target_scale
-	if silhouette_overlay:
-		silhouette_overlay.pivot_offset = silhouette_overlay.size * 0.5
-		silhouette_overlay.position = offset_pos
-		silhouette_overlay.scale = target_scale
+	if layout_builder:
+		layout_builder.apply_artwork_transform(artwork_texture, silhouette_overlay, offset_pos, target_scale)
 
 
 func _load_available_skins() -> void:
-	_available_skins.clear()
-	var tid_str: String = String(current_target_id).to_lower()
-
-	# 1. Skin Base (siempre presente y siempre desbloqueada)
-	var base_tex: Texture2D = _get_base_texture()
-	var base_skin: Dictionary = {
-		"id": "base",
-		"skin_name": "%s Base" % (character_data_ref.display_name if character_data_ref else "Original"),
-		"description": "Aspecto operativo estándar de despliegue estelar.",
-		"rarity": "common",
-		"is_base": true,
-		"is_unlocked": true,
-		"unlocked_stars": 3,
-		"stars": 1,
-		"texture": base_tex,
-		"glow_color": character_data_ref.color if character_data_ref else Color(0.2, 0.85, 1.0)
-	}
-	_available_skins.append(base_skin)
-
-	# 2. Skins alternativas desde CosmeticsManager
-	var catalog_skins: Array[Dictionary] = CosmeticsManager.get_skins_for_target(current_category, tid_str)
-	for s in catalog_skins:
-		var sid: String = s.get("id", "")
-		var is_unl: bool = SaveManager.is_skin_unlocked(sid)
-		var stars: int = SaveManager.get_skin_stars(sid) if is_unl else 1
-		var tex: Texture2D = _get_skin_texture(s)
-		var glow_hex: String = s.get("glow_hex", "#00f0ff")
-		var glow_col := Color(glow_hex)
-
-		var entry: Dictionary = {
-			"id": sid,
-			"skin_name": s.get("skin_name", sid),
-			"description": s.get("description", "Aspecto cromático del arsenal cuántico."),
-			"rarity": s.get("rarity", "rare"),
-			"is_base": false,
-			"is_unlocked": is_unl,
-			"unlocked_stars": stars if is_unl else 0,
-			"stars": clampi(stars, 1, 3),
-			"texture": tex,
-			"glow_color": glow_col,
-			"raw_data": s
-		}
-		_available_skins.append(entry)
-
-
-func _get_base_texture() -> Texture2D:
-	if not character_data_ref:
-		return null
-	match current_category:
-		"pilot":
-			return character_data_ref.get_selection_texture(false)
-		"ship":
-			return character_data_ref.get_ship_texture()
-		"weapon":
-			return character_data_ref.get_weapon_texture()
-	return null
-
-
-func _get_skin_texture(s_data: Dictionary) -> Texture2D:
-	match current_category:
-		"pilot":
-			var sel_path: String = s_data.get("selection_texture_path", "")
-			if not sel_path.is_empty() and ResourceLoader.exists(sel_path):
-				return load(sel_path) as Texture2D
-			var fb_path: String = s_data.get("texture_path", "")
-			if not fb_path.is_empty() and ResourceLoader.exists(fb_path):
-				return load(fb_path) as Texture2D
-		"ship":
-			var s_path: String = s_data.get("texture_path", "")
-			if not s_path.is_empty() and ResourceLoader.exists(s_path):
-				return load(s_path) as Texture2D
-		"weapon":
-			var w_path: String = s_data.get("texture_path", "")
-			if not w_path.is_empty() and ResourceLoader.exists(w_path):
-				return load(w_path) as Texture2D
-	return _get_base_texture()
+	if layout_builder:
+		_available_skins = layout_builder.load_available_skins(current_category, current_target_id, character_data_ref)
 
 
 func _cycle_skin(dir: int) -> void:
@@ -416,121 +285,16 @@ func _auto_equip_if_unlocked() -> void:
 
 
 func _refresh_display() -> void:
-	if _available_skins.is_empty():
-		return
-
-	var cur: Dictionary = _available_skins[_skin_index]
-	var total: int = _available_skins.size()
-	var is_unlocked: bool = cur.get("is_unlocked", false)
-	var unl_stars: int = cur.get("unlocked_stars", 1)
-	var is_star_unlocked: bool = is_unlocked and (_star_level <= unl_stars)
-
-	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
-	var equipped_now: String = SaveManager.get_equipped_skin(slot_key)
-	var is_equipped: bool = is_star_unlocked and (equipped_now == cur.get("id", ""))
-
-	var theme_col: Color = cur.get("glow_color", Color(0.2, 0.85, 1.0))
-
-	# 1. Dossier Header
-	index_badge.text = "[ %02d / %02d ]" % [_skin_index + 1, total]
-
-	if not is_unlocked:
-		name_label.text = "[ BLOQUEADO ]"
-		name_label.modulate = Color(0.6, 0.65, 0.75, 0.7)
-		status_badge.text = "[ BLOQUEADO // GACHA ]"
-		status_badge.modulate = Color(1.0, 0.35, 0.45)
-	elif not is_star_unlocked:
-		name_label.text = str(cur.get("skin_name", "")).to_upper()
-		name_label.modulate = theme_col
-		status_badge.text = "[ NIVEL %d★ BLOQUEADO ]" % _star_level
-		status_badge.modulate = Color(1.0, 0.6, 0.3)
-	elif is_equipped:
-		name_label.text = str(cur.get("skin_name", "")).to_upper()
-		name_label.modulate = theme_col
-		status_badge.text = "[✓ EQUIPADA]"
-		status_badge.modulate = Color(0.2, 1.0, 0.6)
-	else:
-		name_label.text = str(cur.get("skin_name", "")).to_upper()
-		name_label.modulate = theme_col
-		status_badge.text = "[ DISPONIBLE ]"
-		status_badge.modulate = Color(0.4, 0.8, 1.0)
-
-	# 2. Stars Badge
-	match _star_level:
-		1: stars_badge.text = "★☆☆  [NIVEL 1 - BASE]"
-		2: stars_badge.text = "★★☆  [NIVEL 2 - HALO DE ENERGÍA]"
-		3: stars_badge.text = "★★★  [NIVEL 3 - SOBRECARGA RADIANTE]"
-	stars_badge.modulate = Color(1.0, 0.85, 0.25) if is_star_unlocked else Color(0.5, 0.55, 0.6)
-
-	# 3. Lore / Info
-	if not is_unlocked:
-		desc_label.text = "Aspecto estelar clasificado. Desbloquéalo participando en la Gacha Cuántica del Hangar."
-	else:
-		desc_label.text = str(cur.get("description", ""))
-
-	# 4. Artwork Texture & Shader
-	var tex: Texture2D = cur.get("texture", null)
-	artwork_texture.texture = tex
-
-	if not is_unlocked or not is_star_unlocked:
-		# Silueta negra perimetral
-		artwork_texture.material = _silhouette_material
-		locked_overlay.visible = true
-		lock_title.text = "ASPECTO BLOQUEADO" if not is_unlocked else "NIVEL %d★ BLOQUEADO" % _star_level
-		lock_desc.text = "Obtén duplicados o cápsulas cuánticas para desbloquear este nivel de resonancia."
-		if circular_glow:
-			circular_glow.modulate = Color(0.1, 0.15, 0.25, 0.3)
-	else:
-		locked_overlay.visible = false
-		if current_category == "pilot":
-			var mat := ShaderMaterial.new()
-			mat.shader = HOLOGRAM_SHADER
-			mat.set_shader_parameter("rim_color", theme_col)
-			# Ajuste especial para Valentina: corte suave de rodillas
-			var is_valentina: bool = (String(current_target_id).to_lower() == "valentina")
-			mat.set_shader_parameter("bottom_fade_start", 0.78 if is_valentina else 0.88)
-			artwork_texture.material = mat
-		elif cur.get("is_base", false):
-			artwork_texture.material = null
-		else:
-			CosmeticsManager.apply_skin_to_canvas_item(artwork_texture, cur.get("id", ""), _star_level, false)
-
-		if circular_glow:
-			circular_glow.modulate = Color(theme_col.r, theme_col.g, theme_col.b, 0.85)
-
-	# 5. Tarjetas Adyacentes (Horizontales)
-	var left_idx := (_skin_index - 1 + total) % total
-	var right_idx := (_skin_index + 1) % total
-	left_texture.texture = _available_skins[left_idx].get("texture", null)
-	right_texture.texture = _available_skins[right_idx].get("texture", null)
-
-	# 6. Tarjetas de Estrellas (Verticales)
-	if top_card and bottom_card:
-		top_texture.texture = tex
-		bottom_texture.texture = tex
-		top_card.modulate.a = 0.6 if _star_level > 1 else 0.2
-		bottom_card.modulate.a = 0.6 if _star_level < 3 else 0.2
+	if layout_builder:
+		layout_builder.refresh_display(
+			self, _available_skins, _skin_index, _star_level,
+			current_category, current_target_id, _silhouette_material
+		)
 
 
 func _build_dots() -> void:
-	for child in dots_container.get_children():
-		child.queue_free()
-
-	for i in range(_available_skins.size()):
-		var dot := Panel.new()
-		var is_active := (i == _skin_index)
-		dot.custom_minimum_size = Vector2(20 if is_active else 8, 8)
-		var sb := StyleBoxFlat.new()
-		sb.set_corner_radius_all(4)
-		if is_active:
-			var cur_col: Color = _available_skins[i].get("glow_color", Color(0, 0.95, 1.0))
-			sb.bg_color = cur_col
-			sb.shadow_color = cur_col
-			sb.shadow_size = 4
-		else:
-			sb.bg_color = Color(0.25, 0.35, 0.45, 0.5)
-		dot.add_theme_stylebox_override("panel", sb)
-		dots_container.add_child(dot)
+	if layout_builder:
+		layout_builder.build_dots(dots_container, _available_skins, _skin_index)
 
 
 func _animate_open() -> void:
@@ -567,25 +331,16 @@ func _animate_stars_transition(dir: int) -> void:
 	_active_tween.tween_property(artwork_viewport, "modulate:a", 1.0, 0.14)
 
 
-func get_available_skins_count() -> int:
-	return _available_skins.size()
+func get_available_skins_count() -> int: return _available_skins.size()
+func get_current_skin_index() -> int: return _skin_index
+func get_current_stars() -> int: return _star_level
+func cycle_skins_for_test(dir: int) -> void: _cycle_skin(dir)
+func cycle_stars_for_test(dir: int) -> void: _cycle_stars(dir)
+func equip_current_for_test() -> void: _confirm_equip()
 
-
-func get_current_skin_index() -> int:
-	return _skin_index
-
-
-func get_current_stars() -> int:
-	return _star_level
-
-
-func cycle_skins_for_test(dir: int) -> void:
-	_cycle_skin(dir)
-
-
-func cycle_stars_for_test(dir: int) -> void:
-	_cycle_stars(dir)
-
+func set_stars_for_test(stars: int) -> void:
+	_star_level = clampi(stars, 1, 3)
+	_refresh_display()
 
 func select_skin_by_id_for_test(skin_id: String) -> bool:
 	for i in range(_available_skins.size()):
@@ -599,30 +354,14 @@ func select_skin_by_id_for_test(skin_id: String) -> bool:
 			return true
 	return false
 
-
-func set_stars_for_test(stars: int) -> void:
-	_star_level = clampi(stars, 1, 3)
-	_refresh_display()
-
-
-func equip_current_for_test() -> void:
-	_confirm_equip()
-
-
 func unequip_to_default_for_test() -> void:
 	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
 	SaveManager.unequip_skin(slot_key)
 	var loadout: Dictionary = SaveManager.get_character_loadout(current_target_id)
 	match current_category:
-		"pilot":
-			loadout["pilot_skin"] = ""
-			loadout["equipped_pilot_skin"] = ""
-		"ship":
-			loadout["ship_skin"] = ""
-			loadout["equipped_ship_skin"] = ""
-		"weapon":
-			loadout["weapon_skin"] = ""
-			loadout["equipped_weapon_skin"] = ""
+		"pilot": loadout["pilot_skin"] = ""; loadout["equipped_pilot_skin"] = ""
+		"ship": loadout["ship_skin"] = ""; loadout["equipped_ship_skin"] = ""
+		"weapon": loadout["weapon_skin"] = ""; loadout["equipped_weapon_skin"] = ""
 	SaveManager.set_character_loadout(current_target_id, loadout)
 	_last_valid_equipped_skin = ""
 	skin_selected.emit(slot_key, "")
