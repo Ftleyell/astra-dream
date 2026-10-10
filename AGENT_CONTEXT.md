@@ -31,13 +31,15 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 
 ---
 
-## 🚫 ZONAS PROHIBIDAS — Prohibido Explorar
+## 🧪 Zona de Prototipado y Experimentos
+- `sandbox/`: Área experimental para mecánicas futuras (p. ej. parallax procedural, shaders de prueba). No debe ser importada por escenas o sistemas del runtime de producción (`scenes/`, `core/`).
 
+---
+
+## 🚫 ZONAS PROHIBIDAS DE EXPLORACIÓN AUTOMÁTICA
 ```
 addons/                  <- Plugins de motor y herramientas externas
 .godot/                  <- Cache generado automáticamente por Godot
-scratch/                 <- Temporales de pruebas
-sandbox/                 <- Shaders y prototipos aislados
 preprocess/              <- Fuentes crudas de arte no procesadas
 ```
 
