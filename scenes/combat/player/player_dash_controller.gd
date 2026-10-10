@@ -181,6 +181,14 @@ func _execute_nova_dash() -> void:
 	if player.has_method("update_omega_spin_rotation"):
 		player.update_omega_spin_rotation(omega_spin_angle)
 
+	if fire_trail_scene:
+		var hazard := fire_trail_scene.instantiate()
+		if hazard and hazard.has_method("setup"):
+			hazard.setup(player.global_position, dash_direction, player)
+			var spawn_parent: Node = player.get_tree().current_scene if player.get_tree() and player.get_tree().current_scene else player.get_parent()
+			if spawn_parent:
+				spawn_parent.add_child(hazard)
+
 	var audio_mgr := player.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("dash", 1.25, 0.0)

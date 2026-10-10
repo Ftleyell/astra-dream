@@ -26,10 +26,13 @@ const HUDCurseBadgeControllerClass = preload("res://scenes/ui/hud/components/hud
 const HUDCombatStatsDockControllerClass = preload("res://scenes/ui/hud/components/hud_combat_stats_dock_controller.gd")
 const HUDSatelliteRadarControllerClass = preload("res://scenes/ui/hud/components/hud_satellite_radar_controller.gd")
 const HUDEdgeTrackerManagerClass = preload("res://scenes/ui/hud/components/hud_edge_tracker_manager.gd")
+const HUDEconomyKeybindsControllerClass = preload("res://scenes/ui/hud/components/hud_economy_keybinds_controller.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
-## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController, HudWeaponCooldownBar, HudHealthShieldDisplay, HUDBannerManager, HUDSatelliteRadarController y HUDEdgeTrackerManager.
+## Delega lógica específica a HUDTacticalAbilitiesController, HUDInventoryBarController,
+## HUDEconomyKeybindsController, HudWeaponCooldownBar, HudHealthShieldDisplay,
+## HUDBannerManager, HUDSatelliteRadarController y HUDEdgeTrackerManager.
 
 @export var player: Player
 
@@ -62,43 +65,7 @@ var _curse_ctrl: RefCounted = HUDCurseBadgeControllerClass.new()
 var _stats_dock_ctrl: RefCounted = HUDCombatStatsDockControllerClass.new()
 var _radar_ctrl: RefCounted = HUDSatelliteRadarControllerClass.new()
 var _edge_tracker_mgr: RefCounted = HUDEdgeTrackerManagerClass.new()
-
-var run_time: float:
-	get: return _radar_ctrl.run_time if _radar_ctrl else 0.0
-	set(val): if _radar_ctrl: _radar_ctrl.run_time = val
-var active_satellite_pos: Vector2:
-	get: return _radar_ctrl.active_satellite_pos if _radar_ctrl else Vector2.ZERO
-	set(val): if _radar_ctrl: _radar_ctrl.active_satellite_pos = val
-var has_satellite: bool:
-	get: return _radar_ctrl.has_satellite if _radar_ctrl else false
-	set(val): if _radar_ctrl: _radar_ctrl.has_satellite = val
-var satellite_index: int:
-	get: return _radar_ctrl.satellite_index if _radar_ctrl else 1
-	set(val): if _radar_ctrl: _radar_ctrl.satellite_index = val
-var current_wave: int:
-	get: return _radar_ctrl.current_wave if _radar_ctrl else 1
-	set(val): if _radar_ctrl: _radar_ctrl.current_wave = val
-var wave_time_left: float:
-	get: return _radar_ctrl.wave_time_left if _radar_ctrl else 60.0
-	set(val): if _radar_ctrl: _radar_ctrl.wave_time_left = val
-var wave_satellites_spawned: int:
-	get: return _radar_ctrl.wave_satellites_spawned if _radar_ctrl else 0
-	set(val): if _radar_ctrl: _radar_ctrl.wave_satellites_spawned = val
-var max_wave_satellites: int:
-	get: return _radar_ctrl.max_wave_satellites if _radar_ctrl else 3
-	set(val): if _radar_ctrl: _radar_ctrl.max_wave_satellites = val
-var current_travel_dist: float:
-	get: return _radar_ctrl.current_travel_dist if _radar_ctrl else 0.0
-	set(val): if _radar_ctrl: _radar_ctrl.current_travel_dist = val
-var required_travel_dist: float:
-	get: return _radar_ctrl.required_travel_dist if _radar_ctrl else 600.0
-	set(val): if _radar_ctrl: _radar_ctrl.required_travel_dist = val
-var is_pre_round_active: bool:
-	get: return _radar_ctrl.is_pre_round_active if _radar_ctrl else false
-	set(val): if _radar_ctrl: _radar_ctrl.is_pre_round_active = val
-var pre_round_time_left: float:
-	get: return _radar_ctrl.pre_round_time_left if _radar_ctrl else 30.0
-	set(val): if _radar_ctrl: _radar_ctrl.pre_round_time_left = val
+var _economy_ctrl: RefCounted = HUDEconomyKeybindsControllerClass.new()
 
 var _inventory_chips: Dictionary:
 	get: return _inventory_ctrl.get_inventory_chips() if _inventory_ctrl else {}
@@ -124,11 +91,11 @@ var stats_dock_layer: CanvasLayer:
 	get: return _stats_dock_ctrl.stats_dock_layer if _stats_dock_ctrl else null
 	set(val): if _stats_dock_ctrl: _stats_dock_ctrl.stats_dock_layer = val
 var current_credits: int:
-	get: return _inventory_ctrl.current_credits if _inventory_ctrl else 120
-	set(val): if _inventory_ctrl: _inventory_ctrl.current_credits = val
+	get: return _economy_ctrl.current_credits if _economy_ctrl else 120
+	set(val): if _economy_ctrl: _economy_ctrl.current_credits = val
 var current_biomass: int:
-	get: return _inventory_ctrl.current_biomass if _inventory_ctrl else 0
-	set(val): if _inventory_ctrl: _inventory_ctrl.current_biomass = val
+	get: return _economy_ctrl.current_biomass if _economy_ctrl else 0
+	set(val): if _economy_ctrl: _economy_ctrl.current_biomass = val
 
 func _ready() -> void:
 	add_to_group("hud")
@@ -165,26 +132,9 @@ func _ready() -> void:
 		settings_mgr.settings_changed.connect(_update_ability_keybind_labels)
 	_setup_combat_stats_dock()
 
-func _get_action_key_text(act: StringName) -> String:
-	var events := InputMap.action_get_events(act)
-	for ev in events:
-		if ev is InputEventKey:
-			return ev.as_text_physical_keycode() if ev.physical_keycode != 0 else ev.as_text_keycode()
-		elif ev is InputEventMouseButton:
-			match ev.button_index:
-				MOUSE_BUTTON_LEFT: return "CLIC IZQ"
-				MOUSE_BUTTON_RIGHT: return "CLIC DER"
-				MOUSE_BUTTON_MIDDLE: return "CLIC CEN"
-				_: return "RATÓN %d" % ev.button_index
-	return "N/A"
-
 func _update_ability_keybind_labels() -> void:
-	if dash_keybind_label:
-		dash_keybind_label.text = "[%s]" % _get_action_key_text(&"dash")
-	if laser_keybind_label:
-		laser_keybind_label.text = "[%s]" % _get_action_key_text(&"fire_active")
-	if bomb_keybind_label:
-		bomb_keybind_label.text = "[%s] BOMBA" % _get_action_key_text(&"bomb")
+	if _economy_ctrl:
+		_economy_ctrl.update_keybind_labels()
 
 func _init_subcontrollers() -> void:
 	_abilities_ctrl = TacticalAbilitiesControllerClass.new()
@@ -198,6 +148,16 @@ func _init_subcontrollers() -> void:
 		"credits_label": credits_label,
 		"biomass_label": biomass_label,
 		"credit_icon": credit_icon
+	})
+
+	_economy_ctrl.setup({
+		"credits_label": credits_label,
+		"biomass_label": biomass_label,
+		"credit_icon": credit_icon,
+		"key_label": key_label,
+		"dash_keybind_label": dash_keybind_label,
+		"laser_keybind_label": laser_keybind_label,
+		"bomb_keybind_label": bomb_keybind_label
 	})
 
 	_weapon_bar = WeaponCooldownBarClass.new()
@@ -309,12 +269,12 @@ func _update_weapon_cooldown_sweeps() -> void:
 		_inventory_ctrl.update_weapon_cooldown_sweeps(w_ctrl.equipped_weapons, player.stats if player else null)
 
 func update_credits(amount: int) -> void:
-	if _inventory_ctrl:
-		_inventory_ctrl.update_credits(amount, get_tree())
+	if _economy_ctrl:
+		_economy_ctrl.update_credits(amount, get_tree())
 
 func update_biomass(run_amount: int, total_persistent: int) -> void:
-	if _inventory_ctrl:
-		_inventory_ctrl.update_biomass(run_amount, total_persistent)
+	if _economy_ctrl:
+		_economy_ctrl.update_biomass(run_amount, total_persistent)
 
 func update_exp(current: float, max_val: float, level: int) -> void:
 	if _health_shield_display:
@@ -340,20 +300,8 @@ func _on_inventory_item_added(item: ItemData, count: int) -> void:
 		update_quantum_keys(count)
 
 func update_quantum_keys(keys_count: int) -> void:
-	if not key_label:
-		return
-	if keys_count > 0:
-		key_label.text = "x%d (-20%% Desc.)" % keys_count
-		key_label.modulate = Color(0.35, 1.0, 0.65, 1.0)
-		var badge := find_child("KeyBadge", true, false) as Control
-		if badge:
-			badge.pivot_offset = badge.size * 0.5
-			var tw := create_tween()
-			tw.tween_property(badge, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK)
-			tw.tween_property(badge, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE)
-	else:
-		key_label.text = "x0"
-		key_label.modulate = Color(0.7, 0.88, 1.0, 0.85)
+	if _economy_ctrl:
+		_economy_ctrl.update_quantum_keys(keys_count, self)
 
 func _get_rarity_color(rarity: Enums.Rarity) -> Color:
 	if _inventory_ctrl:

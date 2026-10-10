@@ -113,10 +113,6 @@ var _was_bomb_pressed_during_menu: bool:
 	get: return bomb_controller.was_bomb_pressed_during_menu if bomb_controller else false
 	set(val): if bomb_controller: bomb_controller.was_bomb_pressed_during_menu = val
 
-# Escenas VFX de Combate
-var bomb_shockwave_scene: PackedScene = preload("res://scenes/combat/player/bomb_shockwave_vfx.tscn")
-var explosion_vfx_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
-
 var is_dead: bool = false
 var current_health: float = 100.0
 
@@ -410,12 +406,6 @@ func add_exp(amount: float) -> void:
 
 func take_damage(arg: Variant) -> void:
 	if damage_processor: damage_processor.process_incoming_damage(self, arg, shield_controller, stats, inventory)
-
-func _trigger_death_sequence() -> void:
-	if shield_controller: shield_controller.trigger_death_sequence(self)
-
-func _spawn_player_explosion_vfx() -> void:
-	if shield_controller: shield_controller.spawn_player_explosion_vfx(self)
 
 func _handle_health_regen(delta: float) -> void:
 	if shield_controller: shield_controller.handle_health_regen(self, delta, stats, inventory)

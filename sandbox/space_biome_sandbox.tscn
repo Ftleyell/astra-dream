@@ -8,8 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://6cx51x683kae" path="res://assets/environments/parallax_space/nebula_seamless_0.png" id="17_seamless_nebula"]
 [ext_resource type="Texture2D" uid="uid://lvecvijymwwg" path="res://assets/environments/parallax_space/deep_starfield_8k.png" id="18_starfield_8k"]
 [ext_resource type="Script" uid="uid://csbcxhaoe0brl" path="res://sandbox/cosmic_object_pool.gd" id="25_pool"]
-[ext_resource type="Script" path="res://sandbox/cosmic_socket_director.gd" id="26_director"]
-
+[ext_resource type="Script" uid="uid://6rp2p6wn6sm0" path="res://sandbox/cosmic_socket_director.gd" id="26_director"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_noise"]
 noise_type = 2
@@ -102,7 +101,6 @@ script = ExtResource("25_pool")
 [node name="CosmicSocketDirector" type="Node2D" parent="." unique_id=198273642 node_paths=PackedStringArray("pool_node")]
 script = ExtResource("26_director")
 pool_node = NodePath("../CosmicObjectPool")
-
 
 [node name="SandboxShip" parent="." unique_id=350019094 instance=ExtResource("14_ship")]
 position = Vector2(-25, 26)

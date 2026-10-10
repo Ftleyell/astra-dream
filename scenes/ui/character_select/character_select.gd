@@ -229,47 +229,8 @@ var debug_menu_modal: Node:
 	get:
 		return modal_router.debug_menu_modal if modal_router else null
 
-# Propiedades de compatibilidad con versiones previas
-var ship_skin_button: Button:
-	get:
-		return ship_button
-var weapon_skin_button: Button:
-	get:
-		return weapon_button
-var pet_skin_button: Button:
-	get:
-		return pet_button
-var navigator_skin_button: Button:
-	get:
-		return navigator_button
-var pilot_skin_button: Button:
-	get:
-		return pilot_skin_btn
-var debug_button: Button:
-	get:
-		return null
-var talents_view: Control:
-	get:
-		return loadout_view
-var tomes_view: Control:
-	get:
-		return loadout_view
-var stats_view: Control:
-	get:
-		return abilities_view
 var tab_loadout_btn: Button = null
 var tab_abilities_btn: Button = null
-var tab_talents_btn: Button:
-	get:
-		return tab_abilities_btn
-var tab_tomes_btn: Button:
-	get:
-		return tab_abilities_btn
-var tab_stats_btn: Button:
-	get:
-		return tab_abilities_btn
-var talents_metrics_label: Label = null
-var favored_tome_desc: Label = null
 
 var current_game_speed: float:
 	get: return speed_selector.current_game_speed if speed_selector else 1.0

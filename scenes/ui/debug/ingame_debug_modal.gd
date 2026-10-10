@@ -259,137 +259,44 @@ func _setup_spawns_tab() -> void:
 		UIFocusHelper.apply_cyber_focus(kill_enemies_btn)
 
 
-func _get_forward_spawn_position(distance: float = 200.0) -> Vector2:
-	if not main_game or not ("player" in main_game) or not is_instance_valid(main_game.player):
-		return Vector2.ZERO
-	var p: Node2D = main_game.player
-	var p_vel: Vector2 = p.get("velocity") if "velocity" in p else Vector2.ZERO
-	var forward: Vector2 = p_vel.normalized() if p_vel.length_squared() > 10.0 else Vector2.UP
-	return p.global_position + forward * distance
-
-
 func _on_spawn_monolith_pressed() -> void:
-	if not main_game:
-		return
-	var spawner = main_game.get("space_object_spawner")
-	if not spawner:
-		_set_feedback("Error: SpaceObjectSpawner no disponible")
-		return
-	var spawn_pos: Vector2 = _get_forward_spawn_position(220.0)
-	if spawner.has_method("spawn_monolith_at"):
-		spawner.spawn_monolith_at(spawn_pos)
-		_set_feedback("Monolito Arcano generado a ~220px frente al jugador.")
-	elif spawner.has_method("force_spawn_monolith"):
-		spawner.force_spawn_monolith(true)
-		_set_feedback("Monolito Arcano forzado en la periferia táctica.")
+	_set_feedback(IngameDebugActionExecutor.spawn_monolith(main_game))
 	close()
 
-
 func _on_spawn_boss_pressed() -> void:
-	if not main_game:
-		return
-	var boss_coord = main_game.get("boss_coordinator")
-	if not boss_coord:
-		_set_feedback("Error: BossCoordinator no disponible")
-		return
 	var selected_idx: int = boss_select_option.selected if boss_select_option else 0
 	var boss_id: String = String(boss_select_option.get_item_metadata(selected_idx)) if boss_select_option else "boss_hermit_void"
 	var play_intro: bool = boss_intro_check.button_pressed if boss_intro_check else true
-
-	if boss_coord.has_method("spawn_boss_by_id"):
-		boss_coord.spawn_boss_by_id(boss_id, play_intro)
-		_set_feedback("Jefe %s instanciado (Cinemática: %s)." % [boss_id, str(play_intro)])
-	elif boss_coord.has_method("jump_to_boss"):
-		boss_coord.jump_to_boss(boss_id)
-		_set_feedback("Saltando a jefe %s..." % boss_id)
+	_set_feedback(IngameDebugActionExecutor.spawn_boss(main_game, boss_id, play_intro))
 	close()
-
 
 func _on_spawn_rival_pressed() -> void:
-	if not main_game:
-		return
-	var boss_coord = main_game.get("boss_coordinator")
-	if not boss_coord:
-		_set_feedback("Error: BossCoordinator no disponible")
-		return
 	var selected_idx: int = rival_select_option.selected if rival_select_option else 0
 	var r_id_str: String = String(rival_select_option.get_item_metadata(selected_idx)) if rival_select_option else ""
-	var r_pid: StringName = StringName(r_id_str)
-	if boss_coord.has_method("spawn_rival_pilot"):
-		boss_coord.spawn_rival_pilot(r_pid)
-		_set_feedback("Piloto Rival instanciada: %s" % (r_id_str if r_id_str != "" else "Siguiente en cola"))
+	_set_feedback(IngameDebugActionExecutor.spawn_rival(main_game, r_id_str))
 	close()
-
 
 func _on_spawn_satellite_pressed() -> void:
-	if not main_game:
-		return
-	var sat_coord = main_game.get("satellite_coordinator")
-	if sat_coord and sat_coord.has_method("spawn_specific_satellite"):
-		var pos: Vector2 = _get_forward_spawn_position(220.0)
-		sat_coord.spawn_specific_satellite(pos)
-		_set_feedback("Satélite de tienda instanciado frente a la nave.")
+	_set_feedback(IngameDebugActionExecutor.spawn_satellite(main_game))
 	close()
-
 
 func _on_spawn_transmutation_pressed() -> void:
-	if not main_game:
-		return
-	var sat_coord = main_game.get("satellite_coordinator")
-	if sat_coord and sat_coord.has_method("spawn_specific_transmutation"):
-		var pos: Vector2 = _get_forward_spawn_position(220.0)
-		sat_coord.spawn_specific_transmutation(pos)
-		_set_feedback("Estación de Forja Cuántica instanciada frente a la nave.")
+	_set_feedback(IngameDebugActionExecutor.spawn_transmutation(main_game))
 	close()
-
 
 func _on_spawn_slot_pressed() -> void:
-	if not main_game:
-		return
-	var loot_coord = main_game.get("loot_coordinator")
-	if loot_coord and loot_coord.has_method("spawn_slot_machine"):
-		var pos: Vector2 = _get_forward_spawn_position(260.0)
-		loot_coord.spawn_slot_machine(pos)
-		_set_feedback("Máquina tragamonedas arcade generada frente a la nave.")
+	_set_feedback(IngameDebugActionExecutor.spawn_slot_machine(main_game))
 	close()
-
 
 func _on_spawn_chest_pressed() -> void:
-	if not main_game:
-		return
-	var loot_coord = main_game.get("loot_coordinator")
-	if loot_coord and loot_coord.has_method("spawn_slot_chest"):
-		var pos: Vector2 = _get_forward_spawn_position(180.0)
-		loot_coord.spawn_slot_chest(pos)
-		_set_feedback("Cofre dorado de botín instanciado frente a la nave.")
+	_set_feedback(IngameDebugActionExecutor.spawn_chest(main_game))
 	close()
 
-
 func _on_clear_bullets_pressed() -> void:
-	var bullet_srv: BulletServer = get_node_or_null("/root/BulletServer") as BulletServer
-	if bullet_srv:
-		bullet_srv.bomb_clear_all()
-		_set_feedback("Todas las balas en pantalla han sido neutralizadas.")
-
+	_set_feedback(IngameDebugActionExecutor.clear_all_bullets(get_tree()))
 
 func _on_kill_enemies_pressed() -> void:
-	var tree := get_tree()
-	if not tree:
-		return
-	var killed_count: int = 0
-	for enemy in tree.get_nodes_in_group("enemies"):
-		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
-			continue
-		if enemy.is_in_group("bosses") or enemy.is_in_group("boss") or enemy.is_in_group("rivals"):
-			continue
-		if enemy.has_method("take_damage"):
-			var ctx := HitContext.create_direct_hit(999999.0)
-			enemy.take_damage(ctx)
-			killed_count += 1
-		else:
-			enemy.queue_free()
-			killed_count += 1
-	_set_feedback("Eliminados %d enemigos comunes en el cuadrante." % killed_count)
+	_set_feedback(IngameDebugActionExecutor.kill_common_enemies(get_tree()))
 
 
 # ─── PESTAÑA 2: CHEATS & STATS ────────────────────────────────────────────────
@@ -513,47 +420,13 @@ func _setup_arsenal_tab() -> void:
 
 
 func _inject_weapon(res_path: String, w_name: String) -> void:
-	if not main_game or not is_instance_valid(main_game.get("player")):
-		return
-	var p: Player = main_game.player
-	var w_ctrl := p.get_node_or_null("WeaponController") as WeaponController
-	if not w_ctrl:
-		_set_feedback("Error: WeaponController no encontrado.")
-		return
-	var res := load(res_path) as WeaponData
-	if not res:
-		_set_feedback("Error cargando recurso: " + res_path)
-		return
-	var success := w_ctrl.add_weapon(res)
-	if success:
-		_set_feedback("Arma equipada/subida de nivel: " + w_name)
-	else:
-		_set_feedback("Ranuras llenas. No se pudo equipar " + w_name)
-
+	_set_feedback(IngameDebugActionExecutor.inject_weapon(main_game, res_path, w_name))
 
 func _on_upgrade_all_weapons_pressed() -> void:
-	if not main_game or not is_instance_valid(main_game.get("player")):
-		return
-	var w_ctrl := main_game.player.get_node_or_null("WeaponController") as WeaponController
-	if not w_ctrl:
-		return
-	for inst in w_ctrl.equipped_weapons:
-		w_ctrl.upgrade_weapon(inst.weapon_data.weapon_id)
-	_set_feedback("Todas las armas equipadas recibieron +1 nivel.")
-
+	_set_feedback(IngameDebugActionExecutor.upgrade_all_weapons(main_game))
 
 func _on_max_all_weapons_pressed() -> void:
-	if not main_game or not is_instance_valid(main_game.get("player")):
-		return
-	var w_ctrl := main_game.player.get_node_or_null("WeaponController") as WeaponController
-	if not w_ctrl:
-		return
-	for inst in w_ctrl.equipped_weapons:
-		inst.level = inst.weapon_data.max_level
-		inst.apply_level_modifiers()
-	w_ctrl.weapons_updated.emit(w_ctrl.equipped_weapons)
-	_set_feedback("Todas las armas alcanzaron su nivel máximo.")
-
+	_set_feedback(IngameDebugActionExecutor.max_all_weapons(main_game))
 
 func _on_open_arcana_modal_pressed() -> void:
 	if not main_game or not is_instance_valid(main_game.get("arcana_modal")):
@@ -612,20 +485,7 @@ func _setup_waves_tab() -> void:
 
 
 func _jump_to_wave(target_wave: int) -> void:
-	if not main_game:
-		return
-	main_game.set("current_wave", target_wave)
-	main_game.set("wave_timer", 45.0)
-	main_game.set("_wave_encounter_pending", false)
-	main_game.set("_wave_encounter_spawned_for_wave", 0)
-
-	var hud = main_game.get("hud")
-	if hud and hud.has_method("update_wave_status"):
-		hud.update_wave_status(target_wave, 45.0, 0, 3)
-
-	_on_kill_enemies_pressed()
-	_on_clear_bullets_pressed()
-	_set_feedback("Salto efectuado a Oleada %d." % target_wave)
+	_set_feedback(IngameDebugActionExecutor.jump_to_wave(main_game, get_tree(), target_wave))
 	close()
 
 

@@ -6,202 +6,62 @@
 
 ---
 
-## 🗂️ Mapa Sistema → Archivo Principal
+## 🗂️ Mapa de Arquitectura y Subsistemas
 
-> Para encontrar el código de cualquier sistema, ir primero a este archivo.
-> Leer solo el rango indicado mediante `view_file` con `StartLine` y `EndLine` — no el archivo completo.
+Para localizar el código de cualquier sistema, consulta la tabla antes de abrir archivos:
 
-| Si el cambio/bug está en... | Archivo | Rango clave |
-| Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: ~270 lín. (reducido de 840) |
-| Constructor de tarjetas del elenco (CharacterSelect) | `scenes/ui/character_select/components/character_roster_grid_builder.gd` | Grilla procedural, avatares, bordes y hover |
-| Tabs (Loadout ↔ Habilidades) en CharacterSelect | `scenes/ui/character_select/components/character_select_tab_controller.gd` | — |
-| Enrutamiento de modales CharacterSelect | `scenes/ui/character_select/components/character_select_modal_router.gd` | — |
-| Presentación visual y habilidades CharacterSelect | `scenes/ui/character_select/components/character_select_display_manager.gd` | — |
-| Secuencia de lanzamiento y retorno Hub | `scenes/ui/character_select/components/character_select_launch_controller.gd` | — |
-| Coordinador de skins / companion / gacha | `scenes/ui/character_select/components/character_skin_coordinator.gd` | — |
-| Malla y router de foco teclado/gamepad | `scenes/ui/character_select/components/character_focus_router.gd` | — |
-| Combate (orquestador raíz) | `scenes/combat/main_game.gd` | Orquestador: L420 |
-| Ensamblado e inicialización de escena de combate | `scenes/combat/systems/combat_scene_assembler.gd` | Bootstrap de modales, directores y cableado reactivo |
-| Coordinador de modales y colas reactivas | `scenes/combat/ui/combat_modal_coordinator.gd` | Cola FIFO de modales, LevelUp, Tienda y Arcanas |
-| Orquestación de encuentros y rivales | `scenes/combat/controllers/combat_encounter_controller.gd` | — |
-
-| Feedback sensorial y trauma de cámara | `scenes/combat/systems/combat_player_feedback_coordinator.gd` | Shake, daño y enrutamiento de muerte |
-| Optimizador de gemas y batching de EXP | `scenes/combat/systems/combat_exp_batch_optimizer.gd` | Agrupación periódica de cristales distantes |
-| Despacho de inputs y hotkeys de combate | `scenes/combat/controllers/combat_input_dispatcher.gd` | Toggle de debug F1 y hotkeys |
-| Interacciones tácticas de campo (Chronos/Salvage) | `scenes/combat/systems/combat_tactical_interactions.gd` | — |
-| Bootstrap de loadouts y branches debug | `scenes/combat/systems/combat_bootstrapper.gd` | — |
-| Pipeline y ciclo de vida de oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | State machine & subsystem dispatch |
-| Contexto desacoplado de combate | `scenes/combat/systems/combat_context.gd` | Inyección de actores centrales |
-| Interfaz base de subsistemas Plug&Play | `scenes/combat/systems/combat_subsystem.gd` | Contrato virtual CombatSubsystem |
-| Fin de partida y derrota | `scenes/combat/controllers/combat_end_run_controller.gd` | Telemetría y modal de game over |
-| Jugador (orquestador raíz) | `scenes/combat/player/player.gd` | Orquestador: L250, Damage: L540 |
-| Locomoción y cinemática 360° del jugador | `scenes/combat/player/player_locomotion_controller.gd` | Vuelo, bank tilt, tactical focus, core hitbox |
-| Economía y experiencia in-run del jugador | `scenes/combat/player/player_economy_component.gd` | Exp, levels, credits, biomass, dark matter |
-| Procesador de daño y OSP del jugador | `scenes/combat/player/player_damage_processor.gd` | Mitigación, One-Shot Protection, invulnerabilidad |
-| Inventario de arcanas del jugador | `scenes/combat/player/player_arcana_inventory.gd` | Registro y aplicación de modificadores de arcanas |
-| Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Orquestador: ~230 lín. (reducido de 541) |
-| Cinemática y paralaje de cámara Hub 3D | `scenes/ui/hub/components/hub_camera_controller_3d.gd` | FOV, posicionamiento y paralaje estelar |
-| Despacho de atajos e inputs del Hub | `scenes/ui/hub/components/hub_input_dispatcher.gd` | ESC en modales, Q quit y settings |
-| Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Spawner: BossEncounterSpawner, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |
-| Spawner y escalado de colosos y rivales | `scenes/combat/directors/boss_encounter_spawner.gd` | Instanciación y escalado de vida adaptativo |
-| Jefe rival y duelos 1v1 (Flota Astra) | `scenes/combat/bosses/rival_pilot_boss.gd` | Orquestador de duelo rival |
-| Máquina de estados de rival (reto vs perdón) | `scenes/combat/bosses/components/rival_engagement_behavior.gd` | Radios de advertencia, challenge timer y spared timer |
-| Cinemática y motor de vuelo rival | `scenes/combat/bosses/components/rival_flight_motor.gd` | Vuelo orbital, micro-dashes y bank tilt shader |
-| Controlador maestro de armas | `scenes/combat/player/weapon_controller.gd` | Orquestador de arsenal y equipamiento |
-| Autoaim y adquisición de blancos 2D | `scenes/combat/player/combat_targeting_system.gd` | Priorización de blancos, toggle manual y stutter field |
-| Tracker de cooldowns y carga láser | `scenes/combat/player/weapon_cooldown_tracker.gd` | Cooldowns activos/pasivos, carga continua y memoria |
-| Secuencia cinemática de muerte de jugador | `scenes/combat/player/player_death_sequence_controller.gd` | Explosiones escalonadas, VFX y despacho de fin de partida |
-| Host y backend desacoplado de fondo cósmico | `scenes/combat/environment/space_environment_host.gd` | Subsistema CombatSubsystem Plug & Play de fondo espacial |
-| Contrato base de entorno cósmico | `scenes/combat/environment/base_space_environment.gd` | Contrato polimórfico para backends espaciales |
-| Narrativa, radio, diálogos in-run (CombatSubsystem) | `scenes/combat/directors/combat_narrative_director.gd` | — |
-| Satélites orbitales y estaciones (CombatSubsystem) | `scenes/combat/systems/combat_satellite_coordinator.gd` | Orquestador satelital |
-| Odómetro de vuelo espacial | `scenes/combat/satellite/components/satellite_odometer.gd` | Tracking de distancia pura |
-| Selector de estaciones orbitales | `scenes/combat/satellite/components/satellite_spawn_selector.gd` | Selección y proyección extensible |
-| Contrato base de estación interactuable | `scenes/combat/satellite/components/base_space_station.gd` | Contrato polimórfico de estación |
-| Administrador de debris espacial y macro-objetos | `scenes/combat/systems/combat_space_debris_manager.gd` | Asteroides, planetas y monolitos |
-| Recompensas y tragamonedas (CombatSubsystem) | `scenes/combat/systems/combat_loot_coordinator.gd` | — |
-| Fábrica balística extensible (Strategy Pattern) | `scenes/combat/weapons/weapon_projectile_factory.gd` | Registro abierto de proyectiles |
-| Estrategias de disparo activo y pasivo | `scenes/combat/weapons/behaviors/` | `standard_active_behaviors.gd`, `standard_passive_behaviors.gd` |
-| Gestor de crisis extensible (Event Registry) | `scenes/combat/events/crisis_event_manager.gd` | Registro de anomalías espaciales |
-| Definición modular de crisis espacial | `scenes/combat/events/definitions/crisis_event_definition.gd` | Contrato data-driven de anomalías |
-| Skins / cosméticos / autodescubrimiento | `core/systems/cosmetics_manager.gd` | DB load & discovery: L1 |
-| Sistema de save y persistencia | `core/autoloads/save_manager.gd` | Fachada estática → delega en core/systems/persistence/ |
-| Schemas DTO de persistencia (Roster, Economía, Settings) | `core/systems/persistence/schemas/` | DTOs fuertemente tipados y validación modular |
-| Perfil del jugador (biomasa, trofeos, unlocks) | `core/systems/persistence/meta_progression_state.gd` | — |
-| Run activa (armas, ítems, estado de partida) | `core/systems/persistence/active_run_storage.gd` | — |
-| Items y loot pool | `core/types/item_pool_manager.gd` | — |
-| Satélite orbital (tienda in-run) | `scenes/combat/satellite/satellite_shop.gd` | Orquestador: L267 (reducido de 515 a 267) |
-| Layout y barras de banlist | `scenes/ui/character_select/components/arsenal_banlist_layout_builder.gd` | Construcción de UI, pestañas y panel lateral |
-| Modal de arsenal y banlist | `scenes/ui/character_select/arsenal_banlist_modal.gd` | Orquestador: L231 (reducido de 638 a 231) |
-| Navegación y hotkeys de tienda satelital | `scenes/combat/satellite/components/satellite_shop_navigation_controller.gd` | Despacho de inputs, teclado/pad y atajos numéricos |
-| Economía y ofertas de tienda satelital | `scenes/combat/satellite/components/satellite_shop_economy_controller.gd` | Rerolls, límites de stacks y roll algorithm |
-| Tarjetas de tienda | `scenes/combat/satellite/components/satellite_shop_card_builder.gd` | — |
-| Gacha modal | `scenes/ui/gacha/gacha_modal.gd` | Orquestador de gacha desacoplado |
-| Layout de modal de gacha | `scenes/ui/gacha/components/gacha_modal_layout_builder.gd` | Construcción de banners, viewport 3D y botones |
-| Motor probabilístico y banners de gacha | `scenes/ui/gacha/components/gacha_banner_engine.gd` | Pity garantizado, pools temáticos y rarezas |
-| Matriz de stats en pausa | `scenes/ui/pause_menu/components/build_stats_matrix_presenter.gd` | Renderizado y formateo de atributos |
-| Sinergias de build en pausa | `scenes/ui/pause_menu/components/build_synergy_calculator.gd` | Arsenal, grimorios y chips de equipo |
-| Pedestales 3D y materiales del Hub | `scenes/ui/hub/components/pedestal_visual_presenter.gd` | Mallas 3D, halos, shaders y skins de pilotos |
-| Navegación de modales de compañeros | `scenes/ui/character_select/components/companion_modal_navigation_helper.gd` | Inputs, trampas de foco y bounds click |
-| Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | Orquestador de carrusel |
-| Layout builder de carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_layout_builder.gd` | Tarjetas de skins, paginación y dots |
-| Transición entre escenas | `core/autoloads/scene_transition.gd` | — |
-| Pausa (tokens de pausa) | `core/autoloads/pause_arbitrator.gd` | — |
-| HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | Orquestador: L487 (reducido de 630 a 487) |
-| Ranuras de armas y barridos CD del HUD | `scenes/ui/hud/components/hud_weapon_cooldown_bar.gd` | — |
-| Salud, escudo, EXP y OSP del HUD | `scenes/ui/hud/components/hud_health_shield_display.gd` | — |
-| Dock lateral de estadísticas de combate | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` | Tab toggle y modales |
-| Indicador de maldición del HUD | `scenes/ui/hud/components/hud_curse_badge_controller.gd` | Badge y escalado dinámico |
-| Radar y timer de oleada del HUD | `scenes/ui/hud/components/hud_satellite_radar_controller.gd` | Formato temporal y proyección satelital |
-| Administrador de trackers de borde (Edge Trackers) | `scenes/ui/hud/components/hud_edge_tracker_manager.gd` | Satélite, arcana, jefes y cofres perimetrales |
-| Debug de combate (F1 en partida) | `scenes/ui/debug/ingame_debug_modal.gd` | Orquestador de depuración in-game |
-| Layout builder de depuración in-game | `scenes/ui/debug/ingame_debug_layout_builder.gd` | Sliders de stats, armas y botones de oleada |
-| Debug de metajuego (Character Select) | `scenes/ui/debug/debug_menu_modal.gd` | — |
+| Dominio | Archivo Principal / Orquestador | Componentes Clave |
+|---|---|---|
+| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd` |
+| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd` |
+| **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
+| **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation |
+| **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
+| **Encuentro Rival** | `scenes/combat/bosses/rival_pilot_boss.gd` | `rival_engagement_behavior.gd`, `rival_flight_motor.gd` |
+| **Entorno y Fondo Espacial** | `scenes/combat/environment/space_environment_host.gd` | `base_space_environment.gd`, `combat_space_debris_manager.gd` |
+| **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd` |
+| **HUD de Combate** | `scenes/ui/hud/hud.gd` | `hud_health_shield_display.gd`, `hud_weapon_cooldown_bar.gd`, `hud_satellite_radar_controller.gd`, `hud_edge_tracker_manager.gd` |
+| **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas |
+| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
+| **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `character_select_modal_router.gd`, `arsenal_banlist_modal.gd` |
+| **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
+| **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd` |
+| **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
+| **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
 ---
 
-## 🚫 ZONAS PROHIBIDAS — Nunca explorar
+## 🚫 ZONAS PROHIBIDAS — Prohibido Explorar
 
 ```
-addons/                  ← Plugin Godot AI (herramienta, no es código del juego)
-addons/.godot_ai_update/ ← Staging obsoleto de actualización del addon
-.godot/                  ← Cache del motor, generado automáticamente
-scratch/                 ← Código temporal, ignorado por git
-sandbox/                 ← Shaders y escenas de prueba
-preprocess/              ← Fuentes crudas de arte (JPGs sin procesar, 23 MB)
+addons/                  <- Plugins de motor y herramientas externas
+.godot/                  <- Cache generado automáticamente por Godot
+scratch/                 <- Temporales de pruebas
+sandbox/                 <- Shaders y prototipos aislados
+preprocess/              <- Fuentes crudas de arte no procesadas
 ```
-
-Si el agente necesita encontrar algo y no está en la tabla de arriba → leer
-`docs/DOMAIN_MAP.md` → luego `ARCHITECTURE.md`. Nunca explorar el árbol de carpetas
-directamente.
 
 ---
 
 ## ⚙️ Los 7 Autoloads (Servicios Globales)
 
-Acceder via nombre de clase directamente. No referenciar por ruta de nodo.
-
-| Autoload | Ruta del script | Responsabilidad |
-|---|---|---|
-| `PauseArbitrator` | `res://core/autoloads/pause_arbitrator.gd` | Tokens de pausa concurrentes. **NUNCA** asignar `get_tree().paused` directo. |
-| `SettingsManager` | `res://core/autoloads/settings_manager.gd` | Gráficos, volumen, controles |
-| `SaveManager` | `res://core/autoloads/save_manager.gd` | Fachada de persistencia (delega en `core/systems/persistence/`) |
-| `DebugManager` | `res://core/autoloads/debug_manager.gd` | Poda de debug en producción. Usar `DebugManager.is_debug_enabled()` |
-| `EventBus` | `res://core/autoloads/event_bus.gd` | Señales globales desacopladas |
-| `AudioManager` | `res://core/autoloads/audio_manager.gd` | BGM, SFX, anti-fatiga |
-| `SceneTransition` | `res://core/autoloads/scene_transition.gd` | Fundidos entre escenas |
-
-> `BulletServer` no es autoload — es nodo hijo de `MainGame`.
-
----
-
-## 🏗️ Contratos de Arquitectura Obligatorios
-
-**Modales:** Todo modal extiende `BaseModal` (`res://scenes/ui/components/base_modal.gd`).
-Asignar `modal_token = &"nombre"` en `_ready()`. Usar `open_modal()` y `close_modal()`.
-**Nunca** gestionar `PauseArbitrator` manualmente desde un modal.
-
-**Daño:** Todo daño viaja en `HitContext`. Todo enemigo implementa `take_damage(ctx: HitContext)`.
-`proc_coefficient = 0.0` en proyectiles hijos (Regla Cero Balística).
-
-**Saves:** Nunca escribir directo a `user://`. Siempre usar `SaveManager.*` o los módulos
-en `core/systems/persistence/`.
-
----
-
-## 🧪 Cómo Correr Tests (Iteración Rápida)
-
-```powershell
-# 1. EN ITERACIÓN ACTIVA: Suite específica del módulo tocado (2-3 segundos)
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_weapons_runner.tscn"
-
-# 2. AL FINALIZAR TAREA: Regresión Core completa (21 suites, ~80 seg)
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
-
-# 3. Solo para CI / validación total (~25 min)
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1
-```
-
-> **Regla de Oro:** Durante el desarrollo, **NUNCA** correr `-CoreOnly` en bucle repetitivo. Usar `-Test <suite>` correspondiente para tener feedback instantáneo de 2 segundos. Correr `-CoreOnly` solo una vez antes del commit final.
-
-
----
-
-## 📊 Estado Actual
-
-| Campo | Valor |
+| Autoload | Responsabilidad |
 |---|---|
-| Versión | Alpha 0.1 |
-| Milestone activo | **M7** — Balance Fino de Combate y Feedback |
-| Refactor Estructural | **Completado y Sellado (Paso 5 / 21 suites PASS)** — Poda masiva de volumetría culminada (`main_game` 420 lín, `hud` 487 lín, `character_select` 270 lín, `hub_world` 230 lín, `arsenal_banlist` 231 lín, `satellite_shop` 267 lín) |
-| Arquitectura Prístina | **Plan Activo** (`docs/refactoring/pristine_architecture_purification_plan.md`) — 3 sesiones atómicas: 1) Purificación de `Player`, 2) Entorno Cósmico a Producción, 3) Desacoplamiento de Modales |
-| M7.1 | Rebalanceo 8 armas base → `data/weapons/roster/*.tres` |
-| M7.2 | Oleadas y colosos → `data/timeline/default_encounter_timeline.tres` |
-| M7.3 | Drop rates y créditos → `data/items/roster/*.tres` |
-| M7.4 | Feedback audiovisual → `scenes/combat/enemies/`, `scenes/ui/hud/` |
+| `PauseArbitrator` | Gestión concurrente de tokens de pausa. **Prohibido** modificar `get_tree().paused` directo. |
+| `SettingsManager` | Ajustes de gráficos, audio, controles y accesibilidad. |
+| `SaveManager` | Fachada global de persistencia delegada en schemas DTO tipados. |
+| `DebugManager` | Control de utilidades de depuración en runtime y builds. |
+| `EventBus` | Señales globales desacopladas entre dominios. |
+| `AudioManager` | BGM reactiva, SFX balísticos y buses de audio. |
+| `SceneTransition` | Fundidos y transiciones suaves de escena. |
 
 ---
 
-## 🐛 Bugs Conocidos Pendientes
+## 📋 Reglas Fundamentales de Desarrollo
 
-| Bug | Archivo principal | Estado |
-|---|---|---|
-| Nyx desbloqueada permanentemente (workaround temporal) | `character_select.gd` L629, `meta_progression_state.gd` | Pendiente restaurar condición de unlock |
-| ValentinaO2 / RoxyO2 sin integrar al Hub3D | `hub_world.gd`, `hub_pilot_showcase_controller.gd` | Pendiente sesión de integración |
-
----
-
-## 📋 Template de Inicio de Sesión
-
-Copiar y completar al iniciar cada conversación:
-
-```
-[SESIÓN ASTRA DREAM]
-Sistema: [CHARACTER_SELECT | HUD | COMBAT | HUB | PERSISTENCIA | BALANCE | COSMETICS | ART]
-Contexto: [qué se hizo la última vez en este sistema]
-Archivos probables: [2-4 archivos]
-Pedidos (máx. 4):
-  1.
-  2.
-  3.
-```
+1. **Zero-Allocation Danmaku:** Proyectiles masivos gestionados exclusivamente vía `BulletServer`. Prohibido instanciar `Area2D` individuales para balas masivas.
+2. **Modularidad Estricta:** Anti God-Objects. Todo script se mantiene desacoplado en componentes con responsabilidad única.
+3. **Data-Driven Balance:** Todo valor numérico debe residir en recursos `.tres` (`WeaponData`, `CharacterData`, etc.). Cero números mágicos en GDScript.
+4. **Tipado Estricto:** GDScript 4 con tipado estricto completo en variables, retornos y argumentos.
+5. **Verificación de Tests:** Correr tests aislados por runner específico:
+   `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "<test_runner.tscn>"`
