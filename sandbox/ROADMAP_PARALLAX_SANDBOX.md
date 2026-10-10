@@ -17,20 +17,20 @@
 ---
 
 ## 🌌 Sesión 2: Floating Origin Tracker y Shaders de Parallax Continuo
-- [ ] **Paso 2.1**: Implementar `sandbox/core/floating_origin_tracker.gd` (gestión de coordenadas lógicas en 64 bits, umbral de tolerancia $\delta_{\max}$ y señales de rebase).
-- [ ] **Paso 2.2**: Crear `sandbox/shaders/space_deep_quad.gdshader` (shader de fondo continuo para cámara con UV scrolling analítico, mezcla de colores base, estrellas procedurales y textura 8K).
-- [ ] **Paso 2.3**: Crear `sandbox/shaders/space_nebula_quad.gdshader` (shader para estratos medios de gas nebular con ruido periódico, premultiplied alpha y modulación cromática).
-- [ ] **Paso 2.4**: Implementar `sandbox/rendering/cosmic_parallax_quad.gd` (nodo CanvasItem/Mesh centrado permanentemente en la cámara que alimenta los uniforms de los shaders sin mover geometría en CPU).
-- [ ] **Paso 2.5**: Validación visual preliminar del scrolling suave y sin costuras vinculándolo a la cámara de la nave.
+- [x] ~~**Paso 2.1**: Implementar `sandbox/core/floating_origin_tracker.gd` (gestión de coordenadas lógicas en 64 bits, umbral de tolerancia $\delta_{\max}$ y señales de rebase).~~
+- [x] ~~**Paso 2.2**: Crear `sandbox/shaders/space_deep_quad.gdshader` (shader de fondo continuo para cámara con UV scrolling analítico, mezcla de colores base, estrellas procedurales y textura 8K).~~
+- [x] ~~**Paso 2.3**: Crear `sandbox/shaders/space_nebula_quad.gdshader` (shader para estratos medios de gas nebular con ruido periódico, premultiplied alpha y modulación cromática).~~
+- [x] ~~**Paso 2.4**: Implementar `sandbox/rendering/cosmic_parallax_quad.gd` (nodo CanvasItem/Mesh centrado permanentemente en la cámara que alimenta los uniforms de los shaders sin mover geometría en CPU).~~
+- [x] ~~**Paso 2.5**: Validación visual preliminar del scrolling suave y sin costuras vinculándolo a la cámara de la nave.~~
 
 ---
 
 ## ☄️ Sesión 3: Instanciación Masiva de Debris en GPU (MultiMesh)
-- [ ] **Paso 3.1**: Crear `sandbox/shaders/debris_cutout.gdshader` (alpha testing con instrucción `discard` para Early-Z rejection en GPU).
-- [ ] **Paso 3.2**: Implementar `sandbox/rendering/cosmic_debris_instancer.gd` utilizando `MultiMeshInstance2D` con buffer compacto alimentado por la semilla del chunk.
-- [ ] **Paso 3.3**: Mapeo y slicing de texturas de restos espaciales usando los atlas ya existentes (`assets/environments/parallax_space/`).
-- [ ] **Paso 3.4**: Configurar el ciclo de reciclaje toroidal de celdas para el debris instanciado alrededor de la nave sin asignaciones volátiles (`zero-allocation`).
-- [ ] **Paso 3.5**: Verificación de rendimiento (1 Draw Call para miles de fragmentos y tasa de refresco a 60 FPS estables).
+- [x] ~~**Paso 3.1**: Crear `sandbox/shaders/debris_cutout.gdshader` (alpha testing con instrucción `discard` para Early-Z rejection en GPU).~~
+- [x] ~~**Paso 3.2**: Implementar `sandbox/rendering/cosmic_debris_instancer.gd` utilizando `MultiMeshInstance2D` con buffer compacto alimentado por la semilla del chunk.~~
+- [x] ~~**Paso 3.3**: Mapeo y slicing de texturas de restos espaciales usando los atlas ya existentes (`assets/environments/parallax_space/`).~~
+- [x] ~~**Paso 3.4**: Configurar el ciclo de reciclaje toroidal de celdas para el debris instanciado alrededor de la nave sin asignaciones volátiles (`zero-allocation`).~~
+- [x] ~~**Paso 3.5**: Verificación de rendimiento (1 Draw Call para miles de fragmentos y tasa de refresco a 60 FPS estables).~~
 
 ---
 
