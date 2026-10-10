@@ -57,7 +57,6 @@ static func trigger_pet_rival_jump_warning(director: Node, rival: Node2D, on_fin
 		return
 
 	director.set("is_cockpit_active", true)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	director.set("on_dialogue_finished_callback", on_finished)
 
 	var p_node: Node2D = director.get("player") as Node2D
@@ -109,7 +108,6 @@ static func trigger_rival_face_to_face_dialogue(director: Node, rival: Node2D) -
 		return
 
 	director.set("is_cockpit_active", true)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	director.set("on_dialogue_finished_callback", Callable())
 
 	var p_node: Node2D = director.get("player") as Node2D
@@ -166,7 +164,6 @@ static func trigger_pet_rival_alert(director: Node, pilot_name: String) -> void:
 		return
 
 	director.set("is_cockpit_active", true)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
 		skip_badge.show()
@@ -203,7 +200,6 @@ static func trigger_pet_boss_alert(director: Node, boss_name: String, on_finishe
 		return
 
 	director.set("is_boss_transmission_active", true)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	director.set("on_dialogue_finished_callback", on_finished)
 
 	var p_node: Node2D = director.get("player") as Node2D
@@ -253,7 +249,6 @@ static func trigger_climax_dialogue(director: Node, route: String, on_finished: 
 		return
 
 	director.set("is_boss_transmission_active", true)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	director.set("on_dialogue_finished_callback", on_finished)
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
@@ -358,7 +353,6 @@ static func trigger_post_boss_victory_dialogue(director: Node, route: String, vi
 
 	director.set("is_victory_dialogue_active", true)
 	director.set("pending_victory_data", victory_data)
-	PauseArbitrator.acquire_pause(&"dialogue")
 	var skip_badge = director.get("skip_badge_layer")
 	if skip_badge:
 		skip_badge.show()

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SlotMachineConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/interactables/slot_machine_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+bumper_radius = 46.0
+bumper_kickback_force = 540.0
+bumper_nudge_distance = 14.0
+bump_cooldown = 0.28
+base_spin_cost = 50
+cost_increment = 25
+min_uses = 3
+max_uses = 5
+symbols = ["💰", "💣", "🧲", "💖", "⭐"]
+jackpot_chance = 0.18
+pair_chance = 0.65
