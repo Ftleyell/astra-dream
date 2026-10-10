@@ -43,6 +43,13 @@ func configure_colors(p_color: Color, s_color: Color) -> void:
 			mat.set_shader_parameter("secondary_color", _secondary_color)
 
 
+func on_origin_shifted(shift: Vector2) -> void:
+	_last_spawn_pos -= shift
+	for ghost in _pool:
+		if ghost and is_instance_valid(ghost) and ghost.visible:
+			ghost.global_position -= shift
+
+
 func _init_pool() -> void:
 	if _is_initialized:
 		return

@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3 uid="uid://testdebrisnebula01"]
+
+[ext_resource type="Script" path="res://sandbox/scenes/free_camera_controller.gd" id="1_camera"]
+[ext_resource type="Shader" path="res://sandbox/shaders/universe_nebula.gdshader" id="2_nebulashader"]
+[ext_resource type="Script" path="res://sandbox/rendering/nebula_backdrop_controller.gd" id="3_nebulactrl"]
+[ext_resource type="Resource" uid="uid://cmeq824g55d7j" path="res://sandbox/resources/data/default_cosmic_biome.tres" id="4_biomea"]
+[ext_resource type="Script" path="res://sandbox/environment/debris_streamer_2d.gd" id="5_debris"]
+[ext_resource type="Resource" uid="uid://bg55gq3b76j1m" path="res://sandbox/resources/data/default_debris_layer.tres" id="6_debrisprof"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nebula"]
+shader = ExtResource("2_nebulashader")
+
+[node name="TestDebrisAndNebula" type="Node2D"]
+
+[node name="CosmosCamera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+script = ExtResource("1_camera")
+speed = 800.0
+
+[node name="CanvasLayerNebula" type="CanvasLayer" parent="."]
+layer = -100
+
+[node name="NebulaBackdrop" type="ColorRect" parent="CanvasLayerNebula" node_paths=PackedStringArray("camera")]
+material = SubResource("ShaderMaterial_nebula")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_nebulactrl")
+camera = NodePath("../../CosmosCamera2D")
+biome_a = ExtResource("4_biomea")
+biome_blend_factor = 0.25
+parallax_factor = 0.05
+
+[node name="ParallaxDebrisLayer" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.5, 0.5)
+repeat_size = Vector2(0, 0)
+autoscroll = Vector2(0, 0)
+
+[node name="DebrisStreamer2D" type="Node2D" parent="ParallaxDebrisLayer" node_paths=PackedStringArray("parallax_layer", "camera")]
+script = ExtResource("5_debris")
+profile = ExtResource("6_debrisprof")
+parallax_layer = NodePath("..")
+camera = NodePath("../../CosmosCamera2D")
+run_seed = 771239
+cell_size = 8192.0

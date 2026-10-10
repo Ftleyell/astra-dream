@@ -1,0 +1,95 @@
+[gd_scene format=3 uid="uid://cosmosroot001"]
+
+[ext_resource type="Script" uid="uid://d1qlfdewcqfdc" path="res://sandbox/cosmos_root.gd" id="1_root"]
+[ext_resource type="Shader" uid="uid://bwdn1dp84pu3l" path="res://sandbox/shaders/universe_nebula.gdshader" id="2_nebula_shader"]
+[ext_resource type="Script" uid="uid://booll1p84yo4" path="res://sandbox/rendering/nebula_backdrop_controller.gd" id="3_nebula_ctrl"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_cosmic_biome.tres" id="4_biome_a"]
+[ext_resource type="Script" uid="uid://cf2xilkvyrknx" path="res://sandbox/rendering/galaxy_streamer_2d.gd" id="5_galaxy_streamer"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_galaxy_landmark.tres" id="6_galaxy_res"]
+[ext_resource type="Texture2D" uid="uid://lvecvijymwwg" path="res://assets/environments/parallax_space/deep_starfield_8k.png" id="7_starfield_tex"]
+[ext_resource type="Script" uid="uid://cejyykapnkrf1" path="res://sandbox/astronomy/solar_system_streamer.gd" id="8_solar_streamer"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_celestial_system.tres" id="9_solar_res"]
+[ext_resource type="Script" uid="uid://cuq6hya2k2o1u" path="res://sandbox/environment/debris_streamer_2d.gd" id="10_debris_streamer"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_debris_layer.tres" id="11_debris_res"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nebula"]
+shader = ExtResource("2_nebula_shader")
+shader_parameter/camera_world_position = Vector2(0, 0)
+shader_parameter/viewport_resolution = Vector2(1920, 1080)
+shader_parameter/parallax_factor = 0.05
+shader_parameter/global_time = 0.0
+shader_parameter/biome_a_color_deep = Color(0.01, 0.01, 0.03, 1)
+shader_parameter/biome_a_color_gas_primary = Color(0.18, 0.04, 0.28, 0.8)
+shader_parameter/biome_a_color_gas_secondary = Color(0.02, 0.22, 0.38, 0.6)
+shader_parameter/biome_a_density = 0.65
+shader_parameter/biome_a_frequency = 0.00045
+shader_parameter/biome_b_color_deep = Color(0.02, 0.01, 0.01, 1)
+shader_parameter/biome_b_color_gas_primary = Color(0.35, 0.12, 0.03, 0.85)
+shader_parameter/biome_b_color_gas_secondary = Color(0.4, 0.28, 0.05, 0.65)
+shader_parameter/biome_b_density = 0.8
+shader_parameter/biome_b_frequency = 0.00055
+shader_parameter/biome_blend_factor = 0.0
+shader_parameter/chromatic_dispersion = 0.004
+shader_parameter/flow_drift_speed = 0.012
+
+[node name="CosmosRoot" type="Node2D" unique_id=1328222445 node_paths=PackedStringArray("nebula_controller", "parallax_macro_galaxies", "galaxy_streamer", "parallax_starfield_8k", "parallax_solar_systems", "solar_streamer", "parallax_debris_belt", "debris_streamer", "gameplay_world")]
+script = ExtResource("1_root")
+nebula_controller = NodePath("ParallaxNebulaDeep/NebulaBackdrop")
+parallax_macro_galaxies = NodePath("ParallaxMacroGalaxies")
+galaxy_streamer = NodePath("ParallaxMacroGalaxies/GalaxyStreamer2D")
+parallax_starfield_8k = NodePath("ParallaxStarfield8K")
+parallax_solar_systems = NodePath("ParallaxSolarSystems")
+solar_streamer = NodePath("ParallaxSolarSystems/SolarSystemStreamer")
+parallax_debris_belt = NodePath("ParallaxDebrisBelt")
+debris_streamer = NodePath("ParallaxDebrisBelt/DebrisStreamer2D")
+gameplay_world = NodePath("GameplayWorld")
+
+[node name="ParallaxNebulaDeep" type="CanvasLayer" parent="." unique_id=561466014]
+layer = -100
+
+[node name="NebulaBackdrop" type="ColorRect" parent="ParallaxNebulaDeep" unique_id=1080309711]
+material = SubResource("ShaderMaterial_nebula")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_nebula_ctrl")
+biome_a = ExtResource("4_biome_a")
+biome_blend_factor = 0.2
+parallax_factor = 0.01
+
+[node name="ParallaxMacroGalaxies" type="Parallax2D" parent="." unique_id=814767259]
+scroll_scale = Vector2(0.02, 0.02)
+
+[node name="GalaxyStreamer2D" type="Node2D" parent="ParallaxMacroGalaxies" unique_id=1605695872 node_paths=PackedStringArray("parallax_layer")]
+script = ExtResource("5_galaxy_streamer")
+landmark_profile = ExtResource("6_galaxy_res")
+parallax_layer = NodePath("..")
+
+[node name="ParallaxStarfield8K" type="Parallax2D" parent="." unique_id=1791499758]
+scroll_scale = Vector2(0.05, 0.05)
+repeat_size = Vector2(8192, 8192)
+
+[node name="StarfieldSprite" type="Sprite2D" parent="ParallaxStarfield8K" unique_id=1600850274]
+texture = ExtResource("7_starfield_tex")
+centered = false
+
+[node name="ParallaxSolarSystems" type="Parallax2D" parent="." unique_id=1236841986]
+scroll_scale = Vector2(0.2, 0.2)
+
+[node name="SolarSystemStreamer" type="Node2D" parent="ParallaxSolarSystems" unique_id=1337944796 node_paths=PackedStringArray("parallax_layer")]
+script = ExtResource("8_solar_streamer")
+system_profile = ExtResource("9_solar_res")
+parallax_layer = NodePath("..")
+
+[node name="ParallaxDebrisBelt" type="Parallax2D" parent="." unique_id=740035540]
+scroll_scale = Vector2(0.5, 0.5)
+
+[node name="DebrisStreamer2D" type="Node2D" parent="ParallaxDebrisBelt" unique_id=1001749389 node_paths=PackedStringArray("parallax_layer")]
+script = ExtResource("10_debris_streamer")
+profile = ExtResource("11_debris_res")
+parallax_layer = NodePath("..")
+
+[node name="GameplayWorld" type="Node2D" parent="." unique_id=123479881]

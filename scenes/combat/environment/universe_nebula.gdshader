@@ -264,7 +264,7 @@ void fragment() {
 	float density_factor = clamp(star_density / 90.0, 0.3, 3.0);
 	float sqrt_dens = sqrt(density_factor);
 
-	// 4. Atlas Estelar Profundo 8K Astrofísico (27,780 estrellas continuas, sin cuadrícula, Poisson sub-píxel)
+	// 4. Atlas Estelar Profundo 8K Astrofísico (estrellas lejanas del fondo hiper-profundo)
 	vec2 starfield_world_pos = screen_pixel + camera_world_position * deep_starfield_scroll_scale;
 	vec2 starfield_uv = starfield_world_pos / 8192.0;
 	vec3 star_sample = texture(deep_starfield_texture, starfield_uv).rgb;
@@ -282,10 +282,15 @@ void fragment() {
 		out_color += star_rgb;
 	}
 
-	// 5. Gemas Focales Cercanas con Picos de Difracción (scroll 0.20 - muy escasas, movimiento cinemático)
+	// 5. Capa Media de Estrellas Procedurales (scroll 0.15 - movimiento fluido medio de profundidad)
+	float cell_mid = 180.0 / sqrt_dens;
+	vec2 pos_mid = rotate_2d(screen_pixel + camera_world_position * 0.15, GOLDEN_ANGLE) + vec2(1047.0, -849.0);
+	out_color += sample_star_layer(pos_mid, cell_mid, 0.35, 0.60, 1.40, 0.30, 1.20, 0.30, false, 0.0, cluster_bias, 1.0);
+
+	// 6. Gemas Focales Cercanas con Picos de Difracción (scroll 0.35 - pasan rápido en primer plano cinemático)
 	float cell_focal = 311.0 / sqrt_dens;
-	vec2 pos_focal = rotate_2d(screen_pixel + camera_world_position * 0.200, 2.0 * GOLDEN_ANGLE) + vec2(2833.0, -1367.0);
-	out_color += sample_star_layer(pos_focal, cell_focal, 0.12, 0.85, 2.10, 0.40, 1.65, 0.45, true, star_spike_intensity, cluster_bias, 2.0);
+	vec2 pos_focal = rotate_2d(screen_pixel + camera_world_position * 0.35, 2.0 * GOLDEN_ANGLE) + vec2(2833.0, -1367.0);
+	out_color += sample_star_layer(pos_focal, cell_focal, 0.15, 0.85, 2.20, 0.50, 1.80, 0.50, true, star_spike_intensity, cluster_bias, 2.0);
 
 	COLOR = vec4(out_color, 1.0);
 }

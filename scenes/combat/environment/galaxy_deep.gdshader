@@ -25,7 +25,17 @@ void fragment() {
 	vec2 delta = UV - galaxy_center;
 	float dist = length(delta);
 
-	vec4 tex = texture(TEXTURE, UV);
+	// 1. Rotación suave y continua de sus brazos espirales
+	vec2 uv_rotated = UV;
+	if (abs(spin_speed) > 0.00001) {
+		float angle = TIME * spin_speed;
+		float c = cos(angle);
+		float s = sin(angle);
+		uv_rotated = galaxy_center + vec2(delta.x * c - delta.y * s, delta.x * s + delta.y * c);
+	}
+
+	vec4 tex = texture(TEXTURE, uv_rotated);
+
 
 
 	// 2. Destellos sutiles y armónicos en el núcleo galáctico
@@ -40,5 +50,5 @@ void fragment() {
 	vec3 final_rgb = tex.rgb * tint_color.rgb * overall_brightness * core_sparkle;
 	float final_alpha = tex.a * fade * tint_color.a;
 
-	COLOR = vec4(final_rgb, final_alpha);
+	COLOR = vec4(final_rgb, final_alpha) * COLOR;
 }

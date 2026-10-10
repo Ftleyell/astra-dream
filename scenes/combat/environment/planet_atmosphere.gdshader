@@ -121,10 +121,10 @@ void fragment() {
 		// Oclusión del lado oscuro:
 		// Cuando dark_side_occlusion es 1.0, el alfa interior es 1.0 absoluto dentro de la esfera
 		float final_alpha = mix(tex_color.a, 1.0, dark_side_occlusion) * edge_mask;
-		COLOR = vec4(surface, final_alpha);
+		COLOR = vec4(surface, final_alpha) * COLOR;
 	} else if (outer_atmosphere > 0.001) {
 		vec3 outer_atmo_color = mix(atmosphere_color.rgb, biome_tint_color.rgb, biome_tint_intensity * 0.5);
-		COLOR = vec4(outer_atmo_color, outer_atmosphere * atmosphere_color.a);
+		COLOR = vec4(outer_atmo_color, outer_atmosphere * atmosphere_color.a) * COLOR;
 	} else {
 		COLOR = vec4(0.0, 0.0, 0.0, 0.0);
 	}

@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://cosmosdemo001"]
+
+[ext_resource type="PackedScene" uid="uid://cosmosroot001" path="res://sandbox/cosmos_root.tscn" id="1_cosmos_root"]
+[ext_resource type="Script" uid="uid://csnsu6f3iy5a2" path="res://sandbox/core/floating_origin_tracker.gd" id="2_origin_tracker"]
+[ext_resource type="Script" uid="uid://cga5q56b61h22" path="res://sandbox/scenes/player_vessel.gd" id="3_vessel"]
+[ext_resource type="Script" uid="uid://dx027lylt5j3" path="res://sandbox/scenes/cosmos_camera_2d.gd" id="4_camera"]
+[ext_resource type="Script" uid="uid://bsmseniyieedm" path="res://sandbox/scenes/cosmos_telemetry_overlay.gd" id="5_overlay"]
+[ext_resource type="Resource" path="res://data/characters/roster/nova.tres" id="6_nova_char"]
+[ext_resource type="Script" uid="uid://m82vuj32mytr" path="res://scenes/combat/player/sandevistan_flight_vfx.gd" id="7_sandevistan"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vessel"]
+radius = 24.0
+
+[node name="CosmosEngineDemo" type="Node2D" unique_id=1596802290]
+
+[node name="CosmosRoot" parent="." unique_id=292884675 node_paths=PackedStringArray("camera", "player_target", "floating_origin_tracker") instance=ExtResource("1_cosmos_root")]
+camera = NodePath("PlayerVessel/CosmosCamera2D")
+player_target = NodePath("PlayerVessel")
+floating_origin_tracker = NodePath("FloatingOriginTracker")
+
+[node name="FloatingOriginTracker" type="Node" parent="CosmosRoot" unique_id=707825347 node_paths=PackedStringArray("player_target", "camera", "parallax_layers")]
+process_priority = -50
+script = ExtResource("2_origin_tracker")
+player_target = NodePath("../PlayerVessel")
+camera = NodePath("../PlayerVessel/CosmosCamera2D")
+parallax_layers = [NodePath("../ParallaxMacroGalaxies"), NodePath("../ParallaxStarfield8K"), NodePath("../ParallaxSolarSystems"), NodePath("../ParallaxDebrisBelt")]
+
+[node name="PlayerVessel" type="CharacterBody2D" parent="CosmosRoot" unique_id=1166928796]
+position = Vector2(960, 540)
+motion_mode = 1
+script = ExtResource("3_vessel")
+character_data = ExtResource("6_nova_char")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CosmosRoot/PlayerVessel" unique_id=2006696895]
+shape = SubResource("CircleShape2D_vessel")
+
+[node name="ShipSprite" type="Sprite2D" parent="CosmosRoot/PlayerVessel" unique_id=1556975961]
+z_index = 1
+
+[node name="VesselVisual" type="Polygon2D" parent="CosmosRoot/PlayerVessel" unique_id=1151770160]
+visible = false
+color = Color(0.15, 0.85, 1, 1)
+polygon = PackedVector2Array(0, -28, 18, 20, 0, 12, -18, 20)
+
+[node name="ThrusterVisual" type="Polygon2D" parent="CosmosRoot/PlayerVessel" unique_id=493043006]
+visible = false
+color = Color(1, 0.45, 0.1, 1)
+polygon = PackedVector2Array(-8, 14, 0, 26, 8, 14)
+
+[node name="SandevistanFlightVFX" type="Node2D" parent="CosmosRoot/PlayerVessel" unique_id=1295265778 node_paths=PackedStringArray("source_sprite")]
+script = ExtResource("7_sandevistan")
+source_sprite = NodePath("../ShipSprite")
+
+[node name="CosmosCamera2D" type="Camera2D" parent="CosmosRoot/PlayerVessel" unique_id=1268124782]
+script = ExtResource("4_camera")
+
+[node name="TelemetryOverlay" type="CanvasLayer" parent="." unique_id=1603953433 node_paths=PackedStringArray("cosmos_root", "vessel", "camera")]
+layer = 120
+script = ExtResource("5_overlay")
+cosmos_root = NodePath("../CosmosRoot")
+vessel = NodePath("../CosmosRoot/PlayerVessel")
+camera = NodePath("../CosmosRoot/PlayerVessel/CosmosCamera2D")
+
+[node name="PanelContainer" type="PanelContainer" parent="TelemetryOverlay" unique_id=731793095]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 560.0
+offset_bottom = 250.0
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TelemetryOverlay/PanelContainer" unique_id=2083101061]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="LabelTelemetry" type="Label" parent="TelemetryOverlay/PanelContainer/MarginContainer" unique_id=823045497]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "=== COSMOS ENGINE TELEMETRY ==="

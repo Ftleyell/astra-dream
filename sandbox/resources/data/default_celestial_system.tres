@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="CelestialSystemProfile" load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/celestial_system_profile.gd" id="1_celestial"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star.jpg" id="2_star_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 0.jpg" id="3_star_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 1.jpg" id="4_star_2"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/planet_0.png" id="5_planet_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/planet_1.png" id="6_planet_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/planet_2.png" id="7_planet_2"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/planet_3.png" id="8_planet_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_verdant.png" id="9_planet_verdant"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_cryo.png" id="10_planet_cryo"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_volcanic.png" id="11_planet_volcanic"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/asteroid.png" id="12_moon_ast"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/planet_core.png" id="13_moon_core"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/astral_geode.png" id="14_moon_geode"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_0.png" id="15_station_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_1.png" id="16_station_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_2.png" id="17_station_2"]
+
+[resource]
+script = ExtResource("1_celestial")
+star_name_prefix = "SOLARIS"
+star_texture = ExtResource("2_star_0")
+star_textures = [ExtResource("2_star_0"), ExtResource("3_star_1"), ExtResource("4_star_2")]
+star_base_radius = 450.0
+star_emission_color = Color(1.0, 0.88, 0.55, 1.0)
+star_axial_rotation_speed = 0.008
+min_planets = 3
+max_planets = 6
+orbit_radius_min = 1200.0
+orbit_radius_max = 6400.0
+planet_textures = [ExtResource("5_planet_0"), ExtResource("6_planet_1"), ExtResource("7_planet_2"), ExtResource("8_planet_3"), ExtResource("9_planet_verdant"), ExtResource("10_planet_cryo"), ExtResource("11_planet_volcanic")]
+base_angular_velocity = 0.02
+max_orbital_eccentricity = 0.04
+moon_spawn_probability = 0.65
+moon_orbit_radius_range = Vector2(160.0, 280.0)
+moon_textures = [ExtResource("12_moon_ast"), ExtResource("13_moon_core"), ExtResource("14_moon_geode")]
+station_spawn_probability = 0.55
+station_orbit_radius_range = Vector2(220.0, 360.0)
+space_station_textures = [ExtResource("15_station_0"), ExtResource("16_station_1"), ExtResource("17_station_2")]
+show_orbit_lines = true
+orbit_line_color = Color(0.7, 0.85, 1.0, 0.14)
+orbit_line_width = 1.5

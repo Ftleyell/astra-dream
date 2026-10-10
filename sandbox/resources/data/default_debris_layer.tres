@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DebrisLayerProfile" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/debris_layer_profile.gd" id="1_debris"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/debris_atlas_0.png" id="2_debris_tex"]
+
+[resource]
+script = ExtResource("1_debris")
+instance_count = 600
+field_bounding_box = Vector2(8192, 8192)
+scale_range = Vector2(0.3, 1.4)
+max_initial_rotation = 6.28318
+alpha_modulation = Color(0.85, 0.9, 0.95, 0.7)
+mesh_texture = ExtResource("2_debris_tex")

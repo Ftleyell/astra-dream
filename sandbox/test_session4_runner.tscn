@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://sandbox/test_session4_verification.gd" id="1_test4"]
-
-[node name="TestSession4VerificationRunner" type="Node"]
-script = ExtResource("1_test4")

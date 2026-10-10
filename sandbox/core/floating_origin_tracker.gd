@@ -1,56 +1,51 @@
 class_name FloatingOriginTracker
-extends RefCounted
+extends Node
 
-## floating_origin_tracker.gd
-## Rastreador de coordenadas lógicas en 64 bits con floating origin (rebase).
-## Mantiene la posición del mundo desacoplada de la precisión float32 de la GPU/física.
+## Supervisor del sistema de Origen Flotante para grandes escalas astronómicas.
+## Detecta cuando el objetivo (player/nave) se aleja más allá de threshold_distance
+## respecto al centro global (0, 0), recentrando las entidades del mundo y
+## aplicando compensación exacta sobre Parallax2D.scroll_offset para garantizar
+## cero tirones (jitter/stutter) visuales.
 
-signal rebased(offset: Vector2)
+signal origin_shifted(shift_vector: Vector2)
 
-var _origin: Vector2 = Vector2.ZERO
-var _actor_position: Vector2 = Vector2.ZERO
-var _threshold: float = 8192.0
+@export var player_target: Node2D
+@export var camera: Camera2D
+@export var threshold_distance: float = 10000.0
+@export var parallax_layers: Array[Parallax2D] = []
 
+func _physics_process(_delta: float) -> void:
+	check_and_shift()
 
-func _init(rebase_threshold: float = 8192.0) -> void:
-	_threshold = maxf(rebase_threshold, 1024.0)
-
-
-func update_actor_position(local_pos: Vector2) -> bool:
-	_actor_position = local_pos
-	if _actor_position.length_squared() >= _threshold * _threshold:
-		trigger_rebase()
+## Evalúa si el objetivo superó el umbral y efectúa el recentrado si corresponde.
+func check_and_shift() -> bool:
+	if not is_instance_valid(player_target):
+		return false
+	
+	var len_sq: float = player_target.global_position.length_squared()
+	var thresh_sq: float = threshold_distance * threshold_distance
+	if len_sq >= thresh_sq:
+		trigger_shift(player_target.global_position)
 		return true
 	return false
 
+## Aplica el recentrado vectorial trasladando el objetivo, cámara y capas de paralaje.
+func trigger_shift(shift: Vector2) -> void:
+	if shift == Vector2.ZERO:
+		return
 
-func trigger_rebase() -> void:
-	var delta_offset: Vector2 = _actor_position
-	_origin += delta_offset
-	_actor_position = Vector2.ZERO
-	rebased.emit(delta_offset)
+	if is_instance_valid(player_target):
+		player_target.global_position -= shift
+		if player_target.has_method("on_origin_shifted"):
+			player_target.call("on_origin_shifted", shift)
 
+	if is_instance_valid(camera):
+		if not (is_instance_valid(player_target) and player_target.is_ancestor_of(camera)):
+			camera.global_position -= shift
+		camera.reset_smoothing()
 
-func get_logical_position() -> Vector2:
-	return _origin + _actor_position
+	for layer: Parallax2D in parallax_layers:
+		if is_instance_valid(layer):
+			layer.scroll_offset -= shift * layer.scroll_scale
 
-
-func get_origin() -> Vector2:
-	return _origin
-
-
-func get_actor_position() -> Vector2:
-	return _actor_position
-
-
-func get_threshold() -> float:
-	return _threshold
-
-
-func set_threshold(value: float) -> void:
-	_threshold = maxf(value, 1024.0)
-
-
-func reset(new_origin: Vector2 = Vector2.ZERO) -> void:
-	_origin = new_origin
-	_actor_position = Vector2.ZERO
+	origin_shifted.emit(shift)

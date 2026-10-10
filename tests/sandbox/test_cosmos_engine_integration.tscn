@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://testcosmosengineintegration01"]
+
+[ext_resource type="Script" path="res://tests/sandbox/test_cosmos_engine_integration.gd" id="1_test"]
+
+[node name="TestCosmosEngineIntegration" type="Node2D"]
+script = ExtResource("1_test")
+suite_name = "CosmosEngineIntegration"
