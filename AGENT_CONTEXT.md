@@ -67,7 +67,10 @@
 | Perfil del jugador (biomasa, trofeos, unlocks) | `core/systems/persistence/meta_progression_state.gd` | — |
 | Run activa (armas, ítems, estado de partida) | `core/systems/persistence/active_run_storage.gd` | — |
 | Items y loot pool | `core/types/item_pool_manager.gd` | — |
-| Satélite orbital (tienda in-run) | `scenes/combat/satellite/satellite_shop.gd` | — |
+| Satélite orbital (tienda in-run) | `scenes/combat/satellite/satellite_shop.gd` | Orquestador: L267 (reducido de 515 a 267) |
+| Layout y barras de banlist | `scenes/ui/character_select/components/arsenal_banlist_layout_builder.gd` | Construcción de UI, pestañas y panel lateral |
+| Modal de arsenal y banlist | `scenes/ui/character_select/arsenal_banlist_modal.gd` | Orquestador: L231 (reducido de 638 a 231) |
+| Navegación y hotkeys de tienda satelital | `scenes/combat/satellite/components/satellite_shop_navigation_controller.gd` | Despacho de inputs, teclado/pad y atajos numéricos |
 | Economía y ofertas de tienda satelital | `scenes/combat/satellite/components/satellite_shop_economy_controller.gd` | Rerolls, límites de stacks y roll algorithm |
 | Tarjetas de tienda | `scenes/combat/satellite/components/satellite_shop_card_builder.gd` | — |
 | Gacha modal | `scenes/ui/gacha/gacha_modal.gd` | — |

@@ -7,6 +7,28 @@ extends RefCounted
 ## - Configura badges de estadísticas exactas (+DMG, CD, proc).
 ## - Conecta hover y focus con el panel de estadísticas para previsualización inmediata.
 
+static func apply_panel_styles(panel: Panel, inventory_side_panel: PanelContainer) -> void:
+	if panel:
+		var shop_style := StyleBoxFlat.new()
+		shop_style.bg_color = Color(0.04, 0.06, 0.1, 0.96)
+		shop_style.set_border_width_all(2)
+		shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
+		shop_style.set_corner_radius_all(12)
+		shop_style.set_content_margin_all(14.0)
+		panel.add_theme_stylebox_override("panel", shop_style)
+
+	if inventory_side_panel:
+		var inv_style := StyleBoxFlat.new()
+		inv_style.bg_color = Color(0.02, 0.03, 0.06, 0.98)
+		inv_style.set_border_width_all(1)
+		inv_style.border_width_right = 3
+		inv_style.border_color = Color(0.2, 0.7, 1.0, 0.9)
+		inv_style.set_corner_radius_all(8)
+		inv_style.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
+		inv_style.shadow_size = 8
+		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
+
+
 static func create_item_card_ui(entry: Resource, index: int, shop: SatelliteShop) -> Control:
 	var entry_rarity: Enums.Rarity = entry.get("rarity") if entry.get("rarity") != null else Enums.Rarity.COMMON
 	var rarity_color: Color = _get_rarity_color(entry_rarity)
@@ -386,6 +408,59 @@ static func update_card_affordability(card: Button, player_credits: int) -> void
 		p_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.25, 1.0) if can_afford else Color(0.9, 0.45, 0.45, 0.85))
 	if c_icon:
 		c_icon.modulate = Color(1.0, 0.85, 0.2, 1.0) if can_afford else Color(0.9, 0.45, 0.45, 0.8)
+
+static func update_action_buttons(
+	reroll_btn: Button,
+	close_btn: Button,
+	current_credits: int,
+	reroll_cost: int,
+	rerolls_used: int,
+	max_rerolls: int,
+	can_afford_any: bool
+) -> void:
+	if reroll_btn:
+		if rerolls_used >= max_rerolls:
+			reroll_btn.disabled = true
+			reroll_btn.text = "Re-roll [AGOTADO (%d/%d)]" % [rerolls_used, max_rerolls]
+			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
+		elif current_credits < reroll_cost:
+			reroll_btn.disabled = true
+			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
+		else:
+			reroll_btn.disabled = false
+			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
+			reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+	if close_btn:
+		if not can_afford_any:
+			close_btn.text = "★ Salir [ESC / ESPACIO] ★"
+			close_btn.modulate = Color(0.3, 1.0, 0.6, 1.0)
+		else:
+			close_btn.text = "Salir [ESC / ESPACIO]"
+			close_btn.modulate = Color.WHITE
+
+static func wire_directional_focus(buy_buttons: Array[Button], reroll_btn: Button, close_btn: Button) -> void:
+	if buy_buttons.is_empty():
+		return
+	var n_items: int = buy_buttons.size()
+	for i: int in range(n_items):
+		var btn: Button = buy_buttons[i]
+		btn.focus_neighbor_top = buy_buttons[(i - 1 + n_items) % n_items].get_path() if i > 0 else close_btn.get_path()
+		btn.focus_neighbor_bottom = buy_buttons[(i + 1) % n_items].get_path() if i < n_items - 1 else reroll_btn.get_path()
+		btn.focus_neighbor_left = btn.get_path()
+		btn.focus_neighbor_right = btn.get_path()
+
+	if reroll_btn and close_btn:
+		reroll_btn.focus_neighbor_left = close_btn.get_path()
+		reroll_btn.focus_neighbor_right = close_btn.get_path()
+		reroll_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
+		reroll_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
+
+		close_btn.focus_neighbor_left = reroll_btn.get_path()
+		close_btn.focus_neighbor_right = reroll_btn.get_path()
+		close_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
+		close_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
 
 static func _set_mouse_filter_ignore_recursive(node: Node) -> void:
 	for child: Node in node.get_children():

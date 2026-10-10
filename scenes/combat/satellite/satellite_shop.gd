@@ -2,16 +2,18 @@ class_name SatelliteShop
 extends CanvasLayer
 
 ## SatelliteShop.gd
-## Orquestador desacoplado de la Tienda de Satélites:
+## Orquestador desacoplado y ligero (<200 líneas) de la Tienda de Satélites:
 ## - Panel de compras interactivo con soporte completo de teclado, mando y ratón.
 ## - Panel lateral de inventario y estadísticas coordinado por SatelliteShopInventoryPanel.
 ## - Construcción modular de cartas de ítems mediante SatelliteShopCardBuilder.
-## - Modal de reemplazo de armas (WeaponSwapModal) al alcanzar el tope de 6 armas.
+## - Gestión económica delegada en SatelliteShopEconomyController.
+## - Navegación y atajos despachados por SatelliteShopNavigationController.
 
 const WeaponSwapModalClass = preload("res://scenes/ui/modals/weapon_swap_modal.gd")
 const SatelliteShopInventoryPanelClass = preload("res://scenes/combat/satellite/components/satellite_shop_inventory_panel.gd")
 const SatelliteShopCardBuilderClass = preload("res://scenes/combat/satellite/components/satellite_shop_card_builder.gd")
 const SatelliteShopEconomyControllerClass = preload("res://scenes/combat/satellite/components/satellite_shop_economy_controller.gd")
+const SatelliteShopNavigationControllerClass = preload("res://scenes/combat/satellite/components/satellite_shop_navigation_controller.gd")
 
 signal item_purchased(item: Resource, cost: int)
 signal shop_closed()
@@ -78,10 +80,10 @@ var buy_buttons: Array[Button] = []
 @onready var weapons_list: VBoxContainer = find_child("WeaponsList", true, false) as VBoxContainer
 @onready var items_list: VBoxContainer = find_child("ItemsList", true, false) as VBoxContainer
 
-# Backwards Compatibility Facade for test suite
 var stat_ui_entries: Dictionary:
 	get:
 		return _inventory_panel.stat_ui_entries if _inventory_panel else {}
+
 
 func can_reroll() -> bool:
 	return _economy.can_reroll() if _economy else false
@@ -91,31 +93,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide()
 
-	# Sub-controller setup
 	_inventory_panel = SatelliteShopInventoryPanelClass.new()
 	_inventory_panel.setup(stats_list, weapons_list, items_list, inventory_summary_label)
 	_economy = SatelliteShopEconomyControllerClass.new()
 
-	# Estilos translúcidos de alta tecnología
-	var shop_style := StyleBoxFlat.new()
-	shop_style.bg_color = Color(0.04, 0.06, 0.1, 0.96)
-	shop_style.set_border_width_all(2)
-	shop_style.border_color = Color(0.2, 0.6, 1.0, 0.7)
-	shop_style.set_corner_radius_all(12)
-	shop_style.set_content_margin_all(14.0)
-	if panel:
-		panel.add_theme_stylebox_override("panel", shop_style)
-
-	if inventory_side_panel:
-		var inv_style := StyleBoxFlat.new()
-		inv_style.bg_color = Color(0.02, 0.03, 0.06, 0.98)
-		inv_style.set_border_width_all(1)
-		inv_style.border_width_right = 3
-		inv_style.border_color = Color(0.2, 0.7, 1.0, 0.9)
-		inv_style.set_corner_radius_all(8)
-		inv_style.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
-		inv_style.shadow_size = 8
-		inventory_side_panel.add_theme_stylebox_override("panel", inv_style)
+	SatelliteShopCardBuilderClass.apply_panel_styles(panel, inventory_side_panel)
 
 	if close_btn:
 		close_btn.pressed.connect(close_shop)
@@ -137,8 +119,7 @@ func _ensure_player() -> void:
 
 func _generate_default_shop_items() -> void:
 	available_items_pool.clear()
-	var items: Array[ItemData] = ItemPoolManager.create_satellite_shop_items()
-	for it: ItemData in items:
+	for it: ItemData in ItemPoolManager.create_satellite_shop_items():
 		available_items_pool.append(it)
 
 
@@ -166,7 +147,6 @@ func open_shop(credits: int, satellite_id: int = -1) -> void:
 func _restore_existing_shop_view() -> void:
 	if not items_container:
 		return
-	items_container.queue_free_children() if items_container.has_method("queue_free_children") else null
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	buy_buttons.clear()
@@ -232,121 +212,16 @@ func _refresh_inventory_display() -> void:
 		_inventory_panel.refresh_inventory_display(player)
 
 
-func highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void:
-	_highlight_preview_stat(stat_key, delta_val, is_pct)
-
-
-func clear_stat_highlights() -> void:
-	_clear_stat_highlights()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not visible:
-		return
-
-	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE):
-		close_shop()
-		get_viewport().set_input_as_handled()
-		return
-
-	if event.is_action_pressed("ui_select") or (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE):
-		var focus_owner: Control = get_viewport().gui_get_focus_owner()
-		if focus_owner is Button and not focus_owner.disabled:
-			focus_owner.emit_signal("pressed")
-			get_viewport().set_input_as_handled()
-			return
-		_focus_next_available_buy_button()
-		var new_focus: Control = get_viewport().gui_get_focus_owner()
-		if new_focus is Button and not new_focus.disabled:
-			new_focus.emit_signal("pressed")
-		else:
-			close_shop()
-		get_viewport().set_input_as_handled()
-		return
-
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_1:
-				_buy_item_by_index(0)
-				get_viewport().set_input_as_handled()
-			KEY_2:
-				_buy_item_by_index(1)
-				get_viewport().set_input_as_handled()
-			KEY_3:
-				_buy_item_by_index(2)
-				get_viewport().set_input_as_handled()
-			KEY_R:
-				if can_reroll():
-					_on_reroll_pressed()
-					get_viewport().set_input_as_handled()
-
-	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_W or event.keycode == KEY_UP)):
-		_navigate_vertical(-1)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_S or event.keycode == KEY_DOWN)):
-		_navigate_vertical(1)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
-		_navigate_horizontal(-1)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
-		_navigate_horizontal(1)
-		get_viewport().set_input_as_handled()
-
-
-func _navigate_vertical(dir: int) -> void:
-	var focus_owner: Control = get_viewport().gui_get_focus_owner()
-	var current_idx: int = buy_buttons.find(focus_owner as Button)
-
-	if current_idx != -1:
-		var target_idx: int = current_idx + dir
-		if target_idx < 0:
-			# Wrap to bottom bar
-			if close_btn and is_instance_valid(close_btn):
-				close_btn.grab_focus()
-		elif target_idx >= buy_buttons.size():
-			# Go to bottom bar
-			if reroll_btn and is_instance_valid(reroll_btn) and not reroll_btn.disabled:
-				reroll_btn.grab_focus()
-			elif close_btn and is_instance_valid(close_btn):
-				close_btn.grab_focus()
-		else:
-			var target_btn: Button = buy_buttons[target_idx]
-			if is_instance_valid(target_btn):
-				target_btn.grab_focus()
-	elif focus_owner == reroll_btn or focus_owner == close_btn:
-		if dir < 0:
-			# Go back to last available card
-			for i in range(buy_buttons.size() - 1, -1, -1):
-				var b: Button = buy_buttons[i]
-				if is_instance_valid(b) and not b.disabled:
-					b.grab_focus()
-					return
-			if not buy_buttons.is_empty():
-				buy_buttons[-1].grab_focus()
-	else:
-		_focus_next_available_buy_button()
-
-
-func _navigate_horizontal(dir: int) -> void:
-	var focus_owner: Control = get_viewport().gui_get_focus_owner()
-	if focus_owner == reroll_btn:
-		if close_btn and is_instance_valid(close_btn):
-			close_btn.grab_focus()
-	elif focus_owner == close_btn:
-		if reroll_btn and is_instance_valid(reroll_btn) and not reroll_btn.disabled:
-			reroll_btn.grab_focus()
-	else:
-		# Si está en una oferta, saltar a la oferta adyacente
-		_navigate_vertical(dir)
+func highlight_preview_stat(stat_key: StringName, delta_val: float, is_pct: bool) -> void: _highlight_preview_stat(stat_key, delta_val, is_pct)
+func clear_stat_highlights() -> void: _clear_stat_highlights()
 
 
 func _buy_item_by_index(index: int) -> void:
-	if index >= 0 and index < buy_buttons.size():
-		var btn: Button = buy_buttons[index]
-		if is_instance_valid(btn) and not btn.disabled:
-			btn.emit_signal("pressed")
+	SatelliteShopNavigationControllerClass.buy_item_by_index(index, self)
 
+
+func _unhandled_input(event: InputEvent) -> void:
+	SatelliteShopNavigationControllerClass.handle_unhandled_input(event, self)
 
 
 func _can_afford_any_option() -> bool:
@@ -359,33 +234,15 @@ func _update_credits_display() -> void:
 	for btn: Button in buy_buttons:
 		if is_instance_valid(btn) and not btn.disabled:
 			SatelliteShopCardBuilderClass.update_card_affordability(btn, current_credits)
-	if reroll_btn:
-		if rerolls_used_this_visit >= max_rerolls_per_satellite:
-			reroll_btn.disabled = true
-			reroll_btn.text = "Re-roll [AGOTADO (%d/%d)]" % [rerolls_used_this_visit, max_rerolls_per_satellite]
-			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
-		elif current_credits < reroll_cost:
-			reroll_btn.disabled = true
-			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
-			reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.6)
-		else:
-			reroll_btn.disabled = false
-			reroll_btn.text = "Re-roll (%d C) [R]" % reroll_cost
-			reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	if close_btn:
-		var cannot_buy_anything: bool = not _can_afford_any_option()
-		if cannot_buy_anything:
-			close_btn.text = "★ Salir [ESC / ESPACIO] ★"
-			close_btn.modulate = Color(0.3, 1.0, 0.6, 1.0)
-		else:
-			close_btn.text = "Salir [ESC / ESPACIO]"
-			close_btn.modulate = Color.WHITE
+	SatelliteShopCardBuilderClass.update_action_buttons(
+		reroll_btn, close_btn, current_credits, reroll_cost,
+		rerolls_used_this_visit, max_rerolls_per_satellite, _can_afford_any_option()
+	)
 
 
 func _roll_shop_items() -> void:
 	if not items_container:
 		return
-
 	for child: Node in items_container.get_children():
 		child.queue_free()
 	buy_buttons.clear()
@@ -395,10 +252,8 @@ func _roll_shop_items() -> void:
 
 	_ensure_player()
 	var selected_items: Array[Resource] = _economy.roll_shop_items(available_items_pool, player)
-
 	for i: int in range(selected_items.size()):
 		SatelliteShopCardBuilderClass.create_item_card_ui(selected_items[i], i, self)
-
 	_setup_focus_and_grab()
 
 
@@ -427,33 +282,8 @@ func handle_item_purchase(entry: Resource, cost: int, buy_btn: Button) -> void:
 
 
 func _setup_focus_and_grab() -> void:
-	if buy_buttons.is_empty():
-		return
-
-	var n_items: int = buy_buttons.size()
-	for i: int in range(n_items):
-		var btn: Button = buy_buttons[i]
-		var up_btn: Button = buy_buttons[(i - 1 + n_items) % n_items]
-		var down_btn: Button = buy_buttons[(i + 1) % n_items]
-
-		btn.focus_neighbor_top = up_btn.get_path() if i > 0 else close_btn.get_path()
-		btn.focus_neighbor_bottom = down_btn.get_path() if i < n_items - 1 else reroll_btn.get_path()
-		btn.focus_neighbor_left = btn.get_path()
-		btn.focus_neighbor_right = btn.get_path()
-
-	if reroll_btn and close_btn:
-		reroll_btn.focus_neighbor_left = close_btn.get_path()
-		reroll_btn.focus_neighbor_right = close_btn.get_path()
-		reroll_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
-		reroll_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
-
-		close_btn.focus_neighbor_left = reroll_btn.get_path()
-		close_btn.focus_neighbor_right = reroll_btn.get_path()
-		close_btn.focus_neighbor_top = buy_buttons[n_items - 1].get_path()
-		close_btn.focus_neighbor_bottom = buy_buttons[0].get_path()
-
+	SatelliteShopCardBuilderClass.wire_directional_focus(buy_buttons, reroll_btn, close_btn)
 	_focus_next_available_buy_button()
-
 
 
 func _focus_next_available_buy_button() -> void:
