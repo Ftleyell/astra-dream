@@ -23,6 +23,14 @@ var required_travel_dist: float = 600.0
 var is_pre_round_active: bool = false
 var pre_round_time_left: float = 30.0
 
+func setup_from_root(root: CanvasLayer) -> void:
+	if not root:
+		return
+	setup({
+		"timer_label": root.find_child("TimerLabel", true, false),
+		"satellite_radar_label": root.find_child("SatelliteRadarLabel", true, false)
+	})
+
 func setup(elements: Dictionary) -> void:
 	timer_label = elements.get("timer_label") as Label
 	satellite_radar_label = elements.get("satellite_radar_label") as Label

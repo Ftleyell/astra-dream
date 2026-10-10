@@ -79,7 +79,7 @@
 | Carrusel de skins | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd` | — |
 | Transición entre escenas | `core/autoloads/scene_transition.gd` | — |
 | Pausa (tokens de pausa) | `core/autoloads/pause_arbitrator.gd` | — |
-| HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | — |
+| HUD de combate (orquestador raíz) | `scenes/ui/hud/hud.gd` | Orquestador: L487 (reducido de 630 a 487) |
 | Ranuras de armas y barridos CD del HUD | `scenes/ui/hud/components/hud_weapon_cooldown_bar.gd` | — |
 | Salud, escudo, EXP y OSP del HUD | `scenes/ui/hud/components/hud_health_shield_display.gd` | — |
 | Dock lateral de estadísticas de combate | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` | Tab toggle y modales |

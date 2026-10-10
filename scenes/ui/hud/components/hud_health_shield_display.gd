@@ -23,6 +23,16 @@ var _exp_tween: Tween = null
 
 const LOW_HEALTH_THRESHOLD: float = 0.25
 
+func setup_from_root(root: CanvasLayer) -> void:
+	if not root:
+		return
+	setup({
+		"health_bar": root.find_child("HealthBar", true, false),
+		"health_label": root.find_child("HealthLabel", true, false),
+		"exp_bar": root.find_child("ExpBar", true, false),
+		"level_label": root.find_child("LevelLabel", true, false)
+	})
+
 func setup(elements: Dictionary) -> void:
 	health_bar = elements.get("health_bar") as ProgressBar
 	health_label = elements.get("health_label") as Label

@@ -40,6 +40,35 @@ var _pip_dim_style: StyleBoxFlat
 var _bomb_pip_lit_style: StyleBoxFlat
 var _bomb_pip_dim_style: StyleBoxFlat
 
+func setup_from_root(root: Node) -> void:
+	if not root:
+		return
+	setup({
+		"dash_button_body": root.find_child("DashButtonBody", true, false),
+		"dash_icon": root.find_child("DashIcon", true, false),
+		"dash_cd_overlay": root.find_child("DashCDOverlay", true, false),
+		"dash_cd_num": root.find_child("DashCDNum", true, false),
+		"dash_pip_1": root.find_child("DashPip1", true, false),
+		"dash_pip_2": root.find_child("DashPip2", true, false),
+		"dash_label": root.find_child("DashLabel", true, false),
+		"laser_button_body": root.find_child("LaserButtonBody", true, false),
+		"laser_icon": root.find_child("LaserIcon", true, false),
+		"laser_cd_overlay": root.find_child("LaserCDOverlay", true, false),
+		"laser_cd_num": root.find_child("LaserCDNum", true, false),
+		"laser_cd_label": root.find_child("LaserCDLabel", true, false),
+		"bomb_button_body": root.find_child("BombButtonBody", true, false),
+		"bomb_icon": root.find_child("BombIcon", true, false),
+		"bomb_overlay": root.find_child("BombOverlay", true, false),
+		"bomb_pip_1": root.find_child("BombPip1", true, false),
+		"bomb_pip_2": root.find_child("BombPip2", true, false),
+		"bomb_pip_3": root.find_child("BombPip3", true, false),
+		"bomb_pip_4": root.find_child("BombPip4", true, false),
+		"bomb_pip_5": root.find_child("BombPip5", true, false),
+		"bomb_label": root.find_child("BombLabel", true, false),
+		"bomb_count_label": root.find_child("BombCountLabel", true, false),
+		"aim_mode_label": root.find_child("AimModeLabel", true, false),
+	})
+
 func setup(elements: Dictionary) -> void:
 	dash_button_body = elements.get("dash_button_body") as Control
 	dash_icon = elements.get("dash_icon") as TextureRect

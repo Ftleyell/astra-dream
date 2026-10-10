@@ -2,25 +2,16 @@ class_name GameHUD
 extends CanvasLayer
 
 ## ─── TABLE OF CONTENTS ──────────────────────────────────────────────────────
-## VARIABLES & @ONREADY NODES     → L.25  - L.151
-## LIFECYCLE: _ready              → L.152 - L.236
-## HELPERS: keybind labels        → L.237 - L.257
-## SETUP: _init_subcontrollers    → L.258 - L.297
-## VISIBILITY: set_hud_visible    → L.298 - L.303
-## PROCESS                        → L.304 - L.340
-## WAVE STATUS updates            → L.341 - L.374
-## BANNERS: satellite / character → L.375 - L.387
-## LASER / ABILITIES / WEAPONS    → L.388 - L.399
-## TOMES & COOLDOWN SWEEPS        → L.400 - L.410
-## ECONOMY: credits / biomass     → L.411 - L.418
-## EXP                            → L.419 - L.425
-## HEALTH & BOMBS & ITEMS         → L.426 - L.442
-## QUANTUM KEYS                   → L.443 - L.463
-## BOSS TRACKING                  → L.464 - L.490
-## DASH & AIM & OSP               → L.491 - L.514
-## PLAYER SETUP: set_player       → L.515 - L.543
-## CURSE BADGE                    → L.544 - L.617
-## COMBAT STATS DOCK              → L.618 - L.652
+## COMPONENT PRELOADS & NODES    → L.25  - L.65
+## RADAR & STATE PROXIES         → L.66  - L.125
+## LIFECYCLE: _ready & keybinds  → L.126 - L.190
+## SUBCONTROLLER INITIALIZATION   → L.191 - L.220
+## FRAME PROCESS & RETICLE       → L.221 - L.235
+## STATUS, BANNERS & RADAR       → L.236 - L.275
+## ABILITIES, WEAPONS & ECONOMY  → L.276 - L.335
+## ITEMS, KEYS & BOSS TRACKING   → L.336 - L.390
+## PLAYER WIRING: set_player     → L.391 - L.455
+## CURSE BADGE & STATS DOCK      → L.456 - L.485
 ## ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -42,22 +33,13 @@ const HUDEdgeTrackerManagerClass = preload("res://scenes/ui/hud/components/hud_e
 
 @export var player: Player
 
-@onready var health_bar: ProgressBar = find_child("HealthBar", true, false) as ProgressBar
-@onready var health_label: Label = find_child("HealthLabel", true, false) as Label
-@onready var dash_label: Label = find_child("DashLabel", true, false) as Label
-@onready var bomb_label: Label = find_child("BombLabel", true, false) as Label
-@onready var laser_cd_label: Label = find_child("LaserCDLabel", true, false) as Label
 @onready var dash_keybind_label: Label = find_child("DashKeybind", true, false) as Label
 @onready var laser_keybind_label: Label = find_child("LaserKeybind", true, false) as Label
 @onready var bomb_keybind_label: Label = find_child("BombKeybind", true, false) as Label
-@onready var aim_mode_label: Label = find_child("AimModeLabel", true, false) as Label
 @onready var credits_label: Label = find_child("CreditsLabel", true, false) as Label
 @onready var biomass_label: Label = find_child("BiomassLabel", true, false) as Label
 @onready var credit_icon: TextureRect = find_child("CreditIcon", true, false) as TextureRect
 @onready var timer_label: Label = find_child("TimerLabel", true, false) as Label
-@onready var satellite_radar_label: Label = find_child("SatelliteRadarLabel", true, false) as Label
-@onready var exp_bar: ProgressBar = find_child("ExpBar", true, false) as ProgressBar
-@onready var level_label: Label = find_child("LevelLabel", true, false) as Label
 @onready var inventory_row: HBoxContainer = find_child("InventoryRow", true, false) as HBoxContainer
 @onready var weapon_slots_row: HBoxContainer = find_child("WeaponSlotsRow", true, false) as HBoxContainer
 @onready var tome_slots_row: HBoxContainer = find_child("TomeSlotsRow", true, false) as HBoxContainer
@@ -67,28 +49,6 @@ const HUDEdgeTrackerManagerClass = preload("res://scenes/ui/hud/components/hud_e
 @onready var boss_tracker: Control = find_child("BossEdgeIndicator", true, false) as Control
 @onready var chest_tracker: Control = find_child("ChestEdgeIndicator", true, false) as Control
 @onready var key_label: Label = find_child("KeyLabel", true, false) as Label
-
-@onready var dash_button_body: Control = find_child("DashButtonBody", true, false) as Control
-@onready var dash_icon: TextureRect = find_child("DashIcon", true, false) as TextureRect
-@onready var dash_cd_overlay: ColorRect = find_child("DashCDOverlay", true, false) as ColorRect
-@onready var dash_cd_num: Label = find_child("DashCDNum", true, false) as Label
-@onready var dash_pip_1: Panel = find_child("DashPip1", true, false) as Panel
-@onready var dash_pip_2: Panel = find_child("DashPip2", true, false) as Panel
-
-@onready var laser_button_body: Control = find_child("LaserButtonBody", true, false) as Control
-@onready var laser_icon: TextureRect = find_child("LaserIcon", true, false) as TextureRect
-@onready var laser_cd_overlay: ColorRect = find_child("LaserCDOverlay", true, false) as ColorRect
-@onready var laser_cd_num: Label = find_child("LaserCDNum", true, false) as Label
-
-@onready var bomb_button_body: Control = find_child("BombButtonBody", true, false) as Control
-@onready var bomb_icon: TextureRect = find_child("BombIcon", true, false) as TextureRect
-@onready var bomb_overlay: ColorRect = find_child("BombOverlay", true, false) as ColorRect
-@onready var bomb_pip_1: Panel = find_child("BombPip1", true, false) as Panel
-@onready var bomb_pip_2: Panel = find_child("BombPip2", true, false) as Panel
-@onready var bomb_pip_3: Panel = find_child("BombPip3", true, false) as Panel
-@onready var bomb_pip_4: Panel = find_child("BombPip4", true, false) as Panel
-@onready var bomb_pip_5: Panel = find_child("BombPip5", true, false) as Panel
-@onready var bomb_count_label: Label = find_child("BombCountLabel", true, false) as Label
 
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
@@ -105,124 +65,70 @@ var _edge_tracker_mgr: RefCounted = HUDEdgeTrackerManagerClass.new()
 
 var run_time: float:
 	get: return _radar_ctrl.run_time if _radar_ctrl else 0.0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.run_time = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.run_time = val
 var active_satellite_pos: Vector2:
 	get: return _radar_ctrl.active_satellite_pos if _radar_ctrl else Vector2.ZERO
-	set(val):
-		if _radar_ctrl: _radar_ctrl.active_satellite_pos = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.active_satellite_pos = val
 var has_satellite: bool:
 	get: return _radar_ctrl.has_satellite if _radar_ctrl else false
-	set(val):
-		if _radar_ctrl: _radar_ctrl.has_satellite = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.has_satellite = val
 var satellite_index: int:
 	get: return _radar_ctrl.satellite_index if _radar_ctrl else 1
-	set(val):
-		if _radar_ctrl: _radar_ctrl.satellite_index = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.satellite_index = val
 var current_wave: int:
 	get: return _radar_ctrl.current_wave if _radar_ctrl else 1
-	set(val):
-		if _radar_ctrl: _radar_ctrl.current_wave = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.current_wave = val
 var wave_time_left: float:
 	get: return _radar_ctrl.wave_time_left if _radar_ctrl else 60.0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.wave_time_left = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.wave_time_left = val
 var wave_satellites_spawned: int:
 	get: return _radar_ctrl.wave_satellites_spawned if _radar_ctrl else 0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.wave_satellites_spawned = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.wave_satellites_spawned = val
 var max_wave_satellites: int:
 	get: return _radar_ctrl.max_wave_satellites if _radar_ctrl else 3
-	set(val):
-		if _radar_ctrl: _radar_ctrl.max_wave_satellites = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.max_wave_satellites = val
 var current_travel_dist: float:
 	get: return _radar_ctrl.current_travel_dist if _radar_ctrl else 0.0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.current_travel_dist = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.current_travel_dist = val
 var required_travel_dist: float:
 	get: return _radar_ctrl.required_travel_dist if _radar_ctrl else 600.0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.required_travel_dist = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.required_travel_dist = val
 var is_pre_round_active: bool:
 	get: return _radar_ctrl.is_pre_round_active if _radar_ctrl else false
-	set(val):
-		if _radar_ctrl: _radar_ctrl.is_pre_round_active = val
-
+	set(val): if _radar_ctrl: _radar_ctrl.is_pre_round_active = val
 var pre_round_time_left: float:
 	get: return _radar_ctrl.pre_round_time_left if _radar_ctrl else 30.0
-	set(val):
-		if _radar_ctrl: _radar_ctrl.pre_round_time_left = val
+	set(val): if _radar_ctrl: _radar_ctrl.pre_round_time_left = val
 
 var _inventory_chips: Dictionary:
-	get:
-		if _inventory_ctrl:
-			return _inventory_ctrl.get_inventory_chips()
-		return {}
-
+	get: return _inventory_ctrl.get_inventory_chips() if _inventory_ctrl else {}
 var _satellite_banner_node: Control:
-	get:
-		return _banner_mgr._satellite_banner_node if _banner_mgr else null
-	set(val):
-		if _banner_mgr:
-			_banner_mgr._satellite_banner_node = val
-
+	get: return _banner_mgr._satellite_banner_node if _banner_mgr else null
+	set(val): if _banner_mgr: _banner_mgr._satellite_banner_node = val
 var _unlock_banner_node: Control:
-	get:
-		return _banner_mgr._unlock_banner_node if _banner_mgr else null
-	set(val):
-		if _banner_mgr:
-			_banner_mgr._unlock_banner_node = val
-
+	get: return _banner_mgr._unlock_banner_node if _banner_mgr else null
+	set(val): if _banner_mgr: _banner_mgr._unlock_banner_node = val
 var _tactical_alert_node: Control:
-	get:
-		return _banner_mgr._tactical_alert_node if _banner_mgr else null
-	set(val):
-		if _banner_mgr:
-			_banner_mgr._tactical_alert_node = val
-
+	get: return _banner_mgr._tactical_alert_node if _banner_mgr else null
+	set(val): if _banner_mgr: _banner_mgr._tactical_alert_node = val
 var curse_badge: Control:
 	get: return _curse_ctrl.curse_badge if _curse_ctrl else null
-	set(val):
-		if _curse_ctrl: _curse_ctrl.curse_badge = val
-
+	set(val): if _curse_ctrl: _curse_ctrl.curse_badge = val
 var curse_label: Label:
 	get: return _curse_ctrl.curse_label if _curse_ctrl else null
-	set(val):
-		if _curse_ctrl: _curse_ctrl.curse_label = val
-
+	set(val): if _curse_ctrl: _curse_ctrl.curse_label = val
 var combat_stats_dock: CombatStatsDock:
 	get: return _stats_dock_ctrl.combat_stats_dock if _stats_dock_ctrl else null
-	set(val):
-		if _stats_dock_ctrl: _stats_dock_ctrl.combat_stats_dock = val
-
+	set(val): if _stats_dock_ctrl: _stats_dock_ctrl.combat_stats_dock = val
 var stats_dock_layer: CanvasLayer:
 	get: return _stats_dock_ctrl.stats_dock_layer if _stats_dock_ctrl else null
-	set(val):
-		if _stats_dock_ctrl: _stats_dock_ctrl.stats_dock_layer = val
-
+	set(val): if _stats_dock_ctrl: _stats_dock_ctrl.stats_dock_layer = val
 var current_credits: int:
-	get:
-		return _inventory_ctrl.current_credits if _inventory_ctrl else 120
-	set(val):
-		if _inventory_ctrl:
-			_inventory_ctrl.current_credits = val
-
+	get: return _inventory_ctrl.current_credits if _inventory_ctrl else 120
+	set(val): if _inventory_ctrl: _inventory_ctrl.current_credits = val
 var current_biomass: int:
-	get:
-		return _inventory_ctrl.current_biomass if _inventory_ctrl else 0
-	set(val):
-		if _inventory_ctrl:
-			_inventory_ctrl.current_biomass = val
+	get: return _inventory_ctrl.current_biomass if _inventory_ctrl else 0
+	set(val): if _inventory_ctrl: _inventory_ctrl.current_biomass = val
 
 func _ready() -> void:
 	add_to_group("hud")
@@ -236,60 +142,16 @@ func _ready() -> void:
 		_edge_tracker_mgr.set_player(player)
 
 	# Ocultar barra rectangular superior para priorizar el anillo diegético bajo la nave
-	if health_bar:
-		health_bar.visible = false
-	if health_label:
-		health_label.visible = false
-	if satellite_radar_label:
-		satellite_radar_label.visible = false
+	if _health_shield_display:
+		if _health_shield_display.health_bar:
+			_health_shield_display.health_bar.visible = false
+		if _health_shield_display.health_label:
+			_health_shield_display.health_label.visible = false
+	if _radar_ctrl and _radar_ctrl.satellite_radar_label:
+		_radar_ctrl.satellite_radar_label.visible = false
 
 	if player:
-		player.health_changed.connect(_on_health_changed)
-		player.bomb_used.connect(_on_bomb_used)
-		_on_health_changed(player.current_health, player.stats.get_stat(&"max_health"))
-		_on_bomb_used(player.bomb_count)
-
-		var player_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
-		if player_stats:
-			if not player_stats.stat_changed.is_connected(_on_stat_changed):
-				player_stats.stat_changed.connect(_on_stat_changed)
-			update_curse(player_stats.get_stat(&"curse"))
-
-		if player.has_signal("dash_updated"):
-			player.dash_updated.connect(_on_dash_updated)
-			_on_dash_updated(player.dash_charges, player.max_dash_charges, 1.0, player.is_focus_active)
-
-		if player.character_data and _abilities_ctrl:
-			_abilities_ctrl.update_ability_icons(player.character_data)
-
-		if player.inventory:
-			player.inventory.item_added.connect(_on_inventory_item_added)
-
-		if player.has_signal("osp_triggered"):
-			player.osp_triggered.connect(_on_osp_triggered)
-
-		if player.has_signal("biomass_changed"):
-			player.biomass_changed.connect(update_biomass)
-		update_biomass(player.run_biomass, SaveManager.get_biomass())
-
-		if player.has_signal("credits_changed"):
-			if not player.credits_changed.is_connected(update_credits):
-				player.credits_changed.connect(update_credits)
-		update_credits(player.run_credits)
-
-		var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController
-		if weapon_ctrl:
-			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
-			weapon_ctrl.weapons_updated.connect(update_weapon_slots)
-			if weapon_ctrl.has_signal("aim_mode_changed"):
-				weapon_ctrl.aim_mode_changed.connect(_on_aim_mode_changed)
-			update_weapon_slots(weapon_ctrl.equipped_weapons)
-			_on_aim_mode_changed(weapon_ctrl.is_manual_aim)
-
-		var tome_ctrl = player.tome_controller if "tome_controller" in player else null
-		if tome_ctrl:
-			tome_ctrl.tomes_updated.connect(update_tome_slots)
-			update_tome_slots(tome_ctrl.equipped_tomes, tome_ctrl.tome_levels)
+		set_player(player)
 
 	if not target_reticle and target_reticle_scene:
 		target_reticle = target_reticle_scene.instantiate() as Node2D
@@ -326,31 +188,7 @@ func _update_ability_keybind_labels() -> void:
 
 func _init_subcontrollers() -> void:
 	_abilities_ctrl = TacticalAbilitiesControllerClass.new()
-	_abilities_ctrl.setup({
-		"dash_button_body": dash_button_body,
-		"dash_icon": dash_icon,
-		"dash_cd_overlay": dash_cd_overlay,
-		"dash_cd_num": dash_cd_num,
-		"dash_pip_1": dash_pip_1,
-		"dash_pip_2": dash_pip_2,
-		"dash_label": dash_label,
-		"laser_button_body": laser_button_body,
-		"laser_icon": laser_icon,
-		"laser_cd_overlay": laser_cd_overlay,
-		"laser_cd_num": laser_cd_num,
-		"laser_cd_label": laser_cd_label,
-		"bomb_button_body": bomb_button_body,
-		"bomb_icon": bomb_icon,
-		"bomb_overlay": bomb_overlay,
-		"bomb_pip_1": bomb_pip_1,
-		"bomb_pip_2": bomb_pip_2,
-		"bomb_pip_3": bomb_pip_3,
-		"bomb_pip_4": bomb_pip_4,
-		"bomb_pip_5": bomb_pip_5,
-		"bomb_label": bomb_label,
-		"bomb_count_label": bomb_count_label,
-		"aim_mode_label": aim_mode_label
-	})
+	_abilities_ctrl.setup_from_root(self)
 
 	_inventory_ctrl = InventoryBarControllerClass.new()
 	_inventory_ctrl.setup({
@@ -366,19 +204,11 @@ func _init_subcontrollers() -> void:
 	_weapon_bar.setup(weapon_slots_row)
 
 	_health_shield_display = HealthShieldDisplayClass.new()
-	_health_shield_display.setup({
-		"health_bar": health_bar,
-		"health_label": health_label,
-		"exp_bar": exp_bar,
-		"level_label": level_label
-	})
+	_health_shield_display.setup_from_root(self)
 
 	_banner_mgr = BannerManagerClass.new()
 
-	_radar_ctrl.setup({
-		"timer_label": timer_label,
-		"satellite_radar_label": satellite_radar_label
-	})
+	_radar_ctrl.setup_from_root(self)
 
 	_edge_tracker_mgr.setup({
 		"satellite_tracker": satellite_tracker,
@@ -489,12 +319,6 @@ func update_biomass(run_amount: int, total_persistent: int) -> void:
 func update_exp(current: float, max_val: float, level: int) -> void:
 	if _health_shield_display:
 		_health_shield_display.update_exp(current, max_val, level, get_tree())
-	else:
-		if exp_bar:
-			exp_bar.max_value = max_val
-			exp_bar.value = current
-		if level_label:
-			level_label.text = "NV. %d" % level
 
 func _on_health_changed(current: float, max_val: float) -> void:
 	if _health_shield_display:
@@ -504,12 +328,6 @@ func _on_health_changed(current: float, max_val: float) -> void:
 			shield_val = player.shield_controller.get("current_shield") if "current_shield" in player.shield_controller else 0.0
 			max_sh = player.shield_controller.get("max_shield") if "max_shield" in player.shield_controller else 0.0
 		_health_shield_display.update_health(current, max_val, shield_val, max_sh, get_tree())
-	else:
-		if health_bar:
-			health_bar.max_value = max_val
-			health_bar.value = current
-		if health_label:
-			health_label.text = "%d / %d" % [int(current), int(max_val)]
 
 func _on_bomb_used(remaining: int) -> void:
 	if _abilities_ctrl:
@@ -583,23 +401,62 @@ func _on_osp_triggered(_remaining_hp: float) -> void:
 
 func set_player(p: Player) -> void:
 	player = p
-	if not is_inside_tree():
+	if not is_inside_tree() or not is_instance_valid(player):
 		return
-	if is_instance_valid(player) and _edge_tracker_mgr:
+	if _edge_tracker_mgr:
 		_edge_tracker_mgr.set_player(player)
-	if is_instance_valid(player):
-		if not player.bomb_used.is_connected(_on_bomb_used):
-			player.bomb_used.connect(_on_bomb_used)
-		_on_bomb_used(player.bomb_count)
-		if not player.health_changed.is_connected(_on_health_changed):
-			player.health_changed.connect(_on_health_changed)
-		_on_health_changed(player.current_health, player.stats.get_stat(&"max_health") if player.stats else 100.0)
 
-		var target_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
-		if target_stats:
-			if not target_stats.stat_changed.is_connected(_on_stat_changed):
-				target_stats.stat_changed.connect(_on_stat_changed)
-			update_curse(target_stats.get_stat(&"curse"))
+	if not player.bomb_used.is_connected(_on_bomb_used):
+		player.bomb_used.connect(_on_bomb_used)
+	_on_bomb_used(player.bomb_count)
+
+	if not player.health_changed.is_connected(_on_health_changed):
+		player.health_changed.connect(_on_health_changed)
+	_on_health_changed(player.current_health, player.stats.get_stat(&"max_health") if player.stats else 100.0)
+
+	var target_stats: CharacterStats = player.character_stats if player.character_stats else player.stats
+	if target_stats:
+		if not target_stats.stat_changed.is_connected(_on_stat_changed):
+			target_stats.stat_changed.connect(_on_stat_changed)
+		update_curse(target_stats.get_stat(&"curse"))
+
+	if player.has_signal("dash_updated") and not player.dash_updated.is_connected(_on_dash_updated):
+		player.dash_updated.connect(_on_dash_updated)
+		_on_dash_updated(player.dash_charges, player.max_dash_charges, 1.0, player.is_focus_active)
+
+	if player.character_data and _abilities_ctrl:
+		_abilities_ctrl.update_ability_icons(player.character_data)
+
+	if player.inventory and not player.inventory.item_added.is_connected(_on_inventory_item_added):
+		player.inventory.item_added.connect(_on_inventory_item_added)
+
+	if player.has_signal("osp_triggered") and not player.osp_triggered.is_connected(_on_osp_triggered):
+		player.osp_triggered.connect(_on_osp_triggered)
+
+	if player.has_signal("biomass_changed") and not player.biomass_changed.is_connected(update_biomass):
+		player.biomass_changed.connect(update_biomass)
+	update_biomass(player.run_biomass, SaveManager.get_biomass())
+
+	if player.has_signal("credits_changed") and not player.credits_changed.is_connected(update_credits):
+		player.credits_changed.connect(update_credits)
+	update_credits(player.run_credits)
+
+	var weapon_ctrl := player.get_node_or_null("WeaponController") as WeaponController
+	if weapon_ctrl:
+		if not weapon_ctrl.laser_cooldown_updated.is_connected(update_laser_cooldown):
+			weapon_ctrl.laser_cooldown_updated.connect(update_laser_cooldown)
+		if not weapon_ctrl.weapons_updated.is_connected(update_weapon_slots):
+			weapon_ctrl.weapons_updated.connect(update_weapon_slots)
+		if weapon_ctrl.has_signal("aim_mode_changed") and not weapon_ctrl.aim_mode_changed.is_connected(_on_aim_mode_changed):
+			weapon_ctrl.aim_mode_changed.connect(_on_aim_mode_changed)
+		update_weapon_slots(weapon_ctrl.equipped_weapons)
+		_on_aim_mode_changed(weapon_ctrl.is_manual_aim)
+
+	var tome_ctrl = player.tome_controller if "tome_controller" in player else null
+	if tome_ctrl:
+		if not tome_ctrl.tomes_updated.is_connected(update_tome_slots):
+			tome_ctrl.tomes_updated.connect(update_tome_slots)
+		update_tome_slots(tome_ctrl.equipped_tomes, tome_ctrl.tome_levels)
 
 func _setup_curse_badge() -> void:
 	if _curse_ctrl:
