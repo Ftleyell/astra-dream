@@ -22,6 +22,9 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 | **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd` |
 | **HUD de Combate** | `scenes/ui/hud/hud.gd` | `hud_health_shield_display.gd`, `hud_weapon_cooldown_bar.gd`, `hud_satellite_radar_controller.gd`, `hud_edge_tracker_manager.gd` |
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas |
+| **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
+| **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
+| **Balizas / Tragamonedas** | `scenes/combat/satellite/slot_machine_beacon.gd` | `slot_machine_marquee_display.gd`, `slot_machine_payout_engine.gd`, `slot_machine_config.gd` |
 | **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `character_select_modal_router.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
