@@ -55,6 +55,13 @@ release/
 *.rar
 artist_pack*/
 scratch/
+preprocess/
+
+# Raw 3D Assets & Source Files
+*.blend
+*.blend1
+*.fbx
+*.obj
 
 # Crash logs and debug traces
 *.log

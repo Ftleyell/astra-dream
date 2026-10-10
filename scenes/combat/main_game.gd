@@ -210,6 +210,17 @@ func _get_genocide_escort_pilot_id() -> StringName:
 		return encounter_controller.get_genocide_escort_pilot_id(player_pid)
 	return &"nyx"
 
+func _get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
+	if narrative_director:
+		return narrative_director.get_rival_dialogue(rival_pid, player_pid)
+	return {}
+
+func _trigger_post_boss_victory_dialogue(route: String, victory_data: Dictionary) -> void:
+	if narrative_director:
+		narrative_director.trigger_post_boss_victory_dialogue(route, victory_data)
+
+
+
 
 func _start_prologue_briefing() -> void:
 	if narrative_director: narrative_director.start_prologue_briefing()

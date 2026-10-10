@@ -12,19 +12,23 @@ signal spin_started()
 signal spin_resolved(outcome: Dictionary)
 
 const ExpBlobScript = preload("res://scenes/combat/pickups/exp_blob.gd")
+const SlotMachineConfigScript = preload("res://data/interactables/slot_machine_config.gd")
+const DefaultConfig = preload("res://data/interactables/default_slot_machine_config.tres")
+
+@export var config: Resource = DefaultConfig
 
 @export var bumper_radius: float = 46.0
 
 var remaining_uses: int = 3
 var current_spin_cost: int = 50
-const COST_INCREMENT: int = 25
+var cost_increment: int = 25
 
 var is_rolling: bool = false
 var is_exploded: bool = false
 var _is_tearing_down: bool = false
 var _bump_cooldown: float = 0.0
 
-const SYMBOLS: Array[String] = ["💰", "💣", "🧲", "💖", "⭐"]
+var symbols: Array[String] = ["💰", "💣", "🧲", "💖", "⭐"]
 
 # Nodos visuales in-game
 var _visual_core: CanvasItem
@@ -40,9 +44,17 @@ var _msg_label: Label
 func _ready() -> void:
 	add_to_group("slot_machine_beacon")
 	scale = Vector2(2.0, 2.0)
-	if remaining_uses <= 0:
+	if config:
+		bumper_radius = config.bumper_radius
+		current_spin_cost = config.base_spin_cost
+		cost_increment = config.cost_increment
+		symbols = config.symbols.duplicate()
+		if remaining_uses <= 0:
+			remaining_uses = randi_range(config.min_uses, config.max_uses)
+	elif remaining_uses <= 0:
 		remaining_uses = randi_range(3, 5)
 	_setup_visuals()
+
 	_setup_marquee_display()
 	_setup_area()
 
@@ -246,20 +258,20 @@ func _start_in_game_spin(player: Player) -> void:
 	var s2: String = "💰"
 	var s3: String = "💰"
 
-	if roll < 0.18:
+	if roll < (config.jackpot_chance if config else 0.18):
 		# Triple Jackpot / Evento especial
-		var sym := SYMBOLS[randi() % SYMBOLS.size()]
+		var sym := symbols[randi() % symbols.size()]
 		s1 = sym
 		s2 = sym
 		s3 = sym
-	elif roll < 0.65:
+	elif roll < (config.pair_chance if config else 0.65):
 		# Par coincidente (Reembolso)
-		var sym := SYMBOLS[randi() % SYMBOLS.size()]
+		var sym := symbols[randi() % symbols.size()]
 		s1 = sym
 		s2 = sym
-		var other := SYMBOLS[randi() % SYMBOLS.size()]
+		var other := symbols[randi() % symbols.size()]
 		while other == sym:
-			other = SYMBOLS[randi() % SYMBOLS.size()]
+			other = symbols[randi() % symbols.size()]
 		s3 = other
 		if randf() > 0.5:
 			var tmp := s2
@@ -267,10 +279,7 @@ func _start_in_game_spin(player: Player) -> void:
 			s3 = tmp
 	else:
 		# Tres diferentes
-		s1 = SYMBOLS[0]
-		s2 = SYMBOLS[1]
-		s3 = SYMBOLS[2]
-		var shuffled := SYMBOLS.duplicate()
+		var shuffled := symbols.duplicate()
 		shuffled.shuffle()
 		s1 = shuffled[0]
 		s2 = shuffled[1]
@@ -292,7 +301,8 @@ func _start_in_game_spin(player: Player) -> void:
 			elif step >= 11 and r_idx == 2:
 				_reel_labels[2].text = final_symbols[2]
 			else:
-				_reel_labels[r_idx].text = SYMBOLS[randi() % SYMBOLS.size()]
+				_reel_labels[r_idx].text = symbols[randi() % symbols.size()]
+
 		var tree := get_tree()
 		if tree == null:
 			return
@@ -402,7 +412,7 @@ func record_use() -> void:
 
 func consume_spin() -> void:
 	remaining_uses -= 1
-	current_spin_cost += COST_INCREMENT
+	current_spin_cost += cost_increment
 
 func trigger_explosion() -> void:
 	if is_exploded:

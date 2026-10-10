@@ -2,14 +2,8 @@ class_name GameOverModal
 extends CanvasLayer
 
 ## GameOverModal.gd
-## Pantalla de Fin de Partida (Game Over / Misión Fallida).
-## Muestra telemetría completa de la incursión:
-## - Puntuación total calculada
-## - Indicador destacado de Nuevo Récord / Posición en el Top 10
-## - Oleadas sobrevividas, tiempo de juego, bajas y jefes derrotados
-## - Materiales y recursos recolectados: Biomasa, Antimateria y Créditos
-## - Pactos Astra activos, Ítems de inventario y Armas equipadas
-## - Acciones rápidas: [R] Reiniciar Incursión / [H] Volver al HUB
+## Pantalla de Fin de Partida (Game Over / Misión Fallida / Victoria Estelar).
+## Orquestador liviano de ciclo de vida, navegación y señales de la pantalla final.
 
 signal restart_requested()
 signal hub_requested()
@@ -75,7 +69,6 @@ func show_game_over(data: Dictionary) -> void:
 
 	show()
 
-	# Sonido dramático de apertura
 	var audio_mgr := get_node_or_null("/root/AudioManager") if is_inside_tree() else null
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("menu_open", 1.0, 1.0)
@@ -86,10 +79,9 @@ func show_game_over(data: Dictionary) -> void:
 		restart_button.grab_focus()
 
 func _populate_screen(data: Dictionary) -> void:
-	# 1. Puntuación & Récord
 	var score: int = int(data.get("score", 0))
 	if score_value_label:
-		score_value_label.text = "%s PTS" % _format_number(score)
+		score_value_label.text = GameOverTelemetryFormatter.format_score_text(score)
 
 	var is_victory: bool = bool(data.get("victory", false))
 	var ending_title: String = str(data.get("ending_title", ""))
@@ -102,224 +94,63 @@ func _populate_screen(data: Dictionary) -> void:
 			title_label.text = "SEÑAL DE NAVE PERDIDA (GAME OVER)"
 			title_label.modulate = Color(1.0, 0.25, 0.25, 1.0)
 
-	var is_new_record: bool = bool(data.get("is_new_highscore", false))
-	var rank: int = int(data.get("rank", -1))
+	_setup_highscore_badge(data, ending_title)
 
-	if highscore_badge:
-		if not ending_title.is_empty():
-			highscore_badge.show()
-			if highscore_label:
-				highscore_label.text = "✦ %s ✦" % ending_title.to_upper()
-				var e_type: String = str(data.get("ending_type", "neutral"))
-				if e_type == "pacifist":
-					highscore_label.modulate = Color(0.2, 0.95, 1.0, 1.0)
-				elif e_type == "slayer":
-					highscore_label.modulate = Color(1.0, 0.25, 0.35, 1.0)
-				else:
-					highscore_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
-		elif is_new_record:
-			highscore_badge.show()
-			if highscore_label:
-				highscore_label.text = "★ ¡NUEVO RÉCORD HISTÓRICO - TOP #1! ★"
-				highscore_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
-		elif rank > 0 and rank <= 10:
-			highscore_badge.show()
-			if highscore_label:
-				highscore_label.text = "★ RÉCORD REGISTRADO EN EL TOP #%d ★" % rank
-				highscore_label.modulate = Color(0.3, 0.9, 1.0, 1.0)
-		else:
-			highscore_badge.hide()
-
-	# 2. Piloto
 	var pilot_name: String = str(data.get("pilot_name", "Nova"))
+	var epilogue_text: String = str(data.get("epilogue_text", ""))
 	if pilot_label:
-		var pilot_line := "PILOTO: %s" % pilot_name.to_upper()
-		if not str(data.get("epilogue_text", "")).is_empty():
-			pilot_line += " | %s" % str(data.get("epilogue_text", ""))
-		pilot_label.text = pilot_line
+		pilot_label.text = GameOverTelemetryFormatter.format_pilot_title(pilot_name, epilogue_text)
 
-	# 3. Estadísticas de Incursión
 	if wave_val_label:
-		wave_val_label.text = "Oleada %d" % int(data.get("waves_survived", 1))
+		wave_val_label.text = GameOverTelemetryFormatter.format_wave_text(int(data.get("waves_survived", 1)))
 	if time_val_label:
 		time_val_label.text = str(data.get("time_formatted", "00:00"))
 	if bosses_val_label:
-		bosses_val_label.text = "%d Derrotados" % int(data.get("bosses_defeated", 0))
+		bosses_val_label.text = GameOverTelemetryFormatter.format_bosses_text(int(data.get("bosses_defeated", 0)))
 	if kills_val_label:
-		kills_val_label.text = "%d Bajas" % int(data.get("enemies_killed", 0))
+		kills_val_label.text = GameOverTelemetryFormatter.format_kills_text(int(data.get("enemies_killed", 0)))
 
-	# 4. Materiales & Economía
 	if biomass_val_label:
-		biomass_val_label.text = "+%d ☣" % int(data.get("biomass_collected", 0))
+		biomass_val_label.text = GameOverTelemetryFormatter.format_biomass_text(int(data.get("biomass_collected", 0)))
 	if dark_matter_val_label:
-		dark_matter_val_label.text = "+%d ✦" % int(data.get("dark_matter_collected", 0))
+		dark_matter_val_label.text = GameOverTelemetryFormatter.format_dark_matter_text(int(data.get("dark_matter_collected", 0)))
 	if credits_val_label:
-		credits_val_label.text = "+%d ⬡" % int(data.get("credits_collected", 0))
+		credits_val_label.text = GameOverTelemetryFormatter.format_credits_text(int(data.get("credits_collected", 0)))
 
-	# 5. Pactos Astra
-	_populate_arcanas(data.get("arcanas", []))
+	GameOverLayoutBuilder.populate_arcanas(arcanas_container, data.get("arcanas", []))
+	GameOverLayoutBuilder.populate_items(items_container, data.get("items", []))
+	GameOverLayoutBuilder.populate_weapons(weapons_container, data.get("weapons", []))
 
-	# 6. Ítems de Inventario
-	_populate_items(data.get("items", []))
-
-	# 7. Armas Equipadas
-	_populate_weapons(data.get("weapons", []))
-
-func _populate_arcanas(arcanas_list: Array) -> void:
-	if not arcanas_container:
-		return
-	for c in arcanas_container.get_children():
-		c.queue_free()
-
-	if arcanas_list.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "Ningún pacto astra sellado."
-		empty_lbl.modulate = Color(0.6, 0.65, 0.75, 0.6)
-		empty_lbl.add_theme_font_size_override("font_size", 12)
-		arcanas_container.add_child(empty_lbl)
+func _setup_highscore_badge(data: Dictionary, ending_title: String) -> void:
+	if not highscore_badge:
 		return
 
-	for arc in arcanas_list:
-		if not (arc is ArcanaData):
-			continue
-		var arc_data := arc as ArcanaData
-		var chip := _create_chip(arc_data.name, arc_data.color_accent, arc_data.icon, Vector2(28, 28))
-		arcanas_container.add_child(chip)
+	var is_new_record: bool = bool(data.get("is_new_highscore", false))
+	var rank: int = int(data.get("rank", -1))
 
-func _populate_items(items_list: Array) -> void:
-	if not items_container:
-		return
-	for c in items_container.get_children():
-		c.queue_free()
-
-	if items_list.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "Ningún ítem recolectado."
-		empty_lbl.modulate = Color(0.6, 0.65, 0.75, 0.6)
-		empty_lbl.add_theme_font_size_override("font_size", 12)
-		items_container.add_child(empty_lbl)
-		return
-
-	for item_entry in items_list:
-		var item_res: ItemData = item_entry.get("data") if item_entry is Dictionary else null
-		var count: int = int(item_entry.get("count", 1)) if item_entry is Dictionary else 1
-		if not item_res:
-			continue
-		var chip_text := item_res.item_name
-		if count > 1:
-			chip_text += " [x%d]" % count
-		
-		var rarity_col: Color = Color(0.3, 0.8, 0.9, 1.0) # COMMON
-		match item_res.rarity:
-			Enums.Rarity.UNCOMMON:
-				rarity_col = Color(0.2, 0.9, 0.4, 1.0) # Verde
-			Enums.Rarity.RARE:
-				rarity_col = Color(0.1, 0.6, 1.0, 1.0) # Azul
-			Enums.Rarity.EPIC:
-				rarity_col = Color(0.8, 0.3, 1.0, 1.0) # Púrpura
-			Enums.Rarity.LEGENDARY:
-				rarity_col = Color(1.0, 0.75, 0.2, 1.0) # Oro
-			_:
-				rarity_col = Color(0.5, 0.65, 0.8, 0.9)
-
-		var chip := _create_chip(chip_text, rarity_col, item_res.icon, Vector2(28, 28))
-		items_container.add_child(chip)
-
-func _populate_weapons(weapons_list: Array) -> void:
-	if not weapons_container:
-		return
-	for c in weapons_container.get_children():
-		c.queue_free()
-
-	if weapons_list.is_empty():
-		var empty_lbl := Label.new()
-		empty_lbl.text = "Arma básica estándar."
-		empty_lbl.modulate = Color(0.6, 0.65, 0.75, 0.6)
-		empty_lbl.add_theme_font_size_override("font_size", 12)
-		weapons_container.add_child(empty_lbl)
-		return
-
-	for w_info in weapons_list:
-		var w_name: String = ""
-		var w_lvl: int = 1
-		var w_icon: Texture2D = null
-		if w_info is Dictionary:
-			w_name = str(w_info.get("name", ""))
-			var raw_id: String = str(w_info.get("id", ""))
-			if w_name.is_empty() or w_name == "Arma" or w_name.contains("_"):
-				w_name = WeaponData.get_stylized_name_for_id(raw_id if not raw_id.is_empty() else w_name)
-			w_lvl = int(w_info.get("level", 1))
-			w_icon = w_info.get("icon", null)
-		elif "weapon_data" in w_info and w_info.weapon_data:
-			if w_info.weapon_data.has_method("get_display_name"):
-				w_name = w_info.weapon_data.get_display_name()
-			elif "weapon_name" in w_info.weapon_data and not w_info.weapon_data.weapon_name.is_empty():
-				w_name = w_info.weapon_data.weapon_name
+	if not ending_title.is_empty():
+		highscore_badge.show()
+		if highscore_label:
+			highscore_label.text = "✦ %s ✦" % ending_title.to_upper()
+			var e_type: String = str(data.get("ending_type", "neutral"))
+			if e_type == "pacifist":
+				highscore_label.modulate = Color(0.2, 0.95, 1.0, 1.0)
+			elif e_type == "slayer":
+				highscore_label.modulate = Color(1.0, 0.25, 0.35, 1.0)
 			else:
-				w_name = WeaponData.get_stylized_name_for_id(str(w_info.weapon_data.weapon_id))
-			w_lvl = int(w_info.level) if "level" in w_info else 1
-			w_icon = w_info.weapon_data.icon if "icon" in w_info.weapon_data else null
-		elif "weapon_id" in w_info:
-			w_name = WeaponData.get_stylized_name_for_id(str(w_info.weapon_id))
-		else:
-			w_name = WeaponData.get_stylized_name_for_id(str(w_info))
-
-		if w_name.is_empty():
-			w_name = "Arma Estelar"
-
-		var chip_text := "%s (Nv. %d)" % [w_name, w_lvl]
-		var chip := _create_chip(chip_text, Color(1.0, 0.8, 0.25, 1.0), w_icon, Vector2(32, 32))
-		weapons_container.add_child(chip)
-
-func _create_chip(text: String, accent_color: Color, icon_tex: Texture2D = null, icon_size: Vector2 = Vector2(24, 24)) -> PanelContainer:
-	var chip := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.08, 0.14, 0.92)
-	style.border_color = accent_color
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 10.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	style.shadow_color = Color(accent_color.r, accent_color.g, accent_color.b, 0.2)
-	style.shadow_size = 4
-	chip.add_theme_stylebox_override("panel", style)
-
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 8)
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-
-	if icon_tex:
-		var tr := TextureRect.new()
-		tr.texture = icon_tex
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.custom_minimum_size = icon_size
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		hbox.add_child(tr)
-
-	var lbl := Label.new()
-	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 13)
-	lbl.modulate = Color(0.92, 0.96, 1.0, 1.0)
-	hbox.add_child(lbl)
-
-	chip.add_child(hbox)
-	return chip
-
-	chip.add_child(hbox)
-	return chip
-
-func _format_number(n: int) -> String:
-	var s := str(n)
-	var res := ""
-	var count := 0
-	for i in range(s.length() - 1, -1, -1):
-		res = s[i] + res
-		count += 1
-		if count % 3 == 0 and i > 0:
-			res = "," + res
-	return res
+				highscore_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+	elif is_new_record:
+		highscore_badge.show()
+		if highscore_label:
+			highscore_label.text = "★ ¡NUEVO RÉCORD HISTÓRICO - TOP #1! ★"
+			highscore_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+	elif rank > 0 and rank <= 10:
+		highscore_badge.show()
+		if highscore_label:
+			highscore_label.text = "★ RÉCORD REGISTRADO EN EL TOP #%d ★" % rank
+			highscore_label.modulate = Color(0.3, 0.9, 1.0, 1.0)
+	else:
+		highscore_badge.hide()
 
 func _on_endless_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
