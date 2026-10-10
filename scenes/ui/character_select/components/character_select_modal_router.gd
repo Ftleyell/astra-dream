@@ -17,6 +17,67 @@ var hero_picker_modal: Node = null
 var arsenal_banlist_modal: Node = null
 
 
+func setup_from_root(root: Control) -> void:
+	debug_menu_modal = root.get_node_or_null("DebugMenuModal")
+	pet_selection_modal = root.get_node_or_null("PetSelectionModal")
+	navigator_selection_modal = root.get_node_or_null("NavigatorSelectionModal")
+	gacha_modal = root.get_node_or_null("GachaModal")
+	tome_selection_modal = root.get_node_or_null("TomeSelectionModal")
+	weapon_selection_modal = root.get_node_or_null("WeaponSelectionModal")
+	character_skill_tree_modal = root.get_node_or_null("CharacterSkillTreeModal")
+	cosmetic_carousel_modal = root.get_node_or_null("CosmeticCarouselModal")
+	hero_picker_modal = root.get_node_or_null("HeroPickerModal")
+	arsenal_banlist_modal = root.get_node_or_null("ArsenalBanlistModal")
+
+
+func connect_modal_signals(listener: Object) -> void:
+	if pet_selection_modal:
+		if pet_selection_modal.has_signal("pet_selected"):
+			pet_selection_modal.connect("pet_selected", Callable(listener, "_on_pet_selected"))
+		if pet_selection_modal.has_signal("skin_equipped"):
+			pet_selection_modal.connect("skin_equipped", Callable(listener, "_on_pet_skin_equipped"))
+		if pet_selection_modal.has_signal("closed"):
+			pet_selection_modal.connect("closed", Callable(listener, "_on_pet_modal_closed"))
+
+	if navigator_selection_modal:
+		if navigator_selection_modal.has_signal("navigator_selected"):
+			navigator_selection_modal.connect("navigator_selected", Callable(listener, "_on_navigator_selected"))
+		if navigator_selection_modal.has_signal("skin_equipped"):
+			navigator_selection_modal.connect("skin_equipped", Callable(listener, "_on_navigator_skin_equipped"))
+		if navigator_selection_modal.has_signal("closed"):
+			navigator_selection_modal.connect("closed", Callable(listener, "_on_navigator_modal_closed"))
+
+	if debug_menu_modal and debug_menu_modal.has_signal("closed"):
+		debug_menu_modal.connect("closed", Callable(listener, "_on_debug_modal_closed"))
+
+	if cosmetic_carousel_modal:
+		if cosmetic_carousel_modal.has_signal("skin_modal_closed"):
+			cosmetic_carousel_modal.connect("skin_modal_closed", Callable(listener, "_on_cosmetic_carousel_closed"))
+		if cosmetic_carousel_modal.has_signal("skin_selected"):
+			cosmetic_carousel_modal.connect("skin_selected", Callable(listener, "_on_skin_selected"))
+
+	if gacha_modal:
+		if gacha_modal.has_signal("skin_equipped"):
+			gacha_modal.connect("skin_equipped", Callable(listener, "_on_gacha_skin_equipped"))
+		if gacha_modal.has_signal("modal_closed"):
+			gacha_modal.connect("modal_closed", Callable(listener, "_on_gacha_modal_closed"))
+
+	if tome_selection_modal and tome_selection_modal.has_signal("closed"):
+		tome_selection_modal.connect("closed", Callable(listener, "_on_tome_modal_closed"))
+
+	if weapon_selection_modal and weapon_selection_modal.has_signal("closed"):
+		weapon_selection_modal.connect("closed", Callable(listener, "_on_weapon_modal_closed"))
+
+	if arsenal_banlist_modal and arsenal_banlist_modal.has_signal("closed"):
+		arsenal_banlist_modal.connect("closed", Callable(listener, "_on_arsenal_banlist_modal_closed"))
+
+	if character_skill_tree_modal:
+		if character_skill_tree_modal.has_signal("modal_closed"):
+			character_skill_tree_modal.connect("modal_closed", Callable(listener, "_on_skill_tree_closed"))
+		elif character_skill_tree_modal.has_signal("closed"):
+			character_skill_tree_modal.connect("closed", Callable(listener, "_on_skill_tree_closed"))
+
+
 func setup_modals(
 	p_debug: Node,
 	p_pet: Node,

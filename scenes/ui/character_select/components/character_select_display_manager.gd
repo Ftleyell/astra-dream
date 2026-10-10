@@ -35,6 +35,38 @@ var passive_block_desc: Label = null
 var favored_tome_desc: Label = null
 
 
+func setup_from_root(root: Control) -> void:
+	name_label = root.get_node_or_null("MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox/NameLabel") as Label
+	title_label = root.get_node_or_null("MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox/ClassTitleLabel") as Label
+	biomass_label = root.get_node_or_null("MarginContainer/RootVBox/HeaderBar/TelemetryBox/BiomassLabel") as Label
+	antimatter_label = root.get_node_or_null("MarginContainer/RootVBox/HeaderBar/TelemetryBox/AntimatterLabel") as Label
+	dark_matter_label = root.get_node_or_null("MarginContainer/RootVBox/HeaderBar/TelemetryBox/DarkMatterLabel") as Label
+	expand_talents_btn = root.get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TalentsCard/TalentsMargin/TalentsVBox/ExpandTalentsBtn") as Button
+	loadout_button = root.get_node_or_null("MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/LoadoutButton") as Button
+	orbital_terminal = (root.get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as OrbitalIgnitionTerminal) if root.get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") else (root.get_node_or_null("MarginContainer/RootVBox/DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as OrbitalIgnitionTerminal)
+
+	var rel_base: String = "MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/AbilitiesView/"
+	weapon_block_icon = root.get_node_or_null(rel_base + "WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockIcon") as TextureRect
+	weapon_block_tag = root.get_node_or_null(rel_base + "WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTag") as Label
+	weapon_block_title = root.get_node_or_null(rel_base + "WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockTitle") as Label
+	weapon_block_desc = root.get_node_or_null(rel_base + "WeaponBlock/WeaponMargin/WeaponRow/WeaponBlockVBox/WeaponBlockDesc") as Label
+
+	tactical_block_icon = root.get_node_or_null(rel_base + "TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockIcon") as TextureRect
+	tactical_block_tag = root.get_node_or_null(rel_base + "TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTag") as Label
+	tactical_block_title = root.get_node_or_null(rel_base + "TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockTitle") as Label
+	tactical_block_desc = root.get_node_or_null(rel_base + "TacticalBlock/TacticalMargin/TacticalRow/TacticalBlockVBox/TacticalBlockDesc") as Label
+
+	dash_block_icon = root.get_node_or_null(rel_base + "DashBlock/DashMargin/DashRow/DashBlockIcon") as TextureRect
+	dash_block_tag = root.get_node_or_null(rel_base + "DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTag") as Label
+	dash_block_title = root.get_node_or_null(rel_base + "DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockTitle") as Label
+	dash_block_desc = root.get_node_or_null(rel_base + "DashBlock/DashMargin/DashRow/DashBlockVBox/DashBlockDesc") as Label
+
+	passive_block_icon = root.get_node_or_null(rel_base + "PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockIcon") as TextureRect
+	passive_block_tag = root.get_node_or_null(rel_base + "PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTag") as Label
+	passive_block_title = root.get_node_or_null(rel_base + "PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockTitle") as Label
+	passive_block_desc = root.get_node_or_null(rel_base + "PassiveBlock/PassiveMargin/PassiveRow/PassiveBlockVBox/PassiveBlockDesc") as Label
+
+
 func setup_identity_and_telemetry(
 	p_name_lbl: Label,
 	p_title_lbl: Label,

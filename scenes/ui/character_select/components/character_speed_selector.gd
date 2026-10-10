@@ -11,6 +11,14 @@ var speed_4x_btn: Button = null
 var current_game_speed: float = 1.0
 
 
+func setup_from_root(root: Control) -> void:
+	var base_path: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/"
+	var b1: Button = root.get_node_or_null(base_path + "Speed1xBtn") as Button
+	var b2: Button = root.get_node_or_null(base_path + "Speed2xBtn") as Button
+	var b4: Button = root.get_node_or_null(base_path + "Speed4xBtn") as Button
+	setup(b1, b2, b4)
+
+
 func setup(p_1x: Button, p_2x: Button, p_4x: Button) -> void:
 	speed_1x_btn = p_1x
 	speed_2x_btn = p_2x

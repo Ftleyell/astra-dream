@@ -18,6 +18,18 @@ var on_focus_save_needed: Callable = Callable()
 var on_focus_restore_needed: Callable = Callable()
 
 
+func setup_from_root(
+	root: Control,
+	p_roster_dict: Dictionary,
+	p_on_refresh: Callable,
+	p_on_save_focus: Callable,
+	p_on_restore_focus: Callable
+) -> void:
+	var carousel: Node = root.get_node_or_null("CosmeticCarouselModal")
+	var gacha: Node = root.get_node_or_null("GachaModal")
+	setup(carousel, gacha, p_roster_dict, p_on_refresh, p_on_save_focus, p_on_restore_focus)
+
+
 func setup(
 	p_cosmetic_carousel: Node,
 	p_gacha_modal: Node,
@@ -32,6 +44,44 @@ func setup(
 	on_character_refresh_needed = p_on_refresh
 	on_focus_save_needed = p_on_save_focus
 	on_focus_restore_needed = p_on_restore_focus
+
+
+func apply_heroine_loadout(char_id: StringName) -> void:
+	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
+	if loadout.has("selected_pet") and not str(loadout["selected_pet"]).is_empty():
+		SaveManager.set_selected_pet(StringName(str(loadout["selected_pet"])))
+	if loadout.has("selected_navigator") and not str(loadout["selected_navigator"]).is_empty():
+		SaveManager.set_selected_navigator(StringName(str(loadout["selected_navigator"])))
+
+	var cur_pet_str: String = String(SaveManager.get_selected_pet()).to_lower()
+	var pet_skin: String = str(loadout.get("equipped_pet_skin", ""))
+	if not pet_skin.is_empty():
+		SaveManager.equip_skin("pet:" + cur_pet_str, pet_skin)
+	else:
+		SaveManager.unequip_skin("pet:" + cur_pet_str)
+
+	var cur_nav_str: String = String(SaveManager.get_selected_navigator()).to_lower()
+	var nav_skin: String = str(loadout.get("equipped_navigator_skin", ""))
+	if not nav_skin.is_empty():
+		SaveManager.equip_skin("navigator:" + cur_nav_str, nav_skin)
+	else:
+		SaveManager.unequip_skin("navigator:" + cur_nav_str)
+
+	var cid_str: String = String(char_id).to_lower()
+	var ship_skin: String = str(loadout.get("equipped_ship_skin", loadout.get("ship_skin", "base")))
+	if ship_skin.is_empty():
+		ship_skin = "base"
+	SaveManager.equip_skin("ship:" + cid_str, ship_skin)
+
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", "base")))
+	if weapon_skin.is_empty():
+		weapon_skin = "base"
+	SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
+
+	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "base")))
+	if pilot_skin.is_empty():
+		pilot_skin = "base"
+	SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
 
 
 func open_ship_customization(current_character_id: StringName) -> void:

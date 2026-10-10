@@ -49,6 +49,25 @@ func restore_companion_modal_focus(companion_button: Button, orbital_terminal: C
 		target_focus.call_deferred("grab_focus")
 
 
+func setup_from_root(root: Control) -> void:
+	var base_path: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/"
+	var b_back: Button = root.get_node_or_null("MarginContainer/RootVBox/HeaderBar/BackButton") as Button
+	var b_ship: Button = root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipButton") as Button
+	var b_weapon: Button = root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard/WeaponButton") as Button
+	var b_pet: Button = root.get_node_or_null(base_path + "PetCard/PetButton") as Button
+	var b_nav: Button = root.get_node_or_null(base_path + "NavigatorCard/NavigatorButton") as Button
+	var b_talents: Button = root.get_node_or_null(base_path + "TalentsCard/TalentsMargin/TalentsVBox/ExpandTalentsBtn") as Button
+	var b_banlist: Button = root.get_node_or_null(base_path + "TomesCard/TomesMargin/TomesVBox/ArsenalBanlistBtn") as Button
+	var b_tomes: Button = root.get_node_or_null(base_path + "TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/TomesPoolBtn") as Button
+	var b_loadout: Button = root.get_node_or_null(base_path + "TomesCard/TomesMargin/TomesVBox/TomesActionsHBox/LoadoutButton") as Button
+	var b_s1: Button = root.get_node_or_null(base_path + "SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed1xBtn") as Button
+	var b_s2: Button = root.get_node_or_null(base_path + "SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed2xBtn") as Button
+	var b_s4: Button = root.get_node_or_null(base_path + "SpeedCard/SpeedMargin/SpeedVBox/SpeedRow/Speed4xBtn") as Button
+	var b_skin: Button = root.get_node_or_null("MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/HeroIdentityBox/PilotSkinButton") as Button
+	var term: Control = (root.get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as Control) if root.get_node_or_null("DockContainer/TerminalCenter/OrbitalIgnitionTerminal") else (root.get_node_or_null("MarginContainer/RootVBox/DockContainer/TerminalCenter/OrbitalIgnitionTerminal") as Control)
+	setup_focus_mesh(b_back, b_ship, b_weapon, b_pet, b_nav, b_talents, b_banlist, b_tomes, b_loadout, b_s1, b_s2, b_s4, b_skin, term)
+
+
 func setup_focus_mesh(
 	back_button: Button,
 	ship_button: Button,

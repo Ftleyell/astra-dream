@@ -12,7 +12,7 @@
 > Leer solo el rango indicado mediante `view_file` con `StartLine` y `EndLine` — no el archivo completo.
 
 | Si el cambio/bug está en... | Archivo | Rango clave |
-| Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: L234, Input: L447, Roster: L488 |
+| Selección de personaje (ESC, launch, skins, hero picker) | `scenes/ui/character_select/character_select.gd` | Orquestador: ~270 lín. (reducido de 840) |
 | Constructor de tarjetas del elenco (CharacterSelect) | `scenes/ui/character_select/components/character_roster_grid_builder.gd` | Grilla procedural, avatares, bordes y hover |
 | Tabs (Loadout ↔ Habilidades) en CharacterSelect | `scenes/ui/character_select/components/character_select_tab_controller.gd` | — |
 | Enrutamiento de modales CharacterSelect | `scenes/ui/character_select/components/character_select_modal_router.gd` | — |
@@ -39,7 +39,7 @@
 | Economía y experiencia in-run del jugador | `scenes/combat/player/player_economy_component.gd` | Exp, levels, credits, biomass, dark matter |
 | Procesador de daño y OSP del jugador | `scenes/combat/player/player_damage_processor.gd` | Mitigación, One-Shot Protection, invulnerabilidad |
 | Inventario de arcanas del jugador | `scenes/combat/player/player_arcana_inventory.gd` | Registro y aplicación de modificadores de arcanas |
-| Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Pilot select: L382, Interactables: L312 |
+| Hub 3D (hangar, pilotos, terminales, skill tree) | `scenes/ui/hub/hub_world.gd` | Orquestador: ~230 lín. (reducido de 541) |
 | Cinemática y paralaje de cámara Hub 3D | `scenes/ui/hub/components/hub_camera_controller_3d.gd` | FOV, posicionamiento y paralaje estelar |
 | Despacho de atajos e inputs del Hub | `scenes/ui/hub/components/hub_input_dispatcher.gd` | ESC en modales, Q quit y settings |
 | Coordinación de jefes y colosos (CombatSubsystem) | `scenes/combat/directors/combat_boss_coordinator.gd` | Orquestador: L36, Spawner: BossEncounterSpawner, Cinemática: BossCinematicSequence, HUD: BossHealthBarManager |

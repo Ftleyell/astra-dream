@@ -16,6 +16,14 @@ var on_pilot_pressed_callback: Callable = Callable()
 var _pilot_hover_tween: Tween = null
 
 
+func setup_from_root(root: Control, p_on_pressed: Callable) -> void:
+	var base_path: String = "MarginContainer/RootVBox/MainWorkspace/RightShowcaseArea/"
+	var fb: TextureRect = root.get_node_or_null(base_path + "FullbodyTexture") as TextureRect
+	var glow: TextureRect = root.get_node_or_null(base_path + "BacklightGlow") as TextureRect
+	var btn: Button = root.get_node_or_null(base_path + "PilotButton") as Button
+	setup(fb, glow, btn, p_on_pressed)
+
+
 func setup(
 	p_fullbody: TextureRect,
 	p_glow: TextureRect,

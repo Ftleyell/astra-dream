@@ -32,6 +32,42 @@ var navigator_desc: Label = null
 var navigator_button: Button = null
 
 
+func setup_from_root(
+	root: Control,
+	p_on_ship_pressed: Callable,
+	p_on_weapon_pressed: Callable,
+	p_on_pet_pressed: Callable,
+	p_on_nav_pressed: Callable
+) -> void:
+	var base_path: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/"
+	setup_ship_and_weapon(
+		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard") as PanelContainer,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipIcon") as TextureRect,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox/ShipName") as Label,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipButton") as Button,
+		p_on_ship_pressed,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard") as PanelContainer,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponIcon") as TextureRect,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox/WeaponName") as Label,
+		root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard/WeaponButton") as Button,
+		p_on_weapon_pressed
+	)
+	setup_companions(
+		root.get_node_or_null(base_path + "PetCard") as PanelContainer,
+		root.get_node_or_null(base_path + "PetCard/PetMargin/PetBox/PetIcon") as TextureRect,
+		root.get_node_or_null(base_path + "PetCard/PetMargin/PetBox/PetLabelVBox/PetName") as Label,
+		root.get_node_or_null(base_path + "PetCard/PetMargin/PetBox/PetLabelVBox/PetDesc") as Label,
+		root.get_node_or_null(base_path + "PetCard/PetButton") as Button,
+		p_on_pet_pressed,
+		root.get_node_or_null(base_path + "NavigatorCard") as PanelContainer,
+		root.get_node_or_null(base_path + "NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorIcon") as TextureRect,
+		root.get_node_or_null(base_path + "NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox/NavigatorName") as Label,
+		root.get_node_or_null(base_path + "NavigatorCard/NavigatorMargin/NavigatorBox/NavigatorLabelVBox/NavigatorDesc") as Label,
+		root.get_node_or_null(base_path + "NavigatorCard/NavigatorButton") as Button,
+		p_on_nav_pressed
+	)
+
+
 func setup_ship_and_weapon(
 	p_ship_card: PanelContainer,
 	p_ship_icon: TextureRect,

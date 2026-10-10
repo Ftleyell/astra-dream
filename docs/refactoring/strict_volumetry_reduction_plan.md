@@ -9,11 +9,11 @@
 | Archivo / Subsistema | Líneas Actuales | Causa Principal de Inflación | Meta de Líneas |
 | :--- | :--- | :--- | :--- |
 | [`scenes/combat/main_game.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/main_game.gd) | **420** *(de 827)* | Reducido ~50%: getters/setters espejo compactados, sesión encapsulada en `CombatBootstrapper`, listeners purgados y tests validados. | **< 320** |
-| [`scenes/ui/character_select/character_select.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/character_select/character_select.gd) | **840** | 70+ `@onready` references de UI empotradas, boilerplate de slots/habilidades, helpers de setup manual aún no delegados al presenter. | **< 280** |
+| [`scenes/ui/character_select/character_select.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/character_select/character_select.gd) | **270** *(de 840)* | Refactorizado y purificado: orquestador compacto delegando en subcomponentes modulares (`CharacterEquipmentCards`, `CharacterSelectDisplayManager`, etc.). | **< 280** (Reducción de -68%) |
 | [`scenes/ui/hud/hud.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hud/hud.gd) | **487** *(de 630)* | Poda de 20+ `@onready` individuales delegados en `HUDTacticalAbilitiesController`, `HudHealthShieldDisplay` y `HUDSatelliteRadarController`; unificación reactiva de conexiones en `set_player(p)`. | **< 280** (Completada etapa 1 de modularización) |
 | [`scenes/ui/character_select/arsenal_banlist_modal.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/character_select/arsenal_banlist_modal.gd) | **231** *(de 638)* | Extracción completa de construcción UI procedural a `ArsenalBanlistLayoutBuilder`; orquestador compacto y tests 100% PASS. | **< 200** (Reducción de -63%) |
 | [`scenes/combat/satellite/satellite_shop.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/satellite/satellite_shop.gd) | **267** *(de 515)* | Desacoplamiento de navegación/inputs en `SatelliteShopNavigationController` y estilos de panel/foco en `SatelliteShopCardBuilder`. | **< 180** (Reducción de -48%) |
-| [`scenes/ui/hub/hub_world.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hub/hub_world.gd) | **433** | Orquestación residual del hangar y terminales. | **< 190** |
+| [`scenes/ui/hub/hub_world.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/ui/hub/hub_world.gd) | **230** *(de 541)* | Delegación de responsabilidades de hangar, terminales, trofeos y escaparate en sus controladores respectivos. | **< 250** (Reducción de -57%) |
 
 ---
 

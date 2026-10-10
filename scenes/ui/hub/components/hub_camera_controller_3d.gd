@@ -24,7 +24,7 @@ static func setup_camera(
 
 static func update_parallax(
 	camera: Camera3D,
-	hangar_builder: RefCounted
+	hangar_builder: HubHangarBuilder3D
 ) -> void:
 	if is_instance_valid(camera) and hangar_builder and hangar_builder.has_method("update_parallax"):
 		hangar_builder.update_parallax(camera.global_position)
