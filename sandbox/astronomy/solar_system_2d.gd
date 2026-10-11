@@ -54,6 +54,7 @@ func _clear_existing_system() -> void:
 	_is_built = false
 
 const STAR_CORONA_SHADER: Shader = preload("res://sandbox/shaders/star_corona.gdshader")
+const STAR_FLAT_CORE_SHADER: Shader = preload("res://sandbox/shaders/star_flat_core.gdshader")
 const STAR_LIGHT_FIELD_SHADER: Shader = preload("res://sandbox/shaders/star_light_field.gdshader")
 const STATION_BEACON_SHADER: Shader = preload("res://scenes/combat/environment/space_station_beacon.gdshader")
 const CELESTIAL_BODY_SHADER: Shader = preload("res://sandbox/shaders/celestial_body.gdshader")
@@ -74,6 +75,7 @@ func _build_system_hierarchy() -> void:
 	var star_prefix: String = system_profile.star_name_prefix
 	var star_radius: float = system_profile.star_base_radius
 	var star_color: Color = system_profile.star_emission_color
+	var star_flat_core_col: Color = system_profile.star_flat_core_color
 	var axial_speed: float = system_profile.star_axial_rotation_speed
 	var heat_distortion: float = 0.045
 	var pulse_spd: float = 1.5
@@ -113,6 +115,11 @@ func _build_system_hierarchy() -> void:
 		effective_theta_jitter_deg = active_archetype.planet_theta_jitter_degrees
 		if not active_archetype.star_textures.is_empty():
 			star_tex_list = active_archetype.star_textures
+		if active_archetype.flat_core_color.a > 0.0:
+			star_flat_core_col = active_archetype.flat_core_color
+
+	if star_flat_core_col.a <= 0.0:
+		star_flat_core_col = star_color
 
 	# 2. Estrella Central
 	star_body = OrbitalBody2D.new()
@@ -149,7 +156,26 @@ func _build_system_hierarchy() -> void:
 	light_sprite.z_index = -1
 	star_body.add_child(light_sprite)
 
-	# 2.2 Visual de la Estrella
+	var star_diameter: float = star_radius * corona_mult * 2.0
+
+	# 2.2 Fondo Plano Sólido del Núcleo (Anti-agujeros y oclusión de fondo)
+	var flat_core_sprite: Sprite2D = Sprite2D.new()
+	flat_core_sprite.name = "StarFlatCore"
+	flat_core_sprite.centered = true
+	flat_core_sprite.texture = _get_light_quad_texture()
+	flat_core_sprite.scale = Vector2.ONE * (star_diameter * 0.5)
+	if STAR_FLAT_CORE_SHADER != null:
+		var core_mat: ShaderMaterial = ShaderMaterial.new()
+		core_mat.shader = STAR_FLAT_CORE_SHADER
+		core_mat.set_shader_parameter("flat_color", star_flat_core_col)
+		core_mat.set_shader_parameter("core_radius", 0.45)
+		core_mat.set_shader_parameter("edge_feather", 0.02)
+		flat_core_sprite.material = core_mat
+	else:
+		flat_core_sprite.modulate = star_flat_core_col
+	star_body.add_child(flat_core_sprite)
+
+	# 2.3 Visual de la Estrella (Corona y Textura Animada)
 	var star_sprite: Sprite2D = Sprite2D.new()
 	star_sprite.name = "StarVisual"
 	star_sprite.centered = true
@@ -180,7 +206,6 @@ func _build_system_hierarchy() -> void:
 		star_sprite.modulate = star_color
 
 	var tex_w: float = float(selected_tex.get_width()) if selected_tex != null and selected_tex.get_width() > 0 else 512.0
-	var star_diameter: float = star_radius * corona_mult * 2.0
 	star_sprite.scale = Vector2.ONE * (star_diameter / tex_w)
 	star_body.add_child(star_sprite)
 	star_body.set_sprite_reference(star_sprite)

@@ -173,6 +173,15 @@ func _test_star_archetypes_and_visual_light() -> void:
 	assert_true(star_mat != null, "El material de StarVisual debe ser de tipo ShaderMaterial.")
 	assert_true(star_mat.get_shader_parameter("heat_distortion_strength") > 0.0, "El shader de la estrella debe tener heat_distortion_strength activo.")
 
+	# Verificar StarFlatCore y su ShaderMaterial de fondo plano sólido
+	var star_flat_core: Sprite2D = test_system.star_body.get_node_or_null("StarFlatCore") as Sprite2D
+	assert_true(star_flat_core != null, "CentralStar debe contener el fondo plano StarFlatCore.")
+	assert_true(star_flat_core.material != null, "StarFlatCore debe tener asignado su ShaderMaterial.")
+	var flat_core_mat: ShaderMaterial = star_flat_core.material as ShaderMaterial
+	assert_true(flat_core_mat != null, "El material de StarFlatCore debe ser ShaderMaterial.")
+	var assigned_flat_color: Color = flat_core_mat.get_shader_parameter("flat_color")
+	assert_true(assigned_flat_color.a > 0.0, "StarFlatCore debe tener un flat_color opaco configurado.")
+
 	# Verificar SolarSystemLightField y su ShaderMaterial de luz ambiental orbital
 	var light_field: Sprite2D = test_system.star_body.get_node_or_null("SolarSystemLightField") as Sprite2D
 	assert_true(light_field != null, "CentralStar debe contener el campo de luz ambiental SolarSystemLightField.")

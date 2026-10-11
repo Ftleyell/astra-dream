@@ -26,6 +26,7 @@ star_texture = ExtResource("2_star_0")
 star_textures = [ExtResource("2_star_0"), ExtResource("3_star_1"), ExtResource("4_star_2")]
 star_base_radius = 420.0
 star_emission_color = Color(1.0, 0.88, 0.55, 1.0)
+star_flat_core_color = Color(1.0, 0.85, 0.45, 1.0)
 star_axial_rotation_speed = 0.008
 min_planets = 3
 max_planets = 6

@@ -13,6 +13,7 @@ name_prefixes = ["SOLARIS", "HELIOS", "AURELIA", "SOL"]
 spawn_weight = 4.0
 star_textures = [ExtResource("2_star_0"), ExtResource("3_star")]
 star_color = Color(1.0, 0.82, 0.42, 1.0)
+flat_core_color = Color(1.0, 0.78, 0.32, 1.0)
 star_core_radius = 420.0
 axial_rotation_speed = 0.008
 heat_distortion_strength = 0.045
