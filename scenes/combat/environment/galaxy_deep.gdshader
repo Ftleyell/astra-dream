@@ -11,11 +11,11 @@ render_mode blend_add;
  * - Decaimiento radial suave hacia los bordes para eliminar cualquier línea de corte cuadrada.
  */
 
-uniform float spin_speed : hint_range(-0.1, 0.1) = 0.004;
+uniform float spin_speed : hint_range(-0.1, 0.1) = 0.015;
 uniform vec2 galaxy_center = vec2(0.5, 0.5);
 uniform float core_pulse_speed : hint_range(0.1, 5.0) = 1.2;
-uniform float core_pulse_intensity : hint_range(0.0, 1.0) = 0.22;
-uniform float overall_brightness : hint_range(0.1, 2.5) = 0.85;
+uniform float core_pulse_intensity : hint_range(0.0, 1.0) = 0.35;
+uniform float overall_brightness : hint_range(0.1, 3.0) = 1.45;
 uniform float radial_fade_start : hint_range(0.1, 0.5) = 0.35;
 uniform float radial_fade_end : hint_range(0.2, 0.6) = 0.49;
 uniform vec4 tint_color : source_color = vec4(0.95, 0.90, 1.0, 1.0);

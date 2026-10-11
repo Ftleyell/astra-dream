@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcl6annrjb41b"
-path="res://.godot/imported/Black Hole.jpg-7d0b07e2b1cebd3a5dde48fa7134c592.ctex"
+uid="uid://dsturi3usf0wy"
+path="res://.godot/imported/Moon_0.jpg-7ca1c0fc14e6c3190da0f67c55e02df2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/environments/parallax_space/Black Hole.jpg"
-dest_files=["res://.godot/imported/Black Hole.jpg-7d0b07e2b1cebd3a5dde48fa7134c592.ctex"]
+source_file="res://assets/environments/parallax_space/Moon_0.jpg"
+dest_files=["res://.godot/imported/Moon_0.jpg-7ca1c0fc14e6c3190da0f67c55e02df2.ctex"]
 
 [params]
 

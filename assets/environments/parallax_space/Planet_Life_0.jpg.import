@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhljpjlnfto02"
-path="res://.godot/imported/planet_3.png-e89ff0ffffbc263ef9ac4a91c2240243.ctex"
+uid="uid://8qgutixs7xhs"
+path="res://.godot/imported/Planet_Life_0.jpg-9f9b2c4b67f86b27ac54cf240e8d77e0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/environments/parallax_space/planet_3.png"
-dest_files=["res://.godot/imported/planet_3.png-e89ff0ffffbc263ef9ac4a91c2240243.ctex"]
+source_file="res://assets/environments/parallax_space/Planet_Life_0.jpg"
+dest_files=["res://.godot/imported/Planet_Life_0.jpg-9f9b2c4b67f86b27ac54cf240e8d77e0.ctex"]
 
 [params]
 

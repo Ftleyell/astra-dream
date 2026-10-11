@@ -39,6 +39,9 @@ func _discover_orbital_children() -> void:
 func set_sprite_reference(sprite: Sprite2D) -> void:
 	_sprite = sprite
 
+func get_sprite() -> Sprite2D:
+	return _sprite
+
 func add_orbital_child(child_body: OrbitalBody2D) -> void:
 	if not _orbital_children.has(child_body):
 		_orbital_children.append(child_body)

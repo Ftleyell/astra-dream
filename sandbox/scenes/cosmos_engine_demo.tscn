@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bsmseniyieedm" path="res://sandbox/scenes/cosmos_telemetry_overlay.gd" id="5_overlay"]
 [ext_resource type="Resource" path="res://data/characters/roster/nova.tres" id="6_nova_char"]
 [ext_resource type="Script" uid="uid://m82vuj32mytr" path="res://scenes/combat/player/sandevistan_flight_vfx.gd" id="7_sandevistan"]
+[ext_resource type="Script" uid="uid://dffol0ltcshyt" path="res://sandbox/rendering/cosmos_debug_drawer_2d.gd" id="8_debug_drawer"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_vessel"]
 radius = 24.0
@@ -54,12 +55,18 @@ source_sprite = NodePath("../ShipSprite")
 [node name="CosmosCamera2D" type="Camera2D" parent="CosmosRoot/PlayerVessel" unique_id=1268124782]
 script = ExtResource("4_camera")
 
-[node name="TelemetryOverlay" type="CanvasLayer" parent="." unique_id=1603953433 node_paths=PackedStringArray("cosmos_root", "vessel", "camera")]
+[node name="CosmosDebugDrawer2D" type="Node2D" parent="CosmosRoot" unique_id=987162534 node_paths=PackedStringArray("cosmos_root", "camera")]
+script = ExtResource("8_debug_drawer")
+cosmos_root = NodePath("..")
+camera = NodePath("../PlayerVessel/CosmosCamera2D")
+
+[node name="TelemetryOverlay" type="CanvasLayer" parent="." unique_id=1603953433 node_paths=PackedStringArray("cosmos_root", "vessel", "camera", "debug_drawer")]
 layer = 120
 script = ExtResource("5_overlay")
 cosmos_root = NodePath("../CosmosRoot")
 vessel = NodePath("../CosmosRoot/PlayerVessel")
 camera = NodePath("../CosmosRoot/PlayerVessel/CosmosCamera2D")
+debug_drawer = NodePath("../CosmosRoot/CosmosDebugDrawer2D")
 
 [node name="PanelContainer" type="PanelContainer" parent="TelemetryOverlay" unique_id=731793095]
 offset_left = 20.0

@@ -10,6 +10,9 @@ extends ColorRect
 @export_range(0.0, 1.0, 0.01) var biome_blend_factor: float = 0.0
 @export_range(0.0, 1.0, 0.005) var parallax_factor: float = 0.05
 @export var auto_sync_viewport: bool = true
+@export var tile_texture: Texture2D
+@export_range(0.00005, 0.005, 0.00005) var tile_scale: float = 0.00035
+@export_range(0.0, 1.0, 0.05) var tile_mix: float = 0.45
 
 var _shader_mat: ShaderMaterial = null
 var _accumulated_time: float = 0.0
@@ -34,7 +37,7 @@ func _process(delta: float) -> void:
 	_accumulated_time += delta
 	_update_uniforms()
 
-func _apply_biome_configurations() -> void:
+func apply_biome_configurations() -> void:
 	if _shader_mat == null:
 		return
 
@@ -42,15 +45,42 @@ func _apply_biome_configurations() -> void:
 		_shader_mat.set_shader_parameter("biome_a_color_deep", biome_a.color_deep_space)
 		_shader_mat.set_shader_parameter("biome_a_color_gas_primary", biome_a.color_gas_primary)
 		_shader_mat.set_shader_parameter("biome_a_color_gas_secondary", biome_a.color_gas_secondary)
+		_shader_mat.set_shader_parameter("biome_a_star_tint", biome_a.color_star_tint)
 		_shader_mat.set_shader_parameter("biome_a_density", biome_a.gas_density)
+		_shader_mat.set_shader_parameter("biome_a_contrast", biome_a.gas_contrast)
 		_shader_mat.set_shader_parameter("biome_a_frequency", biome_a.noise_frequency)
 
 	if biome_b != null:
 		_shader_mat.set_shader_parameter("biome_b_color_deep", biome_b.color_deep_space)
 		_shader_mat.set_shader_parameter("biome_b_color_gas_primary", biome_b.color_gas_primary)
 		_shader_mat.set_shader_parameter("biome_b_color_gas_secondary", biome_b.color_gas_secondary)
+		_shader_mat.set_shader_parameter("biome_b_star_tint", biome_b.color_star_tint)
 		_shader_mat.set_shader_parameter("biome_b_density", biome_b.gas_density)
+		_shader_mat.set_shader_parameter("biome_b_contrast", biome_b.gas_contrast)
 		_shader_mat.set_shader_parameter("biome_b_frequency", biome_b.noise_frequency)
+
+## Configura reactivamente el Bioma B (bioma solar objetivo) en el material del shader
+func set_biome_b(config: CosmicBiomeConfig) -> void:
+	if biome_b == config:
+		return
+	biome_b = config
+	if _shader_mat == null or biome_b == null:
+		return
+	_shader_mat.set_shader_parameter("biome_b_color_deep", biome_b.color_deep_space)
+	_shader_mat.set_shader_parameter("biome_b_color_gas_primary", biome_b.color_gas_primary)
+	_shader_mat.set_shader_parameter("biome_b_color_gas_secondary", biome_b.color_gas_secondary)
+	_shader_mat.set_shader_parameter("biome_b_star_tint", biome_b.color_star_tint)
+	_shader_mat.set_shader_parameter("biome_b_density", biome_b.gas_density)
+	_shader_mat.set_shader_parameter("biome_b_contrast", biome_b.gas_contrast)
+	_shader_mat.set_shader_parameter("biome_b_frequency", biome_b.noise_frequency)
+
+	if tile_texture != null:
+		_shader_mat.set_shader_parameter("nebula_tile_texture", tile_texture)
+		_shader_mat.set_shader_parameter("nebula_tile_scale", tile_scale)
+		_shader_mat.set_shader_parameter("nebula_tile_mix", tile_mix)
+
+func _apply_biome_configurations() -> void:
+	apply_biome_configurations()
 
 func _update_uniforms() -> void:
 	if _shader_mat == null:
@@ -76,3 +106,15 @@ func set_blend_factor(blend: float) -> void:
 	biome_blend_factor = clampf(blend, 0.0, 1.0)
 	if _shader_mat != null:
 		_shader_mat.set_shader_parameter("biome_blend_factor", biome_blend_factor)
+
+## Actualiza las fuentes de luz estelares activas para teñir el fondo e iluminar el gas
+func update_star_lights(positions: PackedVector2Array, colors: PackedColorArray, radii: PackedFloat32Array) -> void:
+	if _shader_mat == null:
+		return
+	var count: int = mini(positions.size(), 4)
+	_shader_mat.set_shader_parameter("star_light_count", count)
+	if count > 0:
+		_shader_mat.set_shader_parameter("star_light_positions", positions)
+		_shader_mat.set_shader_parameter("star_light_colors", colors)
+		_shader_mat.set_shader_parameter("star_light_radii", radii)
+

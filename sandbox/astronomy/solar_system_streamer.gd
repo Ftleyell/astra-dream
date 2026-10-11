@@ -8,8 +8,8 @@ extends Node2D
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
 @export var run_seed: int = 428175
-@export var pool_size: int = 4
-@export var cell_size: float = 30000.0
+@export var pool_size: int = 8
+@export var cell_size: float = 16000.0
 
 var _macro_grid: CosmicMacroGrid
 var _pool: Array[SolarSystem2D] = []
@@ -18,6 +18,8 @@ var _global_time: float = 0.0
 
 func _ready() -> void:
 	assert(system_profile != null, "CelestialSystemProfile no asignado en SolarSystemStreamer.")
+	if system_profile != null and system_profile.cell_size > 0.0:
+		cell_size = system_profile.cell_size
 	_initialize_macro_grid()
 	_initialize_system_pool()
 
@@ -61,21 +63,20 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 	var layer_center: Vector2 = (cam_pos * parallax_layer.scroll_scale) - parallax_layer.scroll_offset
 	var current_cell: Vector2i = _macro_grid.world_to_grid_coords(layer_center)
 
+	var effective_spawn_chance: float = system_profile.spawn_chance if system_profile != null else 0.75
+
 	# Identificar celdas candidatas visibles
 	var required_cells: Array[Vector2i] = []
 	for ox: int in range(-1, 2):
 		for oy: int in range(-1, 2):
 			var candidate_cell: Vector2i = current_cell + Vector2i(ox, oy)
-			# Probabilidad de spawn de sistema solar en la celda (ej. 40%)
-			if _macro_grid.get_cell_pseudorandom_float(candidate_cell, 9091) > 0.40:
+			# Probabilidad determinista de spawn de sistema solar en la celda
+			if _macro_grid.get_cell_pseudorandom_float(candidate_cell, 9091) > effective_spawn_chance:
 				continue
 
-			var cell_center: Vector2 = _macro_grid.grid_to_world_center(candidate_cell)
-			var offset_norm: Vector2 = _macro_grid.get_cell_normalized_offset(candidate_cell, 4321)
-			var jitter: Vector2 = (offset_norm - Vector2(0.5, 0.5)) * (cell_size * 0.5)
-			var system_pos: Vector2 = cell_center + jitter
+			var system_pos: Vector2 = get_system_position_for_cell(candidate_cell)
 
-			var max_bound: float = system_profile.orbit_radius_max + 1000.0
+			var max_bound: float = (system_profile.get_maximum_orbital_bound() if system_profile != null else 6000.0) + 1500.0
 			if _intersects_frustum(system_pos, layer_center, viewport_half, max_bound):
 				required_cells.append(candidate_cell)
 
@@ -99,16 +100,28 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 				var cell_seed: int = run_seed ^ CosmicHasher.hash_2d(req_cell.x, req_cell.y, 777)
 				sys_to_acquire.build_system(cell_seed)
 				
-				var cell_center: Vector2 = _macro_grid.grid_to_world_center(req_cell)
-				var offset_norm: Vector2 = _macro_grid.get_cell_normalized_offset(req_cell, 4321)
-				var jitter: Vector2 = (offset_norm - Vector2(0.5, 0.5)) * (cell_size * 0.5)
-				sys_to_acquire.position = cell_center + jitter
+				sys_to_acquire.position = get_system_position_for_cell(req_cell)
 				sys_to_acquire.visible = true
 				_active_systems[req_cell] = sys_to_acquire
 
 	# Evaluar orbitalmente todos los sistemas activos en t_global
 	for sys: SolarSystem2D in _active_systems.values():
 		sys.update_astronomical_state(current_time)
+
+## Calcula la posición analítica del sistema estelar dentro de la celda,
+## acotando el jitter de forma adaptativa para garantizar que las órbitas jamás crucen el margen periférico (cell_boundary_padding).
+func get_system_position_for_cell(cell_coords: Vector2i) -> Vector2:
+	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell_coords)
+	var cell_seed: int = run_seed ^ CosmicHasher.hash_2d(cell_coords.x, cell_coords.y, 777)
+	var arch: StarArchetype = system_profile.get_archetype_for_seed(cell_seed) if system_profile != null else null
+	var sys_reach: float = (arch.orbit_radius_max if arch != null else (system_profile.orbit_radius_max if system_profile != null else 4400.0)) + 400.0
+	var padding: float = system_profile.cell_boundary_padding if system_profile != null else 250.0
+	var safe_half: float = (cell_size * 0.5) - padding
+	var max_jitter_dist: float = maxf(safe_half - sys_reach, 0.0)
+
+	var offset_norm: Vector2 = _macro_grid.get_cell_normalized_offset(cell_coords, 4321)
+	var jitter: Vector2 = (offset_norm - Vector2(0.5, 0.5)) * 2.0 * max_jitter_dist
+	return cell_center + jitter
 
 func _intersects_frustum(pos: Vector2, center: Vector2, half_extents: Vector2, bound_radius: float) -> bool:
 	var delta_pos: Vector2 = (pos - center).abs()
@@ -121,5 +134,9 @@ func get_pool_available_count() -> int:
 func get_active_systems_count() -> int:
 	return _active_systems.size()
 
+func get_active_systems() -> Dictionary:
+	return _active_systems
+
 func get_macro_grid() -> CosmicMacroGrid:
 	return _macro_grid
+

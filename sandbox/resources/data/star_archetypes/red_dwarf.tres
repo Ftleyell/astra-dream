@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="StarArchetype" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/star_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star.jpg" id="2_star"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 0.jpg" id="3_star_0"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/biomes/biome_04_crimson_veil.tres" id="4_biome"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"red_dwarf"
+display_name = "Enana Roja"
+name_prefixes = ["PROXIMA", "GLIESE", "KEPLER", "ROSS", "TRAPPIST"]
+spawn_weight = 3.0
+star_textures = [ExtResource("2_star"), ExtResource("3_star_0")]
+star_color = Color(1.0, 0.38, 0.22, 1.0)
+star_core_radius = 340.0
+axial_rotation_speed = 0.012
+heat_distortion_strength = 0.035
+pulse_speed = 1.0
+corona_size_multiplier = 1.25
+corona_intensity = 1.35
+biome_config = ExtResource("4_biome")
+orbit_radius_min = 720.0
+orbit_radius_max = 2100.0
+min_orbital_spacing = 320.0
+light_field_radius_multiplier = 1.20
+light_field_intensity = 0.95
+heliosphere_noise_strength = 0.35
+heliosphere_edge_feather = 0.18
+planet_day_tint_strength = 0.55
+planet_atmo_tint_strength = 0.60

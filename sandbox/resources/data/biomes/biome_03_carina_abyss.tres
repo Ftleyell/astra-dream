@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CosmicBiomeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/cosmic_biome_config.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+biome_id = &"biome_carina_abyss"
+display_name = "Abismo de Carina"
+color_deep_space = Color(0.005, 0.018, 0.02, 1)
+color_gas_primary = Color(0.04, 0.32, 0.22, 0.85)
+color_gas_secondary = Color(0.08, 0.38, 0.44, 0.65)
+color_star_tint = Color(0.75, 1, 0.92, 1)
+noise_frequency = 0.0006
+noise_octaves = 4
+gas_density = 2.0
+gas_contrast = 1.9
+chromatic_aberration_strength = 0.002
+starfield_energy = 1.15

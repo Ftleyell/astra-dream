@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bcjlayl3nt1w7"
-path="res://.godot/imported/planet_1.png-bf074cfd8ee20e0c6c142fcd1202d499.ctex"
+uid="uid://cj8s66beagr0l"
+path="res://.godot/imported/Planet_Desert.jpg-86136b197be52507d4ea95c3e89db4dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/environments/parallax_space/planet_1.png"
-dest_files=["res://.godot/imported/planet_1.png-bf074cfd8ee20e0c6c142fcd1202d499.ctex"]
+source_file="res://assets/environments/parallax_space/Planet_Desert.jpg"
+dest_files=["res://.godot/imported/Planet_Desert.jpg-86136b197be52507d4ea95c3e89db4dd.ctex"]
 
 [params]
 

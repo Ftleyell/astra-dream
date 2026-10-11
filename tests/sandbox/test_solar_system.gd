@@ -17,6 +17,7 @@ func _run_solar_system_tests() -> void:
 	_test_hierarchical_moon_orbit()
 	_test_zero_numerical_drift_reversibility()
 	_test_solar_system_streamer_pooling()
+	_test_star_archetypes_and_visual_light()
 	pass_suite("TestSolarSystem completado con éxito (100% de aserciones pasadas).")
 
 func _setup_test_profile() -> void:
@@ -125,4 +126,96 @@ func _test_solar_system_streamer_pooling() -> void:
 	streamer._update_streaming_and_orbits(50.0)
 	assert_true(streamer.get_pool_available_count() == 3, "El pool debe mantenerse íntegro y sin fugas.")
 
+	# Validar matemáticamente que ningún sistema solar cruza el margen periférico (cell_boundary_padding = 500px)
+	var test_cells: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, -1), Vector2i(2, 3)]
+	for c in test_cells:
+		var c_center: Vector2 = streamer.get_macro_grid().grid_to_world_center(c)
+		var s_pos: Vector2 = streamer.get_system_position_for_cell(c)
+		var offset_from_center: Vector2 = (s_pos - c_center).abs()
+		var max_allowed_half: float = (streamer.cell_size * 0.5) - _system_profile.cell_boundary_padding
+		# El centro del sol + su radio de alcance debe respetar el medio ancho seguro
+		assert_true(offset_from_center.x <= max_allowed_half + 0.1, "El jitter X debe permanecer dentro del margen seguro.")
+		assert_true(offset_from_center.y <= max_allowed_half + 0.1, "El jitter Y debe permanecer dentro del margen seguro.")
+
 	streamer.queue_free()
+
+func _test_star_archetypes_and_visual_light() -> void:
+	# Cargar o instanciar los 3 arquetipos estelares
+	var arch_yellow: StarArchetype = load("res://sandbox/resources/data/star_archetypes/yellow_dwarf.tres")
+	var arch_blue: StarArchetype = load("res://sandbox/resources/data/star_archetypes/blue_giant.tres")
+	var arch_red: StarArchetype = load("res://sandbox/resources/data/star_archetypes/red_dwarf.tres")
+
+	assert_true(arch_yellow != null, "yellow_dwarf.tres debe existir y cargar correctamente.")
+	assert_true(arch_blue != null, "blue_giant.tres debe existir y cargar correctamente.")
+	assert_true(arch_red != null, "red_dwarf.tres debe existir y cargar correctamente.")
+
+	var multi_profile: CelestialSystemProfile = load("res://sandbox/resources/data/default_celestial_system.tres")
+	assert_true(multi_profile != null, "default_celestial_system.tres debe cargar correctamente.")
+
+	# Comprobar selección ponderada determinista
+	var selected_arch: StarArchetype = multi_profile.get_archetype_for_seed(12345)
+	assert_true(selected_arch != null, "La selección determinista de arquetipo debe retornar un StarArchetype válido.")
+
+	# Comprobar construcción de sistema solar con arquetipo
+	var test_system: SolarSystem2D = SolarSystem2D.new()
+	test_system.system_profile = multi_profile
+	add_child(test_system)
+	test_system.build_system(8888)
+
+	assert_true(test_system.active_archetype != null, "El sistema solar debe tener su active_archetype asignado.")
+	assert_true(test_system.star_body != null, "El sistema solar debe instanciar su star_body central.")
+
+	# Verificar StarVisual y su ShaderMaterial
+	var star_visual: Sprite2D = test_system.star_body.get_node_or_null("StarVisual") as Sprite2D
+	assert_true(star_visual != null, "CentralStar debe contener un nodo hijo StarVisual.")
+	assert_true(star_visual.material != null, "StarVisual debe tener asignado su ShaderMaterial de corona estelar.")
+	var star_mat: ShaderMaterial = star_visual.material as ShaderMaterial
+	assert_true(star_mat != null, "El material de StarVisual debe ser de tipo ShaderMaterial.")
+	assert_true(star_mat.get_shader_parameter("heat_distortion_strength") > 0.0, "El shader de la estrella debe tener heat_distortion_strength activo.")
+
+	# Verificar SolarSystemLightField y su ShaderMaterial de luz ambiental orbital
+	var light_field: Sprite2D = test_system.star_body.get_node_or_null("SolarSystemLightField") as Sprite2D
+	assert_true(light_field != null, "CentralStar debe contener el campo de luz ambiental SolarSystemLightField.")
+	assert_true(light_field.material != null, "SolarSystemLightField debe tener asignado su ShaderMaterial.")
+	var light_mat: ShaderMaterial = light_field.material as ShaderMaterial
+	assert_true(light_mat != null, "El material de luz debe ser ShaderMaterial.")
+	assert_true(light_mat.get_shader_parameter("heliosphere_noise_strength") > 0.0, "La heliosfera debe tener heliosphere_noise_strength activo.")
+	assert_true(light_mat.get_shader_parameter("heliosphere_edge_feather") > 0.0, "La heliosfera debe tener heliosphere_edge_feather activo.")
+	var field_scale: float = light_field.scale.x
+	assert_true(field_scale >= test_system.active_archetype.orbit_radius_max, "La escala del campo de luz debe cubrir todo el rango orbital exterior.")
+
+	# Verificar que el bounding radius cubre la luz orbital y los planetas
+	assert_true(test_system.get_bounding_radius() >= field_scale, "El bounding radius debe abarcar el campo de luz orbital.")
+
+	# Verificar escala de planetas (al 75% del rango base) y tinte solar estelar
+	for planet: OrbitalBody2D in test_system.planets:
+		var p_vis: Sprite2D = planet.get_node_or_null("PlanetVisual") as Sprite2D
+		assert_true(p_vis != null, "Cada planeta debe tener su nodo PlanetVisual.")
+		assert_true(p_vis.scale.x <= (1.1 * 0.75 + 0.001), "La escala del planeta debe estar dentro del 75% del tamaño base.")
+		var p_mat: ShaderMaterial = p_vis.material as ShaderMaterial
+		assert_true(p_mat != null, "El material de PlanetVisual debe ser ShaderMaterial.")
+		assert_true(p_mat.get_shader_parameter("star_light_tint_strength") > 0.0, "El planeta debe recibir tinte solar estelar.")
+
+		# Verificar que cada planeta tiene al menos 1 estación espacial orbitando
+		var station: OrbitalBody2D = planet.get_node_or_null("Station_1") as OrbitalBody2D
+		if station == null:
+			for ch in planet.get_children():
+				if ch is OrbitalBody2D and ch.name.begins_with("Station_"):
+					station = ch
+					break
+		assert_true(station != null, "Cada planeta debe tener garantizada su estación espacial orbitando.")
+		var st_vis: Sprite2D = station.get_node_or_null("StationVisual") as Sprite2D
+		assert_true(st_vis != null, "La estación debe tener su nodo StationVisual.")
+		var p_diam: float = (float(p_vis.texture.get_width()) if p_vis.texture != null else 256.0) * p_vis.scale.x
+		var st_diam: float = (float(st_vis.texture.get_width()) if st_vis.texture != null else 128.0) * st_vis.scale.x
+		assert_true(is_equal_approx(st_diam, p_diam * 0.15), "El diámetro visual de la estación debe ser exactamente el 15% del planeta.")
+
+	# Verificar buffer orbital mínimo garantizado anti-pisado entre planetas consecutivos
+	var min_gap: float = test_system.active_archetype.min_orbital_spacing
+	for i: int in range(test_system.planets.size() - 1):
+		var p1: OrbitalBody2D = test_system.planets[i]
+		var p2: OrbitalBody2D = test_system.planets[i + 1]
+		var gap: float = p2.orbit_radius - p1.orbit_radius
+		assert_true(gap >= min_gap - 0.1, "El espacio entre las órbitas %d y %d debe ser >= %.1f (obtenido: %.1f). Cero colisiones garantizadas." % [i, i + 1, min_gap, gap])
+
+	test_system.queue_free()

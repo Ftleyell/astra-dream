@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s0d1fpqnol8e"
-path="res://.godot/imported/planet_2.png-1e0bd79e9e4df0bc75175cf57af972a8.ctex"
+uid="uid://ofgepap73wta"
+path="res://.godot/imported/Galaxy_1.jpg-0aba095e06a2183dad127c649f3bc4e0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/environments/parallax_space/planet_2.png"
-dest_files=["res://.godot/imported/planet_2.png-1e0bd79e9e4df0bc75175cf57af972a8.ctex"]
+source_file="res://assets/environments/parallax_space/Galaxy_1.jpg"
+dest_files=["res://.godot/imported/Galaxy_1.jpg-0aba095e06a2183dad127c649f3bc4e0.ctex"]
 
 [params]
 

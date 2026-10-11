@@ -16,7 +16,7 @@ extends Resource
 @export_group("Parámetros de Ruido FBM")
 @export_range(0.00001, 0.005, 0.00001) var noise_frequency: float = 0.0008
 @export_range(1, 6, 1) var noise_octaves: int = 4
-@export_range(0.1, 1.0, 0.05) var gas_density: float = 0.55
+@export_range(0.1, 3.0, 0.05) var gas_density: float = 2.0
 @export_range(0.5, 4.0, 0.1) var gas_contrast: float = 1.8
 
 @export_group("Óptica")
