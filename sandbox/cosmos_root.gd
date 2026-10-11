@@ -89,6 +89,17 @@ func apply_environment_profile() -> void:
 			n_mat.set_shader_parameter("deep_stars_intensity", environment_profile.nebula_deep_stars_intensity)
 			n_mat.set_shader_parameter("deep_stars_scale", environment_profile.nebula_deep_stars_scale)
 			n_mat.set_shader_parameter("deep_stars_parallax", environment_profile.nebula_deep_stars_parallax)
+			n_mat.set_shader_parameter("deep_stars_twinkle_speed", environment_profile.nebula_deep_stars_twinkle_speed)
+			n_mat.set_shader_parameter("deep_stars_sparkle_intensity", environment_profile.nebula_deep_stars_sparkle_intensity)
+			n_mat.set_shader_parameter("deep_stars_halo_radius", environment_profile.nebula_deep_stars_halo_radius)
+			n_mat.set_shader_parameter("deep_stars_gas_interaction", environment_profile.nebula_deep_stars_gas_interaction)
+			n_mat.set_shader_parameter("mid_stars_intensity", environment_profile.nebula_mid_stars_intensity)
+			n_mat.set_shader_parameter("mid_stars_scale", environment_profile.nebula_mid_stars_scale)
+			n_mat.set_shader_parameter("mid_stars_parallax", environment_profile.nebula_mid_stars_parallax)
+			n_mat.set_shader_parameter("mid_stars_twinkle_speed", environment_profile.nebula_mid_stars_twinkle_speed)
+			n_mat.set_shader_parameter("mid_stars_sparkle_intensity", environment_profile.nebula_mid_stars_sparkle_intensity)
+			n_mat.set_shader_parameter("mid_stars_halo_radius", environment_profile.nebula_mid_stars_halo_radius)
+			n_mat.set_shader_parameter("mid_stars_gas_interaction", environment_profile.nebula_mid_stars_gas_interaction)
 			n_mat.set_shader_parameter("nebula_tile_mix", environment_profile.nebula_tile_mix)
 			n_mat.set_shader_parameter("nebula_tile_scale", environment_profile.nebula_tile_scale)
 
@@ -107,6 +118,8 @@ func apply_environment_profile() -> void:
 		_starfield_mat.set_shader_parameter("window_scale", environment_profile.star_window_scale)
 		_starfield_mat.set_shader_parameter("twinkle_amount", environment_profile.star_twinkle_amount)
 		_starfield_mat.set_shader_parameter("twinkle_speed", environment_profile.star_twinkle_speed)
+		_starfield_mat.set_shader_parameter("lens_flare_intensity", environment_profile.star_lens_flare_intensity)
+		_starfield_mat.set_shader_parameter("lens_flare_length", environment_profile.star_lens_flare_length)
 
 	if parallax_solar_systems != null and is_instance_valid(parallax_solar_systems):
 		parallax_solar_systems.scroll_scale = environment_profile.solar_scroll_scale * mult
@@ -130,7 +143,11 @@ func set_layer_visibility(layer_index: int, is_visible: bool) -> void:
 					nebula_controller.visible = is_visible
 		2:
 			if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k):
-				parallax_starfield_8k.visible = is_visible
+				var parent_node: CanvasLayer = parallax_starfield_8k.get_parent() as CanvasLayer
+				if parent_node != null:
+					parent_node.visible = is_visible
+				else:
+					parallax_starfield_8k.visible = is_visible
 		3:
 			if parallax_macro_galaxies != null and is_instance_valid(parallax_macro_galaxies):
 				parallax_macro_galaxies.visible = is_visible
@@ -149,7 +166,10 @@ func get_layer_visibility(layer_index: int) -> bool:
 				return parent_node.visible if parent_node != null else nebula_controller.visible
 			return false
 		2:
-			return parallax_starfield_8k.visible if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k) else false
+			if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k):
+				var parent_node: CanvasLayer = parallax_starfield_8k.get_parent() as CanvasLayer
+				return parent_node.visible if parent_node != null else parallax_starfield_8k.visible
+			return false
 		3:
 			return parallax_macro_galaxies.visible if parallax_macro_galaxies != null and is_instance_valid(parallax_macro_galaxies) else false
 		4:

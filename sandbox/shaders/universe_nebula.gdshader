@@ -12,9 +12,22 @@ uniform float global_time = 0.0;
 
 // Lecho estelar 8K de fondo casi inmóvil (mezclado con el polvo cósmico)
 uniform sampler2D deep_starfield_texture : repeat_enable, filter_linear;
-uniform float deep_stars_intensity : hint_range(0.0, 2.0) = 0.5;
+uniform float deep_stars_intensity : hint_range(0.0, 3.0) = 0.55;
 uniform float deep_stars_parallax : hint_range(0.0, 0.05) = 0.006;
 uniform float deep_stars_scale : hint_range(0.1, 10.0) = 2.8;
+uniform float deep_stars_twinkle_speed : hint_range(0.1, 10.0) = 2.2;
+uniform float deep_stars_sparkle_intensity : hint_range(0.0, 2.0) = 0.85;
+uniform float deep_stars_halo_radius : hint_range(0.1, 3.0) = 1.35;
+uniform float deep_stars_gas_interaction : hint_range(0.0, 2.0) = 0.75;
+
+// Segundo estrato estelar 8K (desactivado en shader cuando se usa capa física dedicada en layer -105)
+uniform float mid_stars_intensity : hint_range(0.0, 5.0) = 0.0;
+uniform float mid_stars_parallax : hint_range(0.0, 0.05) = 0.0065;
+uniform float mid_stars_scale : hint_range(0.1, 10.0) = 1.35;
+uniform float mid_stars_twinkle_speed : hint_range(0.1, 10.0) = 2.4;
+uniform float mid_stars_sparkle_intensity : hint_range(0.0, 3.0) = 1.4;
+uniform float mid_stars_halo_radius : hint_range(0.1, 4.0) = 1.8;
+uniform float mid_stars_gas_interaction : hint_range(0.0, 2.0) = 0.85;
 
 // Textura de nebulosa seamless en tiles (2048x2048) modulada con FBM
 uniform sampler2D nebula_tile_texture : repeat_enable, filter_linear;
@@ -181,20 +194,23 @@ void fragment() {
 		}
 	}
 
-	// Muestreo del lecho de micro-estrellas de fondo casi inmóvil (Ventana amplia para puntos diminutos de 1-2px)
+	// Muestreo continuo bilineal directo del lecho de micro-estrellas (nivel MIP 0 estable sin aliasing):
 	const float BUFFER_SIZE = 8192.0;
 	vec2 deep_star_world_pos = camera_world_position * deep_stars_parallax + (screen_coord - viewport_resolution * 0.5);
 	vec2 deep_star_uv = (deep_star_world_pos * deep_stars_scale) / BUFFER_SIZE;
-	vec3 deep_star_raw = texture(deep_starfield_texture, deep_star_uv).rgb;
 	
-	// Detección de la máscara estelar RGB pura sobre fondo negro
+	vec3 deep_star_raw = textureLod(deep_starfield_texture, deep_star_uv, 0.0).rgb;
 	float deep_star_max = max(deep_star_raw.r, max(deep_star_raw.g, deep_star_raw.b));
+
+	// Curva analítica continua de contraste y descarte de ruido de fondo
+	float star_normalized = smoothstep(0.025, 0.70, deep_star_max);
+	float effective_star_luma = pow(star_normalized, 1.4);
 	
-	if (deep_star_max > 0.015) {
-		// Asignación espectral saturada por canal dominante (R: cálido/rojo, G: dorado/amarillo, B: azul eléctrico)
-		vec3 col_r = vec3(1.70, 0.40, 0.25); // Enana roja / rubí cálido
-		vec3 col_g = vec3(1.60, 1.35, 0.40); // Amarilla media / dorada
-		vec3 col_b = vec3(0.55, 1.05, 1.95); // Azul fría / gigante eléctrica
+	if (effective_star_luma > 0.005) {
+		// Asignación espectral saturada por canal dominante:
+		vec3 col_r = vec3(1.85, 0.45, 0.22); // Enana roja / rubí cálido
+		vec3 col_g = vec3(0.35, 1.95, 0.85); // Esmeralda cósmica / cian-verde brillante
+		vec3 col_b = vec3(0.40, 1.15, 2.35); // Gigante azul eléctrica / zafiro puro
 		
 		float sum_rgb = deep_star_raw.r + deep_star_raw.g + deep_star_raw.b + 0.0001;
 		vec3 star_color = (deep_star_raw.r * col_r + deep_star_raw.g * col_g + deep_star_raw.b * col_b) / sum_rgb;
@@ -203,17 +219,98 @@ void fragment() {
 		vec3 biome_star_tint = mix(biome_a_star_tint.rgb, biome_b_star_tint.rgb, blend);
 		star_color *= biome_star_tint;
 
-		// Variedad de magnitudes (distintas intensidades de brillo conservando la redondez natural)
-		float radial_falloff = pow(deep_star_max, 0.85);
-		vec3 colored_body = star_color * radial_falloff * 2.2;
+		// 1. Destellos y centelleo continuo por coordenadas de bloque estelar
+		vec2 star_block = floor(deep_star_uv * 2048.0);
+		float star_seed = fract(sin(dot(star_block, vec2(127.1, 311.7))) * 43758.5453123);
+		float star_seed2 = fract(sin(dot(star_block + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.18349);
+
+		float time_now = (global_time > 0.001 ? global_time : TIME) * deep_stars_twinkle_speed;
+		float star_freq = 0.85 + star_seed2 * 0.95;
+		float star_phase = star_seed * 6.2831853;
 		
-		// Núcleo blanco incandescente sutil SOLO en las estrellas más brillantes (evita el lavado a blanco puro)
-		vec3 subtle_white = vec3(1.0) * pow(smoothstep(0.05, 0.75, deep_star_max), 2.5) * 0.5;
-		vec3 deep_stars = (colored_body + subtle_white) * deep_stars_intensity;
+		// Oscilación base continua
+		float wave_a = sin(time_now * star_freq + star_phase);
+		float wave_b = sin(time_now * (star_freq * 2.31) + star_phase * 1.618);
+		float composite_wave = (wave_a * 0.65 + wave_b * 0.35);
 		
-		// Sumar aditivamente al lecho cósmico sin alterar la niebla circundante
-		combined_color += deep_stars;
+		float spike_raw = max(0.0, composite_wave);
+		float sharp_sparkle = pow(spike_raw, 5.0) * deep_stars_sparkle_intensity * 1.8;
+		float twinkle_factor = 0.65 + 0.35 * composite_wave + sharp_sparkle;
+
+		// 2. Resplandor y cuerpo estelar continuo
+		float base_falloff = effective_star_luma;
+		float halo = pow(star_normalized, 2.2) * deep_stars_halo_radius * 0.6;
+		
+		vec3 colored_body = star_color * (base_falloff * 2.2 + halo) * twinkle_factor;
+		float core_peak = pow(star_normalized, 3.2) * (1.0 + sharp_sparkle * 1.2);
+		vec3 incandescent_core = (star_color * 1.35 + vec3(0.55)) * (core_peak * 0.40);
+
+		vec3 deep_stars = (colored_body + incandescent_core) * deep_stars_intensity;
+		
+		// 3. Integración volumétrica con el fondo (fusión con el gas nebular)
+		float local_gas_density = clamp(intensity_a + intensity_b, 0.0, 1.0);
+		vec3 local_gas_color = mix(col_gas_a, col_gas_b, blend);
+		vec3 gas_illumination = star_color * local_gas_color * (deep_star_max * 1.6) * local_gas_density * deep_stars_gas_interaction * twinkle_factor;
+		
+		combined_color += deep_stars + gas_illumination;
 	}
 
-	COLOR = vec4(combined_color, max(combined_alpha, 0.95));
+	// Segundo estrato estelar (Mid-Stars medianas más cercanas, con mayor tamaño y paralaje intermedio):
+	if (mid_stars_intensity > 0.01) {
+		vec2 mid_star_world_pos = camera_world_position * mid_stars_parallax + (screen_coord - viewport_resolution * 0.5);
+		vec2 mid_star_uv = (mid_star_world_pos * mid_stars_scale) / BUFFER_SIZE;
+		
+		vec3 mid_star_raw = textureLod(deep_starfield_texture, mid_star_uv, 0.0).rgb;
+		float mid_star_max = max(mid_star_raw.r, max(mid_star_raw.g, mid_star_raw.b));
+		
+		float mid_normalized = smoothstep(0.02, 0.75, mid_star_max);
+		float mid_effective_luma = pow(mid_normalized, 1.3);
+		
+		if (mid_effective_luma > 0.005) {
+			vec3 col_r = vec3(1.85, 0.45, 0.22);
+			vec3 col_g = vec3(0.35, 1.95, 0.85);
+			vec3 col_b = vec3(0.40, 1.15, 2.35);
+			float sum_rgb = mid_star_raw.r + mid_star_raw.g + mid_star_raw.b + 0.0001;
+			vec3 star_color = (mid_star_raw.r * col_r + mid_star_raw.g * col_g + mid_star_raw.b * col_b) / sum_rgb;
+			vec3 biome_star_tint = mix(biome_a_star_tint.rgb, biome_b_star_tint.rgb, blend);
+			star_color *= biome_star_tint;
+			
+			vec2 mid_block = floor(mid_star_uv * 1024.0);
+			float star_seed = fract(sin(dot(mid_block, vec2(127.1, 311.7))) * 43758.5453123);
+			float star_seed2 = fract(sin(dot(mid_block + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.18349);
+			
+			float time_now = (global_time > 0.001 ? global_time : TIME) * mid_stars_twinkle_speed;
+			float star_freq = 0.85 + star_seed2 * 0.95;
+			float star_phase = star_seed * 6.2831853;
+			
+			float wave_a = sin(time_now * star_freq + star_phase);
+			float wave_b = sin(time_now * (star_freq * 2.31) + star_phase * 1.618);
+			float composite_wave = (wave_a * 0.65 + wave_b * 0.35);
+			
+			float spike_raw = max(0.0, composite_wave);
+			float sharp_sparkle = pow(spike_raw, 5.0) * mid_stars_sparkle_intensity * 1.8;
+			float twinkle_factor = 0.65 + 0.35 * composite_wave + sharp_sparkle;
+			
+			// Disco esférico expandido con halo amplio y núcleo incandescente
+			float base_falloff = mid_effective_luma;
+			float halo = pow(mid_normalized, 2.0) * mid_stars_halo_radius * 0.75;
+			
+			vec3 colored_body = star_color * (base_falloff * 2.5 + halo) * twinkle_factor;
+			float core_peak = pow(mid_normalized, 2.8) * (1.0 + sharp_sparkle * 1.3);
+			vec3 incandescent_core = (star_color * 1.45 + vec3(0.65)) * (core_peak * 0.50);
+			
+			vec3 mid_stars = (colored_body + incandescent_core) * mid_stars_intensity;
+			
+			// Fusión volumétrica idéntica con el gas cósmico profundo
+			float local_gas_density = clamp(intensity_a + intensity_b, 0.0, 1.0);
+			vec3 local_gas_color = mix(col_gas_a, col_gas_b, blend);
+			vec3 mid_gas_illumination = star_color * local_gas_color * (mid_star_max * 1.8) * local_gas_density * mid_stars_gas_interaction * twinkle_factor;
+			
+			combined_color += mid_stars + mid_gas_illumination;
+		}
+	}
+
+	// Translucidez volumétrica: el gas denso cubre las capas de fondo, mientras que el espacio oscuro deja pasar las estrellas en layer -105
+	float nebula_alpha = clamp(combined_alpha * 1.5 + 0.15, 0.0, 1.0);
+	COLOR = vec4(combined_color, nebula_alpha);
 }

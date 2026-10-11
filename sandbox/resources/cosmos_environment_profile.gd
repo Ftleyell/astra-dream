@@ -68,7 +68,7 @@ extends Resource
 		emit_changed()
 
 @export_group("Parámetros de Shader: Nebulosa")
-@export_range(0.0, 2.0, 0.05) var nebula_deep_stars_intensity: float = 0.45:
+@export_range(0.0, 3.0, 0.05) var nebula_deep_stars_intensity: float = 0.55:
 	set(v):
 		nebula_deep_stars_intensity = v
 		emit_changed()
@@ -81,6 +81,62 @@ extends Resource
 @export_range(0.0, 0.05, 0.001) var nebula_deep_stars_parallax: float = 0.005:
 	set(v):
 		nebula_deep_stars_parallax = v
+		emit_changed()
+
+@export_range(0.1, 10.0, 0.1) var nebula_deep_stars_twinkle_speed: float = 2.2:
+	set(v):
+		nebula_deep_stars_twinkle_speed = v
+		emit_changed()
+
+@export_range(0.0, 2.0, 0.05) var nebula_deep_stars_sparkle_intensity: float = 0.85:
+	set(v):
+		nebula_deep_stars_sparkle_intensity = v
+		emit_changed()
+
+@export_range(0.1, 3.0, 0.05) var nebula_deep_stars_halo_radius: float = 1.35:
+	set(v):
+		nebula_deep_stars_halo_radius = v
+		emit_changed()
+
+@export_range(0.0, 2.0, 0.05) var nebula_deep_stars_gas_interaction: float = 0.75:
+	set(v):
+		nebula_deep_stars_gas_interaction = v
+		emit_changed()
+
+@export_group("Segundo Estrato Estelar en Nebulosa (Mid-Stars)")
+@export_range(0.0, 5.0, 0.05) var nebula_mid_stars_intensity: float = 1.6:
+	set(v):
+		nebula_mid_stars_intensity = v
+		emit_changed()
+
+@export_range(0.0, 0.05, 0.0005) var nebula_mid_stars_parallax: float = 0.0065:
+	set(v):
+		nebula_mid_stars_parallax = v
+		emit_changed()
+
+@export_range(0.1, 10.0, 0.05) var nebula_mid_stars_scale: float = 1.35:
+	set(v):
+		nebula_mid_stars_scale = v
+		emit_changed()
+
+@export_range(0.1, 10.0, 0.1) var nebula_mid_stars_twinkle_speed: float = 2.4:
+	set(v):
+		nebula_mid_stars_twinkle_speed = v
+		emit_changed()
+
+@export_range(0.0, 3.0, 0.05) var nebula_mid_stars_sparkle_intensity: float = 1.4:
+	set(v):
+		nebula_mid_stars_sparkle_intensity = v
+		emit_changed()
+
+@export_range(0.1, 4.0, 0.05) var nebula_mid_stars_halo_radius: float = 1.8:
+	set(v):
+		nebula_mid_stars_halo_radius = v
+		emit_changed()
+
+@export_range(0.0, 2.0, 0.05) var nebula_mid_stars_gas_interaction: float = 0.85:
+	set(v):
+		nebula_mid_stars_gas_interaction = v
 		emit_changed()
 
 @export_range(0.0, 1.0, 0.05) var nebula_tile_mix: float = 0.45:
@@ -122,4 +178,14 @@ extends Resource
 @export_range(0.1, 10.0, 0.1) var star_twinkle_speed: float = 2.0:
 	set(v):
 		star_twinkle_speed = v
+		emit_changed()
+
+@export_range(0.0, 5.0, 0.1) var star_lens_flare_intensity: float = 2.5:
+	set(v):
+		star_lens_flare_intensity = v
+		emit_changed()
+
+@export_range(0.1, 5.0, 0.1) var star_lens_flare_length: float = 2.0:
+	set(v):
+		star_lens_flare_length = v
 		emit_changed()

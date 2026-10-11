@@ -9,16 +9,20 @@ render_mode blend_add, unshaded;
 // con distintas intensidades de brillo basadas en la magnitud nativa de cada estrella.
 
 uniform sampler2D starfield_texture : repeat_enable, filter_linear;
-uniform float star_intensity : hint_range(0.1, 5.0) = 1.8;
+uniform float star_intensity : hint_range(0.1, 10.0) = 4.0;
 uniform float threshold_cutoff : hint_range(0.005, 0.20) = 0.02;
 
-// Control de ventana y escala del recorrido (valores mayores = estrellas más pequeñas)
-uniform float window_scale : hint_range(0.1, 10.0) = 2.8;
+// Control de ventana y escala del recorrido (valores menores = estrellas más grandes)
+uniform float window_scale : hint_range(0.1, 10.0) = 1.35;
 uniform vec2 window_offset = vec2(0.0);
 
 // Centelleo orgánico
-uniform float twinkle_amount : hint_range(0.0, 1.0) = 0.20;
-uniform float twinkle_speed : hint_range(0.1, 10.0) = 2.0;
+uniform float twinkle_amount : hint_range(0.0, 1.0) = 0.35;
+uniform float twinkle_speed : hint_range(0.1, 10.0) = 2.2;
+
+// Lens flare anamórfico Sci-Fi y destellos en cruz
+uniform float lens_flare_intensity : hint_range(0.0, 5.0) = 2.5;
+uniform float lens_flare_length : hint_range(0.1, 5.0) = 2.0;
 
 // Paleta espectral viva por tipo de estrella (colores ricos, cero tonos deslavados)
 uniform vec4 tint_red_star : source_color = vec4(1.80, 0.40, 0.20, 1.0);     // Enana roja / rubí cálido
@@ -42,29 +46,28 @@ void fragment() {
 	const float BUFFER_SIZE = 8192.0;
 	vec2 base_uv = (world_pos * window_scale + window_offset) / BUFFER_SIZE;
 
-	// 1. Muestreo directo del píxel de la máscara 8K
-	vec3 star_raw = texture(starfield_texture, base_uv).rgb;
+	// Muestreo continuo bilineal directo en nivel MIP 0 (sin saltos erráticos de derivadas dFdx/dFdy)
+	vec3 star_raw = textureLod(starfield_texture, base_uv, 0.0).rgb;
 	float star_luma = max(star_raw.r, max(star_raw.g, star_raw.b));
 
-	// 2. ELIMINAR TOTALMENTE FONDO NEGRO:
-	// Si no hay estrella por encima del umbral, descartar el fragmento de inmediato.
-	if (star_luma <= threshold_cutoff) {
+	if (star_luma < threshold_cutoff) {
 		discard;
 	}
 
-	// 3. Suavizado anti-cuadrados:
-	// Caída radial suave para eliminar bordes o mesetas rectangulares
-	float smooth_luma = smoothstep(threshold_cutoff, 0.95, star_luma);
-	float radial_curve = pow(smooth_luma, 1.2);
+	// Curva analítica continua de contraste y expansión esférica pura
+	float normalized_luma = smoothstep(threshold_cutoff, 0.85, star_luma);
+	float radial_curve = pow(normalized_luma, 1.25);
 
-	// 4. Asignación espectral viva con gran contraste cromático
+	// Asignación espectral continua con gran contraste cromático
 	float r_w = pow(star_raw.r, 2.0);
 	float g_w = pow(star_raw.g, 2.0);
 	float b_w = pow(star_raw.b, 2.0);
 	float sum_w = r_w + g_w + b_w;
 
 	vec3 star_tint;
-	float star_seed = hash_star(floor(base_uv * BUFFER_SIZE));
+	// Semilla pseudoaleatoria basada en bloques UV continuos para coherencia cromática y centelleo
+	vec2 color_block_id = floor(base_uv * 1024.0);
+	float star_seed = hash_star(color_block_id);
 
 	if (sum_w > 0.0001) {
 		star_tint = (r_w * tint_red_star.rgb + g_w * tint_yellow_star.rgb + b_w * tint_blue_star.rgb) / sum_w;
@@ -78,16 +81,27 @@ void fragment() {
 		}
 	}
 
-	// 5. Brillo puro y color vivo (sin formar cuadrados blancos)
-	vec3 colored_body = star_tint * radial_curve * 2.8;
-
-	// Núcleo brillante sutil solo en el punto máximo central
-	float core_sparkle = pow(smoothstep(0.40, 1.0, star_luma), 4.0) * 0.35;
-	vec3 star_disc = colored_body + vec3(core_sparkle);
-
-	// 6. Centelleo cósmico orgánico asíncrono
+	// Centelleo orgánico continuo
 	float current_time = global_time > 0.001 ? global_time : TIME;
-	float twinkle = 1.0 - (twinkle_amount * 0.5) + (twinkle_amount * 0.5) * sin(current_time * twinkle_speed + star_seed * 6.2831);
+	float time_seed = current_time * twinkle_speed + star_seed * 6.2831853;
+	float wave_a = sin(time_seed);
+	float wave_b = sin(time_seed * 2.73 + star_seed * 3.14);
+	float composite_twinkle = wave_a * 0.65 + wave_b * 0.35;
+	
+	float spike_climax = pow(max(0.0, composite_twinkle), 4.5);
+	float twinkle = 0.70 + 0.30 * composite_twinkle + (spike_climax * twinkle_amount * 2.0);
+
+	// Cuerpo estelar esférico puro y halo incandescente expandido
+	vec3 colored_body = star_tint * radial_curve * 2.8;
+	float core_intensity = pow(normalized_luma, 2.8);
+	vec3 core_glow = (star_tint * 1.6 + vec3(0.80)) * (core_intensity * 0.75);
+
+	// Destello de difracción simétrico de 4 puntas en astros brillantes durante picos de centelleo
+	float center_peak = smoothstep(0.40, 0.95, star_luma);
+	float cross_sparkle = pow(center_peak, 2.2) * (0.35 + spike_climax * 1.6) * lens_flare_intensity;
+	vec3 cross_glint = (star_tint * 1.4 + vec3(0.60)) * (cross_sparkle * 0.40);
+
+	vec3 star_disc = colored_body + core_glow + cross_glint;
 
 	// Salida final en modo blend_add
 	vec3 final_color = star_disc * twinkle * star_intensity;

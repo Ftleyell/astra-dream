@@ -88,6 +88,10 @@
   - `nebula_tile_texture`: Textura seamless de detalle en tiles (`nebula_seamless_0.png`).
   - `nebula_tile_scale`: Escala UV espacial de repetición del tile (default: `0.00035`).
   - `nebula_tile_mix`: Peso de mezcla de la textura con el FBM procedural ($0.0 \to 1.0$, default: `0.45`).
+  - `nebula_deep_stars_twinkle_speed`: Frecuencia de centelleo y pulsación estocástica de micro-estrellas (default: `2.2`).
+  - `nebula_deep_stars_sparkle_intensity`: Intensidad de los chispazos agudos repentinos en los picos de oscilación (default: `0.85`).
+  - `nebula_deep_stars_halo_radius`: Expansión del halo incandescente en el clímax de la estrella (default: `1.35`).
+  - `nebula_deep_stars_gas_interaction`: Fuerza de fusión volumétrica e iluminación sobre el gas nebular (default: `0.75`).
 
 ### E. Si quieres calibrar la sensibilidad o umbral del Floating Origin:
 - **Archivo:** [`sandbox/core/floating_origin_tracker.gd`](../../sandbox/core/floating_origin_tracker.gd#L14)
@@ -102,21 +106,21 @@
   - `max_smoothing_distance`: Tope máximo de lag visual (default: `600.0` px) para garantizar que la nave nunca salga del encuadre en aceleraciones extremas.
   - *Nota técnica:* El sistema desacopla el lag nativo de Godot (`position_smoothing_enabled = false`) y utiliza absorción vectorial analítica en `on_origin_shifted(shift)` para garantizar **cero snapback** cuando la posición local se recentra a (0, 0).
 
-### G. Si quieres calibrar las 2 Capas de Estrellas (Máscara 8K sobre negro):
-- **Capa 1 (Micro-estrellas de fondo en Nebulosa):**
+### G. Si quieres calibrar los 2 Estratos de Estrellas en la Nebulosa (Máscara 8K sobre negro):
+- **Estrato 1 (Micro-estrellas de fondo ultra-lejanas):**
   - **Material:** `ShaderMaterial_nebula` en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L23)
-  - `deep_stars_intensity`: Brillo general del lecho estelar (default: `0.45`).
+  - `deep_stars_intensity`: Brillo general del lecho estelar ultra-profundo (default: `0.55`).
   - `deep_stars_scale`: Escala de la ventana (default: `3.0` -> micro-puntos densos de 1-2px).
   - `deep_stars_parallax`: Factor de traslación respecto a la cámara (default: `0.005` -> casi inmóvil).
-  - *Color:* Asignación espectral viva saturada (rojo cálido, amarillo dorado, azul frío) con gradiente radial y variedad de magnitudes sin lavado a blanco puro.
-- **Capa 2 (Buffer Estelar 8K Óptico en Paralaje):**
-  - **Material:** `ShaderMaterial_starfield` en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L40)
-  - `scroll_scale`: Velocidad de paralaje profundo en [`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L92) (calibrado a: `Vector2(0.003, 0.003)` para dar movimiento radicalmente lento y lejanía cósmica extrema).
-  - `window_scale`: Escala de la ventana sobre los 8192 px (calibrado a: `2.8` para proyectar estrellas compactas y pequeñas).
-  - `threshold_cutoff`: Umbral de descarte (`discard`) del fondo negro (default: `0.02`). Todo píxel vacío se descarta, garantizando que la nebulosa y galaxias sean 100% visibles.
-  - `star_intensity`: Brillo general de las estrellas frontales (calibrado a: `2.4`).
-  - `twinkle_amount` / `twinkle_speed`: Titileo orgánico procedural (default: `0.20` / `2.0`).
-  - `tint_red_star`, `tint_yellow_star`, `tint_blue_star`: Colores RGB vivos para rubí, oro solar y azul zafiro. Cero crucetas ni cuadrados blancos, conservando el disco circular suave y altamente saturado.
+  - *Interacción de gas:* Fusión volumétrica suave bañando el gas cósmico.
+- **Capa 2 (Buffer Estelar 8K Óptico en CanvasLayer -105, detrás de la Nebulosa):**
+  - **Ubicación:** `CanvasLayerStarfield` (`layer = -105`, `follow_viewport_enabled = true`) en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L110). Físicamente ubicado **por detrás** de la nebulosa (`layer = -100`).
+  - **Material:** `ShaderMaterial_starfield` en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L56).
+  - `scroll_scale`: Velocidad de paralaje calibrada a `Vector2(0.0065, 0.0065)` (más rápido que el fondo 0.005 pero majestuoso y lento).
+  - `window_scale`: Escala de proyección sobre los 8192 px (`1.35` -> puntos medianos visibles de 4-8px con halo esférico).
+  - `star_intensity`: Brillo general e incandescencia (calibrado a: `3.6`).
+  - `twinkle_amount` / `twinkle_speed`: Titileo orgánico y picos de destello (`0.35` / `2.4`).
+  - *Translucidez del gas:* El shader `universe_nebula.gdshader` en `layer = -100` tiene alfa variable por densidad de gas, cubriendo las estrellas donde el gas es denso y dejándolas brillar a través en el espacio oscuro.
 
 ---
 

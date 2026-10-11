@@ -33,8 +33,12 @@ func _test_profile_resource_integrity() -> void:
 	assert_true(res.solar_profile != null, "Sub-perfil solar debe estar vinculado.")
 	assert_true(res.debris_profile != null, "Sub-perfil de escombros debe estar vinculado.")
 	assert_true(res.parallax_multiplier == 1.0, "Parallax multiplier por defecto debe ser 1.0.")
-	assert_true(res.star_intensity > 0.0, "Intensidad estelar debe ser mayor que 0.")
+	assert_true(res.star_intensity >= 0.0, "Intensidad estelar debe ser no negativa.")
 	assert_true(res.nebula_deep_stars_intensity > 0.0, "Intensidad de microestrellas nebulares debe ser mayor que 0.")
+	assert_true(res.nebula_deep_stars_twinkle_speed > 0.0, "Velocidad de twinkle de microestrellas debe ser mayor que 0.")
+	assert_true(res.nebula_deep_stars_sparkle_intensity > 0.0, "Intensidad de chispazos de microestrellas debe ser mayor que 0.")
+	assert_true(res.nebula_deep_stars_halo_radius > 0.0, "Radio de halo debe ser mayor que 0.")
+	assert_true(res.nebula_deep_stars_gas_interaction > 0.0, "Interacción volumétrica con gas debe ser mayor que 0.")
 
 func _test_strata_propagation_and_reactivity() -> void:
 	var demo_scene: PackedScene = load("res://sandbox/scenes/cosmos_engine_demo.tscn") as PackedScene

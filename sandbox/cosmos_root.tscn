@@ -22,9 +22,20 @@ shader_parameter/viewport_resolution = Vector2(1920, 1080)
 shader_parameter/parallax_factor = 0.05
 shader_parameter/global_time = 0.0
 shader_parameter/deep_starfield_texture = ExtResource("7_starfield_tex")
-shader_parameter/deep_stars_intensity = 0.45
+shader_parameter/deep_stars_intensity = 0.55
 shader_parameter/deep_stars_parallax = 0.005
 shader_parameter/deep_stars_scale = 3.0
+shader_parameter/deep_stars_twinkle_speed = 2.2
+shader_parameter/deep_stars_sparkle_intensity = 0.85
+shader_parameter/deep_stars_halo_radius = 1.35
+shader_parameter/deep_stars_gas_interaction = 0.75
+shader_parameter/mid_stars_intensity = 1.6
+shader_parameter/mid_stars_parallax = 0.0065
+shader_parameter/mid_stars_scale = 1.35
+shader_parameter/mid_stars_twinkle_speed = 2.4
+shader_parameter/mid_stars_sparkle_intensity = 1.4
+shader_parameter/mid_stars_halo_radius = 1.8
+shader_parameter/mid_stars_gas_interaction = 0.85
 shader_parameter/nebula_tile_texture = ExtResource("13_nebula_tile_tex")
 shader_parameter/nebula_tile_scale = 0.00035
 shader_parameter/nebula_tile_mix = 0.45
@@ -45,12 +56,14 @@ shader_parameter/flow_drift_speed = 0.012
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_starfield"]
 shader = ExtResource("12_starfield_shader")
 shader_parameter/starfield_texture = ExtResource("7_starfield_tex")
-shader_parameter/star_intensity = 2.4
+shader_parameter/star_intensity = 0.0
 shader_parameter/threshold_cutoff = 0.02
-shader_parameter/window_scale = 2.8
+shader_parameter/window_scale = 1.35
 shader_parameter/window_offset = Vector2(0, 0)
-shader_parameter/twinkle_amount = 0.2
-shader_parameter/twinkle_speed = 2.0
+shader_parameter/twinkle_amount = 0.35
+shader_parameter/twinkle_speed = 2.4
+shader_parameter/lens_flare_intensity = 2.5
+shader_parameter/lens_flare_length = 2.0
 shader_parameter/tint_red_star = Color(1.8, 0.4, 0.2, 1)
 shader_parameter/tint_yellow_star = Color(1.7, 1.4, 0.35, 1)
 shader_parameter/tint_blue_star = Color(0.5, 1.1, 2.1, 1)
@@ -61,7 +74,7 @@ environment_profile = ExtResource("14_cosmos_env")
 nebula_controller = NodePath("ParallaxNebulaDeep/NebulaBackdrop")
 parallax_macro_galaxies = NodePath("ParallaxMacroGalaxies")
 galaxy_streamer = NodePath("ParallaxMacroGalaxies/GalaxyStreamer2D")
-parallax_starfield_8k = NodePath("ParallaxStarfield8K")
+parallax_starfield_8k = NodePath("CanvasLayerStarfield/ParallaxStarfield8K")
 parallax_solar_systems = NodePath("ParallaxSolarSystems")
 solar_streamer = NodePath("ParallaxSolarSystems/SolarSystemStreamer")
 parallax_debris_belt = NodePath("ParallaxDebrisBelt")
@@ -94,11 +107,15 @@ script = ExtResource("5_galaxy_streamer")
 landmark_profile = ExtResource("6_galaxy_res")
 parallax_layer = NodePath("..")
 
-[node name="ParallaxStarfield8K" type="Parallax2D" parent="." unique_id=1791499758]
-scroll_scale = Vector2(0.003, 0.003)
+[node name="CanvasLayerStarfield" type="CanvasLayer" parent="." unique_id=1791499757]
+layer = -105
+follow_viewport_enabled = true
+
+[node name="ParallaxStarfield8K" type="Parallax2D" parent="CanvasLayerStarfield" unique_id=1791499758]
+scroll_scale = Vector2(0.0065, 0.0065)
 repeat_size = Vector2(8192, 8192)
 
-[node name="StarfieldSprite" type="Sprite2D" parent="ParallaxStarfield8K" unique_id=1600850274]
+[node name="StarfieldSprite" type="Sprite2D" parent="CanvasLayerStarfield/ParallaxStarfield8K" unique_id=1600850274]
 material = SubResource("ShaderMaterial_starfield")
 texture = ExtResource("7_starfield_tex")
 centered = false
