@@ -17,8 +17,10 @@ func _run_floating_origin_tests() -> void:
 	_test_threshold_evaluation_and_shift()
 	_test_parallax_visual_continuity_invariance()
 	_test_child_camera_hierarchy_shift_invariance()
+	_test_cosmos_camera_smoothing_lag_preservation_on_shift()
 	_test_zero_shift_noop()
 	pass_suite("TestFloatingOrigin completado con éxito (100% de aserciones pasadas).")
+
 
 func _test_threshold_evaluation_and_shift() -> void:
 	var tracker: FloatingOriginTracker = FloatingOriginTracker.new()
@@ -126,7 +128,6 @@ func _test_parallax_visual_continuity_invariance() -> void:
 	# screen_pos = local_pos + layer.scroll_offset - camera.global_position * (Vector2.ONE - layer.scroll_scale)
 	# Con compensación: scroll_offset_after = scroll_offset_before + shift * layer.scroll_scale
 	# y camera_after = camera_before - shift.
-	# Validamos que shift_vector aplicado preserva la continuidad del cálculo sin discontinuidad.
 	tracker.trigger_shift(shift)
 
 	assert_true(target.global_position == Vector2.ZERO, "Target debe ser (0,0) tras shift.")
@@ -138,6 +139,8 @@ func _test_parallax_visual_continuity_invariance() -> void:
 	target.queue_free()
 	camera.queue_free()
 	layer.queue_free()
+
+
 
 func _test_child_camera_hierarchy_shift_invariance() -> void:
 	var tracker: FloatingOriginTracker = FloatingOriginTracker.new()
@@ -161,6 +164,50 @@ func _test_child_camera_hierarchy_shift_invariance() -> void:
 
 	tracker.queue_free()
 	target.queue_free()
+
+func _test_cosmos_camera_smoothing_lag_preservation_on_shift() -> void:
+	var tracker: FloatingOriginTracker = FloatingOriginTracker.new()
+	var vessel: CharacterBody2D = CharacterBody2D.new()
+	var cosmos_cam: CosmosCamera2D = CosmosCamera2D.new()
+
+	vessel.add_child(cosmos_cam)
+	add_child(tracker)
+	add_child(vessel)
+
+	cosmos_cam._ready()
+	tracker.player_target = vessel
+	tracker.camera = cosmos_cam
+	tracker.threshold_distance = 10000.0
+
+	# Simular nave volando a alta velocidad (2500 px/s en horizontal)
+	vessel.velocity = Vector2(2500.0, 0.0)
+	vessel.global_position = Vector2(10000.0, 0.0)
+
+	# Simular avance de cuadros para converger el lag de amortiguación
+	for i in range(30):
+		cosmos_cam._process(0.0166)
+
+	var lag_before: Vector2 = vessel.global_position - cosmos_cam.global_position
+	# El lag debe estar orientado hacia adelante (nave por delante de la cámara)
+	assert_true(lag_before.x > 250.0, "La nave debe llevar ventaja (lag) respecto a la cámara amortiguada.")
+	assert_true(cosmos_cam.position.x < -250.0, "La posición local de la cámara debe reflejar el lag amortiguado.")
+
+	# Disparar recentrado de origen
+	var did_shift: bool = tracker.check_and_shift()
+	assert_true(did_shift, "Debe disparar shift al superar 10.000 unidades.")
+	assert_true(vessel.global_position == Vector2.ZERO, "La nave debe recentrarse en (0, 0).")
+
+	var lag_after: Vector2 = vessel.global_position - cosmos_cam.global_position
+	var lag_drift: float = (lag_after - lag_before).length()
+
+	# Cero snapback: la distancia relativa en pantalla entre nave y cámara es IDÉNTICA antes y después del shift
+	assert_true(lag_drift <= 0.001, "Cero snapback: la distancia nave-cámara en pantalla debe preservarse con error < 0.001.")
+	assert_true(cosmos_cam.position.x < -250.0, "La posición local de la cámara no debe resetearse a 0 en el shift (lag preservado).")
+
+	tracker.queue_free()
+	vessel.queue_free()
+
+
 
 func _test_zero_shift_noop() -> void:
 	var tracker: FloatingOriginTracker = FloatingOriginTracker.new()

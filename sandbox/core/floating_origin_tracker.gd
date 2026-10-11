@@ -40,9 +40,16 @@ func trigger_shift(shift: Vector2) -> void:
 			player_target.call("on_origin_shifted", shift)
 
 	if is_instance_valid(camera):
-		if not (is_instance_valid(player_target) and player_target.is_ancestor_of(camera)):
-			camera.global_position -= shift
-		camera.reset_smoothing()
+		if camera.has_method("on_origin_shifted"):
+			camera.call("on_origin_shifted", shift)
+		else:
+			var is_child: bool = is_instance_valid(player_target) and player_target.is_ancestor_of(camera)
+			var is_top_level: bool = (camera as CanvasItem).top_level if camera is CanvasItem else false
+			if is_top_level or not is_child:
+				camera.global_position -= shift
+			if camera.has_method("reset_smoothing"):
+				camera.reset_smoothing()
+
 
 	for layer: Parallax2D in parallax_layers:
 		if is_instance_valid(layer):

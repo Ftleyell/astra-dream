@@ -61,6 +61,15 @@
 - **Variables clave:**
   - `threshold_distance`: Distancia antes de recentrar (default: `10000.0` px). Disminuir a `5000.0` para pruebas de estrés de shifts frecuentes; aumentar a `20000.0` para mundos muy abiertos.
 
+### F. Si quieres calibrar el suavizado y amortiguación de la Cámara (Anti-Snapback):
+- **Archivo:** [`sandbox/scenes/cosmos_camera_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/scenes/cosmos_camera_2d.gd)
+- **Variables clave:**
+  - `smoothing_enabled`: Habilita o deshabilita la amortiguación inercial (default: `true`).
+  - `smoothing_speed`: Velocidad de seguimiento amortiguado (default: `8.0`). Valores mayores = cámara más pegada; valores menores = mayor desfase dinámico a velocidad.
+  - `max_smoothing_distance`: Tope máximo de lag visual (default: `600.0` px) para garantizar que la nave nunca salga del encuadre en aceleraciones extremas.
+  - *Nota técnica:* El sistema desacopla el lag nativo de Godot (`position_smoothing_enabled = false`) y utiliza absorción vectorial analítica en `on_origin_shifted(shift)` para garantizar **cero snapback** cuando la posición local se recentra a (0, 0).
+
+
 ---
 
 ## 🧪 3. Guía de Ejecución de Tests Específicos (Sin gastar tokens)
