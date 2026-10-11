@@ -39,9 +39,10 @@
   - Shader de Luz Orbital y Heliosfera: [`sandbox/shaders/star_light_field.gdshader`](../../sandbox/shaders/star_light_field.gdshader) (Proyecta el bioma cósmico local del sol: halo orgánico con ruido procedural FBM de gas/polvo estelar y suave fade-out smoothstep en el límite de la heliopausa).
   - Shader Universal de Cuerpos Celestes: [`sandbox/shaders/celestial_body.gdshader`](../../sandbox/shaders/celestial_body.gdshader) (Incorpora tinte dinámico de luz solar sobre la cara diurna iluminada y el Fresnel atmosférico, con atenuación analítica por distancia orbital).
 - **Proporciones Planetarias y Subestructuras:**
-  - Escala de planetas: 75% del rango base (`0.375` a `0.825`).
-  - Lunas: Desactivadas temporalmente (`moon_spawn_probability = 0.0`).
-  - Estaciones espaciales: Garantizadas 1 por planeta (`station_spawn_probability = 1.0`), con tamaño exactamente al 15% del diámetro del planeta que orbitan y radio orbital adaptativo (1.8x a 2.5x).
+  - Multiplicador de escala de planetas: `planet_size_multiplier = 1.15` (+15% de escala sobre diámetro base).
+  - Lunas: Activas con probabilidad (`moon_spawn_probability = 0.65`, 1-2 por planeta en zonas habitables), tamaño al `20%` del diámetro del planeta (`moon_size_ratio = 0.20`).
+  - Estaciones espaciales: Garantizadas 1 por planeta habitable (`station_spawn_probability = 1.0`), tamaño al `15%` del diámetro del planeta (`station_size_ratio = 0.15`) y radio orbital adaptativo (1.9x a 2.5x).
+  - Escala armónica secundaria: Al crecer los planetas un 15%, las lunas, estaciones y sus radios orbitales secundarios se expanden un 15% de forma proporcional.
 - **Variables clave de ajuste:**
   - `cell_size`: Tamaño de cuadrante estelar (calibrado a: `12000.0` px para holgura de sistemas grandes).
   - `cell_boundary_padding`: Margen perimetral de seguridad por celda (calibrado a: `250.0` px, sumando 500px entre celdas contiguas para evitar solapamientos en las comisuras sin generar franjas vacías excesivas).

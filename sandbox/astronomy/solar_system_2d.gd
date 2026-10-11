@@ -298,6 +298,8 @@ func _build_system_hierarchy() -> void:
 		if p_tex == null and not system_profile.planet_textures.is_empty():
 			p_tex = system_profile.planet_textures[0]
 
+		target_diameter *= system_profile.planet_size_multiplier
+
 		var planet_body: OrbitalBody2D = OrbitalBody2D.new()
 		planet_body.name = "Planet_" + str(i + 1)
 		planet_body.body_name = StringName("Planet_" + str(i + 1))
@@ -397,7 +399,7 @@ func _build_system_hierarchy() -> void:
 			moon_sprite.texture = moon_tex
 
 			var m_tex_w: float = float(moon_tex.get_width()) if moon_tex != null and moon_tex.get_width() > 0 else 2048.0
-			var moon_target_diam: float = planet_visual_diameter * 0.20 # 20% del planeta
+			var moon_target_diam: float = planet_visual_diameter * system_profile.moon_size_ratio
 			var moon_scale: float = moon_target_diam / m_tex_w
 			moon_sprite.scale = Vector2.ONE * moon_scale
 
@@ -459,7 +461,7 @@ func _build_system_hierarchy() -> void:
 			st_sprite.texture = st_texture
 
 			var st_tex_w: float = float(st_texture.get_width()) if st_texture != null and st_texture.get_width() > 0 else 128.0
-			var station_target_diameter: float = planet_visual_diameter * 0.15 # 15% del planeta
+			var station_target_diameter: float = planet_visual_diameter * system_profile.station_size_ratio
 			var st_scale_factor: float = station_target_diameter / st_tex_w
 			st_sprite.scale = Vector2.ONE * st_scale_factor
 
