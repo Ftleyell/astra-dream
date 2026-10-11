@@ -8,36 +8,36 @@
 
 | Subsistema / Elemento Visual | Archivo Principal | Recurso de Balance (.tres) | Qué controla |
 |---|---|---|---|
-| **Orquestador Central** | [`sandbox/cosmos_root.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.gd) | `sandbox/cosmos_root.tscn` | Prioridad de proceso (`-100`), orquestación de tiempo global `_global_time`, enlace de cámara y estratos. |
-| **Perfil Maestro Unificado** | [`sandbox/resources/cosmos_environment_profile.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/cosmos_environment_profile.gd) | [`sandbox/resources/data/default_cosmos_environment.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_cosmos_environment.tres) | Centraliza factores de paralaje (1-5), sub-perfiles y parámetros ópticos de shaders con propagación reactiva en runtime. |
-| **Origen Flotante (Anti-Jitter)** | [`sandbox/core/floating_origin_tracker.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/core/floating_origin_tracker.gd) | Configurado en nodo export | Umbral de recentrado (`threshold_distance = 10000.0`), absorción en `Parallax2D.scroll_offset`. |
-| **Grid Determinista & Hash** | [`sandbox/core/cosmic_macro_grid.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/core/cosmic_macro_grid.gd) / [`cosmic_hasher.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/core/cosmic_hasher.gd) | — | Tamaño de cuadrantes ($O(1)$ sin estado), funciones hash pseudo-aleatorias y semillas estables. |
-| **Sistemas Solares & Órbitas** | [`sandbox/astronomy/solar_system_streamer.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/astronomy/solar_system_streamer.gd) | [`sandbox/resources/data/default_celestial_system.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_celestial_system.tres) | Generación de estrellas centrales, planetas keplerianos, radios min/max, lunas y streaming por celda. |
-| **Cuerpos Celestes Individuales** | [`sandbox/astronomy/solar_system_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/astronomy/solar_system_2d.gd) / [`orbital_body_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/astronomy/orbital_body_2d.gd) | [`sandbox/resources/celestial_system_profile.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/celestial_system_profile.gd) | Fórmulas analíticas $\theta(t) = \theta_0 + t \cdot \omega$, dibujo de órbitas vectoriales, sol central. |
-| **Macro-Galaxias Ultra-Lentas** | [`sandbox/rendering/galaxy_streamer_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/rendering/galaxy_streamer_2d.gd) | [`sandbox/resources/data/default_galaxy_landmark.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_galaxy_landmark.tres) | Regla de galaxia única sin solapamiento, retención analítica en frustum anti-desaparición, capa ultra-profunda (`scroll_scale = 0.04`). |
-| **Buffer Estelar 8K Óptico (Capa 2)** | [`sandbox/shaders/deep_starfield.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/deep_starfield.gdshader) | Configurado en `ShaderMaterial_starfield` ([`cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn#L40)) | Muestreo 1:1 de máscara 8K RGB pura. Kernel óptico expansivo: halos, núcleo incandescente y espículas de 4 puntas (B: gigantes azules, G: amarillas, R: cálidas). Discard de fondo negro. |
-| **Micro-Estrellas Nebulares (Capa 1)** | [`sandbox/shaders/universe_nebula.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/universe_nebula.gdshader#L134) | Configurado en `ShaderMaterial_nebula` ([`cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn#L23)) | Ventana amplia (escala 3.0) para micro-estrellas nítidas de 1-2px, tintadas por canal RGB sin espículas ni centelleo. Fondo casi inmóvil (`parallax = 0.005`). |
-| **Cinturón de Escombros GPU** | [`sandbox/environment/debris_streamer_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/environment/debris_streamer_2d.gd) | [`sandbox/resources/data/default_debris_layer.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_debris_layer.tres) | `MultiMeshInstance2D` (1 draw call, 2000 fragmentos), densidad, escala, rotación estocástica. |
-| **Shader de Nebulosa & Biomas** | [`sandbox/shaders/universe_nebula.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/universe_nebula.gdshader) / [`nebula_backdrop_controller.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/rendering/nebula_backdrop_controller.gd) | [`sandbox/resources/data/default_cosmic_biome.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_cosmic_biome.tres) | FBM Simplex en GPU, anti-tiling estocástico, blending de color A/B, turbulencia de gas. |
-| **Visual Debugger 2D (Gizmos)** | [`sandbox/rendering/cosmos_debug_drawer_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/rendering/cosmos_debug_drawer_2d.gd) | Tecla `F2` en runtime | Renderizado vectorial: frustum analítico de cámara, celdas de macro-grid, círculos de delimitación galáctica y origen flotante. |
-| **Nave de Prueba & Heroína** | [`sandbox/scenes/player_vessel.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/scenes/player_vessel.gd) | [`data/characters/roster/nova.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/data/characters/roster/nova.tres) | Aceleración, frenado, giro inercial, toberas de plasma, Sandevistan VFX y alternancia de heroína (`TAB`/`E`/`Q`). |
-| **Cámara & Zoom Suave** | [`sandbox/scenes/cosmos_camera_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/scenes/cosmos_camera_2d.gd) | — | Suavizado posicional, zoom elástico por rueda de ratón (`min_zoom = 0.2`, `max_zoom = 2.0`). |
-| **Overlay y Panel Live Debug** | [`sandbox/scenes/cosmos_telemetry_overlay.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/scenes/cosmos_telemetry_overlay.gd) | Tecla `F1` / Toggles `1-5` / `F2` | HUD y panel interactivo colapsable: telemetría en tiempo real, toggles de estratos 1 a 5, sliders en caliente y acelerador de tiempo cósmico. |
+| **Orquestador Central** | [`sandbox/cosmos_root.gd`](../../sandbox/cosmos_root.gd) | `sandbox/cosmos_root.tscn` | Prioridad de proceso (`-100`), orquestación de tiempo global `_global_time`, enlace de cámara y estratos. |
+| **Perfil Maestro Unificado** | [`sandbox/resources/cosmos_environment_profile.gd`](../../sandbox/resources/cosmos_environment_profile.gd) | [`sandbox/resources/data/default_cosmos_environment.tres`](../../sandbox/resources/data/default_cosmos_environment.tres) | Centraliza factores de paralaje (1-5), sub-perfiles y parámetros ópticos de shaders con propagación reactiva en runtime. |
+| **Origen Flotante (Anti-Jitter)** | [`sandbox/core/floating_origin_tracker.gd`](../../sandbox/core/floating_origin_tracker.gd) | Configurado en nodo export | Umbral de recentrado (`threshold_distance = 10000.0`), absorción en `Parallax2D.scroll_offset`. |
+| **Grid Determinista & Hash** | [`sandbox/core/cosmic_macro_grid.gd`](../../sandbox/core/cosmic_macro_grid.gd) / [`cosmic_hasher.gd`](../../sandbox/core/cosmic_hasher.gd) | — | Tamaño de cuadrantes ($O(1)$ sin estado), funciones hash pseudo-aleatorias y semillas estables. |
+| **Sistemas Solares & Órbitas** | [`sandbox/astronomy/solar_system_streamer.gd`](../../sandbox/astronomy/solar_system_streamer.gd) | [`sandbox/resources/data/default_celestial_system.tres`](../../sandbox/resources/data/default_celestial_system.tres) | Generación de estrellas centrales, planetas keplerianos, radios min/max, lunas y streaming por celda. |
+| **Cuerpos Celestes Individuales** | [`sandbox/astronomy/solar_system_2d.gd`](../../sandbox/astronomy/solar_system_2d.gd) / [`orbital_body_2d.gd`](../../sandbox/astronomy/orbital_body_2d.gd) | [`sandbox/resources/celestial_system_profile.gd`](../../sandbox/resources/celestial_system_profile.gd) | Fórmulas analíticas $\theta(t) = \theta_0 + t \cdot \omega$, dibujo de órbitas vectoriales, sol central. |
+| **Macro-Galaxias Ultra-Lentas** | [`sandbox/rendering/galaxy_streamer_2d.gd`](../../sandbox/rendering/galaxy_streamer_2d.gd) | [`sandbox/resources/data/default_galaxy_landmark.tres`](../../sandbox/resources/data/default_galaxy_landmark.tres) | Regla de galaxia única sin solapamiento, retención analítica en frustum anti-desaparición, capa ultra-profunda (`scroll_scale = 0.04`). |
+| **Buffer Estelar 8K Óptico (Capa 2)** | [`sandbox/shaders/deep_starfield.gdshader`](../../sandbox/shaders/deep_starfield.gdshader) | Configurado en `ShaderMaterial_starfield` ([`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L40)) | Muestreo 1:1 de máscara 8K RGB pura. Kernel óptico expansivo: halos, núcleo incandescente y espículas de 4 puntas (B: gigantes azules, G: amarillas, R: cálidas). Discard de fondo negro. |
+| **Micro-Estrellas Nebulares (Capa 1)** | [`sandbox/shaders/universe_nebula.gdshader`](../../sandbox/shaders/universe_nebula.gdshader#L134) | Configurado en `ShaderMaterial_nebula` ([`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L23)) | Ventana amplia (escala 3.0) para micro-estrellas nítidas de 1-2px, tintadas por canal RGB sin espículas ni centelleo. Fondo casi inmóvil (`parallax = 0.005`). |
+| **Cinturón de Escombros GPU** | [`sandbox/environment/debris_streamer_2d.gd`](../../sandbox/environment/debris_streamer_2d.gd) | [`sandbox/resources/data/default_debris_layer.tres`](../../sandbox/resources/data/default_debris_layer.tres) | `MultiMeshInstance2D` (1 draw call, 2000 fragmentos), densidad, escala, rotación estocástica. |
+| **Shader de Nebulosa & Biomas** | [`sandbox/shaders/universe_nebula.gdshader`](../../sandbox/shaders/universe_nebula.gdshader) / [`nebula_backdrop_controller.gd`](../../sandbox/rendering/nebula_backdrop_controller.gd) | [`sandbox/resources/data/default_cosmic_biome.tres`](../../sandbox/resources/data/default_cosmic_biome.tres) | FBM Simplex en GPU, anti-tiling estocástico, blending de color A/B, turbulencia de gas. |
+| **Visual Debugger 2D (Gizmos)** | [`sandbox/rendering/cosmos_debug_drawer_2d.gd`](../../sandbox/rendering/cosmos_debug_drawer_2d.gd) | Tecla `F2` en runtime | Renderizado vectorial: frustum analítico de cámara, celdas de macro-grid, círculos de delimitación galáctica y origen flotante. |
+| **Nave de Prueba & Heroína** | [`sandbox/scenes/player_vessel.gd`](../../sandbox/scenes/player_vessel.gd) | [`data/characters/roster/nova.tres`](../../data/characters/roster/nova.tres) | Aceleración, frenado, giro inercial, toberas de plasma, Sandevistan VFX y alternancia de heroína (`TAB`/`E`/`Q`). |
+| **Cámara & Zoom Suave** | [`sandbox/scenes/cosmos_camera_2d.gd`](../../sandbox/scenes/cosmos_camera_2d.gd) | — | Suavizado posicional, zoom elástico por rueda de ratón (`min_zoom = 0.2`, `max_zoom = 2.0`). |
+| **Overlay y Panel Live Debug** | [`sandbox/scenes/cosmos_telemetry_overlay.gd`](../../sandbox/scenes/cosmos_telemetry_overlay.gd) | Tecla `F1` / Toggles `1-5` / `F2` | HUD y panel interactivo colapsable: telemetría en tiempo real, toggles de estratos 1 a 5, sliders en caliente y acelerador de tiempo cósmico. |
 
 ---
 
 ## 🎛️ 2. Parámetros de Ajuste Rápido y Dónde Cambiarlos
 
 ### A. Si quieres cambiar los Sistemas Solares o Arquetipos Estelares:
-- **Perfil Maestro de Sistemas:** [`sandbox/resources/data/default_celestial_system.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_celestial_system.tres)
+- **Perfil Maestro de Sistemas:** [`sandbox/resources/data/default_celestial_system.tres`](../../sandbox/resources/data/default_celestial_system.tres)
 - **Arquetipos Data-Driven (`StarArchetype`):**
-  - Enana Amarilla (Estándar/Equilibrada): [`yellow_dwarf.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/star_archetypes/yellow_dwarf.tres) (`weight: 4.0`, radio: 700px, órbitas: 1600-4800px, color ámbar cálido)
-  - Gigante Azul (Masiva/Caliente): [`blue_giant.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/star_archetypes/blue_giant.tres) (`weight: 1.5`, radio: 1000px, órbitas: 2200-5600px, color azul zafiro)
-  - Enana Roja (Compacta/Densa): [`red_dwarf.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/star_archetypes/red_dwarf.tres) (`weight: 3.0`, radio: 520px, órbitas: 1200-3600px, color carmesí)
+  - Enana Amarilla (Estándar/Equilibrada): [`yellow_dwarf.tres`](../../sandbox/resources/data/star_archetypes/yellow_dwarf.tres) (`weight: 4.0`, radio: 700px, órbitas: 1600-4800px, color ámbar cálido)
+  - Gigante Azul (Masiva/Caliente): [`blue_giant.tres`](../../sandbox/resources/data/star_archetypes/blue_giant.tres) (`weight: 1.5`, radio: 1000px, órbitas: 2200-5600px, color azul zafiro)
+  - Enana Roja (Compacta/Densa): [`red_dwarf.tres`](../../sandbox/resources/data/star_archetypes/red_dwarf.tres) (`weight: 3.0`, radio: 520px, órbitas: 1200-3600px, color carmesí)
 - **Shaders Visuales de Soles:**
-  - Shader de Corona Solar y Distorsión de Calor: [`sandbox/shaders/star_corona.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/star_corona.gdshader) (Elimina el fondo negro JPG, ondas convectivas de calor y borde de plasma palpitante).
-  - Shader de Luz Orbital y Heliosfera: [`sandbox/shaders/star_light_field.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/star_light_field.gdshader) (Proyecta el bioma cósmico local del sol: halo orgánico con ruido procedural FBM de gas/polvo estelar y suave fade-out smoothstep en el límite de la heliopausa).
-  - Shader Universal de Cuerpos Celestes: [`sandbox/shaders/celestial_body.gdshader`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/shaders/celestial_body.gdshader) (Incorpora tinte dinámico de luz solar sobre la cara diurna iluminada y el Fresnel atmosférico, con atenuación analítica por distancia orbital).
+  - Shader de Corona Solar y Distorsión de Calor: [`sandbox/shaders/star_corona.gdshader`](../../sandbox/shaders/star_corona.gdshader) (Elimina el fondo negro JPG, ondas convectivas de calor y borde de plasma palpitante).
+  - Shader de Luz Orbital y Heliosfera: [`sandbox/shaders/star_light_field.gdshader`](../../sandbox/shaders/star_light_field.gdshader) (Proyecta el bioma cósmico local del sol: halo orgánico con ruido procedural FBM de gas/polvo estelar y suave fade-out smoothstep en el límite de la heliopausa).
+  - Shader Universal de Cuerpos Celestes: [`sandbox/shaders/celestial_body.gdshader`](../../sandbox/shaders/celestial_body.gdshader) (Incorpora tinte dinámico de luz solar sobre la cara diurna iluminada y el Fresnel atmosférico, con atenuación analítica por distancia orbital).
 - **Proporciones Planetarias y Subestructuras:**
   - Escala de planetas: 75% del rango base (`0.375` a `0.825`).
   - Lunas: Desactivadas temporalmente (`moon_spawn_probability = 0.0`).
@@ -56,8 +56,8 @@
   - `planet_day_tint_strength` / `planet_atmo_tint_strength`: Intensidad del baño de luz solar diurna en la corteza y atmósfera del planeta (atenuado por distancia al sol).
 
 ### B. Si quieres cambiar la escala, distancia o velocidad de las Macro-Galaxias de fondo:
-- **Archivo de Balance:** [`sandbox/resources/data/default_galaxy_landmark.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_galaxy_landmark.tres)
-- **Perfil Parallax:** [`default_cosmos_environment.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_cosmos_environment.tres) (`galaxy_scroll_scale`)
+- **Archivo de Balance:** [`sandbox/resources/data/default_galaxy_landmark.tres`](../../sandbox/resources/data/default_galaxy_landmark.tres)
+- **Perfil Parallax:** [`default_cosmos_environment.tres`](../../sandbox/resources/data/default_cosmos_environment.tres) (`galaxy_scroll_scale`)
 - **Variables clave:**
   - `spawn_chance`: Probabilidad estocástica (`1.0` = 100% de presencia en cuadrantes).
   - `maximum_bounding_radius`: Radio analítico (calibrado a: `2000.0` px para reducir drásticamente el espacio muerto entre galaxias).
@@ -71,14 +71,14 @@
 
 
 ### C. Si quieres cambiar la cantidad o velocidad de Escombros Espaciales:
-- **Archivo:** [`sandbox/resources/data/default_debris_layer.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_debris_layer.tres)
+- **Archivo:** [`sandbox/resources/data/default_debris_layer.tres`](../../sandbox/resources/data/default_debris_layer.tres)
 - **Variables clave:**
   - `max_instances`: Cantidad en el pool de GPU (default: `1200` - máx recomendado: `2000`).
   - `cell_size`: Cuadrante de regeneración estocástica.
   - `min_scale` / `max_scale`: Tamaño de las rocas y chatarras.
 
 ### D. Si quieres alterar los colores o densidad de la Nebulosa:
-- **Archivo:** [`sandbox/resources/data/default_cosmic_biome.tres`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/resources/data/default_cosmic_biome.tres) / [`sandbox/cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn)
+- **Archivo:** [`sandbox/resources/data/default_cosmic_biome.tres`](../../sandbox/resources/data/default_cosmic_biome.tres) / [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn)
 - **Variables clave:**
   - `primary_gas_color`: Color base del gas estelar.
   - `secondary_gas_color`: Color de acento / choque térmico.
@@ -89,12 +89,12 @@
   - `nebula_tile_mix`: Peso de mezcla de la textura con el FBM procedural ($0.0 \to 1.0$, default: `0.45`).
 
 ### E. Si quieres calibrar la sensibilidad o umbral del Floating Origin:
-- **Archivo:** [`sandbox/core/floating_origin_tracker.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/core/floating_origin_tracker.gd#L14)
+- **Archivo:** [`sandbox/core/floating_origin_tracker.gd`](../../sandbox/core/floating_origin_tracker.gd#L14)
 - **Variables clave:**
   - `threshold_distance`: Distancia antes de recentrar (default: `10000.0` px). Disminuir a `5000.0` para pruebas de estrés de shifts frecuentes; aumentar a `20000.0` para mundos muy abiertos.
 
 ### F. Si quieres calibrar el suavizado y amortiguación de la Cámara (Anti-Snapback):
-- **Archivo:** [`sandbox/scenes/cosmos_camera_2d.gd`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/scenes/cosmos_camera_2d.gd)
+- **Archivo:** [`sandbox/scenes/cosmos_camera_2d.gd`](../../sandbox/scenes/cosmos_camera_2d.gd)
 - **Variables clave:**
   - `smoothing_enabled`: Habilita o deshabilita la amortiguación inercial (default: `true`).
   - `smoothing_speed`: Velocidad de seguimiento amortiguado (default: `8.0`). Valores mayores = cámara más pegada; valores menores = mayor desfase dinámico a velocidad.
@@ -103,14 +103,14 @@
 
 ### G. Si quieres calibrar las 2 Capas de Estrellas (Máscara 8K sobre negro):
 - **Capa 1 (Micro-estrellas de fondo en Nebulosa):**
-  - **Material:** `ShaderMaterial_nebula` en [`sandbox/cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn#L23)
+  - **Material:** `ShaderMaterial_nebula` en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L23)
   - `deep_stars_intensity`: Brillo general del lecho estelar (default: `0.45`).
   - `deep_stars_scale`: Escala de la ventana (default: `3.0` -> micro-puntos densos de 1-2px).
   - `deep_stars_parallax`: Factor de traslación respecto a la cámara (default: `0.005` -> casi inmóvil).
   - *Color:* Asignación espectral viva saturada (rojo cálido, amarillo dorado, azul frío) con gradiente radial y variedad de magnitudes sin lavado a blanco puro.
 - **Capa 2 (Buffer Estelar 8K Óptico en Paralaje):**
-  - **Material:** `ShaderMaterial_starfield` en [`sandbox/cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn#L40)
-  - `scroll_scale`: Velocidad de paralaje profundo en [`cosmos_root.tscn`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/sandbox/cosmos_root.tscn#L92) (calibrado a: `Vector2(0.003, 0.003)` para dar movimiento radicalmente lento y lejanía cósmica extrema).
+  - **Material:** `ShaderMaterial_starfield` en [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L40)
+  - `scroll_scale`: Velocidad de paralaje profundo en [`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L92) (calibrado a: `Vector2(0.003, 0.003)` para dar movimiento radicalmente lento y lejanía cósmica extrema).
   - `window_scale`: Escala de la ventana sobre los 8192 px (calibrado a: `2.8` para proyectar estrellas compactas y pequeñas).
   - `threshold_cutoff`: Umbral de descarte (`discard`) del fondo negro (default: `0.02`). Todo píxel vacío se descarta, garantizando que la nebulosa y galaxias sean 100% visibles.
   - `star_intensity`: Brillo general de las estrellas frontales (calibrado a: `2.4`).

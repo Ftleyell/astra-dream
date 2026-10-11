@@ -36,8 +36,8 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 
 ## 🧪 Zona de Prototipado y Experimentos
 - `sandbox/`: Área experimental de **Cosmos Engine** (completadas las 7 sesiones de desarrollo y validación matemática). Dispone de orquestador maestro `CosmosRoot`, estratos Parallax2D de 6 niveles, Kepler solver, floating origin, streaming determinista y benchmark de 60 FPS.
-  - **Guía de Ajuste Rápido y Ahorro de Tokens:** [`docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md) (consultar este archivo antes de abrir scripts del sandbox).
-  - **Protocolo de Promoción:** [`docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md).
+  - **Guía de Ajuste Rápido y Ahorro de Tokens:** [`docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md`](docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md) (consultar este archivo antes de abrir scripts del sandbox).
+  - **Protocolo de Promoción:** [`docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md`](docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md).
   - **Restricción:** No debe ser importada por escenas o sistemas del runtime de producción (`scenes/`, `core/`) hasta la fase formal de migración.
 
 ---
