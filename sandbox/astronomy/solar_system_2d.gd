@@ -76,6 +76,8 @@ func _build_system_hierarchy() -> void:
 	var star_radius: float = system_profile.star_base_radius
 	var star_color: Color = system_profile.star_emission_color
 	var star_flat_core_col: Color = system_profile.star_flat_core_color
+	var star_flat_core_rad: float = system_profile.star_flat_core_radius
+	var star_flat_core_feat: float = system_profile.star_flat_core_feather
 	var axial_speed: float = system_profile.star_axial_rotation_speed
 	var heat_distortion: float = 0.045
 	var pulse_spd: float = 1.5
@@ -117,6 +119,8 @@ func _build_system_hierarchy() -> void:
 			star_tex_list = active_archetype.star_textures
 		if active_archetype.flat_core_color.a > 0.0:
 			star_flat_core_col = active_archetype.flat_core_color
+		star_flat_core_rad = active_archetype.flat_core_radius
+		star_flat_core_feat = active_archetype.flat_core_feather
 
 	if star_flat_core_col.a <= 0.0:
 		star_flat_core_col = star_color
@@ -168,8 +172,8 @@ func _build_system_hierarchy() -> void:
 		var core_mat: ShaderMaterial = ShaderMaterial.new()
 		core_mat.shader = STAR_FLAT_CORE_SHADER
 		core_mat.set_shader_parameter("flat_color", star_flat_core_col)
-		core_mat.set_shader_parameter("core_radius", 0.45)
-		core_mat.set_shader_parameter("edge_feather", 0.02)
+		core_mat.set_shader_parameter("core_radius", star_flat_core_rad)
+		core_mat.set_shader_parameter("edge_feather", star_flat_core_feat)
 		flat_core_sprite.material = core_mat
 	else:
 		flat_core_sprite.modulate = star_flat_core_col

@@ -13,6 +13,8 @@ extends Resource
 @export var star_base_radius: float = 400.0
 @export var star_emission_color: Color = Color(1.0, 0.78, 0.35, 1.0)
 @export var star_flat_core_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+@export_range(0.1, 0.5, 0.01) var star_flat_core_radius: float = 0.32
+@export_range(0.005, 0.1, 0.005) var star_flat_core_feather: float = 0.035
 @export_range(0.001, 0.1, 0.001) var star_axial_rotation_speed: float = 0.012
 
 @export_group("Planetas Primarios")

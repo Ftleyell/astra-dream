@@ -6,8 +6,8 @@ render_mode blend_mix, unshaded;
 // eliminando transparencias no deseadas o agujeros que dejan ver el fondo cósmico.
 
 uniform vec4 flat_color : source_color = vec4(1.0, 0.85, 0.45, 1.0);
-uniform float core_radius : hint_range(0.1, 0.5) = 0.45;
-uniform float edge_feather : hint_range(0.001, 0.05) = 0.02;
+uniform float core_radius : hint_range(0.1, 0.5) = 0.32;
+uniform float edge_feather : hint_range(0.001, 0.1) = 0.035;
 
 void fragment() {
 	vec2 delta = UV - vec2(0.5);

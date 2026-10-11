@@ -14,6 +14,8 @@ extends Resource
 @export var star_textures: Array[Texture2D] = []
 @export var star_color: Color = Color(1.0, 0.85, 0.45, 1.0)
 @export var flat_core_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+@export_range(0.1, 0.5, 0.01) var flat_core_radius: float = 0.32
+@export_range(0.005, 0.1, 0.005) var flat_core_feather: float = 0.035
 @export var star_core_radius: float = 350.0
 @export_range(0.001, 0.05, 0.001) var axial_rotation_speed: float = 0.008
 @export_range(0.0, 0.15, 0.005) var heat_distortion_strength: float = 0.045

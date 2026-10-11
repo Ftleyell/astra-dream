@@ -181,6 +181,8 @@ func _test_star_archetypes_and_visual_light() -> void:
 	assert_true(flat_core_mat != null, "El material de StarFlatCore debe ser ShaderMaterial.")
 	var assigned_flat_color: Color = flat_core_mat.get_shader_parameter("flat_color")
 	assert_true(assigned_flat_color.a > 0.0, "StarFlatCore debe tener un flat_color opaco configurado.")
+	var assigned_core_radius: float = flat_core_mat.get_shader_parameter("core_radius")
+	assert_true(assigned_core_radius <= 0.35 and assigned_core_radius >= 0.25, "El radio del núcleo plano debe estar calibrado acorde a la masa del sol (0.25 - 0.35).")
 
 	# Verificar SolarSystemLightField y su ShaderMaterial de luz ambiental orbital
 	var light_field: Sprite2D = test_system.star_body.get_node_or_null("SolarSystemLightField") as Sprite2D
