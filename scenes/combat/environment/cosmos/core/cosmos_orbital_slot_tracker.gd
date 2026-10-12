@@ -31,32 +31,10 @@ func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0
 
 		var star_layer_pos: Vector2 = sys.position + sys.star_body.position
 		var target_layer_pos: Vector2 = world_position * scroll_scale
-		if star_layer_pos.distance_to(target_layer_pos) > (search_radius * scroll_scale.x):
+		if search_radius > 0.0 and star_layer_pos.distance_to(target_layer_pos) > (search_radius * scroll_scale.x):
 			continue
 
-		var bounding_r: float = sys.get_bounding_radius()
-		var slot_radius: float = maxf(bounding_r * 1.15, 3200.0)
-		var base_vel: float = streamer.system_profile.base_angular_velocity if streamer.system_profile != null else 0.05
-		var kepler_ang_vel: float = CosmosKeplerOrbitMath.calculate_keplerian_angular_velocity(
-			base_vel,
-			1000.0,
-			slot_radius,
-			1.0
-		)
-		var cell_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 888)
-		var initial_theta: float = CosmosHasher.hash_2d_float(cell_seed, 101, 11) * TAU
-
-		var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
-			CosmosOrbitSlot.SlotCenterType.STAR,
-			cell,
-			star_layer_pos,
-			slot_radius,
-			kepler_ang_vel,
-			initial_theta,
-			sys.star_body,
-			StringName("StarOrbitSlot_%d_%d" % [cell.x, cell.y]),
-			scroll_scale
-		)
+		var slot: CosmosOrbitSlot = create_star_orbit_slot(sys, cell, scroll_scale)
 		results.append(slot)
 
 	# Si active_systems no tiene ningún sistema cargado en frustum, derivar slot analítico determinista desde el macro-grid
@@ -64,11 +42,17 @@ func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0
 		var grid: CosmosMacroGrid = streamer.get_macro_grid()
 		var target_layer_pos: Vector2 = world_position * scroll_scale
 		var center_cell: Vector2i = grid.world_to_grid_coords(target_layer_pos)
+		var effective_spawn_chance: float = streamer.system_profile.spawn_chance if streamer.system_profile != null else 0.75
+
 		for ox: int in range(-1, 2):
 			for oy: int in range(-1, 2):
 				var cell: Vector2i = center_cell + Vector2i(ox, oy)
+				var has_override: bool = streamer.poi_registry != null and streamer.poi_registry.has_poi(cell)
+				if not has_override and grid.get_cell_pseudorandom_float(cell, 9091) > effective_spawn_chance:
+					continue
+
 				var sys_pos: Vector2 = streamer.get_system_position_for_cell(cell)
-				if sys_pos.distance_to(target_layer_pos) <= (search_radius * scroll_scale.x):
+				if search_radius <= 0.0 or sys_pos.distance_to(target_layer_pos) <= (search_radius * scroll_scale.x):
 					var cell_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 888)
 					var slot_radius: float = 3800.0
 					var base_vel: float = streamer.system_profile.base_angular_velocity if streamer.system_profile != null else 0.05
@@ -110,34 +94,12 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 		if not is_instance_valid(sys):
 			continue
 
-		for p_idx in range(sys.planets.size()):
-			var planet_body: CosmosOrbitalBody2D = sys.planets[p_idx]
-			if not is_instance_valid(planet_body):
-				continue
-
-			var planet_layer_pos: Vector2 = sys.position + planet_body.position
-			if planet_layer_pos.distance_to(target_layer_pos) > (search_radius * scroll_scale.x):
-				continue
-
-			var vis_radius: float = float(planet_body.get_meta(&"visual_radius", 130.0))
-			# Órbita del satélite en espacio de capa cósmica
-			var orbit_dist: float = vis_radius * 2.2
-			var base_vel: float = streamer.system_profile.base_angular_velocity if streamer.system_profile != null else 0.05
-			var sat_ang_vel: float = base_vel * 3.5
-			var p_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 444 + p_idx)
-			var init_theta: float = CosmosHasher.hash_2d_float(p_seed, 202, 22) * TAU
-
-			var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
-				CosmosOrbitSlot.SlotCenterType.PLANET,
-				cell,
-				planet_layer_pos,
-				orbit_dist,
-				sat_ang_vel,
-				init_theta,
-				planet_body,
-				StringName("PlanetOrbitSlot_%d_%d_%d" % [cell.x, cell.y, p_idx]),
-				scroll_scale
-			)
+		var p_slots: Array[CosmosOrbitSlot] = create_planet_orbit_slots(sys, cell, scroll_scale)
+		for slot in p_slots:
+			if search_radius > 0.0:
+				var slot_layer_pos: Vector2 = slot.center_layer_position
+				if slot_layer_pos.distance_to(target_layer_pos) > (search_radius * scroll_scale.x):
+					continue
 			results.append(slot)
 
 	# Si active_systems no tiene ningún planeta en frustum, derivar slots analíticos deterministas desde el macro-grid
@@ -149,12 +111,17 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 		var eff_min_r: float = p_cfg.orbit_radius_min if p_cfg != null else 1200.0
 		var eff_max_r: float = p_cfg.orbit_radius_max if p_cfg != null else 3500.0
 		var eff_spacing: float = p_cfg.min_orbital_spacing if p_cfg != null else 400.0
+		var effective_spawn_chance: float = streamer.system_profile.spawn_chance if streamer.system_profile != null else 0.75
 
 		for ox: int in range(-1, 2):
 			for oy: int in range(-1, 2):
 				var cell: Vector2i = center_cell + Vector2i(ox, oy)
+				var has_override: bool = streamer.poi_registry != null and streamer.poi_registry.has_poi(cell)
+				if not has_override and grid.get_cell_pseudorandom_float(cell, 9091) > effective_spawn_chance:
+					continue
+
 				var sys_pos: Vector2 = streamer.get_system_position_for_cell(cell)
-				if sys_pos.distance_to(target_layer_pos) <= ((search_radius + 4000.0) * scroll_scale.x):
+				if search_radius <= 0.0 or sys_pos.distance_to(target_layer_pos) <= ((search_radius + 4000.0) * scroll_scale.x):
 					var cell_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 777)
 					var num_planets: int = p_cfg.min_planets if p_cfg != null else 3
 					var planet_count_range: int = (p_cfg.max_planets - p_cfg.min_planets) if p_cfg != null else 2
@@ -211,6 +178,80 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 				break
 
 	return results
+
+## Construye el slot de órbita estelar para un sistema solar instanciado
+func create_star_orbit_slot(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_scale: Vector2) -> CosmosOrbitSlot:
+	var streamer: CosmosSolarSystemStreamer = cosmos_root.solar_streamer if cosmos_root != null else null
+	var star_layer_pos: Vector2 = sys.position + (sys.star_body.position if sys.star_body != null else Vector2.ZERO)
+	var bounding_r: float = sys.get_bounding_radius()
+	var slot_radius: float = maxf(bounding_r * 1.15, 3200.0)
+	var base_vel: float = streamer.system_profile.base_angular_velocity if (streamer != null and streamer.system_profile != null) else 0.05
+	var kepler_ang_vel: float = CosmosKeplerOrbitMath.calculate_keplerian_angular_velocity(
+		base_vel,
+		1000.0,
+		slot_radius,
+		1.0
+	)
+	var run_seed: int = streamer.run_seed if streamer != null else 428175
+	var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 888)
+	var initial_theta: float = CosmosHasher.hash_2d_float(cell_seed, 101, 11) * TAU
+
+	return CosmosOrbitSlot.new(
+		CosmosOrbitSlot.SlotCenterType.STAR,
+		cell,
+		star_layer_pos,
+		slot_radius,
+		kepler_ang_vel,
+		initial_theta,
+		sys.star_body,
+		StringName("StarOrbitSlot_%d_%d" % [cell.x, cell.y]),
+		scroll_scale
+	)
+
+## Construye todos los slots de órbita planetaria para los planetas de fondo de un sistema solar
+func create_planet_orbit_slots(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_scale: Vector2) -> Array[CosmosOrbitSlot]:
+	var results: Array[CosmosOrbitSlot] = []
+	var streamer: CosmosSolarSystemStreamer = cosmos_root.solar_streamer if cosmos_root != null else null
+	var base_vel: float = streamer.system_profile.base_angular_velocity if (streamer != null and streamer.system_profile != null) else 0.05
+	var run_seed: int = streamer.run_seed if streamer != null else 428175
+
+	for p_idx in range(sys.planets.size()):
+		var planet_body: CosmosOrbitalBody2D = sys.planets[p_idx]
+		if not is_instance_valid(planet_body):
+			continue
+
+		var planet_layer_pos: Vector2 = sys.position + planet_body.position
+		var vis_radius: float = float(planet_body.get_meta(&"visual_radius", 130.0))
+		var orbit_dist: float = vis_radius * 2.2
+		var sat_ang_vel: float = base_vel * 3.5
+		var p_seed: int = run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 444 + p_idx)
+		var init_theta: float = CosmosHasher.hash_2d_float(p_seed, 202, 22) * TAU
+
+		var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
+			CosmosOrbitSlot.SlotCenterType.PLANET,
+			cell,
+			planet_layer_pos,
+			orbit_dist,
+			sat_ang_vel,
+			init_theta,
+			planet_body,
+			StringName("PlanetOrbitSlot_%d_%d_%d" % [cell.x, cell.y, p_idx]),
+			scroll_scale
+		)
+		results.append(slot)
+
+	return results
+
+## Obtiene de forma empaquetada todos los slots de un sistema solar activo
+func get_slots_for_system(sys: CosmosSolarSystem2D, cell: Vector2i) -> Dictionary:
+	var streamer: CosmosSolarSystemStreamer = cosmos_root.solar_streamer if cosmos_root != null else null
+	var parallax_layer: Parallax2D = streamer.parallax_layer if streamer != null else null
+	var scroll_scale: Vector2 = parallax_layer.scroll_scale if parallax_layer != null else Vector2(0.20, 0.20)
+
+	return {
+		"star_slot": create_star_orbit_slot(sys, cell, scroll_scale),
+		"planet_slots": create_planet_orbit_slots(sys, cell, scroll_scale)
+	}
 
 ## Proyecta un slot analítico a coordenadas del mundo de GameplayWorld considerando la cámara actual.
 ## En Godot Parallax2D:

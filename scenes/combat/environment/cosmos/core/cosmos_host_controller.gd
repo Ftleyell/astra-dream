@@ -22,8 +22,14 @@ const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos
 
 signal region_changed(region_id: StringName, biome_config: CosmosBiomeConfig)
 signal freeze_state_changed(is_frozen: bool)
+signal solar_system_streamed(system: CosmosSolarSystem2D, cell: Vector2i, star_slot: CosmosOrbitSlot, planet_slots: Array)
+signal solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 
-@export var cosmos_root: CosmosRootNode = null
+@export var cosmos_root: CosmosRootNode = null:
+	set(val):
+		cosmos_root = val
+		_slot_tracker = CosmosOrbitalSlotTracker.new(cosmos_root)
+		_connect_cosmos_root_signals()
 @export var default_region_id: StringName = &"perseus_rift"
 @export var auto_connect_pause_arbitrator: bool = true
 
@@ -62,6 +68,30 @@ func _find_or_validate_cosmos_root() -> void:
 	if cosmos_root == null:
 		cosmos_root = get_parent() as CosmosRootNode if get_parent() is CosmosRootNode else null
 	_slot_tracker = CosmosOrbitalSlotTracker.new(cosmos_root)
+	_connect_cosmos_root_signals()
+
+func _connect_cosmos_root_signals() -> void:
+	if cosmos_root == null:
+		return
+	if not cosmos_root.solar_system_streamed.is_connected(_on_solar_system_streamed):
+		cosmos_root.solar_system_streamed.connect(_on_solar_system_streamed)
+	if not cosmos_root.solar_system_unstreamed.is_connected(_on_solar_system_unstreamed):
+		cosmos_root.solar_system_unstreamed.connect(_on_solar_system_unstreamed)
+
+func _on_solar_system_streamed(system: CosmosSolarSystem2D, cell: Vector2i) -> void:
+	var tracker := get_slot_tracker()
+	var slots_dict: Dictionary = tracker.get_slots_for_system(system, cell)
+	var star_slot: CosmosOrbitSlot = slots_dict.get("star_slot") as CosmosOrbitSlot
+	var planet_slots: Array = slots_dict.get("planet_slots", [])
+	solar_system_streamed.emit(system, cell, star_slot, planet_slots)
+
+func _on_solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i) -> void:
+	solar_system_unstreamed.emit(system, cell)
+
+func get_active_solar_systems() -> Dictionary:
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		return cosmos_root.solar_streamer.get_active_systems()
+	return {}
 
 func _initialize_blender() -> void:
 	if cosmos_root != null:

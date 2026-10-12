@@ -19,6 +19,7 @@ var spawn_selector: RefCounted = null
 
 var current_satellite: Node2D = null
 var current_satellite_idx: int = 1
+var _pending_satellite_spawn: bool = false
 var satellites_collected_total: int = 0:
 	set(val):
 		satellites_collected_total = val
@@ -78,6 +79,7 @@ func setup_subsystem(p_context: CombatContextScript) -> void:
 			odometer.initialize_position(context.player.global_position)
 		if context.satellite_shop and not context.satellite_shop.shop_closed.is_connected(_on_shop_closed):
 			context.satellite_shop.shop_closed.connect(_on_shop_closed)
+		call_deferred("_connect_cosmos_streamer")
 
 
 func setup(p_main_game: MainGame) -> void:
@@ -87,6 +89,42 @@ func setup(p_main_game: MainGame) -> void:
 			odometer.initialize_position(main_game.player.global_position)
 		if main_game.satellite_shop and not main_game.satellite_shop.shop_closed.is_connected(_on_shop_closed):
 			main_game.satellite_shop.shop_closed.connect(_on_shop_closed)
+		call_deferred("_connect_cosmos_streamer")
+
+
+func _connect_cosmos_streamer() -> void:
+	var host_ctrl: Node = _get_cosmos_controller()
+	if host_ctrl != null and host_ctrl.has_signal("solar_system_streamed"):
+		if not host_ctrl.solar_system_streamed.is_connected(_on_solar_system_streamed):
+			host_ctrl.solar_system_streamed.connect(_on_solar_system_streamed)
+		if _pending_satellite_spawn and host_ctrl.has_method("get_active_solar_systems"):
+			var active_systems: Dictionary = host_ctrl.call("get_active_solar_systems")
+			for cell: Vector2i in active_systems.keys():
+				var sys: Node = active_systems[cell]
+				var tracker: CosmosOrbitalSlotTracker = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
+				if tracker != null:
+					var slots_dict: Dictionary = tracker.get_slots_for_system(sys, cell)
+					var planet_slots: Array = slots_dict.get("planet_slots", [])
+					if not planet_slots.is_empty():
+						_on_solar_system_streamed(sys, cell, null, planet_slots)
+						break
+
+
+func _on_solar_system_streamed(_system: Node, _cell: Vector2i, _star_slot: CosmosOrbitSlotScript, planet_slots: Array) -> void:
+	if not _pending_satellite_spawn and is_instance_valid(current_satellite):
+		return
+	if planet_slots.is_empty():
+		return
+
+	var host_ctrl: Node = _get_cosmos_controller()
+	var selected_slot: CosmosOrbitSlotScript = planet_slots[0] as CosmosOrbitSlotScript
+	var cam: Camera2D = main_game.camera if (main_game and "camera" in main_game) else null
+	var root_node: CosmosRootNode = host_ctrl.cosmos_root if (host_ctrl != null and "cosmos_root" in host_ctrl) else null
+	var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+	var spawn_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
+
+	_pending_satellite_spawn = false
+	spawn_next_satellite(spawn_pos, selected_slot)
 
 
 func on_wave_started(_wave_idx: int) -> void:
@@ -131,6 +169,10 @@ func update_satellite_lifecycle() -> void:
 		return
 
 	var is_interacting: bool = _is_player_interacting_with_satellite()
+	if is_instance_valid(current_satellite):
+		var follower: Node = current_satellite.get_node_or_null("OrbitalWorldFollower2D")
+		if follower != null and "freeze_parallax_drag" in follower:
+			follower.freeze_parallax_drag = is_interacting
 	odometer.update(main_game.player.global_position, is_interacting)
 
 
@@ -167,7 +209,7 @@ func spawn_next_satellite_ahead() -> void:
 	var spawn_pos: Vector2 = Vector2.ZERO
 
 	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 14000.0)
+		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 24000.0)
 		if not slots.is_empty():
 			selected_slot = slots[0] as CosmosOrbitSlotScript
 			var cam: Camera2D = main_game.camera if "camera" in main_game else null
@@ -176,14 +218,20 @@ func spawn_next_satellite_ahead() -> void:
 			if root_node != null and is_instance_valid(root_node):
 				t_global = root_node.get_global_time()
 			spawn_pos = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
+			_pending_satellite_spawn = false
+			spawn_next_satellite(spawn_pos, selected_slot)
+			return
+		else:
+			# Si Cosmos Engine está activo en MainGame pero no hay planetas en rango, esperar al streaming
+			_pending_satellite_spawn = true
+			return
 
-	if selected_slot == null:
-		spawn_pos = spawn_selector.calculate_spawn_position(
-			player_pos,
-			main_game.player.velocity
-		)
-
-	spawn_next_satellite(spawn_pos, selected_slot)
+	# Fallback cuando no hay Cosmos Engine presente (tests aislados)
+	spawn_pos = spawn_selector.calculate_spawn_position(
+		player_pos,
+		main_game.player.velocity
+	)
+	spawn_next_satellite(spawn_pos, null)
 
 
 func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> void:

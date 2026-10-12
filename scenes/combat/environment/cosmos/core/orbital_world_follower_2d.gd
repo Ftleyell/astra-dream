@@ -13,6 +13,7 @@ const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos
 
 var slot: CosmosOrbitSlot = null
 @export var active: bool = true
+@export var freeze_parallax_drag: bool = false
 
 var _target_node: Node2D = null
 var _camera_ref: Camera2D = null
@@ -59,14 +60,18 @@ func _process(delta: float) -> void:
 	_update_position(delta)
 
 func _update_position(delta: float) -> void:
+	if freeze_parallax_drag:
+		return
+
 	if _camera_ref == null or not is_instance_valid(_camera_ref):
 		_camera_ref = get_viewport().get_camera_2d()
 
 	var t_global: float = 0.0
 	if _cosmos_root != null and is_instance_valid(_cosmos_root):
 		t_global = _cosmos_root.get_global_time()
-	_internal_time += delta
-	t_global += _internal_time
+	else:
+		_internal_time += delta
+		t_global = _internal_time
 
 	var new_world_pos: Vector2 = CosmosOrbitalSlotTracker.project_slot_to_world(slot, t_global, _camera_ref)
 	_target_node.global_position = new_world_pos

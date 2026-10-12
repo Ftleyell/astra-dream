@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://c7kx1ou7uagpg"]
+
+[ext_resource type="Script" path="res://tests/unit/test_orbital_binding_events.gd" id="1_test"]
+
+[node name="TestOrbitalBindingEvents" type="Node2D"]
+script = ExtResource("1_test")
+suite_name = "OrbitalBindingEvents"

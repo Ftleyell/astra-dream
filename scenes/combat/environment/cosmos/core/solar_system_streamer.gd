@@ -7,6 +7,9 @@ const CosmicPoiRegistry = preload("res://scenes/combat/environment/cosmos/core/c
 ## Orquestador y streamer determinista de sistemas solares bajo capas de Parallax2D.
 ## Utiliza CosmosMacroGrid y un Object Pool pre-asignado de CosmosSolarSystem2D para cero-asignaciones dinámicas.
 
+signal system_streamed(system: CosmosSolarSystem2D, cell: Vector2i)
+signal system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
+
 @export var system_profile: CosmosCelestialSystemProfile
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
@@ -69,6 +72,7 @@ func set_run_seed(p_seed: int) -> void:
 		var sys: CosmosSolarSystem2D = _active_systems[cell]
 		sys.visible = false
 		_pool.append(sys)
+		system_unstreamed.emit(sys, cell)
 	_active_systems.clear()
 
 func _initialize_system_pool() -> void:
@@ -142,6 +146,7 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 		sys_to_return.visible = false
 		_active_systems.erase(release_cell)
 		_pool.append(sys_to_return)
+		system_unstreamed.emit(sys_to_return, release_cell)
 
 	# Activar o posicionar nuevas celdas usando el pool
 	for req_cell: Vector2i in required_cells:
@@ -161,6 +166,7 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 				sys_to_acquire.position = get_system_position_for_cell(req_cell)
 				sys_to_acquire.visible = true
 				_active_systems[req_cell] = sys_to_acquire
+				system_streamed.emit(sys_to_acquire, req_cell)
 
 	# Evaluar orbitalmente todos los sistemas activos en t_global
 	for sys: CosmosSolarSystem2D in _active_systems.values():

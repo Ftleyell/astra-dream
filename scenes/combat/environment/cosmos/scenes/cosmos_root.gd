@@ -18,6 +18,8 @@ const CosmosViewportCanvasTracker = preload("res://scenes/combat/environment/cos
 ## de proceso con CosmosFloatingOriginTracker para garantizar cero micro-saltos.
 
 signal origin_shifted(shift_vector: Vector2)
+signal solar_system_streamed(system: CosmosSolarSystem2D, cell: Vector2i)
+signal solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 
 @export var camera: Camera2D
 @export var player_target: Node2D
@@ -70,6 +72,7 @@ func _ready() -> void:
 	_setup_floating_origin()
 	_sync_poi_registry()
 	_bind_camera_to_streamers()
+	_setup_solar_streamer_signals()
 	_cache_starfield_material()
 	_init_environment_profile()
 
@@ -279,6 +282,19 @@ func _on_viewport_updated(center_world_pos: Vector2, zoom: Vector2, _rotation_ra
 		nebula_controller.set_world_view_position(center_world_pos)
 	if parallax_starfield_8k != null and parallax_starfield_8k.has_method("set_world_view_position"):
 		parallax_starfield_8k.call("set_world_view_position", center_world_pos)
+
+func _setup_solar_streamer_signals() -> void:
+	if solar_streamer != null:
+		if not solar_streamer.system_streamed.is_connected(_on_solar_system_streamed):
+			solar_streamer.system_streamed.connect(_on_solar_system_streamed)
+		if not solar_streamer.system_unstreamed.is_connected(_on_solar_system_unstreamed):
+			solar_streamer.system_unstreamed.connect(_on_solar_system_unstreamed)
+
+func _on_solar_system_streamed(system: CosmosSolarSystem2D, cell: Vector2i) -> void:
+	solar_system_streamed.emit(system, cell)
+
+func _on_solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i) -> void:
+	solar_system_unstreamed.emit(system, cell)
 
 func _sync_poi_registry() -> void:
 	if poi_registry == null:
