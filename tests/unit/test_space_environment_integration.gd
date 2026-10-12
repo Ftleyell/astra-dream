@@ -86,6 +86,18 @@ func _test_wave_transition_and_region_change() -> void:
 	var host_ctrl: CosmosHostControllerScript = adapter.get_host_controller()
 	assert_true(host_ctrl != null, "host_ctrl no debe ser nulo.")
 
+	# Por defecto las transiciones de bioma están apagadas
+	assert_true(not adapter.enable_wave_biome_transitions, "Transiciones automáticas de bioma deben estar desactivadas por defecto.")
+
+	# Probar aleatorización de semilla por run
+	var seed_1: int = adapter.randomize_environment_seed()
+	var root_node: CosmosRootNodeScript = adapter.get_cosmos_root()
+	assert_true(root_node.solar_streamer.run_seed == seed_1, "SolarStreamer debe reflejar la semilla configurada.")
+	assert_true(root_node.galaxy_streamer.run_seed == seed_1, "GalaxyStreamer debe reflejar la semilla configurada.")
+
+	# Habilitar flag para verificar el pipeline de transiciones de oleadas
+	adapter.enable_wave_biome_transitions = true
+
 	# Disparar oleada 1 (perseus_rift)
 	_host.on_wave_started(1)
 	assert_true(host_ctrl.get_current_region_id() == &"perseus_rift", "Oleada 1 debe activar perseus_rift.")

@@ -13,6 +13,7 @@ La escena de combate principal (`scenes/combat/main_game.gd`) opera como un orqu
 - **`CombatWavePipeline`**: Máquina de estados que gestiona el ritmo de spawn de oleadas, temporizadores de crisis y eventos de colosos.
 - **`CombatModalCoordinator`**: Cola FIFO de modales in-game (Level Up, Tienda Satelital, Selección de Arcanas) que arbitra pausas seguras.
 - **`CombatSatelliteCoordinator`**: Gestión de trayectorias, distancias y aparición de estaciones orbitales interactuables.
+- **`SpaceEnvironmentHost`**: Anfitrión desacoplado de fondo cósmico (`scenes/combat/environment/space_environment_host.gd`). Conecta e intercambia plug & play el entorno visual, instanciando por defecto [`CosmosCombatEnvironment`](../scenes/combat/environment/cosmos_combat_environment.gd) y gobernando transiciones de bioma reactivas a las oleadas.
 
 ---
 

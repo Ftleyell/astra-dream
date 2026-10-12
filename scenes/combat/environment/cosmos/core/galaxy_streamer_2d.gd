@@ -72,6 +72,22 @@ func _initialize_macro_grid_geometry() -> void:
 	_safe_min_distance = _calculated_cell_size * 0.40
 	_macro_grid = CosmosMacroGrid.new(_calculated_cell_size, run_seed)
 
+## Reconfigura la semilla procedural determinista y regenera el grid
+func set_run_seed(p_seed: int) -> void:
+	if run_seed == p_seed and _macro_grid != null:
+		return
+	run_seed = p_seed
+	if _calculated_cell_size <= 0.0:
+		_initialize_macro_grid_geometry()
+	else:
+		_macro_grid = CosmosMacroGrid.new(_calculated_cell_size, run_seed)
+	for cell: Vector2i in _active_galaxies.keys():
+		var sprite: Sprite2D = _active_galaxies[cell] as Sprite2D
+		sprite.visible = false
+		sprite.modulate.a = 0.0
+		_pool.append(sprite)
+	_active_galaxies.clear()
+
 func _initialize_node_pool() -> void:
 	var count: int = landmark_profile.pool_size if (landmark_profile != null and landmark_profile.pool_size > 0) else pool_size
 	for i: int in range(count):

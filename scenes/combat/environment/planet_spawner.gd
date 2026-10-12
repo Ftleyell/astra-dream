@@ -8,6 +8,7 @@ extends Node2D
 const SpaceEnvironmentConfigScript = preload("res://core/resources/space_environment_config.gd")
 const OrbitalWorldFollower2DScript = preload("res://scenes/combat/environment/cosmos/core/orbital_world_follower_2d.gd")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 
 @export var env_config: Resource = preload("res://data/environment/default_space_environment_config.tres")
 @export var spawn_distance_interval: float = 7000.0
@@ -43,6 +44,19 @@ func _ready() -> void:
 func _spawn_initial_test_planet() -> void:
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else Vector2(960, 540)
+	var host_ctrl: Node = _get_cosmos_controller()
+	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
+		var slots: Array = host_ctrl.call("get_star_orbit_slots", center, 15000.0)
+		if not slots.is_empty():
+			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
+			var cam: Camera2D = _get_camera()
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+			var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+			if _is_position_valid_for_planet(slot_world_pos):
+				_instantiate_planet_at(slot_world_pos, slot)
+				return
+
 	var preferred_pos := center + Vector2(1700.0, -400.0)
 
 	if _is_position_valid_for_planet(preferred_pos):
@@ -89,6 +103,21 @@ func _spawn_planet_ahead() -> bool:
 
 	if active_planets.size() >= max_active_planets:
 		return false
+
+	var host_ctrl: Node = _get_cosmos_controller()
+	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
+		var star_slots: Array = host_ctrl.call("get_star_orbit_slots", player.global_position, 16000.0)
+		if not star_slots.is_empty():
+			var cam: Camera2D = _get_camera()
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+
+			for slot_obj in star_slots:
+				var slot: CosmosOrbitSlotScript = slot_obj as CosmosOrbitSlotScript
+				var projected_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+				if _is_position_valid_for_planet(projected_pos):
+					_instantiate_planet_at(projected_pos, slot)
+					return true
 
 	# Calcular dirección base de avance del jugador (velocity o rotación)
 	var move_dir := player.velocity.normalized()
@@ -160,7 +189,7 @@ func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0) -> bool
 	return true
 
 
-func _instantiate_planet_at(pos: Vector2) -> Planet:
+func _instantiate_planet_at(pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> Planet:
 	if not planet_scene:
 		return null
 
@@ -175,39 +204,58 @@ func _instantiate_planet_at(pos: Vector2) -> Planet:
 
 	container.add_child(planet)
 	active_planets.append(planet)
-	_try_bind_star_orbit(planet, pos)
+	_apply_star_orbit_binding(planet, pos, bound_slot)
 	return planet
 
 
-func _try_bind_star_orbit(planet_node: Planet, candidate_pos: Vector2) -> void:
-	if not is_inside_tree() or not is_instance_valid(planet_node):
-		return
-
+func _get_cosmos_controller() -> Node:
 	var tree := get_tree()
 	var mg: Node = tree.get_first_node_in_group("main_game") if tree else null
 	if not mg:
-		return
+		return null
 
 	var env_host: Node = mg.get_node_or_null("SpaceEnvironmentHost")
 	if not env_host and mg.has_node("SpaceBackground"):
 		env_host = mg.get_node("SpaceBackground")
 
-	var host_ctrl: Node = null
 	if env_host != null and env_host.has_method("get_cosmos_controller"):
-		host_ctrl = env_host.call("get_cosmos_controller")
+		return env_host.call("get_cosmos_controller")
 	elif env_host != null and env_host.has_method("get_host_controller"):
-		host_ctrl = env_host.call("get_host_controller")
+		return env_host.call("get_host_controller")
+	return null
 
-	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
+
+func _get_camera() -> Camera2D:
+	var tree := get_tree()
+	var mg: Node = tree.get_first_node_in_group("main_game") if tree else null
+	if mg and "camera" in mg:
+		return mg.camera as Camera2D
+	return get_viewport().get_camera_2d() if is_inside_tree() else null
+
+
+func _apply_star_orbit_binding(planet_node: Planet, candidate_pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> void:
+	if not is_inside_tree() or not is_instance_valid(planet_node):
+		return
+
+	var host_ctrl: Node = _get_cosmos_controller()
+	var slot_to_bind: CosmosOrbitSlotScript = bound_slot
+
+	if slot_to_bind == null and host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
 		var slots: Array = host_ctrl.call("get_star_orbit_slots", candidate_pos, 9000.0)
 		if not slots.is_empty():
-			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
-			var follower := OrbitalWorldFollower2DScript.new()
-			follower.name = "OrbitalWorldFollower2D"
-			planet_node.add_child(follower)
-			var cam: Camera2D = mg.camera if "camera" in mg else null
-			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-			follower.setup_orbital_binding(slot, cam, root_node)
+			slot_to_bind = slots[0] as CosmosOrbitSlotScript
+
+	if slot_to_bind != null and host_ctrl != null:
+		var follower := OrbitalWorldFollower2DScript.new()
+		follower.name = "OrbitalWorldFollower2D"
+		planet_node.add_child(follower)
+		var cam: Camera2D = _get_camera()
+		var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+		follower.setup_orbital_binding(slot_to_bind, cam, root_node)
+
+
+func _try_bind_star_orbit(planet_node: Planet, candidate_pos: Vector2) -> void:
+	_apply_star_orbit_binding(planet_node, candidate_pos, null)
 
 
 func _prune_active_planets() -> void:

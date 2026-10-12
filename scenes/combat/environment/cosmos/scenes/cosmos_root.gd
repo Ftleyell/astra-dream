@@ -298,6 +298,15 @@ func register_relative_poi(offset: Vector2i, config: CosmicPoiConfig, current_or
 	_sync_poi_registry()
 	return poi_registry.register_relative_poi(offset, config, current_origin)
 
+## Configura la semilla aleatoria/determinista en todos los streamers cósmicos hijos
+func set_run_seed(p_seed: int) -> void:
+	if solar_streamer != null and is_instance_valid(solar_streamer):
+		solar_streamer.set_run_seed(p_seed)
+	if galaxy_streamer != null and is_instance_valid(galaxy_streamer):
+		galaxy_streamer.set_run_seed(p_seed)
+	if debris_streamer != null and is_instance_valid(debris_streamer):
+		debris_streamer.set_run_seed(p_seed)
+
 ## Limpia todos los POIs registrados devolviendo el streaming al comportamiento 100% procedural.
 func clear_poi_overrides() -> void:
 	if poi_registry != null:

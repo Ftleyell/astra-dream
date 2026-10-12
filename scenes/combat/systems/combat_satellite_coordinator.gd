@@ -9,6 +9,7 @@ const SatelliteOdometerClass = preload("res://scenes/combat/satellite/components
 const SatelliteSpawnSelectorClass = preload("res://scenes/combat/satellite/components/satellite_spawn_selector.gd")
 const OrbitalWorldFollower2DScript = preload("res://scenes/combat/environment/cosmos/core/orbital_world_follower_2d.gd")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 
 const BASE_SPAWN_DISTANCE: float = 1200.0
 const DISTANCE_INCREMENT_PER_SAT: float = 400.0
@@ -160,14 +161,32 @@ func spawn_next_satellite_ahead() -> void:
 	if not is_instance_valid(main_game.player) or not main_game.player.is_inside_tree() or main_game.player.is_queued_for_deletion():
 		return
 
-	var spawn_pos: Vector2 = spawn_selector.calculate_spawn_position(
-		main_game.player.global_position,
-		main_game.player.velocity
-	)
-	spawn_next_satellite(spawn_pos)
+	var player_pos: Vector2 = main_game.player.global_position
+	var host_ctrl: Node = _get_cosmos_controller()
+	var selected_slot: CosmosOrbitSlotScript = null
+	var spawn_pos: Vector2 = Vector2.ZERO
+
+	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
+		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 14000.0)
+		if not slots.is_empty():
+			selected_slot = slots[0] as CosmosOrbitSlotScript
+			var cam: Camera2D = main_game.camera if "camera" in main_game else null
+			var t_global: float = 0.0
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			if root_node != null and is_instance_valid(root_node):
+				t_global = root_node.get_global_time()
+			spawn_pos = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
+
+	if selected_slot == null:
+		spawn_pos = spawn_selector.calculate_spawn_position(
+			player_pos,
+			main_game.player.velocity
+		)
+
+	spawn_next_satellite(spawn_pos, selected_slot)
 
 
-func spawn_next_satellite(target_pos: Vector2) -> void:
+func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> void:
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
 
@@ -187,7 +206,7 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 		station.global_position = target_pos
 		station.station_activated.connect(_on_transmutation_activated)
 		station.station_depleted.connect(func(): _on_satellite_exited(current_satellite_idx))
-		_try_bind_orbital_follower(station, target_pos)
+		_apply_orbital_binding(station, target_pos, bound_slot)
 	else:
 		var beacon: SatelliteBeacon = spawn_selector.instantiate_beacon(current_satellite_idx, get_plant_duration())
 		current_satellite = beacon
@@ -195,36 +214,49 @@ func spawn_next_satellite(target_pos: Vector2) -> void:
 		beacon.global_position = target_pos
 		beacon.planted.connect(_on_satellite_planted)
 		beacon.exited_perimeter.connect(_on_satellite_exited)
-		_try_bind_orbital_follower(beacon, target_pos)
+		_apply_orbital_binding(beacon, target_pos, bound_slot)
 
 	if main_game.hud and is_instance_valid(main_game.hud):
 		main_game.hud.set_active_satellite(target_pos, current_satellite_idx)
 
 
-func _try_bind_orbital_follower(target_entity: Node2D, candidate_pos: Vector2) -> void:
-	if not main_game or not is_instance_valid(target_entity):
-		return
-
+func _get_cosmos_controller() -> Node:
+	if not main_game:
+		return null
 	var env_host: Node = main_game.get_node_or_null("SpaceEnvironmentHost")
 	if not env_host and main_game.has_node("SpaceBackground"):
 		env_host = main_game.get_node("SpaceBackground")
 
-	var host_ctrl: Node = null
 	if env_host != null and env_host.has_method("get_cosmos_controller"):
-		host_ctrl = env_host.call("get_cosmos_controller")
+		return env_host.call("get_cosmos_controller")
 	elif env_host != null and env_host.has_method("get_host_controller"):
-		host_ctrl = env_host.call("get_host_controller")
+		return env_host.call("get_host_controller")
+	return null
 
-	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
+
+func _apply_orbital_binding(target_entity: Node2D, candidate_pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> void:
+	if not main_game or not is_instance_valid(target_entity):
+		return
+
+	var host_ctrl: Node = _get_cosmos_controller()
+	var slot_to_bind: CosmosOrbitSlotScript = bound_slot
+
+	if slot_to_bind == null and host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
 		var slots: Array = host_ctrl.call("get_planet_orbit_slots", candidate_pos, 7000.0)
 		if not slots.is_empty():
-			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
-			var follower := OrbitalWorldFollower2DScript.new()
-			follower.name = "OrbitalWorldFollower2D"
-			target_entity.add_child(follower)
-			var cam: Camera2D = main_game.camera if "camera" in main_game else null
-			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-			follower.setup_orbital_binding(slot, cam, root_node)
+			slot_to_bind = slots[0] as CosmosOrbitSlotScript
+
+	if slot_to_bind != null and host_ctrl != null:
+		var follower := OrbitalWorldFollower2DScript.new()
+		follower.name = "OrbitalWorldFollower2D"
+		target_entity.add_child(follower)
+		var cam: Camera2D = main_game.camera if "camera" in main_game else null
+		var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+		follower.setup_orbital_binding(slot_to_bind, cam, root_node)
+
+
+func _try_bind_orbital_follower(target_entity: Node2D, candidate_pos: Vector2) -> void:
+	_apply_orbital_binding(target_entity, candidate_pos, null)
 
 
 func spawn_specific_satellite(target_pos: Vector2) -> void:

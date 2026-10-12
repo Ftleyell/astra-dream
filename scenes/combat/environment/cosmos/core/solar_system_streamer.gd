@@ -59,6 +59,18 @@ func _ready() -> void:
 func _initialize_macro_grid() -> void:
 	_macro_grid = CosmosMacroGrid.new(cell_size, run_seed)
 
+## Reconfigura la semilla procedural determinista y regenera el grid
+func set_run_seed(p_seed: int) -> void:
+	if run_seed == p_seed and _macro_grid != null:
+		return
+	run_seed = p_seed
+	_initialize_macro_grid()
+	for cell: Vector2i in _active_systems.keys():
+		var sys: CosmosSolarSystem2D = _active_systems[cell]
+		sys.visible = false
+		_pool.append(sys)
+	_active_systems.clear()
+
 func _initialize_system_pool() -> void:
 	for i: int in range(pool_size):
 		var sys: CosmosSolarSystem2D = CosmosSolarSystem2D.new()

@@ -93,6 +93,19 @@ func _ready() -> void:
 func _initialize_macro_grid() -> void:
 	_macro_grid = CosmosMacroGrid.new(cell_size, run_seed)
 
+## Reconfigura la semilla procedural determinista y resetea los chunks
+func set_run_seed(p_seed: int) -> void:
+	if run_seed == p_seed and _macro_grid != null:
+		return
+	run_seed = p_seed
+	_initialize_macro_grid()
+	for cell: Vector2i in _active_chunks.keys():
+		var chunk: DebrisCellChunk = _active_chunks[cell]
+		chunk.root.visible = false
+		chunk.is_active = false
+		_pool.append(chunk)
+	_active_chunks.clear()
+
 ## Carga los metadatos de los recursos AtlasTexture y los clasifica en estratos de tamaño
 func _load_atlas_metadata() -> void:
 	_rock_micro.clear()

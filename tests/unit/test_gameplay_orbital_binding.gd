@@ -30,6 +30,7 @@ func _run_suite() -> void:
 	_test_world_projection_formula()
 	_test_orbital_world_follower_behavior()
 	_test_zero_drift_long_term_orbit()
+	_test_spawner_orbital_direct_projection()
 	_teardown_test_scene()
 	pass_suite("TestGameplayOrbitalBinding completado exitosamente (100% PASS).")
 
@@ -171,3 +172,25 @@ func _test_zero_drift_long_term_orbit() -> void:
 	assert_true(absf(pos_t0.y - pos_1cycle.y) <= 0.01, "La posición tras 1 ciclo no debe tener deriva.")
 	assert_true(absf(pos_t0.x - pos_100cycles.x) <= 0.02, "La posición tras 100 ciclos no debe tener deriva analítica.")
 	assert_true(absf(pos_t0.y - pos_100cycles.y) <= 0.02, "La posición tras 100 ciclos no debe tener deriva analítica.")
+
+func _test_spawner_orbital_direct_projection() -> void:
+	var tracker: CosmosOrbitalSlotTracker = _host_controller.get_slot_tracker()
+	var slots: Array[CosmosOrbitSlot] = tracker.get_star_orbit_slots(Vector2.ZERO, 30000.0)
+	assert_true(not slots.is_empty(), "Tracker debe proveer slots de estrella.")
+
+	var slot: CosmosOrbitSlot = slots[0]
+	var cam: Camera2D = _camera
+	var t0: float = _cosmos_root.get_global_time()
+	var projected_pos: Vector2 = CosmosOrbitalSlotTracker.project_slot_to_world(slot, t0, cam)
+
+	var dummy_planet := Node2D.new()
+	dummy_planet.name = "DummyOrbitBoundPlanet"
+	_scene_root.add_child(dummy_planet)
+	dummy_planet.global_position = projected_pos
+
+	var follower := OrbitalWorldFollower2D.new()
+	dummy_planet.add_child(follower)
+	follower.setup_orbital_binding(slot, cam, _cosmos_root)
+
+	assert_true(dummy_planet.global_position.distance_to(projected_pos) <= 0.05, "La entidad spawnada directamente en el slot proyectado debe conservar su posición orbital sin saltos.")
+	dummy_planet.queue_free()

@@ -140,6 +140,76 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 			)
 			results.append(slot)
 
+	# Si active_systems no tiene ningún planeta en frustum, derivar slots analíticos deterministas desde el macro-grid
+	if results.is_empty() and streamer.get_macro_grid() != null:
+		var grid: CosmosMacroGrid = streamer.get_macro_grid()
+		var center_cell: Vector2i = grid.world_to_grid_coords(target_layer_pos)
+		var p_cfg: CosmosPlanetarySystemConfig = streamer.system_profile.get_effective_planetary_config() if streamer.system_profile != null else null
+		var base_vel: float = streamer.system_profile.base_angular_velocity if streamer.system_profile != null else 0.05
+		var eff_min_r: float = p_cfg.orbit_radius_min if p_cfg != null else 1200.0
+		var eff_max_r: float = p_cfg.orbit_radius_max if p_cfg != null else 3500.0
+		var eff_spacing: float = p_cfg.min_orbital_spacing if p_cfg != null else 400.0
+
+		for ox: int in range(-1, 2):
+			for oy: int in range(-1, 2):
+				var cell: Vector2i = center_cell + Vector2i(ox, oy)
+				var sys_pos: Vector2 = streamer.get_system_position_for_cell(cell)
+				if sys_pos.distance_to(target_layer_pos) <= ((search_radius + 4000.0) * scroll_scale.x):
+					var cell_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 777)
+					var num_planets: int = p_cfg.min_planets if p_cfg != null else 3
+					var planet_count_range: int = (p_cfg.max_planets - p_cfg.min_planets) if p_cfg != null else 2
+					if planet_count_range > 0:
+						var planet_rnd: float = CosmosHasher.hash_2d_float(cell_seed, 202, 22)
+						num_planets += int(planet_rnd * float(planet_count_range + 1))
+					num_planets = maxi(num_planets, 1)
+
+					var base_sys_theta: float = CosmosHasher.hash_2d_float(cell_seed, 505, 55) * TAU
+					var theta_step: float = TAU / float(num_planets)
+					var prev_r: float = 0.0
+
+					for p_idx: int in range(num_planets):
+						var p_seed: int = cell_seed + ((p_idx + 1) * 733)
+						var t_norm: float = float(p_idx) / float(maxi(num_planets - 1, 1))
+						var exp_curve: float = pow(t_norm, 1.15)
+						var ideal_r: float = lerpf(eff_min_r, eff_max_r, exp_curve)
+						var r_jit: float = (CosmosHasher.hash_2d_float(p_seed, 303, 33) - 0.5) * (eff_spacing * 0.35)
+						var actual_r: float = ideal_r + r_jit
+						if p_idx > 0:
+							actual_r = maxf(actual_r, prev_r + eff_spacing)
+						prev_r = actual_r
+
+						var dir_sign: float = 1.0 if CosmosHasher.hash_2d_float(p_seed, 404, 44) > 0.1 else -1.0
+						var p_ang_vel: float = CosmosKeplerOrbitMath.calculate_keplerian_angular_velocity(base_vel, eff_min_r, actual_r, dir_sign)
+						var p_init_theta: float = fposmod(base_sys_theta + (float(p_idx) * theta_step), TAU)
+
+						# Posición instantánea inicial del planeta respecto al centro del sistema
+						var rel_planet_pos: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(actual_r, p_init_theta, p_ang_vel, 0.0)
+						var planet_layer_pos: Vector2 = sys_pos + rel_planet_pos
+
+						var vis_radius: float = 130.0
+						var orbit_dist: float = vis_radius * 2.2
+						var sat_ang_vel: float = base_vel * 3.5
+						var sat_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 444 + p_idx)
+						var init_sat_theta: float = CosmosHasher.hash_2d_float(sat_seed, 202, 22) * TAU
+
+						var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
+							CosmosOrbitSlot.SlotCenterType.PLANET,
+							cell,
+							planet_layer_pos,
+							orbit_dist,
+							sat_ang_vel,
+							init_sat_theta,
+							null,
+							StringName("PlanetOrbitSlot_%d_%d_%d" % [cell.x, cell.y, p_idx]),
+							scroll_scale
+						)
+						results.append(slot)
+
+					if not results.is_empty():
+						break
+			if not results.is_empty():
+				break
+
 	return results
 
 ## Proyecta un slot analítico a coordenadas del mundo de GameplayWorld considerando la cámara actual.

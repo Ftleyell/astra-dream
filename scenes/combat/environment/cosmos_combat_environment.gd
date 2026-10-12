@@ -26,12 +26,30 @@ const WAVE_BIOME_MAP: Dictionary[int, StringName] = {
 	21: &"bootes_void"      # Oleadas 21+: vacío cósmico profundo
 }
 
+@export var enable_wave_biome_transitions: bool = false
+@export var randomize_seed_on_ready: bool = true
+
 var _camera_ref: Camera2D = null
 var _player_ref: CharacterBody2D = null
 
 
 func _ready() -> void:
 	_ensure_components()
+	if randomize_seed_on_ready:
+		randomize_environment_seed()
+
+
+## Genera y aplica una nueva semilla procedural para la partida actual
+func randomize_environment_seed() -> int:
+	var new_seed: int = int(randi()) & 0x7FFFFFFF
+	set_environment_seed(new_seed)
+	return new_seed
+
+
+## Aplica una semilla específica a los subsistemas cósmicos
+func set_environment_seed(p_seed: int) -> void:
+	if cosmos_root != null and is_instance_valid(cosmos_root):
+		cosmos_root.set_run_seed(p_seed)
 
 
 func _ensure_components() -> void:
@@ -91,11 +109,12 @@ func set_player_reference(p_player: CharacterBody2D) -> void:
 
 
 func notify_wave_started(wave_idx: int) -> void:
-	_apply_wave_biome_transition(wave_idx)
+	if enable_wave_biome_transitions:
+		_apply_wave_biome_transition(wave_idx)
 
 
 func _apply_wave_biome_transition(wave_idx: int) -> void:
-	if host_controller == null or not is_instance_valid(host_controller):
+	if not enable_wave_biome_transitions or host_controller == null or not is_instance_valid(host_controller):
 		return
 
 	var target_region: StringName = &""

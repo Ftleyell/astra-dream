@@ -34,12 +34,14 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 
 ---
 
-## 🧪 Zona de Prototipado y Experimentos
-- `sandbox/`: Área experimental de **Cosmos Engine** (arquitectura 100% modular y data-driven: `PlanetaryShadowProjector2D`, `KeplerOrbitMath`, 6 biomas curados, 5 arquetipos estelares, estratos Parallax2D, Kepler solver, floating origin, streaming determinista y benchmark de 60 FPS).
-  - **Regla Estricta del Subsistema:** [`.agents/rules/cosmos_engine.md`](.agents/rules/cosmos_engine.md) (consultar siempre para mapeo directo parámetro $\to$ `.tres`; prohibido explorar orquestadores o scripts `.gd` para ajustes visuales/balance).
-  - **Guía de Ajuste Rápido y Ahorro de Tokens:** [`docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md`](docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md).
-  - **Plan de Refactor & Promoción:** [`docs/sandbox/PLAN_REFACTOR_COSMOS_ENGINE.md`](docs/sandbox/PLAN_REFACTOR_COSMOS_ENGINE.md) y [`docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md`](docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md).
-  - **Restricción:** No debe ser importada por escenas o sistemas del runtime de producción (`scenes/`, `core/`) hasta la fase formal de migración.
+## 🌌 Cosmos Engine en Producción (Entorno Espacial de MainGame)
+- **Estado:** 100% Promovido a producción bajo [`scenes/combat/environment/cosmos/`](scenes/combat/environment/cosmos/). Enlazado como entorno por defecto en MainGame a través de [`SpaceEnvironmentHost`](scenes/combat/environment/space_environment_host.gd) y [`CosmosCombatEnvironment`](scenes/combat/environment/cosmos_combat_environment.gd).
+- **Controlador y Fachada:** [`CosmosHostController`](scenes/combat/environment/cosmos/core/cosmos_host_controller.gd) arbitra hit-stops, pausas (`PauseArbitrator`), biomas por oleada (`WAVE_BIOME_MAP`) e inyección narrativa de POIs celestiales.
+- **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
+  - **Prohibido abrir o reescribir scripts orquestadores `.gd`** para balances estéticos o ajustes numéricos.
+  - Para ajustar cualquier aspecto visual o de balance (soles, sombras, órbitas, escombros, nebulosas, galaxias), editar **directamente** los `.tres` en [`scenes/combat/environment/cosmos/resources/data/`](scenes/combat/environment/cosmos/resources/data/) consultando [`.agents/rules/cosmos_engine.md`](.agents/rules/cosmos_engine.md).
+  - Verificación aislada ultra-rápida (2 seg): `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_space_environment_integration.tscn"`.
+- `sandbox/`: Permanece como banco de pruebas y playground experimental aislado de I+D.
 
 ---
 
