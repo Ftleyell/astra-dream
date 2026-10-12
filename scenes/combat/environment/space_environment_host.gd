@@ -9,7 +9,7 @@ extends CombatSubsystem
 
 const BaseSpaceEnvironmentScript = preload("res://scenes/combat/environment/base_space_environment.gd")
 
-@export var default_environment_scene: PackedScene = preload("res://scenes/combat/environment/space_background.tscn")
+@export var default_environment_scene: PackedScene = preload("res://scenes/combat/environment/cosmos_combat_environment.tscn")
 @export var custom_environment_scene: PackedScene = null
 
 var active_environment: Node2D = null
