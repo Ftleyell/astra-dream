@@ -222,6 +222,12 @@ func set_active_satellite(pos: Vector2, index: int) -> void:
 		_edge_tracker_mgr.track_satellite(pos, index, player)
 	show_satellite_banner(index)
 
+func update_active_satellite_position(pos: Vector2) -> void:
+	if _radar_ctrl:
+		_radar_ctrl.active_satellite_pos = pos
+	if _edge_tracker_mgr:
+		_edge_tracker_mgr.update_satellite_position(pos)
+
 func show_satellite_banner(index: int) -> void:
 	if _banner_mgr:
 		_banner_mgr.show_satellite_banner(index, self)

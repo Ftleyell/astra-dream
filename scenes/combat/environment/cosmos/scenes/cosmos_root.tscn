@@ -122,7 +122,7 @@ mouse_filter = 2
 script = ExtResource("15_starfield_ctrl")
 
 [node name="ParallaxSolarSystems" type="Parallax2D" parent="." unique_id=1236841986]
-scroll_scale = Vector2(0.25, 0.25)
+scroll_scale = Vector2(1.0, 1.0)
 
 [node name="CosmosSolarSystemStreamer" type="Node2D" parent="ParallaxSolarSystems" unique_id=1337944796 node_paths=PackedStringArray("parallax_layer")]
 script = ExtResource("8_solar_streamer")

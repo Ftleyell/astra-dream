@@ -30,6 +30,13 @@ func _ready() -> void:
 	assert(main_game.player != null, "Player debe existir en MainGame")
 	assert(main_game.space_object_spawner != null, "SpaceObjectSpawner debe estar inicializado")
 	assert(main_game.boss_coordinator != null, "CombatBossCoordinator debe estar inicializado")
+	if main_game.skip_badge_layer and main_game.skip_badge_layer.has_method("_execute_skip"):
+		main_game.skip_badge_layer._execute_skip()
+	Dialogic.end_timeline(true)
+	main_game.is_briefing_active = false
+	PauseArbitrator.force_unpause_all()
+	get_tree().paused = false
+	await get_tree().process_frame
 	print("  ✓ MainGame y coordinadores modulares inicializados")
 
 	# 3. Validar Invocación y Pausa de IngameDebugModal

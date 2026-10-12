@@ -254,10 +254,12 @@ func _setup_floating_origin() -> void:
 func _bind_camera_to_streamers() -> void:
 	if camera == null:
 		return
+	_sync_poi_registry()
 	if galaxy_streamer != null and galaxy_streamer.camera == null:
 		galaxy_streamer.camera = camera
 	if solar_streamer != null and solar_streamer.camera == null:
 		solar_streamer.camera = camera
+		solar_streamer._update_streaming_and_orbits(_global_time)
 	if debris_streamer != null:
 		if debris_streamer.camera == null:
 			debris_streamer.camera = camera
@@ -269,7 +271,6 @@ func _bind_camera_to_streamers() -> void:
 		var star_ctrl: CosmosStarfieldBackdropController = parallax_starfield_8k as CosmosStarfieldBackdropController
 		if star_ctrl.camera == null:
 			star_ctrl.camera = camera
-	_sync_poi_registry()
 
 func _on_viewport_updated(center_world_pos: Vector2, zoom: Vector2, _rotation_rad: float) -> void:
 	if solar_streamer != null:

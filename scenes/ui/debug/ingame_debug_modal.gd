@@ -50,6 +50,7 @@ signal modal_closed()
 @onready var god_mode_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/GodModeCheck") as CheckBox
 @onready var inf_credits_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/InfCreditsCheck") as CheckBox
 @onready var inf_bombs_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/InfBombsCheck") as CheckBox
+@onready var uncap_zoom_check: CheckBox = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/UncapZoomCheck") as CheckBox
 @onready var restore_hp_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/RestoreHpBtn") as Button
 @onready var add_bombs_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/CheatsGrid/AddBombsBtn") as Button
 @onready var speed_1x_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/CheatsContent/SpeedRow/Speed1xBtn") as Button
@@ -314,6 +315,14 @@ func _setup_cheats_tab() -> void:
 		)
 		UIFocusHelper.apply_cyber_focus(inf_bombs_check)
 
+	if uncap_zoom_check:
+		uncap_zoom_check.toggled.connect(func(val: bool):
+			if main_game and main_game.get("camera") and main_game.camera is GameCamera2D:
+				main_game.camera.uncap_zoom = val
+			_set_feedback("Zoom Ilimitado: " + ("ACTIVO (Rueda para alejar hasta 0.05x)" if val else "INACTIVO"))
+		)
+		UIFocusHelper.apply_cyber_focus(uncap_zoom_check)
+
 	if restore_hp_btn:
 		restore_hp_btn.pressed.connect(func():
 			if main_game and is_instance_valid(main_game.get("player")):
@@ -350,6 +359,8 @@ func _sync_toggles_with_state() -> void:
 	if god_mode_check: god_mode_check.set_pressed_no_signal(DebugManager.infinite_hp)
 	if inf_credits_check: inf_credits_check.set_pressed_no_signal(DebugManager.infinite_credits)
 	if inf_bombs_check: inf_bombs_check.set_pressed_no_signal(DebugManager.infinite_consumables)
+	if uncap_zoom_check and main_game and main_game.get("camera") and main_game.camera is GameCamera2D:
+		uncap_zoom_check.set_pressed_no_signal(main_game.camera.uncap_zoom)
 
 
 func _populate_stats_sliders() -> void:

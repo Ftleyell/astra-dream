@@ -53,7 +53,7 @@ func _connect_cosmos_streamer() -> void:
 			var active_systems: Dictionary = host_ctrl.call("get_active_solar_systems")
 			for cell: Vector2i in active_systems.keys():
 				var sys: Node = active_systems[cell]
-				var tracker: CosmosOrbitalSlotTracker = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
+				var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
 				if tracker != null:
 					var slots_dict: Dictionary = tracker.get_slots_for_system(sys, cell)
 					var star_slot: CosmosOrbitSlotScript = slots_dict.get("star_slot")
@@ -74,7 +74,7 @@ func _on_solar_system_streamed(_system: Node, cell: Vector2i, star_slot: CosmosO
 	var root_node: CosmosRootNode = host_ctrl.cosmos_root if (host_ctrl != null and "cosmos_root" in host_ctrl) else null
 	var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
 	var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(star_slot, t_global, cam)
-	if _is_position_valid_for_planet(slot_world_pos):
+	if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
 		spawned_system_cells[cell] = true
 		_instantiate_planet_at(slot_world_pos, star_slot)
 
@@ -83,18 +83,19 @@ func _spawn_initial_test_planet() -> void:
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else Vector2(960, 540)
 	var host_ctrl: Node = _get_cosmos_controller()
-	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_star_orbit_slots", center, 24000.0)
-		if not slots.is_empty():
-			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
-			var cam: Camera2D = _get_camera()
-			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
-			var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
-			if _is_position_valid_for_planet(slot_world_pos):
-				spawned_system_cells[slot.orbit_center_cell] = true
-				_instantiate_planet_at(slot_world_pos, slot)
-				return
+	if host_ctrl != null:
+		if host_ctrl.has_method("get_star_orbit_slots"):
+			var slots: Array = host_ctrl.call("get_star_orbit_slots", center, 24000.0)
+			if not slots.is_empty():
+				var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
+				var cam: Camera2D = _get_camera()
+				var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+				var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+				var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+				if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
+					spawned_system_cells[slot.orbit_center_cell] = true
+					_instantiate_planet_at(slot_world_pos, slot)
+					return
 		# Si hay Cosmos Engine presente pero aún no hay estrellas disponibles, esperar al streaming
 		return
 
@@ -158,7 +159,7 @@ func _spawn_planet_ahead() -> bool:
 				if spawned_system_cells.has(slot.orbit_center_cell):
 					continue
 				var projected_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
-				if _is_position_valid_for_planet(projected_pos):
+				if _is_position_valid_for_planet(projected_pos, -1.0, true):
 					spawned_system_cells[slot.orbit_center_cell] = true
 					_instantiate_planet_at(projected_pos, slot)
 					return true
@@ -205,7 +206,7 @@ func _spawn_planet_ahead() -> bool:
 	return false
 
 
-func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0) -> bool:
+func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0, is_orbital_slot: bool = false) -> bool:
 	var check_dist: float = min_planet_distance if min_dist <= 0.0 else min_dist
 	var check_dist_sq: float = check_dist * check_dist
 
@@ -219,7 +220,8 @@ func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0) -> bool
 					return false
 
 		var group_satellites := tree.get_nodes_in_group("satellites")
-		var min_sat_dist: float = env_config.station_min_distance_to_planet if is_instance_valid(env_config) else 2500.0
+		var default_sat_dist: float = env_config.station_min_distance_to_planet if is_instance_valid(env_config) else 2500.0
+		var min_sat_dist: float = 450.0 if is_orbital_slot else default_sat_dist
 		var min_sat_sq: float = min_sat_dist * min_sat_dist
 		for sat in group_satellites:
 			if is_instance_valid(sat) and sat is Node2D and not sat.is_queued_for_deletion():

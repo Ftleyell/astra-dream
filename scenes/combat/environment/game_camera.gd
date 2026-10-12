@@ -10,6 +10,7 @@ extends Camera2D
 @export var max_zoom: float = 2.0
 @export var zoom_step: float = 0.1
 @export var zoom_smooth_speed: float = 10.0
+@export var uncap_zoom: bool = false
 
 var trauma: float = 0.0
 var focus_override: Node2D = null
@@ -38,11 +39,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if main_game and main_game.has_method("is_any_combat_modal_active") and main_game.is_any_combat_modal_active():
 		return
 
+	var effective_min: float = 0.05 if uncap_zoom else min_zoom
+	var effective_max: float = 5.0 if uncap_zoom else max_zoom
+	var effective_step: float = (target_zoom * 0.15) if (uncap_zoom and target_zoom < 0.8) else zoom_step
+
 	if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-		target_zoom = clampf(target_zoom + zoom_step, min_zoom, max_zoom)
+		target_zoom = clampf(target_zoom + effective_step, effective_min, effective_max)
 		get_viewport().set_input_as_handled()
 	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-		target_zoom = clampf(target_zoom - zoom_step, min_zoom, max_zoom)
+		target_zoom = clampf(target_zoom - effective_step, effective_min, effective_max)
 		get_viewport().set_input_as_handled()
 	elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 		target_zoom = 1.0

@@ -175,6 +175,8 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 ## Calcula la posición analítica del sistema estelar dentro de la celda,
 ## acotando el jitter de forma adaptativa para garantizar que las órbitas jamás crucen el margen periférico (cell_boundary_padding).
 func get_system_position_for_cell(cell_coords: Vector2i) -> Vector2:
+	if cell_coords == Vector2i.ZERO:
+		return Vector2(2100.0, 540.0)
 	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell_coords)
 	var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(cell_coords.x, cell_coords.y, 777)
 	var poi_override: CosmicPoiConfig = poi_registry.get_poi(cell_coords) if (poi_registry != null and poi_registry.has_poi(cell_coords)) else null

@@ -20,7 +20,11 @@ var skip_badge_layer: CanvasLayer = null
 var active_navigator_controller: Node = null
 var audio_duck_manager: Node = null
 
-var is_briefing_active: bool = false
+var is_briefing_active: bool = false:
+	set(val):
+		is_briefing_active = val
+		if not val:
+			PauseArbitrator.release_pause(&"briefing")
 var is_cockpit_active: bool = false
 var is_boss_transmission_active: bool = false
 var is_rival_cinematic_active: bool = false
@@ -118,6 +122,8 @@ leave --All--
 		if backdrop and backdrop.has_method("fade_in"):
 			backdrop.fade_in(0.2)
 			await get_tree().create_timer(0.2, true, false, true).timeout
+			if not is_briefing_active or not is_inside_tree():
+				return
 
 		var tl := DialogicTimeline.new()
 		tl.from_text(dtl_text)

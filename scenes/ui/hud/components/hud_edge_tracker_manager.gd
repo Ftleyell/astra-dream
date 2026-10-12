@@ -40,6 +40,10 @@ func track_satellite(target_pos: Vector2, index: int, player: Player = null) -> 
 			satellite_tracker.set_player(player)
 		satellite_tracker.set_target(target_pos, index)
 
+func update_satellite_position(target_pos: Vector2) -> void:
+	if is_instance_valid(satellite_tracker):
+		satellite_tracker.active_satellite_pos = target_pos
+
 func clear_satellite_tracking() -> void:
 	if is_instance_valid(satellite_tracker):
 		satellite_tracker.clear_target()

@@ -13,6 +13,7 @@ const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/
 
 const BASE_SPAWN_DISTANCE: float = 1200.0
 const DISTANCE_INCREMENT_PER_SAT: float = 400.0
+const ABANDON_RELOCATE_DISTANCE: float = 12000.0
 
 var odometer: RefCounted = null
 var spawn_selector: RefCounted = null
@@ -101,7 +102,7 @@ func _connect_cosmos_streamer() -> void:
 			var active_systems: Dictionary = host_ctrl.call("get_active_solar_systems")
 			for cell: Vector2i in active_systems.keys():
 				var sys: Node = active_systems[cell]
-				var tracker: CosmosOrbitalSlotTracker = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
+				var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
 				if tracker != null:
 					var slots_dict: Dictionary = tracker.get_slots_for_system(sys, cell)
 					var planet_slots: Array = slots_dict.get("planet_slots", [])
@@ -141,6 +142,17 @@ func get_required_distance_for_next_sat() -> float:
 	return odometer.get_required_distance()
 
 
+func _is_current_satellite_completed() -> bool:
+	if not is_instance_valid(current_satellite):
+		return true
+	if current_satellite is SatelliteBeacon:
+		return (current_satellite as SatelliteBeacon).is_planted
+	if current_satellite is TransmutationStation:
+		var station: TransmutationStation = current_satellite as TransmutationStation
+		return station.is_depleted or station.uses_remaining <= 0
+	return false
+
+
 func _is_player_interacting_with_satellite() -> bool:
 	if not is_instance_valid(current_satellite) or not main_game or not is_instance_valid(main_game.player):
 		return false
@@ -148,9 +160,12 @@ func _is_player_interacting_with_satellite() -> bool:
 	var p_pos: Vector2 = main_game.player.global_position
 	var sat_pos: Vector2 = current_satellite.global_position
 	var dist_to_sat: float = p_pos.distance_to(sat_pos)
+	var is_in_perimeter: bool = ("player_inside" in current_satellite and current_satellite.player_inside)
+
+	if _is_current_satellite_completed():
+		return is_in_perimeter or dist_to_sat < 450.0
 
 	var is_near: bool = dist_to_sat < 1200.0
-	var is_in_perimeter: bool = ("player_inside" in current_satellite and current_satellite.player_inside)
 	var is_charging: bool = current_satellite.has_method("is_station_charging") and current_satellite.is_station_charging()
 	var is_busy: bool = current_satellite.has_method("is_station_busy") and current_satellite.is_station_busy()
 	var is_ready_sat: bool = current_satellite.has_method("is_station_ready") and current_satellite.is_station_ready()
@@ -168,12 +183,37 @@ func update_satellite_lifecycle() -> void:
 	if not main_game or not is_instance_valid(main_game.player):
 		return
 
+	var p_pos: Vector2 = main_game.player.global_position
 	var is_interacting: bool = _is_player_interacting_with_satellite()
+	var should_freeze_odometer: bool = is_interacting
+
 	if is_instance_valid(current_satellite):
+		var sat_pos: Vector2 = current_satellite.global_position
+		var dist_to_sat: float = p_pos.distance_to(sat_pos)
+		var is_in_perimeter: bool = ("player_inside" in current_satellite and current_satellite.player_inside)
+		var is_charging: bool = current_satellite.has_method("is_station_charging") and current_satellite.is_station_charging()
+		var is_busy: bool = current_satellite.has_method("is_station_busy") and current_satellite.is_station_busy()
+		if not current_satellite.has_method("is_station_charging") and "current_charge" in current_satellite:
+			is_charging = current_satellite.current_charge > 0.0
+		if not current_satellite.has_method("is_station_busy") and "is_processing" in current_satellite:
+			is_busy = current_satellite.is_processing or ("active_reward_chest" in current_satellite and is_instance_valid(current_satellite.active_reward_chest))
+
 		var follower: Node = current_satellite.get_node_or_null("OrbitalWorldFollower2D")
 		if follower != null and "freeze_parallax_drag" in follower:
-			follower.freeze_parallax_drag = is_interacting
-	odometer.update(main_game.player.global_position, is_interacting)
+			follower.freeze_parallax_drag = (dist_to_sat < 450.0 or is_in_perimeter or is_charging or is_busy)
+
+		if not _is_current_satellite_completed() and dist_to_sat < ABANDON_RELOCATE_DISTANCE:
+			should_freeze_odometer = true
+
+		if main_game.hud and is_instance_valid(main_game.hud) and main_game.hud.has_method("update_active_satellite_position"):
+			var edge_mgr: HUDEdgeTrackerManager = main_game.hud.get("_edge_tracker_mgr") as HUDEdgeTrackerManager
+			if edge_mgr and is_instance_valid(edge_mgr.satellite_tracker):
+				if edge_mgr.satellite_tracker.has_satellite and edge_mgr.satellite_tracker.satellite_index == current_satellite_idx:
+					main_game.hud.update_active_satellite_position(current_satellite.global_position)
+			else:
+				main_game.hud.update_active_satellite_position(current_satellite.global_position)
+
+	odometer.update(p_pos, should_freeze_odometer)
 
 
 func _on_odometer_distance_updated(current_dist: float, req_dist: float) -> void:
@@ -239,9 +279,8 @@ func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript
 		return
 
 	if current_satellite and is_instance_valid(current_satellite):
-		if current_satellite is TransmutationStation:
-			var station := current_satellite as TransmutationStation
-			if not station.is_depleted and station.uses_remaining > 0:
+		if not _is_current_satellite_completed():
+			if is_instance_valid(main_game.player) and main_game.player.global_position.distance_to(current_satellite.global_position) < ABANDON_RELOCATE_DISTANCE:
 				return
 		current_satellite.queue_free()
 

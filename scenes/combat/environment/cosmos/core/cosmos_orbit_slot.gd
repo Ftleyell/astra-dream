@@ -44,14 +44,10 @@ func _init(
 ## Evalúa la posición analítica local en la capa cósmica en el instante t_global
 func calculate_layer_position(global_time: float) -> Vector2:
 	if is_instance_valid(body_reference):
-		if center_type == SlotCenterType.STAR:
-			# Para slots que orbitan estrellas de fondo
-			var rel_pos: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(orbit_radius, initial_phase, angular_velocity, global_time)
-			return body_reference.global_position + rel_pos
-		elif center_type == SlotCenterType.PLANET:
-			# Para slots que orbitan un planeta de fondo
-			var rel_pos: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(orbit_radius, initial_phase, angular_velocity, global_time)
-			return body_reference.global_position + rel_pos
+		var rel_pos: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(orbit_radius, initial_phase, angular_velocity, global_time)
+		var parent_node: Node = body_reference.get_parent()
+		var parent_pos: Vector2 = (parent_node as Node2D).position if parent_node is Node2D else Vector2.ZERO
+		return parent_pos + body_reference.position + rel_pos
 	
 	# Fallback puramente matemático si el nodo fue liberado o está fuera del pool
 	var rel_orbit: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(orbit_radius, initial_phase, angular_velocity, global_time)

@@ -19,6 +19,8 @@ var _target_node: Node2D = null
 var _camera_ref: Camera2D = null
 var _cosmos_root: CosmosRootNode = null
 var _internal_time: float = 0.0
+var _paused_time_offset: float = 0.0
+var _last_cosmos_time: float = -1.0
 
 func _ready() -> void:
 	if get_parent() is Node2D:
@@ -61,6 +63,7 @@ func _process(delta: float) -> void:
 
 func _update_position(delta: float) -> void:
 	if freeze_parallax_drag:
+		_paused_time_offset += delta
 		return
 
 	if _camera_ref == null or not is_instance_valid(_camera_ref):
@@ -68,10 +71,16 @@ func _update_position(delta: float) -> void:
 
 	var t_global: float = 0.0
 	if _cosmos_root != null and is_instance_valid(_cosmos_root):
-		t_global = _cosmos_root.get_global_time()
+		var root_time: float = _cosmos_root.get_global_time()
+		if is_equal_approx(root_time, _last_cosmos_time) and delta > 0.0:
+			_internal_time += delta
+		else:
+			_internal_time = 0.0
+			_last_cosmos_time = root_time
+		t_global = root_time + _internal_time
 	else:
 		_internal_time += delta
 		t_global = _internal_time
 
-	var new_world_pos: Vector2 = CosmosOrbitalSlotTracker.project_slot_to_world(slot, t_global, _camera_ref)
+	var new_world_pos: Vector2 = CosmosOrbitalSlotTracker.project_slot_to_world(slot, t_global - _paused_time_offset, _camera_ref)
 	_target_node.global_position = new_world_pos
