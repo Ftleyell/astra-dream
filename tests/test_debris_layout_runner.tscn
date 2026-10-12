@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ch0s5rj83t3xc"]
+
+[ext_resource type="Script" path="res://tests/test_debris_layout_generator.gd" id="1_test"]
+
+[node name="TestDebrisLayoutGeneratorRunner" type="Node"]
+script = ExtResource("1_test")

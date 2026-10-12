@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://c1vycig3muqd5"]
+
+[ext_resource type="Script" path="res://tests/sandbox/test_planetary_shadows.gd" id="1_test"]
+
+[node name="TestPlanetaryShadows" type="Node2D"]
+script = ExtResource("1_test")
+suite_name = "PlanetaryShadows"

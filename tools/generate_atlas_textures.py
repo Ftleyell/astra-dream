@@ -27,6 +27,7 @@ ATLAS_CONFIGS = [
 def generate_atlas_resources() -> None:
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     all_created = []
+    all_metadata = []
 
     for cfg in ATLAS_CONFIGS:
         img_path = cfg["image_file"]
@@ -77,15 +78,24 @@ def generate_atlas_resources() -> None:
                     f.write(tres_content)
 
                 all_created.append(f"res://assets/environments/parallax_space/atlas_textures/{filename}")
+                all_metadata.append({
+                    "path": f"res://assets/environments/parallax_space/atlas_textures/{filename}",
+                    "prefix": cfg["prefix"],
+                    "rect": [x1, y1, final_w, final_h]
+                })
                 count += 1
 
         print(f"[OK] Atlas {cfg['id']}: {count} recursos AtlasTexture generados.")
 
-    # Guardar un manifiesto en JSON para fácil acceso desde GDScript
-    manifest_path = os.path.join(OUTPUT_DIR, "debris_manifest.json")
+    # Guardar manifiesto de rutas y metadatos con rectángulos pre-extraídos (O(1) runtime)
     import json
+    manifest_path = os.path.join(OUTPUT_DIR, "debris_manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(all_created, f, indent=2)
+
+    metadata_path = os.path.join(OUTPUT_DIR, "debris_metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(all_metadata, f, indent=2)
 
     print(f"\n>>> Total generado: {len(all_created)} recursos AtlasTexture en '{OUTPUT_DIR}'. <<<")
 

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CosmosBiomeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmic_biome_config.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+biome_id = &"biome_hyperion_forge"
+display_name = "Forja de Hiperión"
+color_deep_space = Color(0.022, 0.01, 0.008, 1)
+color_gas_primary = Color(0.42, 0.16, 0.03, 0.9)
+color_gas_secondary = Color(0.45, 0.32, 0.06, 0.7)
+color_star_tint = Color(1, 0.88, 0.65, 1)
+noise_frequency = 0.00075
+noise_octaves = 4
+gas_density = 2.0
+gas_contrast = 2.3
+chromatic_aberration_strength = 0.003
+starfield_energy = 1.35

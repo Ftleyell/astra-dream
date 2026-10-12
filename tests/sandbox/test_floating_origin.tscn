@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b7v8w9x0y1z02"]
+
+[ext_resource type="Script" path="res://tests/sandbox/test_floating_origin.gd" id="1_tfo"]
+
+[node name="TestFloatingOrigin" type="Node"]
+script = ExtResource("1_tfo")

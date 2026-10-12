@@ -1,0 +1,1782 @@
+[
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_000.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1352,
+      1546,
+      51,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_001.tres",
+    "prefix": "debris_0",
+    "rect": [
+      706,
+      1509,
+      115,
+      86
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_002.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1547,
+      1505,
+      88,
+      76
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_003.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1191,
+      1464,
+      158,
+      103
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_004.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1620,
+      1427,
+      48,
+      54
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_005.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1306,
+      1407,
+      45,
+      46
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_006.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1536,
+      1384,
+      69,
+      68
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_007.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1177,
+      1380,
+      76,
+      90
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_008.tres",
+    "prefix": "debris_0",
+    "rect": [
+      922,
+      1375,
+      136,
+      119
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_009.tres",
+    "prefix": "debris_0",
+    "rect": [
+      781,
+      1373,
+      70,
+      54
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_010.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1274,
+      1347,
+      55,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_011.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1685,
+      1325,
+      48,
+      50
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_012.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1424,
+      1321,
+      84,
+      75
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_013.tres",
+    "prefix": "debris_0",
+    "rect": [
+      258,
+      1314,
+      125,
+      124
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_014.tres",
+    "prefix": "debris_0",
+    "rect": [
+      902,
+      1256,
+      63,
+      78
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_015.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1059,
+      1237,
+      253,
+      146
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_016.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1477,
+      1235,
+      94,
+      101
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_017.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1318,
+      1229,
+      64,
+      104
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_018.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1617,
+      1217,
+      86,
+      86
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_019.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1530,
+      1168,
+      79,
+      78
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_020.tres",
+    "prefix": "debris_0",
+    "rect": [
+      976,
+      1164,
+      182,
+      112
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_021.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1231,
+      1156,
+      64,
+      56
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_022.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1765,
+      1155,
+      50,
+      83
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_023.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1317,
+      1148,
+      103,
+      130
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_024.tres",
+    "prefix": "debris_0",
+    "rect": [
+      214,
+      1128,
+      80,
+      99
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_025.tres",
+    "prefix": "debris_0",
+    "rect": [
+      918,
+      1112,
+      123,
+      88
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_026.tres",
+    "prefix": "debris_0",
+    "rect": [
+      612,
+      1110,
+      47,
+      57
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_027.tres",
+    "prefix": "debris_0",
+    "rect": [
+      324,
+      1106,
+      86,
+      80
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_028.tres",
+    "prefix": "debris_0",
+    "rect": [
+      459,
+      1104,
+      432,
+      336
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_029.tres",
+    "prefix": "debris_0",
+    "rect": [
+      852,
+      1098,
+      59,
+      78
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_030.tres",
+    "prefix": "debris_0",
+    "rect": [
+      69,
+      1087,
+      88,
+      127
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_031.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1663,
+      1084,
+      58,
+      76
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_032.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1067,
+      1052,
+      98,
+      81
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_033.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1252,
+      1031,
+      59,
+      57
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_034.tres",
+    "prefix": "debris_0",
+    "rect": [
+      342,
+      1028,
+      78,
+      52
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_035.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1192,
+      1023,
+      56,
+      52
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_036.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1864,
+      991,
+      111,
+      97
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_037.tres",
+    "prefix": "debris_0",
+    "rect": [
+      737,
+      985,
+      52,
+      52
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_038.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1741,
+      953,
+      96,
+      147
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_039.tres",
+    "prefix": "debris_0",
+    "rect": [
+      918,
+      948,
+      165,
+      138
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_040.tres",
+    "prefix": "debris_0",
+    "rect": [
+      552,
+      939,
+      80,
+      59
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_041.tres",
+    "prefix": "debris_0",
+    "rect": [
+      156,
+      933,
+      147,
+      171
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_042.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1077,
+      922,
+      146,
+      131
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_043.tres",
+    "prefix": "debris_0",
+    "rect": [
+      795,
+      915,
+      116,
+      180
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_044.tres",
+    "prefix": "debris_0",
+    "rect": [
+      872,
+      893,
+      78,
+      94
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_045.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1781,
+      887,
+      95,
+      60
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_046.tres",
+    "prefix": "debris_0",
+    "rect": [
+      968,
+      884,
+      68,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_047.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1232,
+      864,
+      65,
+      61
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_048.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1046,
+      859,
+      84,
+      81
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_049.tres",
+    "prefix": "debris_0",
+    "rect": [
+      223,
+      850,
+      345,
+      350
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_050.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1317,
+      849,
+      400,
+      343
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_051.tres",
+    "prefix": "debris_0",
+    "rect": [
+      438,
+      848,
+      76,
+      51
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_052.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1338,
+      825,
+      56,
+      57
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_053.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1134,
+      820,
+      58,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_054.tres",
+    "prefix": "debris_0",
+    "rect": [
+      198,
+      819,
+      189,
+      50
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_055.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1669,
+      810,
+      46,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_056.tres",
+    "prefix": "debris_0",
+    "rect": [
+      973,
+      783,
+      93,
+      85
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_057.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1421,
+      768,
+      97,
+      63
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_058.tres",
+    "prefix": "debris_0",
+    "rect": [
+      320,
+      753,
+      49,
+      51
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_059.tres",
+    "prefix": "debris_0",
+    "rect": [
+      684,
+      749,
+      78,
+      88
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_060.tres",
+    "prefix": "debris_0",
+    "rect": [
+      494,
+      738,
+      162,
+      200
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_061.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1591,
+      730,
+      69,
+      57
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_062.tres",
+    "prefix": "debris_0",
+    "rect": [
+      393,
+      724,
+      54,
+      81
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_063.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1678,
+      700,
+      68,
+      54
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_064.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1105,
+      697,
+      160,
+      120
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_065.tres",
+    "prefix": "debris_0",
+    "rect": [
+      764,
+      689,
+      62,
+      88
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_066.tres",
+    "prefix": "debris_0",
+    "rect": [
+      692,
+      652,
+      374,
+      267
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_067.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1369,
+      649,
+      189,
+      160
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_068.tres",
+    "prefix": "debris_0",
+    "rect": [
+      606,
+      630,
+      44,
+      118
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_069.tres",
+    "prefix": "debris_0",
+    "rect": [
+      658,
+      623,
+      115,
+      70
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_070.tres",
+    "prefix": "debris_0",
+    "rect": [
+      409,
+      589,
+      216,
+      151
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_071.tres",
+    "prefix": "debris_0",
+    "rect": [
+      986,
+      586,
+      94,
+      58
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_072.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1105,
+      531,
+      66,
+      70
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_073.tres",
+    "prefix": "debris_0",
+    "rect": [
+      324,
+      526,
+      92,
+      90
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_074.tres",
+    "prefix": "debris_0",
+    "rect": [
+      781,
+      525,
+      115,
+      104
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_075.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1197,
+      518,
+      237,
+      188
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_076.tres",
+    "prefix": "debris_0",
+    "rect": [
+      670,
+      513,
+      49,
+      108
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_077.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1213,
+      490,
+      47,
+      44
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_078.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1557,
+      464,
+      159,
+      155
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_079.tres",
+    "prefix": "debris_0",
+    "rect": [
+      1431,
+      463,
+      57,
+      49
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_0_080.tres",
+    "prefix": "debris_0",
+    "rect": [
+      782,
+      389,
+      111,
+      98
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_000.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1658,
+      1869,
+      48,
+      49
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_001.tres",
+    "prefix": "debris_1",
+    "rect": [
+      268,
+      1860,
+      187,
+      58
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_002.tres",
+    "prefix": "debris_1",
+    "rect": [
+      560,
+      1852,
+      115,
+      79
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_003.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1859,
+      1850,
+      92,
+      82
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_004.tres",
+    "prefix": "debris_1",
+    "rect": [
+      66,
+      1838,
+      131,
+      110
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_005.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1386,
+      1836,
+      131,
+      122
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_006.tres",
+    "prefix": "debris_1",
+    "rect": [
+      774,
+      1793,
+      194,
+      199
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_007.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1071,
+      1780,
+      225,
+      222
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_008.tres",
+    "prefix": "debris_1",
+    "rect": [
+      597,
+      1621,
+      63,
+      61
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_009.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1090,
+      1620,
+      164,
+      70
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_010.tres",
+    "prefix": "debris_1",
+    "rect": [
+      827,
+      1614,
+      123,
+      67
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_011.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1648,
+      1613,
+      60,
+      77
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_012.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1394,
+      1612,
+      91,
+      67
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_013.tres",
+    "prefix": "debris_1",
+    "rect": [
+      61,
+      1607,
+      137,
+      122
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_014.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1848,
+      1603,
+      117,
+      102
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_015.tres",
+    "prefix": "debris_1",
+    "rect": [
+      308,
+      1596,
+      121,
+      95
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_016.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1351,
+      1546,
+      51,
+      46
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_017.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1546,
+      1506,
+      90,
+      78
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_018.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1190,
+      1464,
+      159,
+      104
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_019.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1620,
+      1427,
+      48,
+      53
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_020.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1305,
+      1407,
+      46,
+      46
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_021.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1536,
+      1384,
+      70,
+      69
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_022.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1177,
+      1380,
+      77,
+      90
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_023.tres",
+    "prefix": "debris_1",
+    "rect": [
+      777,
+      1379,
+      66,
+      49
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_024.tres",
+    "prefix": "debris_1",
+    "rect": [
+      921,
+      1374,
+      137,
+      121
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_025.tres",
+    "prefix": "debris_1",
+    "rect": [
+      80,
+      1366,
+      88,
+      89
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_026.tres",
+    "prefix": "debris_1",
+    "rect": [
+      547,
+      1359,
+      108,
+      79
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_027.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1274,
+      1347,
+      55,
+      45
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_028.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1843,
+      1335,
+      139,
+      132
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_029.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1684,
+      1324,
+      49,
+      51
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_030.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1424,
+      1321,
+      84,
+      74
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_031.tres",
+    "prefix": "debris_1",
+    "rect": [
+      258,
+      1313,
+      126,
+      126
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_032.tres",
+    "prefix": "debris_1",
+    "rect": [
+      794,
+      1290,
+      118,
+      61
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_033.tres",
+    "prefix": "debris_1",
+    "rect": [
+      901,
+      1255,
+      65,
+      79
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_034.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1059,
+      1237,
+      253,
+      147
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_035.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1477,
+      1235,
+      89,
+      101
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_036.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1317,
+      1228,
+      65,
+      105
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_037.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1616,
+      1217,
+      93,
+      87
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_038.tres",
+    "prefix": "debris_1",
+    "rect": [
+      975,
+      1171,
+      172,
+      105
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_039.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1531,
+      1168,
+      79,
+      78
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_040.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1231,
+      1156,
+      65,
+      56
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_041.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1763,
+      1154,
+      52,
+      85
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_042.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1316,
+      1147,
+      105,
+      132
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_043.tres",
+    "prefix": "debris_1",
+    "rect": [
+      31,
+      1117,
+      187,
+      88
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_044.tres",
+    "prefix": "debris_1",
+    "rect": [
+      919,
+      1112,
+      121,
+      88
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_045.tres",
+    "prefix": "debris_1",
+    "rect": [
+      852,
+      1097,
+      62,
+      80
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_046.tres",
+    "prefix": "debris_1",
+    "rect": [
+      270,
+      1090,
+      203,
+      134
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_047.tres",
+    "prefix": "debris_1",
+    "rect": [
+      530,
+      1085,
+      225,
+      192
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_048.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1659,
+      1072,
+      62,
+      86
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_049.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1067,
+      1051,
+      97,
+      98
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_050.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1191,
+      1024,
+      56,
+      53
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_051.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1863,
+      991,
+      113,
+      97
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_052.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1741,
+      954,
+      98,
+      160
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_053.tres",
+    "prefix": "debris_1",
+    "rect": [
+      972,
+      946,
+      108,
+      69
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_054.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1076,
+      923,
+      147,
+      131
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_055.tres",
+    "prefix": "debris_1",
+    "rect": [
+      794,
+      894,
+      157,
+      200
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_056.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1048,
+      889,
+      82,
+      51
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_057.tres",
+    "prefix": "debris_1",
+    "rect": [
+      59,
+      883,
+      131,
+      58
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_058.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1320,
+      848,
+      397,
+      344
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_059.tres",
+    "prefix": "debris_1",
+    "rect": [
+      562,
+      840,
+      161,
+      181
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_060.tres",
+    "prefix": "debris_1",
+    "rect": [
+      292,
+      835,
+      172,
+      174
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_061.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1134,
+      819,
+      58,
+      47
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_062.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1668,
+      810,
+      47,
+      44
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_063.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1851,
+      808,
+      119,
+      101
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_064.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1421,
+      768,
+      98,
+      62
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_065.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1268,
+      740,
+      73,
+      44
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_066.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1590,
+      730,
+      71,
+      57
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_067.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1676,
+      701,
+      71,
+      52
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_068.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1054,
+      687,
+      114,
+      84
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_069.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1368,
+      649,
+      190,
+      160
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_070.tres",
+    "prefix": "debris_1",
+    "rect": [
+      859,
+      634,
+      63,
+      104
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_071.tres",
+    "prefix": "debris_1",
+    "rect": [
+      561,
+      606,
+      149,
+      82
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_072.tres",
+    "prefix": "debris_1",
+    "rect": [
+      82,
+      606,
+      100,
+      103
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_073.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1295,
+      602,
+      122,
+      89
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_074.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1854,
+      601,
+      114,
+      105
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_075.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1585,
+      590,
+      75,
+      59
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_076.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1088,
+      583,
+      158,
+      111
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_077.tres",
+    "prefix": "debris_1",
+    "rect": [
+      274,
+      580,
+      203,
+      132
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_078.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1672,
+      566,
+      75,
+      55
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_079.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1406,
+      553,
+      70,
+      84
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_080.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1606,
+      372,
+      132,
+      55
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_081.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1869,
+      363,
+      94,
+      62
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_082.tres",
+    "prefix": "debris_1",
+    "rect": [
+      83,
+      355,
+      97,
+      95
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_083.tres",
+    "prefix": "debris_1",
+    "rect": [
+      840,
+      346,
+      110,
+      98
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_084.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1068,
+      333,
+      174,
+      125
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_085.tres",
+    "prefix": "debris_1",
+    "rect": [
+      312,
+      324,
+      136,
+      125
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_086.tres",
+    "prefix": "debris_1",
+    "rect": [
+      562,
+      323,
+      132,
+      167
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_087.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1310,
+      299,
+      194,
+      155
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_088.tres",
+    "prefix": "debris_1",
+    "rect": [
+      304,
+      158,
+      52,
+      54
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_089.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1623,
+      100,
+      67,
+      60
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_090.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1140,
+      96,
+      47,
+      46
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_091.tres",
+    "prefix": "debris_1",
+    "rect": [
+      582,
+      91,
+      111,
+      87
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_092.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1359,
+      89,
+      76,
+      85
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_093.tres",
+    "prefix": "debris_1",
+    "rect": [
+      58,
+      88,
+      161,
+      118
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_094.tres",
+    "prefix": "debris_1",
+    "rect": [
+      841,
+      83,
+      101,
+      94
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_095.tres",
+    "prefix": "debris_1",
+    "rect": [
+      328,
+      73,
+      141,
+      139
+    ]
+  },
+  {
+    "path": "res://assets/environments/parallax_space/atlas_textures/debris_1_096.tres",
+    "prefix": "debris_1",
+    "rect": [
+      1822,
+      52,
+      168,
+      162
+    ]
+  }
+]

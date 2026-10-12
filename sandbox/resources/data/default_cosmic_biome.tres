@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CosmicBiomeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/cosmic_biome_config.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+biome_id = &"biome_perseus_rift"
+display_name = "Grieta de Perseo"
+color_deep_space = Color(0.008, 0.012, 0.025, 1.0)
+color_gas_primary = Color(0.22, 0.06, 0.32, 0.85)
+color_gas_secondary = Color(0.04, 0.28, 0.36, 0.65)
+color_star_tint = Color(0.88, 0.94, 1.0, 1.0)
+noise_frequency = 0.00065
+noise_octaves = 4
+gas_density = 2.0
+gas_contrast = 2.1
+chromatic_aberration_strength = 0.0025
+starfield_energy = 1.2

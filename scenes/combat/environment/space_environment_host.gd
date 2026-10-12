@@ -9,7 +9,7 @@ extends CombatSubsystem
 
 const BaseSpaceEnvironmentScript = preload("res://scenes/combat/environment/base_space_environment.gd")
 
-@export var default_environment_scene: PackedScene = preload("res://scenes/combat/environment/space_background.tscn")
+@export var default_environment_scene: PackedScene = preload("res://scenes/combat/environment/cosmos_combat_environment.tscn")
 @export var custom_environment_scene: PackedScene = null
 
 var active_environment: Node2D = null
@@ -67,3 +67,16 @@ func swap_environment_backend(new_scene: PackedScene) -> void:
 		active_environment = null
 	_ensure_active_environment()
 	_bind_environment_references()
+
+
+func get_cosmos_controller() -> Node:
+	if is_instance_valid(active_environment) and active_environment.has_method("get_host_controller"):
+		return active_environment.call("get_host_controller") as Node
+	return null
+
+
+func change_region(region_id: StringName, blend_duration: float = 2.0) -> bool:
+	var ctrl: Node = get_cosmos_controller()
+	if ctrl != null and ctrl.has_method("change_region"):
+		return bool(ctrl.call("change_region", region_id, blend_duration))
+	return false

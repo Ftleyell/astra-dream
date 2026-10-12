@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="DebrisLayerProfile" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/debris_layer_profile.gd" id="1_debris"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/debris_atlas_0.png" id="2_debris_tex"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/debris_atlas_1.png" id="3_scrap_tex"]
+
+[resource]
+script = ExtResource("1_debris")
+rock_texture = ExtResource("2_debris_tex")
+scrap_texture = ExtResource("3_scrap_tex")
+mesh_texture = ExtResource("2_debris_tex")
+instance_count = 500
+scrap_instance_count = 250
+field_bounding_box = Vector2(12000, 12000)
+micro_ratio = 0.75
+medium_ratio = 0.25
+macro_ratio = 0.0
+micro_scale_range = Vector2(0.2, 0.45)
+medium_scale_range = Vector2(0.55, 1.1)
+macro_scale_range = Vector2(1.25, 2.1)
+scale_range = Vector2(0.35, 1.6)
+max_initial_rotation = 6.28318
+alpha_modulation = Color(0.85, 0.9, 0.95, 0.75)
+micro_alpha_multiplier = 0.6
+medium_alpha_multiplier = 0.9
+macro_alpha_multiplier = 1.0
+kuiper_belt_ratio = 0.5
+border_corridor_ratio = 0.4
+ambient_space_ratio = 0.1
+kuiper_belt_width = 700.0
+kuiper_inner_padding = 300.0
+kuiper_default_radius = 4600.0
+border_corridor_width = 900.0
+rock_micro_max_area = 7000.0
+rock_medium_max_area = 25000.0
+scrap_micro_max_area = 9000.0
+scrap_medium_max_area = 28000.0
+

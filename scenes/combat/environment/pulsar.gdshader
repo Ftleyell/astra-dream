@@ -202,5 +202,5 @@ void fragment() {
 
 	float final_alpha = max(max(asset_alpha, cone_alpha), max(center_eclipse_alpha, screen_lens_mask));
 
-	COLOR = vec4(final_rgb, clamp(final_alpha, 0.0, 1.0));
+	COLOR = vec4(final_rgb, clamp(final_alpha, 0.0, 1.0)) * COLOR;
 }

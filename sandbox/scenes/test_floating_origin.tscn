@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://d1c2b3f4o5t01"]
+
+[ext_resource type="Script" path="res://sandbox/core/floating_origin_tracker.gd" id="1_fot"]
+
+[node name="TestFloatingOrigin" type="Node2D"]
+
+[node name="ParallaxBackground" type="Node2D" parent="."]
+
+[node name="DeepLayer" type="Parallax2D" parent="ParallaxBackground"]
+scroll_scale = Vector2(0.1, 0.1)
+repeat_size = Vector2(4000, 4000)
+
+[node name="MarkerDeep" type="ColorRect" parent="ParallaxBackground/DeepLayer"]
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(0.2, 0.4, 0.8, 1)
+
+[node name="MidLayer" type="Parallax2D" parent="ParallaxBackground"]
+scroll_scale = Vector2(0.5, 0.5)
+repeat_size = Vector2(3000, 3000)
+
+[node name="MarkerMid" type="ColorRect" parent="ParallaxBackground/MidLayer"]
+offset_left = 500.0
+offset_top = 500.0
+offset_right = 540.0
+offset_bottom = 540.0
+color = Color(0.8, 0.3, 0.6, 1)
+
+[node name="PlayerTarget" type="Node2D" parent="."]
+
+[node name="ShipMarker" type="ColorRect" parent="PlayerTarget"]
+offset_left = -15.0
+offset_top = -15.0
+offset_right = 15.0
+offset_bottom = 15.0
+color = Color(1, 1, 1, 1)
+
+[node name="Camera2D" type="Camera2D" parent="PlayerTarget"]
+position_smoothing_enabled = true
+
+[node name="FloatingOriginTracker" type="Node" parent="." node_paths=PackedStringArray("player_target", "camera", "parallax_layers")]
+script = ExtResource("1_fot")
+player_target = NodePath("../PlayerTarget")
+camera = NodePath("../PlayerTarget/Camera2D")
+threshold_distance = 10000.0
+parallax_layers = [NodePath("../ParallaxBackground/DeepLayer"), NodePath("../ParallaxBackground/MidLayer")]

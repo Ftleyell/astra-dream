@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="CosmosEnvironmentProfile" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://sandbox/resources/cosmos_environment_profile.gd" id="1_prof"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_cosmic_biome.tres" id="2_biome"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_galaxy_landmark.tres" id="3_galaxy"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_celestial_system.tres" id="4_solar"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_debris_layer.tres" id="5_debris"]
+
+[resource]
+script = ExtResource("1_prof")
+nebula_parallax_factor = 0.01
+galaxy_scroll_scale = Vector2(0.1, 0.1)
+starfield_scroll_scale = Vector2(0.0015, 0.0015)
+solar_scroll_scale = Vector2(0.25, 0.25)
+debris_scroll_scale = Vector2(0.25, 0.25)
+parallax_multiplier = 1.0
+biome_a_profile = ExtResource("2_biome")
+biome_blend_factor = 0.2
+galaxy_profile = ExtResource("3_galaxy")
+solar_profile = ExtResource("4_solar")
+debris_profile = ExtResource("5_debris")
+nebula_deep_stars_intensity = 0.55
+nebula_deep_stars_scale = 3.0
+nebula_deep_stars_parallax = 0.005
+nebula_deep_stars_twinkle_speed = 2.2
+nebula_deep_stars_sparkle_intensity = 1.1
+nebula_deep_stars_halo_radius = 1.5
+nebula_deep_stars_gas_interaction = 0.85
+nebula_mid_stars_intensity = 0.0
+nebula_mid_stars_parallax = 0.002
+nebula_mid_stars_scale = 1.35
+nebula_mid_stars_twinkle_speed = 2.4
+nebula_mid_stars_sparkle_intensity = 1.4
+nebula_mid_stars_halo_radius = 1.8
+nebula_mid_stars_gas_interaction = 0.85
+nebula_tile_mix = 0.45
+nebula_tile_scale = 0.00035
+nebula_density_multiplier = 1.0
+star_intensity = 1.5
+star_threshold_cutoff = 0.02
+star_window_scale = 1.35
+star_twinkle_amount = 0.35
+star_twinkle_speed = 2.4
+star_lens_flare_intensity = 2.5
+star_lens_flare_length = 2.0

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CosmosBiomeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmic_biome_config.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+biome_id = &"biome_crimson_veil"
+display_name = "Velo Carmesí"
+color_deep_space = Color(0.018, 0.005, 0.01, 1)
+color_gas_primary = Color(0.4, 0.04, 0.12, 0.88)
+color_gas_secondary = Color(0.32, 0.02, 0.26, 0.7)
+color_star_tint = Color(1, 0.75, 0.8, 1)
+noise_frequency = 0.0007
+noise_octaves = 4
+gas_density = 2.0
+gas_contrast = 2.2
+chromatic_aberration_strength = 0.0035
+starfield_energy = 1.25

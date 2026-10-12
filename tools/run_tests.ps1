@@ -23,6 +23,15 @@ if (Test-Path $vscodeSettings) {
 }
 
 if (-not $godot) {
+    if ($env:LOCALAPPDATA) {
+        $wingetCandidate = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe"
+        if (Test-Path $wingetCandidate) {
+            $godot = $wingetCandidate
+        }
+    }
+}
+
+if (-not $godot) {
     $wingetCandidate = "C:\Users\$env:USERNAME\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.2-stable_win64_console.exe"
     if (Test-Path $wingetCandidate) {
         $godot = $wingetCandidate

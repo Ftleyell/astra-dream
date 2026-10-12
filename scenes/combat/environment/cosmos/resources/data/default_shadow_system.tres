@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CosmosShadowSystemConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/shadow_system_config.gd" id="1_shadow"]
+
+[resource]
+script = ExtResource("1_shadow")
+enable_planetary_shadows = true
+shadow_intensity = 0.75
+shadow_penumbra_ratio = 0.45
+shadow_expansion_factor = 1.85
+shadow_heliopause_fade = 0.22
+shadow_tint = Color(0.18, 0.18, 0.24, 1.0)
+shadow_base_width_scale = 1.0
+shadow_tip_curvature = 0.40

@@ -18,7 +18,7 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation |
 | **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
 | **Encuentro Rival** | `scenes/combat/bosses/rival_pilot_boss.gd` | `rival_engagement_behavior.gd`, `rival_flight_motor.gd` |
-| **Entorno y Fondo Espacial** | `scenes/combat/environment/space_environment_host.gd` | `base_space_environment.gd`, `combat_space_debris_manager.gd` |
+| **Entorno y Fondo Espacial** | `scenes/combat/environment/space_environment_host.gd` | `base_space_environment.gd`, `cosmos_combat_environment.gd`, `cosmos/` (`CosmosHostController`, `CosmosRootNode`) |
 | **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd` |
 | **HUD de Combate** | `scenes/ui/hud/hud.gd` | `hud_health_shield_display.gd`, `hud_weapon_cooldown_bar.gd`, `hud_satellite_radar_controller.gd`, `hud_edge_tracker_manager.gd` |
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas |
@@ -35,7 +35,11 @@ Para localizar el código de cualquier sistema, consulta la tabla antes de abrir
 ---
 
 ## 🧪 Zona de Prototipado y Experimentos
-- `sandbox/`: Área experimental para mecánicas futuras (p. ej. parallax procedural, shaders de prueba). No debe ser importada por escenas o sistemas del runtime de producción (`scenes/`, `core/`).
+- `sandbox/`: Área experimental de **Cosmos Engine** (arquitectura 100% modular y data-driven: `PlanetaryShadowProjector2D`, `KeplerOrbitMath`, 6 biomas curados, 5 arquetipos estelares, estratos Parallax2D, Kepler solver, floating origin, streaming determinista y benchmark de 60 FPS).
+  - **Regla Estricta del Subsistema:** [`.agents/rules/cosmos_engine.md`](.agents/rules/cosmos_engine.md) (consultar siempre para mapeo directo parámetro $\to$ `.tres`; prohibido explorar orquestadores o scripts `.gd` para ajustes visuales/balance).
+  - **Guía de Ajuste Rápido y Ahorro de Tokens:** [`docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md`](docs/sandbox/COSMOS_ENGINE_AJUSTE_RAPIDO.md).
+  - **Plan de Refactor & Promoción:** [`docs/sandbox/PLAN_REFACTOR_COSMOS_ENGINE.md`](docs/sandbox/PLAN_REFACTOR_COSMOS_ENGINE.md) y [`docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md`](docs/sandbox/GUIA_MIGRACION_COSMOS_PRODUCCION.md).
+  - **Restricción:** No debe ser importada por escenas o sistemas del runtime de producción (`scenes/`, `core/`) hasta la fase formal de migración.
 
 ---
 

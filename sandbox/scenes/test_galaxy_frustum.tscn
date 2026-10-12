@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://testgalaxyfrustum01"]
+
+[ext_resource type="Resource" uid="uid://c8vqyflwsm3n2" path="res://sandbox/resources/data/default_galaxy_landmark.tres" id="1_landmark"]
+[ext_resource type="Script" path="res://sandbox/rendering/galaxy_streamer_2d.gd" id="2_streamer"]
+[ext_resource type="Script" path="res://sandbox/scenes/free_camera_controller.gd" id="3_camera"]
+
+[node name="TestGalaxyFrustum" type="Node2D"]
+
+[node name="CosmosCamera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+script = ExtResource("3_camera")
+
+[node name="ParallaxMacroGalaxies" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.02, 0.02)
+repeat_size = Vector2(0, 0)
+autoscroll = Vector2(0, 0)
+
+[node name="GalaxyStreamer2D" type="Node2D" parent="ParallaxMacroGalaxies" node_paths=PackedStringArray("parallax_layer", "camera")]
+script = ExtResource("2_streamer")
+landmark_profile = ExtResource("1_landmark")
+parallax_layer = NodePath("..")
+camera = NodePath("../../CosmosCamera2D")
+run_seed = 8943719

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://testgalaxystreaming01"]
+
+[ext_resource type="Script" path="res://tests/sandbox/test_galaxy_streaming.gd" id="1_test"]
+
+[node name="TestGalaxyStreamingRunner" type="Node"]
+script = ExtResource("1_test")

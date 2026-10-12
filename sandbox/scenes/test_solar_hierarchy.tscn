@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://testsolarhierarchy01"]
+
+[ext_resource type="Resource" uid="uid://cxkj8n2e85p67" path="res://sandbox/resources/data/default_celestial_system.tres" id="1_profile"]
+[ext_resource type="Script" path="res://sandbox/astronomy/solar_system_2d.gd" id="2_solarsystem"]
+[ext_resource type="Script" path="res://sandbox/scenes/free_camera_controller.gd" id="3_camera"]
+[ext_resource type="Script" path="res://sandbox/scenes/test_solar_time_controller.gd" id="4_controller"]
+
+[node name="TestSolarHierarchy" type="Node2D"]
+
+[node name="CosmosCamera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+script = ExtResource("3_camera")
+
+[node name="ParallaxSolarLayer" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.2, 0.2)
+repeat_size = Vector2(0, 0)
+autoscroll = Vector2(0, 0)
+
+[node name="SolarSystem2D" type="Node2D" parent="ParallaxSolarLayer"]
+position = Vector2(960, 540)
+script = ExtResource("2_solarsystem")
+system_profile = ExtResource("1_profile")
+system_seed = 987654
+
+[node name="TimeController" type="Node" parent="." node_paths=PackedStringArray("solar_system")]
+script = ExtResource("4_controller")
+solar_system = NodePath("../ParallaxSolarLayer/SolarSystem2D")
+time_scale = 1.0

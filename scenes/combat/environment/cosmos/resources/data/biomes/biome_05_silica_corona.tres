@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CosmosBiomeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmic_biome_config.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+biome_id = &"biome_silica_corona"
+display_name = "Corona Silícea"
+color_deep_space = Color(0.004, 0.006, 0.014, 1)
+color_gas_primary = Color(0.06, 0.18, 0.42, 0.8)
+color_gas_secondary = Color(0.24, 0.28, 0.38, 0.55)
+color_star_tint = Color(0.85, 0.92, 1, 1)
+noise_frequency = 0.00055
+noise_octaves = 4
+gas_density = 2.0
+gas_contrast = 1.7
+chromatic_aberration_strength = 0.002
+starfield_energy = 1.1

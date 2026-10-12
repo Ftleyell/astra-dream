@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="CosmosCelestialSystemProfile" load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/celestial_system_profile.gd" id="1_celestial"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star.jpg" id="2_star_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 0.jpg" id="3_star_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 1.jpg" id="4_star_2"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Desert.jpg" id="5_p_desert"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Gas.jpg" id="6_p_gas"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Ice.jpg" id="7_p_ice"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Life.jpg" id="8_p_life"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Life_0.jpg" id="9_p_life_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Moon_0.jpg" id="10_moon_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Moon_1.jpg" id="11_moon_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_0.png" id="12_station_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_1.png" id="13_station_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_2.png" id="14_station_2"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/yellow_dwarf.tres" id="15_arch_yellow"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/blue_giant.tres" id="16_arch_blue"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/red_dwarf.tres" id="17_arch_red"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/white_dwarf.tres" id="18_arch_white"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/magnetar.tres" id="19_arch_magnetar"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_star_visual.tres" id="20_star_vis"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_planetary_system.tres" id="21_planet_sys"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_shadow_system.tres" id="22_shadow_sys"]
+
+[resource]
+script = ExtResource("1_celestial")
+star_visual_config = ExtResource("20_star_vis")
+planetary_config = ExtResource("21_planet_sys")
+shadow_config = ExtResource("22_shadow_sys")
+star_archetypes = [ExtResource("15_arch_yellow"), ExtResource("16_arch_blue"), ExtResource("17_arch_red"), ExtResource("18_arch_white"), ExtResource("19_arch_magnetar")]
+star_name_prefix = "SOLARIS"
+star_texture = ExtResource("2_star_0")
+star_textures = [ExtResource("2_star_0"), ExtResource("3_star_1"), ExtResource("4_star_2")]
+star_base_radius = 420.0
+star_emission_color = Color(1.0, 0.88, 0.55, 1.0)
+star_flat_core_color = Color(1.0, 0.85, 0.45, 1.0)
+star_flat_core_radius = 0.32
+star_flat_core_feather = 0.035
+star_axial_rotation_speed = 0.008
+min_planets = 3
+max_planets = 6
+orbit_radius_min = 980.0
+orbit_radius_max = 2760.0
+min_orbital_spacing = 440.0
+planet_theta_jitter_degrees = 25.0
+planet_size_multiplier = 1.15
+planet_textures = [ExtResource("5_p_desert"), ExtResource("6_p_gas"), ExtResource("7_p_ice"), ExtResource("8_p_life"), ExtResource("9_p_life_0")]
+interior_planet_textures = [ExtResource("5_p_desert"), ExtResource("6_p_gas")]
+habitable_planet_textures = [ExtResource("8_p_life"), ExtResource("9_p_life_0")]
+exterior_planet_textures = [ExtResource("7_p_ice"), ExtResource("6_p_gas")]
+cell_size = 7500.0
+cell_boundary_padding = 175.0
+spawn_chance = 1.0
+base_angular_velocity = 0.02
+max_orbital_eccentricity = 0.04
+moon_spawn_probability = 0.65
+moon_orbit_radius_range = Vector2(120.0, 200.0)
+moon_size_ratio = 0.20
+moon_textures = [ExtResource("10_moon_0"), ExtResource("11_moon_1")]
+normal_moon_texture = ExtResource("10_moon_0")
+magma_moon_texture = ExtResource("11_moon_1")
+station_spawn_probability = 1.0
+station_orbit_radius_range = Vector2(130.0, 220.0)
+station_size_ratio = 0.15
+space_station_textures = [ExtResource("12_station_0"), ExtResource("13_station_1"), ExtResource("14_station_2")]
+show_orbit_lines = true
+orbit_line_color = Color(0.7, 0.85, 1.0, 0.14)
+orbit_line_width = 1.5
+enable_planetary_shadows = true
+shadow_intensity = 0.75
+shadow_penumbra_ratio = 0.45
+shadow_expansion_factor = 1.85
+shadow_heliopause_fade = 0.22
+shadow_tint = Color(0.18, 0.18, 0.24, 1.0)

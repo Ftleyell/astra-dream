@@ -83,5 +83,5 @@ void fragment() {
 	// Alfa total: núcleo opaco + corona semi-transparente recortada
 	float final_alpha = clamp(core_mask * 1.5 + corona_alpha * 0.85, 0.0, 1.0) * edge_feather;
 
-	COLOR = vec4(final_rgb, final_alpha);
+	COLOR = vec4(final_rgb, final_alpha) * COLOR;
 }
