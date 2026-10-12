@@ -207,28 +207,48 @@ void fragment() {
 	float effective_star_luma = pow(star_normalized, 1.4);
 	
 	if (effective_star_luma > 0.005) {
-		// Asignación espectral saturada por canal dominante:
-		vec3 col_r = vec3(1.85, 0.45, 0.22); // Enana roja / rubí cálido
-		vec3 col_g = vec3(0.35, 1.95, 0.85); // Esmeralda cósmica / cian-verde brillante
-		vec3 col_b = vec3(0.40, 1.15, 2.35); // Gigante azul eléctrica / zafiro puro
-		
-		float sum_rgb = deep_star_raw.r + deep_star_raw.g + deep_star_raw.b + 0.0001;
-		vec3 star_color = (deep_star_raw.r * col_r + deep_star_raw.g * col_g + deep_star_raw.b * col_b) / sum_rgb;
+		// Semillas pseudoaleatorias suavizadas (filtro bilineal en la grilla de bloques para evitar cortes en cuadrado)
+		vec2 star_grid_pos = deep_star_uv * 2048.0;
+		vec2 grid_i = floor(star_grid_pos);
+		vec2 grid_f = fract(star_grid_pos);
+		vec2 smooth_f = grid_f * grid_f * (3.0 - 2.0 * grid_f);
+
+		float s00 = fract(sin(dot(grid_i, vec2(127.1, 311.7))) * 43758.5453);
+		float s10 = fract(sin(dot(grid_i + vec2(1.0, 0.0), vec2(127.1, 311.7))) * 43758.5453);
+		float s01 = fract(sin(dot(grid_i + vec2(0.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+		float s11 = fract(sin(dot(grid_i + vec2(1.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+		float star_seed = mix(mix(s00, s10, smooth_f.x), mix(s01, s11, smooth_f.x), smooth_f.y);
+
+		float s2_00 = fract(sin(dot(grid_i + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.183);
+		float s2_10 = fract(sin(dot(grid_i + vec2(44.12, 91.73), vec2(269.5, 183.3))) * 28461.183);
+		float s2_01 = fract(sin(dot(grid_i + vec2(43.12, 92.73), vec2(269.5, 183.3))) * 28461.183);
+		float s2_11 = fract(sin(dot(grid_i + vec2(44.12, 92.73), vec2(269.5, 183.3))) * 28461.183);
+		float star_seed2 = mix(mix(s2_00, s2_10, smooth_f.x), mix(s2_01, s2_11, smooth_f.x), smooth_f.y);
+
+		// Clasificación espectral estocástica rica (tonos cálidos, dorados, zafiro y exóticos)
+		vec3 star_color;
+		if (star_seed < 0.35) {
+			star_color = mix(vec3(1.95, 0.50, 0.22), vec3(1.85, 0.80, 0.28), star_seed2); // Rubí cálido / Ámbar
+		} else if (star_seed < 0.65) {
+			star_color = mix(vec3(1.80, 1.55, 0.45), vec3(1.35, 1.35, 1.10), star_seed2); // Sol dorado / Blanco marfil
+		} else if (star_seed < 0.90) {
+			star_color = mix(vec3(0.45, 1.15, 2.30), vec3(0.65, 1.60, 2.10), star_seed2); // Gigante azul eléctrico
+		} else {
+			star_color = mix(vec3(1.45, 0.55, 2.15), vec3(0.35, 1.90, 1.25), star_seed2); // Violeta / Esmeralda
+		}
 		
 		// Matizar con el tinte estelar armónico de los biomas activos
 		vec3 biome_star_tint = mix(biome_a_star_tint.rgb, biome_b_star_tint.rgb, blend);
 		star_color *= biome_star_tint;
 
-		// 1. Destellos y centelleo continuo por coordenadas de bloque estelar
-		vec2 star_block = floor(deep_star_uv * 2048.0);
-		float star_seed = fract(sin(dot(star_block, vec2(127.1, 311.7))) * 43758.5453123);
-		float star_seed2 = fract(sin(dot(star_block + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.18349);
+		// Variación de magnitud orgánica (evita que todas parezcan del mismo brillo)
+		float star_mag = 0.60 + star_seed2 * 0.85;
 
+		// 1. Destellos y centelleo continuo suave
 		float time_now = (global_time > 0.001 ? global_time : TIME) * deep_stars_twinkle_speed;
 		float star_freq = 0.85 + star_seed2 * 0.95;
 		float star_phase = star_seed * 6.2831853;
 		
-		// Oscilación base continua
 		float wave_a = sin(time_now * star_freq + star_phase);
 		float wave_b = sin(time_now * (star_freq * 2.31) + star_phase * 1.618);
 		float composite_wave = (wave_a * 0.65 + wave_b * 0.35);
@@ -243,16 +263,18 @@ void fragment() {
 		
 		vec3 colored_body = star_color * (base_falloff * 2.2 + halo) * twinkle_factor;
 		float core_peak = pow(star_normalized, 3.2) * (1.0 + sharp_sparkle * 1.2);
-		vec3 incandescent_core = (star_color * 1.35 + vec3(0.55)) * (core_peak * 0.40);
+		vec3 incandescent_core = (star_color * 1.5 + vec3(0.20)) * (core_peak * 0.40);
 
-		vec3 deep_stars = (colored_body + incandescent_core) * deep_stars_intensity;
-		
-		// 3. Integración volumétrica con el fondo (fusión con el gas nebular)
+		vec3 deep_stars = (colored_body + incandescent_core) * deep_stars_intensity * star_mag;
+
+		// 3. Integración volumétrica y perforación a través del gas denso (punch-through)
 		float local_gas_density = clamp(intensity_a + intensity_b, 0.0, 1.0);
 		vec3 local_gas_color = mix(col_gas_a, col_gas_b, blend);
-		vec3 gas_illumination = star_color * local_gas_color * (deep_star_max * 1.6) * local_gas_density * deep_stars_gas_interaction * twinkle_factor;
+		vec3 gas_illumination = star_color * local_gas_color * (deep_star_max * 1.8) * local_gas_density * deep_stars_gas_interaction * twinkle_factor;
 		
-		combined_color += deep_stars + gas_illumination;
+		// Las estrellas atraviesan e iluminan el gas espeso con mayor potencia
+		float gas_punch_through = 1.0 + local_gas_density * 1.5;
+		combined_color += (deep_stars * gas_punch_through) + gas_illumination;
 	}
 
 	// Segundo estrato estelar (Mid-Stars medianas más cercanas, con mayor tamaño y paralaje intermedio):
@@ -267,18 +289,39 @@ void fragment() {
 		float mid_effective_luma = pow(mid_normalized, 1.3);
 		
 		if (mid_effective_luma > 0.005) {
-			vec3 col_r = vec3(1.85, 0.45, 0.22);
-			vec3 col_g = vec3(0.35, 1.95, 0.85);
-			vec3 col_b = vec3(0.40, 1.15, 2.35);
-			float sum_rgb = mid_star_raw.r + mid_star_raw.g + mid_star_raw.b + 0.0001;
-			vec3 star_color = (mid_star_raw.r * col_r + mid_star_raw.g * col_g + mid_star_raw.b * col_b) / sum_rgb;
+			vec2 mid_grid_pos = mid_star_uv * 1024.0;
+			vec2 m_grid_i = floor(mid_grid_pos);
+			vec2 m_grid_f = fract(mid_grid_pos);
+			vec2 m_smooth_f = m_grid_f * m_grid_f * (3.0 - 2.0 * m_grid_f);
+
+			float ms00 = fract(sin(dot(m_grid_i, vec2(127.1, 311.7))) * 43758.5453);
+			float ms10 = fract(sin(dot(m_grid_i + vec2(1.0, 0.0), vec2(127.1, 311.7))) * 43758.5453);
+			float ms01 = fract(sin(dot(m_grid_i + vec2(0.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+			float ms11 = fract(sin(dot(m_grid_i + vec2(1.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+			float star_seed = mix(mix(ms00, ms10, m_smooth_f.x), mix(ms01, ms11, m_smooth_f.x), m_smooth_f.y);
+
+			float ms2_00 = fract(sin(dot(m_grid_i + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.183);
+			float ms2_10 = fract(sin(dot(m_grid_i + vec2(44.12, 91.73), vec2(269.5, 183.3))) * 28461.183);
+			float ms2_01 = fract(sin(dot(m_grid_i + vec2(43.12, 92.73), vec2(269.5, 183.3))) * 28461.183);
+			float ms2_11 = fract(sin(dot(m_grid_i + vec2(44.12, 92.73), vec2(269.5, 183.3))) * 28461.183);
+			float star_seed2 = mix(mix(ms2_00, ms2_10, m_smooth_f.x), mix(ms2_01, ms2_11, m_smooth_f.x), m_smooth_f.y);
+
+			vec3 star_color;
+			if (star_seed < 0.35) {
+				star_color = mix(vec3(1.95, 0.50, 0.22), vec3(1.85, 0.80, 0.28), star_seed2);
+			} else if (star_seed < 0.65) {
+				star_color = mix(vec3(1.80, 1.55, 0.45), vec3(1.35, 1.35, 1.10), star_seed2);
+			} else if (star_seed < 0.90) {
+				star_color = mix(vec3(0.45, 1.15, 2.30), vec3(0.65, 1.60, 2.10), star_seed2);
+			} else {
+				star_color = mix(vec3(1.45, 0.55, 2.15), vec3(0.35, 1.90, 1.25), star_seed2);
+			}
+
 			vec3 biome_star_tint = mix(biome_a_star_tint.rgb, biome_b_star_tint.rgb, blend);
 			star_color *= biome_star_tint;
 			
-			vec2 mid_block = floor(mid_star_uv * 1024.0);
-			float star_seed = fract(sin(dot(mid_block, vec2(127.1, 311.7))) * 43758.5453123);
-			float star_seed2 = fract(sin(dot(mid_block + vec2(43.12, 91.73), vec2(269.5, 183.3))) * 28461.18349);
-			
+			float star_mag = 0.65 + star_seed2 * 0.80;
+
 			float time_now = (global_time > 0.001 ? global_time : TIME) * mid_stars_twinkle_speed;
 			float star_freq = 0.85 + star_seed2 * 0.95;
 			float star_phase = star_seed * 6.2831853;
@@ -297,9 +340,9 @@ void fragment() {
 			
 			vec3 colored_body = star_color * (base_falloff * 2.5 + halo) * twinkle_factor;
 			float core_peak = pow(mid_normalized, 2.8) * (1.0 + sharp_sparkle * 1.3);
-			vec3 incandescent_core = (star_color * 1.45 + vec3(0.65)) * (core_peak * 0.50);
+			vec3 incandescent_core = (star_color * 1.5 + vec3(0.20)) * (core_peak * 0.50);
 			
-			vec3 mid_stars = (colored_body + incandescent_core) * mid_stars_intensity;
+			vec3 mid_stars = (colored_body + incandescent_core) * mid_stars_intensity * star_mag;
 			
 			// Fusión volumétrica idéntica con el gas cósmico profundo
 			float local_gas_density = clamp(intensity_a + intensity_b, 0.0, 1.0);

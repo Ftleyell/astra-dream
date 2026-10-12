@@ -56,10 +56,10 @@ func _draw() -> void:
 		_draw_frustum(frustum_rect, cam_zoom)
 
 	if draw_galaxy_bounds:
-		_draw_galaxies()
+		_draw_galaxies(cam_world_center)
 
 	if draw_solar_bounds:
-		_draw_solar_systems()
+		_draw_solar_systems(cam_world_center)
 
 	if draw_floating_origin:
 		_draw_origin_marker()
@@ -119,7 +119,13 @@ func _draw_grid(frustum: Rect2) -> void:
 					var cell_label: String = "Grid Cell [%d, %d]" % [cx, cy]
 					draw_string(_default_font, cell_corner, cell_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, text_color)
 
-func _draw_galaxies() -> void:
+func _project_parallax_to_local(raw_global_pos: Vector2, parallax_layer: Parallax2D, cam_world_pos: Vector2) -> Vector2:
+	if parallax_layer == null:
+		return to_local(raw_global_pos)
+	var parallax_offset: Vector2 = cam_world_pos * (Vector2.ONE - parallax_layer.scroll_scale) + parallax_layer.scroll_offset
+	return to_local(raw_global_pos + parallax_offset)
+
+func _draw_galaxies(cam_world_pos: Vector2) -> void:
 	if cosmos_root.galaxy_streamer == null or not is_instance_valid(cosmos_root.galaxy_streamer):
 		return
 
@@ -134,13 +140,14 @@ func _draw_galaxies() -> void:
 
 	var yellow_color: Color = Color(1.0, 0.85, 0.2, 0.6)
 	var magenta_color: Color = Color(0.95, 0.25, 0.85, 0.35)
+	var parallax: Parallax2D = cosmos_root.parallax_macro_galaxies
 
 	for cell: Vector2i in active_galaxies.keys():
 		var sprite: Sprite2D = active_galaxies[cell] as Sprite2D
 		if sprite == null or not is_instance_valid(sprite) or not sprite.visible:
 			continue
 
-		var local_pos: Vector2 = to_local(sprite.global_position)
+		var local_pos: Vector2 = _project_parallax_to_local(sprite.global_position, parallax, cam_world_pos)
 
 		# Radio de delimitación analítico
 		draw_arc(local_pos, bound_r, 0.0, TAU, 48, yellow_color, 2.0)
@@ -155,20 +162,21 @@ func _draw_galaxies() -> void:
 			var label: String = "GALAXY SECTOR [%d, %d]\nBounding Radius: %.0f px\nSafety Margin: +%.0f px" % [cell.x, cell.y, bound_r, pad]
 			draw_string(_default_font, local_pos + Vector2(35.0, -10.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, yellow_color)
 
-func _draw_solar_systems() -> void:
+func _draw_solar_systems(cam_world_pos: Vector2) -> void:
 	if cosmos_root.solar_streamer == null or not is_instance_valid(cosmos_root.solar_streamer):
 		return
 
 	var active_sys: Dictionary = cosmos_root.solar_streamer.get_active_systems()
 	var cyan_color: Color = Color(0.15, 0.85, 1.0, 0.65)
 	var orbit_color: Color = Color(0.3, 0.9, 0.9, 0.3)
+	var parallax: Parallax2D = cosmos_root.parallax_solar_systems
 
 	for cell_coords: Vector2i in active_sys.keys():
 		var sys: SolarSystem2D = active_sys[cell_coords] as SolarSystem2D
 		if sys == null or not is_instance_valid(sys) or not sys.visible:
 			continue
 
-		var local_pos: Vector2 = to_local(sys.global_position)
+		var local_pos: Vector2 = _project_parallax_to_local(sys.global_position, parallax, cam_world_pos)
 		var bound_r: float = sys.get_bounding_radius()
 		if bound_r <= 0.0:
 			bound_r = 6000.0

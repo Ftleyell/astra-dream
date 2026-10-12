@@ -11,9 +11,10 @@
 [ext_resource type="Resource" path="res://sandbox/resources/data/default_celestial_system.tres" id="9_solar_res"]
 [ext_resource type="Script" uid="uid://cuq6hya2k2o1u" path="res://sandbox/environment/debris_streamer_2d.gd" id="10_debris_streamer"]
 [ext_resource type="Resource" path="res://sandbox/resources/data/default_debris_layer.tres" id="11_debris_res"]
-[ext_resource type="Shader" uid="uid://deepstarfield001" path="res://sandbox/shaders/deep_starfield.gdshader" id="12_starfield_shader"]
+[ext_resource type="Shader" uid="uid://c63kkhg8y1vwg" path="res://sandbox/shaders/deep_starfield.gdshader" id="12_starfield_shader"]
 [ext_resource type="Texture2D" uid="uid://6cx51x683kae" path="res://assets/environments/parallax_space/nebula_seamless_0.png" id="13_nebula_tile_tex"]
 [ext_resource type="Resource" path="res://sandbox/resources/data/default_cosmos_environment.tres" id="14_cosmos_env"]
+[ext_resource type="Script" path="res://sandbox/rendering/starfield_backdrop_controller.gd" id="15_starfield_ctrl"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nebula"]
 shader = ExtResource("2_nebula_shader")
@@ -26,11 +27,11 @@ shader_parameter/deep_stars_intensity = 0.55
 shader_parameter/deep_stars_parallax = 0.005
 shader_parameter/deep_stars_scale = 3.0
 shader_parameter/deep_stars_twinkle_speed = 2.2
-shader_parameter/deep_stars_sparkle_intensity = 0.85
-shader_parameter/deep_stars_halo_radius = 1.35
-shader_parameter/deep_stars_gas_interaction = 0.75
-shader_parameter/mid_stars_intensity = 1.6
-shader_parameter/mid_stars_parallax = 0.0065
+shader_parameter/deep_stars_sparkle_intensity = 1.1
+shader_parameter/deep_stars_halo_radius = 1.5
+shader_parameter/deep_stars_gas_interaction = 0.85
+shader_parameter/mid_stars_intensity = 0.0
+shader_parameter/mid_stars_parallax = 0.002
 shader_parameter/mid_stars_scale = 1.35
 shader_parameter/mid_stars_twinkle_speed = 2.4
 shader_parameter/mid_stars_sparkle_intensity = 1.4
@@ -56,7 +57,7 @@ shader_parameter/flow_drift_speed = 0.012
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_starfield"]
 shader = ExtResource("12_starfield_shader")
 shader_parameter/starfield_texture = ExtResource("7_starfield_tex")
-shader_parameter/star_intensity = 0.0
+shader_parameter/star_intensity = 1.5
 shader_parameter/threshold_cutoff = 0.02
 shader_parameter/window_scale = 1.35
 shader_parameter/window_offset = Vector2(0, 0)
@@ -74,7 +75,7 @@ environment_profile = ExtResource("14_cosmos_env")
 nebula_controller = NodePath("ParallaxNebulaDeep/NebulaBackdrop")
 parallax_macro_galaxies = NodePath("ParallaxMacroGalaxies")
 galaxy_streamer = NodePath("ParallaxMacroGalaxies/GalaxyStreamer2D")
-parallax_starfield_8k = NodePath("CanvasLayerStarfield/ParallaxStarfield8K")
+parallax_starfield_8k = NodePath("CanvasLayerStarfield/StarfieldBackdrop")
 parallax_solar_systems = NodePath("ParallaxSolarSystems")
 solar_streamer = NodePath("ParallaxSolarSystems/SolarSystemStreamer")
 parallax_debris_belt = NodePath("ParallaxDebrisBelt")
@@ -107,18 +108,18 @@ script = ExtResource("5_galaxy_streamer")
 landmark_profile = ExtResource("6_galaxy_res")
 parallax_layer = NodePath("..")
 
-[node name="CanvasLayerStarfield" type="CanvasLayer" parent="." unique_id=1791499757]
+[node name="CanvasLayerStarfield" type="CanvasLayer" parent="." unique_id=1791499758]
 layer = -105
-follow_viewport_enabled = true
 
-[node name="ParallaxStarfield8K" type="Parallax2D" parent="CanvasLayerStarfield" unique_id=1791499758]
-scroll_scale = Vector2(0.0065, 0.0065)
-repeat_size = Vector2(8192, 8192)
-
-[node name="StarfieldSprite" type="Sprite2D" parent="CanvasLayerStarfield/ParallaxStarfield8K" unique_id=1600850274]
+[node name="StarfieldBackdrop" type="ColorRect" parent="CanvasLayerStarfield" unique_id=1600850274]
 material = SubResource("ShaderMaterial_starfield")
-texture = ExtResource("7_starfield_tex")
-centered = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("15_starfield_ctrl")
 
 [node name="ParallaxSolarSystems" type="Parallax2D" parent="." unique_id=1236841986]
 scroll_scale = Vector2(0.25, 0.25)

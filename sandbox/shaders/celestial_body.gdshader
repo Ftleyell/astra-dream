@@ -26,7 +26,9 @@ uniform vec2 light_direction = vec2(-1.0, 0.0);
 uniform float light_depth : hint_range(0.0, 1.0) = 0.30;
 uniform float terminator_offset : hint_range(-1.0, 1.0) = 0.0;
 uniform float terminator_softness : hint_range(0.01, 1.0) = 0.28;
-uniform float night_ambient : hint_range(0.0, 0.3) = 0.08;
+uniform float night_ambient : hint_range(0.0, 0.5) = 0.22;
+uniform float day_exposure_boost : hint_range(0.8, 2.5) = 1.30;
+uniform float eclipse_shadow : hint_range(0.0, 1.0) = 0.0;
 uniform vec4 night_tint_color : source_color = vec4(0.02, 0.03, 0.08, 1.0);
 
 // Atmósfera y Resplandor (Fresnel)
@@ -111,8 +113,11 @@ void fragment() {
 			surface += emissive_boost * (1.0 - lit_factor * 0.5);
 		}
 
-		// Iluminación día / noche con penumbra ambiental en el lado oscuro
-		float light_multiplier = mix(night_ambient, 1.0, lit_factor);
+		// Iluminación día / noche balanceada con exposición diurna y penumbra ambiental
+		float light_multiplier = mix(night_ambient, day_exposure_boost, lit_factor);
+		if (eclipse_shadow > 0.001) {
+			light_multiplier *= (1.0 - eclipse_shadow * 0.85);
+		}
 		vec3 lit_surface = surface * light_multiplier;
 
 		// Tinte de la luz de la estrella central en la cara diurna iluminada
@@ -121,8 +126,9 @@ void fragment() {
 			lit_surface = mix(lit_surface, star_tinted, lit_factor);
 		}
 
-		// Tinte sutil de la noche para dar profundidad y coherencia
-		vec3 night_color = mix(lit_surface, surface * night_tint_color.rgb * 1.5, (1.0 - lit_factor) * 0.6);
+		// Tinte de la noche enriquecido (earthshine / luz cenicienta para retener relieve sin perder la noche)
+		vec3 earthshine = surface * mix(vec3(0.20, 0.22, 0.30), night_tint_color.rgb * 2.5, 0.5) * (night_ambient * 2.2);
+		vec3 night_color = mix(lit_surface, earthshine, (1.0 - lit_factor) * 0.7);
 		surface = mix(night_color, lit_surface, lit_factor);
 
 		// Velo de bioma cósmico

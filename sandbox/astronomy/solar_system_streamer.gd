@@ -18,8 +18,17 @@ var _global_time: float = 0.0
 
 func _ready() -> void:
 	assert(system_profile != null, "CelestialSystemProfile no asignado en SolarSystemStreamer.")
-	if system_profile != null and system_profile.cell_size > 0.0:
-		cell_size = system_profile.cell_size
+	if system_profile != null:
+		if system_profile.cell_size > 0.0:
+			cell_size = system_profile.cell_size
+		var s_cfg: ShadowSystemConfig = system_profile.get_effective_shadow_config()
+		var p_cfg: PlanetarySystemConfig = system_profile.get_effective_planetary_config()
+		_shadows_enabled = s_cfg.enable_planetary_shadows
+		_shadow_opacity = s_cfg.shadow_intensity
+		_shadow_penumbra_ratio = s_cfg.shadow_penumbra_ratio
+		_shadow_expansion_factor = s_cfg.shadow_expansion_factor
+		_shadow_heliopause_fade = s_cfg.shadow_heliopause_fade
+		_planet_day_exposure = p_cfg.planet_day_exposure
 	_initialize_macro_grid()
 	_initialize_system_pool()
 
@@ -99,6 +108,10 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 				var sys_to_acquire: SolarSystem2D = _pool.pop_back()
 				var cell_seed: int = run_seed ^ CosmicHasher.hash_2d(req_cell.x, req_cell.y, 777)
 				sys_to_acquire.build_system(cell_seed)
+				sys_to_acquire.set_shadows_enabled(_shadows_enabled)
+				sys_to_acquire.set_shadow_opacity(_shadow_opacity)
+				sys_to_acquire.set_planet_day_exposure(_planet_day_exposure)
+				sys_to_acquire.set_star_core_brightness(_star_core_brightness)
 				
 				sys_to_acquire.position = get_system_position_for_cell(req_cell)
 				sys_to_acquire.visible = true
@@ -140,3 +153,72 @@ func get_active_systems() -> Dictionary:
 func get_macro_grid() -> CosmicMacroGrid:
 	return _macro_grid
 
+var _shadows_enabled: bool = true
+var _shadow_opacity: float = 0.75
+var _shadow_penumbra_ratio: float = 0.45
+var _shadow_expansion_factor: float = 1.85
+var _shadow_heliopause_fade: float = 0.22
+var _planet_day_exposure: float = 1.30
+var _star_core_brightness: float = 1.25
+
+func set_shadows_enabled(p_enabled: bool) -> void:
+	_shadows_enabled = p_enabled
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_shadows_enabled(p_enabled)
+	for sys: SolarSystem2D in _pool:
+		sys.set_shadows_enabled(p_enabled)
+
+func set_shadow_opacity(p_opacity: float) -> void:
+	_shadow_opacity = p_opacity
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_shadow_opacity(p_opacity)
+	for sys: SolarSystem2D in _pool:
+		sys.set_shadow_opacity(p_opacity)
+
+func set_shadow_penumbra_ratio(p_ratio: float) -> void:
+	_shadow_penumbra_ratio = p_ratio
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_shadow_penumbra_ratio(p_ratio)
+	for sys: SolarSystem2D in _pool:
+		sys.set_shadow_penumbra_ratio(p_ratio)
+
+func set_shadow_expansion_factor(p_factor: float) -> void:
+	_shadow_expansion_factor = p_factor
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_shadow_expansion_factor(p_factor)
+	for sys: SolarSystem2D in _pool:
+		sys.set_shadow_expansion_factor(p_factor)
+
+func set_shadow_heliopause_fade(p_fade: float) -> void:
+	_shadow_heliopause_fade = p_fade
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_shadow_heliopause_fade(p_fade)
+	for sys: SolarSystem2D in _pool:
+		sys.set_shadow_heliopause_fade(p_fade)
+
+# Setters legacy
+func set_shadow_longitudinal_fade(p_fade: float) -> void:
+	set_shadow_heliopause_fade(p_fade)
+
+func set_shadow_length_multiplier(_p_mult: float) -> void:
+	pass
+
+func set_shadow_base_width_scale(_p_scale: float) -> void:
+	pass
+
+func set_shadow_tip_curvature(_p_curv: float) -> void:
+	pass
+
+func set_planet_day_exposure(p_exp: float) -> void:
+	_planet_day_exposure = p_exp
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_planet_day_exposure(p_exp)
+	for sys: SolarSystem2D in _pool:
+		sys.set_planet_day_exposure(p_exp)
+
+func set_star_core_brightness(p_core: float) -> void:
+	_star_core_brightness = p_core
+	for sys: SolarSystem2D in _active_systems.values():
+		sys.set_star_core_brightness(p_core)
+	for sys: SolarSystem2D in _pool:
+		sys.set_star_core_brightness(p_core)

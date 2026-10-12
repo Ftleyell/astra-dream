@@ -48,7 +48,7 @@ func _test_strata_presence_and_initialization() -> void:
 
 	# Validar FloatingOriginTracker
 	assert_true(_cosmos_root.floating_origin_tracker != null, "FloatingOriginTracker debe estar vinculado en CosmosRoot.")
-	assert_true(_cosmos_root.floating_origin_tracker.parallax_layers.size() >= 4, "FloatingOriginTracker debe supervisar los estratos de paralaje.")
+	assert_true(_cosmos_root.floating_origin_tracker.parallax_layers.size() >= 3, "FloatingOriginTracker debe supervisar los estratos de paralaje.")
 
 func _test_cosmic_time_propagation() -> void:
 	var initial_time: float = _cosmos_root.get_global_time()

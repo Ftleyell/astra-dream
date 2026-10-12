@@ -28,10 +28,26 @@ var _check_gizmos: CheckBox = null
 
 var _slider_parallax: HSlider = null
 var _label_parallax_val: Label = null
+var _slider_star_parallax: HSlider = null
+var _label_star_parallax_val: Label = null
 var _slider_stars: HSlider = null
 var _label_stars_val: Label = null
 var _slider_nebula: HSlider = null
 var _label_nebula_val: Label = null
+
+var _check_shadows: CheckBox = null
+var _slider_shadow_opacity: HSlider = null
+var _label_shadow_opacity_val: Label = null
+var _slider_shadow_penumbra: HSlider = null
+var _label_shadow_penumbra_val: Label = null
+var _slider_shadow_expansion: HSlider = null
+var _label_shadow_expansion_val: Label = null
+var _slider_shadow_fade: HSlider = null
+var _label_shadow_fade_val: Label = null
+var _slider_planet_exposure: HSlider = null
+var _label_planet_exposure_val: Label = null
+var _slider_star_core: HSlider = null
+var _label_star_core_val: Label = null
 
 func _ready() -> void:
 	layer = 120
@@ -125,7 +141,7 @@ func _build_debug_ui() -> void:
 	_debug_panel.offset_left = -390.0
 	_debug_panel.offset_top = 65.0
 	_debug_panel.offset_right = -20.0
-	_debug_panel.offset_bottom = 620.0
+	_debug_panel.offset_bottom = 760.0
 	_debug_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_debug_panel.visible = false
 	add_child(_debug_panel)
@@ -203,6 +219,19 @@ func _build_debug_ui() -> void:
 	_slider_parallax.value_changed.connect(_on_parallax_slider_changed)
 	vbox.add_child(_slider_parallax)
 
+	# Velocidad / Factor de Paralaje del Buffer Óptico 8K (Segunda Capa)
+	_label_star_parallax_val = Label.new()
+	_label_star_parallax_val.text = "Paralaje Buffer Óptico 8K: 0.00650"
+	_label_star_parallax_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_star_parallax_val)
+	_slider_star_parallax = HSlider.new()
+	_slider_star_parallax.min_value = 0.00000
+	_slider_star_parallax.max_value = 0.02000
+	_slider_star_parallax.step = 0.00010
+	_slider_star_parallax.value = 0.00650
+	_slider_star_parallax.value_changed.connect(_on_star_parallax_slider_changed)
+	vbox.add_child(_slider_star_parallax)
+
 	# Intensidad Estelar
 	_label_stars_val = Label.new()
 	_label_stars_val.text = "Intensidad Estelar 8K: 2.40"
@@ -228,6 +257,91 @@ func _build_debug_ui() -> void:
 	_slider_nebula.value = 2.0
 	_slider_nebula.value_changed.connect(_on_nebula_density_slider_changed)
 	vbox.add_child(_slider_nebula)
+
+	# 5. Sombras Planetarias y Fotometría Solar
+	vbox.add_child(HSeparator.new())
+	var lbl_sol: Label = Label.new()
+	lbl_sol.text = "SOMBRAS Y FOTOMETRÍA SOLAR:"
+	lbl_sol.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(lbl_sol)
+
+	_check_shadows = CheckBox.new()
+	_check_shadows.text = "🌑 Sombras Planetarias Activas"
+	_check_shadows.button_pressed = true
+	_check_shadows.toggled.connect(_on_shadows_toggled)
+	vbox.add_child(_check_shadows)
+
+	_label_shadow_opacity_val = Label.new()
+	_label_shadow_opacity_val.text = "Opacidad de Sombra: 0.75"
+	_label_shadow_opacity_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_shadow_opacity_val)
+	_slider_shadow_opacity = HSlider.new()
+	_slider_shadow_opacity.min_value = 0.0
+	_slider_shadow_opacity.max_value = 1.0
+	_slider_shadow_opacity.step = 0.05
+	_slider_shadow_opacity.value = 0.75
+	_slider_shadow_opacity.value_changed.connect(_on_shadow_opacity_changed)
+	vbox.add_child(_slider_shadow_opacity)
+
+	_label_shadow_penumbra_val = Label.new()
+	_label_shadow_penumbra_val.text = "Suavidad de Penumbra: 0.45"
+	_label_shadow_penumbra_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_shadow_penumbra_val)
+	_slider_shadow_penumbra = HSlider.new()
+	_slider_shadow_penumbra.min_value = 0.05
+	_slider_shadow_penumbra.max_value = 0.90
+	_slider_shadow_penumbra.step = 0.05
+	_slider_shadow_penumbra.value = 0.45
+	_slider_shadow_penumbra.value_changed.connect(_on_shadow_penumbra_changed)
+	vbox.add_child(_slider_shadow_penumbra)
+
+	_label_shadow_expansion_val = Label.new()
+	_label_shadow_expansion_val.text = "Expansión Cónica: 1.85x"
+	_label_shadow_expansion_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_shadow_expansion_val)
+	_slider_shadow_expansion = HSlider.new()
+	_slider_shadow_expansion.min_value = 1.00
+	_slider_shadow_expansion.max_value = 3.50
+	_slider_shadow_expansion.step = 0.05
+	_slider_shadow_expansion.value = 1.85
+	_slider_shadow_expansion.value_changed.connect(_on_shadow_expansion_changed)
+	vbox.add_child(_slider_shadow_expansion)
+
+	_label_shadow_fade_val = Label.new()
+	_label_shadow_fade_val.text = "Fade Heliopausa: 0.22"
+	_label_shadow_fade_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_shadow_fade_val)
+	_slider_shadow_fade = HSlider.new()
+	_slider_shadow_fade.min_value = 0.02
+	_slider_shadow_fade.max_value = 0.50
+	_slider_shadow_fade.step = 0.01
+	_slider_shadow_fade.value = 0.22
+	_slider_shadow_fade.value_changed.connect(_on_shadow_fade_changed)
+	vbox.add_child(_slider_shadow_fade)
+
+	_label_planet_exposure_val = Label.new()
+	_label_planet_exposure_val.text = "Exposición Diurna Planetas: 1.30"
+	_label_planet_exposure_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_planet_exposure_val)
+	_slider_planet_exposure = HSlider.new()
+	_slider_planet_exposure.min_value = 0.8
+	_slider_planet_exposure.max_value = 2.5
+	_slider_planet_exposure.step = 0.05
+	_slider_planet_exposure.value = 1.30
+	_slider_planet_exposure.value_changed.connect(_on_planet_exposure_changed)
+	vbox.add_child(_slider_planet_exposure)
+
+	_label_star_core_val = Label.new()
+	_label_star_core_val.text = "Brillo Núcleo Solar: 1.25"
+	_label_star_core_val.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_label_star_core_val)
+	_slider_star_core = HSlider.new()
+	_slider_star_core.min_value = 0.8
+	_slider_star_core.max_value = 2.5
+	_slider_star_core.step = 0.05
+	_slider_star_core.value = 1.25
+	_slider_star_core.value_changed.connect(_on_star_core_changed)
+	vbox.add_child(_slider_star_core)
 
 	vbox.add_child(HSeparator.new())
 
@@ -326,6 +440,15 @@ func _on_parallax_slider_changed(val: float) -> void:
 	if cosmos_root != null and cosmos_root.environment_profile != null:
 		cosmos_root.environment_profile.parallax_multiplier = val
 
+func _on_star_parallax_slider_changed(val: float) -> void:
+	if _label_star_parallax_val != null:
+		_label_star_parallax_val.text = "Paralaje Buffer Óptico 8K: %.5f" % val
+	if cosmos_root != null:
+		if cosmos_root.environment_profile != null:
+			cosmos_root.environment_profile.starfield_scroll_scale = Vector2(val, val)
+		elif cosmos_root.parallax_starfield_8k != null:
+			cosmos_root.parallax_starfield_8k.scroll_scale = Vector2(val, val)
+
 func _on_star_intensity_slider_changed(val: float) -> void:
 	if _label_stars_val != null:
 		_label_stars_val.text = "Intensidad Estelar 8K: %.2f" % val
@@ -340,6 +463,85 @@ func _on_nebula_density_slider_changed(val: float) -> void:
 			cosmos_root.environment_profile.biome_a_profile.gas_density = val
 		cosmos_root.apply_environment_profile()
 
+func _on_shadows_toggled(toggled_on: bool) -> void:
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.enable_planetary_shadows = toggled_on
+			if prof.shadow_config != null:
+				prof.shadow_config.enable_planetary_shadows = toggled_on
+		cosmos_root.solar_streamer.set_shadows_enabled(toggled_on)
+
+func _on_shadow_opacity_changed(val: float) -> void:
+	if _label_shadow_opacity_val != null:
+		_label_shadow_opacity_val.text = "Opacidad de Sombra: %.2f" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.shadow_intensity = val
+			if prof.shadow_config != null:
+				prof.shadow_config.shadow_intensity = val
+		cosmos_root.solar_streamer.set_shadow_opacity(val)
+
+func _on_shadow_penumbra_changed(val: float) -> void:
+	if _label_shadow_penumbra_val != null:
+		_label_shadow_penumbra_val.text = "Suavidad de Penumbra: %.2f" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.shadow_penumbra_ratio = val
+			if prof.shadow_config != null:
+				prof.shadow_config.shadow_penumbra_ratio = val
+		cosmos_root.solar_streamer.set_shadow_penumbra_ratio(val)
+
+func _on_shadow_expansion_changed(val: float) -> void:
+	if _label_shadow_expansion_val != null:
+		_label_shadow_expansion_val.text = "Expansión Cónica: %.2fx" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.shadow_expansion_factor = val
+			if prof.shadow_config != null:
+				prof.shadow_config.shadow_expansion_factor = val
+		cosmos_root.solar_streamer.set_shadow_expansion_factor(val)
+
+func _on_shadow_fade_changed(val: float) -> void:
+	if _label_shadow_fade_val != null:
+		_label_shadow_fade_val.text = "Fade Heliopausa: %.2f" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.shadow_heliopause_fade = val
+			if prof.shadow_config != null:
+				prof.shadow_config.shadow_heliopause_fade = val
+		cosmos_root.solar_streamer.set_shadow_heliopause_fade(val)
+
+func _on_planet_exposure_changed(val: float) -> void:
+	if _label_planet_exposure_val != null:
+		_label_planet_exposure_val.text = "Exposición Diurna Planetas: %.2f" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			prof.planet_day_exposure = val
+			if prof.planetary_config != null:
+				prof.planetary_config.planet_day_exposure = val
+		cosmos_root.solar_streamer.set_planet_day_exposure(val)
+
+func _on_star_core_changed(val: float) -> void:
+	if _label_star_core_val != null:
+		_label_star_core_val.text = "Brillo Núcleo Solar: %.2f" % val
+	if cosmos_root != null and cosmos_root.solar_streamer != null:
+		var prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+		if prof != null:
+			if prof.star_visual_config != null:
+				prof.star_visual_config.core_brightness = val
+			for arch: StarArchetype in prof.star_archetypes:
+				if arch != null:
+					arch.core_brightness = val
+					if arch.visual_config != null:
+						arch.visual_config.core_brightness = val
+		cosmos_root.solar_streamer.set_star_core_brightness(val)
+
 func _sync_ui_state_from_engine() -> void:
 	if cosmos_root != null:
 		_sync_checkbox_stratum(1, cosmos_root.get_layer_visibility(1))
@@ -352,12 +554,38 @@ func _sync_ui_state_from_engine() -> void:
 			if _slider_parallax != null:
 				_slider_parallax.set_value_no_signal(prof.parallax_multiplier)
 				_label_parallax_val.text = "Paralaje Global: %.2fx" % prof.parallax_multiplier
+			if _slider_star_parallax != null:
+				var star_px: float = prof.starfield_scroll_scale.x
+				_slider_star_parallax.set_value_no_signal(star_px)
+				_label_star_parallax_val.text = "Paralaje Buffer Óptico 8K: %.5f" % star_px
 			if _slider_stars != null:
 				_slider_stars.set_value_no_signal(prof.star_intensity)
 				_label_stars_val.text = "Intensidad Estelar 8K: %.2f" % prof.star_intensity
 			if _slider_nebula != null and prof.biome_a_profile != null:
 				_slider_nebula.set_value_no_signal(prof.biome_a_profile.gas_density)
 				_label_nebula_val.text = "Densidad de Gas Nebular: %.2f" % prof.biome_a_profile.gas_density
+
+		if cosmos_root.solar_streamer != null and cosmos_root.solar_streamer.system_profile != null:
+			var s_prof: CelestialSystemProfile = cosmos_root.solar_streamer.system_profile
+			var sh_cfg: ShadowSystemConfig = s_prof.get_effective_shadow_config()
+			var pl_cfg: PlanetarySystemConfig = s_prof.get_effective_planetary_config()
+			if _check_shadows != null:
+				_check_shadows.set_pressed_no_signal(sh_cfg.enable_planetary_shadows)
+			if _slider_shadow_opacity != null:
+				_slider_shadow_opacity.set_value_no_signal(sh_cfg.shadow_intensity)
+				_label_shadow_opacity_val.text = "Opacidad de Sombra: %.2f" % sh_cfg.shadow_intensity
+			if _slider_shadow_penumbra != null:
+				_slider_shadow_penumbra.set_value_no_signal(sh_cfg.shadow_penumbra_ratio)
+				_label_shadow_penumbra_val.text = "Suavidad de Penumbra: %.2f" % sh_cfg.shadow_penumbra_ratio
+			if _slider_shadow_expansion != null:
+				_slider_shadow_expansion.set_value_no_signal(sh_cfg.shadow_expansion_factor)
+				_label_shadow_expansion_val.text = "Expansión Cónica: %.2fx" % sh_cfg.shadow_expansion_factor
+			if _slider_shadow_fade != null:
+				_slider_shadow_fade.set_value_no_signal(sh_cfg.shadow_heliopause_fade)
+				_label_shadow_fade_val.text = "Fade Heliopausa: %.2f" % sh_cfg.shadow_heliopause_fade
+			if _slider_planet_exposure != null:
+				_slider_planet_exposure.set_value_no_signal(pl_cfg.planet_day_exposure)
+				_label_planet_exposure_val.text = "Exposición Diurna Planetas: %.2f" % pl_cfg.planet_day_exposure
 
 	if debug_drawer != null and _check_gizmos != null:
 		_check_gizmos.set_pressed_no_signal(debug_drawer.enabled)

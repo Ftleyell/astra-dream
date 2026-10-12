@@ -12,10 +12,11 @@
 | **Perfil Maestro Unificado** | [`sandbox/resources/cosmos_environment_profile.gd`](../../sandbox/resources/cosmos_environment_profile.gd) | [`sandbox/resources/data/default_cosmos_environment.tres`](../../sandbox/resources/data/default_cosmos_environment.tres) | Centraliza factores de paralaje (1-5), sub-perfiles y parámetros ópticos de shaders con propagación reactiva en runtime. |
 | **Origen Flotante (Anti-Jitter)** | [`sandbox/core/floating_origin_tracker.gd`](../../sandbox/core/floating_origin_tracker.gd) | Configurado en nodo export | Umbral de recentrado (`threshold_distance = 10000.0`), absorción en `Parallax2D.scroll_offset`. |
 | **Grid Determinista & Hash** | [`sandbox/core/cosmic_macro_grid.gd`](../../sandbox/core/cosmic_macro_grid.gd) / [`cosmic_hasher.gd`](../../sandbox/core/cosmic_hasher.gd) | — | Tamaño de cuadrantes ($O(1)$ sin estado), funciones hash pseudo-aleatorias y semillas estables. |
-| **Sistemas Solares & Órbitas** | [`sandbox/astronomy/solar_system_streamer.gd`](../../sandbox/astronomy/solar_system_streamer.gd) | [`sandbox/resources/data/default_celestial_system.tres`](../../sandbox/resources/data/default_celestial_system.tres) | Generación de estrellas centrales, planetas keplerianos, radios min/max, lunas y streaming por celda. |
-| **Cuerpos Celestes Individuales** | [`sandbox/astronomy/solar_system_2d.gd`](../../sandbox/astronomy/solar_system_2d.gd) / [`orbital_body_2d.gd`](../../sandbox/astronomy/orbital_body_2d.gd) | [`sandbox/resources/celestial_system_profile.gd`](../../sandbox/resources/celestial_system_profile.gd) | Fórmulas analíticas $\theta(t) = \theta_0 + t \cdot \omega$, dibujo de órbitas vectoriales, sol central. |
+| **Sistemas Solares & Órbitas** | [`sandbox/astronomy/solar_system_streamer.gd`](../../sandbox/astronomy/solar_system_streamer.gd) | [`sandbox/resources/data/default_planetary_system.tres`](../../sandbox/resources/data/default_planetary_system.tres) / [`default_celestial_system.tres`](../../sandbox/resources/data/default_celestial_system.tres) | Generación de estrellas centrales, planetas keplerianos, radios min/max, lunas y streaming por celda. |
+| **Sombras Planetarias & Eclipses** | [`sandbox/astronomy/planetary_shadow_projector_2d.gd`](../../sandbox/astronomy/planetary_shadow_projector_2d.gd) | [`sandbox/resources/data/default_shadow_system.tres`](../../sandbox/resources/data/default_shadow_system.tres) | Conos de sombra analíticos, penumbra smoothstep, desvanecimiento en heliopausa y composición anti-double-darkening. |
+| **Cuerpos Celestes Individuales** | [`sandbox/astronomy/solar_system_2d.gd`](../../sandbox/astronomy/solar_system_2d.gd) / [`orbital_body_2d.gd`](../../sandbox/astronomy/orbital_body_2d.gd) | [`sandbox/resources/data/default_star_visual.tres`](../../sandbox/resources/data/default_star_visual.tres) / [`star_archetypes/`](../../sandbox/resources/data/star_archetypes/) | Fórmulas analíticas keplerianas, dibujo de órbitas vectoriales, sol central, corona y heliosfera. |
 | **Macro-Galaxias Ultra-Lentas** | [`sandbox/rendering/galaxy_streamer_2d.gd`](../../sandbox/rendering/galaxy_streamer_2d.gd) | [`sandbox/resources/data/default_galaxy_landmark.tres`](../../sandbox/resources/data/default_galaxy_landmark.tres) | Regla de galaxia única sin solapamiento, retención analítica en frustum anti-desaparición, capa ultra-profunda (`scroll_scale = 0.04`). |
-| **Buffer Estelar 8K Óptico (Capa 2)** | [`sandbox/shaders/deep_starfield.gdshader`](../../sandbox/shaders/deep_starfield.gdshader) | Configurado en `ShaderMaterial_starfield` ([`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L40)) | Muestreo 1:1 de máscara 8K RGB pura. Kernel óptico expansivo: halos, núcleo incandescente y espículas de 4 puntas (B: gigantes azules, G: amarillas, R: cálidas). Discard de fondo negro. |
+| **Buffer Estelar 8K Óptico (Capa 2)** | [`sandbox/shaders/deep_starfield.gdshader`](../../sandbox/shaders/deep_starfield.gdshader) / [`starfield_backdrop_controller.gd`](../../sandbox/rendering/starfield_backdrop_controller.gd) | Configurado en `ShaderMaterial_starfield` ([`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L40)) | CanvasLayer (-105) a pantalla completa inmune al zoom. Muestreo 1:1 de máscara 8K RGB pura. Kernel óptico: halos, núcleo incandescente y espículas. Discard de fondo negro. |
 | **Micro-Estrellas Nebulares (Capa 1)** | [`sandbox/shaders/universe_nebula.gdshader`](../../sandbox/shaders/universe_nebula.gdshader#L134) | Configurado en `ShaderMaterial_nebula` ([`cosmos_root.tscn`](../../sandbox/cosmos_root.tscn#L23)) | Ventana amplia (escala 3.0) para micro-estrellas nítidas de 1-2px, tintadas por canal RGB sin espículas ni centelleo. Fondo casi inmóvil (`parallax = 0.005`). |
 | **Cinturón de Escombros GPU** | [`sandbox/environment/debris_streamer_2d.gd`](../../sandbox/environment/debris_streamer_2d.gd) | [`sandbox/resources/data/default_debris_layer.tres`](../../sandbox/resources/data/default_debris_layer.tres) | `MultiMeshInstance2D` (1 draw call, 2000 fragmentos), densidad, escala, rotación estocástica. |
 | **Shader de Nebulosa & Biomas** | [`sandbox/shaders/universe_nebula.gdshader`](../../sandbox/shaders/universe_nebula.gdshader) / [`nebula_backdrop_controller.gd`](../../sandbox/rendering/nebula_backdrop_controller.gd) | [`sandbox/resources/data/default_cosmic_biome.tres`](../../sandbox/resources/data/default_cosmic_biome.tres) | FBM Simplex en GPU, anti-tiling estocástico, blending de color A/B, turbulencia de gas. |
@@ -54,7 +55,9 @@
   - `pulse_speed`: Frecuencia de latido y respiración del plasma solar.
   - `light_field_radius_multiplier` / `light_field_intensity`: Alcance e intensidad del halo ambiental y bioma estelar.
   - `heliosphere_noise_strength` / `heliosphere_edge_feather`: Turbulencia FBM del bioma de gas orbital y suavidad del fade out en el borde orbital.
-  - `planet_day_tint_strength` / `planet_atmo_tint_strength`: Intensidad del baño de luz solar diurna en la corteza y atmósfera del planeta (atenuado por distancia al sol).
+  - `core_brightness`: Brillo térmico del núcleo solar en el shader de corona (calibrado a: `1.25` para evitar deslumbramiento blanco excesivo).
+  - `planet_day_exposure` / `planet_night_ambient`: Factor de exposición diurna (`1.30`) y luz ambiental nocturna enriquecida (`0.22`, earthshine/starlight) en `celestial_body.gdshader`.
+  - `enable_planetary_shadows` / `shadow_intensity` / `shadow_penumbra_ratio` / `shadow_expansion_factor` / `shadow_heliopause_fade` / `shadow_tint`: Sistema de sombras planetarias concéntricas agrupadas en `CanvasGroup` con shader de composición `cosmic_shadow_group.gdshader` (Anti Double-Darkening garantizado). Punta circular concéntrica exacta a la heliopausa (`r_sun = sqrt((D+x)^2 + y^2)`), base calibrada al disco visible real y eclipses interplanetarios analíticos en GPU. Ajustable en vivo desde el Debug Panel (F1): Opacidad, Suavidad de Penumbra, Expansión Cónica y Fade Heliopausa.
 
 ### B. Si quieres cambiar la escala, distancia o velocidad de las Macro-Galaxias de fondo:
 - **Archivo de Balance:** [`sandbox/resources/data/default_galaxy_landmark.tres`](../../sandbox/resources/data/default_galaxy_landmark.tres)
@@ -71,12 +74,16 @@
 
 
 
-### C. Si quieres cambiar la cantidad o velocidad de Escombros Espaciales:
+### C. Si quieres cambiar la cantidad, mezclas o estratos de Escombros Espaciales (Dual MultiMesh):
 - **Archivo:** [`sandbox/resources/data/default_debris_layer.tres`](../../sandbox/resources/data/default_debris_layer.tres)
 - **Variables clave:**
-  - `max_instances`: Cantidad en el pool de GPU (default: `1200` - máx recomendado: `2000`).
-  - `cell_size`: Cuadrante de regeneración estocástica.
-  - `min_scale` / `max_scale`: Tamaño de las rocas y chatarras.
+  - `rock_texture` / `scrap_texture`: Texturas de atlas (`debris_atlas_0.png` y `debris_atlas_1.png`).
+  - `instance_count` / `scrap_instance_count`: Instancias por estrato (default: 1000 rocas, 600 chatarra -> 1600 total en 2 draw calls).
+  - `micro_ratio` / `medium_ratio` / `macro_ratio`: Ponderación estocástica de tamaños (calibrado a 70% micro, 25% mediano, 5% macro).
+  - `micro_scale_range` / `medium_scale_range` / `macro_scale_range`: Rangos de escala para cada estrato sin deformación de aspecto.
+  - `micro_alpha_multiplier` / `medium_alpha_multiplier` / `macro_alpha_multiplier`: Modulación de alfa y profundidad por estrato.
+  - `cell_size`: Cuadrante espacial de regeneración estocástica (default: `8192.0` px).
+
 
 ### D. Si quieres alterar los colores o densidad de la Nebulosa:
 - **Archivo:** [`sandbox/resources/data/default_cosmic_biome.tres`](../../sandbox/resources/data/default_cosmic_biome.tres) / [`sandbox/cosmos_root.tscn`](../../sandbox/cosmos_root.tscn)

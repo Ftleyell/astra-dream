@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CelestialSystemProfile" load_steps=18 format=3]
+[gd_resource type="Resource" script_class="CelestialSystemProfile" load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://sandbox/resources/celestial_system_profile.gd" id="1_celestial"]
 [ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star.jpg" id="2_star_0"]
@@ -17,10 +17,18 @@
 [ext_resource type="Resource" path="res://sandbox/resources/data/star_archetypes/yellow_dwarf.tres" id="15_arch_yellow"]
 [ext_resource type="Resource" path="res://sandbox/resources/data/star_archetypes/blue_giant.tres" id="16_arch_blue"]
 [ext_resource type="Resource" path="res://sandbox/resources/data/star_archetypes/red_dwarf.tres" id="17_arch_red"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/star_archetypes/white_dwarf.tres" id="18_arch_white"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/star_archetypes/magnetar.tres" id="19_arch_magnetar"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_star_visual.tres" id="20_star_vis"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_planetary_system.tres" id="21_planet_sys"]
+[ext_resource type="Resource" path="res://sandbox/resources/data/default_shadow_system.tres" id="22_shadow_sys"]
 
 [resource]
 script = ExtResource("1_celestial")
-star_archetypes = [ExtResource("15_arch_yellow"), ExtResource("16_arch_blue"), ExtResource("17_arch_red")]
+star_visual_config = ExtResource("20_star_vis")
+planetary_config = ExtResource("21_planet_sys")
+shadow_config = ExtResource("22_shadow_sys")
+star_archetypes = [ExtResource("15_arch_yellow"), ExtResource("16_arch_blue"), ExtResource("17_arch_red"), ExtResource("18_arch_white"), ExtResource("19_arch_magnetar")]
 star_name_prefix = "SOLARIS"
 star_texture = ExtResource("2_star_0")
 star_textures = [ExtResource("2_star_0"), ExtResource("3_star_1"), ExtResource("4_star_2")]
@@ -59,3 +67,9 @@ space_station_textures = [ExtResource("12_station_0"), ExtResource("13_station_1
 show_orbit_lines = true
 orbit_line_color = Color(0.7, 0.85, 1.0, 0.14)
 orbit_line_width = 1.5
+enable_planetary_shadows = true
+shadow_intensity = 0.75
+shadow_penumbra_ratio = 0.45
+shadow_expansion_factor = 1.85
+shadow_heliopause_fade = 0.22
+shadow_tint = Color(0.18, 0.18, 0.24, 1.0)

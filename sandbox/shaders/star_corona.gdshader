@@ -12,7 +12,7 @@ uniform sampler2D star_texture : filter_linear_mipmap, repeat_disable;
 uniform vec4 star_tint : source_color = vec4(1.0, 0.85, 0.45, 1.0);
 uniform float heat_distortion_strength : hint_range(0.0, 0.15) = 0.045;
 uniform float pulse_speed : hint_range(0.1, 5.0) = 1.5;
-uniform float core_brightness : hint_range(1.0, 3.0) = 1.6;
+uniform float core_brightness : hint_range(0.8, 3.0) = 1.25;
 uniform float corona_intensity : hint_range(0.0, 2.0) = 0.85;
 uniform float black_threshold : hint_range(0.01, 0.3) = 0.06;
 

@@ -52,14 +52,7 @@ func add_orbital_child(child_body: OrbitalBody2D) -> void:
 ## Evalúa la posición orbital y rotación propia de forma puramente analítica.
 ## Si orbit_radius == 0, permanece en su origen (usado para la estrella central).
 func evaluate_orbital_position(global_time: float) -> void:
-	if orbit_radius > 0.0001:
-		var current_theta: float = initial_theta + (angular_velocity * global_time)
-		position = Vector2(
-			orbit_radius * cos(current_theta),
-			orbit_radius * sin(current_theta)
-		)
-	else:
-		position = Vector2.ZERO
+	position = KeplerOrbitMath.calculate_orbit_position(orbit_radius, initial_theta, angular_velocity, global_time)
 
 	if _sprite != null and axial_rotation_velocity != 0.0:
 		_sprite.rotation = initial_axial_rotation + (axial_rotation_velocity * global_time)

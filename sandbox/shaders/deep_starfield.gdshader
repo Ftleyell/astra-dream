@@ -30,12 +30,9 @@ uniform vec4 tint_yellow_star : source_color = vec4(1.70, 1.40, 0.35, 1.0);  // 
 uniform vec4 tint_blue_star : source_color = vec4(0.50, 1.10, 2.10, 1.0);    // Gigante azul eléctrico / zafiro
 
 uniform float global_time = 0.0;
-
-varying vec2 world_pos;
-
-void vertex() {
-	world_pos = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
-}
+uniform vec2 camera_world_position = vec2(0.0);
+uniform vec2 viewport_resolution = vec2(1920.0, 1080.0);
+uniform vec2 scroll_scale = vec2(0.0015);
 
 float hash_star(vec2 p) {
 	vec2 i = floor(p);
@@ -44,7 +41,9 @@ float hash_star(vec2 p) {
 
 void fragment() {
 	const float BUFFER_SIZE = 8192.0;
-	vec2 base_uv = (world_pos * window_scale + window_offset) / BUFFER_SIZE;
+	vec2 screen_coord = FRAGCOORD.xy;
+	vec2 star_world_pos = camera_world_position * scroll_scale + (screen_coord - viewport_resolution * 0.5);
+	vec2 base_uv = (star_world_pos * window_scale + window_offset) / BUFFER_SIZE;
 
 	// Muestreo continuo bilineal directo en nivel MIP 0 (sin saltos erráticos de derivadas dFdx/dFdy)
 	vec3 star_raw = textureLod(starfield_texture, base_uv, 0.0).rgb;
@@ -58,28 +57,29 @@ void fragment() {
 	float normalized_luma = smoothstep(threshold_cutoff, 0.85, star_luma);
 	float radial_curve = pow(normalized_luma, 1.25);
 
-	// Asignación espectral continua con gran contraste cromático
-	float r_w = pow(star_raw.r, 2.0);
-	float g_w = pow(star_raw.g, 2.0);
-	float b_w = pow(star_raw.b, 2.0);
-	float sum_w = r_w + g_w + b_w;
+	// Generación de semillas pseudoaleatorias continuas
+	vec2 star_uv_block = floor(base_uv * 2048.0);
+	float star_seed = hash_star(star_uv_block);
+	float star_seed2 = hash_star(star_uv_block + vec2(73.1, 151.7));
 
-	vec3 star_tint;
-	// Semilla pseudoaleatoria basada en bloques UV continuos para coherencia cromática y centelleo
-	vec2 color_block_id = floor(base_uv * 1024.0);
-	float star_seed = hash_star(color_block_id);
-
-	if (sum_w > 0.0001) {
-		star_tint = (r_w * tint_red_star.rgb + g_w * tint_yellow_star.rgb + b_w * tint_blue_star.rgb) / sum_w;
+	// Clasificación espectral estocástica orgánica (tonos estelares reales y variados)
+	vec3 spectral_tint;
+	if (star_seed < 0.35) {
+		// Enana roja / Rubí cálido / Ámbar naranja
+		spectral_tint = mix(vec3(1.95, 0.55, 0.20), vec3(1.85, 0.85, 0.30), star_seed2);
+	} else if (star_seed < 0.65) {
+		// Amarilla dorada / Blanco cálido solar
+		spectral_tint = mix(vec3(1.75, 1.50, 0.50), vec3(1.30, 1.35, 1.05), star_seed2);
+	} else if (star_seed < 0.90) {
+		// Gigante azul zafiro / Cian eléctrico
+		spectral_tint = mix(vec3(0.50, 1.15, 2.25), vec3(0.70, 1.50, 2.10), star_seed2);
 	} else {
-		if (star_seed < 0.33) {
-			star_tint = tint_red_star.rgb;
-		} else if (star_seed < 0.66) {
-			star_tint = tint_yellow_star.rgb;
-		} else {
-			star_tint = tint_blue_star.rgb;
-		}
+		// Estrellas exóticas / violeta profundo o esmeralda cósmica tenue
+		spectral_tint = mix(vec3(1.40, 0.60, 2.10), vec3(0.40, 1.85, 1.20), star_seed2);
 	}
+
+	// Variación orgánica de magnitud/intensidad por estrella individual (evita que todas brillen igual)
+	float star_magnitude = 0.55 + star_seed2 * 0.90; // Rango [0.55, 1.45]
 
 	// Centelleo orgánico continuo
 	float current_time = global_time > 0.001 ? global_time : TIME;
@@ -91,17 +91,19 @@ void fragment() {
 	float spike_climax = pow(max(0.0, composite_twinkle), 4.5);
 	float twinkle = 0.70 + 0.30 * composite_twinkle + (spike_climax * twinkle_amount * 2.0);
 
-	// Cuerpo estelar esférico puro y halo incandescente expandido
-	vec3 colored_body = star_tint * radial_curve * 2.8;
+	// Cuerpo estelar esférico con color saturado
+	vec3 colored_body = spectral_tint * radial_curve * 2.6;
+	
+	// Núcleo incandescente: mantiene el tinte estelar y solo añade blanco suave en el centro de estrellas muy potentes
 	float core_intensity = pow(normalized_luma, 2.8);
-	vec3 core_glow = (star_tint * 1.6 + vec3(0.80)) * (core_intensity * 0.75);
+	vec3 core_glow = (spectral_tint * 1.8 + vec3(0.25)) * (core_intensity * 0.65);
 
 	// Destello de difracción simétrico de 4 puntas en astros brillantes durante picos de centelleo
 	float center_peak = smoothstep(0.40, 0.95, star_luma);
 	float cross_sparkle = pow(center_peak, 2.2) * (0.35 + spike_climax * 1.6) * lens_flare_intensity;
-	vec3 cross_glint = (star_tint * 1.4 + vec3(0.60)) * (cross_sparkle * 0.40);
+	vec3 cross_glint = (spectral_tint * 1.5 + vec3(0.30)) * (cross_sparkle * 0.40);
 
-	vec3 star_disc = colored_body + core_glow + cross_glint;
+	vec3 star_disc = (colored_body + core_glow + cross_glint) * star_magnitude;
 
 	// Salida final en modo blend_add
 	vec3 final_color = star_disc * twinkle * star_intensity;

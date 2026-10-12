@@ -36,7 +36,7 @@ signal origin_shifted(shift_vector: Vector2)
 @export var nebula_controller: NebulaBackdropController
 @export var parallax_macro_galaxies: Parallax2D
 @export var galaxy_streamer: GalaxyStreamer2D
-@export var parallax_starfield_8k: Parallax2D
+@export var parallax_starfield_8k: CanvasItem
 @export var parallax_solar_systems: Parallax2D
 @export var solar_streamer: SolarSystemStreamer
 @export var parallax_debris_belt: Parallax2D
@@ -128,8 +128,11 @@ func apply_environment_profile() -> void:
 
 	if parallax_debris_belt != null and is_instance_valid(parallax_debris_belt):
 		parallax_debris_belt.scroll_scale = environment_profile.debris_scroll_scale * mult
-	if debris_streamer != null and is_instance_valid(debris_streamer) and environment_profile.debris_profile != null:
-		debris_streamer.profile = environment_profile.debris_profile
+	if debris_streamer != null and is_instance_valid(debris_streamer):
+		if environment_profile.debris_profile != null:
+			debris_streamer.profile = environment_profile.debris_profile
+		if environment_profile.solar_profile != null:
+			debris_streamer.celestial_profile = environment_profile.solar_profile
 
 ## Control de visibilidad por estrato cósmico (1: Nebulosa, 2: Starfield, 3: Galaxias, 4: Solar, 5: Debris)
 func set_layer_visibility(layer_index: int, is_visible: bool) -> void:
@@ -185,9 +188,12 @@ func toggle_layer_visibility(layer_index: int) -> bool:
 
 func _cache_starfield_material() -> void:
 	if parallax_starfield_8k != null:
-		var sprite: Sprite2D = parallax_starfield_8k.get_node_or_null("StarfieldSprite") as Sprite2D
-		if sprite != null and sprite.material is ShaderMaterial:
-			_starfield_mat = sprite.material as ShaderMaterial
+		if parallax_starfield_8k is ColorRect:
+			_starfield_mat = (parallax_starfield_8k as ColorRect).material as ShaderMaterial
+		else:
+			var sprite: Sprite2D = parallax_starfield_8k.get_node_or_null("StarfieldSprite") as Sprite2D
+			if sprite != null and sprite.material is ShaderMaterial:
+				_starfield_mat = sprite.material as ShaderMaterial
 
 func _setup_floating_origin() -> void:
 	if floating_origin_tracker == null:
@@ -204,8 +210,8 @@ func _setup_floating_origin() -> void:
 			var layers: Array[Parallax2D] = []
 			if parallax_macro_galaxies != null:
 				layers.append(parallax_macro_galaxies)
-			if parallax_starfield_8k != null:
-				layers.append(parallax_starfield_8k)
+			if parallax_starfield_8k is Parallax2D:
+				layers.append(parallax_starfield_8k as Parallax2D)
 			if parallax_solar_systems != null:
 				layers.append(parallax_solar_systems)
 			if parallax_debris_belt != null:
@@ -219,10 +225,17 @@ func _bind_camera_to_streamers() -> void:
 		galaxy_streamer.camera = camera
 	if solar_streamer != null and solar_streamer.camera == null:
 		solar_streamer.camera = camera
-	if debris_streamer != null and debris_streamer.camera == null:
-		debris_streamer.camera = camera
+	if debris_streamer != null:
+		if debris_streamer.camera == null:
+			debris_streamer.camera = camera
+		if solar_streamer != null and debris_streamer.solar_streamer == null:
+			debris_streamer.solar_streamer = solar_streamer
 	if nebula_controller != null and nebula_controller.camera == null:
 		nebula_controller.camera = camera
+	if parallax_starfield_8k != null and parallax_starfield_8k is StarfieldBackdropController:
+		var star_ctrl: StarfieldBackdropController = parallax_starfield_8k as StarfieldBackdropController
+		if star_ctrl.camera == null:
+			star_ctrl.camera = camera
 
 func _process(delta: float) -> void:
 	var delta_time: float = delta * time_scale
@@ -253,26 +266,12 @@ func _sync_active_star_lights_to_nebula(delta: float) -> void:
 	var colors: PackedColorArray = PackedColorArray()
 	var radii: PackedFloat32Array = PackedFloat32Array()
 
-	var scroll_s: Vector2 = parallax_solar_systems.scroll_scale if parallax_solar_systems != null else Vector2.ONE
-	var scroll_off: Vector2 = parallax_solar_systems.scroll_offset if parallax_solar_systems != null else Vector2.ZERO
-
-	var vp_size: Vector2 = nebula_controller.get_viewport_rect().size
-	if vp_size == Vector2.ZERO:
-		vp_size = Vector2(1920.0, 1080.0)
-	var vp_center: Vector2 = vp_size * 0.5
-
-	var cam_pos: Vector2 = camera.get_screen_center_position() if camera != null else Vector2.ZERO
-	if cam_pos == Vector2.ZERO and camera != null and camera.global_position != Vector2.ZERO:
-		cam_pos = camera.global_position
 	var zoom_val: float = camera.zoom.x if camera != null and camera.zoom.x > 0.0001 else 1.0
 
-	var layer_center: Vector2 = (cam_pos * scroll_s) - scroll_off
-
-	# Punto de referencia de la nave/cámara proyectado al plano del estrato del sistema solar
+	# Punto de referencia de la nave/cámara en espacio de coordenadas globales
 	var player_world_pos: Vector2 = camera.global_position if camera != null else Vector2.ZERO
 	if player_target != null and is_instance_valid(player_target):
 		player_world_pos = player_target.global_position
-	var player_layer_pos: Vector2 = (player_world_pos * scroll_s) - scroll_off
 
 	var target_influence: float = 0.0
 	var closest_biome: CosmicBiomeConfig = null
@@ -287,8 +286,9 @@ func _sync_active_star_lights_to_nebula(delta: float) -> void:
 		var orbit_max: float = arch.orbit_radius_max if arch != null else 2400.0
 		var light_rad: float = orbit_max * 1.5
 
-		# Posición exacta del sol en pantalla (viewport space) y radio aparente
-		var sun_screen_pos: Vector2 = vp_center + (sys.position - layer_center) * zoom_val
+		# Posición exacta del centro del sol en pantalla (viewport space 1:1) y radio aparente
+		var star_item: CanvasItem = sys.star_body if (sys.star_body != null and is_instance_valid(sys.star_body)) else sys
+		var sun_screen_pos: Vector2 = star_item.get_global_transform_with_canvas().origin
 		var sun_screen_radius: float = light_rad * zoom_val
 
 		if positions.size() < 4:
@@ -296,9 +296,9 @@ func _sync_active_star_lights_to_nebula(delta: float) -> void:
 			colors.append(star_col)
 			radii.append(sun_screen_radius)
 
-		# Evaluar proximidad real de la nave en el plano del sol:
+		# Evaluar proximidad real de la nave al sol en coordenadas de juego:
 		# La transición comienza en 1.10 * orbit_max y alcanza 1.0 (saturación total) en 0.85 * orbit_max
-		var dist_to_sun: float = player_layer_pos.distance_to(sys.position)
+		var dist_to_sun: float = player_world_pos.distance_to(star_item.global_position)
 		var transition_outer: float = orbit_max * 1.10
 		var transition_inner: float = orbit_max * 0.85
 		if dist_to_sun < transition_outer:
@@ -324,6 +324,8 @@ func _on_floating_origin_shifted(shift: Vector2) -> void:
 	_accumulated_shift += shift
 	if nebula_controller != null and is_instance_valid(nebula_controller):
 		nebula_controller.accumulated_origin_shift = _accumulated_shift
+	if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k) and parallax_starfield_8k is StarfieldBackdropController:
+		(parallax_starfield_8k as StarfieldBackdropController).accumulated_origin_shift = _accumulated_shift
 	origin_shifted.emit(shift)
 
 ## Devuelve el tiempo cósmico universal transcurrido.

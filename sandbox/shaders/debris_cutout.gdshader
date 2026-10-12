@@ -8,28 +8,34 @@ render_mode blend_mix, unshaded;
 // y alpha-cutoff con descarte de fragmentos (discard) para evitar bordes cuadrados.
 
 uniform sampler2D atlas_texture : filter_linear_mipmap;
+uniform float global_time = 0.0;
 uniform float alpha_cutoff : hint_range(0.0, 1.0) = 0.08;
 uniform float drift_speed : hint_range(0.0, 100.0) = 15.0;
 uniform float spin_speed_mult : hint_range(0.0, 5.0) = 0.8;
 
-// INSTANCE_CUSTOM en MultiMeshInstance2D provee un vec4 por instancia:
-// INSTANCE_CUSTOM.xy -> UV offset del sub-rect en el atlas
-// INSTANCE_CUSTOM.zw -> UV scale (anchura, altura normalizadas) del sub-rect
+uniform float cell_radius = 6000.0;
+uniform float edge_fade_margin = 1200.0;
+
+varying vec2 v_local_pos;
 
 void vertex() {
-	// Variación determinista por instancia basada en su posición o UV offset
-	float seed = fract(INSTANCE_CUSTOM.x * 123.45 + INSTANCE_CUSTOM.y * 678.91);
+	v_local_pos = VERTEX;
+	float t = (global_time > 0.0) ? global_time : TIME;
+	// Semilla determinista derivada de UVs y coordenadas del atlas
+	float seed = fract(sin(float(INSTANCE_ID) * 12.9898 + INSTANCE_CUSTOM.x * 78.233 + INSTANCE_CUSTOM.y * 37.719) * 43758.5453);
 	float spin_rate = (seed - 0.5) * 2.0 * spin_speed_mult;
-	float angle = TIME * spin_rate;
+	float angle = t * spin_rate;
 
-	// Rotación 2D sobre el centro del quad local (-0.5 .. 0.5)
+	// Rotación 2D limpia sobre el centro del quad local (-0.5 .. 0.5)
 	float c = cos(angle);
 	float s = sin(angle);
 	vec2 rotated_v = vec2(VERTEX.x * c - VERTEX.y * s, VERTEX.x * s + VERTEX.y * c);
 
-	// Deriva sutil determinista en el espacio
-	vec2 drift_dir = vec2(cos(seed * 6.28318), sin(seed * 6.28318));
-	vec2 drift_offset = drift_dir * (TIME * drift_speed * (0.5 + seed * 0.5));
+	// Deriva armónica suave con amplitud atenuada para evitar jitter subpixel frente a la cámara
+	vec2 drift_offset = vec2(
+		cos(t * 0.15 + seed * 6.28318),
+		sin(t * 0.12 + seed * 6.28318)
+	) * (drift_speed * 0.02);
 
 	VERTEX = rotated_v + drift_offset;
 
@@ -45,7 +51,12 @@ void fragment() {
 		discard;
 	}
 
-	// Modulación de color por el color de la instancia
+	// Desvanecimiento suave en los bordes extremos del cuadrante para evitar cortes bruscos
+	float dist_from_center = max(abs(v_local_pos.x), abs(v_local_pos.y));
+	float fade_factor = 1.0 - smoothstep(cell_radius - edge_fade_margin, cell_radius, dist_from_center);
+
+	// Modulación de color por el color de la instancia y fade perimetral
 	COLOR = tex_color * COLOR;
+	COLOR.a *= fade_factor;
 }
 

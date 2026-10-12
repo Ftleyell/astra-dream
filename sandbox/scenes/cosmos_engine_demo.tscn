@@ -24,7 +24,7 @@ process_priority = -50
 script = ExtResource("2_origin_tracker")
 player_target = NodePath("../PlayerVessel")
 camera = NodePath("../PlayerVessel/CosmosCamera2D")
-parallax_layers = [NodePath("../ParallaxMacroGalaxies"), NodePath("../CanvasLayerStarfield/ParallaxStarfield8K"), NodePath("../ParallaxSolarSystems"), NodePath("../ParallaxDebrisBelt")]
+parallax_layers = [NodePath("../ParallaxMacroGalaxies"), NodePath("../ParallaxSolarSystems"), NodePath("../ParallaxDebrisBelt")]
 
 [node name="PlayerVessel" type="CharacterBody2D" parent="CosmosRoot" unique_id=1166928796]
 position = Vector2(960, 540)
