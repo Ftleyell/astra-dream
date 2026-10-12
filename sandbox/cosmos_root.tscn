@@ -130,7 +130,7 @@ system_profile = ExtResource("9_solar_res")
 parallax_layer = NodePath("..")
 
 [node name="ParallaxDebrisBelt" type="Parallax2D" parent="." unique_id=740035540]
-scroll_scale = Vector2(0.5, 0.5)
+scroll_scale = Vector2(0.25, 0.25)
 
 [node name="DebrisStreamer2D" type="Node2D" parent="ParallaxDebrisBelt" unique_id=1001749389 node_paths=PackedStringArray("parallax_layer")]
 script = ExtResource("10_debris_streamer")

@@ -195,8 +195,8 @@ func _test_spatial_distribution_and_anti_overlapping() -> void:
 	if has_star and n_kuiper > 0:
 		var star_offset: Vector2 = streamer.get_star_offset_for_cell(test_cell)
 		for i: int in range(n_kuiper):
-			var xf: Transform2D = multimesh.get_instance_transform_2d(i)
-			var dist: float = (xf.origin - star_offset).length()
+			var pos_inst: Vector2 = streamer.get_instance_local_position(i)
+			var dist: float = (pos_inst - star_offset).length()
 			# Debe respetar el anillo exterior y no spawnear en el núcleo del sol
 			assert_true(dist >= 800.0, "Instancia de Kuiper no debe spawnear en el núcleo del sistema solar.")
 	else:
@@ -207,7 +207,7 @@ func _test_spatial_distribution_and_anti_overlapping() -> void:
 	var pos_set: Dictionary = {}
 	var duplicate_count: int = 0
 	for i: int in range(mini(count, 100)):
-		var origin_pos: Vector2 = multimesh.get_instance_transform_2d(i).origin
+		var origin_pos: Vector2 = streamer.get_instance_local_position(i)
 		var pos_key: Vector2i = Vector2i(int(round(origin_pos.x)), int(round(origin_pos.y)))
 		if pos_set.has(pos_key):
 			duplicate_count += 1
@@ -229,8 +229,8 @@ func _test_spatial_distribution_and_anti_overlapping() -> void:
 	var star_offset_candidate: Vector2 = streamer.get_star_offset_for_cell(candidate_star_cell)
 	assert_true(n_star_kuiper > 0, "En celda con estrella debe generarse cinturón de Kuiper.")
 	for k: int in range(mini(n_star_kuiper, 20)):
-		var k_xf: Transform2D = multimesh.get_instance_transform_2d(k)
-		var k_dist: float = (k_xf.origin - star_offset_candidate).length()
+		var k_pos: Vector2 = streamer.get_instance_local_position(k)
+		var k_dist: float = (k_pos - star_offset_candidate).length()
 		assert_true(k_dist >= 800.0, "Instancia de Kuiper con estrella debe respetar radio exterior.")
 
 	streamer.queue_free()

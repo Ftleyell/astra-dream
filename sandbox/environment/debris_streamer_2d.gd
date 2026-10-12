@@ -21,6 +21,17 @@ static var _cached_scrap_micro: Array[Dictionary] = []
 static var _cached_scrap_medium: Array[Dictionary] = []
 static var _cached_scrap_macro: Array[Dictionary] = []
 
+class DebrisCellChunk:
+	var root: Node2D = null
+	var rock_multimesh_instance: MultiMeshInstance2D = null
+	var rock_multimesh: MultiMesh = null
+	var scrap_multimesh_instance: MultiMeshInstance2D = null
+	var scrap_multimesh: MultiMesh = null
+	var cell: Vector2i = Vector2i(2147483647, 2147483647)
+	var is_active: bool = false
+	var rock_items: Array[DebrisLayoutGenerator.DebrisInstanceData] = []
+	var scrap_items: Array[DebrisLayoutGenerator.DebrisInstanceData] = []
+
 @export var profile: DebrisLayerProfile
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
@@ -28,12 +39,16 @@ static var _cached_scrap_macro: Array[Dictionary] = []
 @export var cell_size: float = 12000.0
 @export var celestial_profile: CelestialSystemProfile
 @export var solar_streamer: SolarSystemStreamer = null
+@export var pool_size: int = 9
 
 var _global_time: float = 0.0
 var _multimesh_instance: MultiMeshInstance2D = null
 var _multimesh: MultiMesh = null
 var _scrap_multimesh_instance: MultiMeshInstance2D = null
 var _scrap_multimesh: MultiMesh = null
+
+var _pool: Array[DebrisCellChunk] = []
+var _active_chunks: Dictionary = {} # Vector2i -> DebrisCellChunk
 
 var _macro_grid: CosmicMacroGrid = null
 var _current_cell: Vector2i = Vector2i(2147483647, 2147483647)
@@ -231,59 +246,72 @@ func _initialize_multimesh() -> void:
 	quad_mesh.size = Vector2(1.0, 1.0)
 
 	var shader_res: Shader = load(SHADER_PATH) as Shader
-
-	# 1. MultiMesh Principal (Rocas / Asteroides)
-	_multimesh_instance = MultiMeshInstance2D.new()
-	_multimesh_instance.name = "RockDebrisMultiMeshInstance"
-	
-	_multimesh = MultiMesh.new()
-	_multimesh.transform_format = MultiMesh.TRANSFORM_2D
-	_multimesh.use_colors = true
-	_multimesh.use_custom_data = true
-	_multimesh.mesh = quad_mesh
-	
-	var rock_count: int = profile.instance_count if profile != null else 600
-	_multimesh.instance_count = rock_count
-	_multimesh.visible_instance_count = rock_count
-	_last_instance_count = rock_count
-	_multimesh_instance.multimesh = _multimesh
-
-	if shader_res != null:
-		var mat_rock: ShaderMaterial = ShaderMaterial.new()
-		mat_rock.shader = shader_res
-		var rock_tex: Texture2D = profile.get_effective_rock_texture() if profile != null else null
-		if rock_tex != null:
-			mat_rock.set_shader_parameter("atlas_texture", rock_tex)
-		_multimesh_instance.material = mat_rock
-
-	add_child(_multimesh_instance)
-
-	# 2. MultiMesh Secundario (Chatarra / Restos Mecánicos) si está configurado
+	var rock_tex: Texture2D = profile.get_effective_rock_texture() if profile != null else null
 	var scrap_tex: Texture2D = profile.get_effective_scrap_texture() if profile != null else null
+	var rock_count: int = profile.instance_count if profile != null else 600
 	var scrap_count: int = profile.scrap_instance_count if profile != null else 0
 
-	if scrap_tex != null and scrap_count > 0:
-		_scrap_multimesh_instance = MultiMeshInstance2D.new()
-		_scrap_multimesh_instance.name = "ScrapDebrisMultiMeshInstance"
-		
-		_scrap_multimesh = MultiMesh.new()
-		_scrap_multimesh.transform_format = MultiMesh.TRANSFORM_2D
-		_scrap_multimesh.use_colors = true
-		_scrap_multimesh.use_custom_data = true
-		_scrap_multimesh.mesh = quad_mesh
-		
-		_scrap_multimesh.instance_count = scrap_count
-		_scrap_multimesh.visible_instance_count = scrap_count
-		_last_scrap_instance_count = scrap_count
-		_scrap_multimesh_instance.multimesh = _scrap_multimesh
+	_last_instance_count = rock_count
+	_last_scrap_instance_count = scrap_count
+	_pool.clear()
+	_active_chunks.clear()
+
+	for i: int in range(maxi(pool_size, 1)):
+		var chunk: DebrisCellChunk = DebrisCellChunk.new()
+		chunk.root = Node2D.new()
+		chunk.root.name = "DebrisCellChunk_" + str(i)
+		chunk.root.visible = false
+		add_child(chunk.root)
+
+		# 1. MultiMesh Principal (Rocas)
+		chunk.rock_multimesh_instance = MultiMeshInstance2D.new()
+		chunk.rock_multimesh_instance.name = "RockMultiMesh"
+		chunk.rock_multimesh = MultiMesh.new()
+		chunk.rock_multimesh.transform_format = MultiMesh.TRANSFORM_2D
+		chunk.rock_multimesh.use_colors = true
+		chunk.rock_multimesh.use_custom_data = true
+		chunk.rock_multimesh.mesh = quad_mesh
+		chunk.rock_multimesh.instance_count = rock_count
+		chunk.rock_multimesh.visible_instance_count = rock_count
+		chunk.rock_multimesh_instance.multimesh = chunk.rock_multimesh
 
 		if shader_res != null:
-			var mat_scrap: ShaderMaterial = ShaderMaterial.new()
-			mat_scrap.shader = shader_res
-			mat_scrap.set_shader_parameter("atlas_texture", scrap_tex)
-			_scrap_multimesh_instance.material = mat_scrap
+			var mat_rock: ShaderMaterial = ShaderMaterial.new()
+			mat_rock.shader = shader_res
+			if rock_tex != null:
+				mat_rock.set_shader_parameter("atlas_texture", rock_tex)
+			chunk.rock_multimesh_instance.material = mat_rock
 
-		add_child(_scrap_multimesh_instance)
+		chunk.root.add_child(chunk.rock_multimesh_instance)
+
+		# 2. MultiMesh Secundario (Chatarra)
+		if scrap_tex != null and scrap_count > 0:
+			chunk.scrap_multimesh_instance = MultiMeshInstance2D.new()
+			chunk.scrap_multimesh_instance.name = "ScrapMultiMesh"
+			chunk.scrap_multimesh = MultiMesh.new()
+			chunk.scrap_multimesh.transform_format = MultiMesh.TRANSFORM_2D
+			chunk.scrap_multimesh.use_colors = true
+			chunk.scrap_multimesh.use_custom_data = true
+			chunk.scrap_multimesh.mesh = quad_mesh
+			chunk.scrap_multimesh.instance_count = scrap_count
+			chunk.scrap_multimesh.visible_instance_count = scrap_count
+			chunk.scrap_multimesh_instance.multimesh = chunk.scrap_multimesh
+
+			if shader_res != null:
+				var mat_scrap: ShaderMaterial = ShaderMaterial.new()
+				mat_scrap.shader = shader_res
+				mat_scrap.set_shader_parameter("atlas_texture", scrap_tex)
+				chunk.scrap_multimesh_instance.material = mat_scrap
+
+			chunk.root.add_child(chunk.scrap_multimesh_instance)
+
+		_pool.append(chunk)
+
+	if not _pool.is_empty():
+		_multimesh_instance = _pool[0].rock_multimesh_instance
+		_multimesh = _pool[0].rock_multimesh
+		_scrap_multimesh_instance = _pool[0].scrap_multimesh_instance
+		_scrap_multimesh = _pool[0].scrap_multimesh
 
 func _process(delta: float) -> void:
 	_global_time += delta
@@ -291,10 +319,11 @@ func _process(delta: float) -> void:
 	_evaluate_and_stream()
 
 func _update_shader_time() -> void:
-	if _multimesh_instance != null and _multimesh_instance.material is ShaderMaterial:
-		(_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
-	if _scrap_multimesh_instance != null and _scrap_multimesh_instance.material is ShaderMaterial:
-		(_scrap_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
+	for chunk: DebrisCellChunk in _pool:
+		if chunk.rock_multimesh_instance != null and chunk.rock_multimesh_instance.material is ShaderMaterial:
+			(chunk.rock_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
+		if chunk.scrap_multimesh_instance != null and chunk.scrap_multimesh_instance.material is ShaderMaterial:
+			(chunk.scrap_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
 
 ## Obtiene la posición lógica en el plano del estrato de paralaje
 func get_layer_focal_position() -> Vector2:
@@ -305,53 +334,114 @@ func get_layer_focal_position() -> Vector2:
 		cam_pos = camera.global_position
 	return (cam_pos * parallax_layer.scroll_scale) - parallax_layer.scroll_offset
 
+## Streaming analítico continuo: mantiene activo un vecindario 3x3 alrededor de la cámara eliminando popping
 func _evaluate_and_stream() -> void:
-	if _macro_grid == null or _multimesh == null:
+	if _macro_grid == null or _pool.is_empty():
 		return
 
 	var focal_pos: Vector2 = get_layer_focal_position()
-	var cell: Vector2i = _macro_grid.world_to_grid_coords(focal_pos)
+	var center_cell: Vector2i = _macro_grid.world_to_grid_coords(focal_pos)
+	_current_cell = center_cell
 
-	if cell != _current_cell:
-		regenerate_cell(cell)
+	var required_cells: Array[Vector2i] = []
+	for ox: int in range(-1, 2):
+		for oy: int in range(-1, 2):
+			required_cells.append(center_cell + Vector2i(ox, oy))
+
+	# 1. Desactivar y reciclar celdas que ya salieron del vecindario
+	var cells_to_release: Array[Vector2i] = []
+	for active_cell: Vector2i in _active_chunks.keys():
+		if not required_cells.has(active_cell):
+			cells_to_release.append(active_cell)
+
+	for rel_cell: Vector2i in cells_to_release:
+		var chunk: DebrisCellChunk = _active_chunks[rel_cell]
+		chunk.root.visible = false
+		chunk.is_active = false
+		_active_chunks.erase(rel_cell)
+
+	# 2. Asignar slots del pool y poblar las nuevas celdas requeridas
+	for req_cell: Vector2i in required_cells:
+		if _active_chunks.has(req_cell):
+			continue
+		var free_chunk: DebrisCellChunk = _get_available_chunk()
+		if free_chunk != null:
+			_populate_chunk(free_chunk, req_cell)
+			_active_chunks[req_cell] = free_chunk
+
+func _get_available_chunk() -> DebrisCellChunk:
+	for chunk: DebrisCellChunk in _pool:
+		if not chunk.is_active:
+			return chunk
+
+	# Fallback si todos están activos: reciclar el más distante de la celda focal
+	var farthest_chunk: DebrisCellChunk = null
+	var max_dist_sq: int = -1
+	for active_cell: Vector2i in _active_chunks.keys():
+		var d: Vector2i = active_cell - _current_cell
+		var dist_sq: int = d.x * d.x + d.y * d.y
+		if dist_sq > max_dist_sq:
+			max_dist_sq = dist_sq
+			farthest_chunk = _active_chunks[active_cell]
+
+	if farthest_chunk != null:
+		_active_chunks.erase(farthest_chunk.cell)
+		farthest_chunk.is_active = false
+		return farthest_chunk
+
+	return _pool[0] if not _pool.is_empty() else null
 
 ## Regenera deterministamente el búfer de instancias GPU para la celda dada
 func regenerate_cell(cell: Vector2i) -> void:
 	_current_cell = cell
 	if _macro_grid == null:
 		_initialize_macro_grid()
-	if _multimesh == null:
+	if _pool.is_empty():
+		_initialize_multimesh()
+
+	if _pool.is_empty():
 		return
 
+	if camera != null and parallax_layer != null:
+		_evaluate_and_stream()
+	else:
+		# Modo aislado / test unitario sin escena completa
+		var primary_chunk: DebrisCellChunk = _pool[0]
+		_populate_chunk(primary_chunk, cell)
+		_active_chunks.clear()
+		_active_chunks[cell] = primary_chunk
+
+func _populate_chunk(chunk: DebrisCellChunk, cell: Vector2i) -> void:
+	chunk.cell = cell
+	chunk.is_active = true
+	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell)
+	chunk.root.position = cell_center
+	chunk.root.visible = true
+
 	var rock_count: int = profile.instance_count if profile != null else 600
-	if _multimesh.instance_count != rock_count:
-		_multimesh.instance_count = rock_count
-		_multimesh.visible_instance_count = rock_count
-		_last_instance_count = rock_count
+	if chunk.rock_multimesh.instance_count != rock_count:
+		chunk.rock_multimesh.instance_count = rock_count
+		chunk.rock_multimesh.visible_instance_count = rock_count
 
-	_populate_buffer(_multimesh, _multimesh_instance, rock_count, cell, false)
+	chunk.rock_items = _fill_multimesh_buffer(chunk.rock_multimesh, rock_count, cell, false, cell_center)
 
-	if _scrap_multimesh != null and _scrap_multimesh_instance != null:
+	if chunk.scrap_multimesh != null:
 		var scrap_count: int = profile.scrap_instance_count if profile != null else 0
-		if _scrap_multimesh.instance_count != scrap_count:
-			_scrap_multimesh.instance_count = scrap_count
-			_scrap_multimesh.visible_instance_count = scrap_count
-			_last_scrap_instance_count = scrap_count
+		if chunk.scrap_multimesh.instance_count != scrap_count:
+			chunk.scrap_multimesh.instance_count = scrap_count
+			chunk.scrap_multimesh.visible_instance_count = scrap_count
 
 		if scrap_count > 0:
-			_populate_buffer(_scrap_multimesh, _scrap_multimesh_instance, scrap_count, cell, true)
+			chunk.scrap_items = _fill_multimesh_buffer(chunk.scrap_multimesh, scrap_count, cell, true, cell_center)
 
 ## Población determinista de instancias MultiMesh delegada en DebrisLayoutGenerator
-func _populate_buffer(
+func _fill_multimesh_buffer(
 	mesh_buffer: MultiMesh,
-	mesh_inst: MultiMeshInstance2D,
 	count: int,
 	cell: Vector2i,
-	is_scrap: bool
-) -> void:
-	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell)
-	mesh_inst.position = cell_center
-
+	is_scrap: bool,
+	cell_center: Vector2
+) -> Array[DebrisLayoutGenerator.DebrisInstanceData]:
 	# Consultar el estado estelar (SSOT con solar_streamer si está disponible)
 	var cell_has_star: bool = false
 	var star_offset: Vector2 = Vector2.ZERO
@@ -421,6 +511,8 @@ func _populate_buffer(
 			data.uv_rect.size.y
 		))
 
+	return items
+
 func get_current_cell() -> Vector2i:
 	return _current_cell
 
@@ -436,10 +528,21 @@ func get_total_instance_count() -> int:
 		total += _scrap_multimesh.instance_count
 	return total
 
+func get_instance_local_position(index: int) -> Vector2:
+	var chunk: DebrisCellChunk = _active_chunks.get(_current_cell, null)
+	if chunk == null and not _pool.is_empty():
+		chunk = _pool[0]
+	if chunk != null and index >= 0 and index < chunk.rock_items.size():
+		return chunk.rock_items[index].position
+	return Vector2.ZERO
+
 func get_instance_layer_position(index: int) -> Vector2:
-	if _multimesh == null or _multimesh_instance == null:
+	var chunk: DebrisCellChunk = _active_chunks.get(_current_cell, null)
+	if chunk == null and not _pool.is_empty():
+		chunk = _pool[0]
+	if chunk == null:
 		return Vector2.ZERO
-	return _multimesh_instance.position + _multimesh.get_instance_transform_2d(index).origin
+	return chunk.root.position + get_instance_local_position(index)
 
 ## Determina si una celda espacial contiene un sistema estelar según el perfil celestial activo
 func has_star_in_cell(cell: Vector2i) -> bool:
