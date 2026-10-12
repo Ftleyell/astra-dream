@@ -462,11 +462,16 @@ func _build_system_hierarchy() -> void:
 				m_mat.set_shader_parameter("star_atmo_tint_strength", 0.0)
 				moon_sprite.material = m_mat
 
+			var moon_visual_radius: float = moon_target_diam * 0.473
 			moon_body.add_child(moon_sprite)
 			moon_body.set_sprite_reference(moon_sprite)
+			moon_body.set_meta(&"visual_radius", moon_visual_radius)
 			planet_body.add_orbital_child(moon_body)
 
-		# 4.2 Estaciones Espaciales Diegéticas
+			if shadow_projector != null:
+				shadow_projector.register_body(moon_body, str(i + 1) + "_Moon_" + str(m_idx + 1))
+
+		# 4.2 Estaciones Espaciales Diegéticas (sin sombra proyectada)
 		var spawn_station: bool = false
 		if zone == PlanetZone.HABITABLE or planetary_cfg.station_spawn_probability >= 1.0:
 			spawn_station = true # Garantizada en planetas habitables o cuando el perfil exige 1.0

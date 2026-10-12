@@ -43,8 +43,8 @@ func _test_solar_system_shadow_hierarchy() -> void:
 	assert_true(_solar_system.planets.size() >= 3, "El sistema solar debe haber generado planetas.")
 
 	# Validar existencia de CosmicShadowsGroup
-	var shadow_group: CanvasGroup = _solar_system.get_node_or_null("CosmicShadowsGroup") as CanvasGroup
-	assert_true(shadow_group != null, "CosmicShadowsGroup debe existir como nodo CanvasGroup en SolarSystem2D.")
+	var shadow_group: CanvasGroup = _solar_system.shadow_projector.get_shadow_group() if _solar_system.shadow_projector != null else null
+	assert_true(shadow_group != null, "CosmicShadowsGroup debe existir en PlanetaryShadowProjector2D.")
 	assert_true(shadow_group.z_index == -1, "CosmicShadowsGroup debe tener z_index = -1.")
 	assert_true(shadow_group.material is ShaderMaterial, "CosmicShadowsGroup debe tener ShaderMaterial asignado.")
 
@@ -52,6 +52,15 @@ func _test_solar_system_shadow_hierarchy() -> void:
 	for planet: OrbitalBody2D in _solar_system.planets:
 		var visual_r: float = float(planet.get_meta(&"visual_radius", 0.0))
 		assert_true(visual_r > 0.0, "El planeta debe tener visual_radius positivo y calibrado.")
+		assert_true(_solar_system.shadow_projector.has_registered_body(planet), "El planeta debe estar registrado en el proyector de sombras.")
+
+		for child_body: OrbitalBody2D in planet.get_orbital_children():
+			if child_body.name.begins_with("Moon_"):
+				var moon_r: float = float(child_body.get_meta(&"visual_radius", 0.0))
+				assert_true(moon_r > 0.0, "La luna debe tener visual_radius positivo y calibrado.")
+				assert_true(_solar_system.shadow_projector.has_registered_body(child_body), "La luna debe estar registrada en el proyector de sombras.")
+			elif child_body.name.begins_with("Station_"):
+				assert_true(not _solar_system.shadow_projector.has_registered_body(child_body), "Las estaciones espaciales NO deben proyectar sombra.")
 
 func _test_interplanetary_eclipse_detection() -> void:
 	assert_true(_solar_system.planets.size() >= 2, "Se requieren al menos 2 planetas para la prueba de eclipse.")
@@ -93,5 +102,5 @@ func _test_runtime_setters_reactivity() -> void:
 
 	_solar_system.set_shadows_enabled(false)
 	assert_true(not _solar_system._shadows_enabled, "set_shadows_enabled(false) debe apagar las sombras.")
-	var shadow_group: CanvasGroup = _solar_system.get_node_or_null("CosmicShadowsGroup") as CanvasGroup
+	var shadow_group: CanvasGroup = _solar_system.shadow_projector.get_shadow_group() if _solar_system.shadow_projector != null else null
 	assert_true(shadow_group != null and not shadow_group.visible, "CosmicShadowsGroup debe ocultarse al deshabilitar sombras.")

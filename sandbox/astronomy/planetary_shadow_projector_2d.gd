@@ -17,6 +17,7 @@ var shadow_tint: Color = Color(0.18, 0.18, 0.24, 1.0)
 
 var _shadow_group: CanvasGroup = null
 var _shadow_group_mat: ShaderMaterial = null
+var _registered_bodies: Array[OrbitalBody2D] = []
 var _planet_pivots: Dictionary = {} # OrbitalBody2D -> Node2D
 var _planet_sprites: Dictionary = {} # OrbitalBody2D -> Sprite2D
 var _light_quad_texture: ImageTexture = null
@@ -60,13 +61,21 @@ func clear_projector() -> void:
 			pivot.queue_free()
 	_planet_pivots.clear()
 	_planet_sprites.clear()
+	_registered_bodies.clear()
+	if is_instance_valid(_shadow_group):
+		_shadow_group.queue_free()
+	_shadow_group = null
+	_shadow_group_mat = null
 
-func register_planet(planet_body: OrbitalBody2D, index: int) -> void:
-	if not shadows_enabled or PLANETARY_SHADOW_CONE_SHADER == null or planet_body == null:
+func has_registered_body(body: OrbitalBody2D) -> bool:
+	return _planet_pivots.has(body)
+
+func register_body(body: OrbitalBody2D, identifier: String) -> void:
+	if not shadows_enabled or PLANETARY_SHADOW_CONE_SHADER == null or body == null:
 		return
 
 	var shadow_pivot: Node2D = Node2D.new()
-	shadow_pivot.name = "ShadowPivot_" + str(index)
+	shadow_pivot.name = "ShadowPivot_" + identifier
 
 	var shadow_sprite: Sprite2D = Sprite2D.new()
 	shadow_sprite.name = "ShadowConeVisual"
@@ -81,10 +90,15 @@ func register_planet(planet_body: OrbitalBody2D, index: int) -> void:
 	if _shadow_group != null:
 		_shadow_group.add_child(shadow_pivot)
 	else:
-		planet_body.add_child(shadow_pivot)
+		body.add_child(shadow_pivot)
 
-	_planet_pivots[planet_body] = shadow_pivot
-	_planet_sprites[planet_body] = shadow_sprite
+	_planet_pivots[body] = shadow_pivot
+	_planet_sprites[body] = shadow_sprite
+	if not _registered_bodies.has(body):
+		_registered_bodies.append(body)
+
+func register_planet(planet_body: OrbitalBody2D, index: int) -> void:
+	register_body(planet_body, str(index))
 
 func update_projections(planets: Array[OrbitalBody2D], light_field_radius: float) -> void:
 	if not shadows_enabled:
@@ -93,41 +107,42 @@ func update_projections(planets: Array[OrbitalBody2D], light_field_radius: float
 				pivot.visible = false
 		return
 
-	for planet_body: OrbitalBody2D in planets:
-		if not is_instance_valid(planet_body):
+	for body: OrbitalBody2D in _registered_bodies:
+		if not is_instance_valid(body):
 			continue
-		var p_pos: Vector2 = planet_body.position
-		var p_dist: float = p_pos.length()
-		var outward_dir: Vector2 = p_pos.normalized() if p_dist > 1.0 else Vector2(1.0, 0.0)
-		var p_radius: float = float(planet_body.get_meta(&"visual_radius", 130.0))
+		var b_pos: Vector2 = body.position
+		if body.get_parent() is OrbitalBody2D:
+			b_pos += (body.get_parent() as OrbitalBody2D).position
+		var b_dist: float = b_pos.length()
+		var outward_dir: Vector2 = b_pos.normalized() if b_dist > 1.0 else Vector2(1.0, 0.0)
+		var b_radius: float = float(body.get_meta(&"visual_radius", 130.0))
 
-		if _planet_pivots.has(planet_body):
-			var pivot: Node2D = _planet_pivots[planet_body]
-			var sprite: Sprite2D = _planet_sprites.get(planet_body, null)
-			if is_instance_valid(pivot) and is_instance_valid(sprite):
-				pivot.visible = true
-				pivot.position = p_pos
-				pivot.rotation = outward_dir.angle()
+		var pivot: Node2D = _planet_pivots.get(body, null)
+		var sprite: Sprite2D = _planet_sprites.get(body, null)
+		if is_instance_valid(pivot) and is_instance_valid(sprite):
+			pivot.visible = true
+			pivot.position = b_pos
+			pivot.rotation = outward_dir.angle()
 
-				var dist_to_heliopause: float = maxf(light_field_radius - p_dist, 50.0)
-				var cone_length: float = dist_to_heliopause + 250.0
-				var base_radius: float = p_radius
-				var end_radius: float = base_radius * shadow_expansion_factor
-				var quad_height: float = maxf(end_radius * 2.5, 200.0)
+			var dist_to_heliopause: float = maxf(light_field_radius - b_dist, 50.0)
+			var cone_length: float = dist_to_heliopause + 250.0
+			var base_radius: float = b_radius
+			var end_radius: float = base_radius * shadow_expansion_factor
+			var quad_height: float = maxf(end_radius * 2.5, 200.0)
 
-				sprite.position = Vector2(0.0, -quad_height * 0.5)
-				sprite.scale = Vector2(cone_length * 0.5, quad_height * 0.5)
+			sprite.position = Vector2(0.0, -quad_height * 0.5)
+			sprite.scale = Vector2(cone_length * 0.5, quad_height * 0.5)
 
-				if sprite.material is ShaderMaterial:
-					var s_mat: ShaderMaterial = sprite.material as ShaderMaterial
-					s_mat.set_shader_parameter("base_radius", base_radius)
-					s_mat.set_shader_parameter("expansion_factor", shadow_expansion_factor)
-					s_mat.set_shader_parameter("penumbra_ratio", shadow_penumbra_ratio)
-					s_mat.set_shader_parameter("planet_sun_dist", p_dist)
-					s_mat.set_shader_parameter("heliopause_radius", light_field_radius)
-					s_mat.set_shader_parameter("heliosphere_edge_feather", shadow_heliopause_fade)
-					s_mat.set_shader_parameter("cone_length", cone_length)
-					s_mat.set_shader_parameter("quad_height", quad_height)
+			if sprite.material is ShaderMaterial:
+				var s_mat: ShaderMaterial = sprite.material as ShaderMaterial
+				s_mat.set_shader_parameter("base_radius", base_radius)
+				s_mat.set_shader_parameter("expansion_factor", shadow_expansion_factor)
+				s_mat.set_shader_parameter("penumbra_ratio", shadow_penumbra_ratio)
+				s_mat.set_shader_parameter("planet_sun_dist", b_dist)
+				s_mat.set_shader_parameter("heliopause_radius", light_field_radius)
+				s_mat.set_shader_parameter("heliosphere_edge_feather", shadow_heliopause_fade)
+				s_mat.set_shader_parameter("cone_length", cone_length)
+				s_mat.set_shader_parameter("quad_height", quad_height)
 
 func evaluate_eclipses(planets: Array[OrbitalBody2D], light_field_radius: float) -> void:
 	for planet_body: OrbitalBody2D in planets:
