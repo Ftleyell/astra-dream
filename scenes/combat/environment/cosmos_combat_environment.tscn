@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://cosmoscombenv001"]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos_combat_environment.gd" id="1_adapter"]
+[ext_resource type="PackedScene" uid="uid://cosmosroot001" path="res://scenes/combat/environment/cosmos/scenes/cosmos_root.tscn" id="2_cosmos_root"]
+
+[node name="CosmosCombatEnvironment" type="Node2D"]
+z_index = -100
+script = ExtResource("1_adapter")
+
+[node name="CosmosRoot" parent="." instance=ExtResource("2_cosmos_root")]
