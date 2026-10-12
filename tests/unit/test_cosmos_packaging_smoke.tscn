@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/unit/test_cosmos_packaging_smoke.gd" id="1_test"]
+
+[node name="TestCosmosPackagingSmoke" type="Node2D"]
+script = ExtResource("1_test")
+suite_name = "CosmosPackagingSmoke"

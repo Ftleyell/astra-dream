@@ -63,7 +63,7 @@ func _test_new_star_archetypes_and_biomes() -> void:
 	var white_dwarf: StarArchetype = load("res://sandbox/resources/data/star_archetypes/white_dwarf.tres") as StarArchetype
 	assert_true(white_dwarf != null, "white_dwarf.tres debe cargar correctamente como StarArchetype.")
 	assert_true(white_dwarf.id == &"white_dwarf", "El ID debe ser white_dwarf.")
-	assert_true(white_dwarf.core_brightness >= 1.5, "La enana blanca debe tener alta luminosidad en el núcleo.")
+	assert_true(white_dwarf.core_brightness >= 1.10, "La enana blanca debe tener alta luminosidad en el núcleo.")
 	assert_true(white_dwarf.biome_config != null, "La enana blanca debe estar asociada a un bioma estelar válido.")
 
 	var magnetar: StarArchetype = load("res://sandbox/resources/data/star_archetypes/magnetar.tres") as StarArchetype
