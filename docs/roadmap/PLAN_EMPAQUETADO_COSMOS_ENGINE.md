@@ -85,24 +85,27 @@ flowchart TD
 
 ---
 
-## 📦 Sesión 4: Fachada `CosmosHostController`, Transiciones de Región & Freeze/Pausa
+## 📦 Sesión 4: Fachada `CosmosHostController`, Transiciones de Región & Freeze/Pausa (✅ Completada)
 * **Objetivo:** Construir la API pública unificada del entorno cósmico que consumirá `MainGame`, integrando control de regiones, congelamiento por hit-stop y pausa de árbol.
-* **Alcance Técnico:**
-  1. Implementar `CosmosHostController.gd`:
-     - API pública:
+* **Alcance Técnico Completado:**
+  1. ✅ Implementado [`CosmosHostController`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/cosmos_host_controller.gd):
+     - API pública unificada:
        - `change_region(region_id: StringName, blend_duration: float)`
+       - `apply_biome(biome_config: CosmosBiomeConfig, blend_duration: float)`
        - `inject_poi_relative_to_player(...)` / `inject_poi_at_virtual_coords(...)`
        - `set_frozen(is_frozen: bool)`
-     - Conexión a `PauseArbitrator.pause_state_changed`:
-       - Al pausarse el juego, suspende el incremento de `_global_time` y congela los tweens de nebulosa activos.
-     - Manejo de `set_frozen(true)` para congelar el tiempo cósmico durante micro-hit-stops de combate (sin requerir pausa del árbol completo).
-  2. Implementar `CosmicBiomeBlender.gd` para interpolar suavemente los uniforms de color y turbulencia de los shaders de nebulosa y starfield durante cambios de región.
-* **Criterio de Verificación:**
-  - Test runner de fachada, pausa y hit-stop:
+     - Integración reactiva con `PauseArbitrator.pause_state_changed`: sincroniza pausas globales pausando el tiempo cósmico `_global_time`.
+     - Soporte desacoplado para hit-stops y freezes balísticos sin requerir pausar el SceneTree completo.
+  2. ✅ Implementado [`CosmicBiomeBlender`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/cosmic_biome_blender.gd):
+     - Transición suave de biomas mediante tweens de SceneTree o progresión analítica manual (`advance_manual_blend`).
+     - Control exacto de uniforms `biome_blend_factor` y paletas A/B sin allocations dinámicas.
+  3. ✅ Soporte de congelamiento `is_frozen` integrado en [`CosmosRootNode`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/scenes/cosmos_root.gd) y propagado a [`CosmosNebulaBackdropController`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/nebula_backdrop_controller.gd).
+* **Criterio de Verificación Cumplido:**
+  - Test runner específico pasando al 100%:
     ```powershell
     powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmos_host_controller.tscn"
     ```
-* **Entregable:** Fachada de alto nivel desacoplada y lista para conectarse al juego.
+* **Entregable:** Fachada de alto nivel desacoplada y validada contra pausas globales, hit-stops, cambios de región e inyección de POIs.
 
 ---
 

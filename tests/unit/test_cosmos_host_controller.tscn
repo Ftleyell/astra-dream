@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://testcosmoshostcontroller01"]
+
+[ext_resource type="Script" path="res://tests/unit/test_cosmos_host_controller.gd" id="1_test"]
+
+[node name="TestCosmosHostController" type="Node2D"]
+script = ExtResource("1_test")
+suite_name = "CosmosHostController"

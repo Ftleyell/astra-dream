@@ -48,7 +48,8 @@ func release_pause(reason: StringName) -> void:
 		var tree := get_tree()
 		if tree and tree.paused:
 			tree.paused = false
-		pause_state_changed.emit(false, [])
+		var empty_reasons: Array[StringName] = []
+		pause_state_changed.emit(false, empty_reasons)
 		all_pauses_cleared.emit()
 	else:
 		pause_state_changed.emit(true, get_active_reasons())
@@ -58,7 +59,8 @@ func force_unpause_all() -> void:
 	var tree := get_tree()
 	if tree and tree.paused:
 		tree.paused = false
-	pause_state_changed.emit(false, [])
+	var empty_reasons: Array[StringName] = []
+	pause_state_changed.emit(false, empty_reasons)
 	all_pauses_cleared.emit()
 
 func is_paused() -> bool:

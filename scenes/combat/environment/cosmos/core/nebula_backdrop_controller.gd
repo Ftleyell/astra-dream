@@ -13,6 +13,7 @@ extends ColorRect
 @export var tile_texture: Texture2D
 @export_range(0.00005, 0.005, 0.00005) var tile_scale: float = 0.00035
 @export_range(0.0, 1.0, 0.05) var tile_mix: float = 0.45
+@export var is_frozen: bool = false
 
 var _shader_mat: ShaderMaterial = null
 var _accumulated_time: float = 0.0
@@ -34,7 +35,8 @@ func _ready() -> void:
 	_apply_biome_configurations()
 
 func _process(delta: float) -> void:
-	_accumulated_time += delta
+	if not is_frozen:
+		_accumulated_time += delta
 	_update_uniforms()
 
 func apply_biome_configurations() -> void:

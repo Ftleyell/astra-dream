@@ -24,6 +24,10 @@ signal origin_shifted(shift_vector: Vector2)
 @export var floating_origin_tracker: CosmosFloatingOriginTracker
 @export var viewport_tracker: CosmosViewportCanvasTracker
 @export var time_scale: float = 1.0
+@export var is_frozen: bool = false:
+	set(v):
+		is_frozen = v
+		_propagate_freeze_state(v)
 
 @export_group("Perfil de Entorno Data-Driven")
 @export var environment_profile: CosmosEnvProfile:
@@ -54,9 +58,14 @@ var _origin_shift_count: int = 0
 var _accumulated_shift: Vector2 = Vector2.ZERO
 var _starfield_mat: ShaderMaterial = null
 
+func _propagate_freeze_state(frozen: bool) -> void:
+	if nebula_controller != null and is_instance_valid(nebula_controller):
+		nebula_controller.is_frozen = frozen
+
 func _ready() -> void:
 	# Prioridad de proceso: CosmosRootNode orquesta el tiempo y el tracker se procesa antes del render
 	process_priority = -100
+	_propagate_freeze_state(is_frozen)
 	_setup_viewport_tracker()
 	_setup_floating_origin()
 	_sync_poi_registry()
@@ -301,6 +310,8 @@ func get_poi(coord: Vector2i) -> CosmicPoiConfig:
 	return poi_registry.get_poi(coord) if poi_registry != null else null
 
 func _process(delta: float) -> void:
+	if is_frozen:
+		return
 	var delta_time: float = delta * time_scale
 	_global_time += delta_time
 
