@@ -6,6 +6,9 @@ extends Node2D
 ## Proyecta la aparición en el vector de avance de la nave espacial.
 
 const SpaceEnvironmentConfigScript = preload("res://core/resources/space_environment_config.gd")
+const OrbitalWorldFollower2DScript = preload("res://scenes/combat/environment/cosmos/core/orbital_world_follower_2d.gd")
+const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+
 @export var env_config: Resource = preload("res://data/environment/default_space_environment_config.tres")
 @export var spawn_distance_interval: float = 7000.0
 @export var spawn_projection_distance: float = 1800.0
@@ -172,7 +175,39 @@ func _instantiate_planet_at(pos: Vector2) -> Planet:
 
 	container.add_child(planet)
 	active_planets.append(planet)
+	_try_bind_star_orbit(planet, pos)
 	return planet
+
+
+func _try_bind_star_orbit(planet_node: Planet, candidate_pos: Vector2) -> void:
+	if not is_inside_tree() or not is_instance_valid(planet_node):
+		return
+
+	var tree := get_tree()
+	var mg: Node = tree.get_first_node_in_group("main_game") if tree else null
+	if not mg:
+		return
+
+	var env_host: Node = mg.get_node_or_null("SpaceEnvironmentHost")
+	if not env_host and mg.has_node("SpaceBackground"):
+		env_host = mg.get_node("SpaceBackground")
+
+	var host_ctrl: Node = null
+	if env_host != null and env_host.has_method("get_cosmos_controller"):
+		host_ctrl = env_host.call("get_cosmos_controller")
+	elif env_host != null and env_host.has_method("get_host_controller"):
+		host_ctrl = env_host.call("get_host_controller")
+
+	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
+		var slots: Array = host_ctrl.call("get_star_orbit_slots", candidate_pos, 9000.0)
+		if not slots.is_empty():
+			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
+			var follower := OrbitalWorldFollower2DScript.new()
+			follower.name = "OrbitalWorldFollower2D"
+			planet_node.add_child(follower)
+			var cam: Camera2D = mg.camera if "camera" in mg else null
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			follower.setup_orbital_binding(slot, cam, root_node)
 
 
 func _prune_active_planets() -> void:

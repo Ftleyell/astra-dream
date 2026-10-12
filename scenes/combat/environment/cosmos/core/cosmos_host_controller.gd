@@ -17,6 +17,8 @@ const CosmosRootNode = preload("res://scenes/combat/environment/cosmos/scenes/co
 const CosmosBiomeConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_biome_config.gd")
 const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd")
 const CosmicBiomeBlender = preload("res://scenes/combat/environment/cosmos/core/cosmic_biome_blender.gd")
+const CosmosOrbitSlot = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 
 signal region_changed(region_id: StringName, biome_config: CosmosBiomeConfig)
 signal freeze_state_changed(is_frozen: bool)
@@ -26,6 +28,7 @@ signal freeze_state_changed(is_frozen: bool)
 @export var auto_connect_pause_arbitrator: bool = true
 
 var _biome_blender: CosmicBiomeBlender = null
+var _slot_tracker: CosmosOrbitalSlotTracker = null
 var _current_region_id: StringName = &""
 var _is_frozen: bool = false
 var _is_paused_by_arbitrator: bool = false
@@ -58,6 +61,7 @@ func _find_or_validate_cosmos_root() -> void:
 		cosmos_root = get_node_or_null("CosmosRoot") as CosmosRootNode
 	if cosmos_root == null:
 		cosmos_root = get_parent() as CosmosRootNode if get_parent() is CosmosRootNode else null
+	_slot_tracker = CosmosOrbitalSlotTracker.new(cosmos_root)
 
 func _initialize_blender() -> void:
 	if cosmos_root != null:
@@ -161,3 +165,23 @@ func get_time_scale() -> float:
 
 func get_biome_blender() -> CosmicBiomeBlender:
 	return _biome_blender
+
+## Devuelve la instancia del tracker de slots orbitales
+func get_slot_tracker() -> CosmosOrbitalSlotTracker:
+	if _slot_tracker == null:
+		_slot_tracker = CosmosOrbitalSlotTracker.new(cosmos_root)
+	elif _slot_tracker.cosmos_root == null and cosmos_root != null:
+		_slot_tracker.cosmos_root = cosmos_root
+	return _slot_tracker
+
+## Obtiene slots de órbita alrededor de soles/estrellas de fondo
+func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
+	return get_slot_tracker().get_star_orbit_slots(world_position, search_radius)
+
+## Obtiene slots de órbita alrededor de planetas de fondo
+func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000.0) -> Array[CosmosOrbitSlot]:
+	return get_slot_tracker().get_planet_orbit_slots(world_position, search_radius)
+
+## Proyecta un slot analítico a coordenadas del mundo de GameplayWorld sincronizadas con la cámara
+func project_slot_to_world(slot: CosmosOrbitSlot, global_time: float, camera: Camera2D) -> Vector2:
+	return CosmosOrbitalSlotTracker.project_slot_to_world(slot, global_time, camera)
