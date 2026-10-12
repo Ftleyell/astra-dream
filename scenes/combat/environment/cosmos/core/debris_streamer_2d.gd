@@ -55,6 +55,18 @@ var _current_cell: Vector2i = Vector2i(2147483647, 2147483647)
 var _last_instance_count: int = 0
 var _last_scrap_instance_count: int = 0
 
+var _has_camera_override: bool = false
+var _override_cam_pos: Vector2 = Vector2.ZERO
+var _override_zoom: Vector2 = Vector2.ONE
+
+func set_camera_override(cam_pos: Vector2, zoom: Vector2) -> void:
+	_has_camera_override = true
+	_override_cam_pos = cam_pos
+	_override_zoom = zoom
+
+func clear_camera_override() -> void:
+	_has_camera_override = false
+
 # Fragmentos clasificados por tamaño y material
 var _rock_micro: Array[Dictionary] = []
 var _rock_medium: Array[Dictionary] = []
@@ -327,10 +339,10 @@ func _update_shader_time() -> void:
 
 ## Obtiene la posición lógica en el plano del estrato de paralaje
 func get_layer_focal_position() -> Vector2:
-	if camera == null or parallax_layer == null:
+	if (camera == null and not _has_camera_override) or parallax_layer == null:
 		return global_position
-	var cam_pos: Vector2 = camera.get_screen_center_position()
-	if cam_pos == Vector2.ZERO and camera.global_position != Vector2.ZERO:
+	var cam_pos: Vector2 = _override_cam_pos if _has_camera_override else (camera.get_screen_center_position() if camera != null else Vector2.ZERO)
+	if not _has_camera_override and cam_pos == Vector2.ZERO and camera != null and camera.global_position != Vector2.ZERO:
 		cam_pos = camera.global_position
 	return (cam_pos * parallax_layer.scroll_scale) - parallax_layer.scroll_offset
 

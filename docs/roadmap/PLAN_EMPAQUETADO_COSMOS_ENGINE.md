@@ -44,35 +44,40 @@ flowchart TD
 
 ---
 
-## 📦 Sesión 2: Motor Determinista & `CosmicPoiRegistry` (Inyección Narrativa)
+## 📦 Sesión 2: Motor Determinista & `CosmicPoiRegistry` (Inyección Narrativa) (✅ Completada)
 * **Objetivo:** Permitir que `MainGame` o los directores de eventos inyecten configuraciones específicas de soles/planetas/galaxias en coordenadas virtuales o relativas al jugador.
-* **Alcance Técnico:**
-  1. Diseñar el recurso de datos `CosmicPoiConfig.tres` (`archetype`, `planet_count`, `custom_label`, `hazard_level`).
-  2. Implementar `CosmicPoiRegistry.gd`:
+* **Alcance Técnico Completado:**
+  1. ✅ Diseñado el recurso tipado [`CosmicPoiConfig`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd) (`archetype`, `planet_count`, `custom_label`, `hazard_level`, `seed_override`).
+  2. ✅ Implementado [`CosmicPoiRegistry`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/cosmic_poi_registry.gd):
      - Almacenamiento $O(1)$ de overrides por coordenada de celda `Vector2i(gx, gy)`.
-     - Métodos: `register_poi(coord: Vector2i, config: CosmicPoiConfig)`, `register_relative_poi(offset: Vector2i, config: CosmicPoiConfig, current_origin: Vector2i)`, `clear_overrides()`.
-  3. Modificar `SolarSystemStreamer` y `GalaxyStreamer2D`:
-     - Al recorrer las celdas en el frustum visible, verificar primero si `CosmicPoiRegistry.has_poi(cell)` está activo.
-     - Si existe override, instanciar la entidad directamente con los parámetros del `CosmicPoiConfig` omitiendo el hash pseudoaleatorio.
-* **Criterio de Verificación:**
-  - Test runner aislado:
+     - Métodos: `register_poi()`, `register_relative_poi()`, `unregister_poi()`, `clear_overrides()`, `has_poi()`, `get_poi()`.
+  3. ✅ Adaptados `CosmosSolarSystemStreamer`, `CosmosSolarSystem2D` y `CosmosGalaxyStreamer2D`:
+     - Al recorrer las celdas en el frustum visible, comprueban `poi_registry.has_poi(cell)`.
+     - Si existe override, instancian la entidad con los parámetros forzados del `CosmicPoiConfig` (arquetipo estelar, label personalizado y número exacto de planetas), omitiendo la aleatoriedad procedural.
+  4. ✅ Enlace y delegación implementados en [`CosmosRootNode`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/scenes/cosmos_root.gd) con sincronización automática hacia todos los streamers.
+* **Criterio de Verificación Cumplido:**
+  - Test runner aislado pasando al 100%:
     ```powershell
     powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmic_poi_registry.tscn"
     ```
-* **Entregable:** Generación procedural sobreescribible en caliente sin fugas de memoria.
+* **Entregable:** Inyección procedural de POIs sobreescribible en tiempo real sin fugas de memoria ni regresiones.
 
 ---
 
-## 📦 Sesión 3: Compatibilidad con Cinemáticas & `ViewportCanvasTracker`
+## 📦 Sesión 3: Compatibilidad con Cinemáticas & `ViewportCanvasTracker` (✅ Completada)
 * **Objetivo:** Desacoplar el seguimiento de la cámara del nodo específico del jugador, sincronizando las capas de paralaje de forma continua y transparente con cualquier cámara activa o cinemática.
-* **Alcance Técnico:**
-  1. Implementar `ViewportCanvasTracker.gd`:
-     - Extraer posición analítica efectiva, rotación y escala/zoom de la cámara activa mediante `get_viewport().get_canvas_transform()`.
-     - Soporte para transiciones de cámara suaves (cinemáticas con `AnimationPlayer`, encuadres de boss o cinemáticas de victoria/game over).
-  2. Adaptar `CosmosRoot` para alimentar a los streamers con las coordenadas visuales del `ViewportCanvasTracker`.
-  3. Prevenir micro-saltos en `FloatingOriginTracker` durante movimientos rápidos de cinemática (clamp / interpolación de origen).
-* **Criterio de Verificación:**
-  - Test runner de cinemáticas y transform del viewport:
+* **Alcance Técnico Completado:**
+  1. ✅ Implementado [`CosmosViewportCanvasTracker`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/viewport_canvas_tracker.gd):
+     - Muestreo analítico exacto de `Transform2D` invertido vía `get_viewport().get_canvas_transform()`.
+     - Extracción automática de posición central de pantalla, rotación y zoom vectorial.
+     - Suavizado contra micro-saltos y teleport/cortes instantáneos (`force_teleport()`, `max_position_delta_per_frame`).
+  2. ✅ Enlazado e integrado en [`CosmosRootNode`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/scenes/cosmos_root.gd):
+     - Detección automática en `_ready()` o instanciación dinámica en tiempo de ejecución.
+     - Señal `viewport_updated` redirigida a `_on_viewport_updated` propagando overrides analíticos directos a todos los streamers (`set_camera_override`) y shaders (`set_world_view_position`).
+  3. ✅ Soporte de fallback y origen flotante en [`CosmosFloatingOriginTracker`](file:///c:/Users/Frani/.gemini/antigravity/scratch/astra_dream/scenes/combat/environment/cosmos/core/floating_origin_tracker.gd):
+     - Método analítico `get_tracked_position()` monitoreando prioritariamente `player_target`, `viewport_tracker` o `camera`.
+* **Criterio de Verificación Cumplido:**
+  - Test runner específico de cinemáticas y transform del viewport pasando al 100%:
     ```powershell
     powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmos_viewport_tracker.tscn"
     ```

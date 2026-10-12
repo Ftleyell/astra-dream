@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CosmicPoiConfig" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd" id="1_script"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/star_archetypes/magnetar.tres" id="2_archetype"]
+
+[resource]
+script = ExtResource("1_script")
+poi_type = 0
+star_archetype = ExtResource("2_archetype")
+planet_count = 3
+custom_label = &"Magnetar_Outpost_Nexus"
+hazard_level = 5
+seed_override = 99991
+extra_metadata = {
+"boss_id": &"rival_pilot_omega",
+"encounter_tier": 3
+}

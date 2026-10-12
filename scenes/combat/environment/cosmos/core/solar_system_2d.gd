@@ -1,6 +1,8 @@
 class_name CosmosSolarSystem2D
 extends Node2D
 
+const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd")
+
 ## Representa un sistema solar completo procedural (estrella central + planetas + lunas).
 ## Genera y orquesta la jerarquía kepleriana determinista a partir de una semilla numérica.
 ## Aplica zonificación térmica por distancia orbital y vector de iluminación día/noche en tiempo real.
@@ -17,6 +19,7 @@ enum PlanetZone {
 var star_body: CosmosOrbitalBody2D = null
 var planets: Array[CosmosOrbitalBody2D] = []
 var active_archetype: CosmosStarArchetype = null
+var current_poi_config: CosmicPoiConfig = null
 var shadow_projector: CosmosPlanetaryShadowProjector2D = null
 var _is_built: bool = false
 var _bounding_radius: float = 0.0
@@ -29,9 +32,10 @@ func _ready() -> void:
 	if not _is_built and system_profile != null:
 		build_system(system_seed)
 
-## Construye la jerarquía física y visual del sistema solar a partir de la semilla dada.
-func build_system(p_seed: int) -> void:
+## Construye la jerarquía física y visual del sistema solar a partir de la semilla dada y POI opcional.
+func build_system(p_seed: int, p_poi_config: CosmicPoiConfig = null) -> void:
 	system_seed = p_seed
+	current_poi_config = p_poi_config
 	_clear_existing_system()
 	if system_profile == null:
 		return
@@ -81,7 +85,10 @@ static func _get_light_quad_texture() -> ImageTexture:
 	return _light_quad_texture
 
 func _build_system_hierarchy() -> void:
-	active_archetype = system_profile.get_archetype_for_seed(system_seed)
+	if current_poi_config != null and current_poi_config.star_archetype != null:
+		active_archetype = current_poi_config.star_archetype
+	else:
+		active_archetype = system_profile.get_archetype_for_seed(system_seed)
 	var shadow_cfg: CosmosShadowSystemConfig = system_profile.get_effective_shadow_config()
 	var planetary_cfg: CosmosPlanetarySystemConfig = system_profile.get_effective_planetary_config()
 	var star_vis_cfg: CosmosStarVisualConfig = active_archetype.get_effective_visual_config() if active_archetype != null else system_profile.get_effective_star_visual_config()
@@ -122,7 +129,10 @@ func _build_system_hierarchy() -> void:
 	# 2. Estrella Central
 	star_body = CosmosOrbitalBody2D.new()
 	star_body.name = "CentralStar"
-	star_body.body_name = StringName(star_prefix + "_" + str(system_seed % 1000))
+	var final_star_name: StringName = StringName(star_prefix + "_" + str(system_seed % 1000))
+	if current_poi_config != null and current_poi_config.custom_label != &"":
+		final_star_name = current_poi_config.custom_label
+	star_body.body_name = final_star_name
 	star_body.orbit_radius = 0.0
 	star_body.angular_velocity = 0.0
 	star_body.initial_theta = 0.0
@@ -218,12 +228,15 @@ func _build_system_hierarchy() -> void:
 	add_child(star_body)
 
 	# 3. Planetas Primarios
-	var planet_count_range: int = planetary_cfg.max_planets - planetary_cfg.min_planets
 	var num_planets: int = planetary_cfg.min_planets
-	if planet_count_range > 0:
-		var planet_rnd: float = CosmosHasher.hash_2d_float(system_seed, 202, 22)
-		num_planets += int(planet_rnd * float(planet_count_range + 1))
-		num_planets = clampi(num_planets, planetary_cfg.min_planets, planetary_cfg.max_planets)
+	if current_poi_config != null and current_poi_config.planet_count >= 0:
+		num_planets = current_poi_config.planet_count
+	else:
+		var planet_count_range: int = planetary_cfg.max_planets - planetary_cfg.min_planets
+		if planet_count_range > 0:
+			var planet_rnd: float = CosmosHasher.hash_2d_float(system_seed, 202, 22)
+			num_planets += int(planet_rnd * float(planet_count_range + 1))
+			num_planets = clampi(num_planets, planetary_cfg.min_planets, planetary_cfg.max_planets)
 
 	var base_system_theta: float = CosmosHasher.hash_2d_float(system_seed, 505, 55) * TAU
 	var theta_step: float = TAU / float(maxi(num_planets, 1))

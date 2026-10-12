@@ -1,6 +1,8 @@
 class_name CosmosFloatingOriginTracker
 extends Node
 
+const CosmosViewportCanvasTracker = preload("res://scenes/combat/environment/cosmos/core/viewport_canvas_tracker.gd")
+
 ## Supervisor del sistema de Origen Flotante para grandes escalas astronómicas.
 ## Detecta cuando el objetivo (player/nave) se aleja más allá de threshold_distance
 ## respecto al centro global (0, 0), recentrando las entidades del mundo y
@@ -11,21 +13,33 @@ signal origin_shifted(shift_vector: Vector2)
 
 @export var player_target: Node2D
 @export var camera: Camera2D
+@export var viewport_tracker: CosmosViewportCanvasTracker
 @export var threshold_distance: float = 10000.0
 @export var parallax_layers: Array[Parallax2D] = []
 
 func _physics_process(_delta: float) -> void:
 	check_and_shift()
 
+## Obtiene la posición efectiva a monitorear (jugador, viewport tracker o cámara)
+func get_tracked_position() -> Vector2:
+	if is_instance_valid(player_target):
+		return player_target.global_position
+	if is_instance_valid(viewport_tracker):
+		return viewport_tracker.current_center
+	if is_instance_valid(camera):
+		return camera.global_position
+	return Vector2.ZERO
+
 ## Evalúa si el objetivo superó el umbral y efectúa el recentrado si corresponde.
 func check_and_shift() -> bool:
-	if not is_instance_valid(player_target):
+	var target_pos: Vector2 = get_tracked_position()
+	if target_pos == Vector2.ZERO and not is_instance_valid(player_target):
 		return false
 	
-	var len_sq: float = player_target.global_position.length_squared()
+	var len_sq: float = target_pos.length_squared()
 	var thresh_sq: float = threshold_distance * threshold_distance
 	if len_sq >= thresh_sq:
-		trigger_shift(player_target.global_position)
+		trigger_shift(target_pos)
 		return true
 	return false
 

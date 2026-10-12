@@ -1,12 +1,16 @@
 class_name CosmosSolarSystemStreamer
 extends Node2D
 
+const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd")
+const CosmicPoiRegistry = preload("res://scenes/combat/environment/cosmos/core/cosmic_poi_registry.gd")
+
 ## Orquestador y streamer determinista de sistemas solares bajo capas de Parallax2D.
 ## Utiliza CosmosMacroGrid y un Object Pool pre-asignado de CosmosSolarSystem2D para cero-asignaciones dinámicas.
 
 @export var system_profile: CosmosCelestialSystemProfile
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
+var poi_registry: CosmicPoiRegistry = null
 @export var run_seed: int = 428175
 @export var pool_size: int = 8
 @export var cell_size: float = 16000.0
@@ -23,6 +27,18 @@ var _shadow_expansion_factor: float = 1.05
 var _shadow_heliopause_fade: float = 0.70
 var _planet_day_exposure: float = 1.30
 var _star_core_brightness: float = 1.25
+
+var _has_camera_override: bool = false
+var _override_cam_pos: Vector2 = Vector2.ZERO
+var _override_zoom: Vector2 = Vector2.ONE
+
+func set_camera_override(cam_pos: Vector2, zoom: Vector2) -> void:
+	_has_camera_override = true
+	_override_cam_pos = cam_pos
+	_override_zoom = zoom
+
+func clear_camera_override() -> void:
+	_has_camera_override = false
 
 func _ready() -> void:
 	assert(system_profile != null, "CosmosCelestialSystemProfile no asignado en CosmosSolarSystemStreamer.")
@@ -64,7 +80,7 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 			sys.update_astronomical_state(current_time)
 		return
 
-	var zoom: Vector2 = camera.zoom
+	var zoom: Vector2 = _override_zoom if _has_camera_override else (camera.zoom if camera != null else Vector2.ONE)
 	if zoom.x <= 0.0001 or zoom.y <= 0.0001:
 		zoom = Vector2.ONE
 
@@ -73,8 +89,8 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 		viewport_size = Vector2(1920.0, 1080.0)
 
 	var viewport_half: Vector2 = (viewport_size * 0.5) / zoom
-	var cam_pos: Vector2 = camera.get_screen_center_position()
-	if cam_pos == Vector2.ZERO and camera.global_position != Vector2.ZERO:
+	var cam_pos: Vector2 = _override_cam_pos if _has_camera_override else (camera.get_screen_center_position() if camera != null else Vector2.ZERO)
+	if not _has_camera_override and cam_pos == Vector2.ZERO and camera != null and camera.global_position != Vector2.ZERO:
 		cam_pos = camera.global_position
 
 	var layer_center: Vector2 = (cam_pos * parallax_layer.scroll_scale) - parallax_layer.scroll_offset
@@ -87,9 +103,15 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 	for ox: int in range(-1, 2):
 		for oy: int in range(-1, 2):
 			var candidate_cell: Vector2i = current_cell + Vector2i(ox, oy)
-			# Probabilidad determinista de spawn de sistema solar en la celda
-			if _macro_grid.get_cell_pseudorandom_float(candidate_cell, 9091) > effective_spawn_chance:
-				continue
+			var has_override: bool = poi_registry != null and poi_registry.has_poi(candidate_cell)
+			if not has_override:
+				# Probabilidad determinista de spawn de sistema solar en la celda
+				if _macro_grid.get_cell_pseudorandom_float(candidate_cell, 9091) > effective_spawn_chance:
+					continue
+			else:
+				var poi: CosmicPoiConfig = poi_registry.get_poi(candidate_cell)
+				if poi != null and poi.poi_type != CosmicPoiConfig.PoiType.SOLAR_SYSTEM:
+					continue
 
 			var system_pos: Vector2 = get_system_position_for_cell(candidate_cell)
 
@@ -115,7 +137,10 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 			if not _pool.is_empty():
 				var sys_to_acquire: CosmosSolarSystem2D = _pool.pop_back()
 				var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(req_cell.x, req_cell.y, 777)
-				sys_to_acquire.build_system(cell_seed)
+				var poi_override: CosmicPoiConfig = poi_registry.get_poi(req_cell) if (poi_registry != null and poi_registry.has_poi(req_cell)) else null
+				if poi_override != null and poi_override.seed_override >= 0:
+					cell_seed = poi_override.seed_override
+				sys_to_acquire.build_system(cell_seed, poi_override)
 				sys_to_acquire.set_shadows_enabled(_shadows_enabled)
 				sys_to_acquire.set_shadow_opacity(_shadow_opacity)
 				sys_to_acquire.set_planet_day_exposure(_planet_day_exposure)
@@ -134,7 +159,12 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 func get_system_position_for_cell(cell_coords: Vector2i) -> Vector2:
 	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell_coords)
 	var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(cell_coords.x, cell_coords.y, 777)
-	var arch: CosmosStarArchetype = system_profile.get_archetype_for_seed(cell_seed) if system_profile != null else null
+	var poi_override: CosmicPoiConfig = poi_registry.get_poi(cell_coords) if (poi_registry != null and poi_registry.has_poi(cell_coords)) else null
+	var arch: CosmosStarArchetype = null
+	if poi_override != null and poi_override.star_archetype != null:
+		arch = poi_override.star_archetype
+	elif system_profile != null:
+		arch = system_profile.get_archetype_for_seed(cell_seed)
 	var sys_reach: float = (arch.orbit_radius_max if arch != null else (system_profile.orbit_radius_max if system_profile != null else 4400.0)) + 400.0
 	var padding: float = system_profile.cell_boundary_padding if system_profile != null else 250.0
 	var safe_half: float = (cell_size * 0.5) - padding

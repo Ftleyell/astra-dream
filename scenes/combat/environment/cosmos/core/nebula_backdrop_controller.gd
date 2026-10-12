@@ -102,6 +102,11 @@ func _update_uniforms() -> void:
 		var world_cam: Vector2 = cam_pos + accumulated_origin_shift
 		_shader_mat.set_shader_parameter("camera_world_position", world_cam)
 
+func set_world_view_position(world_pos: Vector2) -> void:
+	if _shader_mat != null:
+		var world_cam: Vector2 = world_pos + accumulated_origin_shift
+		_shader_mat.set_shader_parameter("camera_world_position", world_cam)
+
 func set_blend_factor(blend: float) -> void:
 	biome_blend_factor = clampf(blend, 0.0, 1.0)
 	if _shader_mat != null:

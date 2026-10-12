@@ -1,6 +1,10 @@
 class_name CosmosRootNode
 extends Node2D
 
+const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd")
+const CosmicPoiRegistry = preload("res://scenes/combat/environment/cosmos/core/cosmic_poi_registry.gd")
+const CosmosViewportCanvasTracker = preload("res://scenes/combat/environment/cosmos/core/viewport_canvas_tracker.gd")
+
 ## Escena Raíz y Orquestador de Cosmos Engine.
 ## Unifica los 6 estratos cósmicos analíticos y Parallax2D en Godot 4:
 ## 1. ParallaxNebulaDeep: Shader universe_nebula.gdshader en CanvasLayer de fondo o Parallax ultralento.
@@ -18,6 +22,7 @@ signal origin_shifted(shift_vector: Vector2)
 @export var camera: Camera2D
 @export var player_target: Node2D
 @export var floating_origin_tracker: CosmosFloatingOriginTracker
+@export var viewport_tracker: CosmosViewportCanvasTracker
 @export var time_scale: float = 1.0
 
 @export_group("Perfil de Entorno Data-Driven")
@@ -43,6 +48,7 @@ signal origin_shifted(shift_vector: Vector2)
 @export var debris_streamer: CosmosDebrisStreamer2D
 @export var gameplay_world: Node2D
 
+var poi_registry: CosmicPoiRegistry = CosmicPoiRegistry.new()
 var _global_time: float = 0.0
 var _origin_shift_count: int = 0
 var _accumulated_shift: Vector2 = Vector2.ZERO
@@ -51,10 +57,23 @@ var _starfield_mat: ShaderMaterial = null
 func _ready() -> void:
 	# Prioridad de proceso: CosmosRootNode orquesta el tiempo y el tracker se procesa antes del render
 	process_priority = -100
+	_setup_viewport_tracker()
 	_setup_floating_origin()
+	_sync_poi_registry()
 	_bind_camera_to_streamers()
 	_cache_starfield_material()
 	_init_environment_profile()
+
+func _setup_viewport_tracker() -> void:
+	if viewport_tracker == null:
+		viewport_tracker = get_node_or_null("CosmosViewportCanvasTracker") as CosmosViewportCanvasTracker
+	if viewport_tracker == null:
+		# Instanciar dinámicamente si no existe en el árbol de escena
+		viewport_tracker = CosmosViewportCanvasTracker.new()
+		viewport_tracker.name = "CosmosViewportCanvasTracker"
+		add_child(viewport_tracker)
+	if not viewport_tracker.viewport_updated.is_connected(_on_viewport_updated):
+		viewport_tracker.viewport_updated.connect(_on_viewport_updated)
 
 func _init_environment_profile() -> void:
 	if environment_profile == null:
@@ -200,6 +219,8 @@ func _setup_floating_origin() -> void:
 		floating_origin_tracker = get_node_or_null("CosmosFloatingOriginTracker") as CosmosFloatingOriginTracker
 	
 	if floating_origin_tracker != null:
+		if floating_origin_tracker.viewport_tracker == null and viewport_tracker != null:
+			floating_origin_tracker.viewport_tracker = viewport_tracker
 		# Establecer prioridad de proceso del tracker previa a los renders
 		floating_origin_tracker.process_priority = -50
 		if not floating_origin_tracker.origin_shifted.is_connected(_on_floating_origin_shifted):
@@ -236,6 +257,48 @@ func _bind_camera_to_streamers() -> void:
 		var star_ctrl: CosmosStarfieldBackdropController = parallax_starfield_8k as CosmosStarfieldBackdropController
 		if star_ctrl.camera == null:
 			star_ctrl.camera = camera
+	_sync_poi_registry()
+
+func _on_viewport_updated(center_world_pos: Vector2, zoom: Vector2, _rotation_rad: float) -> void:
+	if solar_streamer != null:
+		solar_streamer.set_camera_override(center_world_pos, zoom)
+	if galaxy_streamer != null:
+		galaxy_streamer.set_camera_override(center_world_pos, zoom)
+	if debris_streamer != null:
+		debris_streamer.set_camera_override(center_world_pos, zoom)
+	if nebula_controller != null:
+		nebula_controller.set_world_view_position(center_world_pos)
+	if parallax_starfield_8k != null and parallax_starfield_8k.has_method("set_world_view_position"):
+		parallax_starfield_8k.call("set_world_view_position", center_world_pos)
+
+func _sync_poi_registry() -> void:
+	if poi_registry == null:
+		poi_registry = CosmicPoiRegistry.new()
+	if solar_streamer != null and solar_streamer.poi_registry != poi_registry:
+		solar_streamer.poi_registry = poi_registry
+	if galaxy_streamer != null and galaxy_streamer.poi_registry != poi_registry:
+		galaxy_streamer.poi_registry = poi_registry
+
+## Registra un POI narrativo en coordenadas absolutas del macro-grid.
+func register_poi(coord: Vector2i, config: CosmicPoiConfig) -> void:
+	_sync_poi_registry()
+	poi_registry.register_poi(coord, config)
+
+## Registra un POI narrativo en coordenadas relativas a un origen de celda dado.
+func register_relative_poi(offset: Vector2i, config: CosmicPoiConfig, current_origin: Vector2i) -> Vector2i:
+	_sync_poi_registry()
+	return poi_registry.register_relative_poi(offset, config, current_origin)
+
+## Limpia todos los POIs registrados devolviendo el streaming al comportamiento 100% procedural.
+func clear_poi_overrides() -> void:
+	if poi_registry != null:
+		poi_registry.clear_overrides()
+
+func has_poi(coord: Vector2i) -> bool:
+	return poi_registry.has_poi(coord) if poi_registry != null else false
+
+func get_poi(coord: Vector2i) -> CosmicPoiConfig:
+	return poi_registry.get_poi(coord) if poi_registry != null else null
 
 func _process(delta: float) -> void:
 	var delta_time: float = delta * time_scale
@@ -266,12 +329,20 @@ func _sync_active_star_lights_to_nebula(delta: float) -> void:
 	var colors: PackedColorArray = PackedColorArray()
 	var radii: PackedFloat32Array = PackedFloat32Array()
 
-	var zoom_val: float = camera.zoom.x if camera != null and camera.zoom.x > 0.0001 else 1.0
+	var zoom_val: float = 1.0
+	if viewport_tracker != null:
+		zoom_val = viewport_tracker.current_zoom.x
+	elif camera != null and camera.zoom.x > 0.0001:
+		zoom_val = camera.zoom.x
 
-	# Punto de referencia de la nave/cámara en espacio de coordenadas globales
-	var player_world_pos: Vector2 = camera.global_position if camera != null else Vector2.ZERO
+	# Punto de referencia de la nave/cámara/viewport en espacio de coordenadas globales
+	var player_world_pos: Vector2 = Vector2.ZERO
 	if player_target != null and is_instance_valid(player_target):
 		player_world_pos = player_target.global_position
+	elif viewport_tracker != null:
+		player_world_pos = viewport_tracker.current_center
+	elif camera != null:
+		player_world_pos = camera.global_position
 
 	var target_influence: float = 0.0
 	var closest_biome: CosmosBiomeConfig = null

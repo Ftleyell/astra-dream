@@ -1,6 +1,9 @@
 class_name CosmosGalaxyStreamer2D
 extends Node2D
 
+const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resources/cosmic_poi_config.gd")
+const CosmicPoiRegistry = preload("res://scenes/combat/environment/cosmos/core/cosmic_poi_registry.gd")
+
 ## Controlador de streaming determinista de macro-galaxias en capas de Parallax2D.
 ## Implementa la Arquitectura A (Macro-Sectores 3x3):
 ## - Cada macro-sector 3x3 de sistemas solares alberga aproximadamente en su centro una galaxia de fondo.
@@ -12,6 +15,7 @@ const GALAXY_DEEP_SHADER: Shader = preload("res://scenes/combat/environment/gala
 @export var landmark_profile: CosmosGalaxyLandmarkProfile
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
+var poi_registry: CosmicPoiRegistry = null
 @export var run_seed: int = 8943719
 @export var solar_cell_size: float = 7500.0
 @export var pool_size: int = 6
@@ -25,6 +29,18 @@ var _active_galaxies: Dictionary = {} # Vector2i -> Sprite2D
 
 var _cached_frustum_half_extents: Vector2 = Vector2.ZERO
 var _cached_screen_center_layer: Vector2 = Vector2.ZERO
+
+var _has_camera_override: bool = false
+var _override_cam_pos: Vector2 = Vector2.ZERO
+var _override_zoom: Vector2 = Vector2.ONE
+
+func set_camera_override(cam_pos: Vector2, zoom: Vector2) -> void:
+	_has_camera_override = true
+	_override_cam_pos = cam_pos
+	_override_zoom = zoom
+
+func clear_camera_override() -> void:
+	_has_camera_override = false
 
 func _ready() -> void:
 	if landmark_profile != null:
@@ -85,10 +101,10 @@ func _process(delta: float) -> void:
 	_evaluate_frustum_and_stream(delta)
 
 func _evaluate_frustum_and_stream(delta: float) -> void:
-	if camera == null or parallax_layer == null or landmark_profile == null or _macro_grid == null:
+	if (camera == null and not _has_camera_override) or parallax_layer == null or landmark_profile == null or _macro_grid == null:
 		return
 
-	var zoom: Vector2 = camera.zoom
+	var zoom: Vector2 = _override_zoom if _has_camera_override else (camera.zoom if camera != null else Vector2.ONE)
 	if zoom.x <= 0.0001 or zoom.y <= 0.0001:
 		zoom = Vector2.ONE
 
@@ -98,8 +114,8 @@ func _evaluate_frustum_and_stream(delta: float) -> void:
 		viewport_size = Vector2(1920.0, 1080.0)
 
 	var viewport_half: Vector2 = (viewport_size * 0.5) / zoom
-	var cam_pos: Vector2 = camera.get_screen_center_position()
-	if cam_pos == Vector2.ZERO and camera.global_position != Vector2.ZERO:
+	var cam_pos: Vector2 = _override_cam_pos if _has_camera_override else (camera.get_screen_center_position() if camera != null else Vector2.ZERO)
+	if not _has_camera_override and cam_pos == Vector2.ZERO and camera != null and camera.global_position != Vector2.ZERO:
 		cam_pos = camera.global_position
 
 	_cached_screen_center_layer = (cam_pos * parallax_layer.scroll_scale) - parallax_layer.scroll_offset
@@ -117,7 +133,15 @@ func _evaluate_frustum_and_stream(delta: float) -> void:
 	for cx: int in range(min_cx, max_cx + 1):
 		for cy: int in range(min_cy, max_cy + 1):
 			var cell: Vector2i = Vector2i(cx, cy)
-			if _macro_grid.get_cell_pseudorandom_float(cell, 551) <= spawn_chance:
+			var has_override: bool = poi_registry != null and poi_registry.has_poi(cell)
+			var should_spawn: bool = false
+			if has_override:
+				var poi: CosmicPoiConfig = poi_registry.get_poi(cell)
+				should_spawn = (poi != null and poi.poi_type == CosmicPoiConfig.PoiType.GALAXY)
+			else:
+				should_spawn = (_macro_grid.get_cell_pseudorandom_float(cell, 551) <= spawn_chance)
+
+			if should_spawn:
 				var g_pos: Vector2 = evaluate_galaxy_layer_position(cell)
 				if _intersects_frustum(g_pos, _cached_screen_center_layer, _cached_frustum_half_extents):
 					req_cells.append(cell)
