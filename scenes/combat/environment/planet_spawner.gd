@@ -57,27 +57,37 @@ func _connect_cosmos_streamer() -> void:
 				var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
 				if tracker != null:
 					var slots_dict: Dictionary = tracker.get_slots_for_system(sys, cell)
-					var star_slot: CosmosOrbitSlotScript = slots_dict.get("star_slot")
-					_on_solar_system_streamed(sys, cell, star_slot, [])
+					var slot: CosmosOrbitSlotScript = slots_dict.get("destructible_slot") as CosmosOrbitSlotScript
+					if slot == null:
+						slot = slots_dict.get("star_slot") as CosmosOrbitSlotScript
+					_on_solar_system_streamed(sys, cell, slot, [])
 
 
-func _on_solar_system_streamed(_system: Node, cell: Vector2i, star_slot: CosmosOrbitSlotScript, _planet_slots: Array) -> void:
+func _on_solar_system_streamed(system: Node, cell: Vector2i, star_slot: CosmosOrbitSlotScript, _planet_slots: Array) -> void:
 	if spawned_system_cells.has(cell):
 		return
 	_prune_active_planets()
 	if active_planets.size() >= max_active_planets:
 		return
-	if star_slot == null:
-		return
 
 	var host_ctrl: Node = _get_cosmos_controller()
+	var target_slot: CosmosOrbitSlotScript = null
+	if host_ctrl != null and host_ctrl.has_method("get_slot_tracker") and system is CosmosSolarSystem2D:
+		var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker")
+		if tracker != null:
+			target_slot = tracker.get_destructible_planet_slot(system as CosmosSolarSystem2D, cell)
+	if target_slot == null:
+		target_slot = star_slot
+	if target_slot == null:
+		return
+
 	var cam: Camera2D = _get_camera()
 	var root_node: CosmosRootNode = host_ctrl.cosmos_root if (host_ctrl != null and "cosmos_root" in host_ctrl) else null
 	var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
-	var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(star_slot, t_global, cam)
+	var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(target_slot, t_global, cam)
 	if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
 		spawned_system_cells[cell] = true
-		_instantiate_planet_at(slot_world_pos, star_slot)
+		_instantiate_planet_at(slot_world_pos, target_slot)
 
 
 func _spawn_initial_test_planet() -> void:
@@ -85,18 +95,26 @@ func _spawn_initial_test_planet() -> void:
 	var center := player.global_position if is_instance_valid(player) else Vector2(960, 540)
 	var host_ctrl: Node = _get_cosmos_controller()
 	if host_ctrl != null:
-		if host_ctrl.has_method("get_star_orbit_slots"):
-			var slots: Array = host_ctrl.call("get_star_orbit_slots", center, 24000.0)
-			if not slots.is_empty():
-				var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
-				var cam: Camera2D = _get_camera()
-				var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-				var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
-				var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
-				if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
-					spawned_system_cells[slot.orbit_center_cell] = true
-					_instantiate_planet_at(slot_world_pos, slot)
-					return
+		var slots: Array = []
+		if host_ctrl.has_method("get_destructible_planet_slots"):
+			slots = host_ctrl.call("get_destructible_planet_slots", center, 24000.0)
+		elif host_ctrl.has_method("get_slot_tracker"):
+			var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker")
+			if tracker != null and tracker.has_method("get_destructible_planet_slots"):
+				slots = tracker.get_destructible_planet_slots(center, 24000.0)
+		if slots.is_empty() and host_ctrl.has_method("get_star_orbit_slots"):
+			slots = host_ctrl.call("get_star_orbit_slots", center, 24000.0)
+
+		if not slots.is_empty():
+			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
+			var cam: Camera2D = _get_camera()
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+			var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+			if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
+				spawned_system_cells[slot.orbit_center_cell] = true
+				_instantiate_planet_at(slot_world_pos, slot)
+				return
 		# Si hay Cosmos Engine presente pero aún no hay estrellas disponibles, esperar al streaming
 		return
 
@@ -148,14 +166,23 @@ func _spawn_planet_ahead() -> bool:
 		return false
 
 	var host_ctrl: Node = _get_cosmos_controller()
-	if host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
-		var star_slots: Array = host_ctrl.call("get_star_orbit_slots", player.global_position, 24000.0)
-		if not star_slots.is_empty():
+	if host_ctrl != null:
+		var target_slots: Array = []
+		if host_ctrl.has_method("get_destructible_planet_slots"):
+			target_slots = host_ctrl.call("get_destructible_planet_slots", player.global_position, 24000.0)
+		elif host_ctrl.has_method("get_slot_tracker"):
+			var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker")
+			if tracker != null and tracker.has_method("get_destructible_planet_slots"):
+				target_slots = tracker.get_destructible_planet_slots(player.global_position, 24000.0)
+		if target_slots.is_empty() and host_ctrl.has_method("get_star_orbit_slots"):
+			target_slots = host_ctrl.call("get_star_orbit_slots", player.global_position, 24000.0)
+
+		if not target_slots.is_empty():
 			var cam: Camera2D = _get_camera()
 			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
 			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
 
-			for slot_obj in star_slots:
+			for slot_obj in target_slots:
 				var slot: CosmosOrbitSlotScript = slot_obj as CosmosOrbitSlotScript
 				if spawned_system_cells.has(slot.orbit_center_cell):
 					continue
@@ -289,12 +316,21 @@ func _apply_star_orbit_binding(planet_node: Planet, candidate_pos: Vector2, boun
 	var host_ctrl: Node = _get_cosmos_controller()
 	var slot_to_bind: CosmosOrbitSlotScript = bound_slot
 
-	if slot_to_bind == null and host_ctrl != null and host_ctrl.has_method("get_star_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_star_orbit_slots", candidate_pos, 9000.0)
+	if slot_to_bind == null and host_ctrl != null:
+		var slots: Array = []
+		if host_ctrl.has_method("get_destructible_planet_slots"):
+			slots = host_ctrl.call("get_destructible_planet_slots", candidate_pos, 9000.0)
+		elif host_ctrl.has_method("get_slot_tracker"):
+			var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker")
+			if tracker != null and tracker.has_method("get_destructible_planet_slots"):
+				slots = tracker.get_destructible_planet_slots(candidate_pos, 9000.0)
+		if slots.is_empty() and host_ctrl.has_method("get_star_orbit_slots"):
+			slots = host_ctrl.call("get_star_orbit_slots", candidate_pos, 9000.0)
 		if not slots.is_empty():
 			slot_to_bind = slots[0] as CosmosOrbitSlotScript
 
 	if slot_to_bind != null and host_ctrl != null:
+		planet_node.orbit_slot = slot_to_bind
 		var follower := OrbitalWorldFollower2DScript.new()
 		follower.name = "OrbitalWorldFollower2D"
 		planet_node.add_child(follower)

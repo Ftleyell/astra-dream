@@ -208,6 +208,10 @@ func get_slot_tracker() -> CosmosOrbitalSlotTracker:
 func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
 	return get_slot_tracker().get_star_orbit_slots(world_position, search_radius)
 
+## Obtiene slots dedicados para planetas destructibles interactuables
+func get_destructible_planet_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
+	return get_slot_tracker().get_destructible_planet_slots(world_position, search_radius)
+
 ## Obtiene slots de órbita alrededor de planetas de fondo
 func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000.0) -> Array[CosmosOrbitSlot]:
 	return get_slot_tracker().get_planet_orbit_slots(world_position, search_radius)

@@ -136,6 +136,14 @@ func _exit_tree() -> void:
 		if _shadow_sprite.get_parent() != self:
 			_shadow_sprite.queue_free()
 
+func get_star_world_pos() -> Vector2:
+	if slot != null:
+		var cam_pos: Vector2 = _camera_ref.global_position if (_camera_ref != null and is_instance_valid(_camera_ref)) else Vector2.ZERO
+		var s_scale: Vector2 = slot.layer_scroll_scale
+		var star_layer_pos: Vector2 = slot.center_layer_position
+		return (cam_pos * (Vector2.ONE - s_scale)) + star_layer_pos
+	return star_world_pos
+
 func _process(_delta: float) -> void:
 	if not shadows_enabled or _is_fading:
 		return

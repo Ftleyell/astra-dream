@@ -23,7 +23,14 @@ extends Node2D
 @export var nest_trigger_radius: float = 950.0
 @export var disable_defenders: bool = false
 
+@export var lighting_terminator_softness: float = 0.28
+@export var lighting_night_ambient: float = 0.18
+@export var lighting_day_exposure_boost: float = 1.0
+
 const PlanetSectorScript := preload("res://scenes/combat/environment/planet_sector.gd")
+const LIGHTING_SHADER: Shader = preload("res://scenes/combat/environment/planet_day_night_lighting.gdshader")
+const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+
 var sector_scene: PackedScene = preload("res://scenes/combat/environment/planet_sector.tscn")
 var drone_scene: PackedScene = preload("res://scenes/combat/enemies/enemy_drone.tscn")
 
@@ -31,15 +38,20 @@ var player: Player = null
 var defender_timer: float = 2.0
 var active_defenders: Array[Node2D] = []
 var atmosphere_color: Color = Color(0.3, 0.7, 1.0, 0.15)
+var star_world_pos: Vector2 = Vector2.ZERO
+var orbit_slot: CosmosOrbitSlotScript = null
 
 # Array de daño por sector [0.0 = intacto, 1.0 = destruido]
 var crust_damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 var mantle_damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
+static var _quad_texture: ImageTexture = null
+
 @onready var atmosphere_aura: Node2D = get_node_or_null("AtmosphereAura")
 @onready var planet_core: Node2D = get_node_or_null("PlanetCore")
 @onready var mantle_sprite: Sprite2D = get_node_or_null("MantleSprite")
 @onready var crust_sprite: Sprite2D = get_node_or_null("CrustSprite")
+@onready var lighting_overlay_sprite: Sprite2D = get_node_or_null("LightingOverlaySprite")
 @onready var crust_sectors_container: Node2D = get_node_or_null("CrustSectors")
 @onready var mantle_sectors_container: Node2D = get_node_or_null("MantleSectors")
 
@@ -98,8 +110,91 @@ func _initialize_planet() -> void:
 		crust_sprite.scale = Vector2((crust_radius * 2.0) / 512.0, (crust_radius * 2.0) / 512.0)
 		_setup_crust_shader()
 
-	# 4. Construir sectores invisibles de colisión y daño
+	# 4. Configurar Sprite de Overlay de Iluminación Día/Noche
+	_setup_lighting_overlay()
+
+	# 5. Construir sectores invisibles de colisión y daño
 	_build_sectors()
+
+
+static func _get_quad_texture() -> ImageTexture:
+	if _quad_texture == null:
+		var img: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
+		img.fill(Color.WHITE)
+		_quad_texture = ImageTexture.create_from_image(img)
+	return _quad_texture
+
+
+func _setup_lighting_overlay() -> void:
+	if not lighting_overlay_sprite:
+		lighting_overlay_sprite = get_node_or_null("LightingOverlaySprite") as Sprite2D
+		if not lighting_overlay_sprite:
+			lighting_overlay_sprite = Sprite2D.new()
+			lighting_overlay_sprite.name = "LightingOverlaySprite"
+			lighting_overlay_sprite.z_index = 3
+			add_child(lighting_overlay_sprite)
+
+	lighting_overlay_sprite.texture = _get_quad_texture()
+	lighting_overlay_sprite.centered = true
+	lighting_overlay_sprite.scale = Vector2(crust_radius, crust_radius)
+	_setup_lighting_shader()
+
+
+func _setup_lighting_shader() -> void:
+	if not lighting_overlay_sprite:
+		return
+	var mat := lighting_overlay_sprite.material as ShaderMaterial
+	if not mat:
+		mat = ShaderMaterial.new()
+		mat.shader = LIGHTING_SHADER
+		lighting_overlay_sprite.material = mat
+	mat.set_shader_parameter("terminator_softness", lighting_terminator_softness)
+	mat.set_shader_parameter("night_ambient", lighting_night_ambient)
+	mat.set_shader_parameter("day_exposure_boost", lighting_day_exposure_boost)
+	_update_day_night_lighting()
+
+
+func get_star_world_position() -> Vector2:
+	if star_world_pos != Vector2.ZERO:
+		return star_world_pos
+	var shadow_caster: Node = get_node_or_null("GameplayPlanetShadowCaster2D")
+	if shadow_caster != null and shadow_caster.has_method("get_star_world_pos"):
+		var pos: Vector2 = shadow_caster.call("get_star_world_pos")
+		if pos != Vector2.ZERO:
+			return pos
+	if orbit_slot != null:
+		var cam: Camera2D = get_viewport().get_camera_2d() if is_inside_tree() else null
+		var cam_pos: Vector2 = cam.global_position if (cam != null and is_instance_valid(cam)) else Vector2.ZERO
+		var s_scale: Vector2 = orbit_slot.layer_scroll_scale
+		var star_layer_pos: Vector2 = orbit_slot.center_layer_position
+		return (cam_pos * (Vector2.ONE - s_scale)) + star_layer_pos
+	return Vector2.ZERO
+
+
+func set_star_position(pos: Vector2) -> void:
+	star_world_pos = pos
+	_update_day_night_lighting()
+
+
+func _update_day_night_lighting() -> void:
+	if not lighting_overlay_sprite:
+		return
+
+	# Mantener el overlay fijado a los ejes del mundo (desacoplado de la rotación axial del planeta)
+	lighting_overlay_sprite.global_rotation = 0.0
+
+	var mat := lighting_overlay_sprite.material as ShaderMaterial
+	if not mat:
+		return
+
+	var star_pos: Vector2 = get_star_world_position()
+	var light_dir: Vector2 = Vector2(-1.0, 0.0)
+	if star_pos != Vector2.ZERO or star_world_pos != Vector2.ZERO or orbit_slot != null:
+		var to_star: Vector2 = star_pos - global_position
+		if to_star.length_squared() > 1.0:
+			light_dir = to_star.normalized()
+
+	mat.set_shader_parameter("light_direction", light_dir)
 
 
 func _setup_crust_shader() -> void:
@@ -215,6 +310,7 @@ func _process(delta: float) -> void:
 	# Rotación celestial sincrónica unificada (0.005 rad/s)
 	var rot_step: float = delta * 0.005
 	rotation += rot_step
+	_update_day_night_lighting()
 	_handle_defender_nest(delta)
 
 

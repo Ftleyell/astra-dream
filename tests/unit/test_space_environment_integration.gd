@@ -18,6 +18,8 @@ const CosmosSolarSystem2DScript = preload("res://scenes/combat/environment/cosmo
 const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const GameplayPlanetShadowCaster2DScript = preload("res://scenes/combat/environment/gameplay_planet_shadow_caster_2d.gd")
+const PlanetScene: PackedScene = preload("res://scenes/combat/environment/planet.tscn")
+const PlanetScript = preload("res://scenes/combat/environment/planet.gd")
 
 var _host: SpaceEnvironmentHost = null
 var _mock_main_game: Node2D = null
@@ -39,6 +41,7 @@ func _run_suite() -> void:
 	_test_freeze_and_pause_delegation()
 	_test_destructible_orbital_slot_anti_overlap()
 	_test_gameplay_shadow_photometric_sync()
+	_test_planet_day_night_lighting_overlay()
 	_teardown_mock_hierarchy()
 	pass_suite("TestSpaceEnvironmentIntegration completado con éxito al 100%.")
 
@@ -235,6 +238,51 @@ func _test_gameplay_shadow_photometric_sync() -> void:
 
 	standalone_caster.queue_free()
 	shadow_caster.queue_free()
+
+
+func _test_planet_day_night_lighting_overlay() -> void:
+	var planet: Planet = PlanetScene.instantiate() as Planet
+	assert_true(planet != null, "planet.tscn debe instanciarse correctamente.")
+	planet.position = Vector2(1000.0, 1000.0)
+	_mock_main_game.add_child(planet)
+
+	# 1. Verificar nodo overlay y z-index sobre manto y corteza
+	var overlay: Sprite2D = planet.lighting_overlay_sprite
+	assert_true(overlay != null, "Planet debe poseer el nodo LightingOverlaySprite.")
+	assert_true(overlay.z_index >= 3, "LightingOverlaySprite debe renderizarse sobre la corteza (z_index >= 3).")
+	assert_true(overlay.material is ShaderMaterial, "LightingOverlaySprite debe poseer un ShaderMaterial asignado.")
+
+	var mat: ShaderMaterial = overlay.material as ShaderMaterial
+	assert_true(mat.shader != null, "El ShaderMaterial debe contener un shader asignado.")
+	var shader_code: String = mat.shader.code
+	assert_true(shader_code.contains("render_mode blend_mul, unshaded;"), "El shader de día/noche debe usar blend_mul.")
+	assert_true(shader_code.contains("normal = vec3(delta, z)"), "El shader debe calcular la normal esférica analítica 3D.")
+
+	# 2. Verificar cálculo de light_direction hacia la estrella (Sol a la derecha en X = +1.0)
+	planet.set_star_position(Vector2(2000.0, 1000.0))
+	planet._process(0.016)
+	var dir_east: Vector2 = mat.get_shader_parameter("light_direction")
+	assert_true(dir_east.is_equal_approx(Vector2(1.0, 0.0)), "light_direction debe apuntar al este (+X) hacia la estrella.")
+
+	# 3. Sol arriba en Y = -1.0
+	planet.set_star_position(Vector2(1000.0, 0.0))
+	planet._process(0.016)
+	var dir_north: Vector2 = mat.get_shader_parameter("light_direction")
+	assert_true(dir_north.is_equal_approx(Vector2(0.0, -1.0)), "light_direction debe apuntar al norte (-Y) hacia la estrella.")
+
+	# 4. Desacoplamiento de rotación axial (la esfera rota pero el overlay mantiene orientación al mundo)
+	planet.rotation = deg_to_rad(90.0)
+	planet._process(0.016)
+	assert_true(is_equal_approx(overlay.global_rotation, 0.0), "LightingOverlaySprite debe mantener global_rotation = 0.0 frente al giro del planeta.")
+	var dir_north_after_rot: Vector2 = mat.get_shader_parameter("light_direction")
+	assert_true(dir_north_after_rot.is_equal_approx(Vector2(0.0, -1.0)), "light_direction debe mantenerse invariable a pesar del giro axial del planeta.")
+
+	# 5. Coexistencia con daño en sectores de corteza
+	planet.crust_damage[0] = 1.0
+	planet.crust_damage[1] = 0.5
+	assert_true(overlay.visible, "LightingOverlaySprite debe permanecer visible proyectando luz sobre el manto expuesto.")
+
+	planet.queue_free()
 
 
 func _teardown_mock_hierarchy() -> void:

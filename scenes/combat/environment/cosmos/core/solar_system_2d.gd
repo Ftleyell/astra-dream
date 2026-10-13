@@ -21,6 +21,9 @@ var planets: Array[CosmosOrbitalBody2D] = []
 var active_archetype: CosmosStarArchetype = null
 var current_poi_config: CosmicPoiConfig = null
 var shadow_projector: CosmosPlanetaryShadowProjector2D = null
+var destructible_orbit_radius: float = 0.0
+var destructible_initial_theta: float = 0.0
+var destructible_angular_velocity: float = 0.0
 var _is_built: bool = false
 var _bounding_radius: float = 0.0
 var _light_field_radius: float = 0.0
@@ -65,6 +68,9 @@ func _clear_existing_system() -> void:
 	shadow_projector = null
 	_bounding_radius = 0.0
 	_light_field_radius = 0.0
+	destructible_orbit_radius = 0.0
+	destructible_initial_theta = 0.0
+	destructible_angular_velocity = 0.0
 	_is_built = false
 
 const STAR_CORONA_SHADER: Shader = preload("res://scenes/combat/environment/cosmos/shaders/star_corona.gdshader")
@@ -227,7 +233,7 @@ func _build_system_hierarchy() -> void:
 	star_body.set_sprite_reference(star_sprite)
 	add_child(star_body)
 
-	# 3. Planetas Primarios
+	# 3. Planetas Primarios y Reserva de Slot Destructible
 	var num_planets: int = planetary_cfg.min_planets
 	if current_poi_config != null and current_poi_config.planet_count >= 0:
 		num_planets = current_poi_config.planet_count
@@ -238,24 +244,32 @@ func _build_system_hierarchy() -> void:
 			num_planets += int(planet_rnd * float(planet_count_range + 1))
 			num_planets = clampi(num_planets, planetary_cfg.min_planets, planetary_cfg.max_planets)
 
+	var total_slots: int = num_planets + 1
+	var destructible_slot_index: int = 0
+	if total_slots >= 3:
+		var slot_offset: int = int(CosmosHasher.hash_2d_float(system_seed, 707, 77) * float(total_slots - 2))
+		destructible_slot_index = 1 + clampi(slot_offset, 0, total_slots - 3)
+	else:
+		destructible_slot_index = clampi(int(CosmosHasher.hash_2d_float(system_seed, 707, 77) * float(total_slots)), 0, total_slots - 1)
+
 	var base_system_theta: float = CosmosHasher.hash_2d_float(system_seed, 505, 55) * TAU
-	var theta_step: float = TAU / float(maxi(num_planets, 1))
+	var theta_step: float = TAU / float(maxi(total_slots, 1))
 	var theta_jitter_rad: float = deg_to_rad(effective_theta_jitter_deg)
 
 	var prev_orbit_radius: float = 0.0
 
-	for i: int in range(num_planets):
-		var p_seed: int = system_seed + ((i + 1) * 733)
+	for slot_idx: int in range(total_slots):
+		var p_seed: int = system_seed + ((slot_idx + 1) * 733)
 
 		# 3.1 Progresión expansiva y espaciado orbital
-		var t_norm: float = float(i) / float(maxi(num_planets - 1, 1))
+		var t_norm: float = float(slot_idx) / float(maxi(total_slots - 1, 1))
 		var expansion_curve: float = pow(t_norm, 1.15)
 		var ideal_radius: float = lerpf(effective_orbit_min, effective_orbit_max, expansion_curve)
 
 		var radius_jitter: float = (CosmosHasher.hash_2d_float(p_seed, 303, 33) - 0.5) * (effective_min_spacing * 0.35)
 		var actual_radius: float = ideal_radius + radius_jitter
 
-		if i > 0:
+		if slot_idx > 0:
 			actual_radius = maxf(actual_radius, prev_orbit_radius + effective_min_spacing)
 		prev_orbit_radius = actual_radius
 
@@ -264,7 +278,20 @@ func _build_system_hierarchy() -> void:
 		var ang_vel: float = CosmosKeplerOrbitMath.calculate_keplerian_angular_velocity(system_profile.base_angular_velocity, effective_orbit_min, actual_radius, dir_sign)
 
 		var planet_theta_jitter: float = (CosmosHasher.hash_2d_float(p_seed, 515, 51) - 0.5) * 2.0 * theta_jitter_rad
-		var init_theta: float = fposmod(base_system_theta + (float(i) * theta_step) + planet_theta_jitter, TAU)
+		var init_theta: float = fposmod(base_system_theta + (float(slot_idx) * theta_step) + planet_theta_jitter, TAU)
+
+		# Reserva dedicada para el planeta interactuable destructible:
+		# Se garantiza el espaciado kepleriano sin instanciar planetas de fondo en esta franja radial.
+		if slot_idx == destructible_slot_index:
+			destructible_orbit_radius = actual_radius
+			destructible_angular_velocity = ang_vel
+			destructible_initial_theta = init_theta
+			var d_reach: float = actual_radius + 500.0
+			if d_reach > _bounding_radius:
+				_bounding_radius = d_reach
+			continue
+
+		var visual_idx: int = planets.size()
 		var dist_norm: float = clampf(actual_radius / maxf(effective_orbit_max, 1.0), 0.0, 1.0)
 		var dist_tint_attenuation: float = 1.0 - (dist_norm * 0.45) # 1.0 cerca del sol, ~0.55 en la órbita más lejana
 
@@ -272,17 +299,17 @@ func _build_system_hierarchy() -> void:
 		var zone: PlanetZone = PlanetZone.HABITABLE
 		if num_planets <= 2:
 			zone = PlanetZone.HABITABLE
-		elif i == 0:
+		elif visual_idx == 0:
 			zone = PlanetZone.INTERIOR
-		elif i == num_planets - 1:
+		elif visual_idx == num_planets - 1:
 			zone = PlanetZone.EXTERIOR
 		else:
 			if num_planets == 4:
-				zone = PlanetZone.HABITABLE if i == 1 else PlanetZone.EXTERIOR
+				zone = PlanetZone.HABITABLE if visual_idx == 1 else PlanetZone.EXTERIOR
 			elif num_planets == 5:
-				zone = PlanetZone.INTERIOR if i == 1 else (PlanetZone.HABITABLE if i == 2 else PlanetZone.EXTERIOR)
+				zone = PlanetZone.INTERIOR if visual_idx == 1 else (PlanetZone.HABITABLE if visual_idx == 2 else PlanetZone.EXTERIOR)
 			elif num_planets >= 6:
-				zone = PlanetZone.INTERIOR if i == 1 else (PlanetZone.HABITABLE if (i == 2 or i == 3) else PlanetZone.EXTERIOR)
+				zone = PlanetZone.INTERIOR if visual_idx == 1 else (PlanetZone.HABITABLE if (visual_idx == 2 or visual_idx == 3) else PlanetZone.EXTERIOR)
 			else:
 				zone = PlanetZone.HABITABLE
 
@@ -345,8 +372,8 @@ func _build_system_hierarchy() -> void:
 		target_diameter *= planetary_cfg.planet_size_multiplier
 
 		var planet_body: CosmosOrbitalBody2D = CosmosOrbitalBody2D.new()
-		planet_body.name = "Planet_" + str(i + 1)
-		planet_body.body_name = StringName("Planet_" + str(i + 1))
+		planet_body.name = "Planet_" + str(visual_idx + 1)
+		planet_body.body_name = StringName("Planet_" + str(visual_idx + 1))
 		planet_body.orbit_radius = actual_radius
 		planet_body.angular_velocity = ang_vel
 		planet_body.initial_theta = init_theta
@@ -396,7 +423,7 @@ func _build_system_hierarchy() -> void:
 
 		# 3.5 Registro en el proyector de sombras planetarias modular
 		if shadow_projector != null:
-			shadow_projector.register_planet(planet_body, i + 1)
+			shadow_projector.register_planet(planet_body, visual_idx + 1)
 
 		# 4. Estructuras Secundarias (Lunas Diegéticas y Estaciones Espaciales)
 		var max_sub_reach: float = 0.0
@@ -435,7 +462,7 @@ func _build_system_hierarchy() -> void:
 			var moon_init_theta: float = CosmosHasher.hash_2d_float(moon_seed, 1313, 131) * TAU
 
 			var moon_body: CosmosOrbitalBody2D = CosmosOrbitalBody2D.new()
-			moon_body.name = "Moon_" + str(i + 1) + "_" + str(m_idx + 1)
+			moon_body.name = "Moon_" + str(visual_idx + 1) + "_" + str(m_idx + 1)
 			moon_body.body_name = StringName(moon_body.name)
 			moon_body.orbit_radius = moon_radius
 			moon_body.angular_velocity = moon_ang_vel
@@ -482,7 +509,7 @@ func _build_system_hierarchy() -> void:
 			planet_body.add_orbital_child(moon_body)
 
 			if shadow_projector != null:
-				shadow_projector.register_body(moon_body, str(i + 1) + "_Moon_" + str(m_idx + 1))
+				shadow_projector.register_body(moon_body, str(visual_idx + 1) + "_Moon_" + str(m_idx + 1))
 
 		# 4.2 Estaciones Espaciales Diegéticas (sin sombra proyectada)
 		var spawn_station: bool = false
@@ -500,8 +527,8 @@ func _build_system_hierarchy() -> void:
 			var st_init_theta: float = CosmosHasher.hash_2d_float(station_seed, 2323, 233) * TAU
 
 			var station_body: CosmosOrbitalBody2D = CosmosOrbitalBody2D.new()
-			station_body.name = "Station_" + str(i + 1)
-			station_body.body_name = StringName("Station_" + str(i + 1))
+			station_body.name = "Station_" + str(visual_idx + 1)
+			station_body.body_name = StringName("Station_" + str(visual_idx + 1))
 			station_body.orbit_radius = station_radius
 			station_body.angular_velocity = st_ang_vel
 			station_body.initial_theta = st_init_theta
