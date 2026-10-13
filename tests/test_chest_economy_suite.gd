@@ -13,6 +13,7 @@ const CHEST_ECONOMY_CONFIG_PATH := "res://data/balance/default_chest_economy.tre
 const SpatialChestScript := preload("res://scenes/combat/chests/spatial_chest.gd")
 const ChestDirectorScript := preload("res://scenes/combat/chests/chest_director.gd")
 const TransmutationStationScript := preload("res://scenes/combat/satellite/transmutation_station.gd")
+const CosmosOrbitSlotScript := preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 
 var _passed_count: int = 0
 var _failed_count: int = 0
@@ -204,6 +205,27 @@ func _run_suite_4_transmutation_station_and_modal() -> void:
 
 	station.consume_use()
 	_assert_true(station.is_depleted, "Estación pasa a estado agotado al llegar a 0 usos", "No se agotó")
+
+	# Verificación de capa z-index sobre el núcleo solar
+	_assert_true(station.z_index >= 10, "Estación posee z_index >= 10 sobre el núcleo solar", "z_index menor a 10: %d" % station.z_index)
+	_assert_true(not station.z_as_relative, "Estación tiene z_as_relative = false", "z_as_relative es true")
+
+	# Verificación analítica de anclaje al centro solar (r = 0.0, omega = 0.0)
+	var star_center_slot := CosmosOrbitSlotScript.new(
+		CosmosOrbitSlotScript.SlotCenterType.STAR,
+		Vector2i.ZERO,
+		Vector2(2000.0, 1500.0),
+		0.0,
+		0.0,
+		0.0,
+		null,
+		&"StarCenterSlot_0_0",
+		Vector2(0.20, 0.20)
+	)
+	_assert_true(is_zero_approx(star_center_slot.orbit_radius), "Slot del centro solar tiene radio orbital r = 0.0", "r != 0")
+	_assert_true(is_zero_approx(star_center_slot.angular_velocity), "Slot del centro solar tiene velocidad angular omega = 0.0", "omega != 0")
+	var evaluated_layer_pos: Vector2 = star_center_slot.calculate_layer_position(100.0)
+	_assert_true(evaluated_layer_pos.is_equal_approx(Vector2(2000.0, 1500.0)), "Posición del slot se mantiene fija en el centro solar independientemente del tiempo", "Posición no coincide")
 
 	station.queue_free()
 

@@ -43,6 +43,8 @@ var reward_chest_scene: PackedScene = preload("res://scenes/combat/satellite/tra
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	z_index = 10
+	z_as_relative = false
 	add_to_group("transmutation_stations")
 	check_quantum_recompiler()
 	_apply_visual_skin()

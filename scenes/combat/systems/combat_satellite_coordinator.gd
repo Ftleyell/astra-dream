@@ -14,6 +14,9 @@ const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/
 const BASE_SPAWN_DISTANCE: float = 1200.0
 const DISTANCE_INCREMENT_PER_SAT: float = 400.0
 const ABANDON_RELOCATE_DISTANCE: float = 12000.0
+const MIN_ORBIT_SPAWN_DIST: float = 1200.0
+const MAX_ORBIT_SPAWN_DIST: float = 3500.0
+const TARGET_AHEAD_PROJECTION_DIST: float = 2000.0
 
 var odometer: RefCounted = null
 var spawn_selector: RefCounted = null
@@ -105,27 +108,22 @@ func _connect_cosmos_streamer() -> void:
 				var tracker: CosmosOrbitalSlotTrackerScript = host_ctrl.call("get_slot_tracker") if host_ctrl.has_method("get_slot_tracker") else null
 				if tracker != null:
 					var slots_dict: Dictionary = tracker.get_slots_for_system(sys, cell)
+					var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
 					var planet_slots: Array = slots_dict.get("planet_slots", [])
-					if not planet_slots.is_empty():
-						_on_solar_system_streamed(sys, cell, null, planet_slots)
+					if is_transmutation or not planet_slots.is_empty():
+						_on_solar_system_streamed(sys, cell, slots_dict.get("star_slot"), planet_slots)
 						break
 
 
 func _on_solar_system_streamed(_system: Node, _cell: Vector2i, _star_slot: CosmosOrbitSlotScript, planet_slots: Array) -> void:
 	if not _pending_satellite_spawn and is_instance_valid(current_satellite):
 		return
-	if planet_slots.is_empty():
+	var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
+	if not is_transmutation and planet_slots.is_empty():
 		return
 
-	var host_ctrl: Node = _get_cosmos_controller()
-	var selected_slot: CosmosOrbitSlotScript = planet_slots[0] as CosmosOrbitSlotScript
-	var cam: Camera2D = main_game.camera if (main_game and "camera" in main_game) else null
-	var root_node: CosmosRootNode = host_ctrl.cosmos_root if (host_ctrl != null and "cosmos_root" in host_ctrl) else null
-	var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
-	var spawn_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
-
-	_pending_satellite_spawn = false
-	spawn_next_satellite(spawn_pos, selected_slot)
+	if main_game and is_instance_valid(main_game.player):
+		_try_resolve_pending_satellite_spawn(main_game.player.global_position)
 
 
 func on_wave_started(_wave_idx: int) -> void:
@@ -219,20 +217,98 @@ func update_satellite_lifecycle() -> void:
 	odometer.update(p_pos, should_freeze_odometer)
 
 
-func _try_resolve_pending_satellite_spawn(player_pos: Vector2) -> void:
+func _find_best_orbit_slot(player_pos: Vector2, is_transmutation: bool = false) -> Dictionary:
 	var host_ctrl: Node = _get_cosmos_controller()
-	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 24000.0)
-		if not slots.is_empty():
-			var selected_slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
-			var cam: Camera2D = main_game.camera if "camera" in main_game else null
-			var t_global: float = 0.0
-			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-			if root_node != null and is_instance_valid(root_node):
-				t_global = root_node.get_global_time()
-			var spawn_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
-			_pending_satellite_spawn = false
-			spawn_next_satellite(spawn_pos, selected_slot)
+	if host_ctrl == null:
+		return {}
+
+	var cam: Camera2D = main_game.camera if "camera" in main_game else null
+	var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+	var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
+
+	# Si es Forja Cuántica, anclar al centro solar exacto (r = 0) más cercano
+	if is_transmutation:
+		if not host_ctrl.has_method("get_star_center_slots"):
+			return {}
+		var star_slots: Array = host_ctrl.call("get_star_center_slots", player_pos, 16000.0)
+		if star_slots.is_empty():
+			return {}
+
+		var candidates: Array[Dictionary] = []
+		for slot_obj in star_slots:
+			var slot: CosmosOrbitSlotScript = slot_obj as CosmosOrbitSlotScript
+			if slot == null:
+				continue
+			var proj_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+			var dist: float = player_pos.distance_to(proj_pos)
+			candidates.append({
+				"slot": slot,
+				"pos": proj_pos,
+				"score": dist
+			})
+
+		if candidates.is_empty():
+			return {}
+
+		candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return float(a["score"]) < float(b["score"])
+		)
+
+		return {
+			"slot": candidates[0]["slot"],
+			"pos": candidates[0]["pos"]
+		}
+
+	# Si es baliza satelital estándar (no transmutación)
+	if not host_ctrl.has_method("get_planet_orbit_slots"):
+		return {}
+
+	var player_vel: Vector2 = Vector2.ZERO
+	if main_game and is_instance_valid(main_game.player) and "velocity" in main_game.player:
+		player_vel = main_game.player.velocity
+
+	var player_dir: Vector2 = player_vel.normalized() if player_vel.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
+	if player_dir.length_squared() < 0.001:
+		player_dir = Vector2.UP
+
+	var target_ahead: Vector2 = player_pos + (player_dir * TARGET_AHEAD_PROJECTION_DIST)
+	var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, MAX_ORBIT_SPAWN_DIST + 1500.0)
+	if slots.is_empty():
+		return {}
+
+	var candidates: Array[Dictionary] = []
+	for slot_obj in slots:
+		var slot: CosmosOrbitSlotScript = slot_obj as CosmosOrbitSlotScript
+		if slot == null:
+			continue
+		var proj_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+		var dist: float = player_pos.distance_to(proj_pos)
+		if dist >= MIN_ORBIT_SPAWN_DIST and dist <= MAX_ORBIT_SPAWN_DIST:
+			candidates.append({
+				"slot": slot,
+				"pos": proj_pos,
+				"score": proj_pos.distance_squared_to(target_ahead)
+			})
+
+	if candidates.is_empty():
+		return {}
+
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["score"]) < float(b["score"])
+	)
+
+	return {
+		"slot": candidates[0]["slot"],
+		"pos": candidates[0]["pos"]
+	}
+
+
+func _try_resolve_pending_satellite_spawn(player_pos: Vector2) -> void:
+	var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
+	var best: Dictionary = _find_best_orbit_slot(player_pos, is_transmutation)
+	if not best.is_empty():
+		_pending_satellite_spawn = false
+		spawn_next_satellite(best["pos"] as Vector2, best["slot"] as CosmosOrbitSlotScript)
 
 
 func _on_odometer_distance_updated(current_dist: float, req_dist: float) -> void:
@@ -264,29 +340,21 @@ func spawn_next_satellite_ahead() -> void:
 
 	var player_pos: Vector2 = main_game.player.global_position
 	var host_ctrl: Node = _get_cosmos_controller()
-	var selected_slot: CosmosOrbitSlotScript = null
-	var spawn_pos: Vector2 = Vector2.ZERO
+	var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
 
-	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 24000.0)
-		if not slots.is_empty():
-			selected_slot = slots[0] as CosmosOrbitSlotScript
-			var cam: Camera2D = main_game.camera if "camera" in main_game else null
-			var t_global: float = 0.0
-			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
-			if root_node != null and is_instance_valid(root_node):
-				t_global = root_node.get_global_time()
-			spawn_pos = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
+	if host_ctrl != null and (host_ctrl.has_method("get_planet_orbit_slots") or host_ctrl.has_method("get_star_center_slots")):
+		var best: Dictionary = _find_best_orbit_slot(player_pos, is_transmutation)
+		if not best.is_empty():
 			_pending_satellite_spawn = false
-			spawn_next_satellite(spawn_pos, selected_slot)
+			spawn_next_satellite(best["pos"] as Vector2, best["slot"] as CosmosOrbitSlotScript)
 			return
 		else:
-			# Si Cosmos Engine está activo en MainGame pero no hay planetas en rango, retener (hold) el spawn
+			# Si Cosmos Engine está activo en MainGame pero no hay slots en rango razonable, retener (hold) el spawn
 			_pending_satellite_spawn = true
 			return
 
 	# Fallback cuando no hay Cosmos Engine presente (tests aislados)
-	spawn_pos = spawn_selector.calculate_spawn_position(
+	var spawn_pos: Vector2 = spawn_selector.calculate_spawn_position(
 		player_pos,
 		main_game.player.velocity
 	)
@@ -308,6 +376,8 @@ func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript
 	if spawn_selector.should_spawn_transmutation(satellites_collected_total):
 		var station: TransmutationStation = spawn_selector.instantiate_transmutation()
 		current_satellite = station
+		station.z_index = 10
+		station.z_as_relative = false
 		main_game.add_child(station)
 		station.global_position = target_pos
 		station.station_activated.connect(_on_transmutation_activated)
@@ -347,10 +417,15 @@ func _apply_orbital_binding(target_entity: Node2D, candidate_pos: Vector2, bound
 	var host_ctrl: Node = _get_cosmos_controller()
 	var slot_to_bind: CosmosOrbitSlotScript = bound_slot
 
-	if slot_to_bind == null and host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
-		var slots: Array = host_ctrl.call("get_planet_orbit_slots", candidate_pos, 7000.0)
-		if not slots.is_empty():
-			slot_to_bind = slots[0] as CosmosOrbitSlotScript
+	if slot_to_bind == null and host_ctrl != null:
+		if target_entity is TransmutationStation and host_ctrl.has_method("get_star_center_slots"):
+			var star_slots: Array = host_ctrl.call("get_star_center_slots", candidate_pos, 16000.0)
+			if not star_slots.is_empty():
+				slot_to_bind = star_slots[0] as CosmosOrbitSlotScript
+		elif host_ctrl.has_method("get_planet_orbit_slots"):
+			var slots: Array = host_ctrl.call("get_planet_orbit_slots", candidate_pos, 7000.0)
+			if not slots.is_empty():
+				slot_to_bind = slots[0] as CosmosOrbitSlotScript
 
 	if slot_to_bind != null and host_ctrl != null:
 		var follower := OrbitalWorldFollower2DScript.new()
@@ -394,10 +469,13 @@ func spawn_specific_transmutation(target_pos: Vector2) -> void:
 
 	var station: TransmutationStation = spawn_selector.instantiate_transmutation()
 	current_satellite = station
+	station.z_index = 10
+	station.z_as_relative = false
 	main_game.add_child(station)
 	station.global_position = target_pos
 	station.station_activated.connect(_on_transmutation_activated)
 	station.station_depleted.connect(func(): _on_satellite_exited(current_satellite_idx))
+	_apply_orbital_binding(station, target_pos, null)
 
 	if main_game.hud and is_instance_valid(main_game.hud):
 		main_game.hud.set_active_satellite(target_pos, current_satellite_idx)

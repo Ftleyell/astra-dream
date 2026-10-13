@@ -208,6 +208,10 @@ func get_slot_tracker() -> CosmosOrbitalSlotTracker:
 func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
 	return get_slot_tracker().get_star_orbit_slots(world_position, search_radius)
 
+## Obtiene slots del centro solar exacto (r = 0, omega = 0) para la Forja Cuántica
+func get_star_center_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
+	return get_slot_tracker().get_star_center_slots(world_position, search_radius)
+
 ## Obtiene slots dedicados para planetas destructibles interactuables
 func get_destructible_planet_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
 	return get_slot_tracker().get_destructible_planet_slots(world_position, search_radius)

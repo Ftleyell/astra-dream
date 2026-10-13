@@ -80,6 +80,68 @@ func get_star_orbit_slots(world_position: Vector2, search_radius: float = 8000.0
 
 	return results
 
+## Obtiene slots en el centro exacto de estrellas activas (r = 0, omega = 0), ideal para Forja Cuántica
+func get_star_center_slots(world_position: Vector2, search_radius: float = 8000.0) -> Array[CosmosOrbitSlot]:
+	var results: Array[CosmosOrbitSlot] = []
+	if cosmos_root == null or cosmos_root.solar_streamer == null:
+		return results
+
+	var streamer: CosmosSolarSystemStreamer = cosmos_root.solar_streamer
+	var parallax_layer: Parallax2D = streamer.parallax_layer
+	var scroll_scale: Vector2 = parallax_layer.scroll_scale if parallax_layer != null else Vector2(0.20, 0.20)
+	var active_systems: Dictionary = streamer.get_active_systems()
+	var target_layer_pos: Vector2 = world_position * scroll_scale
+
+	for cell: Vector2i in active_systems.keys():
+		var sys: CosmosSolarSystem2D = active_systems[cell]
+		if not is_instance_valid(sys) or sys.star_body == null:
+			continue
+
+		var star_layer_pos: Vector2 = sys.position + sys.star_body.position
+		if search_radius > 0.0 and star_layer_pos.distance_to(target_layer_pos) > search_radius:
+			continue
+
+		var slot: CosmosOrbitSlot = create_star_center_slot(sys, cell, scroll_scale)
+		results.append(slot)
+
+	# Si active_systems no tiene ningún sistema cargado en frustum, derivar slot analítico determinista desde el macro-grid
+	if results.is_empty() and streamer.get_macro_grid() != null:
+		var grid: CosmosMacroGrid = streamer.get_macro_grid()
+		var center_cell: Vector2i = grid.world_to_grid_coords(target_layer_pos)
+		var effective_spawn_chance: float = streamer.system_profile.spawn_chance if streamer.system_profile != null else 0.75
+
+		for ox: int in range(-1, 2):
+			for oy: int in range(-1, 2):
+				var cell: Vector2i = center_cell + Vector2i(ox, oy)
+				var has_override: bool = streamer.poi_registry != null and streamer.poi_registry.has_poi(cell)
+				if not has_override and grid.get_cell_pseudorandom_float(cell, 9091) > effective_spawn_chance:
+					continue
+
+				var sys_pos: Vector2 = streamer.get_system_position_for_cell(cell)
+				if search_radius <= 0.0 or sys_pos.distance_to(target_layer_pos) <= search_radius:
+					var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
+						CosmosOrbitSlot.SlotCenterType.STAR,
+						cell,
+						sys_pos,
+						0.0,
+						0.0,
+						0.0,
+						null,
+						StringName("StarCenterSlot_%d_%d" % [cell.x, cell.y]),
+						scroll_scale
+					)
+					results.append(slot)
+					break
+			if not results.is_empty():
+				break
+
+	if results.size() > 1:
+		results.sort_custom(func(a: CosmosOrbitSlot, b: CosmosOrbitSlot) -> bool:
+			return a.center_layer_position.distance_squared_to(target_layer_pos) < b.center_layer_position.distance_squared_to(target_layer_pos)
+		)
+
+	return results
+
 ## Obtiene slots de órbita alrededor de planetas de fondo activos (ideal para satélites/balizas)
 func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000.0) -> Array[CosmosOrbitSlot]:
 	var results: Array[CosmosOrbitSlot] = []
@@ -223,6 +285,21 @@ func create_star_orbit_slot(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_sca
 		initial_theta,
 		sys.star_body,
 		StringName("StarOrbitSlot_%d_%d" % [cell.x, cell.y]),
+		scroll_scale
+	)
+
+## Construye el slot anclado al centro solar exacto (r = 0.0, omega = 0.0) para un sistema solar
+func create_star_center_slot(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_scale: Vector2) -> CosmosOrbitSlot:
+	var star_layer_pos: Vector2 = sys.position + (sys.star_body.position if (is_instance_valid(sys) and sys.star_body != null) else Vector2.ZERO)
+	return CosmosOrbitSlot.new(
+		CosmosOrbitSlot.SlotCenterType.STAR,
+		cell,
+		star_layer_pos,
+		0.0,
+		0.0,
+		0.0,
+		sys.star_body if is_instance_valid(sys) else null,
+		StringName("StarCenterSlot_%d_%d" % [cell.x, cell.y]),
 		scroll_scale
 	)
 
@@ -374,6 +451,7 @@ func get_slots_for_system(sys: CosmosSolarSystem2D, cell: Vector2i) -> Dictionar
 
 	return {
 		"star_slot": create_star_orbit_slot(sys, cell, scroll_scale),
+		"star_center_slot": create_star_center_slot(sys, cell, scroll_scale),
 		"planet_slots": create_planet_orbit_slots(sys, cell, scroll_scale),
 		"destructible_slot": get_destructible_planet_slot(sys, cell)
 	}
