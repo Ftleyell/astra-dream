@@ -185,7 +185,7 @@ func update_satellite_lifecycle() -> void:
 
 	var p_pos: Vector2 = main_game.player.global_position
 	var is_interacting: bool = _is_player_interacting_with_satellite()
-	var should_freeze_odometer: bool = is_interacting
+	var should_freeze_odometer: bool = is_interacting or _pending_satellite_spawn
 
 	if is_instance_valid(current_satellite):
 		var sat_pos: Vector2 = current_satellite.global_position
@@ -213,7 +213,26 @@ func update_satellite_lifecycle() -> void:
 			else:
 				main_game.hud.update_active_satellite_position(current_satellite.global_position)
 
+	if _pending_satellite_spawn and not is_instance_valid(current_satellite):
+		_try_resolve_pending_satellite_spawn(p_pos)
+
 	odometer.update(p_pos, should_freeze_odometer)
+
+
+func _try_resolve_pending_satellite_spawn(player_pos: Vector2) -> void:
+	var host_ctrl: Node = _get_cosmos_controller()
+	if host_ctrl != null and host_ctrl.has_method("get_planet_orbit_slots"):
+		var slots: Array = host_ctrl.call("get_planet_orbit_slots", player_pos, 24000.0)
+		if not slots.is_empty():
+			var selected_slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
+			var cam: Camera2D = main_game.camera if "camera" in main_game else null
+			var t_global: float = 0.0
+			var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+			if root_node != null and is_instance_valid(root_node):
+				t_global = root_node.get_global_time()
+			var spawn_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(selected_slot, t_global, cam)
+			_pending_satellite_spawn = false
+			spawn_next_satellite(spawn_pos, selected_slot)
 
 
 func _on_odometer_distance_updated(current_dist: float, req_dist: float) -> void:
@@ -262,7 +281,7 @@ func spawn_next_satellite_ahead() -> void:
 			spawn_next_satellite(spawn_pos, selected_slot)
 			return
 		else:
-			# Si Cosmos Engine está activo en MainGame pero no hay planetas en rango, esperar al streaming
+			# Si Cosmos Engine está activo en MainGame pero no hay planetas en rango, retener (hold) el spawn
 			_pending_satellite_spawn = true
 			return
 

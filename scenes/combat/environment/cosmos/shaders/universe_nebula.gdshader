@@ -185,12 +185,15 @@ void fragment() {
 			float star_inf = pow(1.0 - norm_dist, 1.3);
 			float edge_feather = smoothstep(1.0, 0.75, norm_dist);
 			float light_factor = star_inf * edge_feather * s_col.a;
-			// 1. Teñir el gas existente con el espectro estelar del sol con mayor saturación y contraste
-			combined_color = mix(combined_color, combined_color * s_col.rgb * 2.6, light_factor * 0.85);
-			// 2. Dispersión lumínica etérea (ambient scattering) sobre el polvo nebular
-			combined_color += s_col.rgb * light_factor * 1.15 * (intensity_a + intensity_b + 0.40);
-			// 3. Aumentar densidad lumínica
-			combined_alpha = max(combined_alpha, combined_alpha + light_factor * 0.50);
+			// 1. Teñir el gas existente con el espectro estelar del sol preservando contraste cromático
+			vec3 tinted_gas = mix(combined_color, combined_color * s_col.rgb * 1.5, light_factor * 0.75);
+			// 2. Dispersión lumínica atmosférica (ambient scattering) suave sobre el polvo nebular
+			vec3 ambient_scatter = s_col.rgb * light_factor * 0.45 * (intensity_a + intensity_b + 0.25);
+			// 3. Fusión suave con compresión de altas luces (evita el quemado plano a blanco puro)
+			vec3 lit_result = tinted_gas + ambient_scatter;
+			combined_color = lit_result / (vec3(1.0) + lit_result * 0.20);
+			// 4. Aumentar densidad lumínica
+			combined_alpha = max(combined_alpha, combined_alpha + light_factor * 0.35);
 		}
 	}
 

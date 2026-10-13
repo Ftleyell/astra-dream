@@ -117,15 +117,23 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 		var eff_spacing: float = p_cfg.min_orbital_spacing if p_cfg != null else 400.0
 		var effective_spawn_chance: float = streamer.system_profile.spawn_chance if streamer.system_profile != null else 0.75
 
-		for ox: int in range(-1, 2):
-			for oy: int in range(-1, 2):
+		var nearest_cell: Vector2i = center_cell
+		var nearest_dist_sq: float = INF
+
+		for ox: int in range(-2, 3):
+			for oy: int in range(-2, 3):
 				var cell: Vector2i = center_cell + Vector2i(ox, oy)
 				var has_override: bool = streamer.poi_registry != null and streamer.poi_registry.has_poi(cell)
 				if not has_override and grid.get_cell_pseudorandom_float(cell, 9091) > effective_spawn_chance:
 					continue
 
 				var sys_pos: Vector2 = streamer.get_system_position_for_cell(cell)
-				if search_radius <= 0.0 or sys_pos.distance_to(target_layer_pos) <= ((search_radius + 4000.0) * scroll_scale.x):
+				var d_sq: float = sys_pos.distance_squared_to(target_layer_pos)
+				if d_sq < nearest_dist_sq:
+					nearest_dist_sq = d_sq
+					nearest_cell = cell
+
+				if search_radius <= 0.0 or sys_pos.distance_to(target_layer_pos) <= ((search_radius + 6000.0) * scroll_scale.x):
 					var cell_seed: int = streamer.run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 777)
 					var num_planets: int = p_cfg.min_planets if p_cfg != null else 3
 					var planet_count_range: int = (p_cfg.max_planets - p_cfg.min_planets) if p_cfg != null else 2

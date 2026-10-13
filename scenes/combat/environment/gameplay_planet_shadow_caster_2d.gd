@@ -10,7 +10,7 @@ extends Node2D
 ## 2. Compatibilidad con el shader planetary_shadow_cone.gdshader.
 ## 3. Fade out fluido y sincronizado al desintegrarse el planeta.
 
-const PLANETARY_SHADOW_CONE_SHADER: Shader = preload("res://scenes/combat/environment/cosmos/shaders/planetary_shadow_cone.gdshader")
+const GAMEPLAY_SHADOW_CONE_SHADER: Shader = preload("res://scenes/combat/environment/gameplay_planet_shadow_cone.gdshader")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 
@@ -70,12 +70,11 @@ func _build_shadow_visual() -> void:
 	_shadow_sprite.name = "ShadowConeVisual"
 	_shadow_sprite.centered = false
 	_shadow_sprite.texture = _get_quad_texture()
-	_shadow_sprite.modulate = shadow_tint
-	_shadow_sprite.modulate.a = shadow_opacity
+	_shadow_sprite.modulate = Color.WHITE
 
-	if PLANETARY_SHADOW_CONE_SHADER != null:
+	if GAMEPLAY_SHADOW_CONE_SHADER != null:
 		_material = ShaderMaterial.new()
-		_material.shader = PLANETARY_SHADOW_CONE_SHADER
+		_material.shader = GAMEPLAY_SHADOW_CONE_SHADER
 		_shadow_sprite.material = _material
 
 	add_child(_shadow_sprite)
@@ -89,6 +88,11 @@ func setup_shadow_binding(p_slot: CosmosOrbitSlotScript, p_radius: float = 300.0
 		_cosmos_root = p_cosmos_root
 
 	_update_shadow_cone()
+
+func _exit_tree() -> void:
+	if _shadow_sprite != null and is_instance_valid(_shadow_sprite):
+		if _shadow_sprite.get_parent() != self:
+			_shadow_sprite.queue_free()
 
 func _process(_delta: float) -> void:
 	if not shadows_enabled or _is_fading:
@@ -117,7 +121,6 @@ func _update_shadow_cone() -> void:
 	if slot != null:
 		var cam_pos: Vector2 = _camera_ref.global_position if (_camera_ref != null and is_instance_valid(_camera_ref)) else Vector2.ZERO
 		var s_scale: Vector2 = slot.layer_scroll_scale
-		# La posición en capa de la estrella central (o centro de la celda)
 		var star_layer_pos: Vector2 = slot.center_layer_position
 		current_star_pos = (cam_pos * (Vector2.ONE - s_scale)) + star_layer_pos
 		heliopause_radius = maxf(slot.orbit_radius * 1.5, 4500.0)
@@ -126,15 +129,15 @@ func _update_shadow_cone() -> void:
 	var planet_sun_dist: float = to_planet.length()
 	var outward_dir: Vector2 = to_planet.normalized() if planet_sun_dist > 1.0 else Vector2(1.0, 0.0)
 
-	# El pivot rota hacia afuera de la estrella
-	global_rotation = outward_dir.angle()
-
 	var dist_to_heliopause: float = maxf(heliopause_radius - planet_sun_dist, 50.0)
 	var cone_length: float = dist_to_heliopause + 1200.0
 	var end_radius: float = base_radius * shadow_expansion_factor
 	var quad_height: float = maxf(end_radius * 2.5, 200.0)
 
+	global_rotation = outward_dir.angle()
 	_shadow_sprite.position = Vector2(0.0, -quad_height * 0.5)
+	_shadow_sprite.rotation = 0.0
+	_shadow_sprite.offset = Vector2.ZERO
 	_shadow_sprite.scale = Vector2(cone_length * 0.5, quad_height * 0.5)
 
 	if _material != null:
@@ -146,6 +149,8 @@ func _update_shadow_cone() -> void:
 		_material.set_shader_parameter("heliosphere_edge_feather", shadow_heliopause_fade)
 		_material.set_shader_parameter("cone_length", cone_length)
 		_material.set_shader_parameter("quad_height", quad_height)
+		_material.set_shader_parameter("shadow_tint", shadow_tint)
+		_material.set_shader_parameter("shadow_opacity", shadow_opacity)
 
 func fade_and_destroy(duration: float = 0.35) -> void:
 	_is_fading = true
@@ -156,4 +161,8 @@ func fade_and_destroy(duration: float = 0.35) -> void:
 	var tw := create_tween().set_parallel(true)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	tw.tween_property(_shadow_sprite, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.chain().tween_callback(queue_free)
+	tw.chain().tween_callback(func():
+		if _shadow_sprite != null and is_instance_valid(_shadow_sprite) and _shadow_sprite.get_parent() != self:
+			_shadow_sprite.queue_free()
+		queue_free()
+	)

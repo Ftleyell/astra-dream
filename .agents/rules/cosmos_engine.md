@@ -4,8 +4,9 @@
 
 ---
 
-## 1. 🚫 Prohibición Estricta de Exploración y Modificación Ciega de Orquestadores
-- **PROHIBIDO modificar o refactorizar scripts orquestadores** (`cosmos_root.gd`, `solar_system_streamer.gd`, `galaxy_streamer_2d.gd`, `debris_streamer_2d.gd`, `planetary_shadow_projector_2d.gd`, `cosmos_host_controller.gd`) ante solicitudes de ajuste visual, balance numérico, colores, tamaños o densidades.
+## 1. 🚫 Regla de Orquestadores vs Recursos de Balance
+- **PROHIBIDO modificar scripts orquestadores** (`cosmos_root.gd`, `solar_system_streamer.gd`, `galaxy_streamer_2d.gd`, `debris_streamer_2d.gd`, `planetary_shadow_projector_2d.gd`, `cosmos_host_controller.gd`) ante solicitudes de **ajuste visual, balance numérico, colores, tamaños o densidades**. Estos ajustes van estrictamente en `.tres` (sección 2).
+- **PERMITIDO:** Modificaciones de contratos tipados, corrección de bugs de inicialización, transforms y conexiones de interoperabilidad descritas en [`docs/COSMIC_GAMEPLAY_BRIDGE.md`](docs/COSMIC_GAMEPLAY_BRIDGE.md).
 - **PROHIBIDO buscar ciegamente con `grep` o escaneos recursivos** de archivos para localizar parámetros de balance cósmico.
 
 ---
