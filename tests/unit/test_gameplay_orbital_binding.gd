@@ -147,6 +147,20 @@ func _test_orbital_world_follower_behavior() -> void:
 	var advanced_pos: Vector2 = dummy_entity.global_position
 	assert_true(advanced_pos != initial_pos, "La entidad en GameplayWorld debe desplazarse siguiendo la órbita.")
 
+	# Validar freeze_parallax_drag:
+	# 1. Al congelar parallax drag, si la cámara se mueve, la entidad no sufre arrastre de cámara.
+	follower.freeze_parallax_drag = true
+	var pos_before_cam_move: Vector2 = dummy_entity.global_position
+	_camera.global_position += Vector2(500.0, 500.0)
+	follower._update_position(0.0) # tiempo 0 para aislar sólo movimiento de cámara
+	assert_true(dummy_entity.global_position.distance_to(pos_before_cam_move) <= 0.01, "freeze_parallax_drag debe congelar el arrastre de parallax de la cámara.")
+
+	# 2. Con freeze_parallax_drag = true, el tiempo Kepleriano sigue avanzando la posición orbital
+	var pos_before_time_adv: Vector2 = dummy_entity.global_position
+	follower._update_position(1.0)
+	assert_true(dummy_entity.global_position != pos_before_time_adv, "Con freeze_parallax_drag = true, la traslación Kepleriana orbital debe continuar activa.")
+
+	follower.freeze_parallax_drag = false
 	dummy_entity.queue_free()
 
 func _test_zero_drift_long_term_orbit() -> void:

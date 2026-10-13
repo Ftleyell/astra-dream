@@ -13,14 +13,26 @@ const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos
 
 var slot: CosmosOrbitSlot = null
 @export var active: bool = true
-@export var freeze_parallax_drag: bool = false
+@export var freeze_parallax_drag: bool = false:
+	set(value):
+		if freeze_parallax_drag != value:
+			freeze_parallax_drag = value
+			if freeze_parallax_drag:
+				_was_frozen_parallax = true
+				if _camera_ref != null and is_instance_valid(_camera_ref):
+					_frozen_camera_pos = _camera_ref.global_position
+				elif is_inside_tree() and get_viewport() != null and get_viewport().get_camera_2d() != null:
+					_frozen_camera_pos = get_viewport().get_camera_2d().global_position
+			else:
+				_was_frozen_parallax = false
 
 var _target_node: Node2D = null
 var _camera_ref: Camera2D = null
 var _cosmos_root: CosmosRootNode = null
 var _internal_time: float = 0.0
-var _paused_time_offset: float = 0.0
 var _last_cosmos_time: float = -1.0
+var _was_frozen_parallax: bool = false
+var _frozen_camera_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	if get_parent() is Node2D:
@@ -53,6 +65,7 @@ func setup_orbital_binding(p_slot: CosmosOrbitSlot, p_camera: Camera2D = null, p
 	if p_cosmos_root != null:
 		_cosmos_root = p_cosmos_root
 	active = (slot != null)
+	_was_frozen_parallax = false
 	_update_position(0.0)
 
 func _process(delta: float) -> void:
@@ -62,25 +75,38 @@ func _process(delta: float) -> void:
 	_update_position(delta)
 
 func _update_position(delta: float) -> void:
-	if freeze_parallax_drag:
-		_paused_time_offset += delta
-		return
-
 	if _camera_ref == null or not is_instance_valid(_camera_ref):
 		_camera_ref = get_viewport().get_camera_2d()
 
 	var t_global: float = 0.0
 	if _cosmos_root != null and is_instance_valid(_cosmos_root):
 		var root_time: float = _cosmos_root.get_global_time()
-		if is_equal_approx(root_time, _last_cosmos_time) and delta > 0.0:
-			_internal_time += delta
-		else:
+		if not is_equal_approx(root_time, _last_cosmos_time):
 			_internal_time = 0.0
 			_last_cosmos_time = root_time
+		else:
+			_internal_time += delta
 		t_global = root_time + _internal_time
 	else:
 		_internal_time += delta
 		t_global = _internal_time
 
-	var new_world_pos: Vector2 = CosmosOrbitalSlotTracker.project_slot_to_world(slot, t_global - _paused_time_offset, _camera_ref)
+	var cam_pos: Vector2 = Vector2.ZERO
+	if freeze_parallax_drag:
+		if not _was_frozen_parallax:
+			_was_frozen_parallax = true
+			if _camera_ref != null and is_instance_valid(_camera_ref):
+				_frozen_camera_pos = _camera_ref.global_position
+			elif is_inside_tree() and get_viewport() != null and get_viewport().get_camera_2d() != null:
+				_frozen_camera_pos = get_viewport().get_camera_2d().global_position
+		cam_pos = _frozen_camera_pos
+	else:
+		if _was_frozen_parallax:
+			_was_frozen_parallax = false
+		if _camera_ref != null and is_instance_valid(_camera_ref):
+			cam_pos = _camera_ref.global_position
+
+	var layer_pos: Vector2 = slot.calculate_layer_position(t_global)
+	var s_scale: Vector2 = slot.layer_scroll_scale
+	var new_world_pos: Vector2 = (cam_pos * (Vector2.ONE - s_scale)) + layer_pos
 	_target_node.global_position = new_world_pos
