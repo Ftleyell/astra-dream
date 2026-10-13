@@ -14,6 +14,10 @@ const SpaceEnvironmentHostScript = preload("res://scenes/combat/environment/spac
 const CosmosHostControllerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_host_controller.gd")
 const CosmosRootNodeScript = preload("res://scenes/combat/environment/cosmos/scenes/cosmos_root.gd")
 const CombatContextScript = preload("res://scenes/combat/systems/combat_context.gd")
+const CosmosSolarSystem2DScript = preload("res://scenes/combat/environment/cosmos/core/solar_system_2d.gd")
+const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
+const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
+const GameplayPlanetShadowCaster2DScript = preload("res://scenes/combat/environment/gameplay_planet_shadow_caster_2d.gd")
 
 var _host: SpaceEnvironmentHost = null
 var _mock_main_game: Node2D = null
@@ -33,6 +37,8 @@ func _run_suite() -> void:
 	_test_camera_and_player_binding()
 	_test_wave_transition_and_region_change()
 	_test_freeze_and_pause_delegation()
+	_test_destructible_orbital_slot_anti_overlap()
+	_test_gameplay_shadow_photometric_sync()
 	_teardown_mock_hierarchy()
 	pass_suite("TestSpaceEnvironmentIntegration completado con éxito al 100%.")
 
@@ -142,6 +148,93 @@ func _test_freeze_and_pause_delegation() -> void:
 		assert_true(not root_node.galaxy_streamer.is_frozen, "GalaxyStreamer debe descongelarse.")
 	if root_node.nebula_controller != null:
 		assert_true(not root_node.nebula_controller.is_frozen, "NebulaController debe descongelarse.")
+
+
+func _test_destructible_orbital_slot_anti_overlap() -> void:
+	var adapter: CosmosCombatEnvScript = _host.active_environment as CosmosCombatEnvScript
+	var root_node: CosmosRootNodeScript = adapter.get_cosmos_root()
+	var streamer: CosmosSolarSystemStreamer = root_node.solar_streamer
+	assert_true(streamer != null, "SolarStreamer debe estar presente en CosmosRoot.")
+
+	var test_sys: CosmosSolarSystem2D = CosmosSolarSystem2DScript.new()
+	test_sys.system_profile = streamer.system_profile
+	test_sys.build_system(777123)
+	_mock_main_game.add_child(test_sys)
+
+	assert_true(test_sys.destructible_orbit_radius > 0.0, "El sistema solar debe haber reservado un radio orbital para el planeta destructible.")
+	assert_true(not test_sys.planets.is_empty(), "El sistema debe contener planetas visuales de fondo.")
+
+	var planetary_cfg: CosmosPlanetarySystemConfig = streamer.system_profile.get_effective_planetary_config()
+	var min_spacing: float = test_sys.active_archetype.min_orbital_spacing if test_sys.active_archetype != null else planetary_cfg.min_orbital_spacing
+
+	for planet in test_sys.planets:
+		var diff: float = absf(planet.orbit_radius - test_sys.destructible_orbit_radius)
+		assert_true(diff >= min_spacing * 0.99, "Ningún planeta visual de fondo debe invadir la franja kepleriana del planeta interactuable destructible.")
+
+	var tracker: CosmosOrbitalSlotTrackerScript = adapter.get_host_controller().get_slot_tracker()
+	var test_cell := Vector2i(3, 4)
+	var d_slot: CosmosOrbitSlotScript = tracker.get_destructible_planet_slot(test_sys, test_cell)
+	assert_true(d_slot != null, "get_destructible_planet_slot debe retornar un slot no nulo.")
+	assert_true(d_slot.orbit_radius == test_sys.destructible_orbit_radius, "El slot destructible debe reflejar el radio reservado.")
+	assert_true(d_slot.center_type == CosmosOrbitSlotScript.SlotCenterType.STAR, "El slot destructible debe orbitar la estrella central.")
+
+	var slots_dict: Dictionary = tracker.get_slots_for_system(test_sys, test_cell)
+	assert_true(slots_dict.has("destructible_slot"), "get_slots_for_system debe empaquetar destructible_slot.")
+	assert_true(slots_dict["destructible_slot"] != null, "destructible_slot empaquetado debe ser válido.")
+
+	test_sys.queue_free()
+
+
+func _test_gameplay_shadow_photometric_sync() -> void:
+	var adapter: CosmosCombatEnvScript = _host.active_environment as CosmosCombatEnvScript
+	var root_node: CosmosRootNodeScript = adapter.get_cosmos_root()
+	var streamer: CosmosSolarSystemStreamer = root_node.solar_streamer
+	assert_true(streamer != null, "SolarStreamer debe existir para proveer el perfil.")
+	var active_shadow_cfg: CosmosShadowSystemConfig = streamer.system_profile.get_effective_shadow_config()
+	assert_true(active_shadow_cfg != null, "Debe haber una configuración CosmosShadowSystemConfig efectiva.")
+
+	# 1. Probar vinculación e inyección automática de CosmosShadowSystemConfig
+	var shadow_caster: GameplayPlanetShadowCaster2DScript = GameplayPlanetShadowCaster2DScript.new()
+	_mock_main_game.add_child(shadow_caster)
+
+	# Simular slot orbital
+	var dummy_slot := CosmosOrbitSlotScript.new(
+		CosmosOrbitSlotScript.SlotCenterType.STAR,
+		Vector2i(0, 0),
+		Vector2(100.0, 100.0),
+		1200.0,
+		0.05,
+		0.0,
+		null,
+		&"TestSlot",
+		Vector2(0.20, 0.20)
+	)
+
+	shadow_caster.setup_shadow_binding(dummy_slot, 250.0, _mock_camera, root_node)
+
+	# Verificar sincronización fotométrica de parámetros
+	assert_true(shadow_caster.shadow_tint == active_shadow_cfg.shadow_tint, "shadow_tint debe sincronizarse exactamente con Cosmos Engine.")
+	assert_true(shadow_caster.shadow_opacity == active_shadow_cfg.shadow_intensity, "shadow_opacity debe sincronizarse con shadow_intensity de Cosmos Engine.")
+	assert_true(shadow_caster.shadow_penumbra_ratio == active_shadow_cfg.shadow_penumbra_ratio, "shadow_penumbra_ratio debe sincronizarse con Cosmos Engine.")
+	assert_true(shadow_caster.shadow_expansion_factor == active_shadow_cfg.shadow_expansion_factor, "shadow_expansion_factor debe sincronizarse con Cosmos Engine.")
+
+	# 2. Verificar parámetros del ShaderMaterial y modo blend_mul
+	assert_true(shadow_caster._material != null, "ShaderMaterial del cono de sombra debe estar inicializado.")
+	assert_true(shadow_caster._material.get_shader_parameter("shadow_tint") == active_shadow_cfg.shadow_tint, "Uniform shadow_tint del shader debe coincidir.")
+	assert_true(shadow_caster._material.get_shader_parameter("shadow_opacity") == active_shadow_cfg.shadow_intensity, "Uniform shadow_opacity del shader debe coincidir.")
+
+	var shader_code: String = shadow_caster._material.shader.code
+	assert_true(shader_code.contains("render_mode blend_mul, unshaded;"), "El shader debe utilizar blend_mul fotométrico.")
+	assert_true(shader_code.contains("mix(vec3(1.0), shadow_tint.rgb"), "El shader debe utilizar mezcla multiplicativa.")
+
+	# 3. Probar fallback autónomo a DEFAULT_SHADOW_CONFIG sin cosmos_root
+	var standalone_caster: GameplayPlanetShadowCaster2DScript = GameplayPlanetShadowCaster2DScript.new()
+	_mock_main_game.add_child(standalone_caster)
+	standalone_caster.setup_shadow_binding(dummy_slot, 250.0, _mock_camera, null)
+	assert_true(standalone_caster.shadow_tint == GameplayPlanetShadowCaster2DScript.DEFAULT_SHADOW_CONFIG.shadow_tint, "Debe sincronizar fallback a DEFAULT_SHADOW_CONFIG.")
+
+	standalone_caster.queue_free()
+	shadow_caster.queue_free()
 
 
 func _teardown_mock_hierarchy() -> void:

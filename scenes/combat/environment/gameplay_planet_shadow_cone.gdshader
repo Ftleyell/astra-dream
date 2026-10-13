@@ -1,14 +1,13 @@
 shader_type canvas_item;
-render_mode blend_mix, unshaded;
+render_mode blend_mul, unshaded;
 
 /**
  * gameplay_planet_shadow_cone.gdshader
  *
  * Cono de sombra 2D analítico para planetas interactuables de GameplayWorld.
  * Diseñado para operar de forma autónoma en el árbol de gameplay (hijo de GameplayPlanetShadowCaster2D).
- * Utiliza blend_mix proyectando el tinte de sombra con la misma curvatura, ensanchamiento
- * óptico, umbra, penumbra difusa y desvanecimiento periférico que Cosmos Engine,
- * garantizando coherencia visual idéntica sin interferir con capas Parallax.
+ * Utiliza blend_mul multiplicativo idéntico al modo de mezcla de Cosmos Engine (CosmicShadowsGroup),
+ * garantizando coherencia fotométrica y contraste uniforme sobre luz estelar, nebulosas y polvo interestelar.
  */
 
 uniform float base_radius = 120.0;
@@ -61,10 +60,12 @@ void fragment() {
 
 	float total_mask = shadow_factor * attach_fade * edge_fade;
 
-	if (total_mask <= 0.001) {
+	float effective_shadow = total_mask * shadow_opacity;
+	if (effective_shadow <= 0.001) {
 		discard;
 	}
 
-	// Salida coloreada oscurecida con blend_mix idéntica al tono del universo cósmico
-	COLOR = vec4(shadow_tint.rgb, total_mask * shadow_opacity);
+	// Oscurecimiento multiplicativo fotométricamente idéntico a Cosmos Engine
+	vec3 mult_color = mix(vec3(1.0), shadow_tint.rgb, effective_shadow);
+	COLOR = vec4(mult_color, 1.0);
 }

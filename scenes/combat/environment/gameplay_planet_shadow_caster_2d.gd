@@ -13,7 +13,9 @@ extends Node2D
 const GAMEPLAY_SHADOW_CONE_SHADER: Shader = preload("res://scenes/combat/environment/gameplay_planet_shadow_cone.gdshader")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
+const DEFAULT_SHADOW_CONFIG: CosmosShadowSystemConfig = preload("res://scenes/combat/environment/cosmos/resources/data/default_shadow_system.tres")
 
+@export var shadow_config: CosmosShadowSystemConfig = null
 @export var shadows_enabled: bool = true
 @export var shadow_opacity: float = 0.75
 @export var shadow_penumbra_ratio: float = 0.45
@@ -45,6 +47,7 @@ func _ready() -> void:
 	z_index = -1
 	_build_shadow_visual()
 	_find_references()
+	sync_shadow_config()
 
 func _find_references() -> void:
 	if not is_inside_tree():
@@ -79,13 +82,52 @@ func _build_shadow_visual() -> void:
 
 	add_child(_shadow_sprite)
 
-func setup_shadow_binding(p_slot: CosmosOrbitSlotScript, p_radius: float = 300.0, p_camera: Camera2D = null, p_cosmos_root: CosmosRootNode = null) -> void:
+func apply_shadow_config(cfg: CosmosShadowSystemConfig) -> void:
+	if cfg == null:
+		return
+	shadow_config = cfg
+	shadows_enabled = cfg.enable_planetary_shadows
+	shadow_opacity = cfg.shadow_intensity
+	shadow_penumbra_ratio = cfg.shadow_penumbra_ratio
+	shadow_expansion_factor = cfg.shadow_expansion_factor
+	shadow_heliopause_fade = cfg.shadow_heliopause_fade
+	shadow_tint = cfg.shadow_tint
+
+func sync_shadow_config() -> void:
+	if shadow_config != null:
+		apply_shadow_config(shadow_config)
+		return
+
+	var active_cfg: CosmosShadowSystemConfig = null
+	if _cosmos_root != null:
+		if _cosmos_root.solar_streamer != null and _cosmos_root.solar_streamer.system_profile != null:
+			active_cfg = _cosmos_root.solar_streamer.system_profile.get_effective_shadow_config()
+		elif _cosmos_root.environment_profile != null and _cosmos_root.environment_profile.solar_profile != null:
+			active_cfg = _cosmos_root.environment_profile.solar_profile.get_effective_shadow_config()
+
+	if active_cfg == null and slot != null and is_instance_valid(slot.body_reference):
+		var parent_sys: Node = slot.body_reference.get_parent()
+		if parent_sys is CosmosSolarSystem2D and (parent_sys as CosmosSolarSystem2D).system_profile != null:
+			active_cfg = (parent_sys as CosmosSolarSystem2D).system_profile.get_effective_shadow_config()
+
+	if active_cfg == null:
+		active_cfg = DEFAULT_SHADOW_CONFIG
+
+	if active_cfg != null:
+		apply_shadow_config(active_cfg)
+
+func setup_shadow_binding(p_slot: CosmosOrbitSlotScript, p_radius: float = 300.0, p_camera: Camera2D = null, p_cosmos_root: CosmosRootNode = null, p_shadow_config: CosmosShadowSystemConfig = null) -> void:
 	slot = p_slot
 	base_radius = p_radius
 	if p_camera != null:
 		_camera_ref = p_camera
 	if p_cosmos_root != null:
 		_cosmos_root = p_cosmos_root
+
+	if p_shadow_config != null:
+		apply_shadow_config(p_shadow_config)
+	else:
+		sync_shadow_config()
 
 	_update_shadow_cone()
 
@@ -161,6 +203,8 @@ func fade_and_destroy(duration: float = 0.35) -> void:
 	var tw := create_tween().set_parallel(true)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
 	tw.tween_property(_shadow_sprite, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if _material != null:
+		tw.tween_property(_material, "shader_parameter/shadow_opacity", 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.chain().tween_callback(func():
 		if _shadow_sprite != null and is_instance_valid(_shadow_sprite) and _shadow_sprite.get_parent() != self:
 			_shadow_sprite.queue_free()
