@@ -82,7 +82,7 @@ void fragment() {
 	float star_magnitude = 0.55 + star_seed2 * 0.90; // Rango [0.55, 1.45]
 
 	// Centelleo orgánico continuo
-	float current_time = global_time > 0.001 ? global_time : TIME;
+	float current_time = global_time;
 	float time_seed = current_time * twinkle_speed + star_seed * 6.2831853;
 	float wave_a = sin(time_seed);
 	float wave_b = sin(time_seed * 2.73 + star_seed * 3.14);

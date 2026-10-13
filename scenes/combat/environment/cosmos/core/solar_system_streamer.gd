@@ -14,6 +14,7 @@ signal system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
 var poi_registry: CosmicPoiRegistry = null
+@export var is_frozen: bool = false
 @export var run_seed: int = 428175
 @export var pool_size: int = 8
 @export var cell_size: float = 16000.0
@@ -85,6 +86,8 @@ func _initialize_system_pool() -> void:
 		_pool.append(sys)
 
 func _process(delta: float) -> void:
+	if is_frozen:
+		return
 	_global_time += delta
 	_update_streaming_and_orbits(_global_time)
 

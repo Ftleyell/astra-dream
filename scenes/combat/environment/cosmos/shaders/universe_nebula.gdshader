@@ -245,7 +245,7 @@ void fragment() {
 		float star_mag = 0.60 + star_seed2 * 0.85;
 
 		// 1. Destellos y centelleo continuo suave
-		float time_now = (global_time > 0.001 ? global_time : TIME) * deep_stars_twinkle_speed;
+		float time_now = global_time * deep_stars_twinkle_speed;
 		float star_freq = 0.85 + star_seed2 * 0.95;
 		float star_phase = star_seed * 6.2831853;
 		

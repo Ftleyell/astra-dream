@@ -122,10 +122,26 @@ func _test_freeze_and_pause_delegation() -> void:
 	host_ctrl.set_frozen(true)
 	assert_true(host_ctrl.is_frozen(), "Debe reportar congelamiento tras set_frozen(true).")
 	assert_true(root_node.is_frozen, "CosmosRootNode debe estar congelado tras set_frozen(true).")
+	if root_node.solar_streamer != null:
+		assert_true(root_node.solar_streamer.is_frozen, "SolarStreamer debe estar congelado.")
+	if root_node.debris_streamer != null:
+		assert_true(root_node.debris_streamer.is_frozen, "DebrisStreamer debe estar congelado.")
+	if root_node.galaxy_streamer != null:
+		assert_true(root_node.galaxy_streamer.is_frozen, "GalaxyStreamer debe estar congelado.")
+	if root_node.nebula_controller != null:
+		assert_true(root_node.nebula_controller.is_frozen, "NebulaController debe estar congelado.")
 
 	host_ctrl.set_frozen(false)
 	assert_true(not host_ctrl.is_frozen(), "Debe descongelarse tras set_frozen(false).")
 	assert_true(not root_node.is_frozen, "CosmosRootNode debe descongelarse.")
+	if root_node.solar_streamer != null:
+		assert_true(not root_node.solar_streamer.is_frozen, "SolarStreamer debe descongelarse.")
+	if root_node.debris_streamer != null:
+		assert_true(not root_node.debris_streamer.is_frozen, "DebrisStreamer debe descongelarse.")
+	if root_node.galaxy_streamer != null:
+		assert_true(not root_node.galaxy_streamer.is_frozen, "GalaxyStreamer debe descongelarse.")
+	if root_node.nebula_controller != null:
+		assert_true(not root_node.nebula_controller.is_frozen, "NebulaController debe descongelarse.")
 
 
 func _teardown_mock_hierarchy() -> void:

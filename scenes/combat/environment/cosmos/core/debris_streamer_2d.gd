@@ -40,6 +40,7 @@ class DebrisCellChunk:
 @export var celestial_profile: CosmosCelestialSystemProfile
 @export var solar_streamer: CosmosSolarSystemStreamer = null
 @export var pool_size: int = 9
+@export var is_frozen: bool = false
 
 var _global_time: float = 0.0
 var _multimesh_instance: MultiMeshInstance2D = null
@@ -339,6 +340,8 @@ func _initialize_multimesh() -> void:
 		_scrap_multimesh = _pool[0].scrap_multimesh
 
 func _process(delta: float) -> void:
+	if is_frozen:
+		return
 	_global_time += delta
 	_update_shader_time()
 	_evaluate_and_stream()

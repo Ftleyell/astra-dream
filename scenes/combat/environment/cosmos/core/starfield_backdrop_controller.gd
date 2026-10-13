@@ -13,6 +13,7 @@ extends ColorRect
 			_shader_mat.set_shader_parameter("scroll_scale", scroll_scale)
 
 @export var auto_sync_viewport: bool = true
+@export var is_frozen: bool = false
 
 var _shader_mat: ShaderMaterial = null
 var accumulated_origin_shift: Vector2 = Vector2.ZERO
@@ -25,6 +26,8 @@ func _ready() -> void:
 	_update_uniforms()
 
 func _process(_delta: float) -> void:
+	if is_frozen:
+		return
 	_update_uniforms()
 
 func _update_uniforms() -> void:

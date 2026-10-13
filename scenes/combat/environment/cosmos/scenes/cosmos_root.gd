@@ -63,6 +63,15 @@ var _starfield_mat: ShaderMaterial = null
 func _propagate_freeze_state(frozen: bool) -> void:
 	if nebula_controller != null and is_instance_valid(nebula_controller):
 		nebula_controller.is_frozen = frozen
+	if solar_streamer != null and is_instance_valid(solar_streamer):
+		solar_streamer.is_frozen = frozen
+	if debris_streamer != null and is_instance_valid(debris_streamer):
+		debris_streamer.is_frozen = frozen
+	if galaxy_streamer != null and is_instance_valid(galaxy_streamer):
+		galaxy_streamer.is_frozen = frozen
+	if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k):
+		if parallax_starfield_8k is CosmosStarfieldBackdropController:
+			(parallax_starfield_8k as CosmosStarfieldBackdropController).is_frozen = frozen
 
 func _ready() -> void:
 	# Prioridad de proceso: CosmosRootNode orquesta el tiempo y el tracker se procesa antes del render

@@ -16,6 +16,7 @@ const GALAXY_DEEP_SHADER: Shader = preload("res://scenes/combat/environment/gala
 @export var parallax_layer: Parallax2D
 @export var camera: Camera2D
 var poi_registry: CosmicPoiRegistry = null
+@export var is_frozen: bool = false
 @export var run_seed: int = 8943719
 @export var solar_cell_size: float = 7500.0
 @export var pool_size: int = 6
@@ -114,6 +115,8 @@ func _initialize_node_pool() -> void:
 		_pool.append(sprite)
 
 func _process(delta: float) -> void:
+	if is_frozen:
+		return
 	_evaluate_frustum_and_stream(delta)
 
 func _evaluate_frustum_and_stream(delta: float) -> void:
