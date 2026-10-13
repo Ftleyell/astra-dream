@@ -193,6 +193,10 @@ func disintegrate(shockwave_color: Color = Color.WHITE) -> void:
 
 	remove_from_group("planets")
 
+	var shadow_caster: Node = get_node_or_null("GameplayPlanetShadowCaster2D")
+	if shadow_caster != null and shadow_caster.has_method("fade_and_destroy"):
+		shadow_caster.call("fade_and_destroy", 0.35)
+
 	# 3. Vaporización estelar con destello cromático
 	var tw := create_tween().set_parallel(true)
 	tw.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)

@@ -41,16 +41,16 @@ flowchart TD
 ### 🔹 Sesión 2: Proyección de Sombra Estelar (`GameplayPlanetShadowCaster2D`)
 **Objetivo:** Proyectar el cono de sombra umbra/penumbra detrás del planeta interactuable respecto a la estrella central del sistema.
 
-- [ ] **2.1 Creación del Componente Modular `GameplayPlanetShadowCaster2D`:**
+- [x] **2.1 Creación del Componente Modular `GameplayPlanetShadowCaster2D`:**
   - Archivo nuevo: `scenes/combat/environment/gameplay_planet_shadow_caster_2d.gd`
   - Extiende de `Node2D` con tipado estricto.
   - Recibe la referencia al `CosmosOrbitSlot` (o la posición proyectada de la estrella central).
   - Instancia un `Sprite2D` con el shader existente `planetary_shadow_cone.gdshader` y textura `ImageTexture` de 2x2 px.
   - Se ubica con `z_index = -1` dentro del árbol del planeta o en el contenedor de entorno para proyectarse inmediatamente detrás de la corteza y manto.
-- [ ] **2.2 Integración en `PlanetSpawner.gd` y `Planet.gd`:**
+- [x] **2.2 Integración en `PlanetSpawner.gd` y `Planet.gd`:**
   - En `PlanetSpawner._apply_star_orbit_binding()`, vincular el shadow caster al instanciar el planeta con un slot estelar.
   - Asegurar que al destruirse el planeta (`Planet.disintegrate()`), el cono de sombra haga fade out suave o se libere en paralelo sin dejar artefactos visuales.
-- [ ] **2.3 Test Específico:**
+- [x] **2.3 Test Específico:**
   - Crear/extender test unitario de verificación de sombras y slots estelares.
 
 ---

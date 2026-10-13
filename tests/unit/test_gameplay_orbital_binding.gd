@@ -14,6 +14,7 @@ const CosmosRootNode = preload("res://scenes/combat/environment/cosmos/scenes/co
 const CosmosOrbitSlot = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
 const OrbitalWorldFollower2D = preload("res://scenes/combat/environment/cosmos/core/orbital_world_follower_2d.gd")
+const GameplayPlanetShadowCaster2DScript = preload("res://scenes/combat/environment/gameplay_planet_shadow_caster_2d.gd")
 
 var _scene_root: Node2D = null
 var _cosmos_root: CosmosRootNode = null
@@ -29,6 +30,7 @@ func _run_suite() -> void:
 	_test_slot_generation_and_tracking()
 	_test_world_projection_formula()
 	_test_orbital_world_follower_behavior()
+	_test_gameplay_planet_shadow_caster()
 	_test_zero_drift_long_term_orbit()
 	_test_spawner_orbital_direct_projection()
 	_teardown_test_scene()
@@ -162,6 +164,44 @@ func _test_orbital_world_follower_behavior() -> void:
 
 	follower.freeze_parallax_drag = false
 	dummy_entity.queue_free()
+
+func _test_gameplay_planet_shadow_caster() -> void:
+	var dummy_slot := CosmosOrbitSlot.new(
+		CosmosOrbitSlot.SlotCenterType.STAR,
+		Vector2i(0, 0),
+		Vector2(1000.0, 1000.0), # Centro de la estrella en capa
+		1500.0,
+		0.05,
+		0.0,
+		null,
+		&"ShadowTestSlot",
+		Vector2(0.20, 0.20)
+	)
+
+	var dummy_planet := Node2D.new()
+	dummy_planet.name = "ShadowDummyPlanet"
+	_scene_root.add_child(dummy_planet)
+	# Ubicar el planeta a la derecha de la estrella en coordenadas de juego
+	var cam_pos: Vector2 = _camera.global_position
+	var star_world: Vector2 = (cam_pos * Vector2(0.80, 0.80)) + Vector2(1000.0, 1000.0)
+	dummy_planet.global_position = star_world + Vector2(1500.0, 0.0)
+
+	var shadow_caster: Node = GameplayPlanetShadowCaster2DScript.new()
+	dummy_planet.add_child(shadow_caster)
+	shadow_caster.setup_shadow_binding(dummy_slot, 300.0, _camera, _cosmos_root)
+
+	assert_true(shadow_caster.shadows_enabled, "Las sombras deben estar habilitadas por defecto.")
+	assert_true(shadow_caster.z_index == -1, "El shadow caster debe ubicarse en z_index = -1.")
+
+	# La estrella está en Vector2(0), el planeta está en Vector2(1500, 0), outward_dir = Vector2(1, 0) -> rotación 0
+	var expected_angle: float = 0.0
+	assert_true(absf(shadow_caster.global_rotation - expected_angle) <= 0.05, "El cono de sombra debe proyectarse apuntando hacia afuera de la estrella central.")
+
+	# Fade out test
+	shadow_caster.fade_and_destroy(0.1)
+	assert_true(shadow_caster._is_fading, "fade_and_destroy debe activar la bandera _is_fading.")
+
+	dummy_planet.queue_free()
 
 func _test_zero_drift_long_term_orbit() -> void:
 	var dummy_slot := CosmosOrbitSlot.new(

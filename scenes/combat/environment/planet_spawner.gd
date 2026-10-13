@@ -9,6 +9,7 @@ const SpaceEnvironmentConfigScript = preload("res://core/resources/space_environ
 const OrbitalWorldFollower2DScript = preload("res://scenes/combat/environment/cosmos/core/orbital_world_follower_2d.gd")
 const CosmosOrbitSlotScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const CosmosOrbitalSlotTrackerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
+const GameplayPlanetShadowCaster2DScript = preload("res://scenes/combat/environment/gameplay_planet_shadow_caster_2d.gd")
 
 @export var env_config: Resource = preload("res://data/environment/default_space_environment_config.tres")
 @export var spawn_distance_interval: float = 7000.0
@@ -300,6 +301,11 @@ func _apply_star_orbit_binding(planet_node: Planet, candidate_pos: Vector2, boun
 		var cam: Camera2D = _get_camera()
 		var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
 		follower.setup_orbital_binding(slot_to_bind, cam, root_node)
+
+		var shadow_caster := GameplayPlanetShadowCaster2DScript.new()
+		shadow_caster.name = "GameplayPlanetShadowCaster2D"
+		planet_node.add_child(shadow_caster)
+		shadow_caster.setup_shadow_binding(slot_to_bind, planet_node.crust_radius, cam, root_node)
 
 
 func _try_bind_star_orbit(planet_node: Planet, candidate_pos: Vector2) -> void:
