@@ -35,6 +35,7 @@ var _was_frozen_parallax: bool = false
 var _frozen_camera_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if get_parent() is Node2D:
 		_target_node = get_parent() as Node2D
 	_find_references()
@@ -80,13 +81,18 @@ func _update_position(delta: float) -> void:
 
 	var t_global: float = 0.0
 	if _cosmos_root != null and is_instance_valid(_cosmos_root):
-		var root_time: float = _cosmos_root.get_global_time()
-		if not is_equal_approx(root_time, _last_cosmos_time):
+		if _cosmos_root.is_frozen:
 			_internal_time = 0.0
-			_last_cosmos_time = root_time
+			_last_cosmos_time = _cosmos_root.get_global_time()
+			t_global = _last_cosmos_time
 		else:
-			_internal_time += delta
-		t_global = root_time + _internal_time
+			var root_time: float = _cosmos_root.get_global_time()
+			if not is_equal_approx(root_time, _last_cosmos_time):
+				_internal_time = 0.0
+				_last_cosmos_time = root_time
+			else:
+				_internal_time += delta
+			t_global = root_time + _internal_time
 	else:
 		_internal_time += delta
 		t_global = _internal_time

@@ -57,6 +57,7 @@ static var _quad_texture: ImageTexture = null
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("planets")
 	if not planet_data:
 		_pick_random_planet_data()

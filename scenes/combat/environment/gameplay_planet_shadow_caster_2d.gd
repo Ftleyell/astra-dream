@@ -43,6 +43,7 @@ static func _get_quad_texture() -> ImageTexture:
 	return _quad_texture
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	name = "GameplayPlanetShadowCaster2D"
 	z_index = -1
 	_build_shadow_visual()
