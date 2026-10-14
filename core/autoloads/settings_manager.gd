@@ -16,6 +16,7 @@ var resolution_size: Vector2i = Vector2i(1920, 1080)
 var fullscreen: bool = false
 var gamepad_deadzone: float = 0.15
 var core_hitbox_always_visible: bool = false
+var space_background_quality: int = 2
 
 signal settings_changed()
 
@@ -37,6 +38,7 @@ func load_and_apply_settings() -> void:
 
 		gamepad_deadzone = float(config.get_value("controller", "deadzone", 0.15))
 		core_hitbox_always_visible = bool(config.get_value("gameplay", "core_hitbox_always_visible", false))
+		space_background_quality = int(config.get_value("graphics", "space_background_quality", 2))
 
 		_load_keybindings_from_config()
 	else:
@@ -167,7 +169,17 @@ func save_all_settings() -> void:
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("controller", "deadzone", gamepad_deadzone)
 	config.set_value("gameplay", "core_hitbox_always_visible", core_hitbox_always_visible)
+	config.set_value("graphics", "space_background_quality", space_background_quality)
 	config.save(SETTINGS_PATH)
+
+func set_space_background_quality(p_quality: int) -> void:
+	space_background_quality = clampi(p_quality, 0, 2)
+	config.set_value("graphics", "space_background_quality", space_background_quality)
+	config.save(SETTINGS_PATH)
+	settings_changed.emit()
+
+func get_space_background_quality() -> int:
+	return space_background_quality
 
 func set_core_hitbox_always_visible(p_visible: bool) -> void:
 	core_hitbox_always_visible = p_visible

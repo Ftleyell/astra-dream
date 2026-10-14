@@ -26,3 +26,12 @@ func set_drift_parameters(direction: Vector2, speed: float) -> void:
 
 func notify_wave_started(_wave_idx: int) -> void:
 	pass
+
+
+func get_cosmos_controller() -> CosmosHostController:
+	return null
+
+
+func set_environment_seed(_p_seed: int) -> void:
+	pass
+

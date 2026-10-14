@@ -69,7 +69,7 @@ shader_parameter/tint_red_star = Color(1.8, 0.4, 0.2, 1)
 shader_parameter/tint_yellow_star = Color(1.7, 1.4, 0.35, 1)
 shader_parameter/tint_blue_star = Color(0.5, 1.1, 2.1, 1)
 
-[node name="CosmosRootNode" type="Node2D" unique_id=1328222445 node_paths=PackedStringArray("nebula_controller", "parallax_macro_galaxies", "galaxy_streamer", "parallax_starfield_8k", "parallax_solar_systems", "solar_streamer", "parallax_debris_belt", "debris_streamer", "gameplay_world")]
+[node name="CosmosRootNode" type="Node2D" unique_id=1328222445 node_paths=PackedStringArray("nebula_controller", "parallax_macro_galaxies", "galaxy_streamer", "parallax_starfield_8k", "parallax_solar_systems", "solar_streamer", "parallax_debris_belt", "debris_streamer")]
 script = ExtResource("1_root")
 environment_profile = ExtResource("14_cosmos_env")
 nebula_controller = NodePath("ParallaxNebulaDeep/NebulaBackdrop")
@@ -80,7 +80,6 @@ parallax_solar_systems = NodePath("ParallaxSolarSystems")
 solar_streamer = NodePath("ParallaxSolarSystems/CosmosSolarSystemStreamer")
 parallax_debris_belt = NodePath("ParallaxDebrisBelt")
 debris_streamer = NodePath("ParallaxDebrisBelt/CosmosDebrisStreamer2D")
-gameplay_world = NodePath("GameplayWorld")
 
 [node name="ParallaxNebulaDeep" type="CanvasLayer" parent="." unique_id=561466014]
 layer = -100
@@ -137,4 +136,3 @@ script = ExtResource("10_debris_streamer")
 profile = ExtResource("11_debris_res")
 parallax_layer = NodePath("..")
 
-[node name="GameplayWorld" type="Node2D" parent="." unique_id=123479881]

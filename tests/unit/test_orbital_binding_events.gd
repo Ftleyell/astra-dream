@@ -89,7 +89,41 @@ func _test_orbital_follower_freeze() -> void:
 	dummy_node.add_child(follower)
 	_scene_root.add_child(dummy_node)
 
+	var cam := Camera2D.new()
+	cam.global_position = Vector2(100.0, 100.0)
+	_scene_root.add_child(cam)
+
+	var dummy_slot := CosmosOrbitSlot.new(
+		CosmosOrbitSlot.SlotCenterType.STAR,
+		Vector2i(0, 0),
+		Vector2(1000.0, 1000.0),
+		0.0,
+		0.0,
+		0.0,
+		null,
+		&"TestFreezeSlot",
+		Vector2(0.20, 0.20)
+	)
+
+	follower.setup_orbital_binding(dummy_slot, cam, _cosmos_root)
+	follower._update_position(0.0)
+	var pos_at_cam100: Vector2 = dummy_node.global_position
+
+	# 1. Congelar y mover la cámara
 	follower.freeze_parallax_drag = true
 	assert_true(follower.freeze_parallax_drag, "freeze_parallax_drag debe ser configurable a true.")
+	cam.global_position = Vector2(600.0, 600.0)
+	follower._update_position(0.016)
+	assert_true(dummy_node.global_position.distance_to(pos_at_cam100) <= 0.01, "freeze_parallax_drag debe bloquear el arrastre de cámara.")
 
+	# 2. Descongelar con interpolación anti-snapping (0.4s)
+	follower.freeze_parallax_drag = false
+	follower._update_position(0.2)
+	assert_true(is_equal_approx(follower._freeze_weight, 0.5), "El peso de congelamiento debe transicionar suavemente hacia 0.")
+
+	follower._update_position(0.2)
+	assert_true(is_zero_approx(follower._freeze_weight), "El peso de congelamiento debe alcanzar 0 tras 0.4s.")
+	assert_true(dummy_node.global_position.distance_to(Vector2(1480.0, 1480.0)) <= 0.01, "La posición tras descongelar debe recuperar el paralaje completo de la cámara sin saltos.")
+
+	cam.queue_free()
 	dummy_node.queue_free()

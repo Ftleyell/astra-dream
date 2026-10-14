@@ -30,18 +30,18 @@ func _ready() -> void:
 	var player: Player = main_game.player
 
 	# ----------------------------------------------------
-	# CASO 1: Verificación de capa de renderizado (por debajo de textos/UI)
+	# CASO 1: Verificación de capa de renderizado (prioridad visual sobre HUD)
 	# ----------------------------------------------------
-	print("[1/5] Testing Rendering Layer Hierarchy (Underneath UI Texts)...")
+	print("[1/5] Testing Rendering Layer Hierarchy (Above HUD to Prevent Occlusion)...")
 	var tracker_layer: CanvasLayer = hud.get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
 	assert(tracker_layer != null, "SatelliteTrackerLayer debe existir en el HUD")
-	assert(tracker_layer.layer == 4, "SatelliteTrackerLayer debe estar en layer 4 (por debajo de HUD layer 5)")
-	assert(hud.layer == 5, "GameHUD debe estar en layer 5 para superponer textos y barras sobre el cuadradito")
-	print("  ✓ Jerarquía de capas validada: SatelliteTrackerLayer (layer 4) < GameHUD UI (layer 5).")
+	assert(tracker_layer.layer == 6, "SatelliteTrackerLayer debe estar en layer 6 (por encima de HUD layer 5 para no ser tapado)")
+	assert(hud.layer == 5, "GameHUD está en layer 5")
+	print("  ✓ Jerarquía de capas validada: SatelliteTrackerLayer (layer 6) > GameHUD UI (layer 5).")
 
 	var tracker: SatelliteEdgeIndicator = tracker_layer.get_node_or_null("SatelliteEdgeIndicator") as SatelliteEdgeIndicator
 	assert(tracker != null, "SatelliteEdgeIndicator debe existir")
-	assert(tracker.custom_minimum_size == Vector2(50, 50), "El indicador debe ser un cuadradito compacto de 50x50")
+	assert(tracker.custom_minimum_size == Vector2(70, 70), "El indicador debe tener dimensiones ampliadas de 70x70")
 
 	# ----------------------------------------------------
 	# CASO 2: Ocultación inicial cuando no hay satélite activo

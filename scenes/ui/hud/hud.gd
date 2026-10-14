@@ -27,6 +27,7 @@ const HUDCombatStatsDockControllerClass = preload("res://scenes/ui/hud/component
 const HUDSatelliteRadarControllerClass = preload("res://scenes/ui/hud/components/hud_satellite_radar_controller.gd")
 const HUDEdgeTrackerManagerClass = preload("res://scenes/ui/hud/components/hud_edge_tracker_manager.gd")
 const HUDEconomyKeybindsControllerClass = preload("res://scenes/ui/hud/components/hud_economy_keybinds_controller.gd")
+const HUDDragonRadarDisplayClass = preload("res://scenes/ui/hud/components/hud_dragon_radar_display.gd")
 
 ## GameHUD.gd
 ## Fachada y orquestador central del HUD de combate.
@@ -52,6 +53,7 @@ const HUDEconomyKeybindsControllerClass = preload("res://scenes/ui/hud/component
 @onready var boss_tracker: Control = find_child("BossEdgeIndicator", true, false) as Control
 @onready var chest_tracker: Control = find_child("ChestEdgeIndicator", true, false) as Control
 @onready var key_label: Label = find_child("KeyLabel", true, false) as Label
+@onready var dragon_radar: Control = find_child("DragonRadar", true, false) as Control
 
 var target_reticle: Node2D = null
 var target_reticle_scene: PackedScene = preload("res://scenes/ui/hud/target_reticle.tscn")
@@ -357,6 +359,8 @@ func set_player(p: Player) -> void:
 	player = p
 	if not is_inside_tree() or not is_instance_valid(player):
 		return
+	if is_instance_valid(dragon_radar):
+		dragon_radar.set_player(player)
 	if _edge_tracker_mgr:
 		_edge_tracker_mgr.set_player(player)
 

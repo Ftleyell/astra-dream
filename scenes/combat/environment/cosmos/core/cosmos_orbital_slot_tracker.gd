@@ -243,15 +243,19 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 				var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
 					CosmosOrbitSlot.SlotCenterType.PLANET,
 					cell,
-					planet_layer_pos,
+					sys_pos,
 					orbit_dist,
 					sat_ang_vel,
 					init_sat_theta,
 					null,
 					StringName("PlanetOrbitSlot_%d_%d_%d" % [cell.x, cell.y, p_idx]),
-					scroll_scale
+					scroll_scale,
+					actual_r,
+					p_init_theta,
+					p_ang_vel
 				)
 				results.append(slot)
+
 
 	if results.size() > 1:
 		results.sort_custom(func(a: CosmosOrbitSlot, b: CosmosOrbitSlot) -> bool:
@@ -316,7 +320,7 @@ func create_planet_orbit_slots(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_
 			continue
 
 		var star_pos: Vector2 = sys.star_body.position if sys.star_body != null else Vector2.ZERO
-		var planet_layer_pos: Vector2 = sys.position + star_pos + planet_body.position
+		var star_layer_pos: Vector2 = sys.position + star_pos
 		var vis_radius: float = float(planet_body.get_meta(&"visual_radius", 130.0))
 		var orbit_dist: float = vis_radius * 2.2
 		var sat_ang_vel: float = base_vel * 3.5
@@ -326,15 +330,19 @@ func create_planet_orbit_slots(sys: CosmosSolarSystem2D, cell: Vector2i, scroll_
 		var slot: CosmosOrbitSlot = CosmosOrbitSlot.new(
 			CosmosOrbitSlot.SlotCenterType.PLANET,
 			cell,
-			planet_layer_pos,
+			star_layer_pos,
 			orbit_dist,
 			sat_ang_vel,
 			init_theta,
 			planet_body,
 			StringName("PlanetOrbitSlot_%d_%d_%d" % [cell.x, cell.y, p_idx]),
-			scroll_scale
+			scroll_scale,
+			planet_body.orbit_radius,
+			planet_body.initial_theta,
+			planet_body.angular_velocity
 		)
 		results.append(slot)
+
 
 	return results
 

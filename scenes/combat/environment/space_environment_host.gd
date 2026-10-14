@@ -12,13 +12,15 @@ const BaseSpaceEnvironmentScript = preload("res://scenes/combat/environment/base
 @export var default_environment_scene: PackedScene = preload("res://scenes/combat/environment/cosmos_combat_environment.tscn")
 @export var custom_environment_scene: PackedScene = null
 
-var active_environment: Node2D = null
+var active_environment: BaseSpaceEnvironment = null
 
 
 func setup_subsystem(p_context: CombatContext) -> void:
 	super.setup_subsystem(p_context)
 	_ensure_active_environment()
 	_bind_environment_references()
+	if is_instance_valid(active_environment) and context and context.main_game and "run_seed" in context.main_game:
+		active_environment.set_environment_seed(int(context.main_game.run_seed))
 
 
 func _ensure_active_environment() -> void:
@@ -30,14 +32,14 @@ func _ensure_active_environment() -> void:
 
 	# Buscar si ya existe un nodo de entorno en la escena raíz
 	var existing: Node = context.main_game.get_node_or_null("SpaceBackground")
-	if existing and existing is Node2D:
-		active_environment = existing as Node2D
+	if existing and existing is BaseSpaceEnvironment:
+		active_environment = existing as BaseSpaceEnvironment
 		return
 
 	# Instanciar el entorno custom si está provisto, o el default
 	var scene_to_instantiate: PackedScene = custom_environment_scene if custom_environment_scene else default_environment_scene
 	if scene_to_instantiate:
-		var env_node: Node2D = scene_to_instantiate.instantiate() as Node2D
+		var env_node: BaseSpaceEnvironment = scene_to_instantiate.instantiate() as BaseSpaceEnvironment
 		env_node.name = "SpaceBackground"
 		context.main_game.add_child(env_node)
 		context.main_game.move_child(env_node, 0)
@@ -48,16 +50,16 @@ func _bind_environment_references() -> void:
 	if not is_instance_valid(active_environment) or not context:
 		return
 
-	if active_environment.has_method("set_camera_reference") and context.camera:
-		active_environment.call("set_camera_reference", context.camera)
+	if context.camera:
+		active_environment.set_camera_reference(context.camera)
 
-	if active_environment.has_method("set_player_reference") and context.player:
-		active_environment.call("set_player_reference", context.player)
+	if context.player:
+		active_environment.set_player_reference(context.player)
 
 
 func on_wave_started(wave_idx: int) -> void:
-	if is_instance_valid(active_environment) and active_environment.has_method("notify_wave_started"):
-		active_environment.call("notify_wave_started", wave_idx)
+	if is_instance_valid(active_environment):
+		active_environment.notify_wave_started(wave_idx)
 
 
 func swap_environment_backend(new_scene: PackedScene) -> void:
@@ -67,16 +69,19 @@ func swap_environment_backend(new_scene: PackedScene) -> void:
 		active_environment = null
 	_ensure_active_environment()
 	_bind_environment_references()
+	if is_instance_valid(active_environment) and context and context.main_game and "run_seed" in context.main_game:
+		active_environment.set_environment_seed(int(context.main_game.run_seed))
 
 
-func get_cosmos_controller() -> Node:
-	if is_instance_valid(active_environment) and active_environment.has_method("get_host_controller"):
-		return active_environment.call("get_host_controller") as Node
+func get_cosmos_controller() -> CosmosHostController:
+	if is_instance_valid(active_environment):
+		return active_environment.get_cosmos_controller()
 	return null
 
 
 func change_region(region_id: StringName, blend_duration: float = 2.0) -> bool:
-	var ctrl: Node = get_cosmos_controller()
-	if ctrl != null and ctrl.has_method("change_region"):
-		return bool(ctrl.call("change_region", region_id, blend_duration))
+	var ctrl: CosmosHostController = get_cosmos_controller()
+	if ctrl != null:
+		return ctrl.change_region(region_id, blend_duration)
 	return false
+

@@ -12,7 +12,7 @@ var satellite_index: int = 1
 @onready var distance_label: Label = $PanelContainer/VBoxContainer/DistanceLabel
 @onready var arrow_indicator: Polygon2D = $ArrowIndicator
 
-const BOX_SIZE: Vector2 = Vector2(50, 50)
+const BOX_SIZE: Vector2 = Vector2(70, 70)
 const PADDING: float = 8.0
 
 var _pulse_timer: float = 0.0
@@ -27,13 +27,13 @@ var _onscreen_pulse: float = 0.0
 func _draw() -> void:
 	if is_on_screen_active:
 		var center: Vector2 = BOX_SIZE * 0.5
-		var r: float = 46.0 + sin(_onscreen_pulse) * 4.0
+		var r: float = 52.0 + sin(_onscreen_pulse) * 4.0
 		# Anillo exterior de alta visibilidad cian
 		draw_arc(center, r, 0.0, TAU, 48, Color(0.0, 0.95, 1.0, 0.92), 2.5)
 		# Halo interior translúcido
 		draw_arc(center, r * 0.75, 0.0, TAU, 36, Color(0.0, 0.8, 1.0, 0.38), 1.5)
 		# 4 miras tácticas cardinales
-		var tick_len: float = 9.0
+		var tick_len: float = 10.0
 		var col_tick: Color = Color(0.0, 1.0, 0.85, 0.95)
 		draw_line(center + Vector2(-r - tick_len, 0), center + Vector2(-r + 2.0, 0), col_tick, 2.0)
 		draw_line(center + Vector2(r - 2.0, 0), center + Vector2(r + tick_len, 0), col_tick, 2.0)
@@ -57,10 +57,10 @@ func _ready() -> void:
 		style.bg_color = Color(0.04, 0.08, 0.16, 0.88)
 		style.border_color = Color(0.0, 0.92, 1.0, 0.95)
 		style.set_border_width_all(2)
-		style.set_corner_radius_all(6)
+		style.set_corner_radius_all(8)
 		style.set_content_margin_all(2.0)
 		style.shadow_color = Color(0.0, 0.8, 1.0, 0.3)
-		style.shadow_size = 4
+		style.shadow_size = 6
 		panel_container.add_theme_stylebox_override("panel", style)
 
 func set_target(pos: Vector2, index: int) -> void:
@@ -86,10 +86,10 @@ func trigger_ping() -> void:
 
 	if _ping_tween and _ping_tween.is_valid():
 		_ping_tween.kill()
-	_ping_ring_radius = 22.0
+	_ping_ring_radius = 32.0
 	_ping_ring_alpha = 1.0
 	_ping_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_ping_tween.tween_property(self, "_ping_ring_radius", 75.0, 0.85)
+	_ping_tween.tween_property(self, "_ping_ring_radius", 95.0, 0.85)
 	_ping_tween.tween_property(self, "_ping_ring_alpha", 0.0, 0.85)
 	_ping_tween.chain().tween_callback(queue_redraw)
 

@@ -23,6 +23,9 @@ var slot: CosmosOrbitSlot = null
 					_frozen_camera_pos = _camera_ref.global_position
 				elif is_inside_tree() and get_viewport() != null and get_viewport().get_camera_2d() != null:
 					_frozen_camera_pos = get_viewport().get_camera_2d().global_position
+				else:
+					_frozen_camera_pos = Vector2.ZERO
+				_freeze_weight = 1.0
 			else:
 				_was_frozen_parallax = false
 
@@ -33,6 +36,8 @@ var _internal_time: float = 0.0
 var _last_cosmos_time: float = -1.0
 var _was_frozen_parallax: bool = false
 var _frozen_camera_pos: Vector2 = Vector2.ZERO
+var _freeze_weight: float = 0.0
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -48,14 +53,10 @@ func _find_references() -> void:
 		_camera_ref = get_viewport().get_camera_2d()
 
 	if _cosmos_root == null:
-		var root_node: Node = get_tree().get_first_node_in_group("cosmos_root")
+		var root_node: Node = get_tree().get_first_node_in_group(&"cosmos_root")
 		if root_node is CosmosRootNode:
 			_cosmos_root = root_node as CosmosRootNode
-		else:
-			# Buscar en SpaceBackground si existe
-			var bg: Node = get_tree().root.find_child("SpaceBackground", true, false)
-			if bg != null and bg.has_method("get_cosmos_root"):
-				_cosmos_root = bg.call("get_cosmos_root") as CosmosRootNode
+
 
 func setup_orbital_binding(p_slot: CosmosOrbitSlot, p_camera: Camera2D = null, p_cosmos_root: CosmosRootNode = null) -> void:
 	if _target_node == null and get_parent() is Node2D:
@@ -67,6 +68,8 @@ func setup_orbital_binding(p_slot: CosmosOrbitSlot, p_camera: Camera2D = null, p
 		_cosmos_root = p_cosmos_root
 	active = (slot != null)
 	_was_frozen_parallax = false
+	_frozen_camera_pos = Vector2.ZERO
+	_freeze_weight = 0.0
 	_update_position(0.0)
 
 func _process(delta: float) -> void:
@@ -97,22 +100,34 @@ func _update_position(delta: float) -> void:
 		_internal_time += delta
 		t_global = _internal_time
 
-	var cam_pos: Vector2 = Vector2.ZERO
-	if freeze_parallax_drag:
-		if not _was_frozen_parallax:
-			_was_frozen_parallax = true
-			if _camera_ref != null and is_instance_valid(_camera_ref):
-				_frozen_camera_pos = _camera_ref.global_position
-			elif is_inside_tree() and get_viewport() != null and get_viewport().get_camera_2d() != null:
-				_frozen_camera_pos = get_viewport().get_camera_2d().global_position
-		cam_pos = _frozen_camera_pos
-	else:
-		if _was_frozen_parallax:
-			_was_frozen_parallax = false
-		if _camera_ref != null and is_instance_valid(_camera_ref):
-			cam_pos = _camera_ref.global_position
+	var real_cam: Vector2 = Vector2.ZERO
+	if _camera_ref != null and is_instance_valid(_camera_ref):
+		real_cam = _camera_ref.global_position
+	elif is_inside_tree() and get_viewport() != null and get_viewport().get_camera_2d() != null:
+		real_cam = get_viewport().get_camera_2d().global_position
+
+	var s_scale: Vector2 = slot.layer_scroll_scale
+	var is_scale_one: bool = is_equal_approx(s_scale.x, 1.0) and is_equal_approx(s_scale.y, 1.0)
+
+	var cam_pos: Vector2 = real_cam
+	if not is_scale_one:
+		if freeze_parallax_drag:
+			if not _was_frozen_parallax or _frozen_camera_pos == Vector2.ZERO:
+				_was_frozen_parallax = true
+				_frozen_camera_pos = real_cam
+			_freeze_weight = 1.0
+		else:
+			if _was_frozen_parallax:
+				_was_frozen_parallax = false
+			if delta > 0.0:
+				_freeze_weight = move_toward(_freeze_weight, 0.0, delta / 0.4)
+			else:
+				_freeze_weight = 0.0
+
+		if not is_zero_approx(_freeze_weight):
+			cam_pos = real_cam.lerp(_frozen_camera_pos, _freeze_weight)
 
 	var layer_pos: Vector2 = slot.calculate_layer_position(t_global)
-	var s_scale: Vector2 = slot.layer_scroll_scale
 	var new_world_pos: Vector2 = (cam_pos * (Vector2.ONE - s_scale)) + layer_pos
 	_target_node.global_position = new_world_pos
+

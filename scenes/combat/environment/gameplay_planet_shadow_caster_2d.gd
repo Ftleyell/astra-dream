@@ -58,13 +58,10 @@ func _find_references() -> void:
 		_camera_ref = get_viewport().get_camera_2d()
 
 	if _cosmos_root == null:
-		var root_node: Node = get_tree().get_first_node_in_group("cosmos_root")
+		var root_node: Node = get_tree().get_first_node_in_group(&"cosmos_root")
 		if root_node is CosmosRootNode:
 			_cosmos_root = root_node as CosmosRootNode
-		else:
-			var bg: Node = get_tree().root.find_child("SpaceBackground", true, false)
-			if bg != null and bg.has_method("get_cosmos_root"):
-				_cosmos_root = bg.call("get_cosmos_root") as CosmosRootNode
+
 
 func _build_shadow_visual() -> void:
 	if _shadow_sprite != null:
@@ -106,16 +103,12 @@ func sync_shadow_config() -> void:
 		elif _cosmos_root.environment_profile != null and _cosmos_root.environment_profile.solar_profile != null:
 			active_cfg = _cosmos_root.environment_profile.solar_profile.get_effective_shadow_config()
 
-	if active_cfg == null and slot != null and is_instance_valid(slot.body_reference):
-		var parent_sys: Node = slot.body_reference.get_parent()
-		if parent_sys is CosmosSolarSystem2D and (parent_sys as CosmosSolarSystem2D).system_profile != null:
-			active_cfg = (parent_sys as CosmosSolarSystem2D).system_profile.get_effective_shadow_config()
-
 	if active_cfg == null:
 		active_cfg = DEFAULT_SHADOW_CONFIG
 
 	if active_cfg != null:
 		apply_shadow_config(active_cfg)
+
 
 func setup_shadow_binding(p_slot: CosmosOrbitSlotScript, p_radius: float = 300.0, p_camera: Camera2D = null, p_cosmos_root: CosmosRootNode = null, p_shadow_config: CosmosShadowSystemConfig = null) -> void:
 	slot = p_slot

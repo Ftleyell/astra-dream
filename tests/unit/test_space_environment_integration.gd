@@ -42,6 +42,8 @@ func _run_suite() -> void:
 	_test_destructible_orbital_slot_anti_overlap()
 	_test_gameplay_shadow_photometric_sync()
 	_test_planet_day_night_lighting_overlay()
+	_test_seed_synchronization_and_backend_swap()
+	_test_graphics_quality_scalability()
 	_teardown_mock_hierarchy()
 	pass_suite("TestSpaceEnvironmentIntegration completado con éxito al 100%.")
 
@@ -283,6 +285,49 @@ func _test_planet_day_night_lighting_overlay() -> void:
 	assert_true(overlay.visible, "LightingOverlaySprite debe permanecer visible proyectando luz sobre el manto expuesto.")
 
 	planet.queue_free()
+
+
+func _test_seed_synchronization_and_backend_swap() -> void:
+	var adapter: CosmosCombatEnvScript = _host.active_environment as CosmosCombatEnvScript
+	var root_node: CosmosRootNodeScript = adapter.get_cosmos_root()
+
+	_mock_main_game.set("run_seed", 9876543)
+	_host.active_environment.set_environment_seed(9876543)
+	assert_true(root_node.solar_streamer.run_seed == 9876543, "set_environment_seed debe propagar la semilla a solar_streamer.")
+	assert_true(root_node.galaxy_streamer.run_seed == 9876543, "set_environment_seed debe propagar la semilla a galaxy_streamer.")
+	assert_true(root_node.debris_streamer.run_seed == 9876543, "set_environment_seed debe propagar la semilla a debris_streamer.")
+
+	# Intercambio de backend transparente
+	_host.swap_environment_backend(CosmosCombatEnvScene)
+	var swapped_adapter: CosmosCombatEnvScript = _host.active_environment as CosmosCombatEnvScript
+	assert_true(swapped_adapter != null, "swap_environment_backend debe crear nuevo entorno.")
+	var swapped_root: CosmosRootNodeScript = swapped_adapter.get_cosmos_root()
+	assert_true(swapped_root.solar_streamer.run_seed == 9876543, "swap_environment_backend debe preservar run_seed en el nuevo entorno.")
+
+
+func _test_graphics_quality_scalability() -> void:
+	var adapter: CosmosCombatEnvScript = _host.active_environment as CosmosCombatEnvScript
+	var root_node: CosmosRootNodeScript = adapter.get_cosmos_root()
+	assert_true(root_node != null, "root_node no debe ser nulo.")
+
+	# Nivel 2: Alto
+	root_node.apply_graphics_quality(2)
+	assert_true(root_node.parallax_starfield_8k.visible, "Nivel 2 debe activar starfield 8K.")
+	var mat2: ShaderMaterial = root_node.nebula_controller.material as ShaderMaterial
+	assert_true(is_equal_approx(float(mat2.get_shader_parameter("chromatic_dispersion")), 0.004), "Nivel 2 debe tener dispersión cromática activa.")
+	assert_true(is_equal_approx(float(mat2.get_shader_parameter("deep_stars_sparkle_intensity")), 0.85), "Nivel 2 debe tener destellos estelares activos.")
+
+	# Nivel 1: Medio (Steam Deck)
+	root_node.apply_graphics_quality(1)
+	assert_true(not root_node.parallax_starfield_8k.visible, "Nivel 1 debe apagar starfield 8K para optimizar fillrate.")
+	assert_true(is_zero_approx(float(mat2.get_shader_parameter("chromatic_dispersion"))), "Nivel 1 debe desactivar dispersión cromática.")
+	assert_true(is_equal_approx(float(mat2.get_shader_parameter("deep_stars_sparkle_intensity")), 0.85), "Nivel 1 mantiene destellos estelares estándar.")
+
+	# Nivel 0: Bajo (iGPU)
+	root_node.apply_graphics_quality(0)
+	assert_true(not root_node.parallax_starfield_8k.visible, "Nivel 0 debe mantener apagado el starfield 8K.")
+	assert_true(is_zero_approx(float(mat2.get_shader_parameter("chromatic_dispersion"))), "Nivel 0 debe desactivar dispersión cromática.")
+	assert_true(is_zero_approx(float(mat2.get_shader_parameter("deep_stars_sparkle_intensity"))), "Nivel 0 debe simplificar destellos estelares.")
 
 
 func _teardown_mock_hierarchy() -> void:

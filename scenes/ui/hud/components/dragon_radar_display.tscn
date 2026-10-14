@@ -1,0 +1,59 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8y1radar847d"]
+
+[ext_resource type="Script" path="res://scenes/ui/hud/components/hud_dragon_radar_display.gd" id="1_radar"]
+[ext_resource type="Shader" path="res://scenes/ui/hud/shaders/dragon_radar_screen.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" path="res://assets/ui/minmapmask.png" id="3_mask"]
+[ext_resource type="Texture2D" path="res://assets/ui/minmap.png" id="4_frame"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_radar"]
+shader = ExtResource("2_shader")
+shader_parameter/bg_color = Color(0.01, 0.05, 0.02, 0.85)
+shader_parameter/grid_color = Color(0.1, 0.45, 0.2, 0.45)
+shader_parameter/sweep_color = Color(0.2, 0.85, 0.35, 0.6)
+shader_parameter/sweep_angle = 0.0
+shader_parameter/sweep_tail_length = 1.047
+shader_parameter/grid_divisions = 8.0
+shader_parameter/border_radius = 0.43
+shader_parameter/line_thickness = 0.003
+shader_parameter/mask_texture = ExtResource("3_mask")
+shader_parameter/use_mask_texture = true
+
+[node name="DragonRadar" type="Control"]
+custom_minimum_size = Vector2(240, 240)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 240.0
+offset_bottom = 240.0
+mouse_filter = 2
+script = ExtResource("1_radar")
+
+[node name="RadarScreen" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_radar")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RadarBlipsLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RadarFrame" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_frame")
+expand_mode = 1
+stretch_mode = 5

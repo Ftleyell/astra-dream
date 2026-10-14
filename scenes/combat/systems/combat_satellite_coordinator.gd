@@ -396,17 +396,9 @@ func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript
 		main_game.hud.set_active_satellite(target_pos, current_satellite_idx)
 
 
-func _get_cosmos_controller() -> Node:
-	if not main_game:
-		return null
-	var env_host: Node = main_game.get_node_or_null("SpaceEnvironmentHost")
-	if not env_host and main_game.has_node("SpaceBackground"):
-		env_host = main_game.get_node("SpaceBackground")
-
-	if env_host != null and env_host.has_method("get_cosmos_controller"):
-		return env_host.call("get_cosmos_controller")
-	elif env_host != null and env_host.has_method("get_host_controller"):
-		return env_host.call("get_host_controller")
+func _get_cosmos_controller() -> CosmosHostController:
+	if main_game and main_game.environment_host:
+		return main_game.environment_host.get_cosmos_controller()
 	return null
 
 
@@ -414,26 +406,27 @@ func _apply_orbital_binding(target_entity: Node2D, candidate_pos: Vector2, bound
 	if not main_game or not is_instance_valid(target_entity):
 		return
 
-	var host_ctrl: Node = _get_cosmos_controller()
+	var host_ctrl: CosmosHostController = _get_cosmos_controller()
 	var slot_to_bind: CosmosOrbitSlotScript = bound_slot
 
 	if slot_to_bind == null and host_ctrl != null:
-		if target_entity is TransmutationStation and host_ctrl.has_method("get_star_center_slots"):
-			var star_slots: Array = host_ctrl.call("get_star_center_slots", candidate_pos, 16000.0)
+		if target_entity is TransmutationStation:
+			var star_slots: Array[CosmosOrbitSlot] = host_ctrl.get_star_center_slots(candidate_pos, 16000.0)
 			if not star_slots.is_empty():
-				slot_to_bind = star_slots[0] as CosmosOrbitSlotScript
-		elif host_ctrl.has_method("get_planet_orbit_slots"):
-			var slots: Array = host_ctrl.call("get_planet_orbit_slots", candidate_pos, 7000.0)
+				slot_to_bind = star_slots[0]
+		else:
+			var slots: Array[CosmosOrbitSlot] = host_ctrl.get_planet_orbit_slots(candidate_pos, 7000.0)
 			if not slots.is_empty():
-				slot_to_bind = slots[0] as CosmosOrbitSlotScript
+				slot_to_bind = slots[0]
 
 	if slot_to_bind != null and host_ctrl != null:
 		var follower := OrbitalWorldFollower2DScript.new()
 		follower.name = "OrbitalWorldFollower2D"
 		target_entity.add_child(follower)
 		var cam: Camera2D = main_game.camera if "camera" in main_game else null
-		var root_node: CosmosRootNode = host_ctrl.cosmos_root if "cosmos_root" in host_ctrl else null
+		var root_node: CosmosRootNode = host_ctrl.cosmos_root
 		follower.setup_orbital_binding(slot_to_bind, cam, root_node)
+
 
 
 func _try_bind_orbital_follower(target_entity: Node2D, candidate_pos: Vector2) -> void:

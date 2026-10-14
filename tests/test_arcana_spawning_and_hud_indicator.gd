@@ -51,9 +51,9 @@ func _ready() -> void:
 	var arcana_tracker: ArcanaEdgeIndicator = hud.arcana_tracker
 	assert(arcana_tracker is ArcanaEdgeIndicator, "arcana_tracker debe ser instancia de ArcanaEdgeIndicator")
 	var tracker_layer := arcana_tracker.get_parent() as CanvasLayer
-	assert(tracker_layer.layer < hud.layer, "El layer del indicador debe estar debajo del layer de HUD (tracker: %d, hud: %d)" % [tracker_layer.layer, hud.layer])
+	assert(tracker_layer.layer == 6, "El layer del indicador debe ser 6 para estar sobre el HUD (tracker: %d, hud: %d)" % [tracker_layer.layer, hud.layer])
 	assert(arcana_tracker.custom_minimum_size == Vector2(50, 50), "Tamaño de caja debe ser 50x50")
-	print("  ✓ Jerarquía de HUD y ArcanaEdgeIndicator verificada (Layer %d < Layer %d)." % [tracker_layer.layer, hud.layer])
+	print("  ✓ Jerarquía de HUD y ArcanaEdgeIndicator verificada (Layer %d > Layer %d)." % [tracker_layer.layer, hud.layer])
 
 	# ----------------------------------------------------
 	# CASO 2: Garantía de Monolito Arcano en _ready() / Oleada 1

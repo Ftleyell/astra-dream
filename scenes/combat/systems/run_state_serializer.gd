@@ -72,7 +72,8 @@ static func get_run_state(main_game: Node) -> Dictionary:
 		"_wave_encounter_checked_for_wave": main_game.get("_wave_encounter_checked_for_wave"),
 		"_wave_encounter_spawned_for_wave": main_game.get("_wave_encounter_spawned_for_wave"),
 		"_slot_machine_pity_chance": float(main_game.get("_slot_machine_pity_chance")) if main_game.get("_slot_machine_pity_chance") != null else 0.25,
-		"paid_chests_count": main_game.chest_director.paid_chests_count if ("chest_director" in main_game and main_game.chest_director) else 0
+		"paid_chests_count": main_game.chest_director.paid_chests_count if ("chest_director" in main_game and main_game.chest_director) else 0,
+		"run_seed": int(main_game.get("run_seed")) if main_game.get("run_seed") != null else 0
 	}
 
 static func save_run_state(main_game: Node) -> void:
@@ -82,8 +83,11 @@ static func save_run_state(main_game: Node) -> void:
 
 static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	# 1. Variables de oleada y progresión global
+	if run_data.has("run_seed"):
+		main_game.set("run_seed", int(run_data["run_seed"]))
 	main_game.set("current_wave", int(run_data.get("current_wave", 1)))
 	main_game.set("wave_timer", float(run_data.get("wave_timer", 30.0)))
+
 	main_game.set("wave_satellites_spawned", int(run_data.get("wave_satellites_spawned", 0)))
 	main_game.set("satellites_collected_total", int(run_data.get("satellites_collected_total", 0)))
 	main_game.set("current_satellite_idx", int(run_data.get("current_satellite_idx", 1)))

@@ -52,7 +52,6 @@ signal solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 @export var solar_streamer: CosmosSolarSystemStreamer
 @export var parallax_debris_belt: Parallax2D
 @export var debris_streamer: CosmosDebrisStreamer2D
-@export var gameplay_world: Node2D
 
 var poi_registry: CosmicPoiRegistry = CosmicPoiRegistry.new()
 var _global_time: float = 0.0
@@ -76,14 +75,17 @@ func _propagate_freeze_state(frozen: bool) -> void:
 func _ready() -> void:
 	# Prioridad de proceso: CosmosRootNode orquesta el tiempo y el tracker se procesa antes del render
 	process_priority = -100
+	add_to_group(&"cosmos_root")
 	_propagate_freeze_state(is_frozen)
 	_setup_viewport_tracker()
 	_setup_floating_origin()
 	_sync_poi_registry()
-	_bind_camera_to_streamers()
+	bind_camera_to_streamers()
 	_setup_solar_streamer_signals()
 	_cache_starfield_material()
 	_init_environment_profile()
+	_setup_settings_listener()
+
 
 func _setup_viewport_tracker() -> void:
 	if viewport_tracker == null:
@@ -238,15 +240,25 @@ func _cache_starfield_material() -> void:
 func _setup_floating_origin() -> void:
 	if floating_origin_tracker == null:
 		floating_origin_tracker = get_node_or_null("CosmosFloatingOriginTracker") as CosmosFloatingOriginTracker
-	
+
 	if floating_origin_tracker != null:
+		var tree := get_tree()
+		var is_combat: bool = (tree.get_first_node_in_group("bullet_server") != null or tree.get_first_node_in_group("main_game") != null) if tree else false
+		if is_combat:
+			push_warning("CosmosRootNode: FloatingOriginTracker deshabilitado en combate para proteger la memoria física contigua de BulletServer.")
+			floating_origin_tracker.is_enabled = false
+			floating_origin_tracker.set_physics_process(false)
+			floating_origin_tracker.set_process(false)
+			floating_origin_tracker = null
+			return
+
 		if floating_origin_tracker.viewport_tracker == null and viewport_tracker != null:
 			floating_origin_tracker.viewport_tracker = viewport_tracker
 		# Establecer prioridad de proceso del tracker previa a los renders
 		floating_origin_tracker.process_priority = -50
 		if not floating_origin_tracker.origin_shifted.is_connected(_on_floating_origin_shifted):
 			floating_origin_tracker.origin_shifted.connect(_on_floating_origin_shifted)
-		
+
 		# Registrar capas de paralaje si no están asignadas
 		if floating_origin_tracker.parallax_layers.is_empty():
 			var layers: Array[Parallax2D] = []
@@ -260,7 +272,7 @@ func _setup_floating_origin() -> void:
 				layers.append(parallax_debris_belt)
 			floating_origin_tracker.parallax_layers = layers
 
-func _bind_camera_to_streamers() -> void:
+func bind_camera_to_streamers() -> void:
 	if camera == null:
 		return
 	_sync_poi_registry()
@@ -280,6 +292,42 @@ func _bind_camera_to_streamers() -> void:
 		var star_ctrl: CosmosStarfieldBackdropController = parallax_starfield_8k as CosmosStarfieldBackdropController
 		if star_ctrl.camera == null:
 			star_ctrl.camera = camera
+
+func _bind_camera_to_streamers() -> void:
+	bind_camera_to_streamers()
+
+func _setup_settings_listener() -> void:
+	var tree := get_tree()
+	if tree != null and tree.root != null and tree.root.has_node("SettingsManager"):
+		var sm: Node = tree.root.get_node("SettingsManager")
+		if sm != null:
+			if sm.has_signal("settings_changed") and not sm.settings_changed.is_connected(_on_settings_manager_changed):
+				sm.settings_changed.connect(_on_settings_manager_changed)
+			if "space_background_quality" in sm:
+				apply_graphics_quality(int(sm.space_background_quality))
+
+func _on_settings_manager_changed() -> void:
+	var tree := get_tree()
+	if tree != null and tree.root != null and tree.root.has_node("SettingsManager"):
+		var sm: Node = tree.root.get_node("SettingsManager")
+		if sm != null and "space_background_quality" in sm:
+			apply_graphics_quality(int(sm.space_background_quality))
+
+func apply_graphics_quality(quality_level: int) -> void:
+	var show_starfield: bool = (quality_level >= 2)
+	if parallax_starfield_8k != null and is_instance_valid(parallax_starfield_8k):
+		parallax_starfield_8k.visible = show_starfield
+		var parent_node: Node = parallax_starfield_8k.get_parent()
+		if parent_node is CanvasLayer:
+			(parent_node as CanvasLayer).visible = show_starfield
+
+	var dispersion: float = 0.004 if quality_level >= 2 else 0.0
+	if nebula_controller != null and is_instance_valid(nebula_controller) and nebula_controller.material is ShaderMaterial:
+		var n_mat: ShaderMaterial = nebula_controller.material as ShaderMaterial
+		n_mat.set_shader_parameter("chromatic_dispersion", dispersion)
+		var sparkle: float = 0.85 if quality_level >= 1 else 0.0
+		n_mat.set_shader_parameter("deep_stars_sparkle_intensity", sparkle)
+
 
 func _on_viewport_updated(center_world_pos: Vector2, zoom: Vector2, _rotation_rad: float) -> void:
 	if solar_streamer != null:

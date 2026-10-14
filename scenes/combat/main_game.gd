@@ -35,8 +35,14 @@ var space_debris_manager: RefCounted = CombatSpaceDebrisManagerScript.new()
 var feedback_coordinator: RefCounted = CombatPlayerFeedbackCoordinatorScript.new()
 var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
-var environment_host: Node = SpaceEnvironmentHostScript.new()
+var environment_host: SpaceEnvironmentHost = SpaceEnvironmentHostScript.new()
+var run_seed: int = 0:
+	set(val):
+		run_seed = val
+		if environment_host and is_instance_valid(environment_host.active_environment):
+			environment_host.active_environment.set_environment_seed(run_seed)
 var loot_coordinator: CombatLootCoordinator = null
+
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null
 
@@ -186,8 +192,11 @@ func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
 func _ready() -> void:
+	if run_seed == 0:
+		run_seed = int(randi()) & 0x7FFFFFFF
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
+
 
 	# Sincronización estricta del loadout del personaje seleccionado
 	CombatBootstrapperScript.sync_character_loadout()

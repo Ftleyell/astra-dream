@@ -27,7 +27,7 @@ const WAVE_BIOME_MAP: Dictionary[int, StringName] = {
 }
 
 @export var enable_wave_biome_transitions: bool = false
-@export var randomize_seed_on_ready: bool = true
+@export var randomize_seed_on_ready: bool = false
 
 var _camera_ref: Camera2D = null
 var _player_ref: CharacterBody2D = null
@@ -37,6 +37,7 @@ func _ready() -> void:
 	_ensure_components()
 	if randomize_seed_on_ready:
 		randomize_environment_seed()
+
 
 
 ## Genera y aplica una nueva semilla procedural para la partida actual
@@ -83,29 +84,24 @@ func _rebind_references() -> void:
 
 	if _camera_ref != null and is_instance_valid(_camera_ref):
 		cosmos_root.camera = _camera_ref
-		if cosmos_root.has_method("_bind_camera_to_streamers"):
-			cosmos_root.call("_bind_camera_to_streamers")
+		cosmos_root.bind_camera_to_streamers()
 
 	if _player_ref != null and is_instance_valid(_player_ref):
 		cosmos_root.player_target = _player_ref
-		if cosmos_root.floating_origin_tracker != null:
-			cosmos_root.floating_origin_tracker.player_target = _player_ref
 
 
 func set_camera_reference(p_camera: Camera2D) -> void:
 	_camera_ref = p_camera
 	if cosmos_root != null and is_instance_valid(cosmos_root):
 		cosmos_root.camera = p_camera
-		if cosmos_root.has_method("_bind_camera_to_streamers"):
-			cosmos_root.call("_bind_camera_to_streamers")
+		cosmos_root.bind_camera_to_streamers()
 
 
 func set_player_reference(p_player: CharacterBody2D) -> void:
 	_player_ref = p_player
 	if cosmos_root != null and is_instance_valid(cosmos_root):
 		cosmos_root.player_target = p_player
-		if cosmos_root.floating_origin_tracker != null:
-			cosmos_root.floating_origin_tracker.player_target = p_player
+
 
 
 func notify_wave_started(wave_idx: int) -> void:
@@ -133,5 +129,10 @@ func get_host_controller() -> CosmosHostControllerScript:
 	return host_controller
 
 
+func get_cosmos_controller() -> CosmosHostController:
+	return host_controller
+
+
 func get_cosmos_root() -> CosmosRootNodeScript:
 	return cosmos_root
+

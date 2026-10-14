@@ -14,11 +14,15 @@ signal origin_shifted(shift_vector: Vector2)
 @export var player_target: Node2D
 @export var camera: Camera2D
 @export var viewport_tracker: CosmosViewportCanvasTracker
+@export var is_enabled: bool = true
 @export var threshold_distance: float = 10000.0
 @export var parallax_layers: Array[Parallax2D] = []
 
 func _physics_process(_delta: float) -> void:
+	if not is_enabled:
+		return
 	check_and_shift()
+
 
 ## Obtiene la posición efectiva a monitorear (jugador, viewport tracker o cámara)
 func get_tracked_position() -> Vector2:
