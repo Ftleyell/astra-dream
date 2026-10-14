@@ -58,10 +58,16 @@ if ($Test) {
     } elseif (Test-Path $Test) {
         $runners += Get-Item $Test
     } else {
-        $runners = Get-ChildItem $testsDir -Filter "*$Test*"
+        # Busqueda recursiva inteligente tolerando si se omite o incluye .tscn
+        $searchPattern = if ($Test.EndsWith(".tscn")) { "*$Test" } else { "*$Test*.tscn" }
+        $candidates = Get-ChildItem $testsDir -Filter $searchPattern -Recurse
+        if ($candidates.Count -eq 0) {
+            $candidates = Get-ChildItem $testsDir -Filter "*$Test*" -Recurse | Where-Object { $_.Extension -eq ".tscn" }
+        }
+        $runners += $candidates
     }
 } elseif ($Filter) {
-    $runners = Get-ChildItem $testsDir -Filter "*$Filter*.tscn"
+    $runners = Get-ChildItem $testsDir -Filter "*$Filter*.tscn" -Recurse
 } elseif ($CoreOnly) {
     # Conjunto clave de regresion rapida para iteracion de agentes
     $coreNames = @(
@@ -85,14 +91,21 @@ if ($Test) {
         "test_phase4_gold_and_chests_runner.tscn",
         "test_phase5_boss_and_bullets_runner.tscn",
         "test_phase6_tomes_and_dossier_runner.tscn",
-        "test_arsenal_banlist_modal_runner.tscn"
+        "test_arsenal_banlist_modal_runner.tscn",
+        "test_dragon_radar_runner.tscn",
+        "unit/test_space_environment_integration.tscn"
     )
     foreach ($cn in $coreNames) {
         $p = Join-Path $testsDir $cn
-        if (Test-Path $p) { $runners += Get-Item $p }
+        if (Test-Path $p) {
+            $runners += Get-Item $p
+        } else {
+            $fallback = Get-ChildItem $testsDir -Filter (Split-Path $cn -Leaf) -Recurse | Select-Object -First 1
+            if ($fallback) { $runners += $fallback }
+        }
     }
 } else {
-    $runners = Get-ChildItem $testsDir -Filter "*runner*.tscn"
+    $runners = Get-ChildItem $testsDir -Filter "*runner*.tscn" -Recurse
 }
 
 if ($runners.Count -eq 0) {

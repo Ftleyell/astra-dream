@@ -10,7 +10,7 @@ En combate (`main_game.tscn`), conviven dos espacios con naturalezas y scrolls d
    - Aloja elementos de fondo no colisionables en múltiples estratos de profundidad:
      - Nebulosa (`CanvasLayer` -100)
      - Galaxias macro (`Parallax2D`, scroll 0.1)
-     - Campo estelar 8K (`CanvasLayer` -105)
+     - Campo estelar 8K (`CanvasLayer` -105, desconectable según perfil de GPU)
      - Sistemas Solares (`Parallax2D`, scroll 1.0 o configurado en perfil)
      - Cinturón de escombros (`Parallax2D`, scroll 0.25)
 
@@ -29,7 +29,26 @@ En combate (`main_game.tscn`), conviven dos espacios con naturalezas y scrolls d
 - **PROHIBIDO el uso de `find_child`, `has_method` o llamadas dinámicas con `call()`** para comunicarse entre entidades de juego y Cosmos Engine.
 - La vía canónica tipada de acceso es siempre:
   ```gdscript
-  var env_host: SpaceEnvironmentHost = main_game.space_environment_host
+  var env_host: SpaceEnvironmentHost = main_game.environment_host
   var host_ctrl: CosmosHostController = env_host.get_cosmos_controller()
   ```
 - Todas las consultas sobre órbitas, slots y posiciones deben realizarse a través de `host_ctrl` o su `CosmosOrbitalSlotTracker` fuertemente tipado.
+- Para localizar el nodo raíz de Cosmos desde componentes desacoplados en el SceneTree, consultar el grupo global:
+  ```gdscript
+  var cosmos_root: CosmosRootNode = get_tree().get_first_node_in_group(&"cosmos_root") as CosmosRootNode
+  ```
+
+---
+
+## 4. Slots Orbitales Matemáticos Puros (Value Objects)
+- `CosmosOrbitSlot` no contiene referencias vivas a nodos (`body_reference` eliminado). Es un *Value Object* que evalúa en $\mathcal{O}(1)$ la posición en capa en función del tiempo global:
+  ```gdscript
+  var layer_pos: Vector2 = slot.calculate_layer_position(t_global)
+  ```
+- Para slots planetarios, combina analíticamente la posición estelar central, la órbita del planeta anfitrión y la órbita relativa del satélite.
+
+---
+
+## 5. Anti-Snapping en Parallax Drag
+- Cuando una baliza o satélite congela el arrastre de paralaje (`freeze_parallax_drag = true`), `OrbitalWorldFollower2D` captura la posición de la cámara y bloquea la compensación instantáneamente.
+- Al salir del radio de interacción (`freeze_parallax_drag = false`), la posición de la cámara compensada interpola suavemente hacia la cámara activa a lo largo de $0.4\,\text{s}$ mediante `move_toward(_freeze_weight, 0.0, delta / 0.4)` y `cam_pos = real_cam.lerp(_frozen_camera_pos, _freeze_weight)`, eliminando cualquier salto brusco o vibración visual.

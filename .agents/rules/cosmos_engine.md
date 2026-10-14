@@ -32,12 +32,14 @@ Toda modificación numérica o estética DEBE realizarse directamente en el recu
 ---
 
 ## 3. 🧪 Verificación Rápida y Aislada (Test Específico)
-- Prohibido ejecutar suites globales o `-CoreOnly` durante la iteración en Cosmos Engine.
-- Usar **únicamente** el test específico del componente tocado:
-  - **Integración con MainGame / SpaceEnvironmentHost:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_space_environment_integration.tscn"`
-  - **Controlador Host & Biomas (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmos_host_controller.tscn"`
-  - **Inyección POIs Narrativos (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmic_poi_registry.tscn"`
-  - **Viewport Tracker / Cinemáticas (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/unit/test_cosmos_viewport_tracker.tscn"`
+- Prohibido ejecutar suites globales o `-CoreOnly` durante la iteración activa en Cosmos Engine.
+- Usar **únicamente** el test específico del componente tocado (búsqueda recursiva habilitada):
+  - **Integración con MainGame y Semillas:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "space_environment"` (~4.3s)
+  - **Órbitas, Anti-snapping y Parallax:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "orbital_binding_events"` (~6.3s)
+  - **Slots Analíticos y Binding de Entidades:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "gameplay_orbital_binding"` (~4.1s)
+  - **Controlador Host & Biomas (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmos_host_controller"` (~4.1s)
+  - **Smoke Packaging Cosmos:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmos_packaging_smoke"` (~4.0s)
+  - **Inyección POIs Narrativos (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_poi_registry"` (~4.1s)
   - **Sandbox Experimental (I+D):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/sandbox/test_cosmos_engine_integration.tscn"`
 
 ---
@@ -45,3 +47,13 @@ Toda modificación numérica o estética DEBE realizarse directamente en el recu
 ## 4. 🔒 Barrera de Aislamiento y Producción
 - El juego de combate principal (`main_game.tscn`) usa Cosmos Engine **exclusivamente** desde `scenes/combat/environment/cosmos/` a través de `SpaceEnvironmentHost` y `CosmosCombatEnvironment`.
 - Prohibido enlazar nada de `sandbox/` en el árbol de escenas o código de combate de producción.
+
+---
+
+## 5. 🛡️ Contratos Arquitectónicos y Blindaje
+1. **Desactivación de Floating Origin en Combate:** `FloatingOriginTracker` está estrictamente inhabilitado (`is_enabled = false`, `set_physics_process(false)`) al detectar `main_game` o `bullet_server` para prevenir desincronizaciones con el búfer contiguo de proyectiles.
+2. **Slots Analíticos Puros:** `CosmosOrbitSlot` es un *Value Object* analítico sin punteros a nodos de la escena (`body_reference` eliminado). Las posiciones orbitales planetarias compuestas se evalúan en $\mathcal{O}(1)$ matemáticamente puro:
+   $$\text{Pos}(t) = \text{Pos}_{\text{estrella}} + \text{Órbita}_{\text{planeta}}(t) + \text{Órbita}_{\text{satélite}}(t)$$
+3. **Anti-Snapping en Parallax:** `OrbitalWorldFollower2D` aplica un bloqueo inmediato al congelar (`_freeze_weight = 1.0`) y una interpolación ponderada de descompresión suave a $0.4\,\text{s}$ al salir de un área congelada (`move_toward(_freeze_weight, 0.0, delta / 0.4)`). Si `scroll_scale == (1,1)`, el arrastre de paralaje es nulo y se omite.
+4. **Sincronización Determinista de Semillas:** `CosmosCombatEnvironment.randomize_seed_on_ready` se mantiene en `false`. `main_game.run_seed` se inyecta canónicamente vía `SpaceEnvironmentHost` y se serializa/restaura con `RunStateSerializer`.
+5. **Escalabilidad Gráfica de GPU:** `SettingsManager.space_background_quality` (0=Bajo/iGPU, 1=Medio/Deck, 2=Alto/Desktop) conmuta `CanvasLayerStarfield` y complejidad de destellos/dispersión para garantizar 60 FPS estables.
