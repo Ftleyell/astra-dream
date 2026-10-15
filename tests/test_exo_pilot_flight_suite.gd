@@ -78,7 +78,7 @@ func _ready() -> void:
 	assert(thrust_idle < 0.45, "Thrust intensity should be soft pilot flame at idle")
 
 	# 8. Probar Hit Flash y reactor ante daño
-	player.take_damage(10.0)
+	player.take_damage(HitContext.create_simple(10.0))
 	assert(player.hit_flash_timer > 0.0, "hit_flash_timer should be triggered on damage")
 	player._update_pilot_shader(0.016, false)
 	var flash_param: float = mat.get_shader_parameter("hit_flash")

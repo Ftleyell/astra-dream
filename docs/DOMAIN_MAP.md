@@ -287,7 +287,7 @@ Godot utiliza grupos de cadenas fuertemente tipadas (`StringName`) para queries 
 | `&"bullet_server"` | `BulletServer._ready()` | Detección del subsistema danmaku para desactivar floating origin en combate. |
 | `&"main_game"` | `MainGame._ready()` | Verificación de ejecución en modo combate real. |
 | `&"player"` | `Player._ready()` | Target prioritario de proyectiles, enemigos y pickup magnets. |
-| `&"enemies"` | `EnemyBase._ready()`, bosses | Receptores de daño obligatorio implementando `take_damage(ctx: Variant)`. |
+| `&"enemies"` | `EnemyBase._ready()`, bosses | Receptores de daño obligatorio implementando `take_damage(ctx: HitContext)`. |
 | `&"rival_pilots"` | `RivalPilotBoss._ready()` | Detección de pilotos rivales hostiles para bonificación de velocidad y combate. |
 | `&"planet_sectors"` | `PlanetSector._ready()` | Sectores destructibles de planetas para colisión sólida y guiado de navegantes. |
 | `&"emitters"` | Emisores de peligro | Objetos destructibles o generadores secundarios atacables. |

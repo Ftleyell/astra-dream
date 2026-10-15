@@ -121,19 +121,14 @@ func _handle_player_contact() -> void:
 
 func _on_contact_with_player() -> void:
 	if player.has_method("take_damage"):
-		player.take_damage(contact_damage)
+		player.take_damage(HitContext.create_simple(contact_damage))
 
-func take_damage(ctx: Variant) -> void:
-	if is_dying or (get_tree() and get_tree().paused):
+func take_damage(ctx: HitContext) -> void:
+	if is_dying or not ctx or (get_tree() and get_tree().paused):
 		return
 
-	var dmg: float = 0.0
-	var is_crit: bool = false
-	if ctx is HitContext:
-		dmg = ctx.final_damage
-		is_crit = ctx.is_crit
-	elif ctx is float or ctx is int:
-		dmg = float(ctx)
+	var dmg: float = ctx.final_damage
+	var is_crit: bool = ctx.is_crit
 
 	current_health -= dmg
 

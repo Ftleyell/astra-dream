@@ -132,7 +132,7 @@ func _run_test_3_osp_triggers_at_high_hp() -> void:
 	)
 
 	# Deal massive lethal damage (1000.0)
-	player.take_damage(1000.0)
+	player.take_damage(HitContext.create_simple(1000.0))
 
 	_assert_test(osp_signal_received[0], "OSP signal was emitted")
 	_assert_test(is_equal_approx(player.current_health, 1.0), "Player survives with exactly 1 HP", "current_health = %.1f" % player.current_health)
@@ -159,7 +159,7 @@ func _run_test_4_osp_does_not_trigger_below_threshold() -> void:
 	)
 
 	# Deal lethal damage (1000.0)
-	player.take_damage(1000.0)
+	player.take_damage(HitContext.create_simple(1000.0))
 
 	_assert_test(osp_signal_received[0] == false, "OSP signal was NOT emitted when below 90% HP")
 	_assert_test(player.current_health <= 0.0 or player.is_dead == true, "Player dies from lethal hit without OSP")
@@ -170,11 +170,9 @@ func _run_test_4_osp_does_not_trigger_below_threshold() -> void:
 class TestDummyEnemy extends CharacterBody2D:
 	var current_health: float = 100.0
 	var max_health: float = 100.0
-	func take_damage(ctx: Variant) -> void:
-		if ctx is HitContext:
+	func take_damage(ctx: HitContext) -> void:
+		if ctx:
 			current_health -= ctx.final_damage
-		elif ctx is float or ctx is int:
-			current_health -= float(ctx)
 
 ## ─── TEST 5: Innate Point-Blank Pulse for slow weapons (CD > 1.1s) ──────────
 func _run_test_5_point_blank_pulse() -> void:
@@ -226,7 +224,7 @@ func _run_test_6_osp_with_shield() -> void:
 	player.shield_controller.current_shield = 50.0
 
 	# Total combined = max_hp + 50.0, max_combined = max_hp + 50.0 (100% >= 90%)
-	player.take_damage(max_hp + 500.0)
+	player.take_damage(HitContext.create_simple(max_hp + 500.0))
 	_assert_test(not player.is_dead, "Player survived lethal hit with OSP while carrying shield")
 	_assert_test(player.current_health >= 1.0, "Player preserved with at least 1 HP (current_health = %.1f)" % player.current_health)
 	_assert_test(player.shield_controller.current_shield == 0.0, "Shield was completely depleted absorbing blow")
@@ -241,7 +239,7 @@ func _run_test_7_osp_with_negative_armor() -> void:
 	player.stats.set_base_stat(&"armor", -50.0) # Negative armor amplifies damage
 	var max_hp := player.stats.get_stat(&"max_health")
 	player.current_health = max_hp
-	player.take_damage(max_hp + 500.0)
+	player.take_damage(HitContext.create_simple(max_hp + 500.0))
 	_assert_test(not player.is_dead, "Player survived lethal hit under OSP despite -50 negative armor")
 	_assert_test(player.current_health >= 1.0, "Player health remained >= 1 HP under negative armor (current_health = %.1f)" % player.current_health)
 	player.free()

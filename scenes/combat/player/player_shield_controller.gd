@@ -16,12 +16,14 @@ var death_controller: RefCounted = PlayerDeathSequenceControllerClass.new()
 
 func take_damage(
 	player: CharacterBody2D,
-	amount: float,
+	ctx: HitContext,
 	stats: CharacterStats,
 	inventory: Node
 ) -> void:
-	if not player or player.is_dead or player.is_dashing or player.get("is_invulnerable") == true:
+	if not player or not ctx or player.is_dead or player.is_dashing or player.get("is_invulnerable") == true:
 		return
+
+	var amount: float = ctx.final_damage
 
 	var debug_mgr: Node = player.get_node_or_null("/root/DebugManager")
 	if debug_mgr and debug_mgr.has_method("is_infinite_hp_active") and debug_mgr.is_infinite_hp_active():

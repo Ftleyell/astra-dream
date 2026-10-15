@@ -404,8 +404,8 @@ func add_biomass(amount: int) -> void:
 func add_exp(amount: float) -> void:
 	if economy_component: economy_component.add_exp(amount, stats, inventory)
 
-func take_damage(arg: Variant) -> void:
-	if damage_processor: damage_processor.process_incoming_damage(self, arg, shield_controller, stats, inventory)
+func take_damage(ctx: HitContext) -> void:
+	if damage_processor: damage_processor.process_incoming_damage(self, ctx, shield_controller, stats, inventory)
 
 func _handle_health_regen(delta: float) -> void:
 	if shield_controller: shield_controller.handle_health_regen(self, delta, stats, inventory)
@@ -414,7 +414,7 @@ func _update_conversion_core_stats() -> void:
 	if shield_controller: shield_controller.update_conversion_core_stats(self, stats, inventory)
 
 func _on_bullet_hit() -> void:
-	take_damage(10.0)
+	take_damage(HitContext.create_simple(10.0))
 
 func _on_bullet_grazed(_bullet_pos: Vector2) -> void:
 	add_exp(2.0)

@@ -107,7 +107,7 @@ func _fire_support_volley() -> void:
 
 	# Impacto en el jefe
 	if target_boss.has_method("take_damage"):
-		target_boss.take_damage(65.0)
+		target_boss.take_damage(HitContext.create_simple(65.0))
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):

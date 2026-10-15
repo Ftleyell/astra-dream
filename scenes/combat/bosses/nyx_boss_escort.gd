@@ -198,19 +198,12 @@ func _execute_attack() -> void:
 		_:
 			bullet_server.fire_aimed_spread(global_position, target_pos, 4, 25.0, 280.0, 1)
 
-func take_damage(arg: Variant) -> void:
-	if is_dying:
+func take_damage(ctx: HitContext) -> void:
+	if is_dying or not ctx:
 		return
 
-	var dmg: float = 0.0
-	var is_crit: bool = false
-	if arg is HitContext:
-		dmg = arg.final_damage
-		is_crit = arg.is_crit
-	elif arg is float or arg is int:
-		dmg = float(arg)
-	else:
-		return
+	var dmg: float = ctx.final_damage
+	var is_crit: bool = ctx.is_crit
 
 	current_health -= dmg
 	health_changed.emit(maxf(0.0, current_health), max_health)

@@ -251,19 +251,12 @@ func _fire_vortex_burst() -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 1.25)
 
-func take_damage(arg: Variant) -> void:
-	if is_dying:
+func take_damage(ctx: HitContext) -> void:
+	if is_dying or not ctx:
 		return
 
-	var dmg: float = 0.0
-	var is_crit: bool = false
-	if arg is HitContext:
-		dmg = arg.final_damage
-		is_crit = arg.is_crit
-	elif arg is float or arg is int:
-		dmg = float(arg)
-	else:
-		return
+	var dmg: float = ctx.final_damage
+	var is_crit: bool = ctx.is_crit
 
 	current_health -= dmg
 	health_changed.emit(maxf(0.0, current_health), max_health)

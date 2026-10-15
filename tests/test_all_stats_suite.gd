@@ -37,7 +37,7 @@ func _ready() -> void:
 
 	# Con armor actual mitigado:
 	var expected_mitigated: float = 50.0 * (100.0 / (100.0 + current_armor))
-	player.take_damage(50.0)
+	player.take_damage(HitContext.create_simple(50.0))
 	var dmg_taken: float = initial_hp - player.current_health
 	print("  -> Damage taken: ", dmg_taken, " (Expected: ", expected_mitigated, ")")
 	assert(is_equal_approx(dmg_taken, expected_mitigated), "Daño debe coincidir con mitigación de armadura inicial")
@@ -47,7 +47,7 @@ func _ready() -> void:
 	player.current_health = initial_hp
 	stats.add_modifier(&"armor", CharacterStats.StatModifier.new(&"test_armor_25", 25.0, false, self))
 	assert(stats.get_stat(&"armor") == 25.0, "Stat de armadura debe ser 25.0")
-	player.take_damage(50.0)
+	player.take_damage(HitContext.create_simple(50.0))
 	var expected_hp := initial_hp - 40.0
 	assert(is_equal_approx(player.current_health, expected_hp), "Con 25 armadura debe recibir 40.0 de daño (recibido: %s)" % (initial_hp - player.current_health))
 	print("  ✓ Con 25 de armadura: 50.0 mitigado a 40.0 (-20%%)")
@@ -56,7 +56,7 @@ func _ready() -> void:
 	player.current_health = initial_hp
 	stats.add_modifier(&"armor", CharacterStats.StatModifier.new(&"test_armor_75", 75.0, false, self))
 	assert(stats.get_stat(&"armor") == 100.0, "Stat de armadura debe ser 100.0")
-	player.take_damage(50.0)
+	player.take_damage(HitContext.create_simple(50.0))
 	assert(is_equal_approx(player.current_health, initial_hp - 25.0), "Con 100 armadura debe recibir 25.0 de daño (-50%%)")
 	print("  ✓ Con 100 de armadura: 50.0 mitigado a 25.0 (-50%%)")
 

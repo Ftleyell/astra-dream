@@ -200,7 +200,7 @@ func _test_conversion_cores_mechanics() -> int:
 	player.inventory.add_item(scrap_item, 1)
 	player.run_credits = 150
 	player.current_health = 10.0
-	player.take_damage(500.0) # Lethal damage
+	player.take_damage(HitContext.create_simple(500.0)) # Lethal damage
 	assert(not player.is_dead, "Player should be revived by Stellar Scrap")
 	assert(player.run_credits == 50, "Stellar Scrap should have consumed exactly 100 credits, got %d" % player.run_credits)
 	var expected_hp := player.stats.get_stat(&"max_health") * 0.3

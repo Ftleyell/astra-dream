@@ -80,7 +80,7 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 
 	# Probar daño en DOGFIGHT
 	var initial_hp: float = rival.current_health
-	rival.take_damage(100.0)
+	rival.take_damage(HitContext.create_simple(100.0))
 	assert(rival.current_health == initial_hp - 100.0, "take_damage debe reducir la salud")
 
 	# Probar absorción e inmunidad en PEACEFUL_WARN
@@ -90,7 +90,7 @@ func _test_2_rival_pilot_boss_mechanics() -> void:
 	rival_peace.start_encounter()
 	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN)
 	var hp_before: float = rival_peace.current_health
-	rival_peace.take_damage(200.0)
+	rival_peace.take_damage(HitContext.create_simple(200.0))
 	assert(rival_peace.current_health == hp_before, "La rival debe ser invulnerable durante PEACEFUL_WARN sin perder HP")
 	assert(rival_peace.current_state == RivalPilotBossScript.State.PEACEFUL_WARN, "Atacar a la rival en PEACEFUL_WARN no debe provocar combate")
 	rival_peace.queue_free()
@@ -170,7 +170,7 @@ func _test_5_boss_astra_prime_routes() -> void:
 	# Probar muerte y emisión de señal boss_defeated sin excepciones
 	var boss_defeated_signal := [false]
 	prime.boss_defeated.connect(func(_b_id): boss_defeated_signal[0] = true)
-	prime.take_damage(10000.0)
+	prime.take_damage(HitContext.create_simple(10000.0))
 	assert(prime.is_dying == true, "BossAstraPrime debe entrar en is_dying al ser abatido")
 	assert(boss_defeated_signal[0] == true, "BossAstraPrime debe emitir boss_defeated sin errores de BulletServer")
 
@@ -378,7 +378,7 @@ func _test_10_nyx_genocide_escort_and_dialogues() -> void:
 	assert(escort.pilot_name.contains("Valentina"), "Nombre debe incluir a Valentina")
 
 	# Probar daño recibido
-	escort.take_damage(200.0)
+	escort.take_damage(HitContext.create_simple(200.0))
 	assert(escort.current_health == 1400.0, "current_health debe reducirse a 1400")
 
 	escort.queue_free()

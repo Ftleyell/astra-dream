@@ -181,7 +181,7 @@ func test_navigator_controller_and_buff_applications() -> void:
 	controller._apply_navigator_buff()
 	test_assert(dummy_player.has_meta("caelia_shield_hook"), "El buff de Caelia debe activar el escudo gravitational")
 	var hp_before: float = dummy_player.current_health
-	dummy_player.take_damage(50.0) # Debe absorberse completamente sin restar vida
+	dummy_player.take_damage(HitContext.create_simple(50.0)) # Debe absorberse completamente sin restar vida
 	test_assert(dummy_player.current_health == hp_before, "El escudo de Caelia debe absorber 1 impacto completamente sin restar HP")
 	test_assert(not dummy_player.has_meta("caelia_shield_hook"), "Tras absorber el golpe, el escudo se consume")
 	controller._expire_buff()

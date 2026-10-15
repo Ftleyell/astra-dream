@@ -38,17 +38,11 @@ func _process(delta: float) -> void:
 		if player:
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 45.0, 220.0, 2)
 
-func take_damage(arg: Variant) -> void:
-	if not is_active:
+func take_damage(ctx: HitContext) -> void:
+	if not is_active or not ctx:
 		return
 
-	var dmg: float = 0.0
-	if arg is HitContext:
-		dmg = arg.final_damage
-	elif arg is float or arg is int:
-		dmg = float(arg)
-	else:
-		return
+	var dmg: float = ctx.final_damage
 
 	current_health -= dmg
 	# Hit-flash visual

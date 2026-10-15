@@ -44,29 +44,19 @@ func _process(delta: float) -> void:
 
 
 ## Mitigación de armadura plana por impacto
-func take_damage(arg: Variant) -> void:
-	if is_dying or not arg:
-		return
-
-	var final_ctx: HitContext = null
-	if arg is HitContext:
-		final_ctx = arg
-	elif arg is float or arg is int:
-		final_ctx = HitContext.new()
-		final_ctx.raw_damage = float(arg)
-		final_ctx.final_damage = float(arg)
-	else:
+func take_damage(ctx: HitContext) -> void:
+	if is_dying or not ctx:
 		return
 
 	# Reducción plana de daño (mínimo 1.0 de daño absorbido)
-	var original_final := final_ctx.final_damage
-	final_ctx.final_damage = maxf(1.0, original_final - flat_armor)
-	final_ctx.raw_damage = maxf(1.0, final_ctx.raw_damage - flat_armor)
+	var original_final: float = ctx.final_damage
+	ctx.final_damage = maxf(1.0, original_final - flat_armor)
+	ctx.raw_damage = maxf(1.0, ctx.raw_damage - flat_armor)
 
-	super.take_damage(final_ctx)
+	super.take_damage(ctx)
 
 	# Restaurar contexto para evitar efectos colaterales en objetos compartidos
-	final_ctx.final_damage = original_final
+	ctx.final_damage = original_final
 
 
 func _die() -> void:

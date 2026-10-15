@@ -50,7 +50,7 @@ func _ready() -> void:
 	# --- Test 2: Invulnerability prevents all damage ---
 	print("\n[2/4] Verificando invulnerabilidad del jugador durante cinemática...")
 	var initial_hp: float = player.current_health
-	player.take_damage(50.0)
+	player.take_damage(HitContext.create_simple(50.0))
 	assert(player.current_health == initial_hp, "Player must take 0 damage while is_invulnerable is true")
 	print("  ✓ T2: Jugador protegido contra todo daño durante la cinemática")
 

@@ -52,13 +52,13 @@ func _run_tests() -> void:
 	_assert(sec_c_0 != null and sec_m_0 != null, "Sectores 0 instanciados")
 
 	# 2. Romper Sector 0 desde afuera (Corteza 0 -> Manto 0)
-	sec_c_0.take_damage(200.0)
+	sec_c_0.take_damage(HitContext.create_simple(200.0))
 	var crust_mat := planet.crust_sprite.material as ShaderMaterial
 	var dmg_arr: Array = crust_mat.get_shader_parameter("sector_damage")
 	_assert(dmg_arr[0] >= 1.0, "Corteza 0 destruida y shader al 100%")
 	_assert(sec_c_0.is_dead, "Corteza 0 marcada como is_dead")
 
-	sec_m_0.take_damage(800.0)
+	sec_m_0.take_damage(HitContext.create_simple(800.0))
 	_assert(sec_m_0.is_dead, "Manto 0 destruido y colisión abierta hacia el núcleo")
 	_assert(planet.mantle_sprite.material == null, "Textura de fondo se mantiene intacta")
 
@@ -83,20 +83,20 @@ func _run_tests() -> void:
 
 	# Atacar Manto 4 desde el interior del planeta
 	var init_m4_hp: float = sec_m_4.health_component.current_health
-	sec_m_4.take_damage(60.0)
+	sec_m_4.take_damage(HitContext.create_simple(60.0))
 	_assert(sec_m_4.health_component.current_health < init_m4_hp, "Manto 4 recibe daño atacando desde el interior")
 
-	sec_m_4.take_damage(800.0)
+	sec_m_4.take_damage(HitContext.create_simple(800.0))
 	_assert(sec_m_4.is_dead, "Manto 4 destruido desde el interior")
 
 	# Atacar Corteza 4 desde el interior hacia afuera
 	var init_c4_hp: float = sec_c_4.health_component.current_health
-	sec_c_4.take_damage(50.0)
+	sec_c_4.take_damage(HitContext.create_simple(50.0))
 	_assert(sec_c_4.health_component.current_health < init_c4_hp, "Corteza 4 recibe daño atacando desde el interior")
 	dmg_arr = crust_mat.get_shader_parameter("sector_damage")
 	_assert(dmg_arr[4] > 0.0, "Corteza 4 refleja daño en shader atacando desde adentro", "dmg: %.2f" % dmg_arr[4])
 
-	sec_c_4.take_damage(200.0)
+	sec_c_4.take_damage(HitContext.create_simple(200.0))
 	_assert(sec_c_4.is_dead, "Corteza 4 destruida, abriendo el túnel completo al otro lado")
 	dmg_arr = crust_mat.get_shader_parameter("sector_damage")
 	_assert(dmg_arr[4] >= 1.0, "Corteza 4 shader al 100% (túnel de salida abierto)")

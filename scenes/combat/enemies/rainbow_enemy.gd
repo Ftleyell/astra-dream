@@ -114,8 +114,8 @@ func setup_transverse_flight(_center: Vector2, spawn_angle: float) -> void:
 	_current_flight_dir = (tangent_dir * 0.75 + radial_dir * 0.25).normalized()
 	rotation = _current_flight_dir.angle()
 
-func take_damage(ctx: Variant) -> void:
-	if is_dying or (get_tree() and get_tree().paused):
+func take_damage(ctx: HitContext) -> void:
+	if is_dying or not ctx or (get_tree() and get_tree().paused):
 		return
 	super.take_damage(ctx)
 	has_been_engaged = true

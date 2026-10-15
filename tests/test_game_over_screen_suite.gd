@@ -72,7 +72,7 @@ func _test_player_death_sequence() -> void:
 
 	# Probar que llamadas subsiguientes a take_damage no re-emiten
 	died_emitted[0] = false
-	player.take_damage(100.0)
+	player.take_damage(HitContext.create_simple(100.0))
 	assert(died_emitted[0] == false, "No debe volver a emitir player_died si ya está muerto")
 
 	main_game.is_exiting_run = true

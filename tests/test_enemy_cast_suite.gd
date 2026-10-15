@@ -96,10 +96,10 @@ func _ready() -> void:
 	# --- TEST 4: COMPORTAMIENTO DEL TANQUE (ABSORCIÓN Y DAÑO) ---
 	print("\n[4/5] Testing Tank Damage Absorption & Defeat Rewards...")
 	var initial_credits: int = player.run_credits
-	tank.take_damage(50.0)
+	tank.take_damage(HitContext.create_simple(50.0))
 	assert(tank.current_health == 130.0, "Tras 50 de daño el tanque debe tener 130 HP")
 	print("  ✓ Tanque absorbe 50.0 de daño y permanece en combate con 130.0 HP")
-	tank.take_damage(130.0)
+	tank.take_damage(HitContext.create_simple(130.0))
 	assert(tank.is_dying, "Tanque debe morir al llegar a 0 HP")
 	assert(player.run_credits == initial_credits + 8, "Derrotar al tanque debe otorgar +8 Créditos")
 	print("  ✓ Muerte del Tanque otorga +8 Créditos al jugador")

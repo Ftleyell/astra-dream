@@ -289,19 +289,12 @@ func _execute_signature_attack() -> void:
 		return
 	RivalCombatPatternExecutorScript.execute_signature_attack(bullet_server, pilot_id, global_position, player.global_position, rotation, Callable(self, "_play_sfx"))
 
-func take_damage(arg: Variant) -> void:
-	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN or current_state == State.PEACEFUL_WARN:
+func take_damage(ctx: HitContext) -> void:
+	if current_state == State.DYING or current_state == State.WARPING_OUT or current_state == State.WARPING_IN or current_state == State.PEACEFUL_WARN or not ctx:
 		return
 
-	var dmg: float = 0.0
-	var is_crit: bool = false
-	if arg is HitContext:
-		dmg = arg.final_damage
-		is_crit = arg.is_crit
-	elif arg is float or arg is int:
-		dmg = float(arg)
-	else:
-		return
+	var dmg: float = ctx.final_damage
+	var is_crit: bool = ctx.is_crit
 
 	current_health -= dmg
 	health_changed.emit(maxf(0.0, current_health), max_health)

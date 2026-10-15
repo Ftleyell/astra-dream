@@ -56,7 +56,7 @@ func test_oneshot_survival_and_linger() -> void:
 	test_assert(acc != null, "Enemy drone debe poseer DamageAccumulator")
 
 	# Oneshot fatal de 500 de daño
-	enemy.take_damage(500.0)
+	enemy.take_damage(HitContext.create_simple(500.0))
 	
 	test_assert(enemy.is_dying, "El enemigo debe estar muriendo tras oneshot")
 	test_assert(acc.is_dying_linger, "DamageAccumulator debe entrar en modo is_dying_linger")

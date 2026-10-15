@@ -16,6 +16,9 @@ var weapon_level: int = 1
 
 const MAX_DEPTH: int = 4
 
+static func create_simple(dmg: float) -> HitContext:
+	return create_direct_hit(dmg)
+
 static func create_direct_hit(dmg: float, crit: bool = false, proc_coeff: float = 1.0, p_bypass_osp: bool = false) -> HitContext:
 	var ctx := HitContext.new()
 	ctx.raw_damage = dmg
