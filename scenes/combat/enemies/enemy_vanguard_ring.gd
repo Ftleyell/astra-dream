@@ -24,15 +24,21 @@ func _init() -> void:
 	contact_radius = 32.0
 
 func _ready_custom() -> void:
-	_attack_timer = randf_range(2.0, 3.5)
-	_acquire_bullet_server()
 	_setup_telegraph()
 	_setup_visual()
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	_attack_timer = randf_range(2.0, 3.5)
+	_is_telegraphing = false
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()
+	_acquire_bullet_server()
 
 func _setup_visual() -> void:
-	var tex_path := "res://assets/sprites/enemies/enemy_tank.png"
+	var tex_path: String = "res://assets/sprites/enemies/enemy_tank.png"
 	if ResourceLoader.exists(tex_path) and is_instance_valid(sprite):
-		var tex := load(tex_path) as Texture2D
+		var tex: Texture2D = load(tex_path) as Texture2D
 		if tex:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.085, 0.085)
@@ -62,8 +68,8 @@ func _update_behavior(delta: float) -> void:
 	var dir_to_player: Vector2 = to_player.normalized() if to_player.length_squared() > 1.0 else Vector2.RIGHT
 
 	# Giro suave y avance frontal sin retroceso
-	var current_dir := Vector2.RIGHT.rotated(rotation)
-	var new_dir := current_dir.lerp(dir_to_player, delta * 2.5).normalized()
+	var current_dir: Vector2 = Vector2.RIGHT.rotated(rotation)
+	var new_dir: Vector2 = current_dir.lerp(dir_to_player, delta * 2.5).normalized()
 	rotation = new_dir.angle()
 
 	var current_spd: float = move_speed * (0.7 if _is_telegraphing else 1.0)
@@ -80,11 +86,13 @@ func _begin_ring_attack() -> void:
 	if is_instance_valid(_telegraph_indicator):
 		_telegraph_indicator.start_telegraph(TelegraphIndicator.TelegraphType.RING, telegraph_duration, Vector2.ZERO)
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(2.2, 2.2), telegraph_duration * 0.5)
 	tw.tween_property(self, "scale", Vector2(1.9, 1.9), telegraph_duration * 0.5)
 
 func _on_telegraph_completed() -> void:
+	if is_dying:
+		return
 	_is_telegraphing = false
 	_attack_timer = attack_interval + randf_range(-0.4, 0.5)
 	scale = Vector2(2.0, 2.0)
@@ -95,15 +103,20 @@ func _on_telegraph_completed() -> void:
 	# Emisión de anillo radial de 12 proyectiles
 	_bullet_server.fire_alien_ring_burst(global_position, 12, 175.0, rotation)
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("explosion", 0.9, -6.0)
 
 	# Sacudida reactiva cinematográfica leve
-	var cam := get_viewport().get_camera_2d()
+	var cam: Camera2D = get_viewport().get_camera_2d()
 	if cam and cam.has_method("add_trauma"):
 		cam.add_trauma(0.18)
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(2.3, 2.3), 0.08)
 	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
+
+func _on_die_extra() -> void:
+	_is_telegraphing = false
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()

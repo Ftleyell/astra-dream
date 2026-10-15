@@ -36,17 +36,17 @@ func update_hitbox_core_visibility(player: CharacterBody2D, hitbox_core: Node2D,
 
 
 func _check_hostile_threat(player: CharacterBody2D) -> bool:
-	var tree := player.get_tree()
+	var tree: SceneTree = player.get_tree()
 	if not tree:
 		return false
-	if not tree.get_nodes_in_group("bosses").is_empty() or not tree.get_nodes_in_group("rivals").is_empty():
+	if not tree.get_nodes_in_group("bosses").is_empty() or not tree.get_nodes_in_group("rival_pilots").is_empty():
 		return true
-	var chargers := tree.get_nodes_in_group("chargers")
-	for c in chargers:
+	var chargers: Array[Node] = tree.get_nodes_in_group("chargers")
+	for c: Node in chargers:
 		if is_instance_valid(c) and c.get("is_preparing_charge") == true:
 			return true
-	var enemies := tree.get_nodes_in_group("enemies")
-	for e in enemies:
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	for e: Node in enemies:
 		if is_instance_valid(e) and e is Node2D and (e as Node2D).global_position.distance_squared_to(player.global_position) < 14400.0:
 			return true
 	return false

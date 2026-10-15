@@ -17,24 +17,31 @@ func _init() -> void:
 	contact_radius = 14.0
 
 func _ready_custom() -> void:
+	var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
+	var core_glow: CanvasItem = get_node_or_null("CoreGlow") as CanvasItem
+	var existing_spr: Sprite2D = get_node_or_null("FlockSprite") as Sprite2D
+	if existing_spr == null:
+		var tex_path: String = "res://assets/sprites/enemies/enemy_micro_flock.png"
+		if ResourceLoader.exists(tex_path):
+			var tex: Texture2D = load(tex_path) as Texture2D
+			if tex:
+				var spr: Sprite2D = Sprite2D.new()
+				spr.name = "FlockSprite"
+				spr.texture = tex
+				spr.scale = Vector2(0.035, 0.035)
+				add_child(spr)
+				move_child(spr, 0)
+				sprite = spr
+				if visual:
+					visual.visible = false
+				if core_glow:
+					core_glow.visible = false
+	else:
+		sprite = existing_spr
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
 	flock_seed = randf() * 100.0
-	var visual: Node = get_node_or_null("Visual")
-	var core_glow: Node = get_node_or_null("CoreGlow")
-	var tex_path := "res://assets/sprites/enemies/enemy_micro_flock.png"
-	if ResourceLoader.exists(tex_path):
-		var tex := load(tex_path) as Texture2D
-		if tex:
-			var spr := Sprite2D.new()
-			spr.name = "FlockSprite"
-			spr.texture = tex
-			spr.scale = Vector2(0.035, 0.035)
-			add_child(spr)
-			move_child(spr, 0)
-			sprite = spr
-			if visual:
-				visual.visible = false
-			if core_glow:
-				core_glow.visible = false
 
 func _update_behavior(_delta: float) -> void:
 	var to_player := (player.global_position - global_position)

@@ -20,12 +20,17 @@ func _init() -> void:
 	contact_radius = 22.0
 
 func _ready_custom() -> void:
-	var tex_path := "res://assets/sprites/enemies/enemy_kamikaze.png"
+	var tex_path: String = "res://assets/sprites/enemies/enemy_kamikaze.png"
 	if ResourceLoader.exists(tex_path):
-		var tex := load(tex_path) as Texture2D
+		var tex: Texture2D = load(tex_path) as Texture2D
 		if tex and sprite:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.05, 0.05)
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	is_diving = false
+	dive_dir = Vector2.ZERO
 
 func _update_behavior(delta: float) -> void:
 	var dist_to_player := global_position.distance_to(player.global_position)

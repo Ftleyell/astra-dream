@@ -51,8 +51,12 @@ func _ready() -> void:
 func _ready_custom() -> void:
 	pass
 
+func _reset_pool_state() -> void:
+	pass
+
 func reset_from_pool(pos: Vector2) -> void:
 	global_position = pos
+	velocity = Vector2.ZERO
 	current_health = max_health
 	is_dying = false
 	contact_cooldown = 0.0
@@ -60,19 +64,21 @@ func reset_from_pool(pos: Vector2) -> void:
 	scale = Vector2(2.0, 2.0)
 	modulate = Color.WHITE
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if is_instance_valid(sprite):
+		sprite.visible = true
 	if collision_shape:
 		collision_shape.set_deferred("disabled", false)
 	if not is_in_group("enemies"):
 		add_to_group("enemies")
 	if "is_diving" in self:
 		set("is_diving", false)
-	_ready_custom()
+	_reset_pool_state()
 
 func _apply_silhouette_outline() -> void:
 	if not is_instance_valid(sprite):
-		for child in get_children():
+		for child: Node in get_children():
 			if child is Sprite2D:
-				sprite = child
+				sprite = child as Sprite2D
 				break
 	if not is_instance_valid(sprite):
 		return
@@ -101,8 +107,8 @@ func _physics_process(delta: float) -> void:
 	_handle_player_contact()
 
 ## Método virtual para lógica de movimiento y ataque específica de cada arquetipo
-func _update_behavior(delta: float) -> void:
-	var dir := (player.global_position - global_position).normalized()
+func _update_behavior(_delta: float) -> void:
+	var dir: Vector2 = (player.global_position - global_position).normalized()
 	velocity = dir * move_speed
 	rotation = dir.angle()
 	move_and_slide()
@@ -117,17 +123,17 @@ func _on_contact_with_player() -> void:
 	if player.has_method("take_damage"):
 		player.take_damage(contact_damage)
 
-func take_damage(arg) -> void:
+func take_damage(ctx: Variant) -> void:
 	if is_dying or (get_tree() and get_tree().paused):
 		return
 
 	var dmg: float = 0.0
 	var is_crit: bool = false
-	if arg is HitContext:
-		dmg = arg.final_damage
-		is_crit = arg.is_crit
-	elif arg is float or arg is int:
-		dmg = float(arg)
+	if ctx is HitContext:
+		dmg = ctx.final_damage
+		is_crit = ctx.is_crit
+	elif ctx is float or ctx is int:
+		dmg = float(ctx)
 
 	current_health -= dmg
 
@@ -136,7 +142,7 @@ func take_damage(arg) -> void:
 
 	# Hit flash blanco
 	modulate = Color(3.0, 3.0, 3.0, 1.0)
-	var tween := create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 
 	if current_health <= 0.0:

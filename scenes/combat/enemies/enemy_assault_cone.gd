@@ -33,16 +33,28 @@ func _init() -> void:
 	contact_radius = 28.0
 
 func _ready_custom() -> void:
-	add_to_group("chargers")
-	_attack_timer = randf_range(1.5, 2.5)
-	_acquire_bullet_server()
 	_setup_telegraph()
 	_setup_visual()
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	if not is_in_group("chargers"):
+		add_to_group("chargers")
+	_attack_timer = randf_range(1.5, 2.5)
+	is_preparing_charge = false
+	_is_telegraphing = false
+	_is_charging = false
+	_charge_dir = Vector2.ZERO
+	_charge_distance_covered = 0.0
+	_v_danmaku_timer = 0.0
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()
+	_acquire_bullet_server()
 
 func _setup_visual() -> void:
-	var tex_path := "res://assets/sprites/enemies/enemy_shooter.png"
+	var tex_path: String = "res://assets/sprites/enemies/enemy_shooter.png"
 	if ResourceLoader.exists(tex_path) and is_instance_valid(sprite):
-		var tex := load(tex_path) as Texture2D
+		var tex: Texture2D = load(tex_path) as Texture2D
 		if tex:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.075, 0.075)
@@ -122,6 +134,8 @@ func _begin_charge_attack(dir_to_player: Vector2) -> void:
 	tw.tween_property(self, "scale", Vector2(2.35, 1.65), telegraph_duration * 0.55)
 
 func _on_telegraph_completed() -> void:
+	if is_dying:
+		return
 	_is_telegraphing = false
 	is_preparing_charge = false
 	_is_charging = true
@@ -129,7 +143,7 @@ func _on_telegraph_completed() -> void:
 	_v_danmaku_timer = 0.0
 	scale = Vector2(2.4, 1.7)
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("dash", 0.9, 2.0)
 
@@ -152,6 +166,13 @@ func _end_charge() -> void:
 	if is_instance_valid(_telegraph_indicator):
 		_telegraph_indicator.dismiss()
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(1.85, 2.15), 0.12)
 	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.15)
+
+func _on_die_extra() -> void:
+	_is_telegraphing = false
+	_is_charging = false
+	is_preparing_charge = false
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()

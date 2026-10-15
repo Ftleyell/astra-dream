@@ -158,7 +158,7 @@ func _on_health_depleted() -> void:
 	queue_free()
 
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dead or is_dying or not arg:
 		return
 

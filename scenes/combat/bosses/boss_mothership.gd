@@ -181,7 +181,7 @@ func _process_phase_2(delta: float) -> void:
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 7, 48.0, 240.0, 2)
 			_play_boss_sfx("missile", 1.2)
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying or is_invulnerable:
 		return
 

@@ -38,7 +38,7 @@ func _process(delta: float) -> void:
 		if player:
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 45.0, 220.0, 2)
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if not is_active:
 		return
 

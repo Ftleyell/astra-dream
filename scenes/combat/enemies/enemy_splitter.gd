@@ -35,32 +35,50 @@ func _apply_stats() -> void:
 		contact_radius = 26.0
 
 func _ready_custom() -> void:
-	_apply_stats()
-	current_health = max_health
-	var visual: Node = get_node_or_null("Visual")
-	var cell_core: Node = get_node_or_null("CellCore")
-	var tex_path := "res://assets/sprites/enemies/enemy_splitter.png"
-	if ResourceLoader.exists(tex_path):
-		var tex := load(tex_path) as Texture2D
-		if tex:
-			var spr := Sprite2D.new()
-			spr.name = "SplitterSprite"
-			spr.texture = tex
-			spr.scale = Vector2(0.06, 0.06)
-			add_child(spr)
-			move_child(spr, 0)
-			sprite = spr
-			if visual:
-				visual.visible = false
-			if cell_core:
-				cell_core.visible = false
-	if is_micro_clone:
-		scale = Vector2(1.3, 1.3)
+	var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
+	var cell_core: CanvasItem = get_node_or_null("CellCore") as CanvasItem
+	var existing_spr: Sprite2D = get_node_or_null("SplitterSprite") as Sprite2D
+	if existing_spr == null:
+		var tex_path: String = "res://assets/sprites/enemies/enemy_splitter.png"
+		if ResourceLoader.exists(tex_path):
+			var tex: Texture2D = load(tex_path) as Texture2D
+			if tex:
+				var spr: Sprite2D = Sprite2D.new()
+				spr.name = "SplitterSprite"
+				spr.texture = tex
+				spr.scale = Vector2(0.06, 0.06)
+				add_child(spr)
+				move_child(spr, 0)
+				sprite = spr
+				if visual:
+					visual.visible = false
+				if cell_core:
+					cell_core.visible = false
+	else:
+		sprite = existing_spr
+	if tether_line == null:
 		tether_line = Line2D.new()
+		tether_line.name = "TetherLine"
 		tether_line.width = 2.0
 		tether_line.default_color = Color(0.2, 1.0, 0.5, 0.7)
 		tether_line.top_level = true
+		tether_line.visible = false
 		add_child(tether_line)
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	_apply_stats()
+	current_health = max_health
+	is_recombining = false
+	fusion_countdown = 5.0
+	if is_micro_clone:
+		scale = Vector2(1.3, 1.3)
+	else:
+		twin_half = null
+		scale = Vector2(2.0, 2.0)
+	if is_instance_valid(tether_line):
+		tether_line.clear_points()
+		tether_line.visible = is_micro_clone and is_instance_valid(twin_half)
 
 func _update_behavior(delta: float) -> void:
 	if is_micro_clone and is_instance_valid(twin_half) and not twin_half.is_dying:

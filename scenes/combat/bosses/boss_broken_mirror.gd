@@ -231,7 +231,7 @@ func _transition_to_phase_2() -> void:
 
 	_play_sfx("missile", 1.4)
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying or is_invulnerable:
 		return
 

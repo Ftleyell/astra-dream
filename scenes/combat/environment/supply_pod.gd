@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 
 
 ## Mitigación de armadura plana por impacto
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying or not arg:
 		return
 

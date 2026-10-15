@@ -5,7 +5,7 @@ extends Node
 ## Puede desactivarse completamente para builds de producción cambiando FORCE_DISABLE_DEBUG a true.
 
 const FORCE_DISABLE_DEBUG: bool = false
-const FORCE_ENABLE_DEBUG: bool = true
+const FORCE_ENABLE_DEBUG: bool = false
 
 static func is_debug_enabled() -> bool:
 	if FORCE_DISABLE_DEBUG:

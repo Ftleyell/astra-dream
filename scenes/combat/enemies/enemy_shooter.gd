@@ -24,14 +24,19 @@ func _init() -> void:
 	contact_radius = 24.0
 
 func _ready_custom() -> void:
-	shoot_timer = randf_range(1.5, shoot_interval)
-	_acquire_bullet_server()
-	var tex_path := "res://assets/sprites/enemies/enemy_shooter.png"
+	var tex_path: String = "res://assets/sprites/enemies/enemy_shooter.png"
 	if ResourceLoader.exists(tex_path):
-		var tex := load(tex_path) as Texture2D
+		var tex: Texture2D = load(tex_path) as Texture2D
 		if tex and sprite:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.065, 0.065)
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	shoot_timer = randf_range(1.5, shoot_interval)
+	is_charging_shot = false
+	charge_timer = 0.0
+	_acquire_bullet_server()
 
 func _acquire_bullet_server() -> void:
 	if not is_instance_valid(bullet_server):

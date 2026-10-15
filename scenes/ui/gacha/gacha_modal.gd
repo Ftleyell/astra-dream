@@ -137,7 +137,8 @@ func open_gacha_modal() -> void:
 	_refresh_banner_info()
 	_switch_tab(0)
 	show()
-	get_tree().paused = true
+	if not PauseArbitrator.is_reason_active(&"gacha_modal"):
+		PauseArbitrator.acquire_pause(&"gacha_modal")
 
 
 func _refresh_currency() -> void:
@@ -266,5 +267,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_close_pressed() -> void:
 	hide()
-	get_tree().paused = false
+	PauseArbitrator.release_pause(&"gacha_modal")
 	modal_closed.emit()
+
+
+func _exit_tree() -> void:
+	if PauseArbitrator.is_reason_active(&"gacha_modal"):
+		PauseArbitrator.release_pause(&"gacha_modal")

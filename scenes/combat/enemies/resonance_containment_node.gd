@@ -103,7 +103,7 @@ func _update_pulsing(_delta: float) -> void:
 		var vs := 1.0 + 0.15 * sin(Time.get_ticks_msec() * 0.01)
 		visual_core.scale = Vector2(vs, vs)
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying:
 		return
 

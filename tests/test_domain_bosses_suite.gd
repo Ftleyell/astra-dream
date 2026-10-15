@@ -64,12 +64,12 @@ func _ready() -> void:
 
 	assert(hermit.is_in_group("enemies"), "Hermit must be in 'enemies' group")
 	assert(hermit.is_in_group("bosses"), "Hermit must be in 'bosses' group")
-	assert(hermit.get("max_health") == 1600.0, "Hermit max_health must be 1600")
+	assert(hermit.get("max_health") == 2600.0, "Hermit max_health must be 2600")
 	assert(hermit.get("current_phase") == 1, "Hermit starts in phase 1")
 
 	var hit1 := HitContext.new()
-	hit1.raw_damage = 850.0
-	hit1.final_damage = 850.0
+	hit1.raw_damage = 1350.0
+	hit1.final_damage = 1350.0
 	hermit.take_damage(hit1)
 	assert(hermit.get("current_phase") == 2, "Hermit must transition to Phase 2 below 50% HP")
 	hermit.queue_free()
@@ -95,8 +95,8 @@ func _ready() -> void:
 	ash.queue_free()
 	print("  ✓ Reloj de Cenizas (Dominio del Arrepentimiento) validated in Phase 1 & 2")
 
-	# 5. Test Broken Mirror & Overflow Vortex (Wave 6 & 8)
-	print("\n[5/5] Testing Boss 3 & 4: Espejo Quebrado y Vórtice del Desborde...")
+	# 5. Test Broken Mirror & Overflow Vortex (Wave 6 & 8) + Enemy Pooling Recycle
+	print("\n[5/5] Testing Boss 3 & 4 + Enemy Pooling Recycle...")
 	var mirror_scene: PackedScene = load("res://scenes/combat/bosses/boss_broken_mirror.tscn")
 	assert(mirror_scene != null, "boss_broken_mirror.tscn must exist")
 	var mirror := mirror_scene.instantiate() as CharacterBody2D
@@ -125,8 +125,25 @@ func _ready() -> void:
 	assert(vortex.get("current_phase") == 2, "Vortex must transition to Phase 2")
 	vortex.queue_free()
 
+	var pooled_enemies: Array[EnemyBase] = [
+		EnemySplitter.new(),
+		RainbowEnemy.new(),
+		EnemyShooter.new(),
+		EnemyAssaultCone.new(),
+		EnemyVanguardRing.new(),
+		EnemySpecterWave.new()
+	]
+	for enemy: EnemyBase in pooled_enemies:
+		add_child(enemy)
+		var initial_children: int = enemy.get_child_count()
+		enemy.reset_from_pool(Vector2(100.0, 200.0))
+		enemy.reset_from_pool(Vector2(300.0, 400.0))
+		assert(enemy.get_child_count() == initial_children, "Pool recycle must not duplicate child nodes on %s" % enemy.get_class())
+		enemy.queue_free()
+
 	print("  ✓ Espejo Quebrado (Dominio de la Disociación) validated")
 	print("  ✓ Vórtice del Desborde (Dominio del Agobio) validated")
+	print("  ✓ Enemy pooling recycle validated (zero child node duplication)")
 
 	bullet_server.queue_free()
 

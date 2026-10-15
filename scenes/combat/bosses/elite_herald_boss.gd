@@ -251,7 +251,7 @@ func _fire_vortex_burst() -> void:
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 1.25)
 
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying:
 		return
 

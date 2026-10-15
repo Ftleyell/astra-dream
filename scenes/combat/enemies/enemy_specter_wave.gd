@@ -25,15 +25,22 @@ func _init() -> void:
 	contact_radius = 24.0
 
 func _ready_custom() -> void:
-	_attack_timer = randf_range(1.5, 2.8)
-	_acquire_bullet_server()
 	_setup_telegraph()
 	_setup_visual()
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	_attack_timer = randf_range(1.5, 2.8)
+	_is_telegraphing = false
+	_orbit_timer = 0.0
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()
+	_acquire_bullet_server()
 
 func _setup_visual() -> void:
-	var tex_path := "res://assets/sprites/enemies/enemy_splitter.png"
+	var tex_path: String = "res://assets/sprites/enemies/enemy_splitter.png"
 	if ResourceLoader.exists(tex_path) and is_instance_valid(sprite):
-		var tex := load(tex_path) as Texture2D
+		var tex: Texture2D = load(tex_path) as Texture2D
 		if tex:
 			sprite.texture = tex
 			sprite.scale = Vector2(0.065, 0.065)
@@ -83,11 +90,13 @@ func _begin_wave_attack(dir_to_player: Vector2) -> void:
 	if is_instance_valid(_telegraph_indicator):
 		_telegraph_indicator.start_telegraph(TelegraphIndicator.TelegraphType.WAVE, telegraph_duration, dir_to_player)
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(1.8, 2.2), telegraph_duration * 0.5)
 	tw.tween_property(self, "scale", Vector2(2.1, 1.9), telegraph_duration * 0.5)
 
 func _on_telegraph_completed() -> void:
+	if is_dying:
+		return
 	_is_telegraphing = false
 	_attack_timer = attack_interval + randf_range(-0.3, 0.4)
 	scale = Vector2(2.0, 2.0)
@@ -98,10 +107,15 @@ func _on_telegraph_completed() -> void:
 	# Disparo de 2 pares entrelazados (4 balas en total formando crestas y valles)
 	_bullet_server.fire_alien_wave_lane(global_position, player.global_position, 2, 210.0, 65.0, 5.0)
 
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("laser", 0.75, -1.0)
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(2.2, 1.8), 0.07)
 	tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.12)
+
+func _on_die_extra() -> void:
+	_is_telegraphing = false
+	if is_instance_valid(_telegraph_indicator):
+		_telegraph_indicator.dismiss()

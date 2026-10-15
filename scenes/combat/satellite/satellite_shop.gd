@@ -332,10 +332,12 @@ func _open_shop_weapon_swap(w_data: WeaponData, cost: int, buy_btn: Button) -> v
 			call_deferred("_refresh_stats_display")
 			_clear_stat_highlights()
 			_focus_next_available_buy_button()
-			get_tree().paused = true
+			if not PauseArbitrator.is_reason_active(&"satellite_shop"):
+				PauseArbitrator.acquire_pause(&"satellite_shop")
 			swap_modal.queue_free(),
 		func(_discarded_w: WeaponData) -> void:
-			get_tree().paused = true
+			if not PauseArbitrator.is_reason_active(&"satellite_shop"):
+				PauseArbitrator.acquire_pause(&"satellite_shop")
 			if is_instance_valid(buy_btn):
 				buy_btn.grab_focus()
 			else:

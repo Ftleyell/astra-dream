@@ -19,39 +19,72 @@ var has_been_engaged: bool = false
 
 @onready var engine_particles: CPUParticles2D = get_node_or_null("EngineParticles")
 
+static var _cached_spark_texture: ImageTexture = null
+
+static func _get_spark_texture() -> ImageTexture:
+	if _cached_spark_texture == null:
+		var img: Image = Image.create(6, 6, false, Image.FORMAT_RGBA8)
+		img.fill(Color(1.0, 0.85, 0.2, 0.9))
+		_cached_spark_texture = ImageTexture.create_from_image(img)
+	return _cached_spark_texture
+
 func _ready_custom() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemy_id = &"enemy_rainbow"
 	max_health = 350.0
-	current_health = max_health
 	move_speed = 240.0
 	contact_damage = 0.0
 	credits_reward = 250
 	exp_reward = 100.0
 
-	add_to_group("elites")
-	add_to_group("anomalies")
-	add_to_group("rainbow_enemies")
-
 	# El Goblin Arcoíris no debe colisionar físicamente con ningún otro enemigo ni obstáculo
 	collision_mask = 0
 
+	_setup_overhead_hud()
+	_reset_pool_state()
+
+func _reset_pool_state() -> void:
+	current_health = max_health
+	escape_timer = 45.0
+	panic_timer = 0.0
+	_current_flight_dir = Vector2.RIGHT
+	is_escaping = false
+	_flight_wobble_time = 0.0
+	time_since_last_hit = 999.0
+	has_been_engaged = false
+
+	if not is_in_group("elites"):
+		add_to_group("elites")
+	if not is_in_group("anomalies"):
+		add_to_group("anomalies")
+	if not is_in_group("rainbow_enemies"):
+		add_to_group("rainbow_enemies")
+
+	if is_instance_valid(sprite):
+		sprite.visible = true
+	if is_instance_valid(engine_particles):
+		engine_particles.emitting = true
+	if is_instance_valid(hp_bar):
+		hp_bar.max_value = max_health
+		hp_bar.value = current_health
+
 	_acquire_player()
 	if _current_flight_dir == Vector2.RIGHT and is_instance_valid(player):
-		var to_self := (global_position - player.global_position).normalized()
-		var tangent := Vector2(-to_self.y, to_self.x)
+		var to_self: Vector2 = (global_position - player.global_position).normalized()
+		var tangent: Vector2 = Vector2(-to_self.y, to_self.x)
 		_current_flight_dir = (tangent * 0.75 + to_self * 0.25).normalized()
 
 	rotation = _current_flight_dir.angle()
 
-	_setup_overhead_hud()
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click", 0.0, 1.7)
 
 func _setup_overhead_hud() -> void:
+	if is_instance_valid(hp_bar):
+		return
 	hp_bar = ProgressBar.new()
+	hp_bar.name = "OverheadHPBar"
 	hp_bar.min_value = 0.0
 	hp_bar.max_value = max_health
 	hp_bar.value = current_health
@@ -72,19 +105,19 @@ func _setup_overhead_hud() -> void:
 
 	add_child(hp_bar)
 
-func setup_transverse_flight(center: Vector2, spawn_angle: float) -> void:
+func setup_transverse_flight(_center: Vector2, spawn_angle: float) -> void:
 	# Trayectoria transversal en arco a través del campo visual del jugador
-	var radial_dir := Vector2.from_angle(spawn_angle)
-	var sign_tangent := 1.0 if randf() > 0.5 else -1.0
-	var tangent_dir := Vector2(-radial_dir.y * sign_tangent, radial_dir.x * sign_tangent)
+	var radial_dir: Vector2 = Vector2.from_angle(spawn_angle)
+	var sign_tangent: float = 1.0 if randf() > 0.5 else -1.0
+	var tangent_dir: Vector2 = Vector2(-radial_dir.y * sign_tangent, radial_dir.x * sign_tangent)
 	# 75% tangencial (cruzando pantalla), 25% radial leve hacia afuera
 	_current_flight_dir = (tangent_dir * 0.75 + radial_dir * 0.25).normalized()
 	rotation = _current_flight_dir.angle()
 
-func take_damage(arg) -> void:
+func take_damage(ctx: Variant) -> void:
 	if is_dying or (get_tree() and get_tree().paused):
 		return
-	super.take_damage(arg)
+	super.take_damage(ctx)
 	has_been_engaged = true
 	time_since_last_hit = 0.0
 	# Si recibe daño, nunca escapa; el jugador tiene asegurada la cacería
@@ -111,7 +144,7 @@ func _update_behavior(delta: float) -> void:
 			escape_timer -= delta
 
 		# No escapar mientras el jugador esté activamente persiguiéndolo en pantalla
-		var dist_to_p := global_position.distance_to(player.global_position) if is_instance_valid(player) else 9999.0
+		var dist_to_p: float = global_position.distance_to(player.global_position) if is_instance_valid(player) else 9999.0
 		if escape_timer <= 0.0 and dist_to_p > 1200.0:
 			_warp_escape()
 			return
@@ -120,24 +153,24 @@ func _update_behavior(delta: float) -> void:
 
 	# Maniobras de evasión: si el jugador está muy cerca, huir prioritariamente
 	if is_instance_valid(player):
-		var dist := global_position.distance_to(player.global_position)
+		var dist: float = global_position.distance_to(player.global_position)
 		if dist < 230.0:
-			var flee_dir := (global_position - player.global_position).normalized()
+			var flee_dir: Vector2 = (global_position - player.global_position).normalized()
 			_current_flight_dir = _current_flight_dir.lerp(flee_dir, delta * 3.5).normalized()
 		else:
 			# Curvatura suave y oscilación de vuelo evasivo
-			var wobble := sin(_flight_wobble_time * 2.8) * 0.25
-			var swayed_dir := _current_flight_dir.rotated(wobble * delta * 1.5).normalized()
+			var wobble: float = sin(_flight_wobble_time * 2.8) * 0.25
+			var swayed_dir: Vector2 = _current_flight_dir.rotated(wobble * delta * 1.5).normalized()
 			_current_flight_dir = _current_flight_dir.lerp(swayed_dir, delta * 2.0).normalized()
 
 	if panic_timer > 0.0:
 		panic_timer -= delta
 
-	var cur_speed := move_speed + (PANIC_BOOST if panic_timer > 0.0 else 0.0)
+	var cur_speed: float = move_speed + (PANIC_BOOST if panic_timer > 0.0 else 0.0)
 	velocity = _current_flight_dir * cur_speed
 
 	# Orientación suave y precisa del morro de la criatura en dirección al vector de vuelo
-	var target_rot := _current_flight_dir.angle()
+	var target_rot: float = _current_flight_dir.angle()
 	rotation = rotate_toward(rotation, target_rot, delta * 12.0)
 	move_and_slide()
 
@@ -145,19 +178,18 @@ func _spawn_panic_sparks() -> void:
 	var p: Node = get_parent() if is_inside_tree() else null
 	if not p:
 		return
-	for i in range(3):
+	var spark_tex: ImageTexture = _get_spark_texture()
+	for i: int in range(3):
 		var spark := Node2D.new()
 		spark.global_position = global_position + Vector2(randf_range(-12, 12), randf_range(-12, 12))
 		p.add_child(spark)
 
 		var spr := Sprite2D.new()
-		var img := Image.create(6, 6, false, Image.FORMAT_RGBA8)
-		img.fill(Color(1.0, 0.85, 0.2, 0.9))
-		spr.texture = ImageTexture.create_from_image(img)
+		spr.texture = spark_tex
 		spark.add_child(spr)
 
 		var move_offset := Vector2(randf_range(-30, 30), randf_range(-30, 30))
-		var tw := spark.create_tween()
+		var tw: Tween = spark.create_tween()
 		tw.set_parallel(true)
 		tw.tween_property(spark, "position", spark.position + move_offset, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		tw.tween_property(spark, "modulate:a", 0.0, 0.35)
@@ -170,7 +202,7 @@ func _warp_escape() -> void:
 	if engine_particles:
 		engine_particles.emitting = false
 
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector2(0.01, 2.8), 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.parallel().tween_property(self, "modulate:a", 0.0, 0.25)
 	tw.tween_callback(queue_free)
@@ -183,7 +215,7 @@ func _on_die_extra() -> void:
 		engine_particles.emitting = false
 
 	# 2. Sacudida de impacto/destrucción en cámara
-	var cam := get_viewport().get_camera_2d()
+	var cam: Camera2D = get_viewport().get_camera_2d()
 	if cam and cam.has_method("add_trauma"):
 		cam.add_trauma(0.40)
 
@@ -194,7 +226,7 @@ func _on_die_extra() -> void:
 	# 3. Explosión sci-fi completa de nave con restos de casco y shockwaves
 	var explosion_scene: PackedScene = preload("res://scenes/combat/player/player_explosion_vfx.tscn")
 	if explosion_scene and p_parent:
-		var vfx = explosion_scene.instantiate()
+		var vfx: Node = explosion_scene.instantiate()
 		p_parent.add_child(vfx)
 		if vfx.has_method("setup"):
 			vfx.setup(global_position, Color(1.0, 0.85, 0.25, 1.0))
@@ -208,11 +240,11 @@ func _on_die_extra() -> void:
 	if is_instance_valid(player) and player.has_method("add_exp"):
 		var exp_needed: float = maxf(1.0, player.exp_to_next - player.current_exp)
 		var p_target: Player = player
-		var tw := player.create_tween()
+		var tw: Tween = player.create_tween()
 		if tw:
 			tw.set_pause_mode(Tween.TWEEN_PAUSE_STOP)
 			tw.tween_interval(0.45)
-			tw.tween_callback(func():
+			tw.tween_callback(func() -> void:
 				if is_instance_valid(p_target):
 					p_target.add_exp(exp_needed)
 			)
@@ -220,28 +252,28 @@ func _on_die_extra() -> void:
 			player.add_exp(exp_needed)
 
 	# 6. Audio cinematográfico de detonación de reactor botín
-	var audio_mgr := get_node_or_null("/root/AudioManager")
+	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("explosion", 0.85)
 		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
 
 func _spawn_jackpot_fountain(p_node: Node) -> void:
-	for i in range(12):
+	var spark_tex: ImageTexture = _get_spark_texture()
+	for i: int in range(12):
 		var drop := Node2D.new()
 		drop.global_position = global_position
 		p_node.add_child(drop)
 
 		var spr := Sprite2D.new()
-		var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
-		img.fill(Color(1.0, 0.88, 0.2, 1.0))
-		spr.texture = ImageTexture.create_from_image(img)
+		spr.texture = spark_tex
+		spr.scale = Vector2(1.33, 1.33)
 		drop.add_child(spr)
 
-		var angle := randf() * TAU
-		var dist := randf_range(40.0, 110.0)
-		var target_pos := global_position + Vector2(cos(angle), sin(angle)) * dist
+		var angle: float = randf() * TAU
+		var dist: float = randf_range(40.0, 110.0)
+		var target_pos: Vector2 = global_position + Vector2(cos(angle), sin(angle)) * dist
 
-		var tw := drop.create_tween()
+		var tw: Tween = drop.create_tween()
 		tw.set_parallel(true)
 		tw.tween_property(drop, "position", target_pos, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tw.tween_property(drop, "scale", Vector2(0.2, 0.2), 0.55)

@@ -76,7 +76,7 @@ func _physics_process(delta: float) -> void:
 
 
 ## Contrato canónico de combate de Astra Dream
-func take_damage(arg) -> void:
+func take_damage(arg: Variant) -> void:
 	if is_dying or not arg:
 		return
 
