@@ -222,7 +222,7 @@ func _find_best_target_for_navigator() -> Node2D:
 
 	match t_type:
 		&"planet":
-			candidate = _find_nearest_in_groups([&"planet_segment", &"planets", &"bio_cocoon", &"bio_cocoons", &"biomass_orbs"])
+			candidate = _find_nearest_in_groups([&"planet_sectors", &"planets", &"bio_cocoon", &"bio_cocoons", &"biomass_orbs"])
 		&"pact":
 			candidate = _find_nearest_in_groups([&"arcana_orb", &"arcana_orbs", &"astra_pacts", &"pact"])
 			if not is_instance_valid(candidate):

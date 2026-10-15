@@ -13,24 +13,24 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 
 | Dominio | Archivo Principal / Orquestador | Componentes Clave |
 |---|---|---|
-| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `run_state_serializer.gd` |
-| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd` |
-| **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
+| **Combate Raíz** | `scenes/combat/main_game.gd` | `scenes/combat/systems/combat_scene_assembler.gd`, `scenes/combat/systems/combat_context.gd`, `scenes/combat/directors/combat_wave_pipeline.gd`, `scenes/combat/systems/run_state_serializer.gd` |
+| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `tome_controller.gd` |
+| **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `scenes/combat/weapons/weapon_projectile_factory.gd`, `scenes/combat/weapons/behaviors/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
-| **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
-| **Bifurcaciones de Run (Forks)** | `scenes/combat/directors/combat_fork_director.gd` | `run_modifier_manager.gd`, `run_fork_overlay.gd`, `fork_choice_card.gd`, `core/data/run_forks/` |
+| **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd`, `combat_wave_pipeline.gd` |
+| **Bifurcaciones de Run (Forks)** | `scenes/combat/directors/combat_fork_director.gd` | `scenes/combat/systems/run_modifier_manager.gd`, `scenes/combat/ui/run_fork_overlay.gd`, `scenes/combat/ui/fork_choice_card.gd`, `core/data/run_forks/`, `resources/run_forks/` |
 | **Encuentro Rival** | `scenes/combat/bosses/rival_pilot_boss.gd` | `rival_engagement_behavior.gd`, `rival_flight_motor.gd` |
 | **Entorno y Fondo Espacial** | `scenes/combat/environment/space_environment_host.gd` | `base_space_environment.gd`, `cosmos_combat_environment.gd`, `cosmos/` (`CosmosHostController`, `CosmosRootNode`, `OrbitalWorldFollower2D`) |
-| **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd`, `slot_machine_beacon.gd`, `transmutation_station.gd` |
-| **HUD de Combate & Radares** | `scenes/ui/hud/hud.gd` | `hud_health_shield_display.gd`, `hud_satellite_radar_controller.gd`, `hud_edge_tracker_manager.gd`, `hud_dragon_radar_display.gd`, `dragon_radar_blip.gd` |
-| **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas, Banlist |
+| **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `scenes/combat/satellite/satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd`, `slot_machine_beacon.gd`, `transmutation_station.gd` |
+| **HUD de Combate & Radares** | `scenes/ui/hud/hud.gd` | `components/hud_health_shield_display.gd`, `hud_satellite_radar_controller.gd`, `hud_edge_tracker_manager.gd`, `hud_dragon_radar_display.gd`, `dragon_radar_blip.gd`, `combat_stats_dock.gd`, `hud_weapon_cooldown_bar.gd` |
+| **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | `scenes/ui/level_up_modal.gd`, `scenes/combat/satellite/satellite_shop.gd`, `scenes/ui/arcana/arcana_selection_modal.gd`, `scenes/ui/modals/transmutation_modal.gd`, `scenes/ui/modals/chest_reward_modal.gd` |
 | **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
 | **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
-| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
-| **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `arsenal_banlist_modal.gd` |
-| **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
-| **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd` |
-| **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
+| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `components/hub_camera_controller_3d.gd`, `components/hub_input_dispatcher.gd`, `components/pedestal_visual_presenter.gd` |
+| **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `components/character_roster_grid_builder.gd`, `components/character_select_tab_controller.gd`, `arsenal_banlist_modal.gd` |
+| **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `components/gacha_modal_layout_builder.gd`, `components/gacha_banner_engine.gd` |
+| **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `scenes/ui/cosmetics/cosmetic_carousel_modal.gd`, `scenes/ui/cosmetics/cosmetic_carousel_layout_builder.gd` |
+| **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/profile_economy_data.gd`, `schemas/profile_roster_data.gd`, `schemas/profile_settings_data.gd`, `profile_storage.gd`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
 ---

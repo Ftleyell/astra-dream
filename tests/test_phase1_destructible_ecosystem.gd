@@ -240,29 +240,17 @@ func _test_tier3_shattered_signal_and_shrapnel_burst() -> void:
 			s.queue_free()
 	dummy_enemy.queue_free()
 
-	# 4. Verificar PlanetSegment señal shattered y registro de obstáculo
-	var seg_scene = load("res://scenes/combat/environment/planet_segment.tscn") as PackedScene
-	var segment = seg_scene.instantiate()
-	root.add_child(segment)
-	segment.setup_segment(30.0, 60.0, 0.0, 1.0, Color.GREEN, Color.WHITE, 120.0, 1, 1)
+	# 4. Verificar PlanetSector setup_sector y obstacle_radius
+	var sec_scene: PackedScene = load("res://scenes/combat/environment/planet_sector.tscn") as PackedScene
+	var sector: PlanetSector = sec_scene.instantiate() as PlanetSector
+	root.add_child(sector)
+	sector.setup_sector(0, 0, 120.0, 300.0, 0.0, 0.785398, 200.0)
 
-	var seg_shattered := { "emitted": false, "tier": -1 }
-	segment.shattered.connect(func(pos: Vector2, t: int):
-		seg_shattered["emitted"] = true
-		seg_shattered["tier"] = t
-	)
-
-	if segment.obstacle_radius > 0.0:
-		_pass("PlanetSegment obstacle_radius calculado", "Radio: %.1f px" % segment.obstacle_radius)
+	if sector.obstacle_radius > 0.0:
+		_pass("PlanetSector obstacle_radius calculado", "Radio: %.1f px" % sector.obstacle_radius)
 	else:
-		_fail("PlanetSegment obstacle_radius", "Radio inválido")
-
-	segment._die()
-
-	if seg_shattered["emitted"] and seg_shattered["tier"] == 2:
-		_pass("PlanetSegment señal shattered(pos, tier)", "Emitida con Tier 2 (Manto Medio)")
-	else:
-		_fail("PlanetSegment señal shattered", "No se emitió o tier incorrecto: %d" % seg_shattered["tier"])
+		_fail("PlanetSector obstacle_radius", "Radio inválido")
+	sector.queue_free()
 
 
 # --- TIER 4: MONOLITO ARCANO-TECNOLÓGICO ---

@@ -77,7 +77,6 @@ var crisis_event_manager_scene: PackedScene = preload("res://scenes/combat/event
 var crisis_alert_banner_scene: PackedScene = preload("res://scenes/ui/hud/crisis_alert_banner.tscn")
 var active_pet: CompanionPet = null
 var active_navigator_controller = null
-var encounter_director: EncounterDirector = null
 
 const WAVE_DURATION: float = 30.0
 const MAX_SATELLITES_PER_WAVE: int = 1

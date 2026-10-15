@@ -1,14 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://dbx8m30w8l72"]
+[gd_scene format=3 uid="uid://dbx8m30w8l72"]
 
-[ext_resource type="Script" path="res://scenes/ui/title_screen/title_screen.gd" id="1_title"]
+[ext_resource type="Script" uid="uid://dtlmq8gky3kgv" path="res://scenes/ui/title_screen/title_screen.gd" id="1_title"]
 [ext_resource type="PackedScene" uid="uid://cdeploybg001" path="res://scenes/ui/character_select/deployment_space_background.tscn" id="2_bg"]
 [ext_resource type="PackedScene" path="res://scenes/ui/title_screen/patch_notes_panel.tscn" id="3_patchpanel"]
-
 [ext_resource type="Texture2D" uid="uid://cbbx6plpdbona" path="res://assets/ui/astra_dream_logo.png" id="4_logo"]
-[ext_resource type="Script" path="res://scenes/ui/title_screen/logo_impact_controller.gd" id="5_controller"]
+[ext_resource type="Script" uid="uid://df5fmdc17x0mk" path="res://scenes/ui/title_screen/logo_impact_controller.gd" id="5_controller"]
 [ext_resource type="Resource" path="res://scenes/ui/title_screen/default_title_impact_config.tres" id="6_impact_cfg"]
 
-[node name="TitleScreen" type="Control"]
+[node name="TitleScreen" type="Control" unique_id=60561396]
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -18,9 +17,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="DeploymentSpaceBackground" parent="." instance=ExtResource("2_bg")]
+[node name="DeploymentSpaceBackground" parent="." unique_id=1477668147 instance=ExtResource("2_bg")]
+layout_mode = 1
 
-[node name="MainHBox" type="HBoxContainer" parent="."]
+[node name="MainHBox" type="HBoxContainer" parent="." unique_id=181445203]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,18 +34,18 @@ grow_vertical = 2
 theme_override_constants/separation = 60
 alignment = 1
 
-[node name="LeftVBox" type="VBoxContainer" parent="MainHBox"]
+[node name="LeftVBox" type="VBoxContainer" parent="MainHBox" unique_id=1364824664]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 28
 alignment = 1
 
-[node name="LogoContainer" type="Control" parent="MainHBox/LeftVBox"]
+[node name="LogoContainer" type="Control" parent="MainHBox/LeftVBox" unique_id=668322247]
 custom_minimum_size = Vector2(840, 420)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="GhostContainer" type="Control" parent="MainHBox/LeftVBox/LogoContainer"]
+[node name="GhostContainer" type="Control" parent="MainHBox/LeftVBox/LogoContainer" unique_id=1778160982]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -54,7 +54,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VFXAnchor" type="Control" parent="MainHBox/LeftVBox/LogoContainer"]
+[node name="VFXAnchor" type="Control" parent="MainHBox/LeftVBox/LogoContainer" unique_id=1181053085]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -63,7 +63,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox/LogoContainer/VFXAnchor"]
+[node name="LogoTexture" type="TextureRect" parent="MainHBox/LeftVBox/LogoContainer/VFXAnchor" unique_id=1951322082]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -74,39 +74,39 @@ texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TitleLabel" type="Label" parent="MainHBox/LeftVBox"]
+[node name="TitleLabel" type="Label" parent="MainHBox/LeftVBox" unique_id=1501602223]
 visible = false
 layout_mode = 2
 text = "ASTRA : DREAM"
 
-[node name="Spacer" type="Control" parent="MainHBox/LeftVBox"]
+[node name="Spacer" type="Control" parent="MainHBox/LeftVBox" unique_id=1994655965]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="PromptLabel" type="Label" parent="MainHBox/LeftVBox"]
+[node name="PromptLabel" type="Label" parent="MainHBox/LeftVBox" unique_id=669602750]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "[ TOCA CUALQUIER TECLA PARA CONTINUAR ]"
 horizontal_alignment = 1
 
-[node name="Spacer2" type="Control" parent="MainHBox/LeftVBox"]
+[node name="Spacer2" type="Control" parent="MainHBox/LeftVBox" unique_id=1939211486]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="VersionLabel" type="Label" parent="MainHBox/LeftVBox"]
+[node name="VersionLabel" type="Label" parent="MainHBox/LeftVBox" unique_id=1324278370]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.5, 0.65, 0.7)
 theme_override_font_sizes/font_size = 14
 text = "Alpha 0.1"
 horizontal_alignment = 1
 
-[node name="PatchNotesPanel" parent="MainHBox" instance=ExtResource("3_patchpanel")]
+[node name="PatchNotesPanel" parent="MainHBox" unique_id=1549028792 instance=ExtResource("3_patchpanel")]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="FadeRect" type="ColorRect" parent="."]
+[node name="FadeRect" type="ColorRect" parent="." unique_id=270372081]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -117,11 +117,6 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
-[node name="LogoImpactController" type="Node" parent="." node_paths=PackedStringArray("logo_target", "vfx_anchor", "ghost_container", "secondary_panel")]
+[node name="LogoImpactController" type="Node" parent="." unique_id=785260370]
 script = ExtResource("5_controller")
 config = ExtResource("6_impact_cfg")
-logo_target = NodePath("MainHBox/LeftVBox/LogoContainer/VFXAnchor/LogoTexture")
-vfx_anchor = NodePath("MainHBox/LeftVBox/LogoContainer/VFXAnchor")
-ghost_container = NodePath("MainHBox/LeftVBox/LogoContainer/GhostContainer")
-secondary_panel = NodePath("MainHBox/PatchNotesPanel")
-

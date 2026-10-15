@@ -40,14 +40,6 @@ static func assemble(game: MainGame, player: Player, hud: GameHUD) -> void:
 	_setup_dialogue_environment(game, hud)
 
 static func _setup_directors_and_controllers(game: MainGame, hud: GameHUD) -> void:
-	if not game.encounter_director:
-		var enc_dir: EncounterDirector = game.get_node_or_null("EncounterDirector") as EncounterDirector
-		if not enc_dir:
-			enc_dir = EncounterDirector.new()
-			enc_dir.name = "EncounterDirector"
-			game.add_child(enc_dir)
-		game.encounter_director = enc_dir
-
 	if not game.encounter_controller.is_inside_tree():
 		game.encounter_controller.name = "CombatEncounterController"
 		game.add_child(game.encounter_controller)

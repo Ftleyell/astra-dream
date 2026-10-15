@@ -14,20 +14,19 @@ func _ready() -> void:
 
 func _run_tests() -> void:
 	# 1. Escalado Adaptativo de Jefes con Curva de Potencia del Jugador
-	var director := BossRivalDirector.new()
+	var spawner := BossEncounterSpawner.new()
 	var timeline_cfg := EncounterTimelineConfig.new()
 	timeline_cfg.base_boss_hp_multiplier = 1.0
 	timeline_cfg.adaptive_dps_floor = 1.0
 	timeline_cfg.adaptive_dps_ceiling = 10.0
 	timeline_cfg.wave_scaling_hp_step = 0.10
-	director.initialize(timeline_cfg)
 
 	# Jugador base (stats por defecto)
-	var hp_base_pilot: float = director.calculate_adaptive_hp(2000.0, 1, 20.0, 1.0, 0.05, 1.5, 1.0)
+	var hp_base_pilot: float = spawner.calculate_adaptive_hp(2000.0, 1, 20.0, 1.0, 0.05, 1.5, 1.0, timeline_cfg)
 	assert_true(hp_base_pilot >= 2000.0, "La vida calculada debe ser >= base_hp en oleada 1")
 
 	# Jugador sobrepotenciado (high damage, high crit, +projectiles)
-	var hp_turbo_pilot: float = director.calculate_adaptive_hp(2000.0, 8, 60.0, 2.0, 0.50, 2.5, 4.0)
+	var hp_turbo_pilot: float = spawner.calculate_adaptive_hp(2000.0, 8, 60.0, 2.0, 0.50, 2.5, 4.0, timeline_cfg)
 	assert_true(hp_turbo_pilot > hp_base_pilot * 2.5, "La vida adaptativa contra un jugador turbo debe escalar significativamente (> 2.5x base)")
 	print("  ✓ [PASS] Test 1: Curva adaptativa de vida escala dinámicamente con poder del jugador (Base: %.0f HP, Turbo: %.0f HP)" % [hp_base_pilot, hp_turbo_pilot])
 
@@ -77,7 +76,6 @@ func _run_tests() -> void:
 	print("  ✓ [PASS] Test 7: Danmaku radial calibrado con proyectiles colosales (radio %.1f px)" % b_srv.radius[0])
 
 	b_srv.queue_free()
-	director.queue_free()
 
 	print("--- TEST PHASE 5 ALL TESTS PASSED SUCCESSFULLY ---")
 	call_deferred("_complete_suite")

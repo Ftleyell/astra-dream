@@ -36,7 +36,9 @@ astra_dream/
 ├── .agents/rules/           <- Reglas canónicas del proyecto (core, cosmos, gdscript, git, arquitectura)
 ├── assets/                  <- Arte 2D/3D procesado, audio, fuentes y shaders
 ├── core/                    <- Autoloads de infraestructura, modelos DTO y persistencia
+├── data/                    <- Recursos data-driven (.tres) y catálogos (weapons, items, characters, balance, tomes, arcanas)
 ├── docs/                    <- Documentación arquitectónica, planes y guías de desarrollo
+├── resources/               <- Recursos de eventos de bifurcación (run_forks/)
 ├── scenes/
 │   ├── combat/              <- Escena de combate, jugador, jefes, entorno y satélites
 │   └── ui/                  <- Hub 3D, selección de personaje, HUD, modales y gacha
@@ -73,11 +75,11 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Componente | Archivo Fuente | Rol |
 |---|---|---|
-| Ensamblador de Escena | `scenes/combat/combat_scene_assembler.gd` | Configura referencias de cámara, jugador, entorno y HUD en `_ready()`. |
-| Contexto de Combate | `scenes/combat/combat_context.gd` | Contenedor de estado compartido (jugador, cámara, puntuación, tiempo de oleada). |
-| Pipeline de Oleadas | `scenes/combat/combat_wave_pipeline.gd` | Control del avance temporal de oleadas y eventos programados. |
-| Spawner de Enemigos | `scenes/combat/spawners/enemy_spawner.gd` | Spawns procedurales según pesos y composición de `EncounterTimelineConfig`. |
-| Serializador de Estado | `scenes/combat/systems/run_state_serializer.gd` | Serializa y restaura `run_seed`, inventario, armas y estado de partida activa. |
+| Ensamblador de Escena | `scenes/combat/systems/combat_scene_assembler.gd` | Configura referencias de cámara, jugador, entorno y HUD en `_ready()`. |
+| Contexto de Combate | `scenes/combat/systems/combat_context.gd` | Contenedor de estado compartido (jugador, cámara, puntuación, tiempo de oleada). |
+| Pipeline de Oleadas | `scenes/combat/directors/combat_wave_pipeline.gd` | Control del avance temporal de oleadas y eventos programados. |
+| Spawner de Enemigos | `scenes/combat/enemies/enemy_spawner.gd` | Spawns procedurales según pesos y composición de `EncounterTimelineConfig`. |
+| Serializador de Estado | `scenes/combat/systems/run_state_serializer.gd` | Serializa y restaura `run_seed`, inventario, armas, tomos y estado de partida activa. |
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"`
 
@@ -90,11 +92,12 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Componente | Archivo Fuente | Responsabilidad |
 |---|---|---|
-| Locomoción | `scenes/combat/player/components/player_locomotion_controller.gd` | Inercia, aceleración, fricción y dash direccional. |
-| Procesador de Daño | `scenes/combat/player/components/player_damage_processor.gd` | Escudo, vida, inmunidad post-impacto y One-Shot Protection (OSP). |
-| Economía del Jugador | `scenes/combat/player/components/player_economy_component.gd` | Oro en partida, polvo estelar y conteo de llaves cuánticas. |
-| Secuencia de Muerte | `scenes/combat/player/components/player_death_sequence_controller.gd` | Hitstop, explosión visual, congelamiento de entrada y transición a Game Over. |
-| Inventario de Partida | `scenes/combat/player/components/player_inventory_component.gd` | Stacks de ítems pasivos adquiridos y cómputo de stats derivados. |
+| Locomoción | `scenes/combat/player/player_locomotion_controller.gd` | Inercia, aceleración, fricción y dash direccional. |
+| Procesador de Daño | `scenes/combat/player/player_damage_processor.gd` | Escudo, vida, inmunidad post-impacto y One-Shot Protection (OSP). |
+| Economía del Jugador | `scenes/combat/player/player_economy_component.gd` | Oro en partida, polvo estelar y conteo de llaves cuánticas. |
+| Secuencia de Muerte | `scenes/combat/player/player_death_sequence_controller.gd` | Hitstop, explosión visual, congelamiento de entrada y transición a Game Over. |
+| Controlador de Tomos | `scenes/combat/player/tome_controller.gd` | Gestión de tomos pasivos equipados y serialización en run. |
+| Inventario de Arcanas | `scenes/combat/player/player_arcana_inventory.gd` | Pactos arcanos activos y efectos de progresión (`player_progression_applier.gd`). |
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "proc_coefficients_and_osp"`
 
@@ -103,14 +106,14 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 ## 5. Dominio de Armamento y Proyectiles
 
 - **Orquestador:** `scenes/combat/player/weapon_controller.gd` (`class_name WeaponController`)
-- **Datos Data-Driven:** `res://resources/weapons/<weapon_name>.tres` (`WeaponData`)
+- **Datos Data-Driven:** `res://data/weapons/<weapon_name>.tres` (`WeaponData`, `data/weapons/weapon_catalog.gd`)
 
 | Componente | Archivo Fuente | Responsabilidad |
 |---|---|---|
-| Sistema de Puntería | `scenes/combat/player/systems/combat_targeting_system.gd` | Selección del objetivo óptimo (más cercano, más débil, boss prioritario). |
-| Cooldowns de Armas | `scenes/combat/player/systems/weapon_cooldown_tracker.gd` | Gestión de cadencia de tiro por slot de arma activa. |
-| Fábrica de Proyectiles | `scenes/combat/player/systems/weapon_projectile_factory.gd` | Despacho hacia proyectiles convencionales o inyección en `BulletServer`. |
-| Comportamientos de Armas | `scenes/combat/player/weapons/behaviors/` | Lógica específica de disparo por tipo (láser continuo, ráfagas, misiles teledirigidos). |
+| Sistema de Puntería | `scenes/combat/player/combat_targeting_system.gd` | Selección del objetivo óptimo (más cercano, más débil, boss prioritario). |
+| Cooldowns de Armas | `scenes/combat/player/weapon_cooldown_tracker.gd` | Gestión de cadencia de tiro por slot de arma activa. |
+| Fábrica de Proyectiles | `scenes/combat/weapons/weapon_projectile_factory.gd` | Despacho hacia proyectiles convencionales o inyección en `BulletServer`. |
+| Comportamientos de Armas | `scenes/combat/weapons/behaviors/` | Lógica específica de disparo por tipo (láser continuo, ráfagas, misiles teledirigidos). |
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "weapons"`
 
@@ -206,10 +209,11 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Componente | Archivo Fuente | Responsabilidad |
 |---|---|---|
-| Dock de Estadísticas | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` | Visualización de stats en vivo (DPS, velocidad, crítico, armor). |
+| Dock de Estadísticas | `scenes/ui/hud/components/hud_combat_stats_dock_controller.gd` (`combat_stats_dock.gd`) | Visualización de stats en vivo (DPS, velocidad, crítico, armor) con actualización in-place. |
+| Barra de Cooldowns de Armas | `scenes/ui/hud/components/hud_weapon_cooldown_bar.gd` | Tarjetas de armas activas con barrido de enfriamiento cacheado. |
 | Radar Satelital Clásico | `scenes/ui/hud/components/hud_satellite_radar_controller.gd` | Indicadores perimétricos para satélites fuera de pantalla. |
 | Manager de Bordes | `scenes/ui/hud/components/hud_edge_tracker_manager.gd` | Flechas de borde para jefes (`BossEdgeIndicator`) y cofres (`ChestEdgeIndicator`). |
-| Radar Esférico (Dragon Radar) | `scenes/ui/hud/components/hud_dragon_radar_display.gd` | Miniradar circular con shader CRT (`dragon_radar_screen.gdshader`) y blips direccionales (`dragon_radar_blip.gd`). |
+| Radar Esférico (Dragon Radar) | `scenes/ui/hud/components/hud_dragon_radar_display.gd` | Miniradar circular con shader CRT (`dragon_radar_screen.gdshader`), escaneo a 12 Hz y blips (`dragon_radar_blip.gd`). |
 | Teclas de Economía | `scenes/ui/hud/components/hud_economy_keybinds_controller.gd` | Atajos y recordatorios para compra rápida y consumibles. |
 
 - **Runners de Prueba:**
@@ -226,9 +230,11 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Modal | Archivo Fuente | Disparador |
 |---|---|---|
-| Modal de Level-Up | `scenes/ui/level_up/level_up_modal.gd` | Señal `level_up_occurred` de `Player`. |
-| Modal de Tienda | `scenes/ui/shop/shop_modal.gd` | Interacción en radio de baliza comercial. |
-| Modal de Arcanas | `scenes/ui/arcana/arcana_modal.gd` | Recogida de orbe arcano o cofre especial. |
+| Modal de Level-Up | `scenes/ui/level_up_modal.gd` | Señal `level_up_occurred` de `Player`. |
+| Tienda de Satélite | `scenes/combat/satellite/satellite_shop.gd` | Interacción en radio de baliza comercial. |
+| Modal de Arcanas | `scenes/ui/arcana/arcana_selection_modal.gd` | Recogida de orbe arcano o cofre especial. |
+| Modal de Transmutación | `scenes/ui/modals/transmutation_modal.gd` | Interacción con estación de transmutación cuántica. |
+| Modal de Recompensa de Cofre | `scenes/ui/modals/chest_reward_modal.gd` | Apertura de cofre espacial. |
 | Modal de Banlist | `scenes/ui/character_select/arsenal_banlist_modal.gd` | Bloqueo/desbloqueo de armas previo al combate. |
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "level_up_queue"` y `test_arsenal_banlist_modal`
@@ -244,8 +250,8 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | Cámara 3D del Hub | `scenes/ui/hub/components/hub_camera_controller_3d.gd` | Órbitas y transiciones cinematográficas entre pedestales y pantallas. |
 | Pedestales Visuales | `scenes/ui/hub/components/pedestal_visual_presenter.gd` | Renderizado 3D de naves, trajes de piloto y efectos holográficos. |
 | Selección de Piloto | `scenes/ui/character_select/character_select.gd` | Roster de personajes, stats de heroínas y selección de skins. |
-| Motor de Gacha | `scenes/ui/gacha/gacha_modal.gd` | Banners de reclutamiento, pity counters y animación de invocación (`gacha_banner_engine.gd`). |
-| Carrusel de Skins | `core/systems/cosmetics_manager.gd` | Gestión de cosméticos desbloqueados y trajes equipados. |
+| Motor de Gacha | `scenes/ui/gacha/gacha_modal.gd` | Banners de reclutamiento, pity counters y animación de invocación (`components/gacha_banner_engine.gd`). |
+| Carrusel de Skins | `core/systems/cosmetics_manager.gd` | Gestión de cosméticos desbloqueados y trajes equipados (`scenes/ui/cosmetics/cosmetic_carousel_modal.gd`). |
 
 - **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine_and_gacha"` y `test_title_and_hub_navigation`
 
@@ -259,11 +265,12 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 ```
 core/systems/persistence/
 ├── schemas/
-│   ├── meta_progression_schema.gd   <- Desbloqueos globales, talentos, roster y balance de cristales
-│   ├── active_run_schema.gd         <- Partida en curso (vida, armas, items, run_seed, piso/tiempo)
-│   └── settings_schema.gd           <- Preferencias de audio, gráficos y calidad de fondo
-├── meta_progression_state.gd        <- Estado en memoria de la metaprogresión
-└── active_run_storage.gd            <- Guardado y restauración atómica en user://
+│   ├── profile_economy_data.gd      <- Monedas meta, polvo estelar y contadores pity de gacha
+│   ├── profile_roster_data.gd       <- Desbloqueos de pilotos, armas, ítems, skins, mascotas, navegantes y banlist
+│   └── profile_settings_data.gd     <- Preferencias de perfil y estadísticas acumuladas
+├── profile_storage.gd               <- Almacenamiento de perfil en disco con caché DTO en memoria
+├── meta_progression_state.gd        <- Estado en memoria de metaprogresión y árboles de habilidades
+└── active_run_storage.gd            <- Guardado y restauración atómica de partida activa en user://
 ```
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"` (~7.6s)
@@ -280,7 +287,9 @@ Godot utiliza grupos de cadenas fuertemente tipadas (`StringName`) para queries 
 | `&"bullet_server"` | `BulletServer._ready()` | Detección del subsistema danmaku para desactivar floating origin en combate. |
 | `&"main_game"` | `MainGame._ready()` | Verificación de ejecución en modo combate real. |
 | `&"player"` | `Player._ready()` | Target prioritario de proyectiles, enemigos y pickup magnets. |
-| `&"enemies"` | `EnemyBase._ready()`, bosses | Receptores de daño obligatorio implementando `take_damage(ctx: HitContext)`. |
+| `&"enemies"` | `EnemyBase._ready()`, bosses | Receptores de daño obligatorio implementando `take_damage(ctx: Variant)`. |
+| `&"rival_pilots"` | `RivalPilotBoss._ready()` | Detección de pilotos rivales hostiles para bonificación de velocidad y combate. |
+| `&"planet_sectors"` | `PlanetSector._ready()` | Sectores destructibles de planetas para colisión sólida y guiado de navegantes. |
 | `&"emitters"` | Emisores de peligro | Objetos destructibles o generadores secundarios atacables. |
 
 ---
@@ -291,13 +300,17 @@ Todo balance numérico reside en estos directorios. **Prohibido hardcodear núme
 
 | Recurso / Dominio | Directorio Base | Clase GDScript Asociada |
 |---|---|---|
-| Armas | `resources/weapons/` | `WeaponData` (`WeaponLevelStats`) |
-| Personajes / Pilotos | `resources/characters/` | `CharacterData` |
-| Ítems Pasivos | `resources/items/` | `ItemData` (`ItemEffect`) |
-| Cronograma de Oleadas | `resources/waves/` | `EncounterTimelineConfig` (`WaveData`) |
-| Mascotas / Drones | `resources/pets/` | `PetData` |
-| Navegantes / Asistentes | `resources/navigators/` | `NavigatorData` |
-| Banners de Gacha | `resources/gacha/` | `GachaBannerData` |
+| Armas | `data/weapons/` | `WeaponData` (`data/weapons/weapon_catalog.gd`) |
+| Personajes / Pilotos | `data/characters/` | `CharacterData` |
+| Ítems Pasivos y de Satélite | `data/items/` | `ItemData` (`data/items/item_pool_manager.gd`) |
+| Cronograma de Encuentros | `data/balance/` | `EncounterTimelineConfig` (`data/balance/default_encounter_timeline.tres`) |
+| Arcanas / Pactos | `data/arcanas/` | `ArcanaData` |
+| Tomos Pasivos | `data/tomes/` | `TomeData` |
+| Mascotas / Drones | `data/pets/` | `PetData` |
+| Navegantes / Asistentes | `data/navigators/` | `NavigatorData` |
+| Cosméticos / Skins | `data/cosmetics/` | `SkinData` |
+| Árboles de Habilidades | `data/skill_trees/` | Datos de nodos de constelación por piloto |
+| Bifurcaciones de Run (Forks) | `resources/run_forks/` y `core/data/run_forks/` | `RunForkEventData`, `RunForkOptionData`, `RunModifierEffect` |
 | Configuración de Cosmos | `scenes/combat/environment/cosmos/resources/data/` | `CosmosEnvironmentConfig`, `CelestialSystemConfig`, `CosmicBiomeData`, etc. |
 
 ---
