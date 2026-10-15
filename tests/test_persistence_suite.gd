@@ -53,21 +53,28 @@ func _ready() -> void:
 		"run_biomass": 45,
 		"bomb_count": 4,
 		"equipped_weapons": [
-			{"id": "rail_launcher", "level": 2},
-			{"id": "solar_beam", "level": 1}
+			{"id": "rail_launcher", "level": 2, "upgrade_tier": 1, "tier_damage_multiplier": 1.35},
+			{"id": "tachyon_beam", "level": 3, "upgrade_tier": 2, "tier_damage_multiplier": 1.75}
 		],
 		"equipped_items": [
 			{"id": "botas", "count": 2},
-			{"id": "espada", "count": 1}
+			{"id": "espada", "count": 1},
+			{"id": "abyssal_contract", "count": 1}
 		],
-		"chosen_stat_cards": ["card_dmg_1", "card_speed_up"]
+		"equipped_tomes": [
+			{"id": "tome_move_speed", "level": 2}
+		],
+		"chosen_stat_cards": ["card_dmg_1", "card_speed_up"],
+		"_wave_encounter_checked_for_wave": 3,
+		"_wave_encounter_spawned_for_wave": 3,
+		"_slot_machine_pity_chance": 0.42
 	}
 
 	var save_err: Error = SaveManager.save_active_run(mock_run)
 	assert(save_err == OK, "SaveManager.save_active_run debe retornar OK")
 	assert(SaveManager.has_active_run() == true, "SaveManager.has_active_run debe retornar true tras guardar")
 
-	var loaded_run := SaveManager.load_active_run()
+	var loaded_run: Dictionary = SaveManager.load_active_run()
 	assert(loaded_run.get("current_wave") == 3, "Oleada cargada debe ser 3")
 	assert(loaded_run.get("run_credits") == 340, "Créditos cargados deben ser 340")
 	assert(loaded_run.get("bomb_count") == 4, "Bombas cargadas deben ser 4")
@@ -90,28 +97,41 @@ func _ready() -> void:
 	main_game.restore_run_state(loaded_run)
 
 	assert(main_game.current_wave == 3, "MainGame.current_wave debe ser 3 (actual: %d)" % main_game.current_wave)
+	assert(main_game.wave_pipeline.is_pre_round == false, "wave_pipeline.is_pre_round debe ser false tras restaurar run")
 	assert(main_game.satellites_collected_total == 4, "Satélites recolectados deben ser 4")
 	assert(main_game.player.current_level == 4, "Nivel de jugador debe ser 4")
 	assert(main_game.player.run_credits == 340, "Créditos de jugador deben ser 340")
 	assert(main_game.player.bomb_count == 4, "Bombas de jugador deben ser 4")
 	assert(is_equal_approx(main_game.player.current_health, 85.0), "Salud de jugador debe ser 85.0")
 
-	# Verificar inventario
+	# Verificar inventario (incluyendo ítem estratégico de tienda de satélites)
 	assert(main_game.player.inventory.get_item_count(&"botas") == 2, "Inventario debe tener 2 botas")
 	assert(main_game.player.inventory.get_item_count(&"espada") == 1, "Inventario debe tener 1 espada")
+	assert(main_game.player.inventory.get_item_count(&"abyssal_contract") == 1, "Inventario debe restaurar ítem de tienda satelital abyssal_contract")
+
+	# Verificar tomos restaurados
+	assert(main_game.player.tome_controller != null, "TomeController debe existir en el jugador")
+	assert(main_game.player.tome_controller.get_tome_level(&"tome_move_speed") == 2, "TomeController debe restaurar tome_move_speed a nivel 2")
+
+	# Verificar encounter_controller y loot_coordinator tipados
+	assert(main_game.encounter_controller.wave_encounter_checked_for_wave == 3, "encounter_controller.wave_encounter_checked_for_wave debe ser 3")
+	assert(main_game.encounter_controller.wave_encounter_spawned_for_wave == 3, "encounter_controller.wave_encounter_spawned_for_wave debe ser 3")
+	assert(is_equal_approx(main_game.loot_coordinator.pity_chance, 0.42), "loot_coordinator.pity_chance debe ser 0.42")
 
 	# Verificar cartas Brotato
 	assert(main_game.player.chosen_stat_cards.size() == 2, "Debe tener 2 cartas de mejoras registradas")
 
-	# Verificar armas en WeaponController
-	var w_ctrl := main_game.player.get_node_or_null("WeaponController") as WeaponController
+	# Verificar armas en WeaponController (incluyendo WeaponCatalog completo y upgrade_tier)
+	var w_ctrl: WeaponController = main_game.player.get_node_or_null("WeaponController") as WeaponController
 	assert(w_ctrl != null, "WeaponController debe existir en el jugador")
 	assert(w_ctrl.equipped_weapons.size() == 2, "WeaponController debe tener 2 armas equipadas")
-	var rail_inst := w_ctrl.get_weapon_instance(&"rail_launcher")
+	var rail_inst: WeaponInstanceData = w_ctrl.get_weapon_instance(&"rail_launcher")
 	assert(rail_inst != null and rail_inst.level == 2, "rail_launcher debe estar a nivel 2")
-	var solar_inst := w_ctrl.get_weapon_instance(&"solar_beam")
-	assert(solar_inst != null and solar_inst.level == 1, "solar_beam debe estar a nivel 1")
-	print("  ✓ Reconstrucción total de la run en MainGame verificada (Oleada, Nivel, HP, Inventario, Cartas y Armas)")
+	assert(rail_inst.upgrade_tier == 1 and is_equal_approx(rail_inst.tier_damage_multiplier, 1.35), "rail_launcher debe preservar upgrade_tier=1 y tier_damage_multiplier=1.35")
+	var beam_inst: WeaponInstanceData = w_ctrl.get_weapon_instance(&"tachyon_beam")
+	assert(beam_inst != null and beam_inst.level == 3, "tachyon_beam (WeaponCatalog) debe estar a nivel 3")
+	assert(beam_inst.upgrade_tier == 2 and is_equal_approx(beam_inst.tier_damage_multiplier, 1.75), "tachyon_beam debe preservar upgrade_tier=2 y tier_damage_multiplier=1.75")
+	print("  ✓ Reconstrucción total de la run en MainGame verificada (Oleada, Nivel, HP, Inventario, Tomos, Cartas y Armas)")
 
 	# --- TEST 4: PERMADEATH DELETION ---
 	print("\n[4/5] Testing Permadeath active_run.json Cleanup...")
@@ -122,7 +142,7 @@ func _ready() -> void:
 	# --- TEST 5: HIGHSCORES & RUN HISTORY (TOP 10) ---
 	print("\n[5/5] Testing Top 10 Highscores and Leaderboard Sorting...")
 	SaveManager.clear_highscores()
-	var rank1 := SaveManager.record_run_score({
+	var rank1: int = SaveManager.record_run_score({
 		"pilot_id": "nova",
 		"pilot_name": "Nova",
 		"wave_reached": 10,
@@ -134,7 +154,7 @@ func _ready() -> void:
 	})
 	assert(rank1 == 1, "El récord de oleada 10 debe ser el #1 en el ranking (obtenido: #%d)" % rank1)
 
-	var rank2 := SaveManager.record_run_score({
+	var rank2: int = SaveManager.record_run_score({
 		"pilot_id": "echo",
 		"pilot_name": "Echo",
 		"wave_reached": 8,
@@ -146,7 +166,7 @@ func _ready() -> void:
 	})
 	assert(rank2 == 2, "El récord de oleada 8 debe ser el #2 en el ranking (obtenido: #%d)" % rank2)
 
-	var highscores := SaveManager.get_top_highscores()
+	var highscores: Array[Dictionary] = SaveManager.get_top_highscores()
 	assert(highscores.size() <= 10, "La lista de highscores no debe superar los 10 registros")
 	assert(highscores[0].get("wave_reached") >= highscores[1].get("wave_reached"), "Los récords deben estar ordenados descendentemente por oleada")
 	# --- TEST 6: DTO SCHEMA RETROCOMPATIBILITY & MIGRATION (V1 -> V2) ---
@@ -157,6 +177,7 @@ func _ready() -> void:
 		"antimatter": 45,
 		"game_speed": 1.5,
 		"unlocked_characters": ["nova", "echo"],
+		"unlocked_items": ["botas", "telemetry_chip", "quantum_thruster", "expansion_lens"],
 		"character_banlists": {"nova": ["escudo"]},
 		"selected_character": "echo"
 	}
@@ -166,7 +187,16 @@ func _ready() -> void:
 	assert(sanitized.get("antimatter") == 45, "Antimateria legacy debe mantenerse en 45")
 	assert(is_equal_approx(float(sanitized.get("game_speed")), 1.5), "Velocidad de juego legacy debe mantenerse en 1.5")
 	assert(sanitized.get("selected_character") == &"echo", "Personaje seleccionado debe ser &echo")
+	var migrated_items: Array = sanitized.get("unlocked_items", [])
+	assert(migrated_items.has(&"chip_telemetria"), "telemetry_chip debe migrarse a chip_telemetria")
+	assert(migrated_items.has(&"propulsor"), "quantum_thruster debe migrarse a propulsor")
+	assert(migrated_items.has(&"lente_amplificadora"), "expansion_lens debe migrarse a lente_amplificadora")
 	
+	# Verificar alineación de ProfileRosterData.DEFAULT_ITEMS con ItemPoolManager.CANONICAL_ITEM_IDS
+	for canonical_id: StringName in ItemPoolManager.CANONICAL_ITEM_IDS:
+		assert(ProfileRosterData.DEFAULT_ITEMS.has(canonical_id), "DEFAULT_ITEMS debe contener el ID canónico %s" % canonical_id)
+	assert(ProfileStorage.is_item_unlocked(&"__nonexistent_locked_item__") == false, "is_item_unlocked debe retornar false para ítems no desbloqueados")
+
 	# Verificar inyección segura de defaults para campos inexistentes en V1
 	assert(sanitized.has("gacha_pity"), "Debe inyectar gacha_pity en saves legacy")
 	assert(sanitized["gacha_pity"].get("general") == 0, "Pity general por defecto debe ser 0")

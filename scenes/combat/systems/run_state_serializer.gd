@@ -5,7 +5,7 @@ extends RefCounted
 ## Guarda armas equipadas, niveles, inventario, progreso de oleadas y rivales en SaveManager.
 
 static func get_run_state(main_game: Node) -> Dictionary:
-	var player = main_game.get("player")
+	var player: Player = main_game.get("player") as Player
 	if not is_instance_valid(player) or player.current_health <= 0.0:
 		return {}
 
@@ -16,18 +16,20 @@ static func get_run_state(main_game: Node) -> Dictionary:
 	var weapons_data: Array[Dictionary] = []
 	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 	if w_ctrl:
-		for inst in w_ctrl.equipped_weapons:
+		for inst: WeaponInstanceData in w_ctrl.equipped_weapons:
 			if inst.weapon_data:
 				weapons_data.append({
 					"id": String(inst.weapon_data.weapon_id),
-					"level": inst.level
+					"level": inst.level,
+					"upgrade_tier": int(inst.upgrade_tier),
+					"tier_damage_multiplier": float(inst.tier_damage_multiplier)
 				})
 
 	# Ítems de inventario
 	var items_data: Array[Dictionary] = []
 	if player.inventory:
-		for it_entry in player.inventory.get_all_items():
-			var it_res: ItemData = it_entry.get("data")
+		for it_entry: Dictionary in player.inventory.get_all_items():
+			var it_res: ItemData = it_entry.get("data") as ItemData
 			if it_res:
 				items_data.append({
 					"id": String(it_res.item_id),
@@ -37,16 +39,24 @@ static func get_run_state(main_game: Node) -> Dictionary:
 
 	# Cartas de nivel (Brotato)
 	var cards_data: Array[String] = []
-	for card in player.chosen_stat_cards:
+	for card: StatCardData in player.chosen_stat_cards:
 		cards_data.append(String(card.card_id))
+
+	# Tomos de atributos equipados
+	var tomes_state: Dictionary = {}
+	if player.tome_controller and player.tome_controller.has_method("serialize"):
+		tomes_state = player.tome_controller.serialize()
 
 	# Modificadores activos de Run (Bifurcaciones)
 	var run_modifiers: Array[Dictionary] = []
-	var rmm: Node = main_game.get("run_modifier_manager")
+	var rmm: Node = main_game.get("run_modifier_manager") as Node
 	if not rmm and "combat_context" in main_game and main_game.combat_context:
 		rmm = main_game.combat_context.run_modifier_manager
 	if rmm and rmm.has_method("serialize_active_modifiers"):
 		run_modifiers = rmm.serialize_active_modifiers()
+
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
+	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator if "loot_coordinator" in main_game else null
 
 	return {
 		"version": 1,
@@ -73,14 +83,16 @@ static func get_run_state(main_game: Node) -> Dictionary:
 		"bomb_count": player.bomb_count,
 		"equipped_weapons": weapons_data,
 		"equipped_items": items_data,
+		"equipped_tomes": tomes_state.get("equipped_tomes", []),
+		"tome_controller": tomes_state,
 		"chosen_stat_cards": cards_data,
 		"run_modifiers": run_modifiers,
-		"rivals_spared": main_game.get("rivals_spared").duplicate() if main_game.get("rivals_spared") else [],
-		"rivals_killed": main_game.get("rivals_killed").duplicate() if main_game.get("rivals_killed") else [],
-		"rival_queue": main_game.get("rival_queue").duplicate() if main_game.get("rival_queue") else [],
-		"_wave_encounter_checked_for_wave": main_game.get("_wave_encounter_checked_for_wave"),
-		"_wave_encounter_spawned_for_wave": main_game.get("_wave_encounter_spawned_for_wave"),
-		"_slot_machine_pity_chance": float(main_game.get("_slot_machine_pity_chance")) if main_game.get("_slot_machine_pity_chance") != null else 0.25,
+		"rivals_spared": enc_ctrl.rivals_spared.duplicate() if enc_ctrl else [],
+		"rivals_killed": enc_ctrl.rivals_killed.duplicate() if enc_ctrl else [],
+		"rival_queue": enc_ctrl.rival_queue.duplicate() if enc_ctrl else [],
+		"_wave_encounter_checked_for_wave": enc_ctrl.wave_encounter_checked_for_wave if enc_ctrl else 0,
+		"_wave_encounter_spawned_for_wave": enc_ctrl.wave_encounter_spawned_for_wave if enc_ctrl else 0,
+		"_slot_machine_pity_chance": float(loot_coord.pity_chance) if loot_coord else 0.25,
 		"paid_chests_count": main_game.chest_director.paid_chests_count if ("chest_director" in main_game and main_game.chest_director) else 0,
 		"run_seed": int(main_game.get("run_seed")) if main_game.get("run_seed") != null else 0
 	}
@@ -94,6 +106,9 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	# 1. Variables de oleada y progresión global
 	if run_data.has("run_seed"):
 		main_game.set("run_seed", int(run_data["run_seed"]))
+	if "wave_pipeline" in main_game and main_game.wave_pipeline:
+		main_game.wave_pipeline.is_pre_round = false
+	main_game.set("is_pre_round", false)
 	main_game.set("current_wave", int(run_data.get("current_wave", 1)))
 	main_game.set("wave_timer", float(run_data.get("wave_timer", 30.0)))
 
@@ -104,38 +119,32 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	main_game.set("enemies_killed_count", int(run_data.get("enemies_killed_count", 0)))
 	main_game.set("bosses_defeated_count", int(run_data.get("bosses_defeated_count", 0)))
 	main_game.set("prologue_bonus_chosen", bool(run_data.get("prologue_bonus_chosen", true)))
-	main_game.set("_wave_encounter_checked_for_wave", int(run_data.get("_wave_encounter_checked_for_wave", main_game.get("current_wave"))))
-	main_game.set("_wave_encounter_spawned_for_wave", int(run_data.get("_wave_encounter_spawned_for_wave", main_game.get("current_wave"))))
-	var pity_val: Variant = run_data.get("_slot_machine_pity_chance")
-	main_game.set("_slot_machine_pity_chance", float(pity_val) if pity_val != null else 0.25)
-	main_game.set("_wave_encounter_pending", false)
-	if "chest_director" in main_game and main_game.chest_director:
-		if run_data.has("paid_chests_count"):
-			main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
-		var restored_wave: int = int(run_data.get("current_wave", 1))
-		var green_cards: int = 0
-		var p_node = main_game.get("player")
-		if p_node and "inventory" in p_node and p_node.inventory:
-			green_cards = p_node.inventory.get_item_count(&"credit_card_green")
-		main_game.chest_director.on_new_wave(restored_wave, green_cards)
 
-	if run_data.has("rivals_spared"):
-		var rivals_spared: Array = main_game.get("rivals_spared")
-		rivals_spared.clear()
-		for s in run_data["rivals_spared"]:
-			rivals_spared.append(StringName(s))
-	if run_data.has("rivals_killed"):
-		var rivals_killed: Array = main_game.get("rivals_killed")
-		rivals_killed.clear()
-		for k in run_data["rivals_killed"]:
-			rivals_killed.append(StringName(k))
-	if run_data.has("rival_queue"):
-		var rival_queue: Array = main_game.get("rival_queue")
-		rival_queue.clear()
-		for q in run_data["rival_queue"]:
-			rival_queue.append(StringName(q))
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
+	if enc_ctrl:
+		var def_wave: int = int(run_data.get("current_wave", 1))
+		enc_ctrl.wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", def_wave))
+		enc_ctrl.wave_encounter_spawned_for_wave = int(run_data.get("_wave_encounter_spawned_for_wave", def_wave))
+		enc_ctrl.wave_encounter_pending = false
+		if run_data.has("rivals_spared"):
+			enc_ctrl.rivals_spared.clear()
+			for s: Variant in run_data["rivals_spared"]:
+				enc_ctrl.rivals_spared.append(StringName(str(s)))
+		if run_data.has("rivals_killed"):
+			enc_ctrl.rivals_killed.clear()
+			for k: Variant in run_data["rivals_killed"]:
+				enc_ctrl.rivals_killed.append(StringName(str(k)))
+		if run_data.has("rival_queue"):
+			enc_ctrl.rival_queue.clear()
+			for q: Variant in run_data["rival_queue"]:
+				enc_ctrl.rival_queue.append(StringName(str(q)))
 
-	var player = main_game.get("player")
+	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator if "loot_coordinator" in main_game else null
+	if loot_coord:
+		var pity_val: Variant = run_data.get("_slot_machine_pity_chance")
+		loot_coord.pity_chance = float(pity_val) if pity_val != null else 0.25
+
+	var player: Player = main_game.get("player") as Player
 	if not is_instance_valid(player):
 		return
 
@@ -150,7 +159,7 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 
 	# 2. Restaurar arcanas activas
 	var saved_arcanas: Array = run_data.get("active_arcanas", [])
-	for arc_id in saved_arcanas:
+	for arc_id: Variant in saved_arcanas:
 		var arc: ArcanaData = ArcanaData.get_arcana(String(arc_id))
 		if arc:
 			player.apply_arcana(arc)
@@ -158,65 +167,78 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	# 3. Restaurar cartas de nivel elegidas (Brotato)
 	player.chosen_stat_cards.clear()
 	var saved_cards: Array = run_data.get("chosen_stat_cards", [])
-	var stat_deck = main_game.get("stat_deck_manager")
+	var stat_deck: StatDeckManager = main_game.get("stat_deck_manager") as StatDeckManager
 	if stat_deck and "all_stat_cards" in stat_deck:
 		var card_map: Dictionary = {}
-		for card in stat_deck.all_stat_cards:
+		for card: StatCardData in stat_deck.all_stat_cards:
 			card_map[String(card.card_id)] = card
-		for cid in saved_cards:
+		for cid: Variant in saved_cards:
 			var s_cid := String(cid)
 			if card_map.has(s_cid):
 				var card_res: StatCardData = card_map[s_cid]
 				player.chosen_stat_cards.append(card_res)
 				stat_deck.apply_card_to_stats(card_res, player.stats)
 
+	# 3b. Restaurar tomos de atributos equipados
+	if player.tome_controller and player.tome_controller.has_method("deserialize"):
+		if run_data.has("tome_controller") and run_data["tome_controller"] is Dictionary:
+			player.tome_controller.deserialize(run_data["tome_controller"] as Dictionary)
+		else:
+			player.tome_controller.deserialize(run_data)
+
 	# 4. Restaurar ítems adquiridos en inventario
 	if player.inventory:
 		player.inventory.clear_items()
 		var saved_items: Array = run_data.get("equipped_items", [])
 		var item_map: Dictionary = {}
-		for it in ItemPoolManager.create_canonical_stat_items():
+		for it: ItemData in ItemPoolManager.create_canonical_stat_items():
 			item_map[String(it.item_id)] = it
-		for it_entry in saved_items:
-			var i_id: String = String(it_entry.get("id", ""))
-			var i_count: int = int(it_entry.get("count", 1))
-			var i_origin: String = String(it_entry.get("origin", "DESCONOCIDO"))
+		for it: ItemData in ItemPoolManager.create_satellite_shop_items():
+			item_map[String(it.item_id)] = it
+		for it_entry: Variant in saved_items:
+			if not (it_entry is Dictionary):
+				continue
+			var it_dict: Dictionary = it_entry as Dictionary
+			var i_id: String = String(it_dict.get("id", ""))
+			var i_count: int = int(it_dict.get("count", 1))
+			var i_origin: String = String(it_dict.get("origin", "DESCONOCIDO"))
 			if item_map.has(i_id):
 				player.inventory.add_item(item_map[i_id], i_count, i_origin)
+
+	if "chest_director" in main_game and main_game.chest_director:
+		if run_data.has("paid_chests_count"):
+			main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
+		var restored_wave: int = int(run_data.get("current_wave", 1))
+		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if player.inventory else 0
+		main_game.chest_director.on_new_wave(restored_wave, green_cards)
 
 	# 5. Restaurar armas equipadas y sus niveles
 	var w_ctrl := player.get_node_or_null("WeaponController") as WeaponController
 	var saved_weapons: Array = run_data.get("equipped_weapons", [])
 	if w_ctrl and not saved_weapons.is_empty():
 		w_ctrl.clear_equipped_weapons()
-		var weapon_catalog: Dictionary = {
-			"rail_launcher": "res://data/weapons/roster/rail_launcher.tres",
-			"hive_cannon": "res://data/weapons/roster/hive_cannon.tres",
-			"singularity_pulsar": "res://data/weapons/roster/singularity_pulsar.tres",
-			"sniper_rifle": "res://data/weapons/roster/sniper_rifle.tres",
-			"tesla_arc": "res://data/weapons/roster/tesla_arc.tres",
-			"titan_shotgun": "res://data/weapons/roster/titan_shotgun.tres",
-			"cluster_submunition": "res://data/weapons/shop/cluster_submunition.tres",
-			"dimensional_blade": "res://data/weapons/shop/dimensional_blade.tres",
-			"nova_flak": "res://data/weapons/shop/nova_flak.tres",
-			"solar_beam": "res://data/weapons/shop/solar_beam.tres",
-		}
-		for w_entry in saved_weapons:
-			var w_id: String = str(w_entry.get("id", ""))
-			var w_lvl: int = int(w_entry.get("level", 1))
-			if weapon_catalog.has(w_id) and ResourceLoader.exists(weapon_catalog[w_id]):
-				var w_res = load(weapon_catalog[w_id]) as WeaponData
-				if w_res:
-					w_ctrl.add_weapon(w_res)
-					for _l in range(2, w_lvl + 1):
-						w_ctrl.upgrade_weapon(StringName(w_id))
+		for w_entry: Variant in saved_weapons:
+			if not (w_entry is Dictionary):
+				continue
+			var w_dict: Dictionary = w_entry as Dictionary
+			var w_id: String = str(w_dict.get("id", ""))
+			var w_lvl: int = maxi(1, int(w_dict.get("level", 1)))
+			var w_res: WeaponData = WeaponCatalog.get_weapon_by_id(StringName(w_id))
+			if w_res:
+				w_ctrl.add_weapon(w_res)
+				var inst: WeaponInstanceData = w_ctrl.get_weapon_instance(StringName(w_id))
+				if inst:
+					inst.level = w_lvl
+					inst.upgrade_tier = int(w_dict.get("upgrade_tier", Enums.Tier.TIER_2)) as Enums.Tier
+					inst.tier_damage_multiplier = float(w_dict.get("tier_damage_multiplier", 1.0))
+		w_ctrl.weapons_updated.emit(w_ctrl.equipped_weapons)
 
 	# 6. Restaurar salud
 	player.current_health = minf(float(run_data.get("player_health", 100.0)), player.stats.get_stat(&"max_health"))
 	main_game.set("_last_player_hp", player.current_health)
 
 	# 7. Actualizar todo el HUD
-	var hud = main_game.get("hud")
+	var hud: GameHUD = main_game.get("hud") as GameHUD
 	if hud:
 		hud.update_credits(player.run_credits)
 		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
@@ -226,9 +248,10 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 
 	# 8. Restaurar modificadores activos de Run (Bifurcaciones)
 	if run_data.has("run_modifiers"):
-		var rmm: Node = main_game.get("run_modifier_manager")
+		var rmm: Node = main_game.get("run_modifier_manager") as Node
 		if not rmm and "combat_context" in main_game and main_game.combat_context:
 			rmm = main_game.combat_context.run_modifier_manager
 		if rmm and rmm.has_method("restore_active_modifiers"):
 			rmm.restore_active_modifiers(run_data["run_modifiers"])
+
 

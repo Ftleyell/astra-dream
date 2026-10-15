@@ -6,24 +6,42 @@ extends RefCounted
 const DEFAULT_ITEMS: Array[StringName] = [
 	&"botas", &"espada", &"escudo", &"corazon", &"manzana",
 	&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj",
-	&"telemetry_chip", &"quantum_thruster", &"expansion_lens",
-	&"quantum_chronometer", &"quantum_coin", &"biomass_capsule",
-	&"cursed_relic", &"reactor_cristal", &"heavy_condenser",
-	&"tachyon_piercer", &"quantum_key", &"green_card", &"red_card",
-	&"fusion_reactor", &"dense_turbine", &"collimating_lens",
+	&"chip_telemetria", &"propulsor", &"lente_amplificadora",
+	&"reloj_cuantico", &"moneda_oro", &"capsula_biomasa",
+	&"reliquia_maldita", &"glass_reactor", &"heavy_condenser",
+	&"tachyon_piercer", &"quantum_key", &"credit_card_green", &"credit_card_red",
+	&"fusion_reactor", &"dense_turbine", &"collimator_lens",
 	&"split_salvo", &"rapid_injector", &"nanotitanium_plating",
-	&"afterburner", &"tachyon_prism",
-	&"tesla_coil", &"kinetic_armor", &"phase_thruster",
+	&"afterburn_thruster", &"tachyon_prism",
+	&"tesla_coil", &"kinetic_plating", &"phase_thruster",
 	&"retaliation_swarm", &"entropy_catalyst", &"phase_inverter",
-	&"pyroclastic_battery", &"cryogenic_capacitor",
+	&"pyroclastic_battery", &"cryo_condenser",
 	&"alchemical_converter", &"hemodynamic_cell", &"kinetic_converter",
 	&"gravitational_resonator", &"photonic_transducer", &"overdrain_module",
-	&"static_charge_battery", &"stellar_scrap",
+	&"static_cell", &"stellar_scrap",
 	&"abyssal_contract", &"antimatter_core", &"blood_capacitor",
 	&"entropy_engine", &"bifocal_lens", &"inertial_thruster",
 	&"chain_battery", &"photonic_prism", &"orbital_relay",
 	&"quantum_recompiler", &"heavy_salvager", &"chronos_bank"
 ]
+
+const LEGACY_ITEM_ID_MAP: Dictionary = {
+	&"telemetry_chip": &"chip_telemetria",
+	&"quantum_thruster": &"propulsor",
+	&"expansion_lens": &"lente_amplificadora",
+	&"quantum_chronometer": &"reloj_cuantico",
+	&"quantum_coin": &"moneda_oro",
+	&"biomass_capsule": &"capsula_biomasa",
+	&"cursed_relic": &"reliquia_maldita",
+	&"reactor_cristal": &"glass_reactor",
+	&"green_card": &"credit_card_green",
+	&"red_card": &"credit_card_red",
+	&"collimating_lens": &"collimator_lens",
+	&"afterburner": &"afterburn_thruster",
+	&"kinetic_armor": &"kinetic_plating",
+	&"cryogenic_capacitor": &"cryo_condenser",
+	&"static_charge_battery": &"static_cell"
+}
 
 const DEFAULT_CHARACTERS: Array[StringName] = [
 	&"nova", &"valentina", &"kira", &"selene", &"roxy", &"echo"
@@ -81,7 +99,7 @@ static func create_default() -> RefCounted:
 
 func _generate_default_loadouts() -> Dictionary:
 	var loadouts: Dictionary = {}
-	for c_name in ROSTER_PILOTS:
+	for c_name: StringName in ROSTER_PILOTS:
 		loadouts[String(c_name)] = {
 			"selected_pet": &"mochi",
 			"selected_navigator": &"lyra",
@@ -109,8 +127,11 @@ func populate_from_dict(raw: Dictionary) -> void:
 	# Unlocked items
 	unlocked_items = []
 	if raw.has("unlocked_items") and raw["unlocked_items"] is Array:
-		for item in raw["unlocked_items"]:
-			unlocked_items.append(StringName(str(item)))
+		for item: Variant in raw["unlocked_items"]:
+			var raw_id: StringName = StringName(str(item))
+			var canonical_id: StringName = LEGACY_ITEM_ID_MAP.get(raw_id, raw_id)
+			if not unlocked_items.has(canonical_id):
+				unlocked_items.append(canonical_id)
 	else:
 		unlocked_items = DEFAULT_ITEMS.duplicate()
 

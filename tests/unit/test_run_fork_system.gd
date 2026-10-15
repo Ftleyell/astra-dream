@@ -147,9 +147,18 @@ func test_run_modifier_manager_lifecycle() -> void:
 	assert_true(is_equal_approx(rmm.get_total_float_modifier(&"spawn_multiplier", 1.0), 1.4), "Spawn multiplier permanente debe seguir activo.")
 	assert_true(is_equal_approx(rmm.get_total_float_modifier(&"gold_multiplier", 1.0), 1.0), "Gold multiplier debe haberse revertido a 1.0 tras expirar.")
 
-	# Test de serialización
+	# Test de serialización y preservación de resource_path tras duplicate(false)
+	var disk_fork: RunForkOptionData = load("res://resources/run_forks/starter/fork_hostile_storm.tres") as RunForkOptionData
+	if disk_fork:
+		rmm.register_fork_choice(disk_fork)
 	var serialized: Array[Dictionary] = rmm.serialize_active_modifiers()
-	assert_true(serialized.size() >= 1, "Debe serializar al menos el modificador permanente activo.")
+	assert_true(serialized.size() >= 2, "Debe serializar los modificadores activos.")
+	var found_disk_path: bool = false
+	for entry: Dictionary in serialized:
+		if str(entry.get("resource_path", "")) == "res://resources/run_forks/starter/fork_hostile_storm.tres":
+			found_disk_path = true
+			break
+	assert_true(found_disk_path, "serialize_active_modifiers debe preservar resource_path del recurso .tres original tras duplicate(false).")
 
 	rmm.queue_free()
 	print("[OK] test_run_modifier_manager_lifecycle")
@@ -269,27 +278,37 @@ func test_generic_property_effect() -> void:
 	target_obj.set_meta(&"test_stat", 10.0)
 	add_child(target_obj)
 
+	var eff1: GenericPropertyRunEffect = GenericPropertyRunEffectScript.new()
+	eff1.system_tag = &"main_game"
+	eff1.property_key = &"rotation_degrees"
+	eff1.value = 45.0
+	eff1.operation = GenericPropertyRunEffectScript.Operation.ADD
 
-	# Usar un nodo con propiedad real
-	var eff := GenericPropertyRunEffectScript.new()
-	eff.system_tag = &"main_game"
-	eff.property_key = &"rotation_degrees"
-	eff.value = 45.0
-	eff.operation = GenericPropertyRunEffectScript.Operation.ADD
-
+	var eff2: GenericPropertyRunEffect = GenericPropertyRunEffectScript.new()
+	eff2.system_tag = &"main_game"
+	eff2.property_key = &"rotation_degrees"
+	eff2.value = 2.0
+	eff2.operation = GenericPropertyRunEffectScript.Operation.MULTIPLY
 
 	var context := CombatContextScript.new()
 	context.main_game = target_obj
-	# Asignar rotación inicial
 	target_obj.rotation_degrees = 15.0
 
-	# Aplicar: rotation_degrees = 15 + 45 = 60
-	eff.apply_effect(context)
+	# Aplicar eff1: rotation_degrees = 15 + 45 = 60
+	eff1.apply_effect(context)
 	assert_true(is_equal_approx(target_obj.rotation_degrees, 60.0), "GenericProperty ADD debe sumar valor a 60.0. Obtenido: %f" % target_obj.rotation_degrees)
 
-	# Revertir: rotation_degrees vuelve a 15.0
-	eff.revert_effect(context)
-	assert_true(is_equal_approx(target_obj.rotation_degrees, 15.0), "GenericProperty revert debe restaurar a 15.0. Obtenido: %f" % target_obj.rotation_degrees)
+	# Aplicar eff2 superpuesto: (15 + 45) * 2 = 120
+	eff2.apply_effect(context)
+	assert_true(is_equal_approx(target_obj.rotation_degrees, 120.0), "GenericProperty MULTIPLY superpuesto debe dar 120.0. Obtenido: %f" % target_obj.rotation_degrees)
+
+	# Revertir fuera de orden (eff1 expira primero mientras eff2 sigue activo): 15 * 2 = 30
+	eff1.revert_effect(context)
+	assert_true(is_equal_approx(target_obj.rotation_degrees, 30.0), "Expiración fuera de orden de eff1 debe recomputar base*2 = 30.0. Obtenido: %f" % target_obj.rotation_degrees)
+
+	# Revertir eff2: vuelve limpiamente al valor base original 15.0
+	eff2.revert_effect(context)
+	assert_true(is_equal_approx(target_obj.rotation_degrees, 15.0), "GenericProperty revert final debe restaurar a 15.0. Obtenido: %f" % target_obj.rotation_degrees)
 
 	target_obj.queue_free()
 	print("[OK] test_generic_property_effect")

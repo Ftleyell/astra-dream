@@ -24,7 +24,13 @@ func register_fork_choice(option: RunForkOptionData) -> void:
 	if not is_instance_valid(option):
 		return
 
+	var source_path: String = option.resource_path
+	if source_path.is_empty() and option.has_meta(&"source_resource_path"):
+		source_path = str(option.get_meta(&"source_resource_path", ""))
+
 	var opt_instance: RunForkOptionData = option.duplicate(false) as RunForkOptionData
+	if not source_path.is_empty():
+		opt_instance.set_meta(&"source_resource_path", source_path)
 	opt_instance.effects = []
 	for eff: RunEffect in option.effects:
 		if is_instance_valid(eff):
@@ -61,7 +67,7 @@ func on_wave_completed(_wave_idx: int) -> void:
 				modifier_wave_durations[inst_id] = remaining
 
 	# Limpiar opciones que ya no tienen ningún efecto activo
-	for i in range(active_modifiers.size() - 1, -1, -1):
+	for i: int in range(active_modifiers.size() - 1, -1, -1):
 		var opt: RunForkOptionData = active_modifiers[i]
 		if not is_instance_valid(opt):
 			active_modifiers.remove_at(i)
@@ -111,9 +117,13 @@ func serialize_active_modifiers() -> Array[Dictionary]:
 				var rem: int = int(modifier_wave_durations.get(eff.get_instance_id(), eff.duration_waves))
 				eff_durations.append(rem)
 
+		var res_path: String = opt.resource_path
+		if res_path.is_empty() and opt.has_meta(&"source_resource_path"):
+			res_path = str(opt.get_meta(&"source_resource_path", ""))
+
 		result.append({
 			"id": String(opt.id),
-			"resource_path": opt.resource_path,
+			"resource_path": res_path,
 			"remaining_durations": eff_durations
 		})
 	return result
@@ -128,9 +138,10 @@ func restore_active_modifiers(data: Array) -> void:
 		var opt: RunForkOptionData = null
 
 		if not res_path.is_empty() and ResourceLoader.exists(res_path):
-			var base_res := load(res_path) as RunForkOptionData
+			var base_res: RunForkOptionData = load(res_path) as RunForkOptionData
 			if base_res:
 				opt = base_res.duplicate(false) as RunForkOptionData
+				opt.set_meta(&"source_resource_path", res_path)
 				opt.effects = []
 				for eff: RunEffect in base_res.effects:
 					if is_instance_valid(eff):
@@ -142,7 +153,7 @@ func restore_active_modifiers(data: Array) -> void:
 		active_modifiers.append(opt)
 		var durations: Array = dict.get("remaining_durations", [])
 
-		for i in range(opt.effects.size()):
+		for i: int in range(opt.effects.size()):
 			var eff: RunEffect = opt.effects[i]
 			if not is_instance_valid(eff):
 				continue

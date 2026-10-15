@@ -77,7 +77,7 @@ func _get_fork_director() -> Node:
 	if context and context.fork_director and is_instance_valid(context.fork_director):
 		_bind_fork_director(context.fork_director)
 		return context.fork_director
-	for sub in subsystems:
+	for sub: CombatSubsystemScript in subsystems:
 		if is_instance_valid(sub) and sub.has_method("start_wave_drain"):
 			_bind_fork_director(sub)
 			return sub

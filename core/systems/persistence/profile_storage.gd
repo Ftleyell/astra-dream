@@ -17,6 +17,20 @@ const ProfileSettingsDataScript = preload("res://core/systems/persistence/schema
 const TomeCatalogScript = preload("res://data/tomes/tome_catalog.gd")
 const WeaponCatalogScript = preload("res://data/weapons/weapon_catalog.gd")
 
+static var _cached_profile: Dictionary = {}
+static var _is_cache_valid: bool = false
+static var _cached_file_existed: bool = false
+
+static func invalidate_cache() -> void:
+	_cached_profile.clear()
+	_is_cache_valid = false
+	_cached_file_existed = false
+
+static func _update_cache(profile_dict: Dictionary, file_existed: bool = true) -> void:
+	_cached_profile = profile_dict.duplicate(true)
+	_is_cache_valid = true
+	_cached_file_existed = file_existed
+
 # ==============================================================================
 # CREACIÓN DE PERFILES Y DICCIONARIOS BASE
 # ==============================================================================
@@ -91,27 +105,38 @@ static func clean_and_validate_data(raw: Dictionary) -> Dictionary:
 	return assemble_profile_dict(roster, economy, settings)
 
 static func load_profile() -> Dictionary:
-	if not FileAccess.file_exists(SAVE_PATH):
-		return get_default_profile()
+	var exists_now: bool = FileAccess.file_exists(SAVE_PATH)
+	if _is_cache_valid and _cached_file_existed == exists_now:
+		return _cached_profile.duplicate(true)
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if not exists_now:
+		var def_prof: Dictionary = get_default_profile()
+		_update_cache(def_prof, false)
+		return def_prof.duplicate(true)
+
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if not file:
-		return get_default_profile()
+		var def_prof: Dictionary = get_default_profile()
+		return def_prof
 
-	var json_str := file.get_as_text()
+	var json_str: String = file.get_as_text()
 	file.close()
 
 	if json_str.strip_edges().is_empty():
-		return get_default_profile()
+		var def_prof: Dictionary = get_default_profile()
+		_update_cache(def_prof, true)
+		return def_prof.duplicate(true)
 
-	var parser := JSON.new()
-	var err := parser.parse(json_str)
+	var parser: JSON = JSON.new()
+	var err: Error = parser.parse(json_str)
 	if err != OK:
 		push_error("Error parsing save file: %s" % parser.get_error_message())
 		return get_default_profile()
 
 	var data: Dictionary = parser.data
-	return clean_and_validate_data(data)
+	var validated: Dictionary = clean_and_validate_data(data)
+	_update_cache(validated, true)
+	return validated.duplicate(true)
 
 # ==============================================================================
 # GUARDADO FÍSICO
@@ -155,19 +180,19 @@ static func save_profile(
 		roster.selected_pet = p_selected_pet
 	if p_unlocked_pets != null and p_unlocked_pets is Array:
 		var pets_typed: Array[StringName] = []
-		for p in p_unlocked_pets:
+		for p: Variant in p_unlocked_pets:
 			pets_typed.append(StringName(str(p)))
 		roster.unlocked_pets = pets_typed
 	if p_unlocked_endings != null and p_unlocked_endings is Array:
 		var endings_typed: Array[String] = []
-		for e in p_unlocked_endings:
+		for e: Variant in p_unlocked_endings:
 			endings_typed.append(String(e))
 		roster.unlocked_endings = endings_typed
 	if p_selected_navigator != &"":
 		roster.selected_navigator = p_selected_navigator
 	if p_unlocked_navigators != null and p_unlocked_navigators is Array:
 		var navs_typed: Array[StringName] = []
-		for n in p_unlocked_navigators:
+		for n: Variant in p_unlocked_navigators:
 			navs_typed.append(StringName(str(n)))
 		roster.unlocked_navigators = navs_typed
 	if p_unlocked_skins != null and p_unlocked_skins is Dictionary:
@@ -199,12 +224,13 @@ static func save_profile(
 
 	var payload: Dictionary = serialize_profile(roster, economy, settings)
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not file:
 		return FileAccess.get_open_error()
 
 	file.store_string(JSON.stringify(payload, "\t"))
 	file.close()
+	_update_cache(assemble_profile_dict(roster, economy, settings), true)
 	return OK
 
 # ==============================================================================
@@ -217,7 +243,7 @@ static func get_character_active_tomes(char_id: StringName) -> Array[StringName]
 	if tomes_dict.has(str(char_id)):
 		var raw_arr: Array = tomes_dict[str(char_id)]
 		var result: Array[StringName] = []
-		for item in raw_arr:
+		for item: Variant in raw_arr:
 			result.append(StringName(str(item)))
 		if not result.is_empty():
 			return result
@@ -232,10 +258,11 @@ static func set_character_active_tomes(char_id: StringName, tomes: Array[StringN
 	tomes_dict[str(char_id)] = str_arr
 	prof["character_active_tomes"] = tomes_dict
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
 		file.close()
+		_update_cache(clean_and_validate_data(prof), true)
 
 static func get_character_active_weapons(char_id: StringName) -> Array[StringName]:
 	var prof: Dictionary = load_profile()
@@ -243,7 +270,7 @@ static func get_character_active_weapons(char_id: StringName) -> Array[StringNam
 	if weapons_dict.has(str(char_id)):
 		var raw_arr: Array = weapons_dict[str(char_id)]
 		var result: Array[StringName] = []
-		for item in raw_arr:
+		for item: Variant in raw_arr:
 			result.append(StringName(str(item)))
 		if not result.is_empty():
 			return result
@@ -258,24 +285,25 @@ static func set_character_active_weapons(char_id: StringName, weapons: Array[Str
 	weapons_dict[str(char_id)] = str_arr
 	prof["character_active_weapons"] = weapons_dict
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
 		file.close()
+		_update_cache(clean_and_validate_data(prof), true)
 
 static func get_unlocked_items() -> Array[StringName]:
 	var prof: Dictionary = load_profile()
 	var raw_items: Array = prof.get("unlocked_items", [])
 	var result: Array[StringName] = []
-	for it in raw_items:
+	for it: Variant in raw_items:
 		result.append(StringName(str(it)))
 	return result
 
 static func is_item_unlocked(item_id: StringName) -> bool:
-	var unlocked := get_unlocked_items()
+	var unlocked: Array[StringName] = get_unlocked_items()
 	if unlocked.has(item_id) or unlocked.is_empty():
 		return true
-	return true
+	return false
 
 static func get_character_banlist(char_id: StringName) -> Array[StringName]:
 	var prof: Dictionary = load_profile()
@@ -283,13 +311,13 @@ static func get_character_banlist(char_id: StringName) -> Array[StringName]:
 	if ban_dict.has(str(char_id)):
 		var raw_arr: Array = ban_dict[str(char_id)]
 		var result: Array[StringName] = []
-		for item in raw_arr:
+		for item: Variant in raw_arr:
 			result.append(StringName(str(item)))
 		return result
 	elif ban_dict.has(char_id):
 		var raw_arr: Array = ban_dict[char_id]
 		var result: Array[StringName] = []
-		for item in raw_arr:
+		for item: Variant in raw_arr:
 			result.append(StringName(str(item)))
 		return result
 	return []
@@ -303,46 +331,34 @@ static func set_character_banlist(char_id: StringName, banned_ids: Array[StringN
 	ban_dict[str(char_id)] = str_arr
 	prof["character_banlists"] = ban_dict
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
 		file.close()
+		_update_cache(clean_and_validate_data(prof), true)
 
 static func get_character_loadout(char_id: StringName) -> Dictionary:
 	var prof: Dictionary = load_profile()
 	var loadouts: Dictionary = prof.get("character_loadouts", {})
-	var cid_str := str(char_id)
+	var cid_str: String = str(char_id)
 	var loadout: Dictionary = {}
-	var has_saved_loadout: bool = false
 	if loadouts.has(cid_str) and loadouts[cid_str] is Dictionary:
 		loadout = (loadouts[cid_str] as Dictionary).duplicate()
-		has_saved_loadout = true
 
-	var needs_save: bool = false
 	if not loadout.has("selected_pet") or str(loadout["selected_pet"]).is_empty():
 		loadout["selected_pet"] = &"mochi"
-		needs_save = true
 	if not loadout.has("selected_navigator") or str(loadout["selected_navigator"]).is_empty():
 		loadout["selected_navigator"] = &"lyra"
-		needs_save = true
 	if not loadout.has("equipped_pet_skin"):
 		loadout["equipped_pet_skin"] = ""
-		needs_save = true
 	if not loadout.has("equipped_navigator_skin"):
 		loadout["equipped_navigator_skin"] = ""
-		needs_save = true
 	if not loadout.has("equipped_ship_skin") or str(loadout["equipped_ship_skin"]).is_empty():
 		loadout["equipped_ship_skin"] = "base"
-		needs_save = true
 	if not loadout.has("equipped_weapon_skin") or str(loadout["equipped_weapon_skin"]).is_empty():
 		loadout["equipped_weapon_skin"] = "base"
-		needs_save = true
 	if not loadout.has("equipped_pilot_skin") or str(loadout["equipped_pilot_skin"]).is_empty():
 		loadout["equipped_pilot_skin"] = "base"
-		needs_save = true
-
-	if not has_saved_loadout or needs_save:
-		set_character_loadout(char_id, loadout)
 
 	return loadout
 
@@ -352,7 +368,8 @@ static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> v
 	loadouts[str(char_id)] = loadout.duplicate()
 	prof["character_loadouts"] = loadouts
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
 		file.close()
+		_update_cache(clean_and_validate_data(prof), true)
