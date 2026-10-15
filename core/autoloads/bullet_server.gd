@@ -42,6 +42,10 @@ var player_invulnerable: bool = false
 
 # Obstáculos destructibles (Cobertura balística dual)
 var _obstacles: Array[Dictionary] = []
+var valid_obs_nodes: Array[Node2D] = []
+var obs_x: PackedFloat32Array = PackedFloat32Array()
+var obs_y: PackedFloat32Array = PackedFloat32Array()
+var obs_r_sq: PackedFloat32Array = PackedFloat32Array()
 
 signal player_hit()
 signal player_grazed(pos: Vector2)
@@ -149,14 +153,14 @@ func _physics_process(delta: float) -> void:
 
 	# Pre-filtrar y almacenar en caché las posiciones y radios de los obstáculos activos
 	# para evitar decenas de miles de llamadas C++ a global_position dentro del bucle de balas.
-	var valid_obs_nodes: Array[Node2D] = []
-	var obs_x: PackedFloat32Array = PackedFloat32Array()
-	var obs_y: PackedFloat32Array = PackedFloat32Array()
-	var obs_r_sq: PackedFloat32Array = PackedFloat32Array()
+	valid_obs_nodes.clear()
+	obs_x.resize(0)
+	obs_y.resize(0)
+	obs_r_sq.resize(0)
 
-	var obs_count := _obstacles.size()
+	var obs_count: int = _obstacles.size()
 	if obs_count > 0:
-		for obs_idx in range(obs_count - 1, -1, -1):
+		for obs_idx: int in range(obs_count - 1, -1, -1):
 			var obs: Dictionary = _obstacles[obs_idx]
 			var obs_node: Node2D = obs.get("node") as Node2D
 			if not is_instance_valid(obs_node) or not obs_node.is_inside_tree():

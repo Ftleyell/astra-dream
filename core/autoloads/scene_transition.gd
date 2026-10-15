@@ -68,7 +68,7 @@ func _build_hierarchy() -> void:
 	_trail_viewport.name = "TrailViewport"
 	_trail_viewport.transparent_bg = true
 	_trail_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_NEVER
-	_trail_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_trail_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	add_child(_trail_viewport)
 
 	_wipe_mat = ShaderMaterial.new()
@@ -93,7 +93,7 @@ func _build_hierarchy() -> void:
 
 
 func _precalculate_luts() -> void:
-	for cfg in PILOT_CONFIG:
+	for cfg: Dictionary in PILOT_CONFIG:
 		var pilot_name: String = cfg.name
 		var ship_path: String = SHIPS_DIR + "ship_%s.png" % pilot_name
 		if ResourceLoader.exists(ship_path):
@@ -109,17 +109,17 @@ func _setup_lanes() -> void:
 	_trail_viewport.size = Vector2i(int(screen_size.x), int(screen_size.y))
 	_trail_display.size = screen_size
 
-	for child in _solid_bands_root.get_children():
+	for child: Node in _solid_bands_root.get_children():
 		child.queue_free()
-	for child in _front_bands_root.get_children():
+	for child: Node in _front_bands_root.get_children():
 		child.queue_free()
-	for child in _trail_viewport.get_children():
+	for child: Node in _trail_viewport.get_children():
 		child.queue_free()
 	_pilot_lanes.clear()
 
 	var band_height: float = ceil(screen_size.y / float(PILOT_CONFIG.size()))
 
-	for i in range(PILOT_CONFIG.size()):
+	for i: int in range(PILOT_CONFIG.size()):
 		var cfg: Dictionary = PILOT_CONFIG[i]
 		var pilot_name: String = cfg.name
 		var lut_data: Dictionary = _lut_cache.get(pilot_name, {})
@@ -136,7 +136,7 @@ func _setup_lanes() -> void:
 		var ship_length_norm: float = ship_pixel_length / screen_size.x
 
 		# Sprite en viewport para after-images
-		var spr := Sprite2D.new()
+		var spr: Sprite2D = Sprite2D.new()
 		spr.texture = tex
 		spr.centered = true
 		spr.rotation_degrees = 90.0
@@ -144,7 +144,7 @@ func _setup_lanes() -> void:
 		spr.position = Vector2(-ship_pixel_length * 2.0, (i + 0.5) * band_height)
 		spr.z_index = abs(i - 3)
 
-		var mat := ShaderMaterial.new()
+		var mat: ShaderMaterial = ShaderMaterial.new()
 		mat.shader = SHADER_SOLID_TINT
 		mat.set_shader_parameter("tint_color", cfg.color)
 		spr.material = mat
@@ -152,10 +152,10 @@ func _setup_lanes() -> void:
 		_trail_viewport.add_child(spr)
 
 		# 1. Banda continua de fondo con perfil anatómico
-		var band_back := ColorRect.new()
+		var band_back: ColorRect = ColorRect.new()
 		band_back.position = Vector2(0.0, i * band_height)
 		band_back.size = Vector2(screen_size.x, band_height + 1.0)
-		var mat_back := ShaderMaterial.new()
+		var mat_back: ShaderMaterial = ShaderMaterial.new()
 		mat_back.shader = SHADER_BRUSH
 		mat_back.set_shader_parameter("leading_edge_lut", lut_tex)
 		mat_back.set_shader_parameter("tint_color", cfg.color)
@@ -167,10 +167,10 @@ func _setup_lanes() -> void:
 		_solid_bands_root.add_child(band_back)
 
 		# 2. Banda frontal rezagada 1 piloto con perfil anatómico
-		var band_front := ColorRect.new()
+		var band_front: ColorRect = ColorRect.new()
 		band_front.position = Vector2(0.0, i * band_height)
 		band_front.size = Vector2(screen_size.x, band_height + 1.0)
-		var mat_front := ShaderMaterial.new()
+		var mat_front: ShaderMaterial = ShaderMaterial.new()
 		mat_front.shader = SHADER_BRUSH
 		mat_front.set_shader_parameter("leading_edge_lut", lut_tex)
 		mat_front.set_shader_parameter("tint_color", cfg.color)
@@ -207,23 +207,23 @@ func _generate_ship_lut(ship_path: String) -> Dictionary:
 	var min_y: int = img.get_height()
 	var max_y: int = -1
 
-	for y in range(img.get_height()):
-		for x in range(img.get_width()):
+	for y: int in range(img.get_height()):
+		for x: int in range(img.get_width()):
 			if img.get_pixel(x, y).a > 0.12:
 				if x < min_x: min_x = x
 				if x > max_x: max_x = x
 				if y < min_y: min_y = y
 				if y > max_y: max_y = y
 
-	var span_x: int = max(1, max_x - min_x + 1)
-	var span_y: int = max(1, max_y - min_y + 1)
+	var span_x: int = maxi(1, max_x - min_x + 1)
+	var span_y: int = maxi(1, max_y - min_y + 1)
 
-	var lut_img := Image.create(span_x, 1, false, Image.FORMAT_RF)
+	var lut_img: Image = Image.create(span_x, 1, false, Image.FORMAT_RF)
 
-	for i in range(span_x):
+	for i: int in range(span_x):
 		var x: int = min_x + i
 		var first_y: int = -1
-		for y in range(min_y, max_y + 1):
+		for y: int in range(min_y, max_y + 1):
 			if img.get_pixel(x, y).a > 0.12:
 				if first_y == -1:
 					first_y = y
@@ -235,7 +235,7 @@ func _generate_ship_lut(ship_path: String) -> Dictionary:
 
 		lut_img.set_pixel(i, 0, Color(norm_offset, 0.0, 0.0, 1.0))
 
-	var lut_tex := ImageTexture.create_from_image(lut_img)
+	var lut_tex: ImageTexture = ImageTexture.create_from_image(lut_img)
 	return {
 		"texture": tex,
 		"lut": lut_tex,
@@ -248,12 +248,12 @@ func _generate_ship_lut(ship_path: String) -> Dictionary:
 	}
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not is_transitioning:
 		return
 
 	var screen_w: float = _cached_screen_size.x
-	for p in _pilot_lanes:
+	for p: Dictionary in _pilot_lanes:
 		var spr: Sprite2D = p.sprite
 		var mat: ShaderMaterial = p.material
 		var base_c: Color = p.base_color
@@ -294,7 +294,8 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 	_trail_display.visible = true
 	_wipe_mat.set_shader_parameter("fade_progress", -0.5)
 
-	# Limpiar buffer de after-images previo
+	# Activar actualización del SubViewport y limpiar buffer de after-images previo
+	_trail_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	_trail_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ONCE
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -305,9 +306,9 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 	var delay_step: float = 0.09
 	var max_delay: float = 3.0 * delay_step
 
-	var tween := create_tween().set_parallel(true).set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	var tween: Tween = create_tween().set_parallel(true).set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
-	for p in _pilot_lanes:
+	for p: Dictionary in _pilot_lanes:
 		var spr: Sprite2D = p.sprite
 		var mat_back: ShaderMaterial = p.mat_back
 		var mat_front: ShaderMaterial = p.mat_front
@@ -349,11 +350,11 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 
 	# Fase 2: Fade-out sutil de izquierda a derecha
 	var fade_duration: float = 0.40
-	var fade_tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	var fade_tween: Tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	fade_tween.tween_method(
 		func(val: float) -> void:
 			_wipe_mat.set_shader_parameter("fade_progress", val)
-			for p in _pilot_lanes:
+			for p: Dictionary in _pilot_lanes:
 				p.mat_back.set_shader_parameter("fade_progress", val)
 				p.mat_front.set_shader_parameter("fade_progress", val),
 		-0.1, 1.45, fade_duration
@@ -362,7 +363,7 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 	await fade_tween.finished
 
 	# Limpieza y restauración de estado
-	for p in _pilot_lanes:
+	for p: Dictionary in _pilot_lanes:
 		p.sprite.visible = false
 		p.sprite.position = Vector2(-p.ship_pixel_length * 2.0, p.lane_y)
 		p.band_back.visible = false
@@ -370,6 +371,7 @@ func play_wipe(on_covered_callback: Callable = Callable()) -> void:
 		p.mat_back.set_shader_parameter("progress", -0.5)
 		p.mat_front.set_shader_parameter("progress", -0.5)
 
+	_trail_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	_trail_display.visible = false
 	_solid_bands_root.visible = false
 	_front_bands_root.visible = false

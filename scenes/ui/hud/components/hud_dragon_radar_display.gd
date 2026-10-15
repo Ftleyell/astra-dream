@@ -24,11 +24,16 @@ const DragonRadarBlipClass = preload("res://scenes/ui/hud/components/dragon_rada
 var player_ref: Node2D = null
 
 # Estado del sweep angular
+const SCAN_INTERVAL: float = 1.0 / 12.0 # ~12 Hz (entre 10 y 15 Hz)
+const SAT_GROUPS: Array[StringName] = [&"satellite_beacon", &"transmutation_stations", &"slot_machine_beacon"]
+
 var _current_sweep_angle: float = 0.0
 var _prev_sweep_angle: float = 0.0
+var _scan_timer: float = SCAN_INTERVAL
 
 # Almacén de blips activos (renderizados en _draw())
 var _active_blips: Dictionary = {} # target_id (int) -> DragonRadarBlip
+var _expired_keys: Array[int] = []
 
 # Referencias visuales internas
 var _screen_rect: ColorRect = null
@@ -106,7 +111,6 @@ func _process(delta: float) -> void:
 		return
 
 	# 1. Avanzar ángulo de sweep
-	_prev_sweep_angle = _current_sweep_angle
 	_current_sweep_angle = fmod(_current_sweep_angle + sweep_speed * delta, TAU)
 
 	# Actualizar shader
@@ -114,19 +118,23 @@ func _process(delta: float) -> void:
 		_screen_material.set_shader_parameter("sweep_angle", _current_sweep_angle)
 
 	# 2. Actualizar ciclo de vida de blips existentes
-	var expired_keys: Array = []
+	_expired_keys.clear()
 	for k: Variant in _active_blips.keys():
-		var blip = _active_blips[k]
+		var blip: DragonRadarBlip = _active_blips[k] as DragonRadarBlip
 		if blip != null:
 			blip.life -= delta / blip.max_life
 			if blip.life <= 0.0:
-				expired_keys.append(k)
+				_expired_keys.append(int(k))
 
-	for k: Variant in expired_keys:
+	for k: int in _expired_keys:
 		_active_blips.erase(k)
 
-	# 3. Detectar entidades alcanzadas por el haz en este frame
-	_scan_world_entities()
+	# 3. Detectar entidades alcanzadas por el haz (throttled a ~12 Hz)
+	_scan_timer += delta
+	if _scan_timer >= SCAN_INTERVAL:
+		_scan_timer = fmod(_scan_timer, SCAN_INTERVAL)
+		_scan_world_entities()
+		_prev_sweep_angle = _current_sweep_angle
 
 	# 4. Redibujar capa de pings por encima del shader
 	if is_instance_valid(_blips_layer):
@@ -135,10 +143,11 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _scan_world_entities() -> void:
+	var tree: SceneTree = get_tree()
+	if not tree:
+		return
 	if not is_instance_valid(player_ref):
-		var tree := get_tree()
-		if tree:
-			player_ref = tree.get_first_node_in_group("player") as Node2D
+		player_ref = tree.get_first_node_in_group("player") as Node2D
 		if not is_instance_valid(player_ref):
 			return
 
@@ -147,13 +156,12 @@ func _scan_world_entities() -> void:
 	var player_pos: Vector2 = player_ref.global_position
 
 	# 1. Satélites y Estaciones (satellite_beacon, transmutation_stations, slot_machine_beacon)
-	var sat_groups: Array[String] = ["satellite_beacon", "transmutation_stations", "slot_machine_beacon"]
-	for grp in sat_groups:
-		var sats: Array[Node] = get_tree().get_nodes_in_group(grp)
+	for grp: StringName in SAT_GROUPS:
+		var sats: Array[Node] = tree.get_nodes_in_group(grp)
 		for s_node: Node in sats:
 			if not is_instance_valid(s_node):
 				continue
-			var s_2d := s_node as Node2D
+			var s_2d: Node2D = s_node as Node2D
 			if not s_2d or not s_2d.is_inside_tree():
 				continue
 			_process_radar_target(
@@ -168,11 +176,11 @@ func _scan_world_entities() -> void:
 			)
 
 	# 2. Satélite activo seguido por el HUD si aún no está instanciado en el mundo (proyección de odómetro)
-	var hud_parent := get_parent()
+	var hud_parent: Node = get_parent()
 	if hud_parent and "_edge_tracker_mgr" in hud_parent:
-		var edge_mgr = hud_parent._edge_tracker_mgr
+		var edge_mgr: Variant = hud_parent.get("_edge_tracker_mgr")
 		if edge_mgr and "satellite_tracker" in edge_mgr and is_instance_valid(edge_mgr.satellite_tracker):
-			var sat_tracker = edge_mgr.satellite_tracker
+			var sat_tracker: Variant = edge_mgr.satellite_tracker
 			if sat_tracker.has_satellite:
 				_process_radar_target(
 					999999,
@@ -186,11 +194,11 @@ func _scan_world_entities() -> void:
 				)
 
 	# 3. Jefes y Colosos
-	var bosses: Array[Node] = get_tree().get_nodes_in_group("bosses")
+	var bosses: Array[Node] = tree.get_nodes_in_group("bosses")
 	for boss_node: Node in bosses:
 		if not is_instance_valid(boss_node):
 			continue
-		var b_2d := boss_node as Node2D
+		var b_2d: Node2D = boss_node as Node2D
 		if not b_2d or not b_2d.is_inside_tree():
 			continue
 		_process_radar_target(
@@ -205,11 +213,11 @@ func _scan_world_entities() -> void:
 		)
 
 	# 4. Enemigos normales
-	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
 	for enemy_node: Node in enemies:
 		if not is_instance_valid(enemy_node):
 			continue
-		var e_2d := enemy_node as Node2D
+		var e_2d: Node2D = enemy_node as Node2D
 		if not e_2d or not e_2d.is_inside_tree():
 			continue
 		_process_radar_target(
@@ -224,11 +232,11 @@ func _scan_world_entities() -> void:
 		)
 
 	# 5. Drops, orbes de EXP y cofres
-	var exp_blobs: Array[Node] = get_tree().get_nodes_in_group("exp_blobs")
+	var exp_blobs: Array[Node] = tree.get_nodes_in_group("exp_blobs")
 	for exp_node: Node in exp_blobs:
 		if not is_instance_valid(exp_node):
 			continue
-		var exp_2d := exp_node as Node2D
+		var exp_2d: Node2D = exp_node as Node2D
 		if not exp_2d or not exp_2d.is_inside_tree():
 			continue
 		_process_radar_target(
@@ -242,11 +250,11 @@ func _scan_world_entities() -> void:
 			false
 		)
 
-	var consumables: Array[Node] = get_tree().get_nodes_in_group("field_consumables")
+	var consumables: Array[Node] = tree.get_nodes_in_group("field_consumables")
 	for c_node: Node in consumables:
 		if not is_instance_valid(c_node):
 			continue
-		var c_2d := c_node as Node2D
+		var c_2d: Node2D = c_node as Node2D
 		if not c_2d or not c_2d.is_inside_tree():
 			continue
 		_process_radar_target(
@@ -260,11 +268,11 @@ func _scan_world_entities() -> void:
 			false
 		)
 
-	var chests: Array[Node] = get_tree().get_nodes_in_group("spatial_chests")
+	var chests: Array[Node] = tree.get_nodes_in_group("spatial_chests")
 	for ch_node: Node in chests:
 		if not is_instance_valid(ch_node):
 			continue
-		var ch_2d := ch_node as Node2D
+		var ch_2d: Node2D = ch_node as Node2D
 		if not ch_2d or not ch_2d.is_inside_tree():
 			continue
 		_process_radar_target(
@@ -310,7 +318,7 @@ func _process_radar_target(
 
 	var final_pos: Vector2 = radar_center + delta_pos.normalized() * scale_factor
 
-	var blip = _active_blips.get(t_id)
+	var blip: DragonRadarBlip = _active_blips.get(t_id) as DragonRadarBlip
 	if swept:
 		if blip == null:
 			blip = DragonRadarBlipClass.new(t_id, final_pos, color, size_px, blip_fade_time)
@@ -348,7 +356,7 @@ func _on_blips_layer_draw() -> void:
 
 	# 2. Dibujar blips y pings activos
 	for k: Variant in _active_blips.keys():
-		var blip = _active_blips[k]
+		var blip: DragonRadarBlip = _active_blips[k] as DragonRadarBlip
 		if blip == null or blip.life <= 0.0:
 			continue
 

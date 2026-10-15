@@ -41,7 +41,7 @@ func _init() -> void:
 	_build_ui()
 
 func _build_ui() -> void:
-	var sb := StyleBoxFlat.new()
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
 	sb.bg_color = Color(0.02, 0.03, 0.06, 0.98)
 	sb.border_color = Color(0.2, 0.7, 1.0, 0.9)
 	sb.set_border_width_all(1)
@@ -51,14 +51,14 @@ func _build_ui() -> void:
 	sb.shadow_size = 8
 	add_theme_stylebox_override("panel", sb)
 
-	var margin := MarginContainer.new()
+	var margin: MarginContainer = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 10)
 	margin.add_theme_constant_override("margin_right", 10)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_bottom", 10)
 	add_child(margin)
 
-	var vbox := VBoxContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
 	margin.add_child(vbox)
 
@@ -73,13 +73,68 @@ func _build_ui() -> void:
 	_stats_container.add_theme_constant_override("separation", 3)
 	vbox.add_child(_stats_container)
 
+	_ensure_stat_rows()
+
+func _ensure_stat_rows() -> void:
+	if not _stats_container or not _stat_ui_entries.is_empty():
+		return
+	var default_theme_col: Color = Color("#00F0FF")
+	for cfg: Dictionary in RUN_STATS_CONFIG:
+		var key: StringName = cfg["key"]
+		var item_panel: PanelContainer = PanelContainer.new()
+		item_panel.custom_minimum_size = Vector2(0, 24)
+
+		var row_sb: StyleBoxFlat = StyleBoxFlat.new()
+		row_sb.bg_color = Color(0.04, 0.06, 0.10, 0.85)
+		row_sb.border_color = default_theme_col.darkened(0.5)
+		row_sb.set_border_width_all(1)
+		row_sb.border_width_left = 3
+		row_sb.set_corner_radius_all(3)
+		item_panel.add_theme_stylebox_override("panel", row_sb)
+
+		var p_margin: MarginContainer = MarginContainer.new()
+		p_margin.add_theme_constant_override("margin_left", 8)
+		p_margin.add_theme_constant_override("margin_right", 8)
+		p_margin.add_theme_constant_override("margin_top", 2)
+		p_margin.add_theme_constant_override("margin_bottom", 2)
+		item_panel.add_child(p_margin)
+
+		var hbox: HBoxContainer = HBoxContainer.new()
+		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+		p_margin.add_child(hbox)
+
+		var lbl_name: Label = Label.new()
+		lbl_name.text = cfg["name"]
+		lbl_name.add_theme_font_size_override("font_size", 11)
+		lbl_name.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.add_child(lbl_name)
+
+		var lbl_val: Label = Label.new()
+		lbl_val.text = "0"
+		lbl_val.add_theme_font_size_override("font_size", 11)
+		lbl_val.add_theme_color_override("font_color", Color.WHITE)
+		hbox.add_child(lbl_val)
+
+		_stats_container.add_child(item_panel)
+		_stat_ui_entries[key] = {
+			"panel": item_panel,
+			"lbl_name": lbl_name,
+			"lbl_val": lbl_val,
+			"displayed_val": "0",
+			"is_buffed": false,
+			"base_style": row_sb,
+			"current_val": 0.0,
+			"mult": float(cfg.get("mult", 1.0)),
+			"fmt": String(cfg["fmt"]),
+			"suffix": String(cfg["suffix"])
+		}
+
 func refresh_stats(player: Player) -> void:
 	if not is_instance_valid(player) or not _stats_container:
 		return
 
-	for child: Node in _stats_container.get_children():
-		child.queue_free()
-	_stat_ui_entries.clear()
+	_ensure_stat_rows()
 
 	var data: CharacterData = player.character_data
 	var stats: CharacterStats = player.character_stats if player.character_stats else (player.get("stats") as CharacterStats)
@@ -90,8 +145,11 @@ func refresh_stats(player: Player) -> void:
 
 	for cfg: Dictionary in RUN_STATS_CONFIG:
 		var key: StringName = cfg["key"]
+		if not _stat_ui_entries.has(key):
+			continue
+		var entry: Dictionary = _stat_ui_entries[key]
 		var current_val: float = stats.get_stat(key)
-		var base_val: float = stats.get_base_stat(key) if stats.has_method("get_base_stat") else (data.get(key) if (data and key in data) else current_val)
+		var base_val: float = stats.get_base_stat(key) if stats.has_method("get_base_stat") else (float(data.get(key)) if (data and key in data) else current_val)
 		var mult: float = cfg.get("mult", 1.0)
 		var fmt: String = cfg["fmt"]
 		var suffix: String = cfg["suffix"]
@@ -100,54 +158,29 @@ func refresh_stats(player: Player) -> void:
 		var is_buffed: bool = (current_val > base_val + 0.001) and not is_curse
 		var is_cursed: bool = is_curse and current_val > 0.0
 
-		var item_panel := PanelContainer.new()
-		item_panel.custom_minimum_size = Vector2(0, 24)
+		var item_panel: PanelContainer = entry["panel"] as PanelContainer
+		var sb: StyleBoxFlat = entry["base_style"] as StyleBoxFlat
+		var lbl_name: Label = entry["lbl_name"] as Label
+		var lbl_val: Label = entry["lbl_val"] as Label
 
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.04, 0.06, 0.10, 0.85)
 		sb.border_color = (Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else theme_col.darkened(0.5)))
-		sb.set_border_width_all(1)
-		sb.border_width_left = 3
-		sb.set_corner_radius_all(3)
-		item_panel.add_theme_stylebox_override("panel", sb)
+		if is_instance_valid(item_panel):
+			item_panel.add_theme_stylebox_override("panel", sb)
 
-		var p_margin := MarginContainer.new()
-		p_margin.add_theme_constant_override("margin_left", 8)
-		p_margin.add_theme_constant_override("margin_right", 8)
-		p_margin.add_theme_constant_override("margin_top", 2)
-		p_margin.add_theme_constant_override("margin_bottom", 2)
-		item_panel.add_child(p_margin)
-
-		var hbox := HBoxContainer.new()
-		hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-		p_margin.add_child(hbox)
-
-		var lbl_name := Label.new()
-		lbl_name.text = cfg["name"]
-		lbl_name.add_theme_font_size_override("font_size", 11)
-		lbl_name.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else Color(0.8, 0.85, 0.9))
-		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		hbox.add_child(lbl_name)
+		if is_instance_valid(lbl_name):
+			lbl_name.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else Color(0.8, 0.85, 0.9))
 
 		var displayed_val: String = (fmt % (current_val * mult)) + suffix
-		var lbl_val := Label.new()
-		lbl_val.text = displayed_val
-		lbl_val.add_theme_font_size_override("font_size", 11)
-		lbl_val.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else Color.WHITE))
-		hbox.add_child(lbl_val)
+		if is_instance_valid(lbl_val):
+			lbl_val.text = displayed_val
+			lbl_val.add_theme_color_override("font_color", Color("#FF4466") if is_cursed else (Color("#00FF9D") if is_buffed else Color.WHITE))
 
-		_stats_container.add_child(item_panel)
-		_stat_ui_entries[key] = {
-			"panel": item_panel,
-			"lbl_val": lbl_val,
-			"displayed_val": displayed_val,
-			"is_buffed": is_buffed,
-			"base_style": sb,
-			"current_val": current_val,
-			"mult": mult,
-			"fmt": fmt,
-			"suffix": suffix
-		}
+		entry["displayed_val"] = displayed_val
+		entry["is_buffed"] = is_buffed
+		entry["current_val"] = current_val
+		entry["mult"] = mult
+		entry["fmt"] = fmt
+		entry["suffix"] = suffix
 
 const COLOR_HIGHLIGHT_BORDER := Color("#FFE600")
 const COLOR_BOON_GREEN := Color("#00FF9D")

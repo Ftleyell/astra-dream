@@ -10,6 +10,7 @@ extends RefCounted
 const TOTAL_SLOTS: int = 4
 
 var weapon_slots_row: HBoxContainer = null
+var _cd_overlays: Array[ColorRect] = []
 
 func setup(p_slots_row: HBoxContainer) -> void:
 	weapon_slots_row = p_slots_row
@@ -18,17 +19,20 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 	if not is_instance_valid(weapon_slots_row):
 		return
 
-	for child in weapon_slots_row.get_children():
+	_cd_overlays.clear()
+	_cd_overlays.resize(TOTAL_SLOTS)
+
+	for child: Node in weapon_slots_row.get_children():
 		weapon_slots_row.remove_child(child)
 		child.queue_free()
 
-	for slot_idx in range(TOTAL_SLOTS):
+	for slot_idx: int in range(TOTAL_SLOTS):
 		if slot_idx < weapons.size() and weapons[slot_idx] != null:
-			var inst = weapons[slot_idx]
+			var inst: WeaponInstanceData = weapons[slot_idx] as WeaponInstanceData
 			var wdata: WeaponData = inst.weapon_data
 			var w_level: int = inst.level
 
-			var chip := PanelContainer.new()
+			var chip: PanelContainer = PanelContainer.new()
 			chip.name = "WeaponSlot_%d" % slot_idx
 			chip.custom_minimum_size = Vector2(54, 54)
 			chip.clip_contents = true
@@ -45,19 +49,19 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 			]
 
 			var rarity_color: Color = get_rarity_color(wdata.rarity)
-			var style := StyleBoxFlat.new()
+			var style: StyleBoxFlat = StyleBoxFlat.new()
 			style.bg_color = Color(0.04, 0.06, 0.12, 0.95)
 			style.set_border_width_all(2)
 			style.border_color = rarity_color
 			style.set_corner_radius_all(6)
 			chip.add_theme_stylebox_override("panel", style)
 
-			var inner := Control.new()
+			var inner: Control = Control.new()
 			inner.set_anchors_preset(Control.PRESET_FULL_RECT)
 			inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			chip.add_child(inner)
 
-			var icon_rect := TextureRect.new()
+			var icon_rect: TextureRect = TextureRect.new()
 			icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -66,15 +70,16 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 				icon_rect.texture = wdata.icon
 			inner.add_child(icon_rect)
 
-			var cd_overlay := ColorRect.new()
+			var cd_overlay: ColorRect = ColorRect.new()
 			cd_overlay.name = "CDOverlay"
 			cd_overlay.color = Color(0.01, 0.02, 0.05, 0.75)
 			cd_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 			cd_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			cd_overlay.visible = false
 			inner.add_child(cd_overlay)
+			_cd_overlays[slot_idx] = cd_overlay
 
-			var slot_lbl := Label.new()
+			var slot_lbl: Label = Label.new()
 			slot_lbl.text = str(slot_idx + 1)
 			slot_lbl.add_theme_font_size_override("font_size", 10)
 			slot_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.9, 0.5))
@@ -82,7 +87,7 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 			slot_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(slot_lbl)
 
-			var lvl_lbl := Label.new()
+			var lvl_lbl: Label = Label.new()
 			lvl_lbl.text = "★%d" % w_level
 			lvl_lbl.add_theme_font_size_override("font_size", 11)
 			lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
@@ -95,24 +100,24 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 
 			weapon_slots_row.add_child(chip)
 		else:
-			var empty_chip := PanelContainer.new()
+			var empty_chip: PanelContainer = PanelContainer.new()
 			empty_chip.name = "WeaponSlot_Empty_%d" % slot_idx
 			empty_chip.custom_minimum_size = Vector2(54, 54)
 			empty_chip.tooltip_text = "Ranura #%d [Vacía]\n(Espacio disponible para nuevas armas)" % [slot_idx + 1]
 
-			var style := StyleBoxFlat.new()
+			var style: StyleBoxFlat = StyleBoxFlat.new()
 			style.bg_color = Color(0.02, 0.04, 0.08, 0.45)
 			style.border_color = Color(0.2, 0.35, 0.5, 0.35)
 			style.set_border_width_all(1)
 			style.set_corner_radius_all(6)
 			empty_chip.add_theme_stylebox_override("panel", style)
 
-			var inner := Control.new()
+			var inner: Control = Control.new()
 			inner.set_anchors_preset(Control.PRESET_FULL_RECT)
 			inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			empty_chip.add_child(inner)
 
-			var plus_lbl := Label.new()
+			var plus_lbl: Label = Label.new()
 			plus_lbl.text = "+"
 			plus_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			plus_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -122,7 +127,7 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 			plus_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			inner.add_child(plus_lbl)
 
-			var slot_lbl := Label.new()
+			var slot_lbl: Label = Label.new()
 			slot_lbl.text = str(slot_idx + 1)
 			slot_lbl.add_theme_font_size_override("font_size", 10)
 			slot_lbl.add_theme_color_override("font_color", Color(0.3, 0.4, 0.5, 0.35))
@@ -135,15 +140,13 @@ func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
 func update_weapon_cooldown_sweeps(equipped_weapons: Array, player_stats: Variant) -> void:
 	if not is_instance_valid(weapon_slots_row):
 		return
-	var slots: Array[Node] = weapon_slots_row.get_children()
-	var count: int = mini(slots.size(), equipped_weapons.size())
-	for i in range(count):
-		var inst = equipped_weapons[i]
+	var count: int = mini(_cd_overlays.size(), equipped_weapons.size())
+	for i: int in range(count):
+		var inst: WeaponInstanceData = equipped_weapons[i] as WeaponInstanceData
 		if not inst:
 			continue
-		var slot_card: Node = slots[i]
-		var cd_overlay := slot_card.find_child("CDOverlay", true, false) as ColorRect
-		if not cd_overlay:
+		var cd_overlay: ColorRect = _cd_overlays[i]
+		if not is_instance_valid(cd_overlay):
 			continue
 		var max_cd: float = inst.get_effective_cooldown(player_stats)
 		if inst.active_cooldown > 0.02 and max_cd > 0.0:
