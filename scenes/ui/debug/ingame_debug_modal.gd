@@ -119,8 +119,9 @@ func setup(game: Node2D) -> void:
 func open() -> void:
 	if not DebugManager.is_debug_enabled():
 		return
-	is_open = true
-	get_tree().paused = true
+	if not is_open:
+		is_open = true
+		PauseArbitrator.acquire_pause(&"debug_modal")
 	show()
 	_sync_toggles_with_state()
 	_populate_stats_sliders()
@@ -133,8 +134,7 @@ func close() -> void:
 		return
 	is_open = false
 	hide()
-	if not _should_remain_paused():
-		get_tree().paused = false
+	PauseArbitrator.release_pause(&"debug_modal")
 	modal_closed.emit()
 
 func _should_remain_paused() -> bool:

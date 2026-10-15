@@ -113,6 +113,9 @@ static func _recompute_property(target: Object, prop: StringName, base_val: Vari
 
 
 func _resolve_target(context: CombatContext) -> Object:
+	if not context:
+		return null
+	var game: MainGame = context.main_game as MainGame
 	match system_tag:
 		&"player":
 			return context.player
@@ -121,16 +124,32 @@ func _resolve_target(context: CombatContext) -> Object:
 		&"bullet_server":
 			return context.bullet_server
 		&"environment_host":
-			return context.environment_host if context.environment_host else (context.main_game.get("environment_host") if context.main_game else null)
+			return context.environment_host if context.environment_host else (game.environment_host if game else null)
 		&"satellite_coordinator":
-			return context.satellite_coordinator if context.satellite_coordinator else (context.main_game.get("satellite_coordinator") if context.main_game else null)
+			return context.satellite_coordinator if context.satellite_coordinator else (game.satellite_coordinator if game else null)
 		&"main_game":
 			return context.main_game
 		&"hud":
 			return context.hud
+		&"camera":
+			return context.camera
+		&"space_object_spawner":
+			return context.space_object_spawner if context.space_object_spawner else (game.space_object_spawner if game else null)
+		&"chest_director":
+			return context.chest_director if context.chest_director else (game.chest_director if game else null)
+		&"satellite_shop":
+			return context.satellite_shop if context.satellite_shop else (game.satellite_shop if game else null)
+		&"run_modifier_manager":
+			return context.run_modifier_manager if context.run_modifier_manager else (game.run_modifier_manager if game else null)
+		&"fork_director":
+			return context.fork_director if context.fork_director else (game.fork_director if game else null)
+		&"wave_pipeline":
+			return game.wave_pipeline if game else null
+		&"encounter_controller":
+			return game.encounter_controller if game else null
+		&"loot_coordinator":
+			return game.loot_coordinator if game else null
+		&"boss_coordinator":
+			return game.boss_coordinator if game else null
 		_:
-			if context and system_tag in context:
-				return context.get(system_tag) as Object
-			if context and context.main_game and system_tag in context.main_game:
-				return context.main_game.get(system_tag) as Object
 			return null

@@ -105,6 +105,16 @@ func notify_enemy_spawned(enemy: Node2D) -> void:
 			effect.on_enemy_spawned(enemy, context)
 
 
+func clear_all_modifiers() -> void:
+	var effects_copy: Array[RunEffect] = _active_effects.duplicate()
+	for eff: RunEffect in effects_copy:
+		if is_instance_valid(eff):
+			eff.revert_effect(context)
+	_active_effects.clear()
+	active_modifiers.clear()
+	modifier_wave_durations.clear()
+
+
 func serialize_active_modifiers() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for opt: RunForkOptionData in active_modifiers:
@@ -114,8 +124,11 @@ func serialize_active_modifiers() -> Array[Dictionary]:
 		var eff_durations: Array[int] = []
 		for eff: RunEffect in opt.effects:
 			if is_instance_valid(eff):
-				var rem: int = int(modifier_wave_durations.get(eff.get_instance_id(), eff.duration_waves))
-				eff_durations.append(rem)
+				if not _active_effects.has(eff) and eff.duration_waves > 0:
+					eff_durations.append(0)
+				else:
+					var rem: int = int(modifier_wave_durations.get(eff.get_instance_id(), eff.duration_waves))
+					eff_durations.append(rem)
 
 		var res_path: String = opt.resource_path
 		if res_path.is_empty() and opt.has_meta(&"source_resource_path"):
@@ -130,6 +143,8 @@ func serialize_active_modifiers() -> Array[Dictionary]:
 
 
 func restore_active_modifiers(data: Array) -> void:
+	clear_all_modifiers()
+
 	for item: Variant in data:
 		if not (item is Dictionary):
 			continue
@@ -158,12 +173,15 @@ func restore_active_modifiers(data: Array) -> void:
 			if not is_instance_valid(eff):
 				continue
 
-			eff.apply_effect(context)
-			_active_effects.append(eff)
-
 			var rem: int = eff.duration_waves
 			if i < durations.size():
 				rem = int(durations[i])
+
+			if eff.duration_waves > 0 and rem <= 0:
+				continue
+
+			eff.apply_effect(context)
+			_active_effects.append(eff)
 
 			if rem > 0:
 				modifier_wave_durations[eff.get_instance_id()] = rem

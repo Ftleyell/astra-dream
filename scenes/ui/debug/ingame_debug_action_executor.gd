@@ -161,14 +161,16 @@ static func max_all_weapons(main_game: Node2D) -> String:
 	return "Todas las armas alcanzaron su nivel máximo."
 
 static func jump_to_wave(main_game: Node2D, tree: SceneTree, target_wave: int) -> String:
-	if not main_game:
+	var game: MainGame = main_game as MainGame
+	if not game:
 		return "main_game no disponible."
-	main_game.set("current_wave", target_wave)
-	main_game.set("wave_timer", 45.0)
-	main_game.set("_wave_encounter_pending", false)
-	main_game.set("_wave_encounter_spawned_for_wave", 0)
+	game.current_wave = target_wave
+	game.wave_timer = 45.0
+	if game.encounter_controller:
+		game.encounter_controller.wave_encounter_pending = false
+		game.encounter_controller.wave_encounter_spawned_for_wave = 0
 
-	var hud = main_game.get("hud")
+	var hud: GameHUD = game.hud
 	if hud and hud.has_method("update_wave_status"):
 		hud.update_wave_status(target_wave, 45.0, 0, 3)
 

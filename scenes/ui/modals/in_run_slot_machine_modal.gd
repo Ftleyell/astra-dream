@@ -158,7 +158,7 @@ func open_slot_machine(beacon: Node2D, player: Player) -> void:
 	_reel_labels[1].text = "⭐"
 	_reel_labels[2].text = "💰"
 	show()
-	get_tree().paused = true
+	PauseArbitrator.acquire_pause(&"slot_machine")
 	_spin_button.grab_focus()
 
 func _update_ui_state() -> void:
@@ -321,7 +321,5 @@ func _trigger_global_magnet() -> void:
 
 func _on_close_pressed() -> void:
 	hide()
-	var tree := get_tree()
-	if tree:
-		tree.paused = false
+	PauseArbitrator.release_pause(&"slot_machine")
 	modal_closed.emit()

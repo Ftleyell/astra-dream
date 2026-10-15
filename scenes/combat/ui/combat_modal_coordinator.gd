@@ -190,7 +190,12 @@ func _step_next_modal() -> void:
 		if satellite_shop.has_method("open_shop"):
 			satellite_shop.open_shop(creds, sat_idx)
 	else:
-		if main_game and main_game.get_tree():
-			main_game.get_tree().paused = false
+		PauseArbitrator.release_pause(&"level_up")
+		PauseArbitrator.release_pause(&"satellite_shop")
+		PauseArbitrator.release_pause(&"arcana_selection")
+		PauseArbitrator.release_pause(&"chest_reward")
+		PauseArbitrator.release_pause(&"transmutation")
+		PauseArbitrator.release_pause(&"slot_machine")
+		PauseArbitrator.release_pause(&"slot_machine_reward")
 		resume_encounters_requested.emit()
 

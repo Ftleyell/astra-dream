@@ -20,11 +20,11 @@ var allied_wingman_scene: PackedScene = preload("res://scenes/combat/allies/alli
 var nyx_boss_escort_scene: PackedScene = preload("res://scenes/combat/bosses/nyx_boss_escort.tscn")
 var elite_herald_scene: PackedScene = preload("res://scenes/combat/bosses/elite_herald_boss.tscn")
 
-var main_game: Node2D = null
+var main_game: MainGame = null
 var cinematic_sequence: BossCinematicSequenceScript = null
 var health_bar_manager: BossHealthBarManagerScript = null
 
-func setup(p_main_game: Node2D, p_cinematic: BossCinematicSequenceScript, p_health_bar: BossHealthBarManagerScript) -> void:
+func setup(p_main_game: MainGame, p_cinematic: BossCinematicSequenceScript, p_health_bar: BossHealthBarManagerScript) -> void:
 	main_game = p_main_game
 	cinematic_sequence = p_cinematic
 	health_bar_manager = p_health_bar
@@ -65,29 +65,29 @@ func apply_adaptive_hp(boss_node: Node2D, player: Node2D, current_wave: int) -> 
 func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
 
-	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
-	var current_wave: int = int(main_game.get("current_wave"))
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller
+	var current_wave: int = main_game.current_wave
 	if enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave == current_wave and target_scene_override == null:
 		enc_ctrl.wave_encounter_pending = false
 		return
 
-	if target_scene_override == null and (main_game.call("is_any_combat_modal_active") or main_game.call("has_pending_upgrades")):
+	if target_scene_override == null and (main_game.is_any_combat_modal_active() or main_game.has_pending_upgrades()):
 		if enc_ctrl:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 0.5
 		return
 
-	if target_scene_override == null and main_game.call("_has_active_boss_or_rival"):
+	if target_scene_override == null and main_game._has_active_boss_or_rival():
 		if enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave != current_wave:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 1.0
 		return
 
-	var enemy_spawner: Node = main_game.get("enemy_spawner") as Node
+	var enemy_spawner: EnemySpawner = main_game.enemy_spawner
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 
@@ -122,7 +122,7 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 	else:
 		BossEmergenceHelperScript.prepare_boss(boss_node, boss_target_pos)
 	main_game.add_child(boss_node)
-	main_game.set("current_boss", boss_node)
+	main_game.current_boss = boss_node
 	if enc_ctrl:
 		enc_ctrl.wave_encounter_spawned_for_wave = current_wave
 		enc_ctrl.wave_encounter_pending = false
@@ -140,29 +140,29 @@ func spawn_wave_boss(target_scene_override: PackedScene = null) -> void:
 func spawn_final_boss(force_spawn: bool = false, wingman_callback: Callable = Callable()) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
 
-	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
-	var current_wave: int = int(main_game.get("current_wave"))
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller
+	var current_wave: int = main_game.current_wave
 	if not force_spawn and enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave == current_wave:
 		enc_ctrl.wave_encounter_pending = false
 		return
 
-	if not force_spawn and main_game.call("is_any_combat_modal_active"):
+	if not force_spawn and main_game.is_any_combat_modal_active():
 		if enc_ctrl:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 0.5
 		return
 
-	if not force_spawn and main_game.call("_has_active_boss_or_rival"):
+	if not force_spawn and main_game._has_active_boss_or_rival():
 		if enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave != current_wave:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 1.0
 		return
 
-	var enemy_spawner: Node = main_game.get("enemy_spawner") as Node
+	var enemy_spawner: EnemySpawner = main_game.enemy_spawner
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 
@@ -172,8 +172,8 @@ func spawn_final_boss(force_spawn: bool = false, wingman_callback: Callable = Ca
 	if bullet_srv:
 		bullet_srv.bomb_clear_all()
 
-	var rivals_spared: Array = enc_ctrl.rivals_spared if enc_ctrl else []
-	var rivals_killed: Array = enc_ctrl.rivals_killed if enc_ctrl else []
+	var rivals_spared: Array[StringName] = enc_ctrl.rivals_spared if enc_ctrl else ([] as Array[StringName])
+	var rivals_killed: Array[StringName] = enc_ctrl.rivals_killed if enc_ctrl else ([] as Array[StringName])
 	var route := "neutral"
 	if rivals_spared.size() >= 5:
 		route = "pacifist"
@@ -196,13 +196,13 @@ func spawn_final_boss(force_spawn: bool = false, wingman_callback: Callable = Ca
 	else:
 		BossEmergenceHelperScript.prepare_boss(prime, boss_target_pos)
 	main_game.add_child(prime)
-	main_game.set("current_boss", prime)
+	main_game.current_boss = prime
 	if enc_ctrl:
 		enc_ctrl.wave_encounter_spawned_for_wave = current_wave
 		enc_ctrl.wave_encounter_pending = false
 	apply_adaptive_hp(prime, player, current_wave)
 
-	health_bar_manager.bind_boss(prime, func(_b_id: String) -> void: main_game.call("_on_final_boss_defeated", route))
+	health_bar_manager.bind_boss(prime, func(_b_id: String) -> void: main_game._on_final_boss_defeated(route))
 	cinematic_sequence.play_final_boss_sequence(
 		prime,
 		boss_target_pos,
@@ -215,25 +215,25 @@ func spawn_final_boss(force_spawn: bool = false, wingman_callback: Callable = Ca
 func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
-	var current_wave: int = int(main_game.get("current_wave"))
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller
+	var current_wave: int = main_game.current_wave
 	if enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave == current_wave and override_id == &"":
 		enc_ctrl.wave_encounter_pending = false
 		return
 
-	if main_game.call("is_any_combat_modal_active") or (override_id == &"" and main_game.call("has_pending_upgrades")):
+	if main_game.is_any_combat_modal_active() or (override_id == &"" and main_game.has_pending_upgrades()):
 		if enc_ctrl:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 0.5
 		return
 
-	if override_id == &"" and main_game.call("_has_active_boss_or_rival"):
+	if override_id == &"" and main_game._has_active_boss_or_rival():
 		if enc_ctrl and enc_ctrl.wave_encounter_spawned_for_wave != current_wave:
 			enc_ctrl.wave_encounter_pending = true
 			enc_ctrl.wave_encounter_timer = 1.0
 		return
 
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
 
@@ -250,8 +250,8 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 			return
 		next_pid = unencountered[0]
 
-	main_game.set("is_rival_cinematic_active", true)
-	var enemy_spawner: Node = main_game.get("enemy_spawner") as Node
+	main_game.is_rival_cinematic_active = true
+	var enemy_spawner: EnemySpawner = main_game.enemy_spawner
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 	var bullet_srv: BulletServer = main_game.get_node_or_null("/root/BulletServer") as BulletServer
@@ -272,7 +272,7 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 	if rival.has_method("prepare_warp_in"):
 		rival.prepare_warp_in(rival_target_pos)
 	main_game.add_child(rival)
-	main_game.set("current_rival", rival)
+	main_game.current_rival = rival
 	if enc_ctrl:
 		enc_ctrl.wave_encounter_spawned_for_wave = current_wave
 		enc_ctrl.wave_encounter_pending = false
@@ -288,28 +288,28 @@ func spawn_rival_pilot(override_id: StringName = &"") -> void:
 func spawn_allied_wingmen() -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var player: Node2D = main_game.get("player")
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
-	var rivals_spared: Array = main_game.get("rivals_spared")
+	var rivals_spared: Array[StringName] = main_game.rivals_spared
 	for i in range(rivals_spared.size()):
 		var pid: StringName = rivals_spared[i]
-		var wingman = allied_wingman_scene.instantiate()
+		var wingman: Node2D = allied_wingman_scene.instantiate() as Node2D
 		wingman.global_position = player.global_position + Vector2(cos((TAU / 5.0) * float(i)), sin((TAU / 5.0) * float(i))) * 230.0
-		wingman.setup(pid, (TAU / 5.0) * float(i))
+		wingman.call("setup", pid, (TAU / 5.0) * float(i))
 		main_game.add_child(wingman)
 
 func spawn_elite_herald() -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var player: Node2D = main_game.get("player")
+	var player: Player = main_game.player
 	if not is_instance_valid(player) or not elite_herald_scene:
 		return
-	if main_game.get("current_boss") != null:
+	if main_game.current_boss != null:
 		return
 
-	var current_wave: int = int(main_game.get("current_wave"))
-	var p_vel: Vector2 = player.get("velocity") if "velocity" in player else Vector2.ZERO
+	var current_wave: int = main_game.current_wave
+	var p_vel: Vector2 = player.velocity
 	var forward: Vector2 = p_vel.normalized() if p_vel.length_squared() > 10.0 else Vector2.UP
 	var elite_pos: Vector2 = player.global_position + forward * 580.0
 
@@ -317,7 +317,7 @@ func spawn_elite_herald() -> void:
 	herald.global_position = elite_pos
 	herald.setup_type(current_wave)
 	apply_adaptive_hp(herald, player, current_wave)
-	main_game.set("current_boss", herald)
+	main_game.current_boss = herald
 	main_game.add_child(herald)
 
 	health_bar_manager.bind_boss(herald)
@@ -342,20 +342,20 @@ func spawn_boss_by_id(boss_id: String, play_intro: bool = true) -> void:
 	if play_intro:
 		spawn_wave_boss(scene)
 	else:
-		var player: Node2D = main_game.get("player")
+		var player: Player = main_game.player
 		if not is_instance_valid(player):
 			return
-		var p_vel: Vector2 = player.get("velocity") if "velocity" in player else Vector2.ZERO
+		var p_vel: Vector2 = player.velocity
 		var forward: Vector2 = p_vel.normalized() if p_vel.length_squared() > 10.0 else Vector2.UP
 		var target_pos: Vector2 = player.global_position + forward * 300.0
 		var boss_node: Node2D = scene.instantiate() as Node2D
 		boss_node.global_position = target_pos
 		boss_node.rotation = PI
 		boss_node.process_mode = Node.PROCESS_MODE_PAUSABLE
-		var cur_w: int = int(main_game.get("current_wave"))
+		var cur_w: int = main_game.current_wave
 		apply_adaptive_hp(boss_node, player, cur_w)
 		main_game.add_child(boss_node)
-		main_game.set("current_boss", boss_node)
+		main_game.current_boss = boss_node
 		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
 		var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
 		health_bar_manager.bind_boss(boss_node)

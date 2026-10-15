@@ -21,7 +21,7 @@ var _prompt_tween: Tween = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 
 	if fade_rect:
 		fade_rect.modulate.a = 1.0

@@ -9,7 +9,10 @@ const BossEmergenceHelperScript := preload("res://scenes/combat/bosses/boss_emer
 
 ## Prepara la posición de la cámara y orientación del jugador para duelos cinemáticos 1v1
 static func setup_cinematic_duel(main_game: Node2D, cin_zoom: float = 1.0) -> Dictionary:
-	var player: Node2D = main_game.get("player") as Node2D
+	var game: MainGame = main_game as MainGame
+	var player: Node2D = game.player if game else null
+	if not is_instance_valid(player) and main_game and main_game.get_tree():
+		player = main_game.get_tree().get_first_node_in_group("player") as Node2D
 	var half_width_world: float = 480.0 / cin_zoom
 	var separation_world: float = 960.0 / cin_zoom
 
@@ -50,13 +53,13 @@ static func restore_combat_after_emergence(main_game: Node2D, cam: GameCamera2D,
 		if player.has_method("resume_movement_control"):
 			player.resume_movement_control()
 	unfreeze_combat_environment(main_game)
-	main_game.set("is_boss_transmission_active", false)
+	var game: MainGame = main_game as MainGame
+	if game:
+		game.is_boss_transmission_active = false
+		game.notify_menu_closed(0.4)
+		game._resume_pending_systems_after_cinematics()
 	PauseArbitrator.release_pause(&"dialogue")
 	PauseArbitrator.release_pause(&"boss_cinematic")
-	if main_game.has_method("notify_menu_closed"):
-		main_game.call("notify_menu_closed", 0.4)
-	if main_game.has_method("_resume_pending_systems_after_cinematics"):
-		main_game.call("_resume_pending_systems_after_cinematics")
 
 ## Salto forzado total de emergencia: restaura visuales, colisiones, HUD y combate sin desfasar el estado
 static func force_finish_boss_emergence(main_game: Node2D, boss_node: Node2D) -> void:
@@ -76,7 +79,8 @@ static func force_finish_boss_emergence(main_game: Node2D, boss_node: Node2D) ->
 		BossEmergenceHelperScript.force_emergence(boss_node)
 
 	# 3. Mostrar y trackear en el HUD si no se había hecho aún
-	var hud = main_game.get("hud")
+	var game: MainGame = main_game as MainGame
+	var hud: GameHUD = game.hud if game else null
 	if hud and is_instance_valid(boss_node):
 		var b_name: String = String(boss_node.get("boss_name")) if "boss_name" in boss_node else "JEFE DE DOMINIO"
 		var b_hp: float = float(boss_node.get("max_health")) if "max_health" in boss_node else 1500.0
@@ -86,7 +90,9 @@ static func force_finish_boss_emergence(main_game: Node2D, boss_node: Node2D) ->
 
 	# 4. Descongelar entorno, reanudar cámara y jugador
 	var cam: GameCamera2D = main_game.get_tree().get_first_node_in_group("camera") as GameCamera2D if (main_game.get_tree()) else null
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Node2D = game.player if game else null
+	if not is_instance_valid(player) and main_game.get_tree():
+		player = main_game.get_tree().get_first_node_in_group("player") as Node2D
 	restore_combat_after_emergence(main_game, cam, player)
 
 ## Congela inmediatamente proyectiles, oleadas y enemigos menores sincronizados con la cinemática
@@ -94,8 +100,10 @@ static func freeze_combat_environment(main_game: Node2D) -> void:
 	if not is_instance_valid(main_game):
 		return
 
+	var game: MainGame = main_game as MainGame
+
 	# Otorgar invulnerabilidad total al jugador durante la cinemática
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Node2D = game.player if game else null
 	if not is_instance_valid(player) and main_game.get_tree():
 		player = main_game.get_tree().get_first_node_in_group("player") as Node2D
 	if is_instance_valid(player):
@@ -109,7 +117,7 @@ static func freeze_combat_environment(main_game: Node2D) -> void:
 		bullet_srv.bomb_clear_all()
 
 	# Pausar generación de nuevos enemigos
-	var enemy_spawner: Node = main_game.get("enemy_spawner")
+	var enemy_spawner: EnemySpawner = game.enemy_spawner if game else null
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(true)
 
@@ -134,7 +142,7 @@ static func freeze_combat_environment(main_game: Node2D) -> void:
 				shard.set_process(false)
 
 	# Descartar crisis y tormentas solares durante encuentros con jefes o rivales
-	var crisis_mgr: Node = main_game.get("crisis_manager")
+	var crisis_mgr: Node = game.crisis_manager if game else null
 	if not crisis_mgr:
 		crisis_mgr = main_game.get_node_or_null("CrisisEventManager")
 	if crisis_mgr and crisis_mgr.has_method("dismiss_for_boss_encounter"):
@@ -145,6 +153,7 @@ static func unfreeze_combat_environment(main_game: Node2D) -> void:
 	if not is_instance_valid(main_game):
 		return
 
+	var game: MainGame = main_game as MainGame
 	var tree := main_game.get_tree()
 	if tree:
 		# Reactivar procesamiento de enemigos comunes
@@ -164,12 +173,12 @@ static func unfreeze_combat_environment(main_game: Node2D) -> void:
 				shard.set_process(true)
 
 	# Reanudar generador de enemigos
-	var enemy_spawner: Node = main_game.get("enemy_spawner")
+	var enemy_spawner: EnemySpawner = game.enemy_spawner if game else null
 	if enemy_spawner and enemy_spawner.has_method("set_spawning_paused"):
 		enemy_spawner.set_spawning_paused(false)
 
 	# Levantar invulnerabilidad del jugador con buffer de gracia (0.5s) para reacción justa
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Node2D = game.player if game else null
 	if not is_instance_valid(player) and tree:
 		player = tree.get_first_node_in_group("player") as Node2D
 	if is_instance_valid(player) and tree:

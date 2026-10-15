@@ -15,7 +15,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	_wire_hub_button()
 
 	# Redirigir automáticamente al nuevo Menú Principal HUD 3D si se carga como escena actual

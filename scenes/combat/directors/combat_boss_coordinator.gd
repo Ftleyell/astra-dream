@@ -13,7 +13,7 @@ const BossEncounterSpawnerScript := preload("res://scenes/combat/directors/boss_
 const MAX_BOSS_LEASH_DISTANCE: float = 1400.0
 const BOSS_CATCHUP_COOLDOWN: float = 2.5
 
-var main_game: Node2D = null
+var main_game: MainGame = null
 var _catchup_timer: float = 0.0
 
 var health_bar_manager: BossHealthBarManagerScript = BossHealthBarManagerScript.new()
@@ -65,10 +65,10 @@ func setup_subsystem(p_context: CombatContextScript) -> void:
 	super.setup_subsystem(p_context)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if context and context.main_game:
-		main_game = context.main_game as Node2D
+		main_game = context.main_game as MainGame
 		_setup_subcomponents()
 
-func setup(game: Node2D) -> void:
+func setup(game: MainGame) -> void:
 	main_game = game
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_setup_subcomponents()
@@ -81,12 +81,12 @@ func _setup_subcomponents() -> void:
 func is_blocking_combat() -> bool:
 	if not main_game or not is_instance_valid(main_game):
 		return false
-	if main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
+	if main_game.is_cinematic_or_death_active():
 		return true
-	var current_boss: Node2D = main_game.get("current_boss") as Node2D
+	var current_boss: Node2D = main_game.current_boss
 	if is_instance_valid(current_boss) and not current_boss.is_queued_for_deletion():
 		return true
-	var current_rival: Node2D = main_game.get("current_rival") as Node2D
+	var current_rival: Node2D = main_game.current_rival
 	if is_instance_valid(current_rival) and not current_rival.is_queued_for_deletion():
 		return true
 	if is_inside_tree():
@@ -98,7 +98,7 @@ func is_blocking_combat() -> bool:
 func _physics_process(delta: float) -> void:
 	if not main_game or not is_instance_valid(main_game) or not main_game.is_inside_tree():
 		return
-	if get_tree().paused or (main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active()):
+	if get_tree().paused or main_game.is_cinematic_or_death_active():
 		return
 
 	if _catchup_timer > 0.0:
@@ -108,13 +108,13 @@ func _physics_process(delta: float) -> void:
 	_check_boss_leash_catchup()
 
 func _check_boss_leash_catchup() -> void:
-	var player: Node2D = main_game.get("player") as Node2D
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
 
-	var active_threat: Node2D = main_game.get("current_boss") as Node2D
+	var active_threat: Node2D = main_game.current_boss
 	if not is_instance_valid(active_threat):
-		active_threat = main_game.get("current_rival") as Node2D
+		active_threat = main_game.current_rival
 
 	if not is_instance_valid(active_threat) or not active_threat.is_inside_tree():
 		return
@@ -176,69 +176,68 @@ func jump_to_wave_16(route: String = "neutral") -> void:
 func on_rival_spared(p_id: StringName) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var r_spared: Array = main_game.get("rivals_spared")
+	var r_spared: Array[StringName] = main_game.rivals_spared
 	if not r_spared.has(p_id):
 		r_spared.append(p_id)
 	var r_name: String = String(p_id).capitalize()
-	var cur_rival: Node2D = main_game.get("current_rival")
+	var cur_rival: Node2D = main_game.current_rival
 	if cur_rival and "pilot_name" in cur_rival:
 		r_name = cur_rival.pilot_name
-	main_game.set("current_rival", null)
+	main_game.current_rival = null
 
 	health_bar_manager.hide_boss_bar()
 	health_bar_manager.show_character_unlock_banner(p_id, "PILOTO RESPETADA: " + r_name.to_upper(), "Has permitido que la piloto escape pacíficamente. Decisión registrada.")
 
-	var spawner_node: Node = main_game.get("enemy_spawner")
+	var spawner_node: EnemySpawner = main_game.enemy_spawner
 	if spawner_node and spawner_node.has_method("set_spawning_paused"):
 		spawner_node.set_spawning_paused(false)
-	main_game.call("save_current_run_state")
+	main_game.save_current_run_state()
 
 func on_rival_engaged(p_id: StringName) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var spawner_node: Node = main_game.get("enemy_spawner")
+	var spawner_node: EnemySpawner = main_game.enemy_spawner
 	if spawner_node and spawner_node.has_method("set_spawning_paused"):
 		spawner_node.set_spawning_paused(true)
 
-	var crisis_mgr: Node = main_game.get("crisis_manager")
+	var crisis_mgr: Node = main_game.crisis_manager
 	if not crisis_mgr:
 		crisis_mgr = main_game.get_node_or_null("CrisisEventManager")
 	if crisis_mgr and crisis_mgr.has_method("dismiss_for_boss_encounter"):
 		crisis_mgr.dismiss_for_boss_encounter()
 
-	var cur_rival: Node2D = main_game.get("current_rival")
+	var cur_rival: Node2D = main_game.current_rival
 	if cur_rival:
 		var r_name: String = "DUELO: " + (cur_rival.pilot_name if "pilot_name" in cur_rival else String(p_id).to_upper())
 		var r_hp: float = float(cur_rival.get("max_health")) if "max_health" in cur_rival else 950.0
 		health_bar_manager.show_rival_duel(cur_rival, r_name, r_hp)
 
-func on_rival_defeated(p_id: StringName, weapon: WeaponData) -> void:
+func on_rival_defeated(p_id: StringName, _weapon: WeaponData) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var r_killed: Array = main_game.get("rivals_killed")
+	var r_killed: Array[StringName] = main_game.rivals_killed
 	if not r_killed.has(p_id):
 		r_killed.append(p_id)
 	var r_name: String = String(p_id).capitalize()
-	var cur_rival: Node2D = main_game.get("current_rival")
+	var cur_rival: Node2D = main_game.current_rival
 	if cur_rival and "pilot_name" in cur_rival:
 		r_name = cur_rival.pilot_name
-	main_game.set("current_rival", null)
+	main_game.current_rival = null
 
 	health_bar_manager.hide_boss_bar()
 	health_bar_manager.show_rival_defeated_banner(p_id, r_name)
 
-	var spawner_node: Node = main_game.get("enemy_spawner")
+	var spawner_node: EnemySpawner = main_game.enemy_spawner
 	if spawner_node and spawner_node.has_method("set_spawning_paused"):
 		spawner_node.set_spawning_paused(false)
-	main_game.call("save_current_run_state")
-	main_game.call("_resume_pending_systems_after_cinematics")
+	main_game.save_current_run_state()
+	main_game._resume_pending_systems_after_cinematics()
 
 func on_boss_defeated(_boss_id: String) -> void:
 	if not main_game or not is_instance_valid(main_game):
 		return
-	var b_def_count: int = int(main_game.get("bosses_defeated_count")) + 1
-	main_game.set("bosses_defeated_count", b_def_count)
-	main_game.set("current_boss", null)
+	main_game.bosses_defeated_count += 1
+	main_game.current_boss = null
 
 	health_bar_manager.hide_boss_bar()
 
@@ -246,8 +245,8 @@ func on_boss_defeated(_boss_id: String) -> void:
 	if just_unlocked_nyx:
 		health_bar_manager.show_character_unlock_banner(&"nyx", "¡NUEVO PILOTO DESBLOQUEADO: NYX!", "Has derrotado a 10 Jefes Titanes en tu Carrera espacial.")
 
-	var spawner_node: Node = main_game.get("enemy_spawner")
+	var spawner_node: EnemySpawner = main_game.enemy_spawner
 	if spawner_node and spawner_node.has_method("set_spawning_paused"):
 		spawner_node.set_spawning_paused(false)
-	main_game.call("save_current_run_state")
-	main_game.call("_resume_pending_systems_after_cinematics")
+	main_game.save_current_run_state()
+	main_game._resume_pending_systems_after_cinematics()

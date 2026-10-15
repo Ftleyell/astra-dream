@@ -147,10 +147,11 @@ func test_run_modifier_manager_lifecycle() -> void:
 	assert_true(is_equal_approx(rmm.get_total_float_modifier(&"spawn_multiplier", 1.0), 1.4), "Spawn multiplier permanente debe seguir activo.")
 	assert_true(is_equal_approx(rmm.get_total_float_modifier(&"gold_multiplier", 1.0), 1.0), "Gold multiplier debe haberse revertido a 1.0 tras expirar.")
 
-	# Test de serialización y preservación de resource_path tras duplicate(false)
+	# Test de serialización, preservación de resource_path e idempotencia en restore_active_modifiers
 	var disk_fork: RunForkOptionData = load("res://resources/run_forks/starter/fork_hostile_storm.tres") as RunForkOptionData
 	if disk_fork:
 		rmm.register_fork_choice(disk_fork)
+	var pre_restore_spawn_mult: float = rmm.get_total_float_modifier(&"spawn_multiplier", 1.0)
 	var serialized: Array[Dictionary] = rmm.serialize_active_modifiers()
 	assert_true(serialized.size() >= 2, "Debe serializar los modificadores activos.")
 	var found_disk_path: bool = false
@@ -159,6 +160,13 @@ func test_run_modifier_manager_lifecycle() -> void:
 			found_disk_path = true
 			break
 	assert_true(found_disk_path, "serialize_active_modifiers debe preservar resource_path del recurso .tres original tras duplicate(false).")
+
+	# Restaurar sobre el mismo RunModifierManager: no debe duplicar el delta de fork_hostile_storm
+	rmm.restore_active_modifiers(serialized)
+	var post_restore_spawn_mult: float = rmm.get_total_float_modifier(&"spawn_multiplier", 1.0)
+	assert_true(is_equal_approx(post_restore_spawn_mult, 1.4), "restore_active_modifiers debe restaurar exactamente el multiplicador del recurso .tres (1.4) sin duplicar. Obtenido: %f (pre: %f)" % [post_restore_spawn_mult, pre_restore_spawn_mult])
+	var reserialized: Array[Dictionary] = rmm.serialize_active_modifiers()
+	assert_true(reserialized.size() == 1 and str(reserialized[0].get("resource_path", "")) == "res://resources/run_forks/starter/fork_hostile_storm.tres", "Re-serialización tras restore debe seguir preservando resource_path.")
 
 	rmm.queue_free()
 	print("[OK] test_run_modifier_manager_lifecycle")

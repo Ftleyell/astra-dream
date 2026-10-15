@@ -91,7 +91,7 @@ var gacha_interactable: HubInteractable3D:
 func _ready() -> void:
 	_init_subcomponents()
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
 	camera = HubCameraController3D.setup_camera(player_controller, camera, self)

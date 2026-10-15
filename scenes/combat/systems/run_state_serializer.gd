@@ -4,8 +4,8 @@ extends RefCounted
 ## Serializador y deserializador del estado completo de una Run de combate.
 ## Guarda armas equipadas, niveles, inventario, progreso de oleadas y rivales en SaveManager.
 
-static func get_run_state(main_game: Node) -> Dictionary:
-	var player: Player = main_game.get("player") as Player
+static func get_run_state(main_game: MainGame) -> Dictionary:
+	var player: Player = main_game.player
 	if not is_instance_valid(player) or player.current_health <= 0.0:
 		return {}
 
@@ -49,29 +49,29 @@ static func get_run_state(main_game: Node) -> Dictionary:
 
 	# Modificadores activos de Run (Bifurcaciones)
 	var run_modifiers: Array[Dictionary] = []
-	var rmm: Node = main_game.get("run_modifier_manager") as Node
-	if not rmm and "combat_context" in main_game and main_game.combat_context:
+	var rmm: Node = main_game.run_modifier_manager
+	if not rmm and main_game.combat_context:
 		rmm = main_game.combat_context.run_modifier_manager
 	if rmm and rmm.has_method("serialize_active_modifiers"):
 		run_modifiers = rmm.serialize_active_modifiers()
 
-	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
-	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator if "loot_coordinator" in main_game else null
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller
+	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator
 
 	return {
 		"version": 1,
 		"timestamp": Time.get_unix_time_from_system(),
 		"pilot_id": pilot_id,
 		"pilot_name": pilot_name,
-		"current_wave": main_game.get("current_wave"),
-		"wave_timer": main_game.get("wave_timer"),
-		"wave_satellites_spawned": main_game.get("wave_satellites_spawned"),
-		"satellites_collected_total": main_game.get("satellites_collected_total"),
-		"current_satellite_idx": main_game.get("current_satellite_idx"),
-		"run_time_elapsed": main_game.get("run_time_elapsed"),
-		"enemies_killed_count": main_game.get("enemies_killed_count"),
-		"bosses_defeated_count": main_game.get("bosses_defeated_count"),
-		"prologue_bonus_chosen": main_game.get("prologue_bonus_chosen"),
+		"current_wave": main_game.current_wave,
+		"wave_timer": main_game.wave_timer,
+		"wave_satellites_spawned": main_game.wave_satellites_spawned,
+		"satellites_collected_total": main_game.satellites_collected_total,
+		"current_satellite_idx": main_game.current_satellite_idx,
+		"run_time_elapsed": main_game.run_time_elapsed,
+		"enemies_killed_count": main_game.enemies_killed_count,
+		"bosses_defeated_count": main_game.bosses_defeated_count,
+		"prologue_bonus_chosen": main_game.prologue_bonus_chosen,
 		"player_health": player.current_health,
 		"player_level": player.current_level,
 		"player_exp": player.current_exp,
@@ -93,34 +93,34 @@ static func get_run_state(main_game: Node) -> Dictionary:
 		"_wave_encounter_checked_for_wave": enc_ctrl.wave_encounter_checked_for_wave if enc_ctrl else 0,
 		"_wave_encounter_spawned_for_wave": enc_ctrl.wave_encounter_spawned_for_wave if enc_ctrl else 0,
 		"_slot_machine_pity_chance": float(loot_coord.pity_chance) if loot_coord else 0.25,
-		"paid_chests_count": main_game.chest_director.paid_chests_count if ("chest_director" in main_game and main_game.chest_director) else 0,
-		"run_seed": int(main_game.get("run_seed")) if main_game.get("run_seed") != null else 0
+		"paid_chests_count": main_game.chest_director.paid_chests_count if main_game.chest_director else 0,
+		"run_seed": main_game.run_seed
 	}
 
-static func save_run_state(main_game: Node) -> void:
+static func save_run_state(main_game: MainGame) -> void:
 	var state := get_run_state(main_game)
 	if not state.is_empty():
 		SaveManager.save_active_run(state)
 
-static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
+static func restore_run_state(main_game: MainGame, run_data: Dictionary) -> void:
 	# 1. Variables de oleada y progresión global
 	if run_data.has("run_seed"):
-		main_game.set("run_seed", int(run_data["run_seed"]))
-	if "wave_pipeline" in main_game and main_game.wave_pipeline:
+		main_game.run_seed = int(run_data["run_seed"])
+	if main_game.wave_pipeline:
 		main_game.wave_pipeline.is_pre_round = false
-	main_game.set("is_pre_round", false)
-	main_game.set("current_wave", int(run_data.get("current_wave", 1)))
-	main_game.set("wave_timer", float(run_data.get("wave_timer", 30.0)))
+	main_game.is_pre_round = false
+	main_game.current_wave = int(run_data.get("current_wave", 1))
+	main_game.wave_timer = float(run_data.get("wave_timer", 30.0))
 
-	main_game.set("wave_satellites_spawned", int(run_data.get("wave_satellites_spawned", 0)))
-	main_game.set("satellites_collected_total", int(run_data.get("satellites_collected_total", 0)))
-	main_game.set("current_satellite_idx", int(run_data.get("current_satellite_idx", 1)))
-	main_game.set("run_time_elapsed", float(run_data.get("run_time_elapsed", 0.0)))
-	main_game.set("enemies_killed_count", int(run_data.get("enemies_killed_count", 0)))
-	main_game.set("bosses_defeated_count", int(run_data.get("bosses_defeated_count", 0)))
-	main_game.set("prologue_bonus_chosen", bool(run_data.get("prologue_bonus_chosen", true)))
+	main_game.wave_satellites_spawned = int(run_data.get("wave_satellites_spawned", 0))
+	main_game.satellites_collected_total = int(run_data.get("satellites_collected_total", 0))
+	main_game.current_satellite_idx = int(run_data.get("current_satellite_idx", 1))
+	main_game.run_time_elapsed = float(run_data.get("run_time_elapsed", 0.0))
+	main_game.enemies_killed_count = int(run_data.get("enemies_killed_count", 0))
+	main_game.bosses_defeated_count = int(run_data.get("bosses_defeated_count", 0))
+	main_game.prologue_bonus_chosen = bool(run_data.get("prologue_bonus_chosen", true))
 
-	var enc_ctrl: CombatEncounterController = main_game.encounter_controller if "encounter_controller" in main_game else null
+	var enc_ctrl: CombatEncounterController = main_game.encounter_controller
 	if enc_ctrl:
 		var def_wave: int = int(run_data.get("current_wave", 1))
 		enc_ctrl.wave_encounter_checked_for_wave = int(run_data.get("_wave_encounter_checked_for_wave", def_wave))
@@ -139,12 +139,12 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 			for q: Variant in run_data["rival_queue"]:
 				enc_ctrl.rival_queue.append(StringName(str(q)))
 
-	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator if "loot_coordinator" in main_game else null
+	var loot_coord: CombatLootCoordinator = main_game.loot_coordinator
 	if loot_coord:
 		var pity_val: Variant = run_data.get("_slot_machine_pity_chance")
 		loot_coord.pity_chance = float(pity_val) if pity_val != null else 0.25
 
-	var player: Player = main_game.get("player") as Player
+	var player: Player = main_game.player
 	if not is_instance_valid(player):
 		return
 
@@ -167,7 +167,7 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	# 3. Restaurar cartas de nivel elegidas (Brotato)
 	player.chosen_stat_cards.clear()
 	var saved_cards: Array = run_data.get("chosen_stat_cards", [])
-	var stat_deck: StatDeckManager = main_game.get("stat_deck_manager") as StatDeckManager
+	var stat_deck: StatDeckManager = main_game.stat_deck_manager
 	if stat_deck and "all_stat_cards" in stat_deck:
 		var card_map: Dictionary = {}
 		for card: StatCardData in stat_deck.all_stat_cards:
@@ -235,21 +235,22 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 
 	# 6. Restaurar salud
 	player.current_health = minf(float(run_data.get("player_health", 100.0)), player.stats.get_stat(&"max_health"))
-	main_game.set("_last_player_hp", player.current_health)
+	if main_game.feedback_coordinator:
+		main_game.feedback_coordinator._last_player_hp = player.current_health
 
 	# 7. Actualizar todo el HUD
-	var hud: GameHUD = main_game.get("hud") as GameHUD
+	var hud: GameHUD = main_game.hud
 	if hud:
 		hud.update_credits(player.run_credits)
 		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
-		hud.update_wave_status(main_game.get("current_wave"), main_game.get("wave_timer"), main_game.get("wave_satellites_spawned"), 1)
+		hud.update_wave_status(main_game.current_wave, main_game.wave_timer, main_game.wave_satellites_spawned, 1)
 		player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
 		player.bomb_used.emit(player.bomb_count)
 
 	# 8. Restaurar modificadores activos de Run (Bifurcaciones)
 	if run_data.has("run_modifiers"):
-		var rmm: Node = main_game.get("run_modifier_manager") as Node
-		if not rmm and "combat_context" in main_game and main_game.combat_context:
+		var rmm: Node = main_game.run_modifier_manager
+		if not rmm and main_game.combat_context:
 			rmm = main_game.combat_context.run_modifier_manager
 		if rmm and rmm.has_method("restore_active_modifiers"):
 			rmm.restore_active_modifiers(run_data["run_modifiers"])
