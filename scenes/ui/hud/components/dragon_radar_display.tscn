@@ -19,6 +19,7 @@ shader_parameter/mask_texture = ExtResource("3_mask")
 shader_parameter/use_mask_texture = true
 
 [node name="DragonRadar" type="Control"]
+process_mode = 1
 custom_minimum_size = Vector2(240, 240)
 layout_mode = 3
 anchors_preset = 0

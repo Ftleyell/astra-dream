@@ -93,7 +93,8 @@ if ($Test) {
         "test_phase6_tomes_and_dossier_runner.tscn",
         "test_arsenal_banlist_modal_runner.tscn",
         "test_dragon_radar_runner.tscn",
-        "unit/test_space_environment_integration.tscn"
+        "unit/test_space_environment_integration.tscn",
+        "test_run_fork_system_runner.tscn"
     )
     foreach ($cn in $coreNames) {
         $p = Join-Path $testsDir $cn

@@ -175,3 +175,25 @@ static func jump_to_wave(main_game: Node2D, tree: SceneTree, target_wave: int) -
 	kill_common_enemies(tree)
 	clear_all_bullets(tree)
 	return "Salto efectuado a Oleada %d." % target_wave
+
+static func trigger_run_fork(main_game: Node2D, tree: SceneTree) -> String:
+	if not main_game:
+		return "Error: main_game no disponible."
+	var director: Node = main_game.get("fork_director")
+	if not director and "combat_context" in main_game and main_game.combat_context:
+		director = main_game.combat_context.get("fork_director")
+	if not director and tree:
+		director = tree.get_first_node_in_group(&"fork_director")
+	if not director:
+		return "Error: CombatForkDirector no encontrado en la escena de combate."
+
+	kill_common_enemies(tree)
+	clear_all_bullets(tree)
+
+	if director.has_method("force_fork_selection"):
+		director.force_fork_selection()
+		return "Bifurcación táctica activada inmediatamente: frenando nave y proyectando cuadrantes."
+	elif director.has_method("start_wave_drain"):
+		director.start_wave_drain()
+		return "Drenado de oleada iniciado para bifurcación."
+	return "Error: el director no cuenta con métodos de activación."

@@ -146,7 +146,27 @@ static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) ->
 	var pipeline_script := load("res://scenes/combat/directors/combat_wave_pipeline.gd")
 
 	main_game.combat_context = ctx_script.new()
-	main_game.combat_context.initialize(player, main_game.camera, hud, main_game.bullet_server, main_game.enemy_spawner, main_game.space_object_spawner, main_game.chest_director, main_game.satellite_shop, main_game)
+	main_game.combat_context.initialize(player, main_game.camera, hud, main_game.bullet_server, main_game.enemy_spawner, main_game.space_object_spawner, main_game.chest_director, main_game.satellite_shop, main_game, main_game.satellite_coordinator, main_game.environment_host)
+
+	var rmm_script := load("res://scenes/combat/systems/run_modifier_manager.gd")
+	var rmm: RunModifierManager = rmm_script.new()
+	rmm.name = "RunModifierManager"
+	main_game.add_child(rmm)
+	main_game.run_modifier_manager = rmm
+	main_game.combat_context.run_modifier_manager = rmm
+
+	var fork_overlay_scene := load("res://scenes/combat/ui/run_fork_overlay.tscn")
+	var fork_overlay: RunForkOverlay = fork_overlay_scene.instantiate() as RunForkOverlay
+	main_game.add_child(fork_overlay)
+	main_game.fork_overlay = fork_overlay
+
+	var fork_dir_script := load("res://scenes/combat/directors/combat_fork_director.gd")
+	var fork_dir: CombatForkDirector = fork_dir_script.new()
+	fork_dir.name = "CombatForkDirector"
+	main_game.add_child(fork_dir)
+	main_game.fork_director = fork_dir
+	main_game.combat_context.fork_director = fork_dir
+	fork_dir.setup_director(main_game.combat_context, fork_overlay)
 
 	var pipe = pipeline_script.new()
 	pipe.name = "CombatWavePipeline"
@@ -165,11 +185,14 @@ static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) ->
 	pipe.register_subsystem(main_game.satellite_coordinator)
 	pipe.register_subsystem(main_game.loot_coordinator)
 	pipe.register_subsystem(main_game.narrative_director)
+	pipe.register_subsystem(rmm)
+	pipe.register_subsystem(fork_dir)
 	if main_game.environment_host:
 		if not main_game.environment_host.is_inside_tree():
 			main_game.environment_host.name = "SpaceEnvironmentHost"
 			main_game.add_child(main_game.environment_host)
 		pipe.register_subsystem(main_game.environment_host)
+
 
 	main_game.last_anchor_pos = player.global_position
 	main_game.process_mode = Node.PROCESS_MODE_ALWAYS

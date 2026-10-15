@@ -13,12 +13,15 @@ signal pre_round_started(duration: float)
 signal pre_round_ended()
 signal wave_started(wave_idx: int)
 signal wave_completed(wave_idx: int)
+signal wave_completed_drain_requested(wave_idx: int)
 
 const DEFAULT_WAVE_DURATION: float = 30.0
 const DEFAULT_PRE_ROUND_DURATION: float = 30.0
 
 var context: CombatContextScript = null
 var subsystems: Array[CombatSubsystemScript] = []
+var fork_director: Node = null
+
 
 var is_pre_round: bool = true
 var pre_round_timer: float = DEFAULT_PRE_ROUND_DURATION
@@ -51,8 +54,35 @@ func setup_pipeline(
 func register_subsystem(subsystem: CombatSubsystemScript) -> void:
 	if subsystem and not subsystems.has(subsystem):
 		subsystems.append(subsystem)
+		if subsystem.has_method("start_wave_drain"):
+			_bind_fork_director(subsystem)
 		if context:
 			subsystem.setup_subsystem(context)
+
+
+func _bind_fork_director(director: Node) -> void:
+	fork_director = director
+	if director.has_signal("fork_selection_completed"):
+		if not director.fork_selection_completed.is_connected(_on_fork_selection_completed):
+			director.fork_selection_completed.connect(_on_fork_selection_completed)
+
+
+func _on_fork_selection_completed(_chosen_option: Variant) -> void:
+	_complete_and_advance_wave()
+
+
+func _get_fork_director() -> Node:
+	if fork_director and is_instance_valid(fork_director):
+		return fork_director
+	if context and context.fork_director and is_instance_valid(context.fork_director):
+		_bind_fork_director(context.fork_director)
+		return context.fork_director
+	for sub in subsystems:
+		if is_instance_valid(sub) and sub.has_method("start_wave_drain"):
+			_bind_fork_director(sub)
+			return sub
+	return null
+
 
 
 func register_child_subsystems(root_node: Node) -> void:
@@ -118,7 +148,15 @@ func _tick_active_wave(delta: float, is_major_combat_active: bool) -> void:
 				sub.on_wave_tick(delta, wave_timer)
 
 		if wave_timer <= 0.0:
-			_complete_and_advance_wave()
+			wave_timer = 0.0
+			var director: Node = _get_fork_director()
+			if director != null and director.has_method("start_wave_drain"):
+				if not director.is_active():
+					wave_completed_drain_requested.emit(current_wave)
+					director.start_wave_drain()
+			else:
+				_complete_and_advance_wave()
+
 
 	if on_hud_update_callable.is_valid():
 		on_hud_update_callable.call(false, current_wave, wave_timer)

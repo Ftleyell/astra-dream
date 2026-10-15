@@ -316,6 +316,18 @@ func bomb_clear_all() -> void:
 func clear_all_bullets() -> void:
 	bomb_clear_all()
 
+func despawn_offscreen_bullets(camera_viewport_rect: Rect2, margin: float = 120.0) -> int:
+	var expanded_rect: Rect2 = camera_viewport_rect.grow(margin)
+	var culled: int = 0
+	for i in range(active_count - 1, -1, -1):
+		if not expanded_rect.has_point(Vector2(pos_x[i], pos_y[i])):
+			_swap_and_pop(i)
+			culled += 1
+	if culled > 0 and multimesh_rid.is_valid():
+		RenderingServer.multimesh_set_visible_instances(multimesh_rid, active_count)
+	return culled
+
+
 # MÉTODOS DE CONTROL PARA ENEMIGOS COMUNES (LÍMITE ESTRICTO ANTI-LAG A VELOCIDAD X4)
 func can_common_enemy_shoot() -> bool:
 	return active_common_bullets < MAX_COMMON_ENEMY_BULLETS

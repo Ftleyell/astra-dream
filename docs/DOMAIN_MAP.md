@@ -136,9 +136,11 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | Coordinador de Jefes | `scenes/combat/directors/combat_boss_coordinator.gd` | Gestión de entrada, banners de alerta, música de boss y milestones. |
 | Spawner de Encuentros | `scenes/combat/directors/boss_encounter_spawner.gd` | Instanciación de jefes según el cronograma `EncounterTimelineConfig`. |
 | Director Narrativo | `scenes/combat/directors/combat_narrative_director.gd` | Diálogos de radio, transmisiones e interrupciones narrativas. |
+| Director de Bifurcaciones | `scenes/combat/directors/combat_fork_director.gd` | Gestión de decisiones in-run (forks), detección por umbral de distancia y orquestación cinemática. |
+| Manager de Modificadores | `scenes/combat/systems/run_modifier_manager.gd` | Aplicación y almacenamiento de modificadores activos de la run. |
 | Jefe Rival | `scenes/combat/bosses/rival_pilot_boss.gd` | Comportamientos tácticos de la nave rival (`rival_engagement_behavior.gd`). |
 
-- **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "boss"` y `test_rival_engagement_rules`
+- **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "boss"` y `test_run_fork`
 
 ---
 
@@ -327,11 +329,12 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "rival_engage
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "proc_coefficients_and_osp"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "phase5_boss_and_bullets"
 
-# Economía, Satélites y Persistencia
+# Economía, Satélites, Persistencia y Bifurcaciones
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "satellite_items"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "chest_economy"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine_and_gacha"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 ```
 
 ### Verificación Integral Final (Solo antes de dar por cerrada una tarea)
@@ -339,4 +342,4 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 ```
-*(Ejecuta las 23 suites clave de regresión rápida con timeout estricto de 15s por suite).*
+*(Ejecuta las 24 suites clave de regresión rápida con timeout estricto de 15s por suite).*

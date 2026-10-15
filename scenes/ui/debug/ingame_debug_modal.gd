@@ -68,6 +68,7 @@ signal modal_closed()
 @onready var wave_btns_container: HBoxContainer = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/WaveJumpRow") as HBoxContainer
 @onready var add_30s_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow/Add30sBtn") as Button
 @onready var finish_wave_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow/FinishWaveBtn") as Button
+@onready var trigger_fork_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow/TriggerForkBtn") as Button
 @onready var crisis_solar_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow/CrisisSolarBtn") as Button
 @onready var crisis_flock_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow/CrisisFlockBtn") as Button
 @onready var crisis_mitosis_btn: Button = get_node_or_null("CenterContainer/MainPanel/Margin/VBox/WavesContent/CrisisRow/CrisisMitosisBtn") as Button
@@ -453,6 +454,13 @@ func _setup_waves_tab() -> void:
 				close()
 		)
 		UIFocusHelper.apply_cyber_focus(finish_wave_btn)
+
+	if trigger_fork_btn:
+		trigger_fork_btn.pressed.connect(func():
+			_set_feedback(IngameDebugActionExecutor.trigger_run_fork(main_game, get_tree()))
+			close()
+		)
+		UIFocusHelper.apply_cyber_focus(trigger_fork_btn)
 
 	if crisis_solar_btn:
 		crisis_solar_btn.pressed.connect(func(): _trigger_crisis("solar_storm"))

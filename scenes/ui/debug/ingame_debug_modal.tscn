@@ -388,6 +388,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
 text = "⏩ FINALIZAR OLEADA (Siguiente fase)"
 
+[node name="TriggerForkBtn" type="Button" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent/TimeRow"]
+custom_minimum_size = Vector2(250, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.8, 1)
+text = "🔀 PROBAR BIFURCACIÓN"
+
 [node name="CrisisHeader" type="Label" parent="CenterContainer/MainPanel/Margin/VBox/WavesContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.2, 1)

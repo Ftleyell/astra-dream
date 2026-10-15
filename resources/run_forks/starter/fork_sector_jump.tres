@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RunForkOptionData" load_steps=4 format=3 uid="uid://fork_sector_jump_02"]
+
+[ext_resource type="Script" path="res://core/data/run_forks/run_fork_option_data.gd" id="1_opt"]
+[ext_resource type="Script" path="res://core/data/run_forks/effects/biome_change_run_effect.gd" id="2_eff"]
+
+[sub_resource type="Resource" id="Resource_eff1"]
+script = ExtResource("2_eff")
+effect_name = "Sector Jump: Hyperion Forge"
+duration_waves = -1
+target_region_id = &"hyperion_forge"
+blend_duration = 3.0
+
+[resource]
+script = ExtResource("1_opt")
+id = &"sector_jump"
+title = "Salto de Sector"
+description = "Transición inmediata hacia la Forja de Hiperión. Las anomalías cósmicas alteran el entorno."
+rarity = 2
+weight = 80.0
+min_wave = 2
+max_wave = 999
+effects = [SubResource("Resource_eff1")]

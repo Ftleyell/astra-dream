@@ -18,6 +18,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
 | **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
+| **Bifurcaciones de Run (Forks)** | `scenes/combat/directors/combat_fork_director.gd` | `run_modifier_manager.gd`, `run_fork_overlay.gd`, `fork_choice_card.gd`, `core/data/run_forks/` |
 | **Encuentro Rival** | `scenes/combat/bosses/rival_pilot_boss.gd` | `rival_engagement_behavior.gd`, `rival_flight_motor.gd` |
 | **Entorno y Fondo Espacial** | `scenes/combat/environment/space_environment_host.gd` | `base_space_environment.gd`, `cosmos_combat_environment.gd`, `cosmos/` (`CosmosHostController`, `CosmosRootNode`, `OrbitalWorldFollower2D`) |
 | **Satélites y Estaciones** | `scenes/combat/systems/combat_satellite_coordinator.gd` | `satellite_odometer.gd`, `satellite_spawn_selector.gd`, `satellite_shop.gd`, `slot_machine_beacon.gd`, `transmutation_station.gd` |
@@ -86,6 +87,7 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Jefes y Encuentros** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "boss"` |
 | **Persistencia y Serialización** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"` |
 | **Satélites y Economía** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "satellite_items"` |
+| **Bifurcaciones de Run (Forks)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 
 ---

@@ -14,6 +14,7 @@ func _ready() -> void:
 	test_blip_creation_and_decay()
 	test_sweep_angle_detection()
 	test_radar_display_node_lifecycle()
+	test_radar_freezes_when_paused()
 	
 	pass_suite("DragonRadarSuite completada con 100% de éxito")
 
@@ -53,5 +54,21 @@ func test_radar_display_node_lifecycle() -> void:
 	add_child(radar_inst)
 	assert_true(radar_inst.get_node_or_null("RadarScreen") != null, "Debe inicializar RadarScreen")
 	assert_true(radar_inst.get_node_or_null("RadarFrame") != null, "Debe inicializar RadarFrame")
+	assert_true(radar_inst.process_mode == Node.PROCESS_MODE_PAUSABLE, "Debe tener process_mode = PROCESS_MODE_PAUSABLE")
 	
 	radar_inst.queue_free()
+
+func test_radar_freezes_when_paused() -> void:
+	var radar = HUDDragonRadarDisplayClass.new()
+	add_child(radar)
+	assert_true(radar.process_mode == Node.PROCESS_MODE_PAUSABLE, "Radar debe tener process_mode = PROCESS_MODE_PAUSABLE")
+	
+	radar._current_sweep_angle = 1.25
+	# Simular pausa
+	get_tree().paused = true
+	radar._process(0.1)
+	assert_true(is_equal_approx(radar._current_sweep_angle, 1.25), "El ángulo de barrido debe quedar congelado cuando get_tree().paused es true")
+	get_tree().paused = false
+	
+	radar.queue_free()
+

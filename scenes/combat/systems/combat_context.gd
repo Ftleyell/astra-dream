@@ -20,6 +20,10 @@ var space_object_spawner: Node = null
 var chest_director: Node = null
 var satellite_shop: Node = null
 var main_game: Node = null
+var satellite_coordinator: Node = null
+var environment_host: Node = null
+var run_modifier_manager: Node = null
+var fork_director: Node = null
 
 # Estado global de la run
 var current_wave: int = 1
@@ -41,7 +45,11 @@ func initialize(
 	p_space_object_spawner: Node = null,
 	p_chest_director: Node = null,
 	p_satellite_shop: Node = null,
-	p_main_game: Node = null
+	p_main_game: Node = null,
+	p_satellite_coordinator: Node = null,
+	p_environment_host: Node = null,
+	p_run_modifier_manager: Node = null,
+	p_fork_director: Node = null
 ) -> void:
 	player = p_player
 	camera = p_camera
@@ -52,6 +60,11 @@ func initialize(
 	chest_director = p_chest_director
 	satellite_shop = p_satellite_shop
 	main_game = p_main_game
+	satellite_coordinator = p_satellite_coordinator
+	environment_host = p_environment_host
+	run_modifier_manager = p_run_modifier_manager
+	fork_director = p_fork_director
+
 
 
 func notify_wave_started(wave_idx: int) -> void:

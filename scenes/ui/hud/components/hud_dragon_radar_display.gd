@@ -40,6 +40,7 @@ var _blips_layer: Control = null
 const MASK_USEFUL_RADIUS_RATIO: float = 0.430 # ~441px en 1024px
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_setup_visual_nodes()
 
@@ -101,6 +102,9 @@ func set_player(p_player: Node2D) -> void:
 	player_ref = p_player
 
 func _process(delta: float) -> void:
+	if get_tree().paused:
+		return
+
 	# 1. Avanzar ángulo de sweep
 	_prev_sweep_angle = _current_sweep_angle
 	_current_sweep_angle = fmod(_current_sweep_angle + sweep_speed * delta, TAU)

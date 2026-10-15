@@ -40,6 +40,14 @@ static func get_run_state(main_game: Node) -> Dictionary:
 	for card in player.chosen_stat_cards:
 		cards_data.append(String(card.card_id))
 
+	# Modificadores activos de Run (Bifurcaciones)
+	var run_modifiers: Array[Dictionary] = []
+	var rmm: Node = main_game.get("run_modifier_manager")
+	if not rmm and "combat_context" in main_game and main_game.combat_context:
+		rmm = main_game.combat_context.run_modifier_manager
+	if rmm and rmm.has_method("serialize_active_modifiers"):
+		run_modifiers = rmm.serialize_active_modifiers()
+
 	return {
 		"version": 1,
 		"timestamp": Time.get_unix_time_from_system(),
@@ -66,6 +74,7 @@ static func get_run_state(main_game: Node) -> Dictionary:
 		"equipped_weapons": weapons_data,
 		"equipped_items": items_data,
 		"chosen_stat_cards": cards_data,
+		"run_modifiers": run_modifiers,
 		"rivals_spared": main_game.get("rivals_spared").duplicate() if main_game.get("rivals_spared") else [],
 		"rivals_killed": main_game.get("rivals_killed").duplicate() if main_game.get("rivals_killed") else [],
 		"rival_queue": main_game.get("rival_queue").duplicate() if main_game.get("rival_queue") else [],
@@ -214,3 +223,12 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 		hud.update_wave_status(main_game.get("current_wave"), main_game.get("wave_timer"), main_game.get("wave_satellites_spawned"), 1)
 		player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
 		player.bomb_used.emit(player.bomb_count)
+
+	# 8. Restaurar modificadores activos de Run (Bifurcaciones)
+	if run_data.has("run_modifiers"):
+		var rmm: Node = main_game.get("run_modifier_manager")
+		if not rmm and "combat_context" in main_game and main_game.combat_context:
+			rmm = main_game.combat_context.run_modifier_manager
+		if rmm and rmm.has_method("restore_active_modifiers"):
+			rmm.restore_active_modifiers(run_data["run_modifiers"])
+

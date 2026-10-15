@@ -44,8 +44,34 @@ var enemy_pool: Node = EnemyNodePoolScript.new()
 
 signal swarm_rush_triggered(drone_count: int)
 
+var is_spawning_enabled: bool:
+	get: return not is_spawning_paused
+	set(val): is_spawning_paused = not val
+
 func set_spawning_paused(p_paused: bool) -> void:
 	is_spawning_paused = p_paused
+
+func despawn_offscreen_enemies(camera_viewport_rect: Rect2, margin: float = 120.0) -> int:
+	if not is_inside_tree():
+		return 0
+	var expanded_rect: Rect2 = camera_viewport_rect.grow(margin)
+	var culled_count: int = 0
+	for enemy in get_tree().get_nodes_in_group(&"enemies"):
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not expanded_rect.has_point(enemy.global_position):
+			enemy.queue_free()
+			culled_count += 1
+	return culled_count
+
+func get_onscreen_enemy_count(camera_viewport_rect: Rect2, margin: float = 60.0) -> int:
+	if not is_inside_tree():
+		return 0
+	var expanded_rect: Rect2 = camera_viewport_rect.grow(margin)
+	var count: int = 0
+	for enemy in get_tree().get_nodes_in_group(&"enemies"):
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and expanded_rect.has_point(enemy.global_position):
+			count += 1
+	return count
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -186,7 +212,12 @@ func _get_curse_level() -> float:
 
 func _get_density_multiplier() -> float:
 	var curse: float = _get_curse_level()
-	return 1.0 + (curse * 0.005)
+	var spawn_mod: float = 1.0
+	var rmm: Node = get_tree().get_first_node_in_group(&"run_modifier_manager") if is_inside_tree() else null
+	if rmm and rmm.has_method("get_total_float_modifier"):
+		spawn_mod = rmm.get_total_float_modifier(&"spawn_multiplier", 1.0)
+	return (1.0 + (curse * 0.005)) * spawn_mod
+
 
 func _get_effective_max_enemies() -> int:
 	return int(round(float(max_enemies) * _get_density_multiplier()))
@@ -338,5 +369,9 @@ func _spawn_enemy_at(scene: PackedScene, pos: Vector2) -> Node2D:
 			enemy.move_speed = enemy.get_meta(&"base_move_speed")
 		elif enemy.has_meta(&"base_movement_speed"):
 			enemy.movement_speed = enemy.get_meta(&"base_movement_speed")
+
+		var rmm: Node = get_tree().get_first_node_in_group(&"run_modifier_manager") if is_inside_tree() else null
+		if rmm and rmm.has_method("notify_enemy_spawned"):
+			rmm.notify_enemy_spawned(enemy)
 
 	return enemy

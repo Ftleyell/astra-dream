@@ -45,6 +45,10 @@ var loot_coordinator: CombatLootCoordinator = null
 
 var combat_context: CombatContextScript = null
 var wave_pipeline: CombatWavePipelineScript = null
+var run_modifier_manager: Node = null
+var fork_director: Node = null
+var fork_overlay: CanvasLayer = null
+
 
 @onready var player: Player = $Player
 @onready var bullet_server: BulletServer = $BulletServer
