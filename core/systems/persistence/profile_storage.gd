@@ -233,6 +233,28 @@ static func save_profile(
 	_update_cache(assemble_profile_dict(roster, economy, settings), true)
 	return OK
 
+static func save_profile_fields(updates: Dictionary) -> Error:
+	var prof: Dictionary = load_profile()
+	for k: Variant in updates.keys():
+		prof[str(k)] = updates[k]
+	var validated: Dictionary = clean_and_validate_data(prof)
+	var roster: RefCounted = ProfileRosterDataScript.new()
+	roster.populate_from_dict(validated)
+	var economy: RefCounted = ProfileEconomyDataScript.new()
+	economy.populate_from_dict(validated)
+	var settings: RefCounted = ProfileSettingsDataScript.new()
+	settings.populate_from_dict(validated)
+	var payload: Dictionary = serialize_profile(roster, economy, settings)
+
+	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if not file:
+		return FileAccess.get_open_error()
+
+	file.store_string(JSON.stringify(payload, "\t"))
+	file.close()
+	_update_cache(validated, true)
+	return OK
+
 # ==============================================================================
 # ACCESORES ESPECÍFICOS DE ROSTER Y EQUIPAMIENTO
 # ==============================================================================
@@ -256,13 +278,7 @@ static func set_character_active_tomes(char_id: StringName, tomes: Array[StringN
 	for t: StringName in tomes:
 		str_arr.append(str(t))
 	tomes_dict[str(char_id)] = str_arr
-	prof["character_active_tomes"] = tomes_dict
-
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(prof, "\t"))
-		file.close()
-		_update_cache(clean_and_validate_data(prof), true)
+	save_profile_fields({"character_active_tomes": tomes_dict})
 
 static func get_character_active_weapons(char_id: StringName) -> Array[StringName]:
 	var prof: Dictionary = load_profile()
@@ -283,13 +299,7 @@ static func set_character_active_weapons(char_id: StringName, weapons: Array[Str
 	for w: StringName in weapons:
 		str_arr.append(str(w))
 	weapons_dict[str(char_id)] = str_arr
-	prof["character_active_weapons"] = weapons_dict
-
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(prof, "\t"))
-		file.close()
-		_update_cache(clean_and_validate_data(prof), true)
+	save_profile_fields({"character_active_weapons": weapons_dict})
 
 static func get_unlocked_items() -> Array[StringName]:
 	var prof: Dictionary = load_profile()
@@ -329,13 +339,7 @@ static func set_character_banlist(char_id: StringName, banned_ids: Array[StringN
 	for b: StringName in banned_ids:
 		str_arr.append(str(b))
 	ban_dict[str(char_id)] = str_arr
-	prof["character_banlists"] = ban_dict
-
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(prof, "\t"))
-		file.close()
-		_update_cache(clean_and_validate_data(prof), true)
+	save_profile_fields({"character_banlists": ban_dict})
 
 static func get_character_loadout(char_id: StringName) -> Dictionary:
 	var prof: Dictionary = load_profile()
@@ -366,10 +370,4 @@ static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> v
 	var prof: Dictionary = load_profile()
 	var loadouts: Dictionary = prof.get("character_loadouts", {}).duplicate()
 	loadouts[str(char_id)] = loadout.duplicate()
-	prof["character_loadouts"] = loadouts
-
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(prof, "\t"))
-		file.close()
-		_update_cache(clean_and_validate_data(prof), true)
+	save_profile_fields({"character_loadouts": loadouts})

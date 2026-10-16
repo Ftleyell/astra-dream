@@ -9,6 +9,9 @@ extends CharacterBody2D
 signal health_changed(current: float, max_val: float)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/nyx_boss_escort.tres")
+
+@export var boss_data: BossData = null
 @export var max_health: float = 1600.0
 @export var pilot_id: StringName = &"nyx"
 @export var pilot_name: String = "Nyx, Vengadora del Vacío"
@@ -33,12 +36,24 @@ var engine_trail: Line2D = null
 var hit_flash_tween: Tween = null
 var base_color: Color = Color(1.0, 0.35, 0.65, 1.0)
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(1.2, 1.2)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -121,11 +136,14 @@ func _physics_process(delta: float) -> void:
 	if is_instance_valid(prime_boss):
 		anchor_pos = prime_boss.global_position
 
-	var target_pos := anchor_pos + Vector2(cos(orbit_angle), sin(orbit_angle)) * 140.0
+	var orbit_dist: float = boss_data.desired_distance if boss_data else 140.0
+	var target_pos := anchor_pos + Vector2(cos(orbit_angle), sin(orbit_angle)) * orbit_dist
 
 	dash_timer -= delta
 	if dash_timer <= 0.0 and not is_dashing:
-		dash_timer = randf_range(3.5, 5.0)
+		var d_min: float = boss_data.dash_cooldown_min if boss_data else 3.5
+		var d_max: float = boss_data.dash_cooldown_max if boss_data else 5.0
+		dash_timer = randf_range(d_min, d_max)
 		_start_dash()
 
 	if is_dashing:
@@ -133,7 +151,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		var dir := (target_pos - global_position).normalized()
 		var dist := global_position.distance_to(target_pos)
-		var desired_vel := dir * clampf(dist * 4.0, 100.0, 340.0)
+		var max_spd: float = boss_data.move_speed_phase_1 if boss_data else 340.0
+		var desired_vel := dir * clampf(dist * 4.0, 100.0, max_spd)
 		velocity = velocity.move_toward(desired_vel, 800.0 * delta)
 
 	move_and_slide()
@@ -153,17 +172,21 @@ func _physics_process(delta: float) -> void:
 	# Ataque
 	attack_timer -= delta
 	if attack_timer <= 0.0:
-		attack_timer = randf_range(1.5, 2.2)
+		var a_min: float = boss_data.primary_attack_interval_p1 if boss_data else 1.5
+		var a_max: float = boss_data.secondary_attack_interval_p1 if boss_data else 2.2
+		attack_timer = randf_range(a_min, a_max)
 		_execute_attack()
 
 func _start_dash() -> void:
 	is_dashing = true
 	var dir := (player.global_position - global_position).normalized().rotated(randf_range(-0.4, 0.4))
-	dash_velocity = dir * 600.0
+	var d_spd: float = boss_data.dash_speed if boss_data else 600.0
+	dash_velocity = dir * d_spd
 	_play_sfx("dash", 1.3)
 
 	var tw := create_tween()
-	tw.tween_interval(0.35)
+	var d_dur: float = boss_data.dash_duration if boss_data else 0.35
+	tw.tween_interval(d_dur)
 	tw.tween_callback(func(): is_dashing = false)
 
 func _execute_attack() -> void:

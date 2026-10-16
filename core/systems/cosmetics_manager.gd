@@ -138,88 +138,22 @@ static func get_skins_for_target(category: String, target_id: String) -> Array[D
 	return result
 
 static func roll_random_skin() -> Dictionary:
-	var skins := get_all_skins()
-	if skins.is_empty():
-		return {}
-	
-	var common_pool: Array[Dictionary] = []
-	var rare_pool: Array[Dictionary] = []
-	var epic_pool: Array[Dictionary] = []
-	
-	for s_id in skins.keys():
-		var s: Dictionary = skins[s_id]
-		var rarity: String = s.get("rarity", "common")
-		if rarity == "epic":
-			epic_pool.append(s)
-		elif rarity == "rare":
-			rare_pool.append(s)
-		else:
-			common_pool.append(s)
-			
-	var roll := randf()
-	if roll < 0.15 and not epic_pool.is_empty():
-		return epic_pool[randi() % epic_pool.size()]
-	elif roll < 0.50 and not rare_pool.is_empty():
-		return rare_pool[randi() % rare_pool.size()]
-	elif not common_pool.is_empty():
-		return common_pool[randi() % common_pool.size()]
-		
-	var all_keys := skins.keys()
-	return skins[all_keys[randi() % all_keys.size()]]
+	return roll_banner_skin("general", false)
 
 static func roll_banner_skin(banner_id: String, is_pity: bool = false) -> Dictionary:
 	var skins := get_all_skins()
 	if skins.is_empty():
 		return {}
 
-	# Filtrar pool según el banner temático
-	var banner_skins: Array[Dictionary] = []
-	for sid in skins.keys():
-		var s: Dictionary = skins[sid]
-		var cat: String = s.get("category", "")
-		match banner_id:
-			"ships":
-				if cat == "ship" or cat == "weapon":
-					banner_skins.append(s)
-			"pilots":
-				if cat == "pilot" or cat == "navigator":
-					banner_skins.append(s)
-			_: # "general"
-				banner_skins.append(s)
-
+	var banner_skins: Array[Dictionary] = GachaBannerEngine.filter_skins_for_banner(skins, banner_id)
 	if banner_skins.is_empty():
-		return roll_random_skin()
+		banner_skins = GachaBannerEngine.filter_skins_for_banner(skins, "general")
+	if banner_skins.is_empty():
+		return {}
 
-	var common_pool: Array[Dictionary] = []
-	var rare_pool: Array[Dictionary] = []
-	var epic_pool: Array[Dictionary] = []
-
-	for s in banner_skins:
-		var rarity: String = s.get("rarity", "common")
-		if rarity == "epic":
-			epic_pool.append(s)
-		elif rarity == "rare":
-			rare_pool.append(s)
-		else:
-			common_pool.append(s)
-
-	# Si se activa el Pity (10 tiradas acumuladas), garantizar Épico (o Raro si no hay épico)
-	if is_pity:
-		if not epic_pool.is_empty():
-			return epic_pool[randi() % epic_pool.size()]
-		elif not rare_pool.is_empty():
-			return rare_pool[randi() % rare_pool.size()]
-
-	# Probabilidades estándar: 15% Épico, 35% Raro, 50% Común
-	var roll := randf()
-	if roll < 0.15 and not epic_pool.is_empty():
-		return epic_pool[randi() % epic_pool.size()]
-	elif roll < 0.50 and not rare_pool.is_empty():
-		return rare_pool[randi() % rare_pool.size()]
-	elif not common_pool.is_empty():
-		return common_pool[randi() % common_pool.size()]
-
-	return banner_skins[randi() % banner_skins.size()]
+	var simulated_pity: int = (GachaBannerEngine.PITY_THRESHOLD - 1) if is_pity else 0
+	var pull_res: Dictionary = GachaBannerEngine.resolve_pull(banner_id, simulated_pity, banner_skins)
+	return pull_res.get("skin", {})
 
 static func load_texture(tex_path: String) -> Texture2D:
 	if tex_path.is_empty():

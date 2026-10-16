@@ -156,6 +156,7 @@ func process_dash_procs(source_entity: Node) -> void:
 
 func process_take_damage_procs(incoming_damage: float, source_entity: Node) -> void:
 	var context := HitContext.new()
+	context.attacker = source_entity
 	context.victim = source_entity
 	context.raw_damage = incoming_damage
 	context.final_damage = incoming_damage
@@ -180,7 +181,10 @@ func process_take_damage_procs(incoming_damage: float, source_entity: Node) -> v
 				effect.execute(context, stacks, source_entity)
 
 func process_kill_procs(target_entity: Node) -> void:
+	var owner_node: Node = get_parent()
+	var source_node: Node = owner_node if owner_node != null else target_entity
 	var context := HitContext.new()
+	context.attacker = owner_node
 	context.victim = target_entity
 	if target_entity is Node2D:
 		context.hit_position = (target_entity as Node2D).global_position
@@ -200,7 +204,7 @@ func process_kill_procs(target_entity: Node) -> void:
 
 			var effective_chance: float = _calculate_chance(effect.base_chance, data.stack_type, stacks, data.hyperbolic_factor)
 			if randf() <= effective_chance:
-				effect.execute(context, stacks, target_entity)
+				effect.execute(context, stacks, source_node)
 
 func process_chest_opened_procs(source_entity: Node) -> void:
 	var context := HitContext.new()

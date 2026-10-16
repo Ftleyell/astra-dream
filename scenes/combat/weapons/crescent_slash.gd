@@ -207,6 +207,7 @@ func _check_slash_hits() -> void:
 					ctx_to_use = HitContext.new()
 					ctx_to_use.final_damage = 48.0
 					ctx_to_use.is_crit = false
+				ctx_to_use.hit_position = target.global_position
 				target.take_damage(ctx_to_use)
 
 				# Generar Hit VFX de incisión dimensional sobre la entidad impactada

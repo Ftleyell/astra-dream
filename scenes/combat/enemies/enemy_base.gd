@@ -7,6 +7,10 @@ extends CharacterBody2D
 
 signal enemy_died(enemy: CharacterBody2D)
 
+const _EnemyDataClass = preload("res://core/data/enemy_data.gd")
+const DEFAULT_ENEMY_DATA: EnemyData = preload("res://data/enemies/enemy_base.tres")
+
+@export var enemy_data: EnemyData = null
 @export var enemy_id: StringName = &"enemy_base"
 @export var max_health: float = 30.0
 @export var move_speed: float = 160.0
@@ -38,11 +42,32 @@ static func _get_shared_outline_material() -> ShaderMaterial:
 			_cached_outline_material.shader = shader
 	return _cached_outline_material
 
+func _init() -> void:
+	if enemy_data == null:
+		enemy_data = DEFAULT_ENEMY_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null:
+		enemy_data = DEFAULT_ENEMY_DATA
+	if enemy_data != null:
+		enemy_id = enemy_data.enemy_id
+		max_health = enemy_data.max_health
+		move_speed = enemy_data.move_speed
+		contact_damage = enemy_data.contact_damage
+		exp_reward = enemy_data.exp_reward
+		credits_reward = enemy_data.credits_reward
+		contact_radius = enemy_data.contact_radius
+		contact_interval = enemy_data.contact_interval
+		current_health = max_health
+
 func _ready() -> void:
+	if enemy_data == null:
+		_apply_enemy_data()
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	scale = Vector2(2.0, 2.0)
-	contact_radius *= 2.0
+	contact_radius = (enemy_data.contact_radius if enemy_data != null else contact_radius) * 2.0
 	current_health = max_health
 	_acquire_player()
 	_ready_custom()
@@ -55,8 +80,16 @@ func _reset_pool_state() -> void:
 	pass
 
 func reset_from_pool(pos: Vector2) -> void:
+	if has_meta("is_stutter_slowed"):
+		remove_meta("is_stutter_slowed")
+	if has_meta("stutter_orig_speed"):
+		remove_meta("stutter_orig_speed")
+	if has_meta("is_slowed"):
+		remove_meta("is_slowed")
+	_apply_enemy_data()
 	global_position = pos
 	velocity = Vector2.ZERO
+	contact_radius = (enemy_data.contact_radius if enemy_data != null else contact_radius) * 2.0
 	current_health = max_health
 	is_dying = false
 	contact_cooldown = 0.0
@@ -130,6 +163,11 @@ func take_damage(ctx: HitContext) -> void:
 	var dmg: float = ctx.final_damage
 	var is_crit: bool = ctx.is_crit
 
+	if dmg > 0.0:
+		ctx.victim = self
+		if ctx.hit_position == Vector2.ZERO:
+			ctx.hit_position = global_position
+
 	current_health -= dmg
 
 	if damage_accumulator and damage_accumulator.has_method("register_hit"):
@@ -139,6 +177,9 @@ func take_damage(ctx: HitContext) -> void:
 	modulate = Color(3.0, 3.0, 3.0, 1.0)
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate", Color.WHITE, 0.08)
+
+	if dmg > 0.0 and is_instance_valid(ctx.attacker) and "inventory" in ctx.attacker and ctx.attacker.inventory and ctx.proc_coefficient > 0.0:
+		ctx.attacker.inventory.process_hit_procs(ctx, ctx.attacker)
 
 	if current_health <= 0.0:
 		_die()

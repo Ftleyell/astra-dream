@@ -6,33 +6,34 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 ## Cada mitad tiene un temporizador de 5 segundos con un enlace de resonancia visible.
 ## Si ambas mitades sobreviven los 5 segundos, intentan fusionarse de vuelta en un Splitter.
 
-@export var is_micro_clone: bool = false
+const DEFAULT_SPLITTER_DATA: EnemyData = preload("res://data/enemies/enemy_splitter.tres")
+const DEFAULT_SPLITTER_MICRO_DATA: EnemyData = preload("res://data/enemies/enemy_splitter_micro.tres")
+
+@export var is_micro_clone: bool = false:
+	set(value):
+		is_micro_clone = value
+		enemy_data = DEFAULT_SPLITTER_MICRO_DATA if is_micro_clone else DEFAULT_SPLITTER_DATA
+		_apply_enemy_data()
 @export var fusion_countdown: float = 5.0
+@export var split_count: int = 2
 
 var twin_half: EnemySplitter = null
 var tether_line: Line2D = null
 var is_recombining: bool = false
 
 func _init() -> void:
-	_apply_stats()
+	enemy_data = DEFAULT_SPLITTER_MICRO_DATA if is_micro_clone else DEFAULT_SPLITTER_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	enemy_data = DEFAULT_SPLITTER_MICRO_DATA if is_micro_clone else DEFAULT_SPLITTER_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		fusion_countdown = enemy_data.fusion_countdown
+		split_count = enemy_data.split_count
 
 func _apply_stats() -> void:
-	if is_micro_clone:
-		enemy_id = &"enemy_splitter_micro"
-		max_health = 22.0
-		move_speed = 180.0
-		contact_damage = 8.0
-		exp_reward = 10.0
-		credits_reward = 1
-		contact_radius = 16.0
-	else:
-		enemy_id = &"enemy_splitter"
-		max_health = 75.0
-		move_speed = 135.0
-		contact_damage = 14.0
-		exp_reward = 30.0
-		credits_reward = 2
-		contact_radius = 26.0
+	_apply_enemy_data()
 
 func _ready_custom() -> void:
 	var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
@@ -67,10 +68,10 @@ func _ready_custom() -> void:
 	_reset_pool_state()
 
 func _reset_pool_state() -> void:
-	_apply_stats()
+	_apply_enemy_data()
+	contact_radius = (enemy_data.contact_radius if enemy_data != null else contact_radius) * 2.0
 	current_health = max_health
 	is_recombining = false
-	fusion_countdown = 5.0
 	if is_micro_clone:
 		scale = Vector2(1.3, 1.3)
 	else:

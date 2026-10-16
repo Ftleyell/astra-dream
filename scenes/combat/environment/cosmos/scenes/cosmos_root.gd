@@ -98,12 +98,27 @@ func _setup_viewport_tracker() -> void:
 	if not viewport_tracker.viewport_updated.is_connected(_on_viewport_updated):
 		viewport_tracker.viewport_updated.connect(_on_viewport_updated)
 
+var _has_runtime_profile_copy: bool = false
+
+func _ensure_runtime_environment_profile() -> void:
+	if environment_profile != null and not _has_runtime_profile_copy:
+		var was_connected: bool = environment_profile.changed.is_connected(apply_environment_profile)
+		if was_connected:
+			environment_profile.changed.disconnect(apply_environment_profile)
+		environment_profile = environment_profile.duplicate() as CosmosEnvProfile
+		_has_runtime_profile_copy = true
+		if not environment_profile.changed.is_connected(apply_environment_profile):
+			environment_profile.changed.connect(apply_environment_profile)
+
 func _init_environment_profile() -> void:
 	if environment_profile == null:
 		var default_res: CosmosEnvProfile = load("res://scenes/combat/environment/cosmos/resources/data/default_cosmos_environment.tres") as CosmosEnvProfile
 		if default_res != null:
-			environment_profile = default_res
-	elif not environment_profile.changed.is_connected(apply_environment_profile):
+			environment_profile = default_res.duplicate() as CosmosEnvProfile
+			_has_runtime_profile_copy = true
+	else:
+		_ensure_runtime_environment_profile()
+	if environment_profile != null and not environment_profile.changed.is_connected(apply_environment_profile):
 		environment_profile.changed.connect(apply_environment_profile)
 	
 	if environment_profile != null:
@@ -531,6 +546,7 @@ func cycle_biome(forward: bool = true) -> CosmosBiomeConfig:
 	var path: String = BIOME_PRESETS[_active_biome_index]
 	var biome_res: CosmosBiomeConfig = load(path) as CosmosBiomeConfig
 	if biome_res != null and environment_profile != null:
+		_ensure_runtime_environment_profile()
 		environment_profile.biome_a_profile = biome_res
 		environment_profile.biome_blend_factor = 0.0
 	return biome_res

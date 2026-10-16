@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_id = &"enemy_assault_cone"
+max_health = 110.0
+move_speed = 135.0
+contact_damage = 25.0
+exp_reward = 65.0
+credits_reward = 6
+contact_radius = 28.0
+contact_interval = 0.6
+attack_interval = 4.0
+telegraph_duration = 1.2
+charge_speed = 1200.0
+max_charge_distance = 2400.0

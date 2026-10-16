@@ -266,7 +266,8 @@ func try_open(player: Player, pool: ItemPoolManager = null) -> bool:
 	if modal and is_instance_valid(modal) and modal.is_inside_tree() and not draft_items.is_empty():
 		var paid_cost: int = 0 if was_free else current_cost
 		modal.open_draft(draft_items, was_free, player, func(chosen_item: ItemData) -> void:
-			chest_opened.emit(chosen_item, was_free, paid_cost)
+			if chosen_item != null:
+				chest_opened.emit(chosen_item, was_free, paid_cost)
 			_play_open_and_vanish_fx()
 		, paid_cost)
 	else:

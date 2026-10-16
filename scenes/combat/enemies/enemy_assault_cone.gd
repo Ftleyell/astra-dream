@@ -6,6 +6,8 @@ extends EnemyBase
 ## ultra-largo que atraviesa la pantalla completa, y tras el telegrafiado se lanza en una
 ## embestida a 750 px/s de punta a punta, manteniendo el indicador visible todo el trayecto.
 
+const DEFAULT_ASSAULT_CONE_DATA: EnemyData = preload("res://data/enemies/enemy_assault_cone.tres")
+
 @export var attack_interval: float = 4.0
 @export var telegraph_duration: float = 1.2
 @export var charge_speed: float = 1200.0
@@ -24,13 +26,18 @@ var _bullet_server: BulletServer = null
 var _telegraph_indicator: TelegraphIndicator = null
 
 func _init() -> void:
-	enemy_id = &"enemy_assault_cone"
-	max_health = 110.0
-	move_speed = 135.0
-	contact_damage = 25.0
-	exp_reward = 65.0
-	credits_reward = 6
-	contact_radius = 28.0
+	enemy_data = DEFAULT_ASSAULT_CONE_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_ASSAULT_CONE_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		attack_interval = enemy_data.attack_interval
+		telegraph_duration = enemy_data.telegraph_duration
+		charge_speed = enemy_data.charge_speed
+		max_charge_distance = enemy_data.max_charge_distance
 
 func _ready_custom() -> void:
 	_setup_telegraph()

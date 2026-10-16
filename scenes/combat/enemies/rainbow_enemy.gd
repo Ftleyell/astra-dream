@@ -7,9 +7,13 @@ extends EnemyBase
 ## Al ser destruido, genera una explosión sci-fi completa con restos de nave, onda expansiva,
 ## sacudida de pantalla, jackpot de créditos y un nivel completo instantáneo.
 
+const DEFAULT_RAINBOW_DATA: EnemyData = preload("res://data/enemies/rainbow_enemy.tres")
+
+@export var escape_duration: float = 45.0
+@export var panic_boost: float = 60.0
+
 var escape_timer: float = 45.0
 var panic_timer: float = 0.0
-const PANIC_BOOST: float = 60.0
 var _current_flight_dir: Vector2 = Vector2.RIGHT
 var is_escaping: bool = false
 var _flight_wobble_time: float = 0.0
@@ -28,15 +32,21 @@ static func _get_spark_texture() -> ImageTexture:
 		_cached_spark_texture = ImageTexture.create_from_image(img)
 	return _cached_spark_texture
 
+func _init() -> void:
+	enemy_data = DEFAULT_RAINBOW_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_RAINBOW_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		escape_duration = enemy_data.escape_duration
+		panic_boost = enemy_data.panic_boost
+		escape_timer = escape_duration
+
 func _ready_custom() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	enemy_id = &"enemy_rainbow"
-	max_health = 350.0
-	move_speed = 240.0
-	contact_damage = 0.0
-	credits_reward = 250
-	exp_reward = 100.0
-
 	# El Goblin Arcoíris no debe colisionar físicamente con ningún otro enemigo ni obstáculo
 	collision_mask = 0
 
@@ -45,7 +55,7 @@ func _ready_custom() -> void:
 
 func _reset_pool_state() -> void:
 	current_health = max_health
-	escape_timer = 45.0
+	escape_timer = escape_duration
 	panic_timer = 0.0
 	_current_flight_dir = Vector2.RIGHT
 	is_escaping = false
@@ -166,7 +176,7 @@ func _update_behavior(delta: float) -> void:
 	if panic_timer > 0.0:
 		panic_timer -= delta
 
-	var cur_speed: float = move_speed + (PANIC_BOOST if panic_timer > 0.0 else 0.0)
+	var cur_speed: float = move_speed + (panic_boost if panic_timer > 0.0 else 0.0)
 	velocity = _current_flight_dir * cur_speed
 
 	# Orientación suave y precisa del morro de la criatura en dirección al vector de vuelo

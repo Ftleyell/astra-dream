@@ -9,6 +9,7 @@ extends RefCounted
 
 const PITY_THRESHOLD: int = 10
 const DEFAULT_EPIC_RATE: float = 0.15
+const DEFAULT_RARE_RATE: float = 0.35
 
 const BANNERS_CONFIG := {
 	"general": {
@@ -43,9 +44,11 @@ static func get_available_banner_ids() -> Array[String]:
 static func is_pity_triggered(current_pity: int) -> bool:
 	return (current_pity + 1 >= PITY_THRESHOLD)
 
-static func determine_rarity(roll_val: float, is_pity: bool, epic_rate: float = DEFAULT_EPIC_RATE) -> String:
+static func determine_rarity(roll_val: float, is_pity: bool, epic_rate: float = DEFAULT_EPIC_RATE, rare_rate: float = DEFAULT_RARE_RATE) -> String:
 	if is_pity or roll_val < epic_rate:
 		return "epic"
+	if roll_val < (epic_rate + rare_rate):
+		return "rare"
 	return "common"
 
 static func filter_skins_for_banner(all_skins: Dictionary, banner_id: String) -> Array[Dictionary]:
@@ -65,7 +68,7 @@ static func filter_skins_for_banner(all_skins: Dictionary, banner_id: String) ->
 	return filtered
 
 static func resolve_pull(
-	banner_id: String,
+	_banner_id: String,
 	current_pity: int,
 	available_skins: Array[Dictionary],
 	forced_roll: float = -1.0
@@ -77,15 +80,34 @@ static func resolve_pull(
 	var roll_val: float = forced_roll if forced_roll >= 0.0 else randf()
 	var rarity_target: String = determine_rarity(roll_val, is_pity)
 
-	var matching_rarity: Array[Dictionary] = []
+	var epic_pool: Array[Dictionary] = []
+	var rare_pool: Array[Dictionary] = []
+	var common_pool: Array[Dictionary] = []
 	for s: Dictionary in available_skins:
-		if str(s.get("rarity", "")) == rarity_target:
-			matching_rarity.append(s)
+		var r: String = str(s.get("rarity", "common"))
+		if r == "epic":
+			epic_pool.append(s)
+		elif r == "rare":
+			rare_pool.append(s)
+		else:
+			common_pool.append(s)
 
 	var chosen: Dictionary = {}
-	if not matching_rarity.is_empty():
-		chosen = matching_rarity[randi() % matching_rarity.size()]
+	if rarity_target == "epic":
+		if not epic_pool.is_empty():
+			chosen = epic_pool[randi() % epic_pool.size()]
+		elif not rare_pool.is_empty():
+			chosen = rare_pool[randi() % rare_pool.size()]
+	elif rarity_target == "rare":
+		if not rare_pool.is_empty():
+			chosen = rare_pool[randi() % rare_pool.size()]
+		elif not common_pool.is_empty():
+			chosen = common_pool[randi() % common_pool.size()]
 	else:
+		if not common_pool.is_empty():
+			chosen = common_pool[randi() % common_pool.size()]
+
+	if chosen.is_empty():
 		chosen = available_skins[randi() % available_skins.size()]
 
 	var outcome_is_epic: bool = is_pity or str(chosen.get("rarity", "")) == "epic"

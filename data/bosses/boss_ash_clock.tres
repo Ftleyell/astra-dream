@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/boss_data.gd" id="1_boss_data"]
+
+[resource]
+script = ExtResource("1_boss_data")
+boss_id = "boss_ash_clock"
+boss_name = "RELOJ DE CENIZAS"
+max_health = 2400.0
+contact_damage = 25.0
+phase_2_hp_threshold = 0.5
+phase_2_timeout_seconds = 70.0
+credits_reward = 350
+exp_reward = 450.0
+move_speed_phase_1 = 100.0
+move_speed_phase_2 = 145.0
+desired_distance = 360.0
+primary_attack_interval_p1 = 0.8
+secondary_attack_interval_p1 = 3.5
+primary_attack_interval_p2 = 0.6
+secondary_attack_interval_p2 = 2.8
+telegraph_duration_p1 = 0.65
+telegraph_duration_p2 = 0.6

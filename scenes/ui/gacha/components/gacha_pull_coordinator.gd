@@ -8,6 +8,7 @@ extends RefCounted
 ## - Invocación a CosmeticsManager y resolución de mejoras de estrellas.
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const GachaBannerEngine = preload("res://scenes/ui/gacha/components/gacha_banner_engine.gd")
 const SaveManager = preload("res://core/autoloads/save_manager.gd")
 
 func execute_pulls(count: int, banner_id: String) -> Array[Dictionary]:
@@ -22,7 +23,7 @@ func execute_pulls(count: int, banner_id: String) -> Array[Dictionary]:
 	for i: int in range(count):
 		# Comprobar si esta tirada activa el Pity (10 tiradas acumuladas)
 		var current_pity: int = SaveManager.get_banner_pity(banner_id)
-		var is_pity: bool = (current_pity + 1 >= 10)
+		var is_pity: bool = GachaBannerEngine.is_pity_triggered(current_pity)
 
 		var raw_skin: Dictionary = CosmeticsManager.roll_banner_skin(banner_id, is_pity)
 		if raw_skin.is_empty():

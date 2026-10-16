@@ -388,6 +388,7 @@ func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript
 		current_satellite = beacon
 		main_game.add_child(beacon)
 		beacon.global_position = target_pos
+		beacon.check_orbital_relay(main_game.player)
 		beacon.planted.connect(_on_satellite_planted)
 		beacon.exited_perimeter.connect(_on_satellite_exited)
 		_apply_orbital_binding(beacon, target_pos, bound_slot)
@@ -445,6 +446,7 @@ func spawn_specific_satellite(target_pos: Vector2) -> void:
 	current_satellite = beacon
 	main_game.add_child(beacon)
 	beacon.global_position = target_pos
+	beacon.check_orbital_relay(main_game.player)
 	beacon.planted.connect(_on_satellite_planted)
 	beacon.exited_perimeter.connect(_on_satellite_exited)
 
@@ -475,10 +477,8 @@ func spawn_specific_transmutation(target_pos: Vector2) -> void:
 
 
 func get_plant_duration() -> float:
-	if main_game and is_instance_valid(main_game.player) and main_game.player.inventory:
-		if main_game.player.inventory.has_method("get_item_count") and main_game.player.inventory.get_item_count(&"orbital_relay") > 0:
-			return 4.0
-	return 6.0
+	var target_player: Node = main_game.player if (main_game and is_instance_valid(main_game.player)) else null
+	return SatelliteBeacon.compute_plant_duration(target_player)
 
 
 func _on_transmutation_activated(station: TransmutationStation) -> void:

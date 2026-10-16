@@ -2,43 +2,23 @@ class_name HUDInventoryBarController
 extends RefCounted
 
 const TomeDataScript = preload("res://data/tomes/tome_data.gd")
-const WeaponCooldownBarClass = preload("res://scenes/ui/hud/components/hud_weapon_cooldown_bar.gd")
 
 ## HUDInventoryBarController.gd
 ## Controlador especializado para el inventario in-run en el HUD:
-## - 4 Ranuras fijas de armas equipadas con niveles, tooltips y barridos de CD.
+## - Ranuras de tomos equipados con niveles y tooltips.
 ## - Fichas de ítems pasivos coleccionados con contador de acumulaciones.
-## - Contadores numéricos de créditos y biomasa con animación punch.
 
-var weapon_slots_row: HBoxContainer
 var tome_slots_row: HBoxContainer
 var inventory_row: HBoxContainer
-var credits_label: Label
-var biomass_label: Label
-var credit_icon: TextureRect
 
-var current_credits: int = 120
-var current_biomass: int = 0
 var _inventory_chips: Dictionary[StringName, PanelContainer] = {}
-var _credit_punch_tween: Tween = null
-
-var weapon_bar: RefCounted = WeaponCooldownBarClass.new()
 
 func setup(elements: Dictionary) -> void:
-	weapon_slots_row = elements.get("weapon_slots_row") as HBoxContainer
-	if weapon_slots_row:
-		weapon_bar.setup(weapon_slots_row)
 	tome_slots_row = elements.get("tome_slots_row") as HBoxContainer
 	inventory_row = elements.get("inventory_row") as HBoxContainer
-	credits_label = elements.get("credits_label") as Label
-	biomass_label = elements.get("biomass_label") as Label
-	credit_icon = elements.get("credit_icon") as TextureRect
 
 func get_inventory_chips() -> Dictionary[StringName, PanelContainer]:
 	return _inventory_chips
-
-func update_weapon_slots(weapons: Array, player_stats: Variant) -> void:
-	weapon_bar.update_weapon_slots(weapons, player_stats)
 
 
 func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
@@ -107,9 +87,6 @@ func update_tome_slots(tomes: Array, levels: Dictionary) -> void:
 
 		tome_slots_row.add_child(chip)
 
-func update_weapon_cooldown_sweeps(equipped_weapons: Array, player_stats: Variant) -> void:
-	weapon_bar.update_weapon_cooldown_sweeps(equipped_weapons, player_stats)
-
 func add_or_update_inventory_chip(item: ItemData, count: int) -> void:
 	if not inventory_row:
 		return
@@ -171,31 +148,6 @@ func add_or_update_inventory_chip(item: ItemData, count: int) -> void:
 
 	inventory_row.add_child(chip)
 	_inventory_chips[id] = chip
-
-func update_credits(amount: int, tree_ref: SceneTree = null) -> void:
-	var diff: int = amount - current_credits
-	current_credits = amount
-	_refresh_economy_label()
-
-	if diff > 0 and tree_ref and is_instance_valid(credit_icon) and credit_icon.is_inside_tree():
-		if _credit_punch_tween and _credit_punch_tween.is_valid():
-			_credit_punch_tween.kill()
-		credit_icon.pivot_offset = credit_icon.size / 2.0
-		_credit_punch_tween = tree_ref.create_tween()
-		_credit_punch_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		_credit_punch_tween.tween_property(credit_icon, "scale", Vector2(1.35, 1.35), 0.1)
-		_credit_punch_tween.chain().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_credit_punch_tween.tween_property(credit_icon, "scale", Vector2(1.0, 1.0), 0.16)
-
-func update_biomass(_run_amount: int, total_persistent: int) -> void:
-	current_biomass = total_persistent
-	_refresh_economy_label()
-
-func _refresh_economy_label() -> void:
-	if credits_label:
-		credits_label.text = "%d C" % current_credits
-	if biomass_label:
-		biomass_label.text = "%d" % current_biomass
 
 static func get_rarity_color(rarity: Enums.Rarity) -> Color:
 	match rarity:

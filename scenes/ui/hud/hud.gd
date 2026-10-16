@@ -132,7 +132,6 @@ func _ready() -> void:
 	var settings_mgr = get_node_or_null("/root/SettingsManager")
 	if settings_mgr and settings_mgr.has_signal("settings_changed"):
 		settings_mgr.settings_changed.connect(_update_ability_keybind_labels)
-	_setup_combat_stats_dock()
 
 func _update_ability_keybind_labels() -> void:
 	if _economy_ctrl:
@@ -144,12 +143,8 @@ func _init_subcontrollers() -> void:
 
 	_inventory_ctrl = InventoryBarControllerClass.new()
 	_inventory_ctrl.setup({
-		"weapon_slots_row": weapon_slots_row,
 		"tome_slots_row": tome_slots_row,
-		"inventory_row": inventory_row,
-		"credits_label": credits_label,
-		"biomass_label": biomass_label,
-		"credit_icon": credit_icon
+		"inventory_row": inventory_row
 	})
 
 	_economy_ctrl.setup({
@@ -353,7 +348,7 @@ func _on_aim_mode_changed(is_manual: bool) -> void:
 func _on_osp_triggered(_remaining_hp: float) -> void:
 	if _health_shield_display:
 		_health_shield_display.trigger_osp_effect(self)
-	show_tactical_alert("🛡️ PROTOCOLO OSP ACTIVADO", "¡Impacto letal absorbido! 1.0s de inmunidad concedida", Color(0.2, 0.9, 1.0))
+	show_tactical_alert("🛡️ PROTOCOLO OSP ACTIVADO", "¡Impacto letal absorbido! 0.5s de inmunidad concedida", Color(0.2, 0.9, 1.0))
 
 func set_player(p: Player) -> void:
 	player = p

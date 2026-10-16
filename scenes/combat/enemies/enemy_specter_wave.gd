@@ -6,6 +6,8 @@ extends EnemyBase
 ## Proyecta un carril de advertencia ondulante y desata ráfagas de proyectiles púrpura
 ## que viajan en ondas sinusoidales opuestas (crestas y valles entrelazados).
 
+const DEFAULT_SPECTER_WAVE_DATA: EnemyData = preload("res://data/enemies/enemy_specter_wave.tres")
+
 @export var attack_interval: float = 4.4
 @export var telegraph_duration: float = 0.60
 
@@ -16,13 +18,16 @@ var _telegraph_indicator: TelegraphIndicator = null
 var _orbit_timer: float = 0.0
 
 func _init() -> void:
-	enemy_id = &"enemy_specter_wave"
-	max_health = 75.0
-	move_speed = 135.0
-	contact_damage = 14.0
-	exp_reward = 60.0
-	credits_reward = 6
-	contact_radius = 24.0
+	enemy_data = DEFAULT_SPECTER_WAVE_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_SPECTER_WAVE_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		attack_interval = enemy_data.attack_interval
+		telegraph_duration = enemy_data.telegraph_duration
 
 func _ready_custom() -> void:
 	_setup_telegraph()

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/boss_data.gd" id="1_boss_data"]
+
+[resource]
+script = ExtResource("1_boss_data")
+boss_id = "boss_broken_mirror"
+boss_name = "ESPEJO QUEBRADO"
+max_health = 3200.0
+contact_damage = 25.0
+phase_2_hp_threshold = 0.5
+phase_2_timeout_seconds = 75.0
+credits_reward = 500
+exp_reward = 600.0
+move_speed_phase_1 = 110.0
+move_speed_phase_2 = 110.0
+desired_distance = 320.0
+primary_attack_interval_p1 = 3.0
+secondary_attack_interval_p1 = 1.8
+primary_attack_interval_p2 = 2.2
+secondary_attack_interval_p2 = 1.6
+telegraph_duration_p1 = 0.65
+telegraph_duration_p2 = 0.6

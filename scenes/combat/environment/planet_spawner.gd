@@ -140,9 +140,12 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(player):
 		return
 
-	# Si Cosmos Engine está activo, la generación de planetas es 100% reactiva al streaming
+	# Si Cosmos Engine está activo, la generación de planetas es reactiva al streaming y rellena huecos libres
 	if _get_cosmos_controller() != null:
 		_cleanup_distant_planets()
+		_prune_active_planets()
+		if active_planets.size() < max_active_planets:
+			_spawn_planet_ahead()
 		return
 
 	# Medir distancia recorrida acumulada
@@ -364,6 +367,8 @@ func _cleanup_distant_planets() -> void:
 	for planet in active_planets:
 		if is_instance_valid(planet) and not planet.is_queued_for_deletion():
 			if planet.global_position.distance_squared_to(player.global_position) > MAX_RETAIN_DIST_SQ:
+				if "orbit_slot" in planet and planet.orbit_slot != null:
+					spawned_system_cells.erase(planet.orbit_slot.orbit_center_cell)
 				planet.queue_free()
 
 

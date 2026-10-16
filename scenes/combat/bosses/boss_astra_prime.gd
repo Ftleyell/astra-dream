@@ -12,6 +12,9 @@ signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/boss_astra_prime.tres")
+
+@export var boss_data: BossData = null
 @export var boss_id: String = "boss_astra_prime"
 @export var boss_name: String = "ASTRA PRIME: NÚCLEO SUPREMO"
 @export var max_health: float = 3800.0
@@ -38,12 +41,26 @@ var core_poly: Polygon2D = null
 var crown_nodes: Node2D = null
 var hit_flash_tween: Tween = null
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -53,7 +70,7 @@ func _ready() -> void:
 func set_route(p_route: String) -> void:
 	route = p_route
 	if route == "slayer":
-		max_health = 4600.0
+		max_health = boss_data.slayer_max_health if boss_data else 4600.0
 		current_health = max_health
 		boss_name = "ASTRA PRIME [FURIA ENCADENADA]"
 		if core_poly:
@@ -63,7 +80,7 @@ func set_route(p_route: String) -> void:
 		if core_poly:
 			core_poly.color = Color(0.1, 0.9, 1.0, 0.95)
 	else:
-		boss_name = "ASTRA PRIME: NÚCLEO SUPREMO"
+		boss_name = boss_data.boss_name if boss_data else "ASTRA PRIME: NÚCLEO SUPREMO"
 	health_changed.emit(current_health, max_health)
 
 func _acquire_references() -> void:
@@ -150,8 +167,10 @@ func _process_movement(delta: float) -> void:
 	var dist := global_position.distance_to(player.global_position)
 
 	# Flotación oscilatoria manteniendo distancia de 450 px
-	var ideal_dist := 450.0
-	var speed := 90.0 if route != "slayer" else 135.0
+	var ideal_dist: float = boss_data.desired_distance if boss_data else 450.0
+	var spd_normal: float = boss_data.move_speed_phase_1 if boss_data else 90.0
+	var spd_slayer: float = boss_data.move_speed_phase_2 if boss_data else 135.0
+	var speed: float = spd_normal if route != "slayer" else spd_slayer
 	var vel := (to_player * (dist - ideal_dist) * 0.6) + Vector2(-to_player.y, to_player.x) * sin(movement_timer * 1.2) * speed
 	velocity = velocity.move_toward(vel, 300.0 * delta)
 	move_and_slide()
@@ -171,12 +190,14 @@ func _process_patterns(delta: float) -> void:
 		bullet_server.fire_fermat_spiral_tick(global_position, spiral_tick, 190.0, rotation, b_type)
 
 	# 2. Flores de Rhodonea periódicas
-	if pattern_timer >= (3.2 * fire_mult):
+	var pattern_interval: float = boss_data.primary_attack_interval_p1 if boss_data else 3.2
+	if pattern_timer >= (pattern_interval * fire_mult):
 		pattern_timer = 0.0
 		_fire_rhodonea_nova()
 
 	# 3. Anillo radial / abanico telegrafiado
-	if radial_timer >= (4.8 * fire_mult):
+	var radial_interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 4.8
+	if radial_timer >= (radial_interval * fire_mult):
 		radial_timer = 0.0
 		_fire_aimed_burst()
 
@@ -209,7 +230,8 @@ func take_damage(ctx: HitContext) -> void:
 	if dmg_acc:
 		dmg_acc.register_hit(dmg, is_crit)
 
-	if current_phase == 1 and current_health <= (max_health * 0.5):
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	if current_phase == 1 and current_health <= (max_health * p2_thresh):
 		_transition_phase_2()
 
 	if current_health <= 0.0:

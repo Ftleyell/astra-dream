@@ -3,12 +3,15 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 
 ## Drone estándar de enjambre: rápido, persecución frontal básica y daño por colisión.
 
+const DEFAULT_DRONE_DATA: EnemyData = preload("res://data/enemies/enemy_drone.tres")
+
 func _init() -> void:
-	enemy_id = &"enemy_drone"
-	max_health = 30.0
-	move_speed = 160.0
-	contact_damage = 10.0
-	exp_reward = 15.0
-	credits_reward = 1
-	contact_radius = 22.0
+	enemy_data = DEFAULT_DRONE_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_DRONE_DATA
+	super._apply_enemy_data()
+
 

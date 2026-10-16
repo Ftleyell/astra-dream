@@ -42,13 +42,33 @@ func _ready() -> void:
 		area.body_entered.connect(_on_body_entered)
 		area.body_exited.connect(_on_body_exited)
 
-func check_orbital_relay(player_override: Node = null) -> void:
-	var target_player: Node = player_override if player_override else (get_tree().get_first_node_in_group("player") if get_tree() else null)
-	if target_player and "inventory" in target_player and target_player.inventory:
+const BASE_PLANT_DURATION: float = 6.0
+const RELAY_PLANT_DURATION: float = 4.0
+
+static func compute_plant_duration(target_player: Node, default_duration: float = BASE_PLANT_DURATION) -> float:
+	if is_instance_valid(target_player) and "inventory" in target_player and target_player.inventory:
 		if target_player.inventory.has_method("get_item_count") and target_player.inventory.get_item_count(&"orbital_relay") > 0:
-			plant_duration = 4.0
-		else:
-			plant_duration = 6.0
+			return RELAY_PLANT_DURATION
+	return default_duration
+
+func check_orbital_relay(player_override: Node = null) -> void:
+	var target_player: Node = player_override
+	if not is_instance_valid(target_player):
+		target_player = _cached_player if is_instance_valid(_cached_player) else (get_tree().get_first_node_in_group("player") if get_tree() else null)
+	if is_instance_valid(target_player) and target_player is Node2D:
+		_cached_player = target_player as Node2D
+	if is_instance_valid(target_player) and "inventory" in target_player and target_player.inventory:
+		var inv: Object = target_player.inventory
+		if inv.has_signal("item_added") and not inv.item_added.is_connected(_on_player_item_added):
+			inv.item_added.connect(_on_player_item_added)
+		if inv.has_method("get_item_count") and inv.get_item_count(&"orbital_relay") > 0:
+			plant_duration = RELAY_PLANT_DURATION
+		elif is_equal_approx(plant_duration, BASE_PLANT_DURATION) or is_equal_approx(plant_duration, RELAY_PLANT_DURATION):
+			plant_duration = BASE_PLANT_DURATION
+
+func _on_player_item_added(_item: Resource, _new_count: int) -> void:
+	if not is_planted:
+		check_orbital_relay(_cached_player)
 
 func _setup_ping_line() -> void:
 	_ping_line = Line2D.new()
@@ -108,6 +128,9 @@ func _process(delta: float) -> void:
 
 	if _bump_cooldown > 0.0:
 		_bump_cooldown -= delta
+
+	if not is_planted:
+		check_orbital_relay()
 
 	# Ping radial periódico mientras no esté listo
 	if not is_ready:

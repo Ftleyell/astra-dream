@@ -4,15 +4,16 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 ## Crucero Tanque blindado: nave pesada con gran reserva de salud que actúa como
 ## muro protector absorbiendo disparos del jugador y empujando implacablemente.
 
+const DEFAULT_TANK_DATA: EnemyData = preload("res://data/enemies/enemy_tank.tres")
+
 func _init() -> void:
-	enemy_id = &"enemy_tank"
-	max_health = 180.0
-	move_speed = 85.0
-	contact_damage = 25.0
-	exp_reward = 75.0
-	credits_reward = 8
-	contact_radius = 34.0
-	contact_interval = 0.8
+	enemy_data = DEFAULT_TANK_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_TANK_DATA
+	super._apply_enemy_data()
 
 func _ready_custom() -> void:
 	var tex_path := "res://assets/sprites/enemies/enemy_tank.png"

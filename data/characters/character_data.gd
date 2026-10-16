@@ -321,27 +321,6 @@ static func load_roster() -> Dictionary[StringName, CharacterData]:
 				var res = load(fallback_path)
 				if res is CharacterData:
 					roster[cid] = res as CharacterData
-	for cid: StringName in roster.keys():
-		var cd: CharacterData = roster[cid]
-		if cd:
-			if not cd.ship_mask:
-				cd.ship_mask = cd.get_ship_mask()
-			match cid:
-				&"valentina":
-					cd.hair_direction = Vector2(0.2, 1.0)
-					cd.hair_wave_frequency = 24.0
-					cd.hair_amplitude = 0.015
-				&"roxy":
-					cd.hair_direction = Vector2(0.7, -0.7)
-					cd.hair_wave_frequency = 18.0
-					cd.hair_amplitude = 0.02
-				_:
-					if cd.hair_direction == Vector2.ZERO:
-						cd.hair_direction = Vector2(1.0, 0.0)
-					if is_zero_approx(cd.hair_wave_frequency):
-						cd.hair_wave_frequency = 16.0
-					if is_zero_approx(cd.hair_amplitude):
-						cd.hair_amplitude = 0.02
 
 	return roster
 

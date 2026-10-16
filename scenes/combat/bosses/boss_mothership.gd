@@ -6,6 +6,9 @@ signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/boss_mothership.tres")
+
+@export var boss_data: BossData = null
 @export var boss_id: String = "boss_aegis"
 @export var boss_name: String = "NODRIZA ORBITAL AEGIS"
 @export var max_health: float = 2800.0
@@ -30,12 +33,26 @@ var core_poly: Polygon2D = null
 var shield_ring: Node2D = null
 var hit_flash_tween: Tween = null
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -145,13 +162,15 @@ func _process_phase_1(delta: float) -> void:
 	aimed_timer += delta
 
 	# Anillos radiales con ventanas geométricas cada 1.8 segundos
-	if radial_timer >= 1.8:
+	var rad_interval: float = boss_data.primary_attack_interval_p1 if boss_data else 1.8
+	if radial_timer >= rad_interval:
 		radial_timer = 0.0
 		bullet_server.fire_radial_ring(global_position, 20, 145.0, rotation, 0)
 		_play_boss_sfx("laser", 0.8)
 
 	# Salvas dirigidas de 5 proyectiles en abanico cada 1.3 segundos
-	if aimed_timer >= 1.3:
+	var aim_interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 1.3
+	if aimed_timer >= aim_interval:
 		aimed_timer = 0.0
 		if is_instance_valid(player):
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 5, 40.0, 215.0, 2)
@@ -163,19 +182,22 @@ func _process_phase_2(delta: float) -> void:
 	aimed_timer += delta
 
 	# Espiral Dorada de Fermat continua y densa
-	if spiral_timer >= 0.038:
+	var sp_interval: float = boss_data.spiral_tick_interval_p2 if boss_data else 0.038
+	if spiral_timer >= sp_interval:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		bullet_server.fire_fermat_spiral_tick(global_position, spiral_tick, 175.0, rotation, 1)
 
 	# Pulsos Nova radiales acelerados cada 1.2 segundos
-	if radial_timer >= 1.2:
+	var rad_interval: float = boss_data.primary_attack_interval_p2 if boss_data else 1.2
+	if radial_timer >= rad_interval:
 		radial_timer = 0.0
 		bullet_server.fire_radial_ring(global_position, 24, 165.0, rotation + PI / 12.0, 0)
 		_play_boss_sfx("laser", 0.9)
 
 	# Ráfagas dirigidas más rápidas e intensas
-	if aimed_timer >= 1.5:
+	var aim_interval: float = boss_data.secondary_attack_interval_p2 if boss_data else 1.5
+	if aimed_timer >= aim_interval:
 		aimed_timer = 0.0
 		if is_instance_valid(player):
 			bullet_server.fire_aimed_spread(global_position, player.global_position, 7, 48.0, 240.0, 2)
@@ -188,6 +210,11 @@ func take_damage(ctx: HitContext) -> void:
 	var dmg: float = ctx.final_damage
 	var is_crit: bool = ctx.is_crit
 
+	if dmg > 0.0:
+		ctx.victim = self
+		if ctx.hit_position == Vector2.ZERO:
+			ctx.hit_position = global_position
+
 	current_health -= dmg
 	health_changed.emit(maxf(0.0, current_health), max_health)
 
@@ -198,8 +225,12 @@ func take_damage(ctx: HitContext) -> void:
 	# Feedback visual de impacto (Hit-Flash)
 	_apply_hit_flash()
 
+	if dmg > 0.0 and is_instance_valid(ctx.attacker) and "inventory" in ctx.attacker and ctx.attacker.inventory and ctx.proc_coefficient > 0.0:
+		ctx.attacker.inventory.process_hit_procs(ctx, ctx.attacker)
+
 	# Comprobar transición a Fase 2 (al 50% de HP)
-	if current_phase == 1 and current_health <= max_health * 0.5:
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	if current_phase == 1 and current_health <= max_health * p2_thresh:
 		_transition_to_phase_2()
 
 	# Muerte del jefe
@@ -244,14 +275,14 @@ func _finish_death() -> void:
 	# 1. Otorgar recompensas: +100 Créditos al jugador
 	_acquire_references()
 	if is_instance_valid(player):
-		player.add_credits(100)
+		player.add_credits(boss_data.credits_reward if boss_data else 100)
 
 	# 2. Generar Orbe Colosal de EXP (+150 EXP) en la posición de muerte
 	var blob_scene: PackedScene = load("res://scenes/combat/pickups/exp_blob.tscn")
 	if blob_scene:
 		var blob := blob_scene.instantiate() as Node2D
 		if blob.has_method("setup"):
-			blob.setup(150.0, global_position)
+			blob.setup(boss_data.exp_reward if boss_data else 150.0, global_position)
 		var spawn_parent: Node = get_parent() if get_parent() else get_tree().current_scene
 		if spawn_parent:
 			spawn_parent.call_deferred("add_child", blob)
@@ -280,7 +311,7 @@ func _finish_death() -> void:
 		var dm_orb = dm_scene.instantiate()
 		if dm_orb:
 			if dm_orb.has_method("setup"):
-				dm_orb.setup(15, global_position)
+				dm_orb.setup(boss_data.dark_matter_reward if boss_data else 15, global_position)
 			var spawn_target: Node = get_parent() if get_parent() else get_tree().current_scene
 			if spawn_target:
 				spawn_target.call_deferred("add_child", dm_orb)

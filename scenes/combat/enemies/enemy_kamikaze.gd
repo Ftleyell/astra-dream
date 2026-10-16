@@ -4,20 +4,25 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 ## Kamikaze de asalto: nave ágil que entra en sobrecarga y embiste a gran velocidad
 ## cuando se acerca al jugador, generando una micro-explosión al detonar.
 
-const DIVE_DISTANCE: float = 260.0
-const DIVE_SPEED: float = 360.0
+const DEFAULT_KAMIKAZE_DATA: EnemyData = preload("res://data/enemies/enemy_kamikaze.tres")
+
+@export var dive_distance: float = 260.0
+@export var dive_speed: float = 360.0
 
 var is_diving: bool = false
 var dive_dir: Vector2 = Vector2.ZERO
 
 func _init() -> void:
-	enemy_id = &"enemy_kamikaze"
-	max_health = 20.0
-	move_speed = 220.0
-	contact_damage = 18.0
-	exp_reward = 20.0
-	credits_reward = 2
-	contact_radius = 22.0
+	enemy_data = DEFAULT_KAMIKAZE_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_KAMIKAZE_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		dive_distance = enemy_data.dive_distance
+		dive_speed = enemy_data.dive_speed
 
 func _ready_custom() -> void:
 	var tex_path: String = "res://assets/sprites/enemies/enemy_kamikaze.png"
@@ -36,7 +41,7 @@ func _update_behavior(delta: float) -> void:
 	var dist_to_player := global_position.distance_to(player.global_position)
 
 	# Transición a modo embestida / turbo
-	if not is_diving and dist_to_player <= DIVE_DISTANCE:
+	if not is_diving and dist_to_player <= dive_distance:
 		is_diving = true
 		dive_dir = (player.global_position - global_position).normalized()
 		# Feedback visual de sobrecarga
@@ -47,7 +52,7 @@ func _update_behavior(delta: float) -> void:
 		# Embestida a alta velocidad con leve ajuste direccional
 		var target_dir := (player.global_position - global_position).normalized()
 		dive_dir = dive_dir.lerp(target_dir, delta * 3.5).normalized()
-		velocity = dive_dir * DIVE_SPEED
+		velocity = dive_dir * dive_speed
 		rotation = dive_dir.angle()
 	else:
 		# Persecución veloz estándar

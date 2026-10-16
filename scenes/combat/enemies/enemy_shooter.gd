@@ -4,24 +4,31 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 ## Artillero Danmaku: nave de apoyo que frena a distancia media (~450px)
 ## y dispara periódicamente ráfagas de 3 proyectiles dirigidos hacia el jugador.
 
-const PREFERRED_DISTANCE: float = 450.0
-const DISTANCE_TOLERANCE: float = 50.0
+const DEFAULT_SHOOTER_DATA: EnemyData = preload("res://data/enemies/enemy_shooter.tres")
 
+@export var preferred_distance: float = 450.0
+@export var distance_tolerance: float = 50.0
 @export var shoot_interval: float = 3.6
+@export var charge_duration: float = 0.35
+
 var shoot_timer: float = 2.0
 var is_charging_shot: bool = false
 var charge_timer: float = 0.0
-const CHARGE_DURATION: float = 0.35
 var bullet_server: BulletServer = null
 
 func _init() -> void:
-	enemy_id = &"enemy_shooter"
-	max_health = 45.0
-	move_speed = 130.0
-	contact_damage = 12.0
-	exp_reward = 40.0
-	credits_reward = 4
-	contact_radius = 24.0
+	enemy_data = DEFAULT_SHOOTER_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_SHOOTER_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		shoot_interval = enemy_data.shoot_interval
+		charge_duration = enemy_data.charge_duration
+		preferred_distance = enemy_data.preferred_distance
+		distance_tolerance = enemy_data.distance_tolerance
 
 func _ready_custom() -> void:
 	var tex_path: String = "res://assets/sprites/enemies/enemy_shooter.png"
@@ -72,9 +79,9 @@ func _update_behavior(delta: float) -> void:
 
 	# Control de posicionamiento táctico (mantener distancia de ~450px)
 	var move_dir := Vector2.ZERO
-	if dist > PREFERRED_DISTANCE + DISTANCE_TOLERANCE:
+	if dist > preferred_distance + distance_tolerance:
 		move_dir = dir_to_player
-	elif dist < PREFERRED_DISTANCE - DISTANCE_TOLERANCE:
+	elif dist < preferred_distance - distance_tolerance:
 		move_dir = -dir_to_player * 0.7
 	else:
 		move_dir = dir_to_player.orthogonal() * 0.5
@@ -91,11 +98,11 @@ func _update_behavior(delta: float) -> void:
 
 func _begin_charge_up() -> void:
 	is_charging_shot = true
-	charge_timer = CHARGE_DURATION
+	charge_timer = charge_duration
 	# Telegrafiado visual: contracción y destello de advertencia
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.85, 0.85), CHARGE_DURATION * 0.8)
-	tw.parallel().tween_property(self, "modulate", Color(2.0, 1.4, 1.4, 1.0), CHARGE_DURATION * 0.8)
+	tw.tween_property(self, "scale", Vector2(0.85, 0.85), charge_duration * 0.8)
+	tw.parallel().tween_property(self, "modulate", Color(2.0, 1.4, 1.4, 1.0), charge_duration * 0.8)
 
 func _fire_telegraphed_shot() -> void:
 	# Restaurar modulación

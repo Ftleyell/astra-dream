@@ -56,7 +56,12 @@ func test_transmutation_rules() -> void:
 	assert_true(candidates_for_a.size() == 1, "Debe haber exactamente 1 candidato de sacrificio para item_a")
 	assert_true(candidates_for_a[0].item_id == &"item_b", "El candidato debe ser item_b")
 
-	# Sacrificio para item_c: es COMMON, no hay otro ítem COMMON pero tiene count = 3 (> 1)
+	# Sacrificio para item_c: es COMMON, no hay otro ítem COMMON (un ítem nunca se sacrifica a sí mismo para clonarse)
 	var candidates_for_c := TransmutationDataController.find_sacrifice_candidates(item_c, inventory_list)
-	assert_true(candidates_for_c.size() == 1, "Con count > 1, el mismo ítem debe ser válido como sacrificio")
-	assert_true(candidates_for_c[0].item_id == &"item_c", "El candidato debe ser item_c")
+	assert_true(candidates_for_c.is_empty(), "Un ítem no debe poder sacrificarse a sí mismo para clonarse")
+	assert_true(not TransmutationDataController.has_sacrifice_available(item_c, inventory_list), "has_sacrifice_available debe ser false si solo hay copias del mismo ítem")
+
+	# Límite de max_stacks
+	item_a.max_stacks = 1
+	assert_true(TransmutationDataController.find_sacrifice_candidates(item_a, inventory_list).is_empty(), "Un ítem en max_stacks no puede clonarse")
+	assert_true(not TransmutationDataController.has_sacrifice_available(item_a, inventory_list), "has_sacrifice_available debe ser false cuando se alcanzó max_stacks")

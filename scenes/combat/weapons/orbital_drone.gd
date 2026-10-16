@@ -58,12 +58,17 @@ func _try_fire_micro_beam() -> void:
 		beam_line.visible = true
 
 		if best_target.has_method("take_damage"):
-			var c := HitContext.new()
-			c.attacker = player
-			c.raw_damage = drone_damage
-			c.final_damage = drone_damage
-			c.proc_coefficient = 0.25
-			c.hit_position = target_pos
+			var c: HitContext
+			if hit_context:
+				c = hit_context.fork_child_hit(hit_context.final_damage, hit_context.proc_coefficient, &"orbital_drone")
+				c.hit_position = target_pos
+			else:
+				c = HitContext.new()
+				c.attacker = player
+				c.raw_damage = drone_damage
+				c.final_damage = drone_damage
+				c.proc_coefficient = 0.25
+				c.hit_position = target_pos
 			best_target.take_damage(c)
 
 		var tw := create_tween()

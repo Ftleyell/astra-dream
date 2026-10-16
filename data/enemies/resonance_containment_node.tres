@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_id = &"resonance_containment_node"
+max_health = 150.0
+move_speed = 0.0
+contact_damage = 18.0
+exp_reward = 40.0
+credits_reward = 0
+contact_radius = 24.0
+contact_interval = 0.5
+lifetime = 25.0

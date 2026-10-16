@@ -220,9 +220,18 @@ func on_rival_defeated(p_id: StringName, _weapon: WeaponData) -> void:
 		r_killed.append(p_id)
 	var r_name: String = String(p_id).capitalize()
 	var cur_rival: Node2D = main_game.current_rival
+	var drop_pos: Vector2 = cur_rival.global_position if is_instance_valid(cur_rival) else (main_game.player.global_position if is_instance_valid(main_game.player) else Vector2.ZERO)
 	if cur_rival and "pilot_name" in cur_rival:
 		r_name = cur_rival.pilot_name
 	main_game.current_rival = null
+
+	var chest_scene: PackedScene = load("res://scenes/combat/pickups/stellar_reward_chest.tscn") as PackedScene
+	if chest_scene:
+		var chest: StellarRewardChest = chest_scene.instantiate() as StellarRewardChest
+		if chest:
+			chest.setup(drop_pos)
+			main_game.add_child(chest)
+			chest.global_position = drop_pos
 
 	health_bar_manager.hide_boss_bar()
 	health_bar_manager.show_rival_defeated_banner(p_id, r_name)

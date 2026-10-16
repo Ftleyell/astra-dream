@@ -16,6 +16,9 @@ enum HeraldType {
 	VORTEX = 7
 }
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/elite_herald_boss.tres")
+
+@export var boss_data: BossData = null
 @export var herald_type: HeraldType = HeraldType.TIME
 @export var boss_id: String = "elite_herald"
 @export var boss_name: String = "HERALDO DEL TIEMPO"
@@ -37,11 +40,26 @@ var bullet_server: BulletServer = null
 @onready var visual_core: Polygon2D = get_node_or_null("VisualCore")
 @onready var visual_frame: Polygon2D = get_node_or_null("VisualFrame")
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
+
+	if boss_data == null:
+		_apply_boss_data()
 
 	telegraph_indicator = TelegraphIndicator.new()
 	telegraph_indicator.name = "TelegraphIndicator"
@@ -59,11 +77,13 @@ func setup_type(wave: int) -> void:
 	_configure_by_wave()
 
 func _configure_by_wave() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
 	match herald_type:
 		HeraldType.TIME:
 			boss_id = "herald_time"
 			boss_name = "HERALDO DEL TIEMPO"
-			max_health = 1400.0
+			max_health = boss_data.max_health if boss_data else 1400.0
 			if visual_core:
 				visual_core.color = Color(1.0, 0.8, 0.2, 1.0)
 			if visual_frame:
@@ -71,7 +91,7 @@ func _configure_by_wave() -> void:
 		HeraldType.MIRROR:
 			boss_id = "herald_mirror"
 			boss_name = "HERALDO DEL ESPEJO"
-			max_health = 1800.0
+			max_health = boss_data.herald_mirror_health if boss_data else 1800.0
 			if visual_core:
 				visual_core.color = Color(0.2, 0.9, 1.0, 1.0)
 			if visual_frame:
@@ -79,7 +99,7 @@ func _configure_by_wave() -> void:
 		HeraldType.VORTEX:
 			boss_id = "herald_vortex"
 			boss_name = "HERALDO DEL VÓRTICE"
-			max_health = 2200.0
+			max_health = boss_data.herald_vortex_health if boss_data else 2200.0
 			if visual_core:
 				visual_core.color = Color(0.8, 0.2, 1.0, 1.0)
 			if visual_frame:
@@ -87,7 +107,7 @@ func _configure_by_wave() -> void:
 		_:
 			boss_id = "herald_time"
 			boss_name = "HERALDO DEL DOMINIO"
-			max_health = 1500.0
+			max_health = boss_data.herald_fallback_health if boss_data else 1500.0
 
 	current_health = max_health
 
@@ -113,7 +133,7 @@ func _physics_process(delta: float) -> void:
 	# Movimiento en órbita / rodeo elíptico
 	var to_player := (player.global_position - global_position)
 	var dist := to_player.length()
-	var desired_dist := 320.0
+	var desired_dist: float = boss_data.desired_distance if boss_data else 320.0
 	var tangent := to_player.normalized().orthogonal()
 	var move_dir := tangent * 0.7
 	if dist > desired_dist + 50.0:
@@ -121,7 +141,8 @@ func _physics_process(delta: float) -> void:
 	elif dist < desired_dist - 50.0:
 		move_dir -= to_player.normalized() * 0.4
 
-	velocity = velocity.lerp(move_dir * (130.0 * (0.45 if is_telegraphing else 1.0)), delta * 4.0)
+	var move_spd: float = boss_data.move_speed_phase_1 if boss_data else 130.0
+	velocity = velocity.lerp(move_dir * (move_spd * (0.45 if is_telegraphing else 1.0)), delta * 4.0)
 	move_and_slide()
 
 	# Rotación visual
@@ -153,9 +174,11 @@ func _start_herald_telegraph(p_type: TelegraphIndicator.TelegraphType, duration:
 
 func _process_time_herald(_delta: float) -> void:
 	# Péndulo senoidal de manecillas telegrafiado cada 1.2s
-	if fire_timer >= 1.2:
+	var interval: float = boss_data.primary_attack_interval_p1 if boss_data else 1.2
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.45
+	if fire_timer >= interval:
 		fire_timer = 0.0
-		_start_herald_telegraph(TelegraphIndicator.TelegraphType.CONE, 0.45, Callable(self, "_fire_time_burst"))
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.CONE, tele_dur, Callable(self, "_fire_time_burst"))
 
 func _fire_time_burst() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
@@ -188,9 +211,11 @@ func _fire_time_burst() -> void:
 
 func _process_mirror_herald(_delta: float) -> void:
 	# Tijeras trenzadas de Lissajous telegiadas cada 1.3s
-	if fire_timer >= 1.3:
+	var interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 1.3
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.45
+	if fire_timer >= interval:
 		fire_timer = 0.0
-		_start_herald_telegraph(TelegraphIndicator.TelegraphType.WAVE, 0.45, Callable(self, "_fire_mirror_burst"))
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.WAVE, tele_dur, Callable(self, "_fire_mirror_burst"))
 
 func _fire_mirror_burst() -> void:
 	if not is_instance_valid(bullet_server) or not is_instance_valid(player):
@@ -221,9 +246,11 @@ func _fire_mirror_burst() -> void:
 
 func _process_vortex_herald(_delta: float) -> void:
 	# Espiral de Fermat con modulación armónica respiratoria telegrafiada cada 1.0s
-	if fire_timer >= 1.0:
+	var interval: float = boss_data.primary_attack_interval_p2 if boss_data else 1.0
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.45
+	if fire_timer >= interval:
 		fire_timer = 0.0
-		_start_herald_telegraph(TelegraphIndicator.TelegraphType.RING, 0.45, Callable(self, "_fire_vortex_burst"))
+		_start_herald_telegraph(TelegraphIndicator.TelegraphType.RING, tele_dur, Callable(self, "_fire_vortex_burst"))
 
 func _fire_vortex_burst() -> void:
 	if not is_instance_valid(bullet_server):
@@ -282,8 +309,8 @@ func _die() -> void:
 	boss_defeated.emit(boss_id)
 
 	if is_instance_valid(player):
-		player.add_credits(120)
-		player.add_exp(180.0)
+		player.add_credits(boss_data.credits_reward if boss_data else 120)
+		player.add_exp(boss_data.exp_reward if boss_data else 180.0)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):

@@ -41,23 +41,26 @@ static func find_sacrifice_candidates(target_item: ItemData, eligible_items: Arr
 		var cnt: int = entry.get("count", 0)
 		if not is_item_eligible_for_transmutation(it):
 			continue
-		if it.rarity == target_item.rarity:
-			if it.item_id != target_item.item_id:
-				candidates.append(it)
-			elif cnt > 1:
-				candidates.append(it)
+		if it.item_id == target_item.item_id and target_item.max_stacks > 0 and cnt >= target_item.max_stacks:
+			return []
+		if it.rarity == target_item.rarity and it.item_id != target_item.item_id and cnt > 0:
+			candidates.append(it)
 	return candidates
 
 
 static func has_sacrifice_available(item: ItemData, eligible_items: Array[Dictionary]) -> bool:
 	if not item:
 		return false
+	for entry in eligible_items:
+		var entry_it: ItemData = entry.get("data", null)
+		var entry_cnt: int = entry.get("count", 0)
+		if entry_it and entry_it.item_id == item.item_id and item.max_stacks > 0 and entry_cnt >= item.max_stacks:
+			return false
 	for other_entry in eligible_items:
 		var other_it: ItemData = other_entry.get("data", null)
 		var other_count: int = other_entry.get("count", 0)
-		if other_it and other_it.rarity == item.rarity:
-			if other_it.item_id != item.item_id or other_count > 1:
-				return true
+		if other_it and other_it.rarity == item.rarity and other_it.item_id != item.item_id and other_count > 0:
+			return true
 	return false
 
 
@@ -71,6 +74,10 @@ static func execute_transmutation(player: Player, target_item: ItemData, transmu
 
 	if not player.inventory:
 		return {"success": false, "error": "Inventario no disponible.", "sacrifice": null}
+
+	if target_item and target_item.max_stacks > 0 and player.inventory.has_method("get_item_count"):
+		if player.inventory.get_item_count(target_item.item_id) >= target_item.max_stacks:
+			return {"success": false, "error": "¡Acumulaciones máximas alcanzadas!", "sacrifice": null}
 
 	var eligible_items := get_eligible_items(player.inventory)
 	var candidates := find_sacrifice_candidates(target_item, eligible_items)

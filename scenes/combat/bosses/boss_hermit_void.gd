@@ -10,6 +10,9 @@ signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/boss_hermit_void.tres")
+
+@export var boss_data: BossData = null
 @export var boss_id: String = "boss_hermit_void"
 @export var boss_name: String = "EREMITA DEL VACÍO"
 @export var max_health: float = 2600.0
@@ -38,12 +41,26 @@ var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
 var telegraph_indicator: TelegraphIndicator = null
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -127,7 +144,9 @@ func _physics_process(delta: float) -> void:
 	elapsed_combat_time += delta
 
 	# Regla Anti-Stall (Brotato): Transición automática a Fase 2 a los 65s
-	if current_phase == 1 and (current_health <= max_health * 0.5 or elapsed_combat_time >= 65.0):
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	var p2_timeout: float = boss_data.phase_2_timeout_seconds if boss_data else 65.0
+	if current_phase == 1 and (current_health <= max_health * p2_thresh or elapsed_combat_time >= p2_timeout):
 		_transition_to_phase_2()
 
 	# AURA DE DOMINIO: Gravedad del Aislamiento
@@ -140,7 +159,7 @@ func _physics_process(delta: float) -> void:
 		player.velocity += pull_dir * pull_strength * delta
 
 	# Movimiento suave hacia el jugador (mantener distancia de combate)
-	var desired_dist := 300.0
+	var desired_dist: float = boss_data.desired_distance if boss_data else 300.0
 	var move_dir := Vector2.ZERO
 	if dist > desired_dist + 50.0:
 		move_dir = to_player.normalized()
@@ -149,7 +168,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		move_dir = to_player.normalized().orthogonal() * 0.4
 
-	var current_max_spd: float = (90.0 if current_phase == 1 else 130.0) * (0.45 if is_telegraphing else 1.0)
+	var spd_p1: float = boss_data.move_speed_phase_1 if boss_data else 90.0
+	var spd_p2: float = boss_data.move_speed_phase_2 if boss_data else 130.0
+	var current_max_spd: float = (spd_p1 if current_phase == 1 else spd_p2) * (0.45 if is_telegraphing else 1.0)
 	velocity = velocity.lerp(move_dir * current_max_spd, delta * 2.5)
 	move_and_slide()
 
@@ -170,12 +191,15 @@ func _process_phase_1(delta: float) -> void:
 	aimed_orbs_timer += delta
 
 	# Pulso de Rosa de Rhodonea telegrafiado cada 3.0s (5 pétalos cosenoidales)
-	if gravity_pulse_timer >= 3.0:
+	var pulse_interval: float = boss_data.primary_attack_interval_p1 if boss_data else 3.0
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.65
+	if gravity_pulse_timer >= pulse_interval:
 		gravity_pulse_timer = 0.0
-		_start_telegraph(0.65, Callable(self, "_fire_rhodonea_star_ring"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_fire_rhodonea_star_ring"), TelegraphIndicator.TelegraphType.RING)
 
 	# Ráfaga de 3 orbes serpenteantes con oscilación senoidal lateral cada 2.2s (Ámbar tipo 4)
-	if aimed_orbs_timer >= 2.2:
+	var orbs_interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 2.2
+	if aimed_orbs_timer >= orbs_interval:
 		aimed_orbs_timer = 0.0
 		if is_instance_valid(player) and is_instance_valid(bullet_server):
 			bullet_server.fire_serpentine_spread(global_position, player.global_position, 3, 24.0, 175.0, 18.0, 3.5, 4)
@@ -186,18 +210,22 @@ func _process_phase_2(delta: float) -> void:
 	aimed_orbs_timer += delta
 
 	# Espiral de Fermat con modulación de respiración radial senoidal (Púrpura tipo 6)
-	if spiral_timer >= 0.048:
+	var sp_interval: float = boss_data.spiral_tick_interval_p2 if boss_data else 0.048
+	if spiral_timer >= sp_interval:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
 			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 165.0, rotation, 0.16, 0.32, 6)
 
 	# Doble rosa de Rhodonea telegrafiada cada 2.5s (7 pétalos entrelazados)
-	if gravity_pulse_timer >= 2.5:
+	var pulse_interval: float = boss_data.primary_attack_interval_p2 if boss_data else 2.5
+	var tele_dur: float = boss_data.telegraph_duration_p2 if boss_data else 0.60
+	if gravity_pulse_timer >= pulse_interval:
 		gravity_pulse_timer = 0.0
-		_start_telegraph(0.60, Callable(self, "_fire_expanded_rhodonea_novas"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_fire_expanded_rhodonea_novas"), TelegraphIndicator.TelegraphType.RING)
 
-	if aimed_orbs_timer >= 2.0:
+	var orbs_interval: float = boss_data.secondary_attack_interval_p2 if boss_data else 2.0
+	if aimed_orbs_timer >= orbs_interval:
 		aimed_orbs_timer = 0.0
 		if is_instance_valid(player) and is_instance_valid(bullet_server):
 			bullet_server.fire_serpentine_spread(global_position, player.global_position, 5, 36.0, 195.0, 22.0, 4.0, 4)
@@ -281,7 +309,8 @@ func take_damage(ctx: HitContext) -> void:
 	hit_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 
 	# Transición a Fase 2 al 50% de HP
-	if current_phase == 1 and current_health <= max_health * 0.5:
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	if current_phase == 1 and current_health <= max_health * p2_thresh:
 		_transition_to_phase_2()
 
 	if current_health <= 0.0:
@@ -300,8 +329,8 @@ func _finish_death() -> void:
 
 	# Recompensas
 	if is_instance_valid(player):
-		player.add_credits(250)
-		player.add_exp(300.0)
+		player.add_credits(boss_data.credits_reward if boss_data else 250)
+		player.add_exp(boss_data.exp_reward if boss_data else 300.0)
 
 	queue_free()
 

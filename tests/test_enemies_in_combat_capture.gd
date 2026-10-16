@@ -93,9 +93,11 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	var vp: Viewport = get_viewport()
-	var img: Image = vp.get_texture().get_image()
-	DirAccess.make_dir_recursive_absolute("res://tests/screenshots")
-	var save_path := "res://tests/screenshots/enemies_in_combat_showcase.png"
-	img.save_png(save_path)
-	print("Screenshot guardado exitosamente en: ", save_path)
+	if vp and vp.get_texture():
+		var img: Image = vp.get_texture().get_image()
+		if img:
+			DirAccess.make_dir_recursive_absolute("res://tests/screenshots")
+			var save_path := "res://tests/screenshots/enemies_in_combat_showcase.png"
+			img.save_png(save_path)
+			print("Screenshot guardado exitosamente en: ", save_path)
 	get_tree().quit(0)

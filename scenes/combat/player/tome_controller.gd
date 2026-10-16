@@ -192,7 +192,19 @@ func serialize() -> Dictionary:
 		})
 	return { "equipped_tomes": list }
 
+func _clear_applied_modifiers() -> void:
+	if not player or not is_instance_valid(player) or not player.stats:
+		return
+	for stat_key: StringName in player.stats._modifiers.keys():
+		var list: Array = player.stats._modifiers[stat_key]
+		for i: int in range(list.size() - 1, -1, -1):
+			var existing: CharacterStats.StatModifier = list[i]
+			var id_str: String = String(existing.id)
+			if is_same(existing.source, self) or id_str.begins_with("tome_") or id_str.begins_with("synergy_"):
+				player.stats.remove_modifier(stat_key, existing.id)
+
 func deserialize(data: Dictionary) -> void:
+	_clear_applied_modifiers()
 	equipped_tomes.clear()
 	tome_levels.clear()
 	if not data.has("equipped_tomes"):

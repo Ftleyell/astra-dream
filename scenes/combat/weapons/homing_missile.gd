@@ -119,6 +119,7 @@ func _explode() -> void:
 		targets.append_array(tree.get_nodes_in_group("destructibles"))
 
 	var r_sq := explosion_radius * explosion_radius
+	var directly_damaged: Array[Node2D] = []
 	for node in targets:
 		if node is Node2D and is_instance_valid(node) and not node.get("is_dying"):
 			if global_position.distance_squared_to((node as Node2D).global_position) <= r_sq:
@@ -126,6 +127,7 @@ func _explode() -> void:
 					var child_ctx := hit_context.fork_child_hit(hit_context.final_damage, 0.25, &"auto_aim_missile")
 					child_ctx.hit_position = global_position
 					node.take_damage(child_ctx)
+					directly_damaged.append(node as Node2D)
 
 	# Efecto visual de explosión suave esferoide y chispas radiales
 	var parent_node := get_parent() if is_inside_tree() else null
@@ -145,6 +147,8 @@ func _explode() -> void:
 		var shock := shock_scene.instantiate() as ShockwaveArea
 		if shock:
 			shock.setup(global_position, hit_context, clampf(explosion_radius / 220.0, 0.35, 1.0))
+			for dmg_node: Node2D in directly_damaged:
+				shock.damaged_nodes.append(dmg_node)
 			parent_node.add_child(shock)
 
 	queue_free()

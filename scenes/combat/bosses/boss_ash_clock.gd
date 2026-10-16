@@ -10,6 +10,9 @@ signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/boss_ash_clock.tres")
+
+@export var boss_data: BossData = null
 @export var boss_id: String = "boss_ash_clock"
 @export var boss_name: String = "RELOJ DE CENIZAS"
 @export var max_health: float = 2400.0
@@ -43,12 +46,26 @@ var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
 var telegraph_indicator: TelegraphIndicator = null
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -136,7 +153,9 @@ func _physics_process(delta: float) -> void:
 	elapsed_combat_time += delta
 
 	# Regla Anti-Stall: Transición automática a Fase 2 al 50% HP o 70s
-	if current_phase == 1 and (current_health <= max_health * 0.5 or elapsed_combat_time >= 70.0):
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	var p2_timeout: float = boss_data.phase_2_timeout_seconds if boss_data else 70.0
+	if current_phase == 1 and (current_health <= max_health * p2_thresh or elapsed_combat_time >= p2_timeout):
 		_transition_to_phase_2()
 
 	# Registro de posiciones pasadas para "Eco del Arrepentimiento"
@@ -156,14 +175,16 @@ func _physics_process(delta: float) -> void:
 	# Movimiento elíptico constante
 	var to_player := player.global_position - global_position
 	var dist := to_player.length()
-	var desired_dist := 360.0
+	var desired_dist: float = boss_data.desired_distance if boss_data else 360.0
 	var move_dir := to_player.normalized().orthogonal() * 0.6
 	if dist > desired_dist + 40.0:
 		move_dir += to_player.normalized() * 0.4
 	elif dist < desired_dist - 40.0:
 		move_dir -= to_player.normalized() * 0.4
 
-	var move_spd := (100.0 if current_phase == 1 else 145.0) * (0.45 if is_telegraphing else 1.0)
+	var spd_p1: float = boss_data.move_speed_phase_1 if boss_data else 100.0
+	var spd_p2: float = boss_data.move_speed_phase_2 if boss_data else 145.0
+	var move_spd: float = (spd_p1 if current_phase == 1 else spd_p2) * (0.45 if is_telegraphing else 1.0)
 	velocity = velocity.lerp(move_dir * move_spd, delta * 3.0)
 	move_and_slide()
 
@@ -191,28 +212,34 @@ func _process_phase_1(delta: float) -> void:
 	echo_timer += delta
 
 	# Disparo de manecillas rotatorias con ondulación senoidal cada 0.8s (Dardos Ámbar tipo 4)
-	if clock_hands_timer >= 0.8:
+	var hands_interval: float = boss_data.primary_attack_interval_p1 if boss_data else 0.8
+	if clock_hands_timer >= hands_interval:
 		clock_hands_timer = 0.0
 		_fire_clock_hand_spokes(4, 160.0, 4)
 
 	# Eco del arrepentimiento telegrafiado cada 3.5s
-	if echo_timer >= 3.5:
+	var echo_interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 3.5
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.65
+	if echo_timer >= echo_interval:
 		echo_timer = 0.0
-		_start_telegraph(0.65, Callable(self, "_detonate_past_echoes"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_detonate_past_echoes"), TelegraphIndicator.TelegraphType.RING)
 
 func _process_phase_2(delta: float) -> void:
 	clock_hands_timer += delta
 	echo_timer += delta
 
 	# Manecillas aceleradas en cruz de 8 vías con alta frecuencia senoidal cada 0.6s (Ondas Púrpura tipo 6)
-	if clock_hands_timer >= 0.6:
+	var hands_interval: float = boss_data.primary_attack_interval_p2 if boss_data else 0.6
+	if clock_hands_timer >= hands_interval:
 		clock_hands_timer = 0.0
 		_fire_clock_hand_spokes(8, 185.0, 6)
 
 	# Detonaciones de eco dobles telegrafiadas cada 2.8s
-	if echo_timer >= 2.8:
+	var echo_interval: float = boss_data.secondary_attack_interval_p2 if boss_data else 2.8
+	var tele_dur: float = boss_data.telegraph_duration_p2 if boss_data else 0.60
+	if echo_timer >= echo_interval:
 		echo_timer = 0.0
-		_start_telegraph(0.60, Callable(self, "_detonate_past_echoes_phase_2"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_detonate_past_echoes_phase_2"), TelegraphIndicator.TelegraphType.RING)
 
 func _fire_clock_hand_spokes(count: int, speed: float, bullet_type: int) -> void:
 	if not is_instance_valid(bullet_server):
@@ -319,7 +346,8 @@ func take_damage(ctx: HitContext) -> void:
 	hit_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 
 	# Transición a Fase 2 al 50% de HP
-	if current_phase == 1 and current_health <= max_health * 0.5:
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	if current_phase == 1 and current_health <= max_health * p2_thresh:
 		_transition_to_phase_2()
 
 	if current_health <= 0.0:
@@ -337,8 +365,8 @@ func _finish_death() -> void:
 	boss_defeated.emit(boss_id)
 
 	if is_instance_valid(player):
-		player.add_credits(350)
-		player.add_exp(450.0)
+		player.add_credits(boss_data.credits_reward if boss_data else 350)
+		player.add_exp(boss_data.exp_reward if boss_data else 450.0)
 
 	queue_free()
 

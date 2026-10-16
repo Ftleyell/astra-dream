@@ -314,9 +314,8 @@ func _damage_target(target: Node2D, hit_angle: float) -> void:
 		if not c:
 			c = HitContext.new()
 			c.final_damage = 55.0
+		c.hit_position = target.global_position
 		target.take_damage(c)
-		if c.attacker and "inventory" in c.attacker and c.attacker.inventory:
-			c.attacker.inventory.process_hit_procs(c, c.attacker)
 
 		# Generar Hit VFX de incisión dimensional
 		_spawn_hit_impact_vfx(target.global_position, hit_angle)

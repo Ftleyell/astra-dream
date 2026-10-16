@@ -10,6 +10,9 @@ signal health_changed(current: float, max_val: float)
 signal phase_changed(new_phase: int)
 signal boss_defeated(boss_id: String)
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/boss_overflow_vortex.tres")
+
+@export var boss_data: BossData = null
 @export var boss_id: String = "boss_overflow_vortex"
 @export var boss_name: String = "VÓRTICE DEL DESBORDE"
 @export var max_health: float = 4500.0
@@ -38,12 +41,26 @@ var telegraph_material: ShaderMaterial = null
 var hit_flash_tween: Tween = null
 var telegraph_indicator: TelegraphIndicator = null
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		boss_id = boss_data.boss_id
+		boss_name = boss_data.boss_name
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	add_to_group("bosses")
 	scale = Vector2(2.0, 2.0)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -127,13 +144,15 @@ func _physics_process(delta: float) -> void:
 	elapsed_combat_time += delta
 
 	# Regla Anti-Stall: Transición a Fase 2 al 50% HP o 80s
-	if current_phase == 1 and (current_health <= max_health * 0.5 or elapsed_combat_time >= 80.0):
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	var p2_timeout: float = boss_data.phase_2_timeout_seconds if boss_data else 80.0
+	if current_phase == 1 and (current_health <= max_health * p2_thresh or elapsed_combat_time >= p2_timeout):
 		_transition_to_phase_2()
 
 	# Movimiento de aproximación e interceptación agresiva
 	var to_player := player.global_position - global_position
 	var dist := to_player.length()
-	var desired_dist := 290.0
+	var desired_dist: float = boss_data.desired_distance if boss_data else 290.0
 
 	var move_dir := Vector2.ZERO
 	if dist > desired_dist + 40.0:
@@ -143,7 +162,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		move_dir = to_player.normalized().orthogonal() * 0.5
 
-	var spd: float = (115.0 if current_phase == 1 else 160.0) * (0.45 if is_telegraphing else 1.0)
+	var spd_p1: float = boss_data.move_speed_phase_1 if boss_data else 115.0
+	var spd_p2: float = boss_data.move_speed_phase_2 if boss_data else 160.0
+	var spd: float = (spd_p1 if current_phase == 1 else spd_p2) * (0.45 if is_telegraphing else 1.0)
 	velocity = velocity.lerp(move_dir * spd, delta * 3.0)
 	move_and_slide()
 
@@ -170,19 +191,23 @@ func _process_phase_1(delta: float) -> void:
 	aimed_timer += delta
 
 	# Espiral de Fermat con respiración radial continua (Ondas Púrpura tipo 6)
-	if spiral_timer >= 0.045:
+	var sp_interval: float = boss_data.spiral_tick_interval_p1 if boss_data else 0.045
+	if spiral_timer >= sp_interval:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
 			bullet_server.fire_breathing_fermat_spiral_tick(global_position, spiral_tick, 175.0, rotation, 0.18, 0.35, 6)
 
 	# Erupción de rosa polar de 6 puntas telegrafiada cada 3.2s
-	if nova_timer >= 3.2:
+	var nova_interval: float = boss_data.primary_attack_interval_p1 if boss_data else 3.2
+	var tele_dur: float = boss_data.telegraph_duration_p1 if boss_data else 0.65
+	if nova_timer >= nova_interval:
 		nova_timer = 0.0
-		_start_telegraph(0.65, Callable(self, "_fire_overload_nova_ring"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_fire_overload_nova_ring"), TelegraphIndicator.TelegraphType.RING)
 
 	# Ráfagas serpenteantes dirigidas de plasma cada 2.4s (Dardos Ámbar tipo 4)
-	if aimed_timer >= 2.4:
+	var aim_interval: float = boss_data.secondary_attack_interval_p1 if boss_data else 2.4
+	if aimed_timer >= aim_interval:
 		aimed_timer = 0.0
 		if is_instance_valid(bullet_server):
 			bullet_server.fire_serpentine_spread(global_position, player.global_position, 5, 36.0, 215.0, 22.0, 4.2, 4)
@@ -193,7 +218,8 @@ func _process_phase_2(delta: float) -> void:
 	aimed_timer += delta
 
 	# Doble espiral de Fermat con respiración radial cruzada (Sobrecarga de singularidad: Púrpura 6 y Cobalto 5)
-	if spiral_timer >= 0.038:
+	var sp_interval: float = boss_data.spiral_tick_interval_p2 if boss_data else 0.038
+	if spiral_timer >= sp_interval:
 		spiral_timer = 0.0
 		spiral_tick += 1
 		if is_instance_valid(bullet_server):
@@ -201,11 +227,14 @@ func _process_phase_2(delta: float) -> void:
 			bullet_server.fire_breathing_fermat_spiral_tick(global_position, -spiral_tick, 185.0, -rotation, 0.20, 0.38, 5)
 
 	# Doble nova de 12 lóbulos armónicos telegrafiada cada 2.5s
-	if nova_timer >= 2.5:
+	var nova_interval: float = boss_data.primary_attack_interval_p2 if boss_data else 2.5
+	var tele_dur: float = boss_data.telegraph_duration_p2 if boss_data else 0.60
+	if nova_timer >= nova_interval:
 		nova_timer = 0.0
-		_start_telegraph(0.60, Callable(self, "_fire_overload_double_nova"), TelegraphIndicator.TelegraphType.RING)
+		_start_telegraph(tele_dur, Callable(self, "_fire_overload_double_nova"), TelegraphIndicator.TelegraphType.RING)
 
-	if aimed_timer >= 1.8:
+	var aim_interval: float = boss_data.secondary_attack_interval_p2 if boss_data else 1.8
+	if aimed_timer >= aim_interval:
 		aimed_timer = 0.0
 		if is_instance_valid(bullet_server):
 			bullet_server.fire_serpentine_spread(global_position, player.global_position, 7, 48.0, 240.0, 26.0, 5.0, 4)
@@ -284,7 +313,8 @@ func take_damage(ctx: HitContext) -> void:
 	hit_flash_tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 
 	# Transición a Fase 2 al 50% de HP
-	if current_phase == 1 and current_health <= max_health * 0.5:
+	var p2_thresh: float = boss_data.phase_2_hp_threshold if boss_data else 0.5
+	if current_phase == 1 and current_health <= max_health * p2_thresh:
 		_transition_to_phase_2()
 
 	if current_health <= 0.0:
@@ -302,8 +332,8 @@ func _finish_death() -> void:
 	boss_defeated.emit(boss_id)
 
 	if is_instance_valid(player):
-		player.add_credits(750)
-		player.add_exp(900.0)
+		player.add_credits(boss_data.credits_reward if boss_data else 750)
+		player.add_exp(boss_data.exp_reward if boss_data else 900.0)
 
 	queue_free()
 

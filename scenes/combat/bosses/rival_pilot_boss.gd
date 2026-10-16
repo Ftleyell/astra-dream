@@ -43,6 +43,9 @@ const PILOT_THEME_COLORS: Dictionary = {
 	&"nyx": Color(0.85, 0.0, 0.95),
 }
 
+const DEFAULT_BOSS_DATA: BossData = preload("res://data/bosses/rival_pilot_boss.tres")
+
+@export var boss_data: BossData = null
 @export var pilot_id: StringName = &"nova"
 @export var pilot_name: String = "Nova"
 @export var max_health: float = 1600.0
@@ -81,6 +84,16 @@ var warning_label: Label = null
 var _warp_portal: Node2D = null
 var _warp_target_pos: Vector2 = Vector2.ZERO
 
+func _init() -> void:
+	_apply_boss_data()
+
+func _apply_boss_data() -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
+	if boss_data != null:
+		max_health = boss_data.max_health
+		current_health = max_health
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
@@ -89,6 +102,8 @@ func _ready() -> void:
 	add_to_group("bosses")
 	scale = Vector2(1.2, 1.2)
 
+	if boss_data == null:
+		_apply_boss_data()
 	current_health = max_health
 	_acquire_references()
 	_setup_visuals()
@@ -112,6 +127,8 @@ func _exit_tree() -> void:
 		_warp_portal = null
 
 func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
+	if boss_data == null:
+		boss_data = DEFAULT_BOSS_DATA
 	pilot_id = p_id
 	var roster := CharacterData.load_roster()
 	if roster.has(p_id):
@@ -122,7 +139,9 @@ func setup_pilot(p_id: StringName, p_wave: int = 1) -> void:
 	behavior.setup(pilot_id, pilot_name)
 	var theme_col: Color = PILOT_THEME_COLORS.get(p_id, Color(0.0, 0.9, 1.0))
 	warning_ring_color = Color(theme_col.r, theme_col.g, theme_col.b, 0.5)
-	max_health = 1600.0 + float(p_wave) * 280.0
+	var base_hp: float = boss_data.max_health if boss_data else 1600.0
+	var hp_step: float = boss_data.wave_scaling_hp_step if boss_data else 280.0
+	max_health = base_hp + float(p_wave) * hp_step
 	current_health = max_health
 
 	if ship_sprite and character_data:
@@ -281,7 +300,9 @@ func _process_dogfight(delta: float, dist: float) -> void:
 	flight_motor.process_dogfight_flight(self, player, delta, dist)
 	attack_timer -= delta
 	if attack_timer <= 0.0:
-		attack_timer = randf_range(1.4, 2.2)
+		var a_min: float = boss_data.primary_attack_interval_p1 if boss_data else 1.4
+		var a_max: float = boss_data.secondary_attack_interval_p1 if boss_data else 2.2
+		attack_timer = randf_range(a_min, a_max)
 		_execute_signature_attack()
 
 func _execute_signature_attack() -> void:

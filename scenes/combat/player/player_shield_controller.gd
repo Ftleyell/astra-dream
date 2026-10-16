@@ -61,6 +61,17 @@ func take_damage(
 	else:
 		mitigated_dmg = amount * (2.0 - (100.0 / (100.0 - armor_val)))
 
+	var max_hp: float = stats.get_stat(&"max_health") if stats else 100.0
+	var current_combined: float = player.current_health + current_shield
+	var max_combined: float = maxf(1.0, max_hp + max_shield)
+	var osp_threshold: float = 0.90
+	if (stats and stats.has_method("has_modifier") and stats.has_modifier(&"max_health", &"glass_cannon")) or player.has_meta("glass_cannon"):
+		osp_threshold = 0.95
+
+	var osp_did_trigger: bool = false
+	if not ctx.bypass_osp and (current_combined / max_combined) >= osp_threshold and mitigated_dmg >= current_combined:
+		osp_did_trigger = true
+
 	var remaining_dmg: float = mitigated_dmg
 	if current_shield > 0.0:
 		if current_shield >= remaining_dmg:
@@ -70,23 +81,38 @@ func take_damage(
 			remaining_dmg -= current_shield
 			current_shield = 0.0
 
+	if osp_did_trigger:
+		remaining_dmg = maxf(0.0, player.current_health - 1.0)
+
 	player.current_health -= remaining_dmg
+	if osp_did_trigger:
+		player.current_health = 1.0
 	player.hit_flash_timer = 0.22
 
 	var audio_mgr := player.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("player_hit")
 
-	var max_hp: float = stats.get_stat(&"max_health") if stats else 100.0
 	player.health_changed.emit(player.current_health, max_hp)
 	update_conversion_core_stats(player, stats, inventory)
 
 	if inventory and inventory.has_method("process_take_damage_procs"):
 		inventory.process_take_damage_procs(mitigated_dmg, player)
 
-	# Lógica Letal y Resucitación por Chatarra Estelar
-	if player.has_meta(&"osp_active_frame"):
+	# Lógica Letal, OSP y Resucitación por Chatarra Estelar
+	if osp_did_trigger or player.has_meta(&"osp_active_frame"):
+		if player.has_meta(&"osp_active_frame"):
+			player.remove_meta(&"osp_active_frame")
 		player.current_health = maxf(1.0, player.current_health)
+		player.is_invulnerable = true
+		var tree: SceneTree = player.get_tree()
+		if tree:
+			tree.create_timer(0.5, false, false, true).timeout.connect(func() -> void:
+				if is_instance_valid(player):
+					player.is_invulnerable = false
+			)
+		if player.has_signal("osp_triggered"):
+			player.osp_triggered.emit(player.current_health)
 		return
 
 	if player.current_health <= 0.0 and not player.is_dead:

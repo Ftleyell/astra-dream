@@ -302,6 +302,8 @@ Todo balance numérico reside en estos directorios. **Prohibido hardcodear núme
 |---|---|---|
 | Armas | `data/weapons/` | `WeaponData` (`data/weapons/weapon_catalog.gd`) |
 | Personajes / Pilotos | `data/characters/` | `CharacterData` |
+| Enemigos y Arquetipos | `data/enemies/` | `EnemyData` (`core/data/enemy_data.gd`) |
+| Jefes y Encuentros | `data/bosses/` | `BossData` (`core/data/boss_data.gd`) |
 | Ítems Pasivos y de Satélite | `data/items/` | `ItemData` (`core/types/item_pool_manager.gd`) |
 | Cronograma de Encuentros | `data/balance/` | `EncounterTimelineConfig` (`data/balance/default_encounter_timeline.tres`) |
 | Arcanas / Pactos | `data/arcanas/` | `ArcanaData` |

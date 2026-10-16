@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_id = &"enemy_shooter"
+max_health = 45.0
+move_speed = 130.0
+contact_damage = 12.0
+exp_reward = 40.0
+credits_reward = 4
+contact_radius = 24.0
+contact_interval = 0.6
+shoot_interval = 3.6
+charge_duration = 0.35
+preferred_distance = 450.0
+distance_tolerance = 50.0

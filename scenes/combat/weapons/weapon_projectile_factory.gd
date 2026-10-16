@@ -112,9 +112,6 @@ func dispatch_active_fire(
 
 	_play_fire_sfx(wdata.weapon_id)
 
-	if player and "inventory" in player and player.inventory:
-		player.inventory.process_hit_procs(ctx, player)
-
 func dispatch_passive_fire(
 	inst: WeaponInstanceData,
 	aim_info: Dictionary,
@@ -191,12 +188,26 @@ func fire_homing_missiles(
 func maintain_orbital_drones(ctx: HitContext, desired_count: int, weapon_node: Node2D, spawn_parent: Node) -> void:
 	active_drones = active_drones.filter(func(d: Node2D) -> bool: return is_instance_valid(d))
 
+	var p_player: Node2D = (weapon_node.get_parent() as Node2D) if (weapon_node and weapon_node.get_parent() is Node2D) else weapon_node
+	for existing_d: Node2D in active_drones:
+		if "hit_context" in existing_d:
+			existing_d.set("hit_context", ctx)
+
+	var added_any: bool = false
 	while active_drones.size() < desired_count:
 		var drone: OrbitalDrone = drone_scene.instantiate() as OrbitalDrone
 		var angle := float(active_drones.size()) * TAU / float(maxi(1, desired_count))
-		drone.setup(weapon_node, angle, ctx)
+		drone.setup(p_player, angle, ctx)
 		spawn_parent.add_child(drone)
 		active_drones.append(drone)
+		added_any = true
+
+	if added_any and not active_drones.is_empty():
+		var base_angle: float = float(active_drones[0].get("current_angle")) if "current_angle" in active_drones[0] else 0.0
+		var total: int = active_drones.size()
+		for i: int in range(total):
+			if "current_angle" in active_drones[i]:
+				active_drones[i].set("current_angle", base_angle + float(i) * TAU / float(total))
 
 func _play_fire_sfx(weapon_id: StringName) -> void:
 	var tree := Engine.get_main_loop() as SceneTree

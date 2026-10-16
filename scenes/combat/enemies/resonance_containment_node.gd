@@ -8,6 +8,10 @@ extends CharacterBody2D
 
 signal node_destroyed(node: ResonanceContainmentNode)
 
+const _EnemyDataClass = preload("res://core/data/enemy_data.gd")
+const DEFAULT_NODE_DATA: EnemyData = preload("res://data/enemies/resonance_containment_node.tres")
+
+@export var enemy_data: EnemyData = null
 @export var max_health: float = 150.0
 @export var contact_damage: float = 18.0
 @export var contact_radius: float = 24.0
@@ -28,11 +32,36 @@ var contact_cooldown: float = 0.0
 
 var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.tscn")
 
+func _init() -> void:
+	if enemy_data == null:
+		enemy_data = DEFAULT_NODE_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null:
+		enemy_data = DEFAULT_NODE_DATA
+	if enemy_data != null:
+		max_health = enemy_data.max_health
+		contact_damage = enemy_data.contact_damage
+		contact_radius = enemy_data.contact_radius
+		lifetime = enemy_data.lifetime
+		exp_reward = enemy_data.exp_reward
+		current_health = max_health
+
+func _reset_pool_state() -> void:
+	_apply_enemy_data()
+	contact_radius = (enemy_data.contact_radius if enemy_data != null else contact_radius) * 2.0
+	current_health = max_health
+	is_dying = false
+	contact_cooldown = 0.0
+
 func _ready() -> void:
+	if enemy_data == null:
+		_apply_enemy_data()
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemies")
 	scale = Vector2(2.0, 2.0)
-	contact_radius *= 2.0
+	contact_radius = (enemy_data.contact_radius if enemy_data != null else contact_radius) * 2.0
 	current_health = max_health
 	_acquire_player()
 	

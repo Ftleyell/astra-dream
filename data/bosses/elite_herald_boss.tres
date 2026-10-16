@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/boss_data.gd" id="1_boss_data"]
+
+[resource]
+script = ExtResource("1_boss_data")
+boss_id = "elite_herald"
+boss_name = "HERALDO DEL TIEMPO"
+max_health = 1400.0
+herald_mirror_health = 1800.0
+herald_vortex_health = 2200.0
+herald_fallback_health = 1500.0
+contact_damage = 20.0
+credits_reward = 120
+exp_reward = 180.0
+move_speed_phase_1 = 130.0
+desired_distance = 320.0
+primary_attack_interval_p1 = 1.2
+secondary_attack_interval_p1 = 1.3
+primary_attack_interval_p2 = 1.0
+telegraph_duration_p1 = 0.45

@@ -137,12 +137,11 @@ func _apply_bounded_damage(start_point: Vector2, hit_point: Vector2, primary_sol
 			var dist_sq := _dist_to_segment_sq(node.global_position, start_point, hit_point)
 			if dist_sq <= hit_radius_sq:
 				if node.has_method("take_damage") and hit_context:
-					# Deduplicación Omega Spin: si hay registry activo, saltear enemigos ya golpeados
-					if not hit_registry.is_empty():
-						var enemy_rid: RID = node.get_rid()
-						if hit_registry.has(enemy_rid):
-							continue
-						hit_registry[enemy_rid] = true
+					# Deduplicación Omega Spin / setup+_ready: saltear enemigos ya golpeados
+					var enemy_rid: Variant = node.get_rid() if node.has_method("get_rid") else node.get_instance_id()
+					if hit_registry.has(enemy_rid):
+						continue
+					hit_registry[enemy_rid] = true
 					var child_ctx := hit_context.fork_child_hit(hit_context.final_damage, 0.4, &"screen_laser")
 					child_ctx.hit_position = node.global_position
 					node.take_damage(child_ctx)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_id = &"enemy_splitter"
+max_health = 75.0
+move_speed = 135.0
+contact_damage = 14.0
+exp_reward = 30.0
+credits_reward = 2
+contact_radius = 26.0
+contact_interval = 0.6
+fusion_countdown = 5.0
+split_count = 2

@@ -7,12 +7,24 @@ const SaveSkinsModule = preload("res://core/autoloads/save_modules/save_skins_mo
 const SaveRosterModule = preload("res://core/autoloads/save_modules/save_roster_module.gd")
 
 static var is_resuming_run: bool = false
+static var _self_script: Variant = null
 const SAVE_PATH: String = "user://profile_data.json"
 const SCHEMA_VERSION: int = 2
+
+func _init() -> void:
+	_self_script = get_script() if get_script() != null else self
+
+static func _get_self_ref() -> Variant:
+	if _self_script != null:
+		return _self_script
+	return SaveManager
 
 # ==============================================================================
 # PERFIL & DISCO I/O (DELEGACIÓN A PROFILE STORAGE)
 # ==============================================================================
+
+static func save_profile_fields(updates: Dictionary) -> Error:
+	return ProfileStorage.save_profile_fields(updates)
 
 static func save_profile(
 	unlocked_items: Array[StringName],
@@ -61,29 +73,25 @@ static func get_biomass() -> int:
 	return MetaProgressionState.get_biomass()
 
 static func add_biomass(amount: int) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.add_biomass(amount, self_class)
+	return MetaProgressionState.add_biomass(amount, _get_self_ref())
 
 static func add_test_biomass(amount: int = 100) -> int:
 	return add_biomass(amount)
 
 static func set_biomass(amount: int) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.set_biomass(amount, self_class)
+	MetaProgressionState.set_biomass(amount, _get_self_ref())
 
 static func get_antimatter() -> int:
 	return MetaProgressionState.get_antimatter()
 
 static func add_antimatter(amount: int) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.add_antimatter(amount, self_class)
+	return MetaProgressionState.add_antimatter(amount, _get_self_ref())
 
 static func get_dark_matter() -> int:
 	return MetaProgressionState.get_dark_matter()
 
 static func add_dark_matter(amount: int) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.add_dark_matter(amount, self_class)
+	return MetaProgressionState.add_dark_matter(amount, _get_self_ref())
 
 static func get_unlocked_trophies() -> Dictionary:
 	return MetaProgressionState.get_unlocked_trophies()
@@ -95,12 +103,10 @@ static func get_trophy_mastery(trophy_id: StringName) -> int:
 	return MetaProgressionState.get_trophy_mastery(trophy_id)
 
 static func unlock_or_upgrade_trophy(trophy_id: StringName, mastery_level: int = 1) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.unlock_or_upgrade_trophy(trophy_id, mastery_level, self_class)
+	return MetaProgressionState.unlock_or_upgrade_trophy(trophy_id, mastery_level, _get_self_ref())
 
 static func upgrade_trophy_with_dark_matter(trophy_id: StringName, cost: int) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.upgrade_trophy_with_dark_matter(trophy_id, cost, self_class)
+	return MetaProgressionState.upgrade_trophy_with_dark_matter(trophy_id, cost, _get_self_ref())
 
 static func get_trophy_passive_bonuses() -> Dictionary:
 	return MetaProgressionState.get_trophy_passive_bonuses()
@@ -119,26 +125,22 @@ static func get_character_unlocked_nodes_count(char_id: StringName) -> int:
 	return MetaProgressionState.get_character_unlocked_nodes_count(char_id)
 
 static func unlock_character_skill_node(char_id: StringName, node_id: StringName, cost: int, req_node_id: StringName = &"") -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.unlock_character_skill_node(char_id, node_id, cost, req_node_id, self_class)
+	return MetaProgressionState.unlock_character_skill_node(char_id, node_id, cost, req_node_id, _get_self_ref())
 
 static func refund_character_skills(char_id: StringName, node_cost: int = 25) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.refund_character_skills(char_id, node_cost, self_class)
+	return MetaProgressionState.refund_character_skills(char_id, node_cost, _get_self_ref())
 
 static func get_selected_character() -> StringName:
 	return MetaProgressionState.get_selected_character()
 
 static func set_selected_character(char_id: StringName) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.set_selected_character(char_id, self_class)
+	MetaProgressionState.set_selected_character(char_id, _get_self_ref())
 
 static func get_game_speed() -> float:
 	return MetaProgressionState.get_game_speed()
 
 static func set_game_speed(speed: float) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.set_game_speed(speed, self_class)
+	MetaProgressionState.set_game_speed(speed, _get_self_ref())
 
 # ==============================================================================
 # ESTADÍSTICAS DE CARRERA Y DESBLOQUEO DE PERSONAJES
@@ -151,28 +153,22 @@ static func is_character_unlocked(char_id: StringName) -> bool:
 	return MetaProgressionState.is_character_unlocked(char_id)
 
 static func unlock_character(char_id: StringName) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.unlock_character(char_id, self_class)
+	return MetaProgressionState.unlock_character(char_id, _get_self_ref())
 
 static func lock_character(char_id: StringName) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.lock_character(char_id, self_class)
+	return MetaProgressionState.lock_character(char_id, _get_self_ref())
 
 static func record_boss_kill() -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return MetaProgressionState.record_boss_kill(self_class)
+	return MetaProgressionState.record_boss_kill(_get_self_ref())
 
 static func record_career_run_end(stats_data: Dictionary) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.record_career_run_end(stats_data, self_class)
+	MetaProgressionState.record_career_run_end(stats_data, _get_self_ref())
 
 static func reset_career_stats() -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.reset_career_stats(self_class)
+	MetaProgressionState.reset_career_stats(_get_self_ref())
 
 static func set_career_bosses_killed(count: int) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	MetaProgressionState.set_career_bosses_killed(count, self_class)
+	MetaProgressionState.set_career_bosses_killed(count, _get_self_ref())
 
 static func get_bosses_defeated_count() -> int:
 	return int(get_career_stats().get("total_bosses_killed", 0))
@@ -185,8 +181,7 @@ static func get_selected_pet() -> StringName:
 	return SaveRosterModule.get_selected_pet(load_profile(), is_pet_unlocked)
 
 static func set_selected_pet(pet_id: StringName) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveRosterModule.set_selected_pet(pet_id, self_class)
+	SaveRosterModule.set_selected_pet(pet_id, _get_self_ref())
 
 static func get_unlocked_pets() -> Array[StringName]:
 	return SaveRosterModule.get_unlocked_pets(load_profile())
@@ -195,12 +190,10 @@ static func is_pet_unlocked(pet_id: StringName) -> bool:
 	return SaveRosterModule.is_pet_unlocked(pet_id, load_profile())
 
 static func unlock_pet(pet_id: StringName) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveRosterModule.unlock_pet(pet_id, self_class)
+	return SaveRosterModule.unlock_pet(pet_id, _get_self_ref())
 
 static func lock_pet(pet_id: StringName) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveRosterModule.lock_pet(pet_id, self_class)
+	SaveRosterModule.lock_pet(pet_id, _get_self_ref())
 
 static func get_unlocked_endings() -> Array[String]:
 	return SaveRosterModule.get_unlocked_endings(load_profile())
@@ -209,8 +202,7 @@ static func has_unlocked_ending(ending_id: String) -> bool:
 	return SaveRosterModule.has_unlocked_ending(ending_id, load_profile())
 
 static func record_ending(ending_id: String) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveRosterModule.record_ending(ending_id, self_class)
+	return SaveRosterModule.record_ending(ending_id, _get_self_ref())
 
 # ==============================================================================
 # NAVIGATORS PERSISTENCE (NAVEGANTES)
@@ -220,8 +212,7 @@ static func get_selected_navigator() -> StringName:
 	return SaveRosterModule.get_selected_navigator(load_profile(), is_navigator_unlocked)
 
 static func set_selected_navigator(nav_id: StringName) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveRosterModule.set_selected_navigator(nav_id, self_class)
+	SaveRosterModule.set_selected_navigator(nav_id, _get_self_ref())
 
 static func get_unlocked_navigators() -> Array[StringName]:
 	return SaveRosterModule.get_unlocked_navigators(load_profile())
@@ -230,12 +221,10 @@ static func is_navigator_unlocked(nav_id: StringName) -> bool:
 	return SaveRosterModule.is_navigator_unlocked(nav_id, load_profile())
 
 static func unlock_navigator(nav_id: StringName) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveRosterModule.unlock_navigator(nav_id, self_class)
+	return SaveRosterModule.unlock_navigator(nav_id, _get_self_ref())
 
 static func lock_navigator(nav_id: StringName) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveRosterModule.lock_navigator(nav_id, self_class)
+	SaveRosterModule.lock_navigator(nav_id, _get_self_ref())
 
 # ==============================================================================
 # RUN EN CURSO & HIGHSCORES (DELEGACIÓN A ACTIVE RUN STORAGE)
@@ -277,12 +266,10 @@ static func get_gacha_tokens() -> int:
 	return SaveSkinsModule.get_gacha_tokens(load_profile())
 
 static func add_gacha_tokens(amount: int) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveSkinsModule.add_gacha_tokens(amount, self_class)
+	return SaveSkinsModule.add_gacha_tokens(amount, _get_self_ref())
 
 static func spend_gacha_tokens(amount: int) -> bool:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveSkinsModule.spend_gacha_tokens(amount, self_class)
+	return SaveSkinsModule.spend_gacha_tokens(amount, _get_self_ref())
 
 static func get_unlocked_skins() -> Dictionary:
 	return SaveSkinsModule.get_unlocked_skins(load_profile())
@@ -294,20 +281,16 @@ static func get_skin_stars(skin_id: String) -> int:
 	return SaveSkinsModule.get_skin_stars(skin_id, load_profile())
 
 static func set_skin_stars(skin_id: String, stars: int) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.set_skin_stars(skin_id, stars, self_class)
+	SaveSkinsModule.set_skin_stars(skin_id, stars, _get_self_ref())
 
 static func unlock_or_upgrade_skin(skin_id: String) -> Dictionary:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveSkinsModule.unlock_or_upgrade_skin(skin_id, self_class)
+	return SaveSkinsModule.unlock_or_upgrade_skin(skin_id, _get_self_ref())
 
 static func equip_skin(slot_key: String, skin_id: String) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.equip_skin(slot_key, skin_id, self_class)
+	SaveSkinsModule.equip_skin(slot_key, skin_id, _get_self_ref())
 
 static func unequip_skin(slot_key: String) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.unequip_skin(slot_key, self_class)
+	SaveSkinsModule.unequip_skin(slot_key, _get_self_ref())
 
 static func get_equipped_skin(slot_key: String) -> String:
 	return SaveSkinsModule.get_equipped_skin(slot_key, load_profile())
@@ -316,27 +299,22 @@ static func get_equipped_skins() -> Dictionary:
 	return SaveSkinsModule.get_equipped_skins(load_profile())
 
 static func set_gacha_tokens(amount: int) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.set_gacha_tokens(amount, self_class)
+	SaveSkinsModule.set_gacha_tokens(amount, _get_self_ref())
 
 static func unlock_all_skins(star_level: int = 1) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveSkinsModule.unlock_all_skins(star_level, self_class)
+	return SaveSkinsModule.unlock_all_skins(star_level, _get_self_ref())
 
 static func lock_all_skins() -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.lock_all_skins(self_class)
+	SaveSkinsModule.lock_all_skins(_get_self_ref())
 
 static func get_banner_pity(banner_id: String) -> int:
 	return SaveSkinsModule.get_banner_pity(banner_id, load_profile())
 
 static func increment_banner_pity(banner_id: String, amount: int) -> int:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	return SaveSkinsModule.increment_banner_pity(banner_id, amount, self_class)
+	return SaveSkinsModule.increment_banner_pity(banner_id, amount, _get_self_ref())
 
 static func reset_banner_pity(banner_id: String) -> void:
-	var self_class = load("res://core/autoloads/save_manager.gd")
-	SaveSkinsModule.reset_banner_pity(banner_id, self_class)
+	SaveSkinsModule.reset_banner_pity(banner_id, _get_self_ref())
 
 static func get_character_active_tomes(char_id: StringName) -> Array[StringName]:
 	return ProfileStorage.get_character_active_tomes(char_id)

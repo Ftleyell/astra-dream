@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/boss_data.gd" id="1_boss_data"]
+
+[resource]
+script = ExtResource("1_boss_data")
+boss_id = "rival_pilot_boss"
+boss_name = "Nova"
+max_health = 1600.0
+wave_scaling_hp_step = 280.0
+contact_damage = 20.0
+primary_attack_interval_p1 = 1.4
+secondary_attack_interval_p1 = 2.2

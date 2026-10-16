@@ -5,16 +5,18 @@ extends "res://scenes/combat/enemies/enemy_base.gd"
 ## Aparece en formaciones geométricas masivas (cuñas, arcos o enjambres),
 ## tiene baja salud, alta velocidad y avanza con inercia coordinada.
 
+const DEFAULT_MICRO_FLOCK_DATA: EnemyData = preload("res://data/enemies/enemy_micro_flock.tres")
+
 var flock_seed: float = 0.0
 
 func _init() -> void:
-	enemy_id = &"enemy_micro_flock"
-	max_health = 12.0
-	move_speed = 380.0
-	contact_damage = 6.0
-	exp_reward = 6.0
-	credits_reward = 1
-	contact_radius = 14.0
+	enemy_data = DEFAULT_MICRO_FLOCK_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_MICRO_FLOCK_DATA
+	super._apply_enemy_data()
 
 func _ready_custom() -> void:
 	var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem

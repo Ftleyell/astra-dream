@@ -247,7 +247,7 @@ func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is
 		aim_dir,
 		is_focused,
 		charge_ratio,
-		max_charge_time,
+		get_effective_max_charge_time(),
 		player,
 		global_position,
 		get_global_mouse_position(),

@@ -126,6 +126,11 @@ func _ready() -> void:
 	vortex.queue_free()
 
 	var pooled_enemies: Array[EnemyBase] = [
+		EnemyBase.new(),
+		EnemyDrone.new(),
+		EnemyMicroFlock.new(),
+		EnemyTank.new(),
+		EnemyKamikaze.new(),
 		EnemySplitter.new(),
 		RainbowEnemy.new(),
 		EnemyShooter.new(),
@@ -134,16 +139,29 @@ func _ready() -> void:
 		EnemySpecterWave.new()
 	]
 	for enemy: EnemyBase in pooled_enemies:
+		assert(enemy.enemy_data != null, "Enemy %s must preload its canonical EnemyData on .new()" % str(enemy.enemy_id))
+		var base_hp: float = enemy.enemy_data.max_health
+		var base_spd: float = enemy.enemy_data.move_speed
 		add_child(enemy)
 		var initial_children: int = enemy.get_child_count()
+		enemy.max_health = base_hp * 3.0
+		enemy.move_speed = base_spd * 2.5
+		assert(is_equal_approx(enemy.enemy_data.max_health, base_hp), "EnemyData.max_health must remain read-only")
+		assert(is_equal_approx(enemy.enemy_data.move_speed, base_spd), "EnemyData.move_speed must remain read-only")
 		enemy.reset_from_pool(Vector2(100.0, 200.0))
 		enemy.reset_from_pool(Vector2(300.0, 400.0))
+		assert(is_equal_approx(enemy.max_health, base_hp), "reset_from_pool must restore max_health from EnemyData")
+		assert(is_equal_approx(enemy.move_speed, base_spd), "reset_from_pool must restore move_speed from EnemyData")
 		assert(enemy.get_child_count() == initial_children, "Pool recycle must not duplicate child nodes on %s" % enemy.get_class())
 		enemy.queue_free()
 
+	var r_node := ResonanceContainmentNode.new()
+	assert(r_node.enemy_data != null and is_equal_approx(r_node.max_health, 150.0), "ResonanceContainmentNode must preload EnemyData")
+	r_node.queue_free()
+
 	print("  ✓ Espejo Quebrado (Dominio de la Disociación) validated")
 	print("  ✓ Vórtice del Desborde (Dominio del Agobio) validated")
-	print("  ✓ Enemy pooling recycle validated (zero child node duplication)")
+	print("  ✓ Enemy pooling recycle & EnemyData read-only isolation validated")
 
 	bullet_server.queue_free()
 

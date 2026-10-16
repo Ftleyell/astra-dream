@@ -318,6 +318,9 @@ func skip_and_recycle() -> void:
 			elif _current_player.has_method("show_tactical_alert"):
 				_current_player.show_tactical_alert("COFRE RECICLADO", "+%d créditos recuperados (50%%)" % refund, Color(0.3, 0.9, 1.0))
 
+	if _selection_callback.is_valid():
+		_selection_callback.call(null)
+
 	close_modal()
 
 func close_modal() -> void:

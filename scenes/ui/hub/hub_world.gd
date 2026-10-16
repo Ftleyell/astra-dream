@@ -26,8 +26,10 @@ const PILOT_ROSTER: Array[Dictionary] = [
 	{"id": &"selene", "name": "Selene", "title": "Ocultista del Vacío", "desc": "Canaliza anomalías de gravedad negativa. Ralentiza proyectiles enemigos entrantes y tiene el doble de rango de aspiración de EXP.", "stats": "HP: 110 | Vel: 290 px/s | Daño: 38 | Crítico: 6% | Suerte: +20", "color": Color(0.75, 0.4, 1.0, 1.0), "pedestal_pos": Vector3(8.5, 0.15, -4.0)},
 	{"id": &"roxy", "name": "Roxanne", "title": "Especialista Pesada", "desc": "Blindaje de casco reforzado y escopeta sísmica de metralla. Comienza con escudo cinético que absorbe impactos directos.", "stats": "HP: 150 | Vel: 260 px/s | Daño: 48 | Crítico: 4% | Suerte: -5", "color": Color(0.2, 0.95, 0.5, 1.0), "pedestal_pos": Vector3(8.5, 0.15, 2.0)},
 	{"id": &"echo", "name": "Echo", "title": "Androide Ciber-Guerra", "desc": "Inyecta virus de latencia cuántica que encadenan arcos eléctricos y procs infinitos entre grupos densos de enemigos.", "stats": "HP: 80 | Vel: 360 px/s | Daño: 42 | Crítico: 12% | Suerte: +10", "color": Color(0.5, 0.85, 1.0, 1.0), "pedestal_pos": Vector3(8.5, 0.15, 8.0)},
-	{"id": &"nyx", "name": "Nyx", "title": "Espadachina Dimensional", "desc": "Empuña la Hoja Crepuscular ejecutando ráfagas cortantes en medialuna, torbellinos defensivos y estelas de corte dimensional.", "stats": "HP: 110 | Vel: 350 px/s | Daño: 48 (Melee) | Crítico: 15% | Cortes: Escala con Proyectiles", "color": Color(0.9, 0.25, 1.0, 1.0), "pedestal_pos": Vector3(0.0, 0.15, 10.5)}
+	{"id": &"nyx", "name": "Nyx", "title": "Espadachina Dimensional", "desc": "Guerrera cuerpo a cuerpo de vanguardia. Empuña la Hoja Crepuscular ejecutando ráfagas cortantes en medialuna, cortes circulares que desintegran proyectiles y traslaciones con estelas letales.", "stats": "HP: 110 | Vel: 350 px/s | Daño: 48 (Melee) | Crítico: 15% | Cortes: Escala con Proyectiles", "color": Color(0.9, 0.25, 1.0, 1.0), "pedestal_pos": Vector3(0.0, 0.15, 10.5)}
 ]
+
+var active_pilot_roster: Array[Dictionary] = []
 
 var hangar_builder: HubHangarBuilder3D = null
 var terminal_manager: HubTerminalManager = null
@@ -88,7 +90,25 @@ var gacha_interactable: HubInteractable3D:
 @onready var settings_modal: SettingsModal = get_node_or_null("HubUI/SettingsModal")
 
 
+func _build_dynamic_pilot_roster() -> Array[Dictionary]:
+	var loaded_roster: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
+	var dynamic_list: Array[Dictionary] = []
+	for base_entry: Dictionary in PILOT_ROSTER:
+		var entry: Dictionary = base_entry.duplicate()
+		var cid: StringName = entry.get("id", &"")
+		if loaded_roster.has(cid) and loaded_roster[cid] != null:
+			var cd: CharacterData = loaded_roster[cid]
+			entry["name"] = cd.display_name
+			entry["title"] = cd.title
+			entry["desc"] = cd.description
+			entry["stats"] = cd.stats_summary
+			entry["color"] = cd.color
+		dynamic_list.append(entry)
+	return dynamic_list
+
+
 func _ready() -> void:
+	active_pilot_roster = _build_dynamic_pilot_roster()
 	_init_subcomponents()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	PauseArbitrator.force_unpause_all()
@@ -96,13 +116,13 @@ func _ready() -> void:
 	SaveManager.set_game_speed(1.0)
 	camera = HubCameraController3D.setup_camera(player_controller, camera, self)
 
-	showcase_controller.build_pilot_pedestals_and_vfx(PILOT_ROSTER)
-	showcase_controller.collect_and_verify_sprites(PILOT_ROSTER)
-	showcase_controller.setup_interactables(PILOT_ROSTER, _on_interactable_triggered)
+	showcase_controller.build_pilot_pedestals_and_vfx(active_pilot_roster)
+	showcase_controller.collect_and_verify_sprites(active_pilot_roster)
+	showcase_controller.setup_interactables(active_pilot_roster, _on_interactable_triggered)
 	hangar_builder.build_mirrored_hangar_wing()
 	hangar_builder.setup_environment_collisions()
 	_apply_psychopop_styles()
-	showcase_controller.build_pilot_selector_buttons(pilot_selector_container, PILOT_ROSTER, _select_pilot, character_card)
+	showcase_controller.build_pilot_selector_buttons(pilot_selector_container, active_pilot_roster, _select_pilot, character_card)
 	_update_materials_display()
 	trophy_manager.setup_trophy_room()
 	trophy_manager.update_dark_matter_display()
@@ -110,8 +130,8 @@ func _ready() -> void:
 
 	var saved_cid: StringName = SaveManager.get_selected_character()
 	var init_idx: int = 0
-	for i in range(PILOT_ROSTER.size()):
-		if PILOT_ROSTER[i]["id"] == saved_cid and SaveManager.is_character_unlocked(saved_cid):
+	for i in range(active_pilot_roster.size()):
+		if active_pilot_roster[i]["id"] == saved_cid and SaveManager.is_character_unlocked(saved_cid):
 			init_idx = i
 			break
 	_select_pilot(init_idx, false)
@@ -212,7 +232,8 @@ func _on_modal_closed() -> void:
 		trophy_manager.update_dark_matter_display()
 		trophy_manager.refresh_trophy_visuals()
 	_setup_hub_pets()
-	if showcase_controller: showcase_controller.refresh_pedestal_skins(PILOT_ROSTER)
+	var roster_to_use: Array[Dictionary] = active_pilot_roster if not active_pilot_roster.is_empty() else PILOT_ROSTER
+	if showcase_controller: showcase_controller.refresh_pedestal_skins(roster_to_use)
 
 
 func _is_modal_active() -> bool:
@@ -224,8 +245,9 @@ func _is_modal_active() -> bool:
 
 func _on_interactable_triggered(inter: HubInteractable3D, _body: Node3D) -> void:
 	if not SaveManager.is_character_unlocked(inter.target_character_id): return
-	for i in range(PILOT_ROSTER.size()):
-		if PILOT_ROSTER[i]["id"] == inter.target_character_id:
+	var roster_to_use: Array[Dictionary] = active_pilot_roster if not active_pilot_roster.is_empty() else PILOT_ROSTER
+	for i in range(roster_to_use.size()):
+		if roster_to_use[i]["id"] == inter.target_character_id:
 			_select_pilot(i, true)
 			if character_card: character_card.visible = true
 			_open_skill_tree_for_pilot(inter.target_character_id)
@@ -250,8 +272,9 @@ func _setup_skill_tree_integration() -> void:
 
 
 func _on_open_skill_tree_pressed() -> void:
-	if current_pilot_index >= 0 and current_pilot_index < PILOT_ROSTER.size():
-		_open_skill_tree_for_pilot(PILOT_ROSTER[current_pilot_index]["id"])
+	var roster_to_use: Array[Dictionary] = active_pilot_roster if not active_pilot_roster.is_empty() else PILOT_ROSTER
+	if current_pilot_index >= 0 and current_pilot_index < roster_to_use.size():
+		_open_skill_tree_for_pilot(roster_to_use[current_pilot_index]["id"])
 
 
 func _open_skill_tree_for_pilot(cid: StringName) -> void:
@@ -272,9 +295,10 @@ func _on_skill_tree_closed() -> void:
 
 
 func _select_pilot(index: int, animate_card: bool = true) -> void:
-	if index < 0 or index >= PILOT_ROSTER.size() or not SaveManager.is_character_unlocked(PILOT_ROSTER[index]["id"]): return
+	var roster_to_use: Array[Dictionary] = active_pilot_roster if not active_pilot_roster.is_empty() else PILOT_ROSTER
+	if index < 0 or index >= roster_to_use.size() or not SaveManager.is_character_unlocked(roster_to_use[index]["id"]): return
 	current_pilot_index = index
-	var data: Dictionary = PILOT_ROSTER[index]
+	var data: Dictionary = roster_to_use[index]
 	SaveManager.set_selected_character(data["id"])
 
 	if card_name:
@@ -284,7 +308,7 @@ func _select_pilot(index: int, animate_card: bool = true) -> void:
 	if card_desc: card_desc.text = String(data["desc"])
 	if card_stats: card_stats.text = String(data["stats"])
 	if player_controller: player_controller.set_character(data["id"])
-	if showcase_controller: showcase_controller.select_pilot_visuals(index, PILOT_ROSTER)
+	if showcase_controller: showcase_controller.select_pilot_visuals(index, roster_to_use)
 
 	if animate_card and character_card:
 		character_card.pivot_offset = character_card.size * 0.5

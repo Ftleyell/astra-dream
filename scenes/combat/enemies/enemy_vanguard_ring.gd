@@ -6,6 +6,8 @@ extends EnemyBase
 ## un anillo de advertencia en el suelo y libera un pulso radial de 12 esferas de cobalto
 ## que enseñan al jugador a colarse por los huecos entre proyectiles.
 
+const DEFAULT_VANGUARD_RING_DATA: EnemyData = preload("res://data/enemies/enemy_vanguard_ring.tres")
+
 @export var attack_interval: float = 4.8
 @export var telegraph_duration: float = 0.65
 
@@ -15,13 +17,16 @@ var _bullet_server: BulletServer = null
 var _telegraph_indicator: TelegraphIndicator = null
 
 func _init() -> void:
-	enemy_id = &"enemy_vanguard_ring"
-	max_health = 190.0
-	move_speed = 90.0
-	contact_damage = 22.0
-	exp_reward = 80.0
-	credits_reward = 8
-	contact_radius = 32.0
+	enemy_data = DEFAULT_VANGUARD_RING_DATA
+	_apply_enemy_data()
+
+func _apply_enemy_data() -> void:
+	if enemy_data == null or enemy_data == DEFAULT_ENEMY_DATA:
+		enemy_data = DEFAULT_VANGUARD_RING_DATA
+	super._apply_enemy_data()
+	if enemy_data != null:
+		attack_interval = enemy_data.attack_interval
+		telegraph_duration = enemy_data.telegraph_duration
 
 func _ready_custom() -> void:
 	_setup_telegraph()

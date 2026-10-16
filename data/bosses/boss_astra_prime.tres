@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/data/boss_data.gd" id="1_boss_data"]
+
+[resource]
+script = ExtResource("1_boss_data")
+boss_id = "boss_astra_prime"
+boss_name = "ASTRA PRIME: NÚCLEO SUPREMO"
+max_health = 3800.0
+slayer_max_health = 4600.0
+contact_damage = 30.0
+phase_2_hp_threshold = 0.5
+credits_reward = 1000
+exp_reward = 1200.0
+move_speed_phase_1 = 90.0
+move_speed_phase_2 = 135.0
+desired_distance = 450.0
+primary_attack_interval_p1 = 3.2
+secondary_attack_interval_p1 = 4.8
