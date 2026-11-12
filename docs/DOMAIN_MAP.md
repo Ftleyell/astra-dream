@@ -335,7 +335,12 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "chest_econom
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine_and_gacha"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
+
+# Laboratorio de Arte, Rigs Multi-Pieza y Shaders de Pilotos (Sandbox I+D)
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
 ```
+
+> **Zona Sandbox Multi-Piloto (`sandbox/pilot_rig_lab/`):** Contiene el Studio interactivo (`pilot_rig_lab.tscn` / `.gd`), shader maestro (`pilot_rig_stylizer.gdshader`), pipeline CLI (`tools/build_pilot_rig_pipeline.py`), referencias (`source_refs/`), pilotos compiladas (`assets/` y `pilots/<id>/`) y guía paso a paso (`PILOT_CREATION_GUIDE.md`). Prohibido enlazar directo a `scenes/combat/` hasta su promoción oficial.
 
 ### Verificación Integral Final (Solo antes de dar por cerrada una tarea)
 
