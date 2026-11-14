@@ -75,4 +75,6 @@ ORIGINAL_REQUEST.md
 
 __pycache__/
 *.pyc
+.venv/
+sandbox/pilot_rig_lab/tools/models/
 

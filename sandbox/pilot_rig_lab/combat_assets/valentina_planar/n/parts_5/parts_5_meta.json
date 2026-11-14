@@ -1,0 +1,184 @@
+{
+  "view": "n",
+  "tex_scale": 3,
+  "rig_origin": [
+    270.4,
+    242.4
+  ],
+  "neck_anchor": [
+    257.2,
+    119.1
+  ],
+  "z_orders": {
+    "arm_r": 0,
+    "leg_r": 1,
+    "leg_l": 2,
+    "body_core": 3,
+    "arm_l": 4
+  },
+  "rects": {
+    "body_core": [
+      205.67,
+      109.33,
+      124.0,
+      191.67
+    ],
+    "arm_r": [
+      155.67,
+      111.0,
+      94.33,
+      190.33
+    ],
+    "arm_l": [
+      274.67,
+      116.0,
+      90.0,
+      183.67
+    ],
+    "leg_r": [
+      179.33,
+      279.67,
+      89.0,
+      239.0
+    ],
+    "leg_l": [
+      234.0,
+      271.67,
+      99.33,
+      232.33
+    ]
+  },
+  "bones": [
+    {
+      "name": "Pelvis",
+      "parent": "",
+      "pos": [
+        270.4,
+        242.4
+      ]
+    },
+    {
+      "name": "Waist",
+      "parent": "Pelvis",
+      "pos": [
+        268.0,
+        179.3
+      ]
+    },
+    {
+      "name": "Chest",
+      "parent": "Waist",
+      "pos": [
+        260.0,
+        140.0
+      ]
+    },
+    {
+      "name": "Neck",
+      "parent": "Chest",
+      "pos": [
+        257.2,
+        119.1
+      ]
+    },
+    {
+      "name": "Shoulder_R",
+      "parent": "Chest",
+      "pos": [
+        218.5,
+        140.1
+      ]
+    },
+    {
+      "name": "Elbow_R",
+      "parent": "Shoulder_R",
+      "pos": [
+        194.6,
+        200.0
+      ]
+    },
+    {
+      "name": "Wrist_R",
+      "parent": "Elbow_R",
+      "pos": [
+        174.6,
+        267.0
+      ]
+    },
+    {
+      "name": "Shoulder_L",
+      "parent": "Chest",
+      "pos": [
+        297.9,
+        136.2
+      ]
+    },
+    {
+      "name": "Elbow_L",
+      "parent": "Shoulder_L",
+      "pos": [
+        327.6,
+        198.0
+      ]
+    },
+    {
+      "name": "Wrist_L",
+      "parent": "Elbow_L",
+      "pos": [
+        356.7,
+        266.0
+      ]
+    },
+    {
+      "name": "Thigh_R",
+      "parent": "Pelvis",
+      "pos": [
+        236.0,
+        276.0
+      ]
+    },
+    {
+      "name": "Knee_R",
+      "parent": "Thigh_R",
+      "pos": [
+        222.0,
+        355.0
+      ]
+    },
+    {
+      "name": "Ankle_R",
+      "parent": "Knee_R",
+      "pos": [
+        202.0,
+        466.0
+      ]
+    },
+    {
+      "name": "Thigh_L",
+      "parent": "Pelvis",
+      "pos": [
+        306.0,
+        276.0
+      ]
+    },
+    {
+      "name": "Knee_L",
+      "parent": "Thigh_L",
+      "pos": [
+        306.0,
+        350.0
+      ]
+    },
+    {
+      "name": "Ankle_L",
+      "parent": "Knee_L",
+      "pos": [
+        268.0,
+        448.0
+      ]
+    }
+  ],
+  "_neck_fade_applied": true,
+  "_arm_underlap_sanitized": true,
+  "_back_arm_outline_normalized": true
+}

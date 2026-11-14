@@ -30,7 +30,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd` |
-| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/pilot_rig_lab.gd` | `pilot_rig_stylizer.gdshader`, `tools/build_pilot_rig_pipeline.py`, `PILOT_CREATION_GUIDE.md` |
+| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | `planar_combat_rig.gd`, `pilot_rig_stylizer.gdshader`, `docs/PILOT_RIG_ARCHITECTURE.md`, `docs/PILOT_CREATION_PIPELINE.md` |
 | **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://3iyhkt14pr5e"]
+
+[ext_resource type="Script" uid="uid://pwio80isxnnd" path="res://sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.gd" id="1_proto"]
+
+[node name="PlanarCombatRigProto" type="Node2D" unique_id=467991905]
+script = ExtResource("1_proto")

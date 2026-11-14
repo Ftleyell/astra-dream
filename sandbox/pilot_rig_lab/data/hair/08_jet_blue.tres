@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_hair_preset.gd" id="1_umk2t"]
+
+[resource]
+script = ExtResource("1_umk2t")
+id = "08_jet_blue"
+label = "Color Pelo 8: Negro Azabache con Reflejo Azul"
+override_color = true
+hair_color = Color(0.18, 0.22, 0.34, 1)
+hair_secondary_color = Color(0, 0.84, 1, 1)

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RigStyleProfile" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="1_8w6to"]
+
+[resource]
+script = ExtResource("1_8w6to")
+id = "05_persona5_noir"
+label = "Perfil 5: Persona 5 / Gurren Lagann (Graphic Noir Ink)"
+pipeline_mode = 5
+halftone_pattern_type = 1
+halftone_scale = 170.0
+halftone_strength = 0.3
+halftone_angle_deg = 35.0
+halftone_threshold = 0.36
+ink_boost = 0.52
+cel_step_strength = 0.5
+noir_shadow_crush = 0.88
+rim_light_strength = 0.45
+rim_width_px = 5.5
+glow_intensity = 1.7

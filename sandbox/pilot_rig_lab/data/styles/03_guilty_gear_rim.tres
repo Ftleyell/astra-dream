@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RigStyleProfile" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="1_84gbu"]
+
+[resource]
+script = ExtResource("1_84gbu")
+id = "03_guilty_gear_rim"
+label = "Perfil 3: Guilty Gear / Hades (Rim-Light + Cel Duro)"
+pipeline_mode = 3
+halftone_strength = 0.25
+ink_boost = 0.32
+cel_step_strength = 0.72
+noir_shadow_crush = 0.15
+noir_shadow_threshold = 0.22
+metal_sheen_strength = 0.2
+rim_light_strength = 0.78
+rim_width_px = 5.5
+glow_intensity = 1.35

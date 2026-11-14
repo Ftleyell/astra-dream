@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RigStyleProfile" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="1_0jaos"]
+
+[resource]
+script = ExtResource("1_0jaos")
+id = "02_skullgirls_screentone"
+label = "Perfil 2: Skullgirls Screentone (Semitono en Sombras)"
+pipeline_mode = 2
+enable_halftone = true
+halftone_strength = 0.42
+ink_boost = 0.38
+cel_step_strength = 0.15
+rim_light_strength = 0.3
+rim_width_px = 5.0
+glow_intensity = 1.25

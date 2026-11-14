@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RigStyleProfile" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="1_pvra2"]
+
+[resource]
+script = ExtResource("1_pvra2")
+id = "07_kill_la_kill_hatch"
+label = "Perfil 7: Kill la Kill / Promare (Rayado Manga Diagonal)"
+pipeline_mode = 7
+enable_halftone = true
+halftone_pattern_type = 1
+halftone_scale = 175.0
+halftone_strength = 0.48
+halftone_angle_deg = 40.0
+halftone_threshold = 0.4
+ink_boost = 0.45
+cel_step_strength = 0.68
+noir_shadow_crush = 0.22
+noir_shadow_threshold = 0.22
+rim_light_strength = 0.4
+rim_width_px = 5.0
+glow_intensity = 1.4

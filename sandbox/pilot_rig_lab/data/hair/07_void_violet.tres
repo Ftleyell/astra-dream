@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_hair_preset.gd" id="1_n43rm"]
+
+[resource]
+script = ExtResource("1_n43rm")
+id = "07_void_violet"
+label = "Color Pelo 7: Violeta Nebulosa Profundo"
+override_color = true
+hair_color = Color(0.64, 0.32, 0.98, 1)
+hair_secondary_color = Color(0, 0.96, 0.68, 1)
