@@ -4,6 +4,20 @@
 
 ---
 
+## 0. Generación de Arte Base (Pre-Requisito IA)
+
+Antes de ejecutar los scripts de despiece y mapeo local en Python, el arte crudo debe cumplir las reglas de perspectiva, separación anatómica y fondo neutro para evitar roturas de máscara y estiramientos al deformar huesos en Godot:
+
+- **Guía completa y plantillas de prompts (S, SE/SO, NE/NO, E/O):** ver [Guía Técnica de Generación de Personajes 2.5D](art/character_25d_generation_guide.md).
+- **Prompts específicos de zócalos de cabeza asimétrica:** ver [GOOGLE_AI_PROMPTS.md](../sandbox/pilot_rig_lab/reference_templates/GOOGLE_AI_PROMPTS.md).
+- **Checklist mínimo obligatorio antes de guardar en `source_refs/`:**
+  1. Cámara elevada consistente (**45°–60°** en turnarounds / ~30°–45° en vistas 3/4 de combate), con altura de cabeza, hombros y pelvis alineadas en Y.
+  2. Pose de flotación abierta (*Zero-G A-Pose*): brazos separados **30°–45°** del tronco, piernas abiertas sin superposición y cabello despejado de hombros/cintura.
+  3. Fondo plano uniforme (`#808080` sin sombra proyectada al suelo).
+  4. Contornos de tinta oscura nítidos y cel-shading plano sin efectos glow/halftone horneados (los aplica Godot en Pasada 1/2).
+
+---
+
 ## 1. Estructura de Carpetas del Nuevo Piloto
 
 1. **Fuentes crudas (fuera del import de Godot):** `sandbox/pilot_rig_lab/source_refs/` (protegido con `.gdignore`).
@@ -24,20 +38,22 @@ Usar el entorno virtual `sandbox/pilot_rig_lab/tools/.venv`:
 |---|---|---|
 | 1 | `generate_mask_sheets.py` | Genera hojas guía para segmentación semántica de cuerpo y cabezas. |
 | 2 | `process_masked_5parts.py` | Recorta `body_unified` S y N en 5 piezas (`parts_5`) con `parts_5_meta.json` y upscaling 4x. |
-| 3 | `process_parts5_1to1_maps.py` | Genera mapas 1:1 `_id_mask.png` y `_normal_depth.png` (usa `ml_stage_processors.py` / Sapiens 0.3b). |
-| 4 | `process_limb_anim_masks.py` | Genera `_anim_mask.png` RGB (Hombro/Codo/Muñeca y Muslo/Rodilla/Tobillo) para skinning exacto. |
-| 5 | `process_secondary_mask.py` | Genera `body_core_secondary_mask.png` para física secundaria 2D del busto. |
-| 6 | `build_head_8dir_guide.py` | Genera plantilla guía 4x2 para las 8 direcciones de cabeza. |
-| 7 | `process_head_8dir_sheet.py` | Extrae las 8 cabezas, centra cráneos y genera `heads_metadata.json`, `_hair_jiggle_mask.png` y mapas 2.5D. |
-| 8 | `clean_edge_matting.py` | Limpia flecos de alpha semitransparente hacia tinta abisal (`INK_RGB = [10, 10, 20]`), eximiendo la ventana de cuello de `body_core.png` y el tope de piernas bajo pelvis. |
-| 9 | `polish_outlines.py` | Pulido integral de bordes y normalización de piezas (idempotente con respaldo automático). |
+| 3 | `process_parts5_1to1_maps.py` | Genera mapas 1:1 `_id_mask.png` y `_normal_depth.png` (usa `ml_stage_processors.py` / Sapiens 0.3b y `id_mask_ink_refiner.py`). |
+| 4 | `id_mask_ink_refiner.py` | Módulo de refinamiento CIELAB/SLIC bloqueado a barreras de tinta (`refine_mask_ink_locked`) para fronteras limpias de `_id_mask.png`. |
+| 5 | `process_limb_anim_masks.py` | Genera `_anim_mask.png` RGB (Hombro/Codo/Muñeca y Muslo/Rodilla/Tobillo) para skinning exacto. |
+| 6 | `process_secondary_mask.py` | Genera `body_core_secondary_mask.png` para física secundaria 2D del busto. |
+| 7 | `build_head_8dir_guide.py` | Genera plantilla guía 4x2 para las 8 direcciones de cabeza. |
+| 8 | `process_head_8dir_sheet.py` | Extrae las 8 cabezas, centra cráneos y genera `heads_metadata.json`, `_hair_jiggle_mask.png` y mapas 2.5D. |
+| 9 | `clean_edge_matting.py` | Limpia flecos de alpha semitransparente hacia tinta abisal (`INK_RGB = [10, 10, 20]`), eximiendo la ventana de cuello de `body_core.png` y el tope de piernas bajo pelvis. |
+| 10 | `polish_outlines.py` | Pulido integral de bordes y normalización de piezas (idempotente con respaldo automático). |
 
-### Detalles Clave del Saneamiento Automático (`process_masked_5parts.py` y `polish_outlines.py`)
+### Detalles Clave del Saneamiento Automático (`process_masked_5parts.py`, `process_parts5_1to1_maps.py` y `polish_outlines.py`)
 1. **Extensión bajo solapes (`process_masked_5parts.py`):** en brazos traseros (`z_order < body_core`), `ext_zone` usa semillas `m_sub & (ref_luma > 0.14)` con AO progresivo `0.78..1.0` para no propagar tinta negra dentro del muñón oculto bajo el torso.
-2. **Respaldo de seguridad (`polish_outlines.py`):** crea automáticamente `combat_assets/<pilot_id>_planar/_backup_before_outline_polish/` antes de mutar PNGs si no existe aún.
-3. **Alineación y máscaras (`sanitize_masks_and_alignments`):** recorta `s/parts_5/leg_r_{id_mask,normal_depth}.png` `[8:739]` → `270x731` para empatar `leg_r.png`, rellena huecos `(0, 0, 0)` en `_normal_depth.png` por Voronoi, dilata canal `A` (cabello) de `head_*_id_mask.png` en `14 px` hacia el margen SDF exterior y restaura RGB de piel/cuello en `body_core.png` (`restore_body_core_neck_rgb`).
-4. **Sanitización de cuñas (`sanitize_arm_underlap_wedges`):** reemplaza cuñas geodésicas negras en solapes detrás de `body_core` vía Voronoi; marca `_arm_underlap_sanitized = true` en `parts_5_meta.json`.
-5. **Normalización de brazos traseros (`normalize_back_arm_outlines`):** en `s/arm_l` y `n/arm_r`, unifica el outline exterior a `~4.0` téxeles (`#040406`), levanta sombras interiores aplastadas preservando pliegues finos de armadura (`is_internal_crease`), y adelgaza la costura derecha del torso sobre `s/arm_l` (`_thin_s_body_core_breast_seam`); marca `_back_arm_outline_normalized = true` en `parts_5_meta.json`.
+2. **Horneado de ID Masks bloqueado a tinta (`process_parts5_1to1_maps.py`):** ejecutar con `--import-id-mask <hoja_editada> --refine-heads` tras pintar la hoja cromática canónica (`parts5_id_mask_aligned_edit.png`). Fija las regiones `R/G/B/A` (sin depender de heurísticas de brillo en runtime; `pilot_rig_stylizer.gdshader` muestrea en `LOD 0` con normalización cúbica) y depura ruido de ojos/cejas/cuello en cabezas.
+3. **Respaldo de seguridad (`polish_outlines.py`):** crea automáticamente `combat_assets/<pilot_id>_planar/_backup_before_outline_polish/` antes de mutar PNGs si no existe aún.
+4. **Alineación y máscaras (`sanitize_masks_and_alignments`):** recorta `s/parts_5/leg_r_{id_mask,normal_depth}.png` `[8:739]` → `270x731` para empatar `leg_r.png`, rellena huecos `(0, 0, 0)` en `_normal_depth.png` por Voronoi, dilata canal `A` (cabello) de `head_*_id_mask.png` en `14 px` hacia el margen SDF exterior y restaura RGB de piel/cuello en `body_core.png` (`restore_body_core_neck_rgb`).
+5. **Sanitización de cuñas (`sanitize_arm_underlap_wedges`):** reemplaza cuñas geodésicas negras en solapes detrás de `body_core` vía Voronoi; marca `_arm_underlap_sanitized = true` en `parts_5_meta.json`.
+6. **Normalización de brazos traseros (`normalize_back_arm_outlines`):** en `s/arm_l` y `n/arm_r`, unifica el outline exterior a `~4.0` téxeles (`#040406`), levanta sombras interiores aplastadas preservando pliegues finos de armadura (`is_internal_crease`), y adelgaza la costura derecha del torso sobre `s/arm_l` (`_thin_s_body_core_breast_seam`); marca `_back_arm_outline_normalized = true` en `parts_5_meta.json`.
 
 ---
 
