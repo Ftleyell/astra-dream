@@ -22,7 +22,8 @@ func _run_test() -> void:
 	_test_purged_subsystems(planar)
 	_test_lab_scene_and_matrix()
 	_test_calibrator_scene_and_store()
-	pass_suite("Valentina v2 (8-Dir) purged rig + pure direction routing + masks + Lab HUD + Calibrator verified.")
+	_test_shader_lab_scene()
+	pass_suite("Valentina v2 (8-Dir) purged rig + pure direction routing + masks + Lab HUD + Calibrator + ShaderLab verified.")
 
 
 func _test_profile_and_metrics() -> PilotRigProfile:
@@ -638,6 +639,29 @@ func _test_calibrator_scene_and_store() -> void:
 		assert_true((mc as CanvasItem).z_index == 0, "Calibrator Z-order reorder must preserve z_index == 0 inside CanvasGroup")
 
 	cal_inst.queue_free()
+
+
+func _test_shader_lab_scene() -> void:
+	var sl_scene: PackedScene = ResourceLoader.load("res://sandbox/pilot_rig_lab/shader_lab/planar_shader_lab.tscn") as PackedScene
+	assert_true(sl_scene != null, "Expected planar_shader_lab.tscn to load cleanly")
+	var sl_inst: Node2D = sl_scene.instantiate() as Node2D
+	assert_true(sl_inst != null, "Expected planar_shader_lab.tscn to instantiate as Node2D")
+	add_child(sl_inst)
+
+	var base_rig: PlanarCombatRig = sl_inst.get_node_or_null("BaselineRig") as PlanarCombatRig
+	var sh_rig: PlanarCombatRig = sl_inst.get_node_or_null("ShaderRig") as PlanarCombatRig
+	assert_true(base_rig != null and sh_rig != null, "ShaderLab must instantiate both BaselineRig and ShaderRig for A/B comparison")
+	assert_true(sl_inst.get_node_or_null("ShaderLabBackdrop") != null, "ShaderLab must instantiate ShaderLabBackdrop")
+	assert_true(sl_inst.get_node_or_null("ShaderLabHud") != null, "ShaderLab must instantiate ShaderLabHud")
+
+	sl_inst.call("_select_view", "se")
+	assert_true(base_rig.get_active_view_key() == "se" and sh_rig.get_active_view_key() == "se", "ShaderLab view switch must sync both BaselineRig and ShaderRig to 'se'")
+	sl_inst.call("_apply_style_index", 1)
+	var se_polys_sh: Dictionary = (sh_rig.get_views()["se"] as Dictionary)["polys"] as Dictionary
+	var leg_r_mat: ShaderMaterial = (se_polys_sh["leg_r"] as Polygon2D).material as ShaderMaterial
+	assert_true(bool(leg_r_mat.get_shader_parameter("enable_hip_cast_shadow")) == true, "ShaderLab must apply calibrated hip cast shadow on legs")
+	assert_true(bool(leg_r_mat.get_shader_parameter("enable_stocking_pinch")) == true, "ShaderLab must apply calibrated stocking pinch on legs")
+	sl_inst.queue_free()
 
 
 func _sample_opaque_luma(img: Image, x0: int, y0: int, x1: int, y1: int) -> float:
