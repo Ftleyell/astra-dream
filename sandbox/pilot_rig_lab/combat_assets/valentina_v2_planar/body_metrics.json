@@ -1,0 +1,22 @@
+{
+  "canonical_canvas": [
+    520,
+    560
+  ],
+  "tex_scale": 3,
+  "directions": [
+    "s",
+    "se",
+    "e",
+    "ne",
+    "n",
+    "nw",
+    "w",
+    "sw"
+  ],
+  "head_scale_factor": 0.885,
+  "head_target_disp_h": 88.59,
+  "head_crown_to_chin_du": 65.87,
+  "mounted_total_h_du": 431.32,
+  "head_to_body_proportion": 6.55
+}

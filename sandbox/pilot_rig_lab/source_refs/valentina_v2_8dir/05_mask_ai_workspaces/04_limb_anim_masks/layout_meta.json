@@ -1,0 +1,36 @@
+{
+  "mask_key": "04_limb_anim_masks",
+  "batches": [
+    {
+      "filename": "batchA_S_SE_E_16x9_white.png",
+      "rows": 1,
+      "cols": 3,
+      "cell_w": 1024,
+      "cell_h": 1728,
+      "crop_x0": 268,
+      "views_grid": [
+        [
+          "s",
+          "se",
+          "e"
+        ]
+      ],
+      "description": "3072x1728 (16:9) left->right: S (Front), SE (Front-Right 3/4), E (Right Profile)"
+    },
+    {
+      "filename": "batchB_NE_N_4x3_white.png",
+      "rows": 1,
+      "cols": 2,
+      "cell_w": 1152,
+      "cell_h": 1728,
+      "crop_x0": 204,
+      "views_grid": [
+        [
+          "ne",
+          "n"
+        ]
+      ],
+      "description": "2304x1728 (4:3) left->right: NE (Back-Right 3/4), N (Back)"
+    }
+  ]
+}

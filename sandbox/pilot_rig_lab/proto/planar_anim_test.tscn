@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/proto/planar_anim_test.gd" id="1_anim"]
+
+[node name="PlanarAnimTest" type="Node2D"]
+script = ExtResource("1_anim")

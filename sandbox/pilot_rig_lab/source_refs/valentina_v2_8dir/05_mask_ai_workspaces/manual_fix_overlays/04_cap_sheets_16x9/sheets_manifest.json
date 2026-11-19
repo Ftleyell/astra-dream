@@ -1,0 +1,716 @@
+{
+  "01_arms_front_s_se_sw_16x9": {
+    "file": "01_arms_front_s_se_sw_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "s",
+        "part": "arm_r",
+        "slot_rect": [
+          70,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          182,
+          567,
+          178,
+          416
+        ],
+        "orig_size": [
+          178,
+          416
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "s",
+        "part": "arm_l",
+        "slot_rect": [
+          473,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          586,
+          566,
+          177,
+          417
+        ],
+        "orig_size": [
+          177,
+          417
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 2,
+        "view": "se",
+        "part": "arm_r",
+        "slot_rect": [
+          876,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          980,
+          564,
+          195,
+          421
+        ],
+        "orig_size": [
+          195,
+          421
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 3,
+        "view": "se",
+        "part": "arm_l",
+        "slot_rect": [
+          1279,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1393,
+          588,
+          174,
+          374
+        ],
+        "orig_size": [
+          174,
+          374
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 4,
+        "view": "sw",
+        "part": "arm_r",
+        "slot_rect": [
+          1682,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1795,
+          587,
+          176,
+          376
+        ],
+        "orig_size": [
+          176,
+          376
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 5,
+        "view": "sw",
+        "part": "arm_l",
+        "slot_rect": [
+          2085,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          2188,
+          563,
+          197,
+          423
+        ],
+        "orig_size": [
+          197,
+          423
+        ],
+        "scale": 1.0
+      }
+    ]
+  },
+  "02_arms_profile_e_w_16x9": {
+    "file": "02_arms_profile_e_w_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "e",
+        "part": "arm_r",
+        "slot_rect": [
+          70,
+          0,
+          605,
+          1440
+        ],
+        "limb_rect": [
+          273,
+          567,
+          199,
+          416
+        ],
+        "orig_size": [
+          199,
+          416
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "e",
+        "part": "arm_l",
+        "slot_rect": [
+          675,
+          0,
+          605,
+          1440
+        ],
+        "limb_rect": [
+          877,
+          567,
+          201,
+          416
+        ],
+        "orig_size": [
+          201,
+          416
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 2,
+        "view": "w",
+        "part": "arm_r",
+        "slot_rect": [
+          1280,
+          0,
+          605,
+          1440
+        ],
+        "limb_rect": [
+          1482,
+          567,
+          201,
+          416
+        ],
+        "orig_size": [
+          201,
+          416
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 3,
+        "view": "w",
+        "part": "arm_l",
+        "slot_rect": [
+          1885,
+          0,
+          605,
+          1440
+        ],
+        "limb_rect": [
+          2082,
+          566,
+          210,
+          417
+        ],
+        "orig_size": [
+          210,
+          417
+        ],
+        "scale": 1.0
+      }
+    ]
+  },
+  "03_arms_back_n_ne_nw_16x9": {
+    "file": "03_arms_back_n_ne_nw_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "n",
+        "part": "arm_r",
+        "slot_rect": [
+          70,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          182,
+          562,
+          179,
+          425
+        ],
+        "orig_size": [
+          179,
+          425
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "n",
+        "part": "arm_l",
+        "slot_rect": [
+          473,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          585,
+          561,
+          179,
+          428
+        ],
+        "orig_size": [
+          179,
+          428
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 2,
+        "view": "ne",
+        "part": "arm_r",
+        "slot_rect": [
+          876,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          981,
+          563,
+          193,
+          423
+        ],
+        "orig_size": [
+          193,
+          423
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 3,
+        "view": "ne",
+        "part": "arm_l",
+        "slot_rect": [
+          1279,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1399,
+          569,
+          163,
+          412
+        ],
+        "orig_size": [
+          163,
+          412
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 4,
+        "view": "nw",
+        "part": "arm_r",
+        "slot_rect": [
+          1682,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1801,
+          567,
+          164,
+          416
+        ],
+        "orig_size": [
+          164,
+          416
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 5,
+        "view": "nw",
+        "part": "arm_l",
+        "slot_rect": [
+          2085,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          2190,
+          563,
+          193,
+          423
+        ],
+        "orig_size": [
+          193,
+          423
+        ],
+        "scale": 1.0
+      }
+    ]
+  },
+  "04_legs_front_s_se_sw_16x9": {
+    "file": "04_legs_front_s_se_sw_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "s",
+        "part": "leg_r",
+        "slot_rect": [
+          70,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          153,
+          378,
+          237,
+          794
+        ],
+        "orig_size": [
+          237,
+          794
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "s",
+        "part": "leg_l",
+        "slot_rect": [
+          473,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          556,
+          378,
+          237,
+          793
+        ],
+        "orig_size": [
+          237,
+          793
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 2,
+        "view": "se",
+        "part": "leg_r",
+        "slot_rect": [
+          876,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          968,
+          378,
+          218,
+          794
+        ],
+        "orig_size": [
+          218,
+          794
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 3,
+        "view": "se",
+        "part": "leg_l",
+        "slot_rect": [
+          1279,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1358,
+          403,
+          244,
+          743
+        ],
+        "orig_size": [
+          244,
+          743
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 4,
+        "view": "sw",
+        "part": "leg_r",
+        "slot_rect": [
+          1682,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1760,
+          400,
+          247,
+          749
+        ],
+        "orig_size": [
+          247,
+          749
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 5,
+        "view": "sw",
+        "part": "leg_l",
+        "slot_rect": [
+          2085,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          2176,
+          375,
+          220,
+          800
+        ],
+        "orig_size": [
+          220,
+          800
+        ],
+        "scale": 1.0
+      }
+    ]
+  },
+  "05_legs_back_n_ne_nw_16x9": {
+    "file": "05_legs_back_n_ne_nw_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "n",
+        "part": "leg_r",
+        "slot_rect": [
+          70,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          157,
+          454,
+          228,
+          642
+        ],
+        "orig_size": [
+          228,
+          642
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "n",
+        "part": "leg_l",
+        "slot_rect": [
+          473,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          559,
+          452,
+          231,
+          645
+        ],
+        "orig_size": [
+          231,
+          645
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 2,
+        "view": "ne",
+        "part": "leg_r",
+        "slot_rect": [
+          876,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          958,
+          459,
+          238,
+          632
+        ],
+        "orig_size": [
+          238,
+          632
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 3,
+        "view": "ne",
+        "part": "leg_l",
+        "slot_rect": [
+          1279,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1372,
+          463,
+          216,
+          624
+        ],
+        "orig_size": [
+          216,
+          624
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 4,
+        "view": "nw",
+        "part": "leg_r",
+        "slot_rect": [
+          1682,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          1767,
+          456,
+          232,
+          638
+        ],
+        "orig_size": [
+          232,
+          638
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 5,
+        "view": "nw",
+        "part": "leg_l",
+        "slot_rect": [
+          2085,
+          0,
+          403,
+          1440
+        ],
+        "limb_rect": [
+          2173,
+          459,
+          227,
+          632
+        ],
+        "orig_size": [
+          227,
+          632
+        ],
+        "scale": 1.0
+      }
+    ]
+  },
+  "06_legs_profile_e_w_16x9": {
+    "file": "06_legs_profile_e_w_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "e",
+        "part": "leg_r",
+        "slot_rect": [
+          70,
+          0,
+          1210,
+          1440
+        ],
+        "limb_rect": [
+          579,
+          380,
+          192,
+          790
+        ],
+        "orig_size": [
+          192,
+          790
+        ],
+        "scale": 1.0
+      },
+      {
+        "index": 1,
+        "view": "w",
+        "part": "leg_l",
+        "slot_rect": [
+          1280,
+          0,
+          1210,
+          1440
+        ],
+        "limb_rect": [
+          1789,
+          379,
+          191,
+          791
+        ],
+        "orig_size": [
+          191,
+          791
+        ],
+        "scale": 1.0
+      }
+    ]
+  }
+}

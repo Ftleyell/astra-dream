@@ -1,0 +1,191 @@
+{
+  "06_torso_armpit_fill_16x9": {
+    "file": "06_torso_armpit_fill_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "s",
+        "part": "body_core",
+        "slot_rect": [
+          0,
+          0,
+          640,
+          720
+        ],
+        "paste_xy": [
+          148,
+          131
+        ],
+        "orig_size": [
+          344,
+          458
+        ]
+      },
+      {
+        "index": 1,
+        "view": "se",
+        "part": "body_core",
+        "slot_rect": [
+          640,
+          0,
+          640,
+          720
+        ],
+        "paste_xy": [
+          801,
+          135
+        ],
+        "orig_size": [
+          317,
+          449
+        ]
+      },
+      {
+        "index": 2,
+        "view": "e",
+        "part": "body_core",
+        "slot_rect": [
+          1280,
+          0,
+          640,
+          720
+        ],
+        "paste_xy": [
+          1473,
+          140
+        ],
+        "orig_size": [
+          254,
+          439
+        ]
+      },
+      {
+        "index": 3,
+        "view": "ne",
+        "part": "body_core",
+        "slot_rect": [
+          1920,
+          0,
+          640,
+          720
+        ],
+        "paste_xy": [
+          2073,
+          98
+        ],
+        "orig_size": [
+          333,
+          523
+        ]
+      },
+      {
+        "index": 4,
+        "view": "n",
+        "part": "body_core",
+        "slot_rect": [
+          0,
+          720,
+          640,
+          720
+        ],
+        "paste_xy": [
+          145,
+          833
+        ],
+        "orig_size": [
+          350,
+          493
+        ]
+      },
+      {
+        "index": 5,
+        "view": "nw",
+        "part": "body_core",
+        "slot_rect": [
+          640,
+          720,
+          640,
+          720
+        ],
+        "paste_xy": [
+          793,
+          817
+        ],
+        "orig_size": [
+          333,
+          525
+        ]
+      },
+      {
+        "index": 6,
+        "view": "w",
+        "part": "body_core",
+        "slot_rect": [
+          1280,
+          720,
+          640,
+          720
+        ],
+        "paste_xy": [
+          1467,
+          860
+        ],
+        "orig_size": [
+          265,
+          440
+        ]
+      },
+      {
+        "index": 7,
+        "view": "sw",
+        "part": "body_core",
+        "slot_rect": [
+          1920,
+          720,
+          640,
+          720
+        ],
+        "paste_xy": [
+          2080,
+          853
+        ],
+        "orig_size": [
+          320,
+          453
+        ]
+      }
+    ]
+  },
+  "07_leg_profile_e_glute_16x9": {
+    "file": "07_leg_profile_e_glute_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "index": 0,
+        "view": "e",
+        "part": "leg_r",
+        "slot_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ],
+        "paste_xy": [
+          1173,
+          311
+        ],
+        "orig_size": [
+          214,
+          817
+        ]
+      }
+    ]
+  }
+}

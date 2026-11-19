@@ -25,3 +25,6 @@ extends Resource
 @export var rim_width_px: float = 4.5
 @export var dual_rim_strength: float = 0.0
 @export var glow_intensity: float = 1.05
+
+@export_group("Contorno Caligráfico (Pasada 2)")
+@export var outer_outline_tint_mix: float = 0.55

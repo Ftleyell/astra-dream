@@ -1,0 +1,224 @@
+{
+  "bones": [
+    {
+      "name": "Pelvis",
+      "parent": "",
+      "pos": [
+        260.0,
+        286.7
+      ]
+    },
+    {
+      "name": "Waist",
+      "parent": "Pelvis",
+      "pos": [
+        260.0,
+        250.7
+      ]
+    },
+    {
+      "name": "Chest",
+      "parent": "Waist",
+      "pos": [
+        259.2,
+        209.3
+      ]
+    },
+    {
+      "name": "Neck",
+      "parent": "Chest",
+      "pos": [
+        259.8,
+        182.5
+      ]
+    },
+    {
+      "name": "Shoulder_R",
+      "parent": "Chest",
+      "pos": [
+        223.47,
+        199.67
+      ]
+    },
+    {
+      "name": "Elbow_R",
+      "parent": "Shoulder_R",
+      "pos": [
+        208.4,
+        256.6
+      ]
+    },
+    {
+      "name": "Wrist_R",
+      "parent": "Elbow_R",
+      "pos": [
+        183.9,
+        306.6
+      ]
+    },
+    {
+      "name": "Shoulder_L",
+      "parent": "Chest",
+      "pos": [
+        296.53,
+        199.67
+      ]
+    },
+    {
+      "name": "Elbow_L",
+      "parent": "Shoulder_L",
+      "pos": [
+        311.6,
+        256.6
+      ]
+    },
+    {
+      "name": "Wrist_L",
+      "parent": "Elbow_L",
+      "pos": [
+        336.1,
+        306.6
+      ]
+    },
+    {
+      "name": "Thigh_R",
+      "parent": "Pelvis",
+      "pos": [
+        237.17,
+        290.33
+      ]
+    },
+    {
+      "name": "Knee_R",
+      "parent": "Thigh_R",
+      "pos": [
+        222.3,
+        391.23
+      ]
+    },
+    {
+      "name": "Ankle_R",
+      "parent": "Knee_R",
+      "pos": [
+        200.6,
+        495.43
+      ]
+    },
+    {
+      "name": "Thigh_L",
+      "parent": "Pelvis",
+      "pos": [
+        282.83,
+        290.33
+      ]
+    },
+    {
+      "name": "Knee_L",
+      "parent": "Thigh_L",
+      "pos": [
+        297.7,
+        391.23
+      ]
+    },
+    {
+      "name": "Ankle_L",
+      "parent": "Knee_L",
+      "pos": [
+        319.4,
+        495.43
+      ]
+    },
+    {
+      "name": "Pauldron_R",
+      "parent": "Chest",
+      "pos": [
+        233.51,
+        195.22
+      ]
+    },
+    {
+      "name": "Pauldron_L",
+      "parent": "Chest",
+      "pos": [
+        286.49,
+        195.22
+      ]
+    }
+  ],
+  "has_hd_neck": true,
+  "hip_cast_shadow": {
+    "color": [
+      0.82,
+      0.68,
+      0.74
+    ],
+    "enabled": true,
+    "offset": [
+      -0.2,
+      1.2
+    ]
+  },
+  "neck_anchor": [
+    259.8,
+    182.5
+  ],
+  "rects": {
+    "arm_l": [
+      276.2,
+      185.8333,
+      73.0,
+      171.6667
+    ],
+    "arm_r": [
+      170.8,
+      184.8333,
+      73.0,
+      171.6667
+    ],
+    "body_core": [
+      221.3333,
+      172.0,
+      79.0,
+      159.3333
+    ],
+    "leg_l": [
+      254.3333,
+      269.6667,
+      89.6667,
+      275.3333
+    ],
+    "leg_r": [
+      175.6667,
+      269.6667,
+      90.3333,
+      275.6667
+    ],
+    "pauldron_l": [
+      274.0,
+      178.6667,
+      47.6667,
+      50.0
+    ],
+    "pauldron_r": [
+      198.3333,
+      178.6667,
+      47.6667,
+      50.0
+    ]
+  },
+  "rig_origin": [
+    260.0,
+    286.7
+  ],
+  "tex_scale": 3.0,
+  "view": "s",
+  "z_orders": {
+    "arm_l": 2.0,
+    "arm_r": 4.0,
+    "body_core": 5.0,
+    "leg_l": 0.0,
+    "leg_r": 1.0,
+    "pauldron_l": 5.0,
+    "pauldron_r": 5.0
+  }
+}

@@ -64,6 +64,28 @@ def _voronoi_fill(img: np.ndarray, valid_mask: np.ndarray, max_dist_px: float = 
     return out
 
 
+def alpha_bleed_only(bgra: np.ndarray) -> np.ndarray:
+    """Fill completely transparent (alpha == 0) RGB from nearest opaque pixel without altering any alpha > 0 pixel."""
+    out = bgra.copy()
+    alpha = out[:, :, 3]
+    trans = alpha == 0
+    if not np.any(trans):
+        return out
+    seeds = alpha >= 160
+    if not np.any(seeds):
+        seeds = alpha > 0
+    if not np.any(seeds):
+        return out
+    _, labels = cv2.distanceTransformWithLabels(
+        (~seeds).astype(np.uint8), cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL
+    )
+    oy, ox = np.where(seeds)
+    ty, tx = np.where(trans)
+    idx = labels[ty, tx] - 1
+    out[ty, tx, :3] = out[oy[idx], ox[idx], :3]
+    return out
+
+
 def alpha_bleed_and_defringe(bgra: np.ndarray) -> np.ndarray:
     """Fill transparent RGB with nearest opaque pixel RGB and remove bright fringe."""
     out = bgra.copy()

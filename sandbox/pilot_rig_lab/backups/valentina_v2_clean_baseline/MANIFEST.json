@@ -1,0 +1,322 @@
+﻿{
+    "snapshot_name":  "valentina_v2_clean_baseline",
+    "created_at":  "2026-11-19T00:57:29.1738706-03:00",
+    "file_count":  63,
+    "files":  [
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/s/parts_5/parts_5_meta.json",
+                      "sha256":  "BA32B67744B9FFBEB3BF1618106FA3BEA610A768B0C0DD96CDF94CD8156C98A1"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/se/parts_5/parts_5_meta.json",
+                      "sha256":  "B4042A6ABC05D5F1E5AC592EC5C7B32D7C3BE3B9E28000AFAAA9DB8AE743DCD3"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/e/parts_5/parts_5_meta.json",
+                      "sha256":  "DFBDD105643A994A01A4EABF9BA0761FBEEC05C4FE024FB3FB8B37C7AAC1BAAD"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/ne/parts_5/parts_5_meta.json",
+                      "sha256":  "ED751563F8F1CC0AE92960610CF5BE5541A5F385C2396F8F6F255C8495B9436A"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/n/parts_5/parts_5_meta.json",
+                      "sha256":  "11E42A36A9722DC49DFE4C4B7740E9AFE1F8347A9E25697E0CD3B084070C5A7D"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/nw/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/nw/parts_5/parts_5_meta.json",
+                      "sha256":  "5DF5C8FB191EF518134E4E56584630448C8F5E8A0CF87E76F28F6B793E662012"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/w/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/w/parts_5/parts_5_meta.json",
+                      "sha256":  "937B877C2BFC5EDA8F28A57433FFC3C1097B31392754AE670F5BA9E56AF9CF23"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/sw/parts_5/parts_5_meta.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/sw/parts_5/parts_5_meta.json",
+                      "sha256":  "B48EDE3562B1FD26A88B2402B8708BB48E7527263316668CDACC546D12519B57"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/heads_metadata.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/heads/heads_metadata.json",
+                      "sha256":  "6CA222EF736A4B2FE4CED35298110201CF247543B1A8F097E8B9ADFB0A8A7DD2"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/body_metrics.json",
+                      "snapshot":  "combat_assets/valentina_v2_planar/body_metrics.json",
+                      "sha256":  "BB8B84F04B28FC9D14B9AA5D75AD67DA0DCF4970343EE14656C4236B6165FAB7"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_anim_config.tres",
+                      "snapshot":  "combat_assets/valentina_v2_planar/valentina_v2_anim_config.tres",
+                      "sha256":  "718BBD69BAECE17084C7B96CFCC53DCAFBB2E3DC4409C0D1EC93886C45ABA3CA"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_perspective_config.tres",
+                      "snapshot":  "combat_assets/valentina_v2_planar/valentina_v2_perspective_config.tres",
+                      "sha256":  "EEBAFB9A04CCA7EE769BF04A6CA3E3EB14F6D23256F4E23595CF343DA0A3A115"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres",
+                      "snapshot":  "pilots/valentina_v2/valentina_v2_profile.tres",
+                      "sha256":  "40BF83DB0CF341F8C6D42109DEFD05604FBE3F89D93EB2F2948DB0DF14744895"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilot_rig_stylizer.gdshader",
+                      "snapshot":  "pilot_rig_stylizer.gdshader",
+                      "sha256":  "727CE4F8CD2B3CD943A71166C1AF550429E4EAED87C806A9F82A158CECBFA53C"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilot_rig_pass2.gdshader",
+                      "snapshot":  "pilot_rig_pass2.gdshader",
+                      "sha256":  "87ED84FD7A9EC3312F9FE2CEECB6E4A360DCE4D540F39A98FBF1231BF25F78C2"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/00_base.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/00_base.tres",
+                      "sha256":  "9F06A6E06EA1C01FD46CD887C751300F214CED559BD62759E2CAED70D5EBA6AF"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/01_crimson_nebula.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/01_crimson_nebula.tres",
+                      "sha256":  "77A1917EED25494E2DFC9BEBBCA52DA4B5EF269151352EB2643D7577AF22B3F5"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/02_cyber_emerald.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/02_cyber_emerald.tres",
+                      "sha256":  "3F9BC3C570005AE8FC68C743D0D90C39E3416D87E39BB626E1EABA72FF5888E3"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/03_solar_valkyrie.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/03_solar_valkyrie.tres",
+                      "sha256":  "C09996C63B6619347DBC475C31015E028A683A8401A440ECD4B4B99E9B313A67"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/04_void_amethyst.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/04_void_amethyst.tres",
+                      "sha256":  "416E466669949C38AAF20BC9CCAF003D575D56E5042CBB77F3EDC4BFE0FA4336"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/05_arctic_phantom.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/05_arctic_phantom.tres",
+                      "sha256":  "E477F1F868AD647B5AA0C16654DB280367D114E66A972DC21D75A1F8522E649C"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/06_blood_eclipse.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/06_blood_eclipse.tres",
+                      "sha256":  "BC00AC440030A281A5BAD019BF5B4988112898BF8551B09221A3005DC6B3FA34"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/07_eva_unit_01.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/07_eva_unit_01.tres",
+                      "sha256":  "10319BF44DCE7E7B80CF8D30B6062B5C7D8ED152350E1532F893DC3EDD2890E5"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/08_2b_yorha.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/08_2b_yorha.tres",
+                      "sha256":  "590B2CBA584F4148864517E2094B570821335F81E50F4F485845D636DF5FE30B"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/pilots/valentina_v2/skins/09_edgerunner_lucy.tres",
+                      "snapshot":  "pilots/valentina_v2/skins/09_edgerunner_lucy.tres",
+                      "sha256":  "3A5355855EF2991A0B525F14DD5BF24B1F456DC575924D52A9D5B6D66AA5A7D1"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/00_original.tres",
+                      "snapshot":  "data/styles/00_original.tres",
+                      "sha256":  "01A4DD212E04900562368FB19F45136F34B4C48B5A3272EB358E81333AF0CA76"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/01_trigger_cel.tres",
+                      "snapshot":  "data/styles/01_trigger_cel.tres",
+                      "sha256":  "A94E7487A68330F0FBDA66D6F9000EF8531A792DF303E4356F243A675ACF94CF"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/02_skullgirls_screentone.tres",
+                      "snapshot":  "data/styles/02_skullgirls_screentone.tres",
+                      "sha256":  "5DDFAEC863935C6C3CDA6DEC6C4D57A77D2212A6620BADF8DCB749BBF2F5374F"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/03_guilty_gear_rim.tres",
+                      "snapshot":  "data/styles/03_guilty_gear_rim.tres",
+                      "sha256":  "7FD4F19F0926AF9A02130F471FE425BBD212B2D759B9F04532402EEF52A20305"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/04_spiderverse_dualtone.tres",
+                      "snapshot":  "data/styles/04_spiderverse_dualtone.tres",
+                      "sha256":  "3EA81D0E2B4B443AFEB217D4E3E08D87C4C389C5B976265F495E45C703DC340E"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/05_persona5_noir.tres",
+                      "snapshot":  "data/styles/05_persona5_noir.tres",
+                      "sha256":  "94A4AD6EB6B9748E533A5DA7B8235D9C242E30A6DBAD3DDE294F72057D237742"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/06_edgerunners_dual_rim.tres",
+                      "snapshot":  "data/styles/06_edgerunners_dual_rim.tres",
+                      "sha256":  "FB8838DC5F3804763F4241511171BD7E991FE3FCFCD46AB1276F74BE7547C2E9"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/07_kill_la_kill_hatch.tres",
+                      "snapshot":  "data/styles/07_kill_la_kill_hatch.tres",
+                      "sha256":  "86FC2F589A3E450CE550FCE4869FFC13B37CE3AA7B6C596B2840E449E4B784B0"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/styles/08_arcane_metal.tres",
+                      "snapshot":  "data/styles/08_arcane_metal.tres",
+                      "sha256":  "5BA0C62F3EC21A0D07523360AF68AF48615F3CFFA9464E8649FEA7370EC33EF1"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/00_original.tres",
+                      "snapshot":  "data/hair/00_original.tres",
+                      "sha256":  "D1EDFAB691F7D520AB061C660BCDA25780C10C31FE6389D960F242C1D15448BC"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/01_follow_skin.tres",
+                      "snapshot":  "data/hair/01_follow_skin.tres",
+                      "sha256":  "2D7C3D03351FC7EAC0DAC4EB62E2A494062725CA5A9A9520707BBE1C15A6EE8E"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/02_platinum_2b.tres",
+                      "snapshot":  "data/hair/02_platinum_2b.tres",
+                      "sha256":  "A277DCEA3E4267E69E83BED4A50C6EFFE9EE2F18854B9E59B938FC8AC64F00F9"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/03_valkyrie_gold.tres",
+                      "snapshot":  "data/hair/03_valkyrie_gold.tres",
+                      "sha256":  "CEF86EFC4A9A3DF7683AAC0EF77446192F3BF52BDD5337A7139FD17BA52E6C48"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/04_lucy_pink.tres",
+                      "snapshot":  "data/hair/04_lucy_pink.tres",
+                      "sha256":  "0845E5F5883B6F5753081045B095948EC71C279DD5F5EBDE8DE68C5EE32D8591"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/05_crimson_scarlet.tres",
+                      "snapshot":  "data/hair/05_crimson_scarlet.tres",
+                      "sha256":  "38EFEB3A5E418E239E4D5FF81DF93166949E9587ADA3D671216C7C96B9FED722"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/06_holo_cyan.tres",
+                      "snapshot":  "data/hair/06_holo_cyan.tres",
+                      "sha256":  "88EFA604092983903D1D2D35EF5C6494F5C2C762712C737D5A703550A5A65C4E"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/07_void_violet.tres",
+                      "snapshot":  "data/hair/07_void_violet.tres",
+                      "sha256":  "4485D35D09A409F26CB18D677BF66394E5580D9B12EEB6154590B7E9339BADFA"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/08_jet_blue.tres",
+                      "snapshot":  "data/hair/08_jet_blue.tres",
+                      "sha256":  "80F06AD2B58E82B499910FB81C4EACCA2A639918D1AD1117CE62F9A9326BC712"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/data/hair/09_toxic_emerald.tres",
+                      "snapshot":  "data/hair/09_toxic_emerald.tres",
+                      "sha256":  "3CA644ED2424A1766428EF233465E070EBC7F83EACB250F02CA6A79A4AC50B6A"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/shaders/rig_color_recolor.gdshaderinc",
+                      "snapshot":  "shaders/rig_color_recolor.gdshaderinc",
+                      "sha256":  "08834BAA98BAC367F63880403A759561B097C6F46D544685930AD6E5B5B187D1"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/shaders/rig_perspective_25d.gdshaderinc",
+                      "snapshot":  "shaders/rig_perspective_25d.gdshaderinc",
+                      "sha256":  "300354469E9B0CE97E5411926A155E1E790998C92681BDCAF95EF8EEA49F6F6D"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/shaders/rig_stylized_lighting.gdshaderinc",
+                      "snapshot":  "shaders/rig_stylized_lighting.gdshaderinc",
+                      "sha256":  "C78A3667974CFD2637223CD049394662AB31CBE52987D4F773468696BA97B623"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_e_persp_mask.png",
+                      "snapshot":  "proto/leg_l_e_persp_mask.png",
+                      "sha256":  "7F5ABD44BE13FC178959EBF7FC8EE7E46E78F96A19FAAF8DD4795D9B830E184B"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_ne_persp_mask.png",
+                      "snapshot":  "proto/leg_l_ne_persp_mask.png",
+                      "sha256":  "F2C0DC55DE1BF14D5F9EBA0299E7824519BDBED92AB4B8542C932A5E99A6CAAA"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_nw_persp_mask.png",
+                      "snapshot":  "proto/leg_l_nw_persp_mask.png",
+                      "sha256":  "CCCAD138FEA9670FA860847DC7545A240E15A68549B884B2E0FA7B48BCDB87B6"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_n_persp_mask.png",
+                      "snapshot":  "proto/leg_l_n_persp_mask.png",
+                      "sha256":  "AAA6C511A07599E76D274D831BAC4535CF66AE59A51C611D3BE66670EF1FBEA7"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_se_persp_mask.png",
+                      "snapshot":  "proto/leg_l_se_persp_mask.png",
+                      "sha256":  "25BBBE44889E95F58A47461D9AACACB300E271194FE2FBB52F9854F34F80A316"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_sw_persp_mask.png",
+                      "snapshot":  "proto/leg_l_sw_persp_mask.png",
+                      "sha256":  "D785B2E2E5A822E166C6C7C8D9140FB026200BC0E50E8A81A40A9FB4C73825C3"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_s_persp_mask.png",
+                      "snapshot":  "proto/leg_l_s_persp_mask.png",
+                      "sha256":  "0F567FF416FB94070D388A65D39119D37855CD4B318DA0D59083C74FD131E136"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_l_w_persp_mask.png",
+                      "snapshot":  "proto/leg_l_w_persp_mask.png",
+                      "sha256":  "D0337D68BB70A16FE7CE13C1A8E2716E9C487FB7FC0D01D2EB5C1F5BDC5B2319"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_e_persp_mask.png",
+                      "snapshot":  "proto/leg_r_e_persp_mask.png",
+                      "sha256":  "3CC8C0160E1595AD6914A2D497F2D38EB87B72FABD6E5F8913191AC6D21B39FE"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_ne_persp_mask.png",
+                      "snapshot":  "proto/leg_r_ne_persp_mask.png",
+                      "sha256":  "EFCD839B6FAA27C8DB1F744034C76CCC9E58637EDB6CCD4B703D0D8EBF791442"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_nw_persp_mask.png",
+                      "snapshot":  "proto/leg_r_nw_persp_mask.png",
+                      "sha256":  "2CCF7F419948D3328EF0AB734514FEEFC90B797036778AAA4FB74287A97DB3C9"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_n_persp_mask.png",
+                      "snapshot":  "proto/leg_r_n_persp_mask.png",
+                      "sha256":  "67EC14F3165D276DEF08DB11042360AF10284FFAD7777BEF06823351F70F5D73"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_se_persp_mask.png",
+                      "snapshot":  "proto/leg_r_se_persp_mask.png",
+                      "sha256":  "28ACB743ACB22DA669B1341DD4372BB9193B1272CD937D1F6460F9983CF820A1"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_sw_persp_mask.png",
+                      "snapshot":  "proto/leg_r_sw_persp_mask.png",
+                      "sha256":  "808CA6D8CF20462CDAE8608DD9CB2AA1AB00AEDD092CBA5E9F05CF4E41AC80B5"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_s_persp_mask.png",
+                      "snapshot":  "proto/leg_r_s_persp_mask.png",
+                      "sha256":  "4CA2E5CE8C2A5B21175DA0D05748D788D595CAA8480AC3DF0BE1B4EB3126C11D"
+                  },
+                  {
+                      "source":  "sandbox/pilot_rig_lab/proto/leg_r_w_persp_mask.png",
+                      "snapshot":  "proto/leg_r_w_persp_mask.png",
+                      "sha256":  "2340F8E0C427C476CEBD1945931FD8D120D3DE8D54F56F72F45A827F49BE6AC9"
+                  }
+              ]
+}

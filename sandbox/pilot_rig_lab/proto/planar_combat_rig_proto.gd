@@ -205,9 +205,12 @@ func _apply_static_inspection_from_ui() -> void:
 	if _rig == null or static_chk == null:
 		return
 	var enabled: bool = static_chk.button_pressed
-	var b_idx: int = clampi(body_opt.selected, 0, HudBuilder.BODY_KEYS.size() - 1)
+	var view_keys: Array[String] = _rig.get_available_view_keys()
+	if view_keys.is_empty():
+		view_keys.assign(HudBuilder.BODY_KEYS)
+	var b_idx: int = clampi(body_opt.selected, 0, view_keys.size() - 1)
 	var h_idx: int = clampi(head_opt.selected, 0, HudBuilder.HEAD_KEYS.size() - 1)
-	var b_key: String = HudBuilder.BODY_KEYS[b_idx]
+	var b_key: String = view_keys[b_idx]
 	var h_key: String = HudBuilder.HEAD_KEYS[h_idx]
 	if enabled:
 		_auto_demo = false
@@ -216,8 +219,12 @@ func _apply_static_inspection_from_ui() -> void:
 		_velocity = Vector2.ZERO
 		_rig.set_static_inspection(true, b_key, h_key)
 		var combo_num: int = b_idx * HudBuilder.HEAD_KEYS.size() + h_idx + 1
-		var total: int = HudBuilder.BODY_KEYS.size() * HudBuilder.HEAD_KEYS.size()
-		combo_lbl.text = "Combo %d/%d: %s + %s" % [combo_num, total, b_key.to_upper(), h_key]
+		var total: int = view_keys.size() * HudBuilder.HEAD_KEYS.size()
+		var shown_head: String = _rig.get_active_head_key()
+		if shown_head != h_key:
+			combo_lbl.text = "Combo %d/%d: %s + %s (bloqueado -> %s)" % [combo_num, total, b_key.to_upper(), h_key, shown_head]
+		else:
+			combo_lbl.text = "Combo %d/%d: %s + %s" % [combo_num, total, b_key.to_upper(), h_key]
 	else:
 		_rig.set_static_inspection(false)
 		combo_lbl.text = "Combo: (Modo Dinámico)"
@@ -231,8 +238,11 @@ func _step_static_combo(dir: int) -> void:
 	var static_chk: CheckBox = _hud_refs.get("static_inspect_chk", null) as CheckBox
 	var body_opt: OptionButton = _hud_refs.get("static_body_opt", null) as OptionButton
 	var head_opt: OptionButton = _hud_refs.get("static_head_opt", null) as OptionButton
-	var total: int = HudBuilder.BODY_KEYS.size() * HudBuilder.HEAD_KEYS.size()
-	var b_idx: int = clampi(body_opt.selected, 0, HudBuilder.BODY_KEYS.size() - 1)
+	var view_keys: Array[String] = _rig.get_available_view_keys()
+	if view_keys.is_empty():
+		view_keys.assign(HudBuilder.BODY_KEYS)
+	var total: int = view_keys.size() * HudBuilder.HEAD_KEYS.size()
+	var b_idx: int = clampi(body_opt.selected, 0, view_keys.size() - 1)
 	var h_idx: int = clampi(head_opt.selected, 0, HudBuilder.HEAD_KEYS.size() - 1)
 	var cur: int = b_idx * HudBuilder.HEAD_KEYS.size() + h_idx
 	if static_chk != null and static_chk.button_pressed:
@@ -246,13 +256,25 @@ func _step_static_combo(dir: int) -> void:
 
 func _apply_initial_defaults() -> void:
 	_rig.set_transition_style(PlanarCombatRig.TransitionStyle.WHIP_SNAP_AFTERIMAGE)
-	var prof: PilotRigProfile = _hud_refs.get("active_profile", null) as PilotRigProfile
-	if prof != null:
-		if not prof.style_profiles.is_empty():
-			_rig.apply_style_profile(prof.style_profiles[0])
-		if not prof.skins.is_empty():
-			_rig.apply_skin_preset(prof.skins[0])
-	_rig.enable_afterimage = true
+	var pilot_opt: OptionButton = _hud_refs.get("pilot_opt", null) as OptionButton
+	var profiles: Array = _hud_refs.get("pilot_profiles", []) as Array
+	var preferred_idx: int = -1
+	for i: int in range(profiles.size()):
+		var p: PilotRigProfile = profiles[i] as PilotRigProfile
+		if p != null and p.pilot_id == "valentina_v2":
+			preferred_idx = i
+			break
+	if preferred_idx >= 0 and pilot_opt != null:
+		pilot_opt.select(preferred_idx)
+		pilot_opt.item_selected.emit(preferred_idx)
+	else:
+		var prof: PilotRigProfile = _hud_refs.get("active_profile", null) as PilotRigProfile
+		if prof != null:
+			if not prof.style_profiles.is_empty():
+				_rig.apply_style_profile(prof.style_profiles[0])
+			if not prof.skins.is_empty():
+				_rig.apply_skin_preset(prof.skins[0])
+	_rig.enable_afterimage = false
 	_sync_lighting_uniforms()
 
 

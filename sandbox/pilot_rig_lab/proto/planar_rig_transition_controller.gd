@@ -144,7 +144,15 @@ func update(delta: float, router: PlanarRigViewRouter, defer_head_to_clock: bool
 			snap_to_head = router.target_head_key
 			snap_from_head_flip = router.head_flip_x
 			snap_to_head_flip = router.target_head_flip_x
-			snap_turn_dir = (-1.0 if snap_to_flip else 1.0) if (snap_to_flip != snap_from_flip) else (-1.0 if snap_to_view == "n" else 1.0)
+			var from_vec: Vector2 = PlanarRigViewRouter.get_body_dir_vector(snap_from_view)
+			var to_vec: Vector2 = PlanarRigViewRouter.get_body_dir_vector(snap_to_view)
+			var cross_ang: float = from_vec.angle_to(to_vec)
+			if snap_to_flip != snap_from_flip:
+				snap_turn_dir = -1.0 if snap_to_flip else 1.0
+			elif absf(cross_ang) > 0.05 and absf(cross_ang) < PI - 0.05:
+				snap_turn_dir = signf(cross_ang)
+			else:
+				snap_turn_dir = -1.0 if (snap_to_view in ["n", "nw", "w", "sw"]) else 1.0
 			events["started_snap"] = true
 		elif head_changed:
 			head_micro_snap_active = true
@@ -171,7 +179,9 @@ func update(delta: float, router: PlanarRigViewRouter, defer_head_to_clock: bool
 			if not defer_head_to_clock:
 				router.active_head_key = snap_to_head
 				router.head_flip_x = snap_to_head_flip
-			events["turn_bone_kick"] = snap_turn_dir * 0.28
+			else:
+				router.active_head_key = router.sanitize_head_for_body(snap_to_view, snap_to_flip, router.active_head_key)
+			events["turn_bone_kick"] = 0.0
 		if snap_t >= 1.0:
 			snap_t = 1.0
 			snap_active = false

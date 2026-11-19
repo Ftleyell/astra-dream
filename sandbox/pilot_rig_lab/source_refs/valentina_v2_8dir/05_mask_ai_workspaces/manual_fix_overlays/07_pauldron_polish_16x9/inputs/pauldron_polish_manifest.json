@@ -1,0 +1,243 @@
+{
+  "01_pauldrons_unique_8_16x9": {
+    "file": "01_pauldrons_unique_8_16x9.png",
+    "size": [
+      2560,
+      1440
+    ],
+    "slots": [
+      {
+        "row": 0,
+        "col": 0,
+        "view": "s",
+        "part": "pauldron_r",
+        "mirror_targets": [
+          [
+            "s",
+            "pauldron_l"
+          ]
+        ],
+        "slot_rect": [
+          80,
+          80,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          170,
+          137,
+          420,
+          525
+        ],
+        "orig_size": [
+          120,
+          150
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 0,
+        "col": 1,
+        "view": "se",
+        "part": "pauldron_r",
+        "mirror_targets": [
+          [
+            "sw",
+            "pauldron_l"
+          ]
+        ],
+        "slot_rect": [
+          680,
+          80,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          731,
+          123,
+          497,
+          553
+        ],
+        "orig_size": [
+          142,
+          158
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 0,
+        "col": 2,
+        "view": "se",
+        "part": "pauldron_l",
+        "mirror_targets": [
+          [
+            "sw",
+            "pauldron_r"
+          ]
+        ],
+        "slot_rect": [
+          1280,
+          80,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          1326,
+          139,
+          508,
+          522
+        ],
+        "orig_size": [
+          145,
+          149
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 0,
+        "col": 3,
+        "view": "e",
+        "part": "pauldron_r",
+        "mirror_targets": [
+          [
+            "w",
+            "pauldron_l"
+          ]
+        ],
+        "slot_rect": [
+          1880,
+          80,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          1954,
+          169,
+          452,
+          462
+        ],
+        "orig_size": [
+          129,
+          132
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 1,
+        "col": 0,
+        "view": "n",
+        "part": "pauldron_r",
+        "mirror_targets": [
+          [
+            "n",
+            "pauldron_l"
+          ]
+        ],
+        "slot_rect": [
+          80,
+          720,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          147,
+          770,
+          466,
+          539
+        ],
+        "orig_size": [
+          133,
+          154
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 1,
+        "col": 1,
+        "view": "ne",
+        "part": "pauldron_r",
+        "mirror_targets": [
+          [
+            "nw",
+            "pauldron_l"
+          ]
+        ],
+        "slot_rect": [
+          680,
+          720,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          751,
+          783,
+          458,
+          514
+        ],
+        "orig_size": [
+          131,
+          147
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 1,
+        "col": 2,
+        "view": "ne",
+        "part": "pauldron_l",
+        "mirror_targets": [
+          [
+            "nw",
+            "pauldron_r"
+          ]
+        ],
+        "slot_rect": [
+          1280,
+          720,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          1373,
+          793,
+          413,
+          494
+        ],
+        "orig_size": [
+          118,
+          141
+        ],
+        "scale": 3.5
+      },
+      {
+        "row": 1,
+        "col": 3,
+        "view": "e",
+        "part": "pauldron_l",
+        "mirror_targets": [
+          [
+            "w",
+            "pauldron_r"
+          ]
+        ],
+        "slot_rect": [
+          1880,
+          720,
+          600,
+          640
+        ],
+        "pauldron_rect": [
+          2077,
+          923,
+          206,
+          234
+        ],
+        "orig_size": [
+          59,
+          67
+        ],
+        "scale": 3.5
+      }
+    ]
+  }
+}

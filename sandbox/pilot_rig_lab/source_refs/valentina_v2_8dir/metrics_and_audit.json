@@ -1,0 +1,343 @@
+{
+  "unique_directions": [
+    "s",
+    "se",
+    "e",
+    "ne",
+    "n",
+    "nw",
+    "w",
+    "sw"
+  ],
+  "missing_directions": [],
+  "notes": "All 8 cardinal + diagonal bodies (S, SE, E, NE, N, NW, W, SW) and 8 hi-res 1024x1024 heads complete.",
+  "native_cell_size": [
+    1152,
+    2304
+  ],
+  "canonical_cell_size": [
+    1560,
+    1680
+  ],
+  "placements": {
+    "native": {
+      "s": [
+        124,
+        112,
+        904,
+        2136
+      ],
+      "n": [
+        126,
+        114,
+        902,
+        2134
+      ],
+      "e": [
+        269,
+        113,
+        559,
+        2135
+      ],
+      "w": [
+        311,
+        111,
+        597,
+        2137
+      ],
+      "se": [
+        137,
+        101,
+        891,
+        2147
+      ],
+      "ne": [
+        152,
+        102,
+        818,
+        2146
+      ],
+      "nw": [
+        182,
+        111,
+        815,
+        2137
+      ],
+      "sw": [
+        123,
+        116,
+        891,
+        2132
+      ]
+    },
+    "canonical": {
+      "s": [
+        507,
+        315,
+        546,
+        1290
+      ],
+      "n": [
+        508,
+        315,
+        545,
+        1290
+      ],
+      "e": [
+        594,
+        315,
+        338,
+        1290
+      ],
+      "w": [
+        621,
+        315,
+        360,
+        1290
+      ],
+      "se": [
+        516,
+        315,
+        535,
+        1290
+      ],
+      "ne": [
+        525,
+        315,
+        492,
+        1290
+      ],
+      "nw": [
+        543,
+        315,
+        492,
+        1290
+      ],
+      "sw": [
+        506,
+        315,
+        539,
+        1290
+      ]
+    }
+  },
+  "pose_metrics": [
+    {
+      "name": "s",
+      "source_sheet": "cardinals",
+      "col_index": 0,
+      "raw_bbox_xywh": [
+        158,
+        103,
+        904,
+        2136
+      ],
+      "fg_pixels": 847522,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 18.56,
+      "ink_median_luma": 11.5,
+      "non_ink_p01_luma": 22.9,
+      "non_ink_p99_luma": 213.4,
+      "bright_gt225_pct": 0.35
+    },
+    {
+      "name": "n",
+      "source_sheet": "cardinals",
+      "col_index": 1,
+      "raw_bbox_xywh": [
+        71,
+        103,
+        902,
+        2134
+      ],
+      "fg_pixels": 848664,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 16.32,
+      "ink_median_luma": 11.1,
+      "non_ink_p01_luma": 23.7,
+      "non_ink_p99_luma": 206.1,
+      "bright_gt225_pct": 0.38
+    },
+    {
+      "name": "e",
+      "source_sheet": "cardinals",
+      "col_index": 2,
+      "raw_bbox_xywh": [
+        92,
+        103,
+        559,
+        2135
+      ],
+      "fg_pixels": 545984,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 16.77,
+      "ink_median_luma": 11.5,
+      "non_ink_p01_luma": 27.1,
+      "non_ink_p99_luma": 214.2,
+      "bright_gt225_pct": 0.34
+    },
+    {
+      "name": "w",
+      "source_sheet": "cardinals",
+      "col_index": 3,
+      "raw_bbox_xywh": [
+        232,
+        103,
+        597,
+        2137
+      ],
+      "fg_pixels": 556932,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 16.61,
+      "ink_median_luma": 11.5,
+      "non_ink_p01_luma": 24.8,
+      "non_ink_p99_luma": 215.2,
+      "bright_gt225_pct": 0.51
+    },
+    {
+      "name": "s_diag_alt",
+      "source_sheet": "diagonals",
+      "col_index": 0,
+      "raw_bbox_xywh": [
+        157,
+        103,
+        906,
+        2136
+      ],
+      "fg_pixels": 847578,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 19.23,
+      "ink_median_luma": 10.7,
+      "non_ink_p01_luma": 24.3,
+      "non_ink_p99_luma": 208.6,
+      "bright_gt225_pct": 0.15
+    },
+    {
+      "name": "se",
+      "source_sheet": "diagonals",
+      "col_index": 1,
+      "raw_bbox_xywh": [
+        65,
+        103,
+        891,
+        2147
+      ],
+      "fg_pixels": 826736,
+      "inner_holes_removed_px": 679,
+      "ink_ratio_pct": 15.78,
+      "ink_median_luma": 13.4,
+      "non_ink_p01_luma": 23.0,
+      "non_ink_p99_luma": 205.2,
+      "bright_gt225_pct": 0.14
+    },
+    {
+      "name": "ne",
+      "source_sheet": "diagonals",
+      "col_index": 2,
+      "raw_bbox_xywh": [
+        61,
+        104,
+        818,
+        2146
+      ],
+      "fg_pixels": 825786,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 14.62,
+      "ink_median_luma": 12.9,
+      "non_ink_p01_luma": 24.5,
+      "non_ink_p99_luma": 202.5,
+      "bright_gt225_pct": 0.24
+    },
+    {
+      "name": "nw",
+      "source_sheet": "diagonals",
+      "col_index": 3,
+      "raw_bbox_xywh": [
+        54,
+        103,
+        815,
+        2137
+      ],
+      "fg_pixels": 828248,
+      "inner_holes_removed_px": 0,
+      "ink_ratio_pct": 14.46,
+      "ink_median_luma": 13.2,
+      "non_ink_p01_luma": 24.1,
+      "non_ink_p99_luma": 202.2,
+      "bright_gt225_pct": 0.18
+    },
+    {
+      "name": "sw",
+      "source_sheet": "head_4x2_splice_on_mirror_se",
+      "col_index": 2,
+      "raw_bbox_xywh": [
+        123,
+        116,
+        891,
+        2132
+      ],
+      "fg_pixels": 820253,
+      "inner_holes_removed_px": 1825,
+      "ink_ratio_pct": 15.26,
+      "ink_median_luma": 13.8,
+      "non_ink_p01_luma": 22.1,
+      "non_ink_p99_luma": 207.4,
+      "bright_gt225_pct": 0.31
+    }
+  ],
+  "hires_heads": {
+    "cell_size": [
+      1024,
+      1024
+    ],
+    "cell_keys_4x2": [
+      [
+        [
+          "s",
+          "head_front"
+        ],
+        [
+          "se",
+          "head_front_r"
+        ],
+        [
+          "sw",
+          "head_front_l"
+        ],
+        [
+          "w",
+          "head_side_l"
+        ]
+      ],
+      [
+        [
+          "e",
+          "head_side_r"
+        ],
+        [
+          "ne",
+          "head_back_r"
+        ],
+        [
+          "nw",
+          "head_back_l"
+        ],
+        [
+          "n",
+          "head_back"
+        ]
+      ]
+    ],
+    "sw_splice_scale": 0.5839,
+    "head_holes_removed_px": {
+      "se": 1358,
+      "s": 0,
+      "sw": 1825,
+      "w": 0,
+      "e": 0,
+      "ne": 0,
+      "n": 0,
+      "nw": 0
+    }
+  }
+}

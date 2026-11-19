@@ -367,6 +367,3 @@ static func get_unlocked_items() -> Array[StringName]:
 
 static func is_item_unlocked(item_id: StringName) -> bool:
 	return ProfileStorage.is_item_unlocked(item_id)
-
-
-

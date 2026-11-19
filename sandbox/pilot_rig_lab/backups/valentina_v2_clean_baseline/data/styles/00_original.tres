@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="RigStyleProfile" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="1_7ny4j"]
+
+[resource]
+script = ExtResource("1_7ny4j")
+id = "00_original"
+label = "Perfil 0: Original Upscayl 4x (Referencia Pura)"

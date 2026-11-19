@@ -1,24 +1,17 @@
 class_name PlanarRigWingsVFX
 extends RefCounted
 ## Controlador de VFX procedurales para PlanarCombatRig:
-## - Alas de energía y propulsores de botas.
 ## - Estela Sandevistan en dash y afterimage en snap.
 
 const MAX_ACTIVE_GHOSTS: int = 5
 
 var vfx_root: Node2D = null
-var wings_node: Node2D = null
-var wing_polys: Array[Polygon2D] = []
-var thruster_node: Node2D = null
-var thruster_polys: Array[Polygon2D] = []
 var _add_mat: CanvasItemMaterial = null
 var _dash_ghost_timer: float = 0.0
 var _active_ghosts: Array[Node2D] = []
 
 
-func build(rig_root: Node2D, accent_color: Color) -> void:
-	wing_polys.clear()
-	thruster_polys.clear()
+func build(rig_root: Node2D, _accent_color: Color) -> void:
 	_active_ghosts.clear()
 
 	vfx_root = Node2D.new()
@@ -29,105 +22,26 @@ func build(rig_root: Node2D, accent_color: Color) -> void:
 	if _add_mat == null:
 		_add_mat = CanvasItemMaterial.new()
 		_add_mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	var add_mat: CanvasItemMaterial = _add_mat
-
-	wings_node = Node2D.new()
-	wings_node.name = "ProceduralEnergyWings"
-	wings_node.position = Vector2(0.0, -94.0)
-	wings_node.material = add_mat
-	vfx_root.add_child(wings_node)
-
-	for side: float in [-1.0, 1.0]:
-		var wing := Polygon2D.new()
-		wing.material = add_mat
-		wing.polygon = PackedVector2Array([
-			Vector2(18.0 * side, -6.0),
-			Vector2(92.0 * side, -78.0),
-			Vector2(188.0 * side, -56.0),
-			Vector2(138.0 * side, -16.0),
-			Vector2(162.0 * side, 4.0),
-			Vector2(102.0 * side, 16.0),
-			Vector2(20.0 * side, 14.0),
-		])
-		wing.color = Color(accent_color.r, accent_color.g, accent_color.b, 0.24)
-		wings_node.add_child(wing)
-		wing_polys.append(wing)
-
-		var blade := Line2D.new()
-		blade.material = add_mat
-		blade.points = PackedVector2Array([
-			Vector2(18.0 * side, -6.0),
-			Vector2(92.0 * side, -78.0),
-			Vector2(188.0 * side, -56.0),
-			Vector2(102.0 * side, 16.0),
-		])
-		blade.width = 2.4
-		blade.default_color = Color(1.0, 0.85, 0.90, 0.65)
-		wings_node.add_child(blade)
-
-	thruster_node = Node2D.new()
-	thruster_node.name = "BootThrusters"
-	vfx_root.add_child(thruster_node)
-
-	for _idx: int in range(2):
-		var flame := Polygon2D.new()
-		flame.material = add_mat
-		flame.polygon = PackedVector2Array([
-			Vector2(-7.0, 0.0),
-			Vector2(7.0, 0.0),
-			Vector2(0.0, 44.0),
-		])
-		flame.color = Color(0.20, 0.92, 1.0, 0.62)
-		thruster_node.add_child(flame)
-		thruster_polys.append(flame)
 
 
 func animate(
-	enable_wings: bool,
-	enable_thrusters: bool,
-	flight_phase: float,
-	smooth_move_dir: Vector2,
-	smooth_speed: float,
-	whiplash_wing_kick: float,
-	accent_color: Color,
-	views: Dictionary,
-	active_view_key: String,
-	holo_split_active: bool,
-	snap_t: float,
+	_enable_wings: bool,
+	_enable_thrusters: bool,
+	_flight_phase: float,
+	_smooth_move_dir: Vector2,
+	_smooth_speed: float,
+	_whiplash_wing_kick: float,
+	_accent_color: Color,
+	_views: Dictionary,
+	_active_view_key: String,
+	_holo_split_active: bool,
+	_snap_t: float,
 	body_pivot: Node2D = null
 ) -> void:
 	if vfx_root != null and body_pivot != null:
 		vfx_root.position = body_pivot.position
 		vfx_root.rotation = body_pivot.rotation
 		vfx_root.scale = body_pivot.scale
-	var down_brake: float = clampf(smooth_move_dir.y, 0.0, 1.0) * smooth_speed
-	if wings_node != null:
-		wings_node.visible = enable_wings
-		if enable_wings:
-			var flap: float = sin(flight_phase * 2.1) * (0.06 + smooth_speed * 0.14)
-			var spread: float = 0.86 + smooth_speed * 0.28 + down_brake * 0.22 + absf(whiplash_wing_kick) * 0.16
-			wings_node.scale = Vector2(spread, 1.0 + flap * 0.45 + down_brake * 0.18 - absf(whiplash_wing_kick) * 0.08)
-			wings_node.rotation = whiplash_wing_kick * 0.16
-			wings_node.position.y = lerpf(-94.0, -104.0, down_brake)
-			for i: int in range(wing_polys.size()):
-				wing_polys[i].color = Color(accent_color.r, accent_color.g, accent_color.b, 0.34 + 0.16 * absf(sin(flight_phase)))
-
-	if thruster_node != null:
-		var thruster_vis: bool = enable_thrusters and (not holo_split_active or absf(snap_t - 0.5) > 0.36)
-		thruster_node.visible = thruster_vis
-		if thruster_vis and views.has(active_view_key):
-			var bones: Dictionary = (views[active_view_key] as Dictionary)["bones"] as Dictionary
-			var ankles: Array[String] = ["Ankle_R", "Ankle_L"]
-			var anti_vel: Vector2 = -smooth_move_dir
-			var flame_rot: float = Vector2.DOWN.angle_to(anti_vel)
-			var brake_attenuation: float = lerpf(1.0, 0.32, clampf(smooth_move_dir.y, 0.0, 1.0))
-			for i: int in range(min(thruster_polys.size(), ankles.size())):
-				if bones.has(ankles[i]):
-					var ank: Bone2D = bones[ankles[i]] as Bone2D
-					thruster_polys[i].global_position = ank.global_position
-					thruster_polys[i].global_rotation = flame_rot * 0.45
-					var pulse: float = (0.68 + 0.46 * smooth_speed + 0.16 * sin(flight_phase * 5.0 + float(i) * 1.4)) * brake_attenuation
-					thruster_polys[i].scale = Vector2(0.82 * brake_attenuation + 0.18, pulse)
 
 
 func spawn_snap_afterimage(
@@ -164,45 +78,24 @@ func spawn_snap_afterimage(
 
 
 func process_sandevistan_trail(
-	delta: float,
-	enabled: bool,
-	speed_norm: float,
-	move_dir: Vector2,
-	body_pivot: Node2D,
-	parent_node: Node,
-	global_pos: Vector2,
-	z_idx: int,
-	accent_color: Color,
-	rig_scale: Vector2 = Vector2.ONE,
-	views: Dictionary = {},
-	active_view_key: String = "s",
-	body_flip_x: bool = false,
-	head_anchor: Node2D = null,
-	head_data: Dictionary = {},
-	active_head_key: String = "head_front"
+	_delta: float,
+	_enabled: bool,
+	_speed_norm: float,
+	_move_dir: Vector2,
+	_body_pivot: Node2D,
+	_parent_node: Node,
+	_global_pos: Vector2,
+	_z_idx: int,
+	_accent_color: Color,
+	_rig_scale: Vector2 = Vector2.ONE,
+	_views: Dictionary = {},
+	_active_view_key: String = "s",
+	_body_flip_x: bool = false,
+	_head_anchor: Node2D = null,
+	_head_data: Dictionary = {},
+	_active_head_key: String = "head_front"
 ) -> void:
-	if not enabled or speed_norm < 1.05 or body_pivot == null:
-		return
-	_dash_ghost_timer -= delta
-	if _dash_ghost_timer > 0.0 or parent_node == null:
-		return
-	_dash_ghost_timer = 0.065
-	_spawn_silhouette_ghost(
-		parent_node,
-		global_pos - move_dir * 26.0,
-		rig_scale,
-		z_idx - 1,
-		body_pivot,
-		views,
-		active_view_key,
-		body_flip_x,
-		head_anchor,
-		head_data,
-		active_head_key,
-		accent_color,
-		0.24,
-		0.24
-	)
+	pass
 
 
 func _spawn_silhouette_ghost(

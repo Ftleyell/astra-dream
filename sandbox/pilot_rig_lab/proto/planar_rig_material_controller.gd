@@ -3,8 +3,8 @@ extends RefCounted
 ## Controlador centralizado de ShaderMaterials para PlanarCombatRig.
 ## Aplica perfiles de estilo, skins, pelo, iluminación 2.5D y hit_flash.
 
-const DEFAULT_OUTER_OUTLINE_WIDTH_PX: float = 1.45
-const DEFAULT_OUTER_OUTLINE_STRENGTH: float = 1.0
+const DEFAULT_OUTER_OUTLINE_WIDTH_PX: float = 0.65
+const DEFAULT_OUTER_OUTLINE_STRENGTH: float = 0.0
 const BASE_OUTER_OUTLINE_COLOR: Color = Color(0.0, 0.0, 0.0, 1.0)
 
 var materials: Array[ShaderMaterial] = []
@@ -142,6 +142,8 @@ func apply_style_profile(profile: RigStyleProfile) -> void:
 		mat.set_shader_parameter("rim_width_px", profile.rim_width_px)
 		mat.set_shader_parameter("dual_rim_strength", profile.dual_rim_strength)
 		mat.set_shader_parameter("glow_intensity", profile.glow_intensity)
+	if pass2_material != null:
+		pass2_material.set_shader_parameter("outer_outline_tint_mix", clampf(profile.outer_outline_tint_mix, 0.0, 1.0))
 
 
 func set_hair_style_mode(mode_idx: int) -> void:

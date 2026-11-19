@@ -399,4 +399,3 @@ static func reset_banner_pity(banner_id: String, save_manager_ref: Object) -> vo
 		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
 		tokens, skins, equipped, pity_dict
 	)
-

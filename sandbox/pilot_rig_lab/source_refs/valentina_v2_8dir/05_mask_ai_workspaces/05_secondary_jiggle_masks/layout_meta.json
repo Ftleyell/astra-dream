@@ -1,0 +1,35 @@
+{
+  "mask_key": "05_secondary_jiggle_masks",
+  "batches": [
+    {
+      "filename": "batchA_front_S_SE_4x3_white.png",
+      "rows": 1,
+      "cols": 2,
+      "cell_w": 1152,
+      "cell_h": 1728,
+      "crop_x0": 204,
+      "views_grid": [
+        [
+          "s",
+          "se"
+        ]
+      ],
+      "description": "2304x1728 (4:3) Front Bust left->right: S, SE (paint bust Cyan #00FFFF)"
+    },
+    {
+      "filename": "batchB_back_N_NE_4x3_white.png",
+      "rows": 1,
+      "cols": 2,
+      "cell_w": 1152,
+      "cell_h": 1728,
+      "crop_x0": 204,
+      "views_grid": [
+        [
+          "n",
+          "ne"
+        ]
+      ],
+      "description": "2304x1728 (4:3) Back Glutes left->right: N, NE (paint glutes Magenta #FF00FF)"
+    }
+  ]
+}

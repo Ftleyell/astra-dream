@@ -1,0 +1,14 @@
+=== PROMPT PARA GENERADOR DE IMAGEN (USAR CON e_arm_front_clean_1024.png) ===
+
+Using the attached cybernetic anime arm sprite as an exact style, color, linework, and proportion reference, generate the OPPOSITE-SIDE view of this exact same arm (her LEFT arm seen from the inside/medial side in a right-facing 2D side-profile pose).
+
+Key anatomical & visual requirements:
+- Keep the EXACT same 2D anime cel-shaded art style, crisp black outer ink outline weight, dark charcoal/gunmetal armor plates, subtle burgundy/maroon upper-sleeve accent, specular highlights, and overall length/thickness/angle.
+- Flip the anatomical perspective from outer/back-of-hand view to INNER/PALM-FACING view: show the inner side of the segmented armored glove/palm and inner forearm plates, with the thumb positioned on the RIGHT (forward-facing) side and the fingers curling slightly inward toward the viewer.
+- Keep the arm at the same diagonal angle (extending down and slightly to the left), isolated and centered on a pure flat solid white background (#FFFFFF) with no cast shadows, no torso, no extra limbs, and clean uncropped edges at both the shoulder top and fingertips.
+- Output a single clean isolated arm matching the exact scale of the reference.
+
+=== NOTAS RÁPIDAS ===
+- Imagen principal a adjuntar: e_arm_front_clean_1024.png (1024x1024, fondo #FFFFFF, sin los bordes de dilatación del recorte).
+- Opcional si el generador acepta 2da imagen de contexto: e_body_context_1024.png (para que vea que el personaje mira hacia la derecha y el brazo trasero va detrás del torso).
+- Al guardar el resultado, guárdalo en esta misma carpeta (por ejemplo `e_arm_back_generated.png`) y avísame: con ese brazo generado yo lo recorto, lo espejamos automáticamente para `w`, clonamos la pierna trasera detrás del torso para `e` y `w`, y lo conectamos a los huesos y shader del rig.

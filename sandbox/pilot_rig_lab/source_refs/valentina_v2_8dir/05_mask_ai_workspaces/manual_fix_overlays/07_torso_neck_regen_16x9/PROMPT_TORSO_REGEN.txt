@@ -1,0 +1,12 @@
+Edit this 4x2 grid of 8 anime sci-fi female pilot torsos (views: top row S, SE, E, NE; bottom row N, NW, W, SW) on a pure solid #FFFFFF white background.
+
+TASK:
+1. Complete and cleanly close the missing/cut-off areas on each torso:
+   - Extend and smoothly finish the upper neck cylinder upward by ~15-25% with clean anatomical collar/neck-seal lines (do NOT add a head, chin, or hair).
+   - Cleanly fill and finish the shoulder/deltoid sockets and armpit transitions where the pauldrons and arms were removed, using continuous dark charcoal/burgundy undersuit fabric and clean dark anime ink outlines (#140A0A) so there are no jagged cuts, holes, or rough edges.
+   - Keep the pelvis/hip bottom edge cleanly closed and consistent.
+2. STRICT PRESERVATION RULES:
+   - Keep the exact 4x2 grid layout, cell positions, scale, camera angles, proportions, torso silhouettes, chest/cleavage shape, suit seams, and color palette 100% identical to the input.
+   - Do NOT add arms, hands, legs, head, hair, or shoulder pauldrons.
+   - Keep the background pure flat #FFFFFF white with zero shadows, gradients, text, or grid lines.
+   - Match crisp 2D cel-shaded anime lineart and flat-shaded colors cleanly.

@@ -10,8 +10,8 @@ extends Node2D
 
 const SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_stylizer.gdshader"
 const PASS2_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_pass2.gdshader"
-const DEFAULT_PILOT_PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina/valentina_profile.tres"
-const ANIM_CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_planar/valentina_anim_config.tres"
+const DEFAULT_PILOT_PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
+const ANIM_CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_anim_config.tres"
 
 const MeshBuilder = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_mesh_builder.gd")
 const RigAnimator = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_animator.gd")
@@ -21,6 +21,8 @@ const TransitionCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_r
 const SecondaryPhysScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_secondary_physics.gd")
 const WingsVFXScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_wings_vfx.gd")
 const MaterialCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_material_controller.gd")
+const PerspectiveCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_perspective_controller.gd")
+const ImpactCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_impact_controller.gd")
 
 enum TransitionStyle {
 	WHIP_SNAP_AFTERIMAGE = 4,
@@ -28,19 +30,12 @@ enum TransitionStyle {
 	HOLO_SNAP_FAST = 6,
 }
 
-enum HeadAlignMode {
-	CRANIUM_CENTERED = 0,
-	TORSO_PERSPECTIVE_COMP = 1,
-	SLIM_PROFILES = 2,
-}
-
 @export var pilot_profile: Resource = null
-@export var display_scale: float = 0.34
-@export var enable_procedural_wings: bool = true
-@export var enable_boot_thrusters: bool = true
+@export var display_scale: float = 0.378
+@export var enable_procedural_wings: bool = false
+@export var enable_boot_thrusters: bool = false
 @export var enable_afterimage: bool = false
 @export var transition_style: int = TransitionStyle.WHIP_SNAP_AFTERIMAGE
-@export var head_align_mode: int = HeadAlignMode.TORSO_PERSPECTIVE_COMP
 @export var anim_config: Resource = null
 @export var stepped_fps: float = 15.0
 
@@ -50,6 +45,8 @@ var _transitions: PlanarRigTransitionController = null
 var _physics: PlanarRigSecondaryPhysics = null
 var _vfx: PlanarRigWingsVFX = null
 var _materials: PlanarRigMaterialController = null
+var _perspective: PerspectiveCtrlScript = null
+var _impact: ImpactCtrlScript = null
 
 var _conic_lut: GradientTexture2D = null
 var _unified_canvas_group: CanvasGroup = null
@@ -67,29 +64,9 @@ var _smooth_move_dir: Vector2 = Vector2.DOWN
 var _smooth_aim_dir: Vector2 = Vector2.RIGHT
 var _speed_norm: float = 0.0
 var _smooth_speed: float = 0.0
-var _flight_phase: float = 0.0
-var _turn_bone_kick: float = 0.0
 var _static_inspect_enabled: bool = false
-
-var _step_accum: float = 0.0
-var _q_time: float = 0.0
-var _head_follow_through_timer: float = 0.0
-var _pose_hold_timer: float = 0.0
-var _prev_input_move_dir: Vector2 = Vector2.DOWN
-var _prev_input_speed: float = 0.0
-var _loco_event_cooldown: float = 0.0
-var _head_spring_pos: Vector2 = Vector2.ZERO
-var _head_spring_vel: Vector2 = Vector2.ZERO
-var _prev_neck_global_pos: Vector2 = Vector2.ZERO
-var _has_prev_neck_pos: bool = false
-var _prev_neck_vel: Vector2 = Vector2.ZERO
-var _has_prev_neck_vel: bool = false
-var _head_rot: float = 0.0
-var _head_rot_vel: float = 0.0
-var _hit_stop_timer: float = 0.0
-var _hit_stop_duration: float = 0.055
-var _hit_stop_shake_px: float = 6.0
-var _impact_frame_phase: int = 0
+var calibration_manual_pose: bool = false
+var _synced_profile: PilotRigProfile = null
 
 
 func _ready() -> void:
@@ -101,13 +78,12 @@ func load_pilot_profile(profile: PilotRigProfile) -> void:
 	if profile != null:
 		display_scale = profile.display_scale
 		anim_config = profile.anim_config
+		stepped_fps = profile.stepped_fps
+	_synced_profile = profile
 	build_rig()
 
 
 func build_rig() -> void:
-	_hit_stop_timer = 0.0
-	_impact_frame_phase = 0
-	_step_accum = 0.0
 	for child: Node in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -123,7 +99,10 @@ func build_rig() -> void:
 		_vfx = WingsVFXScript.new()
 	if _materials == null:
 		_materials = MaterialCtrlScript.new()
+	if _impact == null:
+		_impact = ImpactCtrlScript.new()
 	_materials.clear()
+	_impact.reset(null, null)
 
 	_transitions.set_style(transition_style)
 
@@ -131,6 +110,12 @@ func build_rig() -> void:
 	if resolved_profile == null and ResourceLoader.exists(DEFAULT_PILOT_PROFILE_PATH):
 		resolved_profile = ResourceLoader.load(DEFAULT_PILOT_PROFILE_PATH) as PilotRigProfile
 		pilot_profile = resolved_profile
+	if resolved_profile != null and resolved_profile != _synced_profile:
+		display_scale = resolved_profile.display_scale
+		if resolved_profile.anim_config != null:
+			anim_config = resolved_profile.anim_config
+		stepped_fps = resolved_profile.stepped_fps
+		_synced_profile = resolved_profile
 
 	var pilot_root: String = resolved_profile.assets_root if resolved_profile != null and not resolved_profile.assets_root.is_empty() else MeshBuilder.ASSETS_ROOT
 	var accent: Color = resolved_profile.default_accent_color if resolved_profile != null else Color(0.86, 0.18, 0.32, 1.0)
@@ -143,6 +128,7 @@ func build_rig() -> void:
 	if resolved_cfg == null and ResourceLoader.exists(ANIM_CONFIG_PATH):
 		resolved_cfg = ResourceLoader.load(ANIM_CONFIG_PATH) as AnimConfigScript
 	_animator = RigAnimator.new(resolved_cfg)
+	_perspective = PerspectiveCtrlScript.new(resolved_cfg.perspective_config if resolved_cfg != null else null)
 	_conic_lut = MeshBuilder.create_conic_rim_lut()
 	var shader_res: Shader = ResourceLoader.load(SHADER_PATH) as Shader
 	var pass2_shader_res: Shader = ResourceLoader.load(PASS2_SHADER_PATH) as Shader
@@ -151,6 +137,7 @@ func build_rig() -> void:
 
 	_unified_canvas_group = CanvasGroup.new()
 	_unified_canvas_group.name = "UnifiedCharacterGroup"
+	_unified_canvas_group.use_mipmaps = true
 	_unified_canvas_group.fit_margin = 64.0
 	_unified_canvas_group.clear_margin = 64.0
 	_unified_canvas_group.z_index = 0
@@ -161,14 +148,11 @@ func build_rig() -> void:
 		_materials.set_pass2_material(pass2_mat)
 	add_child(_unified_canvas_group)
 
-	var out_str: float = resolved_profile.head_outline_strength if resolved_profile != null else -1.0
-	var out_w: float = resolved_profile.head_outline_width_px if resolved_profile != null else -1.0
-
 	_head_under_anchor = Node2D.new()
 	_head_under_anchor.name = "DecoupledHeadUnderMount"
 	_head_under_anchor.z_index = 0
 	_unified_canvas_group.add_child(_head_under_anchor)
-	_head_under_data = MeshBuilder.build_decoupled_heads(_head_under_anchor, shader_res, _conic_lut, pilot_root, 1, out_str, out_w)
+	_head_under_data = MeshBuilder.build_decoupled_heads(_head_under_anchor, shader_res, _conic_lut, pilot_root, 1)
 	_materials.add_materials(_head_under_data.get("materials", []) as Array)
 
 	_body_pivot = Node2D.new()
@@ -176,7 +160,11 @@ func build_rig() -> void:
 	_body_pivot.z_index = 0
 	_unified_canvas_group.add_child(_body_pivot)
 
-	for v_key: String in ["s", "n"]:
+	var discovered_views: Array[String] = []
+	for v_key: String in ViewRouterScript.DIRECTION_ORDER_8:
+		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [pilot_root, v_key]
+		if not FileAccess.file_exists(meta_path):
+			continue
 		var vd: Dictionary = MeshBuilder.build_body_view_rig(_body_pivot, v_key, shader_res, _conic_lut, pilot_root)
 		if vd.is_empty():
 			continue
@@ -184,6 +172,12 @@ func build_rig() -> void:
 		v_root.visible = (v_key == _router.active_view_key)
 		_materials.add_materials(vd["materials"] as Array)
 		_views[v_key] = vd
+		discovered_views.append(v_key)
+
+	_router.set_available_views(discovered_views)
+	if not _views.has(_router.active_view_key) or (_router.has_8dir_body and _router.body_flip_x):
+		var fb_body: String = "s" if _views.has("s") else (discovered_views[0] if not discovered_views.is_empty() else "s")
+		_router.reset_to(fb_body, false, ViewRouterScript.get_default_head_for_body(fb_body), false)
 
 	# Último hijo de BodyPivot con z_index=0 para cubrir el cuello sin escapar del CanvasGroup.
 	_head_shadow_sprite = _create_head_contact_shadow()
@@ -193,10 +187,11 @@ func build_rig() -> void:
 	_head_anchor.name = "DecoupledHeadMount"
 	_head_anchor.z_index = 0
 	_unified_canvas_group.add_child(_head_anchor)
-	_head_data = MeshBuilder.build_decoupled_heads(_head_anchor, shader_res, _conic_lut, pilot_root, 2, out_str, out_w)
+	_head_data = MeshBuilder.build_decoupled_heads(_head_anchor, shader_res, _conic_lut, pilot_root, 2)
 	_materials.add_materials(_head_data.get("materials", []) as Array)
 
 	_commit_instant_transitions()
+	_sync_rig_space_matrices()
 
 
 func set_transition_style(style_idx: int) -> void:
@@ -209,38 +204,20 @@ func get_transition_style() -> int:
 	return _transitions.transition_style
 
 
-func set_static_inspection(enabled: bool, body_key: String = "s", head_key: String = "head_front") -> void:
+func set_static_inspection(enabled: bool, body_key: String = "s", head_key: String = "head_front", bypass_head_clamp: bool = false) -> void:
 	_static_inspect_enabled = enabled
 	if not enabled:
 		return
 	var safe_body: String = body_key if _views.has(body_key) else "s"
 	var head_sprites: Dictionary = _head_data.get("sprites", {}) as Dictionary
-	var safe_head: String = _router.sanitize_head_for_body(safe_body, false, head_key, 0.0)
+	var safe_head: String = head_key if bypass_head_clamp else _router.sanitize_head_for_body(safe_body, false, head_key, 0.0)
 	if not head_sprites.has(safe_head):
-		safe_head = "head_back" if safe_body == "n" else "head_front"
+		safe_head = ViewRouterScript.get_default_head_for_body(safe_body)
 	_router.reset_to(safe_body, false, safe_head, false)
 	_smooth_move_dir = Vector2.DOWN
 	_smooth_speed = 0.0
-	_prev_input_move_dir = Vector2.DOWN
-	_prev_input_speed = 0.0
-	_loco_event_cooldown = 0.0
-	_pose_hold_timer = 0.0
-	_head_follow_through_timer = 0.0
-	_head_spring_pos = Vector2.ZERO
-	_head_spring_vel = Vector2.ZERO
-	_has_prev_neck_pos = false
-	_prev_neck_vel = Vector2.ZERO
-	_has_prev_neck_vel = false
-	_head_rot = 0.0
-	_head_rot_vel = 0.0
-	_turn_bone_kick = 0.0
-	_flight_phase = 0.0
-	_hit_stop_timer = 0.0
-	_impact_frame_phase = 0
-	if _unified_canvas_group != null:
-		_unified_canvas_group.position = Vector2.ZERO
-	if _materials != null:
-		_materials.set_pass2_impact_phase(0)
+	if _impact != null:
+		_impact.reset(_unified_canvas_group, _materials)
 	if _body_pivot != null:
 		_body_pivot.rotation = 0.0
 		_body_pivot.position = Vector2.ZERO
@@ -248,8 +225,9 @@ func set_static_inspection(enabled: bool, body_key: String = "s", head_key: Stri
 	if _animator != null:
 		_animator.reset()
 	_commit_instant_transitions()
+	_sync_rig_space_matrices()
 	_reset_active_bones_to_rest()
-	_sync_head_transform(0.0)
+	_sync_head_transform(0.0, true)
 
 
 func is_static_inspection() -> bool:
@@ -266,16 +244,6 @@ func _reset_active_bones_to_rest() -> void:
 			bone.rotation = float(rest_rots.get(b_name, 0.0))
 
 
-func set_head_align_mode(mode_idx: int) -> void:
-	head_align_mode = clampi(mode_idx, 0, HeadAlignMode.SLIM_PROFILES)
-	_router.resolve_orientation(_smooth_move_dir, _smooth_speed, _smooth_aim_dir, _head_data.get("sprites", {}) as Dictionary)
-	_sync_head_transform(0.0)
-
-
-func get_head_align_mode() -> int:
-	return head_align_mode
-
-
 func set_locomotion_state(move_dir: Vector2, speed_norm: float, aim_dir: Vector2, snap_instant: bool = false) -> void:
 	if move_dir.length_squared() > 0.002:
 		_move_dir = move_dir.normalized()
@@ -287,10 +255,9 @@ func set_locomotion_state(move_dir: Vector2, speed_norm: float, aim_dir: Vector2
 		_smooth_move_dir = _move_dir
 		_smooth_aim_dir = _aim_dir
 		_smooth_speed = _speed_norm
-		_prev_input_move_dir = _move_dir
-		_prev_input_speed = _speed_norm
 		_router.resolve_orientation(_smooth_move_dir, _smooth_speed, _smooth_aim_dir, head_sprites, true)
 		_commit_instant_transitions()
+		_sync_rig_space_matrices()
 	else:
 		_router.resolve_orientation(_smooth_move_dir, _smooth_speed, _smooth_aim_dir, head_sprites, false)
 
@@ -299,10 +266,9 @@ func snap_transitions_instant() -> void:
 	_smooth_move_dir = _move_dir
 	_smooth_aim_dir = _aim_dir
 	_smooth_speed = _speed_norm
-	_prev_input_move_dir = _move_dir
-	_prev_input_speed = _speed_norm
 	_router.resolve_orientation(_smooth_move_dir, _smooth_speed, _smooth_aim_dir, _head_data.get("sprites", {}) as Dictionary)
 	_commit_instant_transitions()
+	_sync_rig_space_matrices()
 
 
 func _commit_instant_transitions() -> void:
@@ -310,39 +276,19 @@ func _commit_instant_transitions() -> void:
 	_router.body_flip_x = _router.target_body_flip_x
 	_router.active_head_key = _router.target_head_key
 	_router.head_flip_x = _router.target_head_flip_x
-	_head_follow_through_timer = 0.0
-	_pose_hold_timer = 0.0
-	_head_spring_pos = Vector2.ZERO
-	_head_spring_vel = Vector2.ZERO
-	_has_prev_neck_pos = false
-	_prev_neck_vel = Vector2.ZERO
-	_has_prev_neck_vel = false
-	_head_rot = 0.0
-	_head_rot_vel = 0.0
 	_transitions.reset()
 	_physics.reset(_smooth_aim_dir)
 	if _animator != null:
 		_animator.set_whiplash_offsets(0.0, 0.0, 0.0)
-	_turn_bone_kick = 0.0
+		_animator.apply_latched_pose(_views, _router.active_view_key)
+		if _body_pivot != null:
+			_body_pivot.rotation = _animator.get_latest_bank_rot()
 	_materials.update_pass2_transition_fx(0.0, Vector2.RIGHT, -1.0, 0.0, Vector2(0.22, 0.92))
-	_apply_transition_visual_state()
+	_apply_transition_visual_state(true)
 
 
 func _process(delta: float) -> void:
-	_update_pass2_impact_center_uv()
-	if _hit_stop_timer > 0.0:
-		_hit_stop_timer = maxf(0.0, _hit_stop_timer - delta)
-		if _hit_stop_timer <= 0.0:
-			_impact_frame_phase = 0
-			if _unified_canvas_group != null:
-				_unified_canvas_group.position = Vector2.ZERO
-		else:
-			var elapsed: float = _hit_stop_duration - _hit_stop_timer
-			_impact_frame_phase = 1 if elapsed < (_hit_stop_duration * 0.5) else 2
-			if _unified_canvas_group != null:
-				var shake_dir := Vector2(1.0, 0.0) if _impact_frame_phase == 1 else Vector2(0.0, -1.0)
-				_unified_canvas_group.position = shake_dir * _hit_stop_shake_px * (_hit_stop_timer / maxf(_hit_stop_duration, 0.001))
-		_materials.set_pass2_impact_phase(_impact_frame_phase)
+	if _impact != null and _impact.step(delta, self, _unified_canvas_group, _materials):
 		return
 
 	if _static_inspect_enabled:
@@ -350,15 +296,31 @@ func _process(delta: float) -> void:
 			_body_pivot.rotation = 0.0
 			_body_pivot.position = Vector2.ZERO
 			_body_pivot.scale = Vector2.ONE
-		_reset_active_bones_to_rest()
+		if not calibration_manual_pose:
+			_reset_active_bones_to_rest()
+			if _perspective != null and _views.has(_router.active_view_key):
+				_perspective.apply_to_view(_views[_router.active_view_key] as Dictionary, _router.active_view_key, true)
 		_sync_head_transform(0.0)
-		_materials.update_motion_uniforms(delta, _move_dir, _speed_norm)
+		_vfx.animate(
+			enable_procedural_wings,
+			enable_boot_thrusters,
+			0.0,
+			Vector2.DOWN,
+			0.0,
+			0.0,
+			_materials.current_accent_color,
+			_views,
+			_router.active_view_key,
+			false,
+			0.0,
+			_body_pivot
+		)
+		_materials.update_motion_uniforms(delta, Vector2.ZERO, 0.0)
 		_materials.update_pass2_transition_fx(0.0, Vector2.RIGHT, -1.0, 0.0, Vector2(0.22, 0.92))
 		return
 
 	var cfg: AnimConfigScript = _animator.config if (_animator != null and _animator.config != null) else AnimConfigScript.new()
 
-	# --- Reloj Fluido (60+ FPS): Interpolación exponencial independiente de FPS (sin triple-lerp) ---
 	var dir_blend: float = 1.0 - exp(-cfg.dir_smooth_rate * delta)
 	var aim_blend: float = 1.0 - exp(-cfg.aim_smooth_rate * delta)
 	var spd_blend: float = 1.0 - exp(-cfg.speed_smooth_rate * delta)
@@ -370,31 +332,8 @@ func _process(delta: float) -> void:
 	_smooth_aim_dir = _smooth_aim_dir.lerp(_aim_dir, aim_blend).normalized()
 	_smooth_speed = lerpf(_smooth_speed, _speed_norm, spd_blend)
 
-	# Detección automática de Launch y Air-Brake / Drift sobre input directo
-	_loco_event_cooldown = maxf(0.0, _loco_event_cooldown - delta)
-	if _animator != null and _loco_event_cooldown <= 0.0:
-		if _prev_input_speed < 0.20 and _speed_norm >= 0.45:
-			_animator.trigger_launch(_move_dir)
-			_physics.trigger_impulse(-_move_dir * 45.0, -_move_dir * 55.0)
-			_loco_event_cooldown = 0.12
-		elif _prev_input_speed >= 0.45 and ((_prev_input_move_dir.dot(_move_dir) < -0.35 and _speed_norm >= 0.35) or (_speed_norm < _prev_input_speed - 0.50)):
-			_animator.trigger_air_brake(_prev_input_move_dir)
-			_physics.trigger_impulse(_prev_input_move_dir * 65.0, _prev_input_move_dir * 82.0)
-			_loco_event_cooldown = 0.14
-	_prev_input_move_dir = _move_dir
-	_prev_input_speed = _speed_norm
-
 	_router.resolve_orientation(_smooth_move_dir, _smooth_speed, _smooth_aim_dir, _head_data.get("sprites", {}) as Dictionary)
-	var trans_ev: Dictionary = _transitions.update(delta, _router, true)
-	var head_just_deferred: bool = false
-	if bool(trans_ev["started_snap"]):
-		_physics.trigger_snap_impulse(_transitions.snap_turn_dir)
-	if bool(trans_ev.get("head_micro_snap", false)):
-		_head_rot_vel += float(trans_ev.get("head_turn_dir", 0.0)) * 1.45
-	if bool(trans_ev["body_swapped"]):
-		_head_follow_through_timer = cfg.head_snap_lag_sec
-		_pose_hold_timer = maxf(_pose_hold_timer, cfg.snap_pose_hold_sec)
-		head_just_deferred = true
+	var trans_ev: Dictionary = _transitions.update(delta, _router, false)
 	if bool(trans_ev["spawn_afterimage"]):
 		_vfx.spawn_snap_afterimage(
 			get_parent(),
@@ -411,20 +350,9 @@ func _process(delta: float) -> void:
 			_head_data,
 			_router.active_head_key
 		)
-	var kick: float = float(trans_ev["turn_bone_kick"])
-	if absf(kick) > 0.0001:
-		_turn_bone_kick = kick
-
-	if _head_follow_through_timer > 0.0:
-		if not head_just_deferred:
-			_head_follow_through_timer = maxf(0.0, _head_follow_through_timer - delta)
-	elif not _transitions.snap_active:
-		_router.active_head_key = _router.target_head_key
-		_router.head_flip_x = _router.target_head_flip_x
-
-	_flight_phase += delta * (2.2 + _smooth_speed * 1.6)
-	_apply_transition_visual_state()
-	_materials.update_motion_uniforms(delta, _move_dir, _speed_norm)
+	_materials.set_q_time(0.0)
+	_apply_transition_visual_state(true)
+	_materials.update_motion_uniforms(delta, Vector2.ZERO, 0.0)
 	var p2_fx: Dictionary = _transitions.get_pass2_fx_params()
 	_materials.update_pass2_transition_fx(
 		float(p2_fx["smear_strength"]),
@@ -434,30 +362,13 @@ func _process(delta: float) -> void:
 		p2_fx["holo_dir"] as Vector2
 	)
 
-	# --- Reloj Escalonado (solo para q_time del shader) ---
-	var stepped_dt: float = 0.0
-	if stepped_fps >= 59.0:
-		stepped_dt = delta
-		_step_accum = 0.0
-	else:
-		var step_interval: float = 1.0 / maxf(stepped_fps, 1.0)
-		_step_accum += delta
-		if _step_accum >= step_interval:
-			var ticks: int = int(floor(_step_accum / step_interval))
-			_step_accum -= float(ticks) * step_interval
-			stepped_dt = float(ticks) * step_interval
-	if stepped_dt > 0.0:
-		_q_time += stepped_dt
-		_materials.set_q_time(_q_time)
-
-	# --- Dinámica de Esqueleto y Física Secundaria a 60+ FPS (con pose hold breve selectivo) ---
 	_physics.update(
 		delta,
-		_static_inspect_enabled,
+		true,
 		_animator,
 		_views,
 		_head_data,
-		_flight_phase,
+		0.0,
 		_move_dir,
 		_speed_norm,
 		_smooth_move_dir,
@@ -465,146 +376,88 @@ func _process(delta: float) -> void:
 		_smooth_aim_dir,
 		_router.body_flip_x,
 		_router.head_flip_x,
-		_head_under_data
+		_head_under_data,
+		true,
+		true
 	)
-	if _pose_hold_timer > 0.0:
-		_pose_hold_timer = maxf(0.0, _pose_hold_timer - delta)
-	else:
-		_animate_active_body(delta)
-		_turn_bone_kick *= exp(-cfg.turn_kick_decay * delta)
-	_sync_head_transform(delta)
-
-	var holo_split: bool = (_transitions.transition_style == TransitionStyle.HOLO_SNAP_FAST and _transitions.snap_active and _transitions.snap_from_view != _transitions.snap_to_view)
+	_animate_active_body(delta, true)
+	if _perspective != null and _views.has(_router.active_view_key):
+		_perspective.apply_to_view(_views[_router.active_view_key] as Dictionary, _router.active_view_key, false)
+	_sync_head_transform(delta, true)
 	_vfx.animate(
-		enable_procedural_wings,
-		enable_boot_thrusters,
-		_flight_phase,
-		_smooth_move_dir,
-		_smooth_speed,
-		_physics.whiplash_wing_kick,
+		false,
+		false,
+		0.0,
+		Vector2.DOWN,
+		0.0,
+		0.0,
 		_materials.current_accent_color,
 		_views,
 		_router.active_view_key,
-		holo_split,
-		_transitions.snap_t,
+		false,
+		1.0,
 		_body_pivot
 	)
-	_vfx.process_sandevistan_trail(
-		delta,
-		enable_afterimage,
-		_speed_norm,
-		_move_dir,
-		_body_pivot,
-		get_parent(),
-		global_position,
-		z_index,
-		_materials.current_accent_color,
-		scale,
-		_views,
-		_router.active_view_key,
-		_router.body_flip_x,
-		_head_anchor,
-		_head_data,
-		_router.active_head_key
-	)
 
 
-func _apply_transition_visual_state() -> void:
-	var f_scale: Vector2 = _animator.get_foreshorten_scale() if _animator != null else Vector2.ONE
-	_transitions.apply_visual_state(_body_pivot, _views, f_scale, _router, _head_data, _head_under_data)
-	_sync_head_transform(0.0)
+func _apply_transition_visual_state(flush_head_latch: bool = true) -> void:
+	_transitions.apply_visual_state(_body_pivot, _views, Vector2.ONE, _router, _head_data, _head_under_data)
+	_sync_head_transform(0.0, flush_head_latch)
 
 
-func _animate_active_body(delta: float) -> void:
+func _animate_active_body(delta: float, flush_pose_latch: bool = true) -> void:
 	if _body_pivot == null or not _views.has(_router.active_view_key) or _animator == null:
 		return
+	var torso_fwd: Vector2 = _router.get_torso_forward(_router.active_view_key, _router.body_flip_x)
 	_animator.update_and_apply(
 		delta,
 		_body_pivot,
 		_views,
-		_flight_phase,
+		0.0,
 		_smooth_move_dir,
 		_smooth_speed,
 		_router.is_backpedaling,
 		_router.body_flip_x,
-		_turn_bone_kick,
+		0.0,
 		_router.shoulder_look_twist,
 		_router.active_view_key,
-		_smooth_aim_dir
+		_smooth_aim_dir,
+		torso_fwd,
+		flush_pose_latch
 	)
-	var f_scale: Vector2 = _animator.get_foreshorten_scale()
+	_body_pivot.position = Vector2.ZERO
+	_body_pivot.rotation = 0.0
 	var s_xy: Vector2 = _transitions.snap_scale_xy if _transitions.snap_active else Vector2.ONE
-	_body_pivot.scale = Vector2(s_xy.x * f_scale.x, s_xy.y * f_scale.y)
+	_body_pivot.scale = s_xy
 
 
-func _sync_head_transform(delta: float = 0.0) -> void:
+func _sync_head_transform(_delta: float = 0.0, _flush_head_latch: bool = true) -> void:
 	if _head_anchor == null or not _views.has(_router.active_view_key):
 		return
-	var cfg: AnimConfigScript = _animator.config if (_animator != null and _animator.config != null) else AnimConfigScript.new()
 	var vd: Dictionary = _views[_router.active_view_key] as Dictionary
 	var neck_bone: Bone2D = vd.get("neck_bone", null) as Bone2D
-	var rest_rots: Dictionary = vd.get("rest_rots", {}) as Dictionary
-	var neck_world_delta: float = 0.0
+
 	if neck_bone != null:
-		var neck_rest: float = float(rest_rots.get("Neck", 0.0))
-		var flip_sign: float = -1.0 if _router.body_flip_x else 1.0
-		neck_world_delta = (neck_bone.rotation - neck_rest) * flip_sign
-
-		if delta > 0.0 and not _static_inspect_enabled:
-			var neck_pos: Vector2 = neck_bone.global_position
-			if _has_prev_neck_pos:
-				var neck_vel: Vector2 = (neck_pos - _prev_neck_global_pos) / maxf(delta, 0.001)
-				if _has_prev_neck_vel:
-					var neck_dv: Vector2 = neck_vel - _prev_neck_vel
-					_head_spring_vel -= neck_dv * 0.45
-				_prev_neck_vel = neck_vel
-				_has_prev_neck_vel = true
-			_prev_neck_global_pos = neck_pos
-			_has_prev_neck_pos = true
-
-			var steps: int = maxi(1, int(ceil(delta / 0.012)))
-			var h: float = delta / float(steps)
-			for _i: int in range(steps):
-				var acc: Vector2 = -_head_spring_pos * cfg.head_spring_stiffness - _head_spring_vel * cfg.head_spring_damping
-				_head_spring_vel += acc * h
-				_head_spring_pos = (_head_spring_pos + _head_spring_vel * h).limit_length(cfg.head_max_lag_px)
-		elif _static_inspect_enabled:
-			_head_spring_pos = Vector2.ZERO
-			_head_spring_vel = Vector2.ZERO
-			_has_prev_neck_pos = false
-			_prev_neck_vel = Vector2.ZERO
-			_has_prev_neck_vel = false
-
-		_head_anchor.global_position = neck_bone.global_position + _head_spring_pos
-
-	var body_rot: float = _body_pivot.rotation if _body_pivot != null else 0.0
-	var target_head_rot: float = body_rot * (1.0 + cfg.head_counter_balance_mul) + neck_world_delta * cfg.head_neck_rot_mul
-	if delta > 0.0 and not _static_inspect_enabled:
-		var rot_freq: float = sqrt(maxf(cfg.head_rot_stiffness, 1.0))
-		var rot_zeta: float = clampf(cfg.head_rot_damping / maxf(2.0 * rot_freq, 0.01), 0.15, 1.5)
-		var rot_res: Vector2 = RigAnimator.step_spring(_head_rot, _head_rot_vel, target_head_rot, rot_freq, rot_zeta, delta)
-		_head_rot = rot_res.x
-		_head_rot_vel = rot_res.y
-	else:
-		_head_rot = target_head_rot
-		_head_rot_vel = 0.0
-	_head_anchor.rotation = _head_rot
+		_head_anchor.global_position = neck_bone.global_position
+	_head_anchor.rotation = 0.0
+	var h_scale: Vector2 = _transitions.snap_scale_xy if _transitions.snap_active else (_transitions.head_micro_snap_scale if _transitions.head_micro_snap_active else Vector2.ONE)
+	_head_anchor.scale = h_scale
 
 	if _head_under_anchor != null:
 		_head_under_anchor.global_position = _head_anchor.global_position
-		_head_under_anchor.rotation = _head_anchor.rotation
-
-	var over_face_keep: float = 1.0 if _router.active_view_key == "s" else 0.0
-	var h_scale: Vector2 = _transitions.snap_scale_xy if _transitions.snap_active else (_transitions.head_micro_snap_scale if _transitions.head_micro_snap_active else Vector2.ONE)
-	_head_anchor.scale = h_scale
-	if _head_under_anchor != null:
+		_head_under_anchor.rotation = 0.0
 		_head_under_anchor.scale = h_scale
 
+	_apply_head_combo_transform(_router.active_view_key, _router.active_head_key)
+
 	if _head_shadow_sprite != null and _body_pivot != null and neck_bone != null:
-		var l_dir: Vector2 = _materials.current_light_dir_2d if _materials != null else Vector2(-0.58, -0.81).normalized()
-		var shadow_world: Vector2 = neck_bone.global_position + Vector2(0.0, 10.0) + Vector2(-l_dir.x * 3.5, -l_dir.y * 6.5) + _head_spring_pos * 0.45
-		_head_shadow_sprite.position = _body_pivot.to_local(shadow_world)
-		_head_shadow_sprite.rotation = -_body_pivot.rotation
+		var is_back_body: bool = _router.active_view_key in ["n", "ne", "nw"]
+		_head_shadow_sprite.visible = not is_back_body
+		if not is_back_body:
+			var l_dir: Vector2 = _materials.current_light_dir_2d if _materials != null else Vector2(-0.58, -0.81).normalized()
+			var neck_local: Vector2 = _body_pivot.to_local(neck_bone.global_position)
+			_head_shadow_sprite.position = neck_local + Vector2(-l_dir.x * 1.4, 0.8 - l_dir.y * 1.0)
+			_head_shadow_sprite.rotation = 0.0
 
 	var skip_flip_overwrite: bool = _transitions.is_head_holo_split_active()
 	for h_dict: Dictionary in [_head_data, _head_under_data]:
@@ -613,8 +466,43 @@ func _sync_head_transform(delta: float = 0.0) -> void:
 		var h_mats: Array = h_dict.get("materials", []) as Array
 		for mat: ShaderMaterial in h_mats:
 			if not skip_flip_overwrite:
-				mat.set_shader_parameter("normal_flip_x", -1.0 if _router.head_flip_x else 1.0)
-			mat.set_shader_parameter("head_over_face_keep", over_face_keep)
+				mat.set_shader_parameter("normal_flip_x", 1.0)
+			mat.set_shader_parameter("head_over_face_keep", 1.0)
+	_sync_rig_space_matrices()
+
+
+func _apply_head_combo_transform(view_key: String, head_key: String) -> void:
+	for h_dict: Dictionary in [_head_data, _head_under_data]:
+		if h_dict.is_empty():
+			continue
+		var sprites: Dictionary = h_dict.get("sprites", {}) as Dictionary
+		var spr: Sprite2D = sprites.get(head_key, null) as Sprite2D
+		if spr == null:
+			continue
+		var base_scales: Dictionary = h_dict.get("base_scales", {}) as Dictionary
+		var base_offsets: Dictionary = h_dict.get("base_offsets", {}) as Dictionary
+		var base_scale: Vector2 = base_scales.get(head_key, spr.scale) as Vector2
+		var base_off: Vector2 = base_offsets.get(head_key, spr.position) as Vector2
+		var meta: Dictionary = h_dict.get("meta", {}) as Dictionary
+		var combos: Dictionary = meta.get("combo_transforms", {}) as Dictionary
+		var view_combos: Dictionary = combos.get(view_key, {}) as Dictionary
+		if view_combos.has(head_key):
+			var tf: Dictionary = view_combos[head_key] as Dictionary
+			var off_arr: Array = tf.get("sprite_offset", [base_off.x, base_off.y]) as Array
+			var s_val: float = float(tf.get("scale", 1.0))
+			if off_arr.size() >= 2:
+				spr.position = Vector2(float(off_arr[0]), float(off_arr[1]))
+			spr.scale = base_scale * s_val
+		else:
+			spr.position = base_off
+			spr.scale = base_scale
+
+
+func _sync_rig_space_matrices() -> void:
+	if _body_pivot == null or _materials == null:
+		return
+	var inv_pivot: Transform2D = _body_pivot.get_global_transform().affine_inverse()
+	_materials.set_shader_param_all("inv_body_pivot_matrix", inv_pivot)
 
 
 # --- API Pública de Materiales, Presets, Combate e Inspección ---
@@ -703,6 +591,18 @@ func get_views() -> Dictionary:
 	return _views
 
 
+func get_available_view_keys() -> Array[String]:
+	var keys: Array[String] = []
+	for dir_k: String in ViewRouterScript.DIRECTION_ORDER_8:
+		if _views.has(dir_k):
+			keys.append(dir_k)
+	return keys
+
+
+func has_8dir_body() -> bool:
+	return _router != null and _router.has_8dir_body
+
+
 func get_head_data() -> Dictionary:
 	return _head_data
 
@@ -729,7 +629,6 @@ func get_pass2_material() -> ShaderMaterial:
 
 func set_stepped_fps(fps: float) -> void:
 	stepped_fps = clampf(fps, 1.0, 120.0)
-	_step_accum = 0.0
 
 
 func get_stepped_fps() -> float:
@@ -737,41 +636,23 @@ func get_stepped_fps() -> float:
 
 
 func get_q_time() -> float:
-	return _q_time
+	return 0.0
 
 
 func is_head_follow_through_pending() -> bool:
-	return _head_follow_through_timer > 0.0
+	return false
 
 
-func trigger_dash_burst(dir: Vector2 = Vector2.ZERO) -> void:
-	var use_dir: Vector2 = dir.normalized() if dir.length_squared() > 0.002 else _move_dir
-	var cfg: AnimConfigScript = _animator.config if (_animator != null and _animator.config != null) else AnimConfigScript.new()
-	if _animator != null:
-		_animator.trigger_dash_burst(use_dir)
-	_pose_hold_timer = maxf(_pose_hold_timer, cfg.dash_pose_hold_sec)
-	if _physics != null:
-		_physics.trigger_impulse(-use_dir * 85.0, -use_dir * 105.0)
-	_head_spring_vel -= use_dir * 110.0
+func trigger_dash_burst(_dir: Vector2 = Vector2.ZERO) -> void:
+	pass
 
 
-func trigger_attack_recoil(aim_dir: Vector2 = Vector2.ZERO, strength: float = 1.0) -> void:
-	var use_aim: Vector2 = aim_dir.normalized() if aim_dir.length_squared() > 0.002 else _aim_dir
-	if _animator != null:
-		_animator.trigger_attack_recoil(use_aim, strength)
-	if _physics != null:
-		_physics.trigger_impulse(-use_aim * 55.0 * strength, -use_aim * 65.0 * strength)
-	_head_spring_vel -= use_aim * 75.0 * strength
+func trigger_attack_recoil(_aim_dir: Vector2 = Vector2.ZERO, _strength: float = 1.0) -> void:
+	pass
 
 
-func trigger_hit_react(hit_dir: Vector2 = Vector2.ZERO, strength: float = 1.0) -> void:
-	var use_dir: Vector2 = hit_dir.normalized() if hit_dir.length_squared() > 0.002 else -_aim_dir
-	if _animator != null:
-		_animator.trigger_hit_react(use_dir, strength)
-	trigger_hit_flash(clampf(0.85 * strength, 0.25, 1.0))
-	if _physics != null:
-		_physics.trigger_impulse(use_dir * 90.0 * strength, use_dir * 110.0 * strength)
-	_head_spring_vel += use_dir * 120.0 * strength
+func trigger_hit_react(_hit_dir: Vector2 = Vector2.ZERO, _strength: float = 1.0) -> void:
+	pass
 
 
 func is_launch_active() -> bool:
@@ -799,11 +680,15 @@ func get_active_additive_summary() -> String:
 
 
 func get_head_spring_offset() -> Vector2:
-	return _head_spring_pos
+	return Vector2.ZERO
 
 
 func get_anim_config() -> PlanarRigAnimConfig:
 	return _animator.config if _animator != null else null
+
+
+func get_perspective_controller() -> PerspectiveCtrlScript:
+	return _perspective
 
 
 func set_outer_outline_params(enabled: bool, width_px: float, strength: float) -> void:
@@ -812,33 +697,16 @@ func set_outer_outline_params(enabled: bool, width_px: float, strength: float) -
 
 
 func trigger_impact_frame(duration_ms: float = 55.0, shake_px: float = 6.0) -> void:
-	_hit_stop_duration = clampf(duration_ms / 1000.0, 0.040, 0.065)
-	_hit_stop_timer = _hit_stop_duration
-	_hit_stop_shake_px = clampf(shake_px, 0.0, 24.0)
-	_impact_frame_phase = 1
-	_update_pass2_impact_center_uv()
-	if _materials != null:
-		_materials.set_pass2_impact_phase(1)
-
-
-func _update_pass2_impact_center_uv() -> void:
-	if _materials == null:
-		return
-	var center_uv := Vector2(0.5, 0.5)
-	if is_inside_tree() and get_viewport() != null:
-		var vp_rect: Rect2 = get_viewport_rect()
-		if vp_rect.size.x > 1.0 and vp_rect.size.y > 1.0:
-			var screen_pos: Vector2 = get_viewport().get_canvas_transform() * global_position
-			center_uv = (screen_pos / vp_rect.size).clamp(Vector2.ZERO, Vector2.ONE)
-	_materials.set_pass2_impact_center_uv(center_uv)
+	if _impact != null:
+		_impact.trigger(duration_ms, shake_px, self, _materials)
 
 
 func is_hit_stop_active() -> bool:
-	return _hit_stop_timer > 0.0
+	return _impact != null and _impact.is_active()
 
 
 func get_impact_frame_phase() -> int:
-	return _impact_frame_phase
+	return _impact.get_phase() if _impact != null else 0
 
 
 func _create_head_contact_shadow() -> Sprite2D:
@@ -859,7 +727,8 @@ func _create_head_contact_shadow() -> Sprite2D:
 	var spr := Sprite2D.new()
 	spr.name = "HeadContactShadow"
 	spr.texture = tex
-	spr.scale = Vector2(0.35, 0.30)
+	spr.scale = Vector2(0.28, 0.20)
+	spr.modulate.a = 0.72
 	spr.z_index = 0
 	return spr
 

@@ -5,7 +5,7 @@ extends RefCounted
 ## iluminación 2.5D, hit_flash, transiciones snappy (4..6) e inspección estática.
 
 const PILOTS_ROOT_DIR: String = "res://sandbox/pilot_rig_lab/pilots"
-const BODY_KEYS: Array[String] = ["s", "n"]
+const BODY_KEYS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]
 const HEAD_KEYS: Array[String] = [
 	"head_front", "head_front_l", "head_front_r",
 	"head_side_l", "head_side_r",
@@ -37,7 +37,28 @@ static func scan_pilot_profiles() -> Array[PilotRigProfile]:
 				sub_dir.list_dir_end()
 		sub = root_dir.get_next()
 	root_dir.list_dir_end()
+	profiles.sort_custom(func(a: PilotRigProfile, b: PilotRigProfile) -> bool: return a.pilot_id < b.pilot_id)
 	return profiles
+
+
+static func rebuild_static_body_options(body_opt: OptionButton, rig: PlanarCombatRig) -> Array[String]:
+	if body_opt == null:
+		return []
+	var prev_key: String = ""
+	if body_opt.has_meta("view_keys"):
+		var old_keys: Variant = body_opt.get_meta("view_keys")
+		if old_keys is Array and body_opt.selected >= 0 and body_opt.selected < (old_keys as Array).size():
+			prev_key = str((old_keys as Array)[body_opt.selected])
+	body_opt.clear()
+	var view_keys: Array[String] = rig.get_available_view_keys() if rig != null else []
+	if view_keys.is_empty():
+		view_keys.assign(BODY_KEYS)
+	for i: int in range(view_keys.size()):
+		body_opt.add_item("Cuerpo %s" % view_keys[i].to_upper(), i)
+	body_opt.set_meta("view_keys", view_keys)
+	var restore_idx: int = view_keys.find(prev_key)
+	body_opt.select(restore_idx if restore_idx >= 0 else 0)
+	return view_keys
 
 
 static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -> Dictionary:
@@ -283,37 +304,8 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	pass2_out_w_slider.value_changed.connect(sync_pass2_outline)
 	sync_pass2_outline.call()
 
-	var init_out_str: float = (active_profile[0] as PilotRigProfile).head_outline_strength if active_profile[0] != null else 1.0
-	var init_out_w: float = (active_profile[0] as PilotRigProfile).head_outline_width_px if active_profile[0] != null else 5.5
-
-	var head_out_lbl := Label.new()
-	head_out_lbl.text = "Outline Cabeza — Fuerza: %.2f" % init_out_str
-	vbox.add_child(head_out_lbl)
-	var head_out_slider := HSlider.new()
-	head_out_slider.min_value = 0.0
-	head_out_slider.max_value = 1.0
-	head_out_slider.step = 0.05
-	head_out_slider.value = init_out_str
-	head_out_slider.value_changed.connect(func(v: float) -> void:
-		rig.set_shader_param_all("head_outline_strength", v)
-		head_out_lbl.text = "Outline Cabeza — Fuerza: %.2f" % v
-	)
-	vbox.add_child(head_out_slider)
-
-	var head_w_lbl := Label.new()
-	head_w_lbl.text = "Outline Cabeza — Grosor: %.1f px" % init_out_w
-	vbox.add_child(head_w_lbl)
-	var head_w_slider := HSlider.new()
-	head_w_slider.min_value = 0.5
-	head_w_slider.max_value = 24.0
-	head_w_slider.step = 0.1
-	head_w_slider.value = init_out_w
-	head_w_slider.value_changed.connect(func(v: float) -> void:
-		rig.set_shader_param_all("head_outline_width_px", v)
-		head_w_lbl.text = "Outline Cabeza — Grosor: %.1f px" % v
-	)
-	vbox.add_child(head_w_slider)
-
+	var refresh_static_ui: Array[Callable] = [Callable()]
+	var sync_clock_ui: Array[Callable] = [Callable()]
 	pilot_opt.item_selected.connect(func(idx: int) -> void:
 		if idx < 0 or idx >= profiles.size():
 			return
@@ -329,19 +321,19 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 		rig.set_recolor_method(recolor_method_opt.selected)
 		rig.set_hair_style_mode(hair_style_opt.selected)
 		rig.set_shader_param_all("normal_cel_influence", cel_infl_slider.value)
-		head_out_slider.set_value_no_signal(p.head_outline_strength)
-		head_out_lbl.text = "Outline Cabeza — Fuerza: %.2f" % p.head_outline_strength
-		head_w_slider.set_value_no_signal(p.head_outline_width_px)
-		head_w_lbl.text = "Outline Cabeza — Grosor: %.1f px" % p.head_outline_width_px
 		if flash_hold_chk.button_pressed:
 			rig.set_hit_flash(1.0)
 		sync_pass2_outline.call()
 		if sync_lighting.is_valid():
 			sync_lighting.call()
+		if refresh_static_ui[0].is_valid():
+			refresh_static_ui[0].call()
+		if sync_clock_ui[0].is_valid():
+			sync_clock_ui[0].call()
 	)
 
-	# --- 3. MOVIMIENTO & TRANSICIÓN (SNAPPY 4..6) ---
-	_add_section_header(vbox, "3. MOVIMIENTO & TRANSICIÓN")
+	# --- 3. DIRECCIÓN 8-DIR + TRANSICIÓN DE ORIENTACIÓN ---
+	_add_section_header(vbox, "3. DIRECCIÓN 8-DIR & TRANSICIÓN")
 
 	var transition_opt := OptionButton.new()
 	transition_opt.add_item("Transición 4: Whip-Snap + Afterimage (Recomendado)", 4)
@@ -352,16 +344,6 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 		rig.set_transition_style(transition_opt.get_item_id(idx))
 	)
 	vbox.add_child(transition_opt)
-
-	var clock_opt := OptionButton.new()
-	clock_opt.add_item("Doble Reloj: 15 FPS (Anime Estándar)", 15)
-	clock_opt.add_item("Doble Reloj: 12 FPS (Clásico On-2s)", 12)
-	clock_opt.add_item("Doble Reloj: 60 FPS (Fluido Nativo)", 60)
-	clock_opt.select(0)
-	clock_opt.item_selected.connect(func(idx: int) -> void:
-		rig.set_stepped_fps(float(clock_opt.get_item_id(idx)))
-	)
-	vbox.add_child(clock_opt)
 
 	var slowmo_chk := CheckButton.new()
 	slowmo_chk.text = "Slow-Mo 0.25x (Inspección)"
@@ -378,53 +360,6 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	if on_auto_demo.is_valid():
 		auto_demo_chk.toggled.connect(on_auto_demo)
 	vbox.add_child(auto_demo_chk)
-
-	var wings_chk := CheckBox.new()
-	wings_chk.text = "Alas + Propulsores + Trail"
-	wings_chk.button_pressed = true
-	wings_chk.toggled.connect(func(v: bool) -> void:
-		rig.enable_procedural_wings = v
-		rig.enable_boot_thrusters = v
-		rig.enable_afterimage = v
-	)
-	vbox.add_child(wings_chk)
-
-	var action_grid := GridContainer.new()
-	action_grid.columns = 2
-	action_grid.add_theme_constant_override("h_separation", 4)
-	action_grid.add_theme_constant_override("v_separation", 4)
-	vbox.add_child(action_grid)
-
-	var dash_btn := Button.new()
-	dash_btn.text = "Dash Burst [Space]"
-	dash_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dash_btn.pressed.connect(func() -> void: rig.trigger_dash_burst())
-	action_grid.add_child(dash_btn)
-
-	var recoil_btn := Button.new()
-	recoil_btn.text = "Attack Recoil [J]"
-	recoil_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	recoil_btn.pressed.connect(func() -> void: rig.trigger_attack_recoil())
-	action_grid.add_child(recoil_btn)
-
-	var hit_btn := Button.new()
-	hit_btn.text = "Hit React [K]"
-	hit_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hit_btn.pressed.connect(func() -> void: rig.trigger_hit_react())
-	action_grid.add_child(hit_btn)
-
-	var brake_btn := Button.new()
-	brake_btn.text = "Air-Brake [B]"
-	brake_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var on_air_brake_test: Callable = callbacks.get("on_air_brake_test", Callable())
-	brake_btn.pressed.connect(func() -> void:
-		if on_air_brake_test.is_valid():
-			on_air_brake_test.call()
-		else:
-			rig.set_locomotion_state(Vector2.RIGHT, 1.0, Vector2.RIGHT, false)
-			rig.set_locomotion_state(Vector2.LEFT, 1.0, Vector2.RIGHT, false)
-	)
-	action_grid.add_child(brake_btn)
 
 	# --- 4. INSPECCIÓN & ESCENA ---
 	_add_section_header(vbox, "4. INSPECCIÓN & ESCENA")
@@ -493,8 +428,7 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	vbox.add_child(combo_row)
 
 	var static_body_opt := OptionButton.new()
-	static_body_opt.add_item("Cuerpo S", 0)
-	static_body_opt.add_item("Cuerpo N", 1)
+	rebuild_static_body_options(static_body_opt, rig)
 	static_body_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	combo_row.add_child(static_body_opt)
 
@@ -506,6 +440,10 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 
 	var on_static_apply: Callable = callbacks.get("on_static_apply", Callable())
 	var on_static_step: Callable = callbacks.get("on_static_step", Callable())
+	refresh_static_ui[0] = func() -> void:
+		rebuild_static_body_options(static_body_opt, rig)
+		if static_inspect_chk.button_pressed and on_static_apply.is_valid():
+			on_static_apply.call()
 	if on_static_apply.is_valid():
 		static_inspect_chk.toggled.connect(func(_v: bool) -> void: on_static_apply.call())
 		static_body_opt.item_selected.connect(func(_idx: int) -> void:
@@ -544,6 +482,8 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 
 	return {
 		"hud_layer": hud_layer,
+		"pilot_opt": pilot_opt,
+		"pilot_profiles": profiles,
 		"status_lbl": status_lbl,
 		"normal_chk": normal_chk,
 		"light_slider": light_slider,

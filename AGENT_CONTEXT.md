@@ -30,7 +30,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd` |
-| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | `planar_combat_rig.gd`, `pilot_rig_stylizer.gdshader`, `docs/PILOT_RIG_ARCHITECTURE.md`, `docs/PILOT_CREATION_PIPELINE.md` |
+| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | `planar_combat_rig.gd`, `planar_rig_view_router.gd`, `pilot_rig_stylizer.gdshader`, `shaders/*.gdshaderinc`, `docs/VALENTINA_V2_RIG_REFERENCE.md`, `docs/DOMAIN_MAP.md` (Secc. 17) |
 | **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
@@ -51,11 +51,24 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 
 ---
 
+## 🎭 PilotRigLab / Valentina v2 (I+D en Sandbox)
+- **Estado:** Rig limpio y exclusivo de **Valentina v2 (8-Dir Nativo)** bajo [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/). Solo están activos el enrutado 8-dir (`±65°`), las transiciones snappy (Modos 4/5/6 + afterimage) y el pipeline de render estático; locomoción, perspectiva 2.5D y jiggle permanecen purgados en rest pose.
+- **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
+  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*) y [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (única fuente de verdad técnica del rig runtime).
+  - Para ajustar escalas, skins, pelo o estilos, editar **directamente** los `.tres` en `sandbox/pilot_rig_lab/pilots/valentina_v2/` y `sandbox/pilot_rig_lab/data/`.
+  - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/` o `tools/models/`.
+
+---
+
 ## 🚫 ZONAS PROHIBIDAS DE EXPLORACIÓN AUTOMÁTICA
 ```
-addons/                  <- Plugins de motor y herramientas externas
-.godot/                  <- Cache generado automáticamente por Godot
-preprocess/              <- Fuentes crudas de arte no procesadas
+addons/                                <- Plugins de motor y herramientas externas
+.godot/                                <- Cache generado automáticamente por Godot
+preprocess/                            <- Fuentes crudas de arte no procesadas
+sandbox/pilot_rig_lab/tools/.venv/     <- Entorno virtual Python (30,351+ archivos)
+sandbox/pilot_rig_lab/tools/models/    <- Pesos ONNX / modelos locales
+sandbox/pilot_rig_lab/source_refs/     <- Arte crudo IA y workspaces offline (505+ archivos)
+sandbox/pilot_rig_lab/combat_assets/   <- Asset packs PNG/JSON compilados (293+ archivos)
 ```
 
 ---

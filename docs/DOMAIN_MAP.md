@@ -26,6 +26,7 @@
 14. [Catálogo de Grupos de Entidades](#14-catálogo-de-grupos-de-entidades)
 15. [Catálogo de Recursos Data-Driven (`.tres`)](#15-catálogo-de-recursos-data-driven-tres)
 16. [Catálogo de Suites de Prueba Automatizadas](#16-catálogo-de-suites-de-prueba-automatizadas)
+17. [Dominio Sandbox: Estudio de Pilotos 2.5D (`pilot_rig_lab`)](#17-dominio-sandbox-estudio-de-pilotos-25d-pilot_rig_lab)
 
 ---
 
@@ -340,7 +341,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
 ```
 
-> **Zona Sandbox Multi-Piloto (`sandbox/pilot_rig_lab/`):** Contiene el Studio interactivo (`pilot_rig_lab.tscn` / `.gd`), shader maestro (`pilot_rig_stylizer.gdshader`), pipeline CLI (`tools/build_pilot_rig_pipeline.py`), referencias (`source_refs/`), pilotos compiladas (`assets/` y `pilots/<id>/`) y guía paso a paso (`PILOT_CREATION_GUIDE.md`). Prohibido enlazar directo a `scenes/combat/` hasta su promoción oficial.
+> **Zona Sandbox Multi-Piloto (`sandbox/pilot_rig_lab/`):** Contiene el Lab interactivo 2.5D (`proto/planar_combat_rig_proto.tscn`, `proto/planar_combat_rig.gd` y controladores modulares), shaders de doble pase (`pilot_rig_stylizer.gdshader` + `pilot_rig_pass2.gdshader`), pipeline CLI v2 8-dir (`tools/prepare_8dir_sheets.py`, `prepare_ai_mask_workspaces.py`, `build_valentina_v2_rig_assets.py`), referencias (`source_refs/`), asset packs compilados (`combat_assets/` y `pilots/<id>/`) y documentación en [`docs/PILOT_RIG_ARCHITECTURE.md`](PILOT_RIG_ARCHITECTURE.md), [`docs/PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md) y [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md). Prohibido enlazar directo a `scenes/combat/` hasta su promoción oficial.
 
 ### Verificación Integral Final (Solo antes de dar por cerrada una tarea)
 
@@ -348,3 +349,41 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_la
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 ```
 *(Ejecuta las 24 suites clave de regresión rápida con timeout estricto de 15s por suite).*
+
+---
+
+## 17. Dominio Sandbox: Estudio de Pilotos 2.5D (`pilot_rig_lab`)
+
+> **Aislamiento:** Todo reside en `sandbox/pilot_rig_lab/` (prohibido enlazar a `scenes/combat/` hasta su promoción).
+> **Contrato rápido anti-relectura:** [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md) *(tabla parámetro/responsabilidad → archivo exacto y zonas prohibidas)*.
+> **Estado actual:** Solo **Valentina v2 (8-Dir Nativo)** (v1 eliminado). Animaciones de locomoción/combate/física purgadas dejando activos el **cambio de dirección 8-dir** y su **animación de transición de orientación** (`PlanarRigTransitionController` Modos 4/5/6 + afterimage de giro). Ver referencia completa de máscaras, huesos y hooks en [`docs/VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md).
+> **Escena de Laboratorio:** `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` · **Suite:** `tools/run_tests.ps1 -Test "pilot_rig_lab"`
+
+### 17.1 Módulos GDScript (`proto/` y `data/`)
+| Archivo | Responsabilidad |
+|---|---|
+| `proto/planar_combat_rig.gd` | Orquestador del rig limpio (Valentina v2), `UnifiedCharacterGroup` (`CanvasGroup`) y `HeadContactShadow`. |
+| `proto/planar_rig_mesh_builder.gd` | Construye mallas `Polygon2D` + `Skeleton2D` (18 huesos) desde `parts_5_meta.json`, pesos desde `*_anim_mask.png`, y cabezas en 2 pasadas (`head_layer_pass = 1/2`). |
+| `proto/planar_rig_view_router.gd` | **Activo:** Enrutado 8-dir nativo (`valentina_v2`, `body_flip_x = false`), cono cervical `±65°`, histéresis y backpedal anti-exorcista. |
+| `proto/planar_rig_transition_controller.gd` | **Activo:** Transiciones snappy de cambio de orientación (Modos 4..6: `WHIP_SNAP_AFTERIMAGE`, `MICRO_FLASH_SNAP`, `HOLO_SNAP_FAST`) + micro-snap de cabeza. |
+| `proto/planar_rig_wings_vfx.gd` | **Parcial:** Solo `spawn_snap_afterimage` para el modo 4 de transición; alas, propulsores y estela Sandevistan purgados. |
+| `proto/planar_rig_animator.gd` | **Purgado (Rest Pose):** Mantiene huesos en `rest_rots` y `BodyPivot` sin traslación/rotación; conserva `AnimState`, `step_spring` y límites `*_limits` para reconstrucción. |
+| `proto/planar_rig_perspective_controller.gd` | **Purgado (`persp_mode = 0`):** Desactiva escorzos 2.5D en vértice; conserva solo `leg_depth_phase` estático en perfiles `e`/`w`. |
+| `proto/planar_rig_secondary_physics.gd` | **Purgado:** Mantiene `secondary_jiggle_*_px = ZERO` sin whiplash ni resortes. |
+| `proto/planar_rig_material_controller.gd` | Aplica `RigStyleProfile`, `PilotSkinPreset`, `PilotHairPreset`, Pasada 2, rayos-X, `hit_flash` e `impact_frame_phase`. |
+| `proto/planar_lab_hud_builder.gd` | UI del Lab y escaneo automático de `pilots/*/*.tres`. |
+| `data/` & `proto/*_config.gd` | Recursos `.tres`: `PilotRigProfile`, `PilotSkinPreset`, `PilotHairPreset`, `RigStyleProfile`, `PlanarRigAnimConfig`, `RigPerspectiveConfig`. |
+
+### 17.2 Shaders y Máscaras Activas
+- **Pasada 1 (por pieza/cabeza):** `pilot_rig_stylizer.gdshader` + `shaders/rig_color_recolor.gdshaderinc`, `shaders/rig_stylized_lighting.gdshaderinc`, `shaders/rig_perspective_25d.gdshaderinc`.
+- **Pasada 2 (silueta unificada):** `pilot_rig_pass2.gdshader` sobre `UnifiedCharacterGroup`.
+- **Tabla rápida de máscaras en uso** *(detalle por canal en [`docs/PILOT_RIG_ARCHITECTURE.md`](PILOT_RIG_ARCHITECTURE.md#51-inventario-de-máscaras-en-uso-offline-vs-runtime))*:
+  - **Runtime GPU (Pasada 1):** `*_id_mask.png` (`RGBA`: acentos/armadura/traje/medias-pelo, `0`=piel), `*_normal_depth.png` (`RGB`=normal, `A`=profundidad), `body_core_secondary_mask.png` y `*_hair_jiggle_mask.png` (`RG`=jiggle L/R), `body_core_pauldron_mask.png` (sombra de hombrera en torso), `*_outline_sdf.png` (contorno SDF cabeza), `conic_rim_lut` (gradiente procedural).
+  - **Runtime CPU (`Skeleton2D`):** `*_anim_mask.png` (`RGB`=pesos proximal/bisagra/distal; canal `A=seam_fade` horneado pero aún no consumido).
+  - **Offline Python (corte/ingesta):** `01_parts_5_despiece` (`*_parts5_mask.png`), `02_id_mask_bodies`, `03_id_mask_heads`, `04_limb_anim_masks`, `05_secondary_jiggle_masks`, `06_torso_and_leg_e_16x9/ingested_1560x1680/*_pauldron_mask.png`.
+
+### 17.3 Carpetas de Arte Crudo vs Compilado (Valentina v2)
+- **Base cruda sin procesar (preservada para regenerar):** `source_refs/valentina_v2_8dir/00_raw/` (incluyendo `00_raw/overlays_hd/` con originales `2752x1536` de torsos, piernas, hombreras y cabezas).
+- **Overlays HD procesados (Upscayl 4x):** `source_refs/valentina_v2_8dir/05_mask_ai_workspaces/manual_fix_overlays/` (`04_cap_sheets_16x9/`, `06_torso_and_leg_e_16x9/`, `07_pauldron_polish_16x9/`, `07_torso_neck_regen_16x9/`).
+- **Asset Pack compilado para Godot:** `combat_assets/valentina_v2_planar/` (`s..sw/parts_5/`, `heads/`, `hd_torsos/`, `*.tres`, `*.json`).
+- **Pipeline de reconstrucción HD:** Ver orden exacto de scripts en [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md#3-runbook-paso-a-paso-reproducción-y-reconstrucción-rápida).

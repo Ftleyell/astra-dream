@@ -1,17 +1,26 @@
 shader_type canvas_item;
 render_mode blend_mix;
 
-uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
 
 // 1. Outline exterior unificado de la silueta completa (cuerpo + cabeza)
-uniform bool enable_outer_outline = true;
-uniform float outer_outline_width_px : hint_range(0.0, 8.0) = 1.45;
-uniform float outer_outline_strength : hint_range(0.0, 1.0) = 1.0;
+uniform bool enable_outer_outline = false;
+uniform float outer_outline_width_px : hint_range(0.0, 8.0) = 0.65;
+uniform float outer_outline_strength : hint_range(0.0, 1.0) = 0.0;
+uniform float outline_inward_replace : hint_range(0.0, 1.0) = 0.95;
+uniform float outline_crispness : hint_range(0.1, 1.0) = 0.25;
 uniform vec4 outer_outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform vec4 outer_outline_lit_color : source_color = vec4(0.11, 0.035, 0.07, 1.0);
 uniform float outer_outline_tint_mix : hint_range(0.0, 1.0) = 0.0;
 uniform float zoom_scale : hint_range(0.35, 4.0) = 1.0;
 uniform vec2 light_dir_2d = vec2(-0.58, -0.81);
+
+// Soldador morfológico, Light-Wrap HDR y Rotated Poisson IGN
+uniform float seam_weld_radius_px : hint_range(0.5, 2.5) = 1.35;
+uniform float seam_bridge_threshold : hint_range(0.3, 0.9) = 0.62;
+uniform float hdr_threshold : hint_range(1.0, 1.5) = 1.08;
+uniform float hdr_light_wrap_strength : hint_range(0.0, 1.0) = 0.42;
+uniform float ign_jitter_strength : hint_range(0.0, 1.0) = 0.85;
 
 // 2. Smear seco direccional sin costuras entre extremidades
 uniform float smear_strength : hint_range(0.0, 1.0) = 0.0;
@@ -29,6 +38,13 @@ uniform float holo_sweep_strength : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 holo_sweep_dir = vec2(0.22, 0.92);
 uniform vec4 holo_beam_color : source_color = vec4(0.15, 0.96, 1.0, 1.0);
 
+vec3 unpremul_raw(vec4 s) {
+	if (s.a <= 0.0001) {
+		return vec3(0.0);
+	}
+	return min(s.rgb / s.a, vec3(3.0));
+}
+
 vec4 sample_unpremul(vec2 uv) {
 	vec4 s = textureLod(screen_texture, clamp(uv, vec2(0.0), vec2(1.0)), 0.0);
 	if (s.a <= 0.025) {
@@ -38,88 +54,161 @@ vec4 sample_unpremul(vec2 uv) {
 	return s;
 }
 
+float ign(vec2 frag_coord) {
+	vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+	return fract(magic.z * fract(dot(frag_coord, magic.xy)));
+}
+
 void fragment() {
-	vec4 c = sample_unpremul(SCREEN_UV);
+	vec2 px = SCREEN_PIXEL_SIZE;
+	vec4 c0_raw = textureLod(screen_texture, SCREEN_UV, 0.0);
+	vec4 c = vec4(unpremul_raw(c0_raw), c0_raw.a);
 	float orig_c_a = c.a;
 
-	// --- 1. Outline exterior unificado sólido (antes del smear para no ennegrecer trazos de motion) ---
-	if (enable_outer_outline && outer_outline_width_px > 0.01 && outer_outline_strength > 0.01 && c.a < 0.99) {
+	// --- 1. Anillo 1 compartido (8 taps a 1.35 px) + Anillo 2 condicional (8 taps Poisson IGN) ---
+	// Purgado temporalmente para rework de bordes/rims
+	if (false && enable_outer_outline) {
 		float zc = clamp(zoom_scale, 0.35, 4.0);
-		float zoom_eff = mix(0.52, 1.38, smoothstep(0.50, 2.05, zc));
+		float zoom_eff = pow(zc, 0.60);
 		float base_px = outer_outline_width_px * zoom_eff;
-		vec2 light_n = length(light_dir_2d) > 0.001 ? normalize(light_dir_2d) : vec2(-0.58, -0.81);
-		float outer_max = 0.0;
-		float outer_sum = 0.0;
-		float hit_dirs = 0.0;
-		float best_n_dist = 8.0;
-		vec2 best_out_n = -light_n;
-		float best_edge_dist = 8.0;
-		vec3 nearest_edge_rgb = c.a > 0.25 ? min(c.rgb, vec3(1.0)) : outer_outline_color.rgb;
-		for (int i = 0; i < 16; i++) {
-			float ang = float(i) * 0.3926990817; // TAU / 16.0
-			vec2 dir = vec2(cos(ang), sin(ang));
-			float dir_best = 0.0;
-			for (int ring = 0; ring < 4; ring++) {
-				float rf = ring == 0 ? 0.25 : (ring == 1 ? 0.50 : (ring == 2 ? 0.75 : 1.0));
-				float r_px = rf * base_px;
-				vec2 tap_uv = clamp(SCREEN_UV + dir * (r_px * SCREEN_PIXEL_SIZE), vec2(0.0), vec2(1.0));
-				vec4 s_tap = textureLod(screen_texture, tap_uv, 0.0);
-				if (s_tap.a > 0.18) {
-					float alpha_cov = smoothstep(0.18, 0.62, s_tap.a);
-					float d_edge = r_px - (s_tap.a - 0.5) * 0.60;
-					float reach_sample = (1.0 - smoothstep(max(base_px - 0.48, 0.0), base_px + 0.48, d_edge)) * alpha_cov;
-					dir_best = max(dir_best, reach_sample);
-					if (outer_outline_tint_mix > 0.001) {
-						if (d_edge < best_n_dist) {
-							best_n_dist = d_edge;
-							best_out_n = -dir;
-						}
-						if (s_tap.a > 0.25 && d_edge < best_edge_dist) {
-							best_edge_dist = d_edge;
-							nearest_edge_rgb = min(s_tap.rgb / s_tap.a, vec3(1.0));
-						}
+		float w_min = max(0.60 * base_px, 0.55);
+		float w_max = max(1.10 * base_px, 0.85);
+		float r1 = seam_weld_radius_px;
+
+		// 4 ejes diametralmente opuestos: E/W, N/S, SE/NW, SW/NE
+		vec2 o_e  = vec2(r1, 0.0) * px;
+		vec2 o_s  = vec2(0.0, r1) * px;
+		vec2 o_se = vec2(r1 * 0.70710678, r1 * 0.70710678) * px;
+		vec2 o_sw = vec2(-r1 * 0.70710678, r1 * 0.70710678) * px;
+
+		vec4 s_e  = textureLod(screen_texture, clamp(SCREEN_UV + o_e,  vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_w  = textureLod(screen_texture, clamp(SCREEN_UV - o_e,  vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_s  = textureLod(screen_texture, clamp(SCREEN_UV + o_s,  vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_n  = textureLod(screen_texture, clamp(SCREEN_UV - o_s,  vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_se = textureLod(screen_texture, clamp(SCREEN_UV + o_se, vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_nw = textureLod(screen_texture, clamp(SCREEN_UV - o_se, vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_sw = textureLod(screen_texture, clamp(SCREEN_UV + o_sw, vec2(0.0), vec2(1.0)), 0.0);
+		vec4 s_ne = textureLod(screen_texture, clamp(SCREEN_UV - o_sw, vec2(0.0), vec2(1.0)), 0.0);
+
+		// Soldador morfológico de oposición bipolar (sin taps extra)
+		float pair_ew   = min(s_e.a,  s_w.a);
+		float pair_ns   = min(s_s.a,  s_n.a);
+		float pair_senw = min(s_se.a, s_nw.a);
+		float pair_swne = min(s_sw.a, s_ne.a);
+		float max_pair_bridge = max(max(pair_ew, pair_ns), max(pair_senw, pair_swne));
+
+		bool is_micro_crack = (c.a < 0.98) && (max_pair_bridge > 0.80);
+		if (c.a < 0.99 && max_pair_bridge > c.a && max_pair_bridge > seam_bridge_threshold * 0.6) {
+			float w_ew   = smoothstep(0.30, 0.75, pair_ew);
+			float w_ns   = smoothstep(0.30, 0.75, pair_ns);
+			float w_senw = smoothstep(0.30, 0.75, pair_senw);
+			float w_swne = smoothstep(0.30, 0.75, pair_swne);
+			vec3 bridge_rgb = (s_e.rgb + s_w.rgb) * w_ew + (s_s.rgb + s_n.rgb) * w_ns
+				+ (s_se.rgb + s_nw.rgb) * w_senw + (s_sw.rgb + s_ne.rgb) * w_swne;
+			float bridge_a = (s_e.a + s_w.a) * w_ew + (s_s.a + s_n.a) * w_ns
+				+ (s_se.a + s_nw.a) * w_senw + (s_sw.a + s_ne.a) * w_swne;
+			float target_weld_a = smoothstep(seam_bridge_threshold * 0.5, seam_bridge_threshold, max_pair_bridge);
+			float welded_a = max(c.a, target_weld_a);
+			vec3 bridged_col = bridge_rgb / max(bridge_a, 0.0001);
+			float weld_blend = clamp((welded_a - c.a) / max(welded_a, 0.0001), 0.0, 1.0);
+			c.rgb = mix(c.rgb, min(bridged_col, vec3(3.0)), weld_blend);
+			c.a = welded_a;
+			orig_c_a = max(orig_c_a, welded_a);
+		}
+
+		// Estadísticas Anillo 1, Sobel (n_edge / t_dir) y Laplaciano de curvatura
+		float max_a1 = max(c.a, max(max(max(s_e.a, s_w.a), max(s_s.a, s_n.a)), max(max(s_se.a, s_nw.a), max(s_sw.a, s_ne.a))));
+		float min_a1 = min(c.a, min(min(min(s_e.a, s_w.a), min(s_s.a, s_n.a)), min(min(s_se.a, s_nw.a), min(s_sw.a, s_ne.a))));
+
+		float gx = (s_ne.a + 2.0 * s_e.a + s_se.a) - (s_nw.a + 2.0 * s_w.a + s_sw.a);
+		float gy = (s_sw.a + 2.0 * s_s.a + s_se.a) - (s_nw.a + 2.0 * s_n.a + s_ne.a);
+		vec2 grad_a = vec2(gx, gy);
+		vec2 n_edge = length(grad_a) > 0.0001 ? -normalize(grad_a) : vec2(1.0, 0.0);
+		vec2 t_dir = vec2(-n_edge.y, n_edge.x);
+		float laplacian = (s_e.a + s_w.a + s_s.a + s_n.a) * 0.25 - c.a;
+		float concavity = clamp(laplacian * 1.5, -0.5, 0.8);
+
+		// Acumuladores continuos (distancia sub-píxel, color vecino LDR y Light-Wrap HDR)
+		float min_dist_px = c.a > 0.5 ? 0.0 : 100.0;
+		vec3 nearest_ldr_rgb = vec3(0.0);
+		float nearest_w_sum = 0.0;
+		vec3 hdr_wrap_accum = vec3(0.0);
+
+		vec4 ring1_taps[8] = vec4[8](s_e, s_w, s_s, s_n, s_se, s_nw, s_sw, s_ne);
+		for (int i = 0; i < 8; i++) {
+			vec4 tap = ring1_taps[i];
+			if (tap.a > 0.15) {
+				float d_edge = max(r1 - (tap.a - 0.5) * 0.75, 0.0);
+				min_dist_px = min(min_dist_px, d_edge);
+				vec3 up_tap = unpremul_raw(tap);
+				float wt = tap.a * tap.a;
+				nearest_ldr_rgb += min(up_tap, vec3(1.0)) * wt;
+				nearest_w_sum += wt;
+				hdr_wrap_accum += max(up_tap - vec3(hdr_threshold), vec3(0.0)) * tap.a;
+			}
+		}
+
+		// Anillo 2 condicional (8 taps Rotated Poisson con IGN estirado 1.15x sobre tangente a LOD 0.5)
+		if (min_a1 < 0.98 && !is_micro_crack) {
+			float coarse_a = textureLod(screen_texture, SCREEN_UV, 1.5).a;
+			if (coarse_a > 0.005 || max_a1 > 0.005) {
+				float noise = ign(FRAGCOORD.xy) * 6.2831853 * ign_jitter_strength;
+				float cn = cos(noise);
+				float sn = sin(noise);
+				mat2 rot = mat2(vec2(cn, sn), vec2(-sn, cn));
+				const vec2 POISSON_8[8] = vec2[](
+					vec2( 0.9239,  0.3827), vec2(-0.9239, -0.3827),
+					vec2( 0.3827, -0.9239), vec2(-0.3827,  0.9239),
+					vec2( 0.6533,  0.2706), vec2(-0.6533, -0.2706),
+					vec2(-0.2706,  0.6533), vec2( 0.2706, -0.6533)
+				);
+				float ring2_r = max(w_max, base_px);
+				for (int i = 0; i < 8; i++) {
+					vec2 p = rot * POISSON_8[i];
+					vec2 off_px = (n_edge * p.x + t_dir * (p.y * 1.15)) * ring2_r;
+					vec2 tap_uv = clamp(SCREEN_UV + off_px * px, vec2(0.0), vec2(1.0));
+					vec4 s_tap = textureLod(screen_texture, tap_uv, 0.5);
+					if (s_tap.a > 0.15) {
+						float d_tap = max(length(off_px) - (s_tap.a - 0.5) * 0.75, 0.0);
+						min_dist_px = min(min_dist_px, d_tap);
+						vec3 up_tap = unpremul_raw(s_tap);
+						float wt = s_tap.a * s_tap.a;
+						nearest_ldr_rgb += min(up_tap, vec3(1.0)) * wt;
+						nearest_w_sum += wt;
+						hdr_wrap_accum += max(up_tap - vec3(hdr_threshold), vec3(0.0)) * s_tap.a;
 					}
 				}
 			}
-			outer_max = max(outer_max, dir_best);
-			if (dir_best > 0.01) {
-				outer_sum += dir_best;
-				hit_dirs += 1.0;
-			}
 		}
-		float outer_avg = hit_dirs > 0.5 ? (outer_sum / hit_dirs) : 0.0;
-		float raw_reach = mix(outer_max, outer_avg, hit_dirs >= 2.0 ? 0.16 : 0.0);
-		float outer_reach = smoothstep(0.06, 0.62, raw_reach);
-		float a_r = textureLod(screen_texture, clamp(SCREEN_UV + vec2(SCREEN_PIXEL_SIZE.x, 0.0), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_l = textureLod(screen_texture, clamp(SCREEN_UV + vec2(-SCREEN_PIXEL_SIZE.x, 0.0), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_d = textureLod(screen_texture, clamp(SCREEN_UV + vec2(0.0, SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_u = textureLod(screen_texture, clamp(SCREEN_UV + vec2(0.0, -SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_ur = textureLod(screen_texture, clamp(SCREEN_UV + vec2(SCREEN_PIXEL_SIZE.x, -SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_ul = textureLod(screen_texture, clamp(SCREEN_UV + vec2(-SCREEN_PIXEL_SIZE.x, -SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_dr = textureLod(screen_texture, clamp(SCREEN_UV + vec2(SCREEN_PIXEL_SIZE.x, SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		float a_dl = textureLod(screen_texture, clamp(SCREEN_UV + vec2(-SCREEN_PIXEL_SIZE.x, SCREEN_PIXEL_SIZE.y), vec2(0.0), vec2(1.0)), 0.0).a;
-		vec3 final_outline_col = outer_outline_color.rgb;
-		if (outer_outline_tint_mix > 0.001) {
-			vec2 edge_grad = vec2(a_l - a_r, a_u - a_d);
-			if (c.a > 0.05 && dot(edge_grad, edge_grad) > 0.002) {
-				best_out_n = normalize(edge_grad);
-			}
-			float lit_align = smoothstep(-0.10, 0.76, dot(best_out_n, light_n));
-			vec3 tinted_lit_col = mix(
-				outer_outline_lit_color.rgb,
-				nearest_edge_rgb * 0.22 + outer_outline_lit_color.rgb * 0.78,
-				0.35
-			);
-			final_outline_col = mix(outer_outline_color.rgb, tinted_lit_col, lit_align * outer_outline_tint_mix);
+
+		// Light-Wrap HDR entre piezas
+		vec3 hdr_wrap = (hdr_wrap_accum * 0.0625) * hdr_light_wrap_strength;
+		c.rgb += hdr_wrap * c.a;
+
+		// Grosor caligráfico y Colored Line Art (solo activo cuando outer_outline_tint_mix > 0)
+		vec2 light_n = length(light_dir_2d) > 0.001 ? normalize(light_dir_2d) : vec2(-0.58, -0.81);
+		float edge_dot_l = dot(n_edge, light_n);
+		float callig_t = smoothstep(-0.55, 0.65, -edge_dot_l);
+		float callig_width_px = clamp(mix(w_min, w_max, callig_t) + concavity * 0.35, w_min, w_max);
+		float target_width_px = mix(base_px, callig_width_px, outer_outline_tint_mix);
+
+		float aa_band = clamp(outline_crispness, 0.12, 0.65);
+		float outline_cov = smoothstep(target_width_px + aa_band, max(target_width_px - aa_band, 0.0), min_dist_px) * outer_outline_strength;
+		vec3 avg_ldr = nearest_w_sum > 0.0001 ? (nearest_ldr_rgb / nearest_w_sum) : outer_outline_color.rgb;
+		vec3 colored_ink = pow(clamp(avg_ldr, vec3(0.0), vec3(1.0)), vec3(1.6)) * mix(outer_outline_lit_color.rgb * 0.9, vec3(0.18), 0.55);
+		float lit_align = smoothstep(0.05, 0.78, edge_dot_l);
+		vec3 callig_col = mix(colored_ink, outer_outline_lit_color.rgb * 0.45 + avg_ldr * 0.08, lit_align * 0.45);
+		vec3 final_outline_col = mix(outer_outline_color.rgb, callig_col, outer_outline_tint_mix);
+
+		// Reemplazo del borde del PNG: cubre tanto el halo exterior como el primer ~1px interior sucio
+		float inward_edge_mask = (1.0 - smoothstep(0.15, 0.92, min_a1)) * outline_inward_replace * outer_outline_strength;
+		if (c.a < 0.99 || inward_edge_mask > 0.01) {
+			float fg_w = smoothstep(0.35, 0.90, c.a) * (1.0 - inward_edge_mask);
+			vec3 composed_rgb = mix(final_outline_col, c.rgb, fg_w);
+			float outline_blend = max(outline_cov, max(inward_edge_mask, smoothstep(0.28, 0.65, c.a) * outer_outline_strength));
+			c.rgb = c.a < 0.01 ? final_outline_col : mix(c.rgb, composed_rgb, outline_blend);
+			c.a = max(c.a, outline_cov);
 		}
-		float min_in_a = min(min(min(a_r, a_l), min(a_d, a_u)), min(min(a_ur, a_ul), min(a_dr, a_dl)));
-		float inner_seal_bite = mix(0.08, 0.78, smoothstep(0.85, 1.90, zc));
-		float inner_seal = (1.0 - smoothstep(0.35, 0.90, min_in_a)) * c.a;
-		float fg_w = smoothstep(0.20, 0.85, c.a) * (1.0 - inner_seal * inner_seal_bite);
-		vec3 composed_rgb = mix(final_outline_col, c.rgb, fg_w);
-		float outline_blend = outer_outline_strength * max(outer_reach, smoothstep(0.28, 0.65, c.a));
-		c.rgb = c.a < 0.01 ? final_outline_col : mix(c.rgb, composed_rgb, outline_blend);
-		c.a = max(c.a, outer_reach * outer_outline_strength);
 	}
 
 	// --- 2. Smear seco direccional sin costuras ---
@@ -159,7 +248,8 @@ void fragment() {
 
 	// --- 4. Impact Frames (2 frames: B/N directo -> invertido con rayos radiales) ---
 	if (impact_frame_phase > 0 && c.a > 0.05) {
-		float luma = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+		vec3 srgb_c = pow(clamp(c.rgb, vec3(0.0), vec3(1.0)), vec3(1.0 / 2.2));
+		float luma = dot(srgb_c, vec3(0.2126, 0.7152, 0.0722));
 		float bw = step(0.14, luma);
 		if (impact_frame_phase == 1) {
 			c.rgb = vec3(bw * 1.45);

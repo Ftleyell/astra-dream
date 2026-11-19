@@ -1,0 +1,66 @@
+{
+  "mask_key": "03_id_mask_heads",
+  "batches": [
+    {
+      "filename": "batchA_front_2x2_1x1_white.png",
+      "rows": 2,
+      "cols": 2,
+      "cell_w": 1024,
+      "cell_h": 1024,
+      "crop_x0": 0,
+      "views_grid": [
+        [
+          "s",
+          "se"
+        ],
+        [
+          "sw",
+          "w"
+        ]
+      ],
+      "description": "2048x2048 (1:1) grid: Row0=[S, SE], Row1=[SW, W]"
+    },
+    {
+      "filename": "batchB_back_2x2_1x1_white.png",
+      "rows": 2,
+      "cols": 2,
+      "cell_w": 1024,
+      "cell_h": 1024,
+      "crop_x0": 0,
+      "views_grid": [
+        [
+          "e",
+          "ne"
+        ],
+        [
+          "nw",
+          "n"
+        ]
+      ],
+      "description": "2048x2048 (1:1) grid: Row0=[E, NE], Row1=[NW, N]"
+    },
+    {
+      "filename": "all8_4x2_16x9_white.png",
+      "rows": 2,
+      "cols": 4,
+      "cell_w": 1024,
+      "cell_h": 1152,
+      "crop_x0": 0,
+      "views_grid": [
+        [
+          "s",
+          "se",
+          "sw",
+          "w"
+        ],
+        [
+          "e",
+          "ne",
+          "nw",
+          "n"
+        ]
+      ],
+      "description": "4096x2304 (16:9) grid: Row0=[S, SE, SW, W], Row1=[E, NE, NW, N]"
+    }
+  ]
+}

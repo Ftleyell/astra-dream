@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bseee1l7yeup"]
+
+[ext_resource type="Script" uid="uid://bee8p4lauobfa" path="res://sandbox/pilot_rig_lab/calibrator/rig_calibrator.gd" id="1_calib"]
+
+[node name="RigCalibrator" type="Node2D" unique_id=1477001430]
+script = ExtResource("1_calib")

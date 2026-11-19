@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="PilotRigProfile" format=3]
+
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_anim_config.tres" id="1_vj1pv"]
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_hair_preset.gd" id="2_hljdw"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/00_original.tres" id="3_5me0u"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/01_follow_skin.tres" id="4_45qvs"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/02_platinum_2b.tres" id="5_1h62b"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/03_valkyrie_gold.tres" id="6_5h0su"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/04_lucy_pink.tres" id="7_egvmk"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/05_crimson_scarlet.tres" id="8_re0g3"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/06_holo_cyan.tres" id="9_pq6ot"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/07_void_violet.tres" id="10_ln3m5"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/08_jet_blue.tres" id="11_yc4ts"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/hair/09_toxic_emerald.tres" id="12_ibjwl"]
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_rig_profile.gd" id="13_74smy"]
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_skin_preset.gd" id="14_a07hi"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/00_base.tres" id="15_56wdj"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/01_crimson_nebula.tres" id="16_6uaex"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/02_cyber_emerald.tres" id="17_lktno"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/03_solar_valkyrie.tres" id="18_ip2dl"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/04_void_amethyst.tres" id="19_ah4bm"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/05_arctic_phantom.tres" id="20_3otyc"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/06_blood_eclipse.tres" id="21_2cpcy"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/07_eva_unit_01.tres" id="22_o0lbb"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/08_2b_yorha.tres" id="23_7ogi5"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/skins/09_edgerunner_lucy.tres" id="24_srq3m"]
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/rig_style_profile.gd" id="25_gc80d"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/00_original.tres" id="26_oj5dp"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/01_trigger_cel.tres" id="27_0x807"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/02_skullgirls_screentone.tres" id="28_8cmvp"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/03_guilty_gear_rim.tres" id="29_1aial"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/04_spiderverse_dualtone.tres" id="30_ttwgc"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/05_persona5_noir.tres" id="31_vhtge"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/06_edgerunners_dual_rim.tres" id="32_iac28"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/07_kill_la_kill_hatch.tres" id="33_rotrq"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/data/styles/08_arcane_metal.tres" id="34_1a14l"]
+
+[resource]
+script = ExtResource("13_74smy")
+pilot_id = "valentina_v2"
+display_name = "Valentina v2 (8-Dir)"
+assets_root = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar"
+anim_config = ExtResource("1_vj1pv")
+display_scale = 0.378
+default_accent_color = Color(0.86, 0.18, 0.32, 1)
+head_outline_strength = 1.0
+head_outline_width_px = 4.0
+stepped_fps = 15.0
+skins = Array[ExtResource("14_a07hi")]([ExtResource("15_56wdj"), ExtResource("16_6uaex"), ExtResource("17_lktno"), ExtResource("18_ip2dl"), ExtResource("19_ah4bm"), ExtResource("20_3otyc"), ExtResource("21_2cpcy"), ExtResource("22_o0lbb"), ExtResource("23_7ogi5"), ExtResource("24_srq3m")])
+hair_presets = Array[ExtResource("2_hljdw")]([ExtResource("3_5me0u"), ExtResource("4_45qvs"), ExtResource("5_1h62b"), ExtResource("6_5h0su"), ExtResource("7_egvmk"), ExtResource("8_re0g3"), ExtResource("9_pq6ot"), ExtResource("10_ln3m5"), ExtResource("11_yc4ts"), ExtResource("12_ibjwl")])
+style_profiles = Array[ExtResource("25_gc80d")]([ExtResource("26_oj5dp"), ExtResource("27_0x807"), ExtResource("28_8cmvp"), ExtResource("29_1aial"), ExtResource("30_ttwgc"), ExtResource("31_vhtge"), ExtResource("32_iac28"), ExtResource("33_rotrq"), ExtResource("34_1a14l")])

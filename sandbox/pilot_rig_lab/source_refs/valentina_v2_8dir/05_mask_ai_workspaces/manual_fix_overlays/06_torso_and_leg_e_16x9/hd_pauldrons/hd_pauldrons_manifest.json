@@ -1,0 +1,98 @@
+{
+  "hd_pauldron_0.png": [
+    [
+      "s",
+      "pauldron_r",
+      false
+    ],
+    [
+      "s",
+      "pauldron_l",
+      true
+    ]
+  ],
+  "hd_pauldron_1.png": [
+    [
+      "se",
+      "pauldron_r",
+      false
+    ],
+    [
+      "sw",
+      "pauldron_l",
+      true
+    ]
+  ],
+  "hd_pauldron_2.png": [
+    [
+      "se",
+      "pauldron_l",
+      false
+    ],
+    [
+      "sw",
+      "pauldron_r",
+      true
+    ]
+  ],
+  "hd_pauldron_3.png": [
+    [
+      "e",
+      "pauldron_r",
+      false
+    ],
+    [
+      "w",
+      "pauldron_l",
+      true
+    ]
+  ],
+  "hd_pauldron_4.png": [
+    [
+      "n",
+      "pauldron_r",
+      false
+    ],
+    [
+      "n",
+      "pauldron_l",
+      true
+    ]
+  ],
+  "hd_pauldron_5.png": [
+    [
+      "ne",
+      "pauldron_r",
+      false
+    ],
+    [
+      "nw",
+      "pauldron_l",
+      true
+    ]
+  ],
+  "hd_pauldron_6.png": [
+    [
+      "ne",
+      "pauldron_l",
+      false
+    ],
+    [
+      "nw",
+      "pauldron_r",
+      true
+    ]
+  ],
+  "hd_pauldron_7.png": [
+    [
+      "e",
+      "pauldron_l",
+      false
+    ],
+    [
+      "w",
+      "pauldron_r",
+      true
+    ]
+  ]
+}

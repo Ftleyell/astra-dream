@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_hair_preset.gd" id="1_lohii"]
+
+[resource]
+script = ExtResource("1_lohii")
+id = "01_follow_skin"
+label = "Color Pelo 1: Seguir Skin del Traje"
+follow_skin_hair = true
