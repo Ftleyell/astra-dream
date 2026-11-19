@@ -228,6 +228,54 @@ func _wire_inspector_signals() -> void:
 		_ghost_opacity = v
 		_rebuild_ghost()
 	)
+	var po_chk: CheckBox = _hud_refs["po_chk"] as CheckBox
+	var po_col: ColorPickerButton = _hud_refs["po_col"] as ColorPickerButton
+	var po_seams_chk: CheckBox = _hud_refs["po_seams_chk"] as CheckBox
+	var po_erode_slider: HSlider = _hud_refs["po_erode_slider"] as HSlider
+	var po_erode_spin: SpinBox = _hud_refs["po_erode_spin"] as SpinBox
+	var po_out_slider: HSlider = _hud_refs["po_out_slider"] as HSlider
+	var po_out_spin: SpinBox = _hud_refs["po_out_spin"] as SpinBox
+	var po_copy_view_btn: Button = _hud_refs["po_copy_view_btn"] as Button
+	var po_copy_all_btn: Button = _hud_refs["po_copy_all_btn"] as Button
+	var apply_po: Callable = func(erode_v: float, out_v: float, auto_enable: bool, record_undo: bool) -> void:
+		if _syncing_ui:
+			return
+		var en: bool = po_chk.button_pressed
+		if auto_enable and not en and (erode_v > 0.001 or out_v > 0.001):
+			en = true
+		if _selected_kind == "part":
+			_store.set_part_outline(_active_view, _selected_name, en, erode_v, out_v, po_col.color, po_seams_chk.button_pressed, record_undo)
+		elif _selected_kind == "head":
+			_store.set_head_outline(_active_head, en, erode_v, out_v, po_col.color, po_seams_chk.button_pressed, record_undo)
+		else:
+			return
+		_refresh_live_and_inspector()
+	po_chk.toggled.connect(func(_v: bool) -> void: apply_po.call(po_erode_spin.value, po_out_spin.value, false, true))
+	po_col.color_changed.connect(func(_c: Color) -> void: apply_po.call(po_erode_spin.value, po_out_spin.value, false, true))
+	po_seams_chk.toggled.connect(func(_v: bool) -> void: apply_po.call(po_erode_spin.value, po_out_spin.value, false, true))
+	po_erode_slider.drag_started.connect(func() -> void: _store.push_undo_snapshot())
+	po_erode_slider.value_changed.connect(func(v: float) -> void: apply_po.call(v, po_out_spin.value, true, false))
+	po_erode_spin.value_changed.connect(func(v: float) -> void: apply_po.call(v, po_out_spin.value, true, true))
+	po_out_slider.drag_started.connect(func() -> void: _store.push_undo_snapshot())
+	po_out_slider.value_changed.connect(func(v: float) -> void: apply_po.call(po_erode_spin.value, v, true, false))
+	po_out_spin.value_changed.connect(func(v: float) -> void: apply_po.call(po_erode_spin.value, v, true, true))
+	po_copy_view_btn.pressed.connect(func() -> void:
+		if _selected_kind != "part":
+			return
+		_store.copy_part_outline_to_view(_active_view, _selected_name)
+		_refresh_live_and_inspector()
+		_show_toast("Outline de %s copiado a toda la vista %s" % [_selected_name, _active_view.to_upper()])
+	)
+	po_copy_all_btn.pressed.connect(func() -> void:
+		if _selected_kind == "part":
+			_store.copy_part_outline_to_all_views(_active_view, _selected_name)
+			_refresh_live_and_inspector()
+			_show_toast("Outline de %s copiado a las 8 vistas" % _selected_name)
+		elif _selected_kind == "head":
+			_store.copy_head_outline_to_all_heads(_active_head)
+			_refresh_live_and_inspector()
+			_show_toast("Outline de %s copiado a las 8 cabezas" % _active_head)
+	)
 	var hip_sh_chk: CheckBox = _hud_refs["hip_sh_chk"] as CheckBox
 	var hip_sh_col: ColorPickerButton = _hud_refs["hip_sh_col"] as ColorPickerButton
 	var hip_sh_x: SpinBox = _hud_refs["hip_sh_x_spin"] as SpinBox
@@ -902,6 +950,57 @@ func _sync_inspector_values() -> void:
 		abs_y.value = orig.y + cur_rel.y
 
 	var d_pos: Vector2 = cur_rel - base_rel
+	var po_target_lbl: Label = _hud_refs["po_target_lbl"] as Label
+	var po_chk: CheckBox = _hud_refs["po_chk"] as CheckBox
+	var po_col: ColorPickerButton = _hud_refs["po_col"] as ColorPickerButton
+	var po_seams_chk: CheckBox = _hud_refs["po_seams_chk"] as CheckBox
+	var po_erode_slider: HSlider = _hud_refs["po_erode_slider"] as HSlider
+	var po_erode_spin: SpinBox = _hud_refs["po_erode_spin"] as SpinBox
+	var po_out_slider: HSlider = _hud_refs["po_out_slider"] as HSlider
+	var po_out_spin: SpinBox = _hud_refs["po_out_spin"] as SpinBox
+	var po_copy_view_btn: Button = _hud_refs["po_copy_view_btn"] as Button
+	var po_copy_all_btn: Button = _hud_refs["po_copy_all_btn"] as Button
+	var is_outline_editable: bool = (_selected_kind == "part" or _selected_kind == "head")
+	po_chk.disabled = not is_outline_editable
+	po_col.disabled = not is_outline_editable
+	po_seams_chk.disabled = not is_outline_editable
+	po_erode_slider.editable = is_outline_editable
+	po_erode_spin.editable = is_outline_editable
+	po_out_slider.editable = is_outline_editable
+	po_out_spin.editable = is_outline_editable
+	po_copy_view_btn.disabled = (_selected_kind != "part")
+	po_copy_all_btn.disabled = not is_outline_editable
+	if _selected_kind == "part":
+		po_target_lbl.text = "Objetivo: %s (%s)" % [_selected_name, _active_view.to_upper()]
+		po_copy_all_btn.text = "A 8 Vistas"
+		var po_d: Dictionary = _store.get_part_outline(_active_view, _selected_name, false)
+		po_chk.button_pressed = bool(po_d["enabled"])
+		po_col.color = po_d["color"] as Color
+		po_seams_chk.button_pressed = bool(po_d["respect_seams"])
+		po_erode_slider.value = minf(float(po_d["erode_du"]), po_erode_slider.max_value)
+		po_erode_spin.value = float(po_d["erode_du"])
+		po_out_slider.value = minf(float(po_d["outline_du"]), po_out_slider.max_value)
+		po_out_spin.value = float(po_d["outline_du"])
+	elif _selected_kind == "head":
+		po_target_lbl.text = "Objetivo: %s (Cabeza)" % _active_head
+		po_copy_all_btn.text = "A 8 Cabezas"
+		var ho_d: Dictionary = _store.get_head_outline(_active_head, false)
+		po_chk.button_pressed = bool(ho_d["enabled"])
+		po_col.color = ho_d["color"] as Color
+		po_seams_chk.button_pressed = bool(ho_d["respect_seams"])
+		po_erode_slider.value = minf(float(ho_d["erode_du"]), po_erode_slider.max_value)
+		po_erode_spin.value = float(ho_d["erode_du"])
+		po_out_slider.value = minf(float(ho_d["outline_du"]), po_out_slider.max_value)
+		po_out_spin.value = float(ho_d["outline_du"])
+	else:
+		po_target_lbl.text = "Objetivo: selecciona pieza o cabeza"
+		po_copy_all_btn.text = "A 8 Vistas"
+		po_chk.button_pressed = false
+		po_erode_slider.value = 0.0
+		po_erode_spin.value = 0.0
+		po_out_slider.value = 0.0
+		po_out_spin.value = 0.0
+
 	var hip_sh: Dictionary = _store.get_hip_cast_shadow(_active_view, false)
 	(_hud_refs["hip_sh_chk"] as CheckBox).button_pressed = bool(hip_sh["enabled"])
 	(_hud_refs["hip_sh_col"] as ColorPickerButton).color = hip_sh["color"] as Color

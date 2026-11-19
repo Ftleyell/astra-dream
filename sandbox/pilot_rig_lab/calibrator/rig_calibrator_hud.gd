@@ -390,6 +390,86 @@ static func build_ui(parent_layer: CanvasLayer, callbacks: Dictionary) -> Dictio
 	sym_l_to_r_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sym_row.add_child(sym_l_to_r_btn)
 
+	_add_header(right_vbox, "OUTLINE PIEZA (BORDE)")
+
+	var po_target_lbl := Label.new()
+	po_target_lbl.text = "Objetivo: body_core (S)"
+	po_target_lbl.add_theme_font_size_override("font_size", 11)
+	po_target_lbl.add_theme_color_override("font_color", Color(0.85, 0.90, 1.0, 0.92))
+	right_vbox.add_child(po_target_lbl)
+
+	var po_top_row := HBoxContainer.new()
+	po_top_row.add_theme_constant_override("separation", 4)
+	right_vbox.add_child(po_top_row)
+	var po_chk := CheckBox.new()
+	po_chk.text = "Activo"
+	po_chk.button_pressed = false
+	po_top_row.add_child(po_chk)
+
+	var po_col := ColorPickerButton.new()
+	po_col.color = Color(0.015, 0.015, 0.025, 1.0)
+	po_col.edit_alpha = false
+	po_col.custom_minimum_size = Vector2(38.0, 22.0)
+	po_top_row.add_child(po_col)
+
+	var po_seams_chk := CheckBox.new()
+	po_seams_chk.text = "Costuras"
+	po_seams_chk.tooltip_text = "Proteger costuras internas (cuello, sisa, cadera)"
+	po_seams_chk.button_pressed = false
+	po_top_row.add_child(po_seams_chk)
+
+	var po_erode_row := HBoxContainer.new()
+	po_erode_row.add_theme_constant_override("separation", 4)
+	right_vbox.add_child(po_erode_row)
+	var po_erode_lbl := Label.new()
+	po_erode_lbl.text = "Transp:"
+	po_erode_lbl.tooltip_text = "Borde transparente que borra el PNG hacia adentro (du)"
+	po_erode_lbl.custom_minimum_size = Vector2(56.0, 0.0)
+	po_erode_row.add_child(po_erode_lbl)
+	var po_erode_slider := HSlider.new()
+	po_erode_slider.min_value = 0.0
+	po_erode_slider.max_value = 6.0
+	po_erode_slider.step = 0.05
+	po_erode_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	po_erode_row.add_child(po_erode_slider)
+	var po_erode_spin := _make_spin(0.0, 8.0, 0.05)
+	po_erode_spin.size_flags_horizontal = Control.SIZE_FILL
+	po_erode_spin.custom_minimum_size = Vector2(72.0, 0.0)
+	po_erode_row.add_child(po_erode_spin)
+
+	var po_out_row := HBoxContainer.new()
+	po_out_row.add_theme_constant_override("separation", 4)
+	right_vbox.add_child(po_out_row)
+	var po_out_lbl := Label.new()
+	po_out_lbl.text = "Outline:"
+	po_out_lbl.tooltip_text = "Outline desde el nuevo borde resultante hacia afuera (du)"
+	po_out_lbl.custom_minimum_size = Vector2(56.0, 0.0)
+	po_out_row.add_child(po_out_lbl)
+	var po_out_slider := HSlider.new()
+	po_out_slider.min_value = 0.0
+	po_out_slider.max_value = 6.0
+	po_out_slider.step = 0.05
+	po_out_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	po_out_row.add_child(po_out_slider)
+	var po_out_spin := _make_spin(0.0, 8.0, 0.05)
+	po_out_spin.size_flags_horizontal = Control.SIZE_FILL
+	po_out_spin.custom_minimum_size = Vector2(72.0, 0.0)
+	po_out_row.add_child(po_out_spin)
+
+	var po_copy_row := HBoxContainer.new()
+	po_copy_row.add_theme_constant_override("separation", 4)
+	right_vbox.add_child(po_copy_row)
+	var po_copy_view_btn := Button.new()
+	po_copy_view_btn.text = "A Toda Vista"
+	po_copy_view_btn.tooltip_text = "Copiar este borde/outline a todas las piezas de la vista activa"
+	po_copy_view_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	po_copy_row.add_child(po_copy_view_btn)
+	var po_copy_all_btn := Button.new()
+	po_copy_all_btn.text = "A 8 Vistas"
+	po_copy_all_btn.tooltip_text = "Copiar este borde/outline a esta pieza en las 8 vistas (o 8 cabezas)"
+	po_copy_all_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	po_copy_row.add_child(po_copy_all_btn)
+
 	_add_header(right_vbox, "SOMBRA TRAJE (HIP)")
 
 	var sh_top_row := HBoxContainer.new()
@@ -615,6 +695,16 @@ static func build_ui(parent_layer: CanvasLayer, callbacks: Dictionary) -> Dictio
 		"mirror_partner_btn": mirror_partner_btn,
 		"sym_r_to_l_btn": sym_r_to_l_btn,
 		"sym_l_to_r_btn": sym_l_to_r_btn,
+		"po_target_lbl": po_target_lbl,
+		"po_chk": po_chk,
+		"po_col": po_col,
+		"po_seams_chk": po_seams_chk,
+		"po_erode_slider": po_erode_slider,
+		"po_erode_spin": po_erode_spin,
+		"po_out_slider": po_out_slider,
+		"po_out_spin": po_out_spin,
+		"po_copy_view_btn": po_copy_view_btn,
+		"po_copy_all_btn": po_copy_all_btn,
 		"hip_sh_chk": hip_sh_chk,
 		"hip_sh_col": hip_sh_col,
 		"hip_sh_x_spin": hip_sh_x_spin,

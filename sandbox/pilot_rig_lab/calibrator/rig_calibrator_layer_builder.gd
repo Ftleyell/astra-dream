@@ -214,6 +214,7 @@ static func sync_rig_live_state(
 		var offset_delta: Vector2 = cur_rect.position - built_origin
 		var vis: bool = bool(part_vis.get(p_name, true))
 		var alpha: float = float(part_opac.get(p_name, 1.0))
+		var p_out: Dictionary = store.get_part_outline(view_key, p_name, false)
 
 		for poly_key: String in [p_name, "%s_stocking" % p_name]:
 			if not polys.has(poly_key):
@@ -224,11 +225,14 @@ static func sync_rig_live_state(
 			poly.position = offset_delta
 			poly.visible = vis
 			poly.modulate.a = alpha
-			if poly.material is ShaderMaterial and cur_rect.size != Vector2.ZERO:
-				(poly.material as ShaderMaterial).set_shader_parameter(
-					"part_rig_rect",
-					Vector4(cur_rect.position.x / 490.0, cur_rect.position.y / 490.0, cur_rect.size.x / 490.0, cur_rect.size.y / 490.0)
-				)
+			if poly.material is ShaderMaterial:
+				var p_mat: ShaderMaterial = poly.material as ShaderMaterial
+				if cur_rect.size != Vector2.ZERO:
+					p_mat.set_shader_parameter(
+						"part_rig_rect",
+						Vector4(cur_rect.position.x / 490.0, cur_rect.position.y / 490.0, cur_rect.size.x / 490.0, cur_rect.size.y / 490.0)
+					)
+				_apply_outline_uniforms(p_mat, p_out)
 
 	# 1b. Aplicar sombra cel de contacto traje -> piernas (hip_cast_shadow) + pinch de media (stocking_pinch)
 	var hip_sh: Dictionary = store.get_hip_cast_shadow(view_key, false)
@@ -331,6 +335,7 @@ static func sync_rig_live_state(
 	var scaled_disp_sz: Vector2 = disp_sz * h_scale_mul
 	var h_orig: Vector2 = neck_rel + h_off - scaled_disp_sz * 0.5
 	var heads_meta_snap: Dictionary = store.get_heads_meta_snapshot()
+	var h_out: Dictionary = store.get_head_outline(head_key, false)
 
 	var head_passes: Array[Dictionary] = [
 		{"data": rig.get_head_data(), "vis": head_vis, "alpha": head_alpha},
@@ -355,10 +360,20 @@ static func sync_rig_live_state(
 			spr.visible = bool(pass_cfg["vis"])
 			spr.modulate.a = float(pass_cfg["alpha"])
 			if spr.material is ShaderMaterial:
-				(spr.material as ShaderMaterial).set_shader_parameter(
+				var h_mat: ShaderMaterial = spr.material as ShaderMaterial
+				h_mat.set_shader_parameter(
 					"part_rig_rect",
 					Vector4(h_orig.x / 490.0, h_orig.y / 490.0, scaled_disp_sz.x / 490.0, scaled_disp_sz.y / 490.0)
 				)
+				_apply_outline_uniforms(h_mat, h_out)
+
+
+static func _apply_outline_uniforms(mat: ShaderMaterial, cfg: Dictionary) -> void:
+	mat.set_shader_parameter("enable_part_edge_outline", bool(cfg.get("enabled", false)))
+	mat.set_shader_parameter("part_edge_erode_du", float(cfg.get("erode_du", 0.0)))
+	mat.set_shader_parameter("part_edge_outline_du", float(cfg.get("outline_du", 0.0)))
+	mat.set_shader_parameter("part_edge_outline_color", cfg.get("color", RigCalibrationStore.DEFAULT_PART_OUTLINE_COLOR) as Color)
+	mat.set_shader_parameter("part_edge_respect_seams", bool(cfg.get("respect_seams", false)))
 
 
 static func rebuild_ghost_node(

@@ -64,7 +64,7 @@ func _ready() -> void:
 
 	_camera = Camera2D.new()
 	_camera.name = "LabCamera"
-	_camera.position = Vector2(95.0, -10.0)
+	_camera.position = Vector2(-105.0, -10.0)
 	_camera.zoom = Vector2(1.45, 1.45)
 	add_child(_camera)
 
@@ -251,6 +251,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not kev.pressed or kev.echo:
 			return
 		match kev.keycode:
+			KEY_H:
+				if _hud != null:
+					_hud.toggle_panel()
 			KEY_R:
 				_reset_camera()
 			KEY_BRACKETLEFT:
@@ -310,7 +313,7 @@ func _zoom_camera(factor: float) -> void:
 func _reset_camera() -> void:
 	if _camera == null:
 		return
-	_camera.position = Vector2(95.0, -10.0) if _compare_mode == CompareMode.SIDE_BY_SIDE else Vector2(115.0, -10.0)
+	_camera.position = Vector2(-105.0, -10.0)
 	_camera.zoom = Vector2(1.45, 1.45)
 
 

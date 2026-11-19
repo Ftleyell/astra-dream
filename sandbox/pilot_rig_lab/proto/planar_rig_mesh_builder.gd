@@ -200,6 +200,7 @@ static func _build_parts5_rig(
 		var col_tex: Texture2D = load_texture_res("%s/%s.png" % [parts5_dir, p_name], true, true)
 		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [parts5_dir, p_name], false, true)
 		var nd_tex: Texture2D = load_texture_res("%s/%s_normal_depth.png" % [parts5_dir, p_name], false, true)
+		var ilm_tex: Texture2D = load_texture_res("%s/%s_ilm_mask.png" % [parts5_dir, p_name], false, true)
 		if col_tex == null:
 			continue
 
@@ -241,6 +242,9 @@ static func _build_parts5_rig(
 			mat.set_shader_parameter("id_mask_tex", id_tex)
 		if nd_tex != null:
 			mat.set_shader_parameter("normal_depth_tex", nd_tex)
+		if ilm_tex != null:
+			mat.set_shader_parameter("ilm_mask_tex", ilm_tex)
+		mat.set_shader_parameter("has_ilm_mask", ilm_tex != null)
 		if conic_lut != null:
 			mat.set_shader_parameter("conic_rim_lut", conic_lut)
 		mat.set_shader_parameter("use_normal_depth", nd_tex != null)
@@ -250,6 +254,7 @@ static func _build_parts5_rig(
 		mat.set_shader_parameter("weld_bottom_seam", p_name == "body_core")
 		mat.set_shader_parameter("suppress_alpha_rim", 1.0)
 		mat.set_shader_parameter("part_rig_rect", Vector4(part_origin.x / 490.0, part_origin.y / 490.0, dw / 490.0, dh / 490.0))
+		_apply_part_edge_outline_from_meta(mat, meta, p_name)
 		poly.material = mat
 
 		poly_refs[p_name] = poly
@@ -627,6 +632,7 @@ static func build_decoupled_heads(
 		var col_tex: Texture2D = load_texture_res("%s/%s.png" % [heads_dir, h_key], true, true)
 		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [heads_dir, h_key], false, true)
 		var nd_tex: Texture2D = load_texture_res("%s/%s_normal_depth.png" % [heads_dir, h_key], false, true)
+		var ilm_tex: Texture2D = load_texture_res("%s/%s_ilm_mask.png" % [heads_dir, h_key], false, true)
 		var jiggle_tex: Texture2D = load_texture_res("%s/%s_hair_jiggle_mask.png" % [heads_dir, h_key], false, false)
 		var sdf_tex: Texture2D = load_texture_res("%s/%s_outline_sdf.png" % [heads_dir, h_key], false, false)
 		if col_tex == null:
@@ -658,6 +664,9 @@ static func build_decoupled_heads(
 			mat.set_shader_parameter("id_mask_tex", id_tex)
 		if nd_tex != null:
 			mat.set_shader_parameter("normal_depth_tex", nd_tex)
+		if ilm_tex != null:
+			mat.set_shader_parameter("ilm_mask_tex", ilm_tex)
+		mat.set_shader_parameter("has_ilm_mask", ilm_tex != null)
 		if jiggle_tex != null:
 			mat.set_shader_parameter("secondary_jiggle_mask_tex", jiggle_tex)
 		if sdf_tex != null:
@@ -673,6 +682,7 @@ static func build_decoupled_heads(
 		mat.set_shader_parameter("suppress_alpha_rim", 1.0 if layer_pass == 1 else 0.0)
 		var h_orig := neck_rel + sprite_off - disp_size * 0.5
 		mat.set_shader_parameter("part_rig_rect", Vector4(h_orig.x / 490.0, h_orig.y / 490.0, disp_size.x / 490.0, disp_size.y / 490.0))
+		_apply_part_edge_outline_from_meta(mat, meta, h_key)
 		spr.material = mat
 
 		head_anchor.add_child(spr)
@@ -688,6 +698,25 @@ static func build_decoupled_heads(
 		"base_scales": base_scales,
 		"base_offsets": base_offsets,
 	}
+
+
+static func _apply_part_edge_outline_from_meta(mat: ShaderMaterial, meta: Dictionary, item_key: String) -> void:
+	if mat == null:
+		return
+	var outlines: Variant = meta.get("part_outlines", null)
+	if not (outlines is Dictionary):
+		return
+	var entry_v: Variant = (outlines as Dictionary).get(item_key, null)
+	if not (entry_v is Dictionary):
+		return
+	var d: Dictionary = entry_v as Dictionary
+	var col_arr: Array = d.get("color", [0.015, 0.015, 0.025]) as Array
+	var col := Color(float(col_arr[0]), float(col_arr[1]), float(col_arr[2]), 1.0) if col_arr.size() >= 3 else Color(0.015, 0.015, 0.025, 1.0)
+	mat.set_shader_parameter("enable_part_edge_outline", bool(d.get("enabled", false)))
+	mat.set_shader_parameter("part_edge_erode_du", clampf(float(d.get("erode_du", 0.0)), 0.0, 8.0))
+	mat.set_shader_parameter("part_edge_outline_du", clampf(float(d.get("outline_du", 0.0)), 0.0, 8.0))
+	mat.set_shader_parameter("part_edge_outline_color", col)
+	mat.set_shader_parameter("part_edge_respect_seams", bool(d.get("respect_seams", false)))
 
 
 static func _build_grid_mesh(

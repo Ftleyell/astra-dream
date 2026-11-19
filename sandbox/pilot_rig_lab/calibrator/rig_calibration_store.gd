@@ -17,6 +17,11 @@ const MIRROR_VIEW_PAIRS: Dictionary = {
 const MAX_UNDO_STEPS: int = 80
 const DEFAULT_HIP_SHADOW_OFFSET := Vector2(0.8, 3.2)
 const DEFAULT_HIP_SHADOW_COLOR := Color(0.82, 0.68, 0.74, 1.0)
+const DEFAULT_PART_OUTLINE_COLOR := Color(0.015, 0.015, 0.025, 1.0)
+const HEAD_OUTLINE_KEYS: Array[String] = [
+	"head_front", "head_front_r", "head_side_r", "head_back_r",
+	"head_back", "head_back_l", "head_side_l", "head_front_l",
+]
 
 var assets_root: String = DEFAULT_ASSETS_ROOT
 var _views_meta: Dictionary = {}
@@ -402,9 +407,30 @@ func reset_item_to_baseline(view_key: String, target_kind: String, target_name: 
 		var base_z: Dictionary = base_m.get("z_orders", {}) as Dictionary
 		if base_z.has(target_name):
 			set_part_z_order(view_key, target_name, int(base_z[target_name]))
+		var base_po: Dictionary = get_part_outline(view_key, target_name, true)
+		set_part_outline(
+			view_key,
+			target_name,
+			bool(base_po["enabled"]),
+			float(base_po["erode_du"]),
+			float(base_po["outline_du"]),
+			base_po["color"] as Color,
+			bool(base_po["respect_seams"]),
+			false
+		)
 	elif target_kind == "head":
 		set_head_combo_offset(view_key, target_name, get_head_combo_offset(view_key, target_name, true))
 		set_head_combo_scale(view_key, target_name, get_head_combo_scale(view_key, target_name, true))
+		var base_ho: Dictionary = get_head_outline(target_name, true)
+		set_head_outline(
+			target_name,
+			bool(base_ho["enabled"]),
+			float(base_ho["erode_du"]),
+			float(base_ho["outline_du"]),
+			base_ho["color"] as Color,
+			bool(base_ho["respect_seams"]),
+			false
+		)
 	elif target_kind == "neck_anchor":
 		set_neck_anchor_rel(view_key, get_neck_anchor_rel(view_key, true))
 	elif target_kind == "bone":
@@ -516,6 +542,22 @@ func mirror_view_to_partner(src_view: String) -> String:
 			if soff.size() >= 2:
 				dtf["sprite_offset"] = [snappedf(-float(soff[0]), 0.0001), snappedf(float(soff[1]), 0.0001)]
 			dtf["scale"] = snappedf(float(stf.get("scale", 1.0)), 0.001)
+
+	# 7. Espejar part_outlines por pieza (intercambiando _r <-> _l)
+	for src_part_o: String in PART_KEYS:
+		var dst_part_o: String = _swap_rl_part(src_part_o)
+		var spo: Dictionary = get_part_outline(src_view, src_part_o, false)
+		if bool(spo["enabled"]) or ((dst_m.get("part_outlines", {}) as Dictionary).has(dst_part_o)):
+			set_part_outline(
+				dst_view,
+				dst_part_o,
+				bool(spo["enabled"]),
+				float(spo["erode_du"]),
+				float(spo["outline_du"]),
+				spo["color"] as Color,
+				bool(spo["respect_seams"]),
+				false
+			)
 
 	_dirty = true
 	return dst_view
@@ -645,6 +687,147 @@ func set_stocking_pinch(
 	_dirty = true
 
 
+static func parse_part_outline_from_meta(meta: Dictionary, item_key: String) -> Dictionary:
+	var outlines: Variant = meta.get("part_outlines", null)
+	if not (outlines is Dictionary):
+		return {
+			"enabled": false,
+			"erode_du": 0.0,
+			"outline_du": 0.0,
+			"color": DEFAULT_PART_OUTLINE_COLOR,
+			"respect_seams": false,
+		}
+	var raw: Variant = (outlines as Dictionary).get(item_key, null)
+	if not (raw is Dictionary):
+		return {
+			"enabled": false,
+			"erode_du": 0.0,
+			"outline_du": 0.0,
+			"color": DEFAULT_PART_OUTLINE_COLOR,
+			"respect_seams": false,
+		}
+	var d: Dictionary = raw as Dictionary
+	var col_arr: Array = d.get("color", [DEFAULT_PART_OUTLINE_COLOR.r, DEFAULT_PART_OUTLINE_COLOR.g, DEFAULT_PART_OUTLINE_COLOR.b]) as Array
+	var col_v := Color(float(col_arr[0]), float(col_arr[1]), float(col_arr[2]), 1.0) if col_arr.size() >= 3 else DEFAULT_PART_OUTLINE_COLOR
+	return {
+		"enabled": bool(d.get("enabled", false)),
+		"erode_du": clampf(float(d.get("erode_du", 0.0)), 0.0, 8.0),
+		"outline_du": clampf(float(d.get("outline_du", 0.0)), 0.0, 8.0),
+		"color": col_v,
+		"respect_seams": bool(d.get("respect_seams", false)),
+	}
+
+
+static func _encode_part_outline_dict(enabled: bool, erode_du: float, outline_du: float, color: Color, respect_seams: bool) -> Dictionary:
+	return {
+		"enabled": enabled,
+		"erode_du": snappedf(clampf(erode_du, 0.0, 8.0), 0.01),
+		"outline_du": snappedf(clampf(outline_du, 0.0, 8.0), 0.01),
+		"color": [snappedf(color.r, 0.001), snappedf(color.g, 0.001), snappedf(color.b, 0.001)],
+		"respect_seams": respect_seams,
+	}
+
+
+func get_part_outline(view_key: String, part_name: String, from_baseline: bool = false) -> Dictionary:
+	var src: Dictionary = _baseline_views_meta if from_baseline else _views_meta
+	return parse_part_outline_from_meta(src.get(view_key, {}) as Dictionary, part_name)
+
+
+func set_part_outline(
+	view_key: String,
+	part_name: String,
+	enabled: bool,
+	erode_du: float,
+	outline_du: float,
+	color: Color,
+	respect_seams: bool,
+	record_undo: bool = true
+) -> void:
+	var m: Dictionary = get_view_meta(view_key)
+	if m.is_empty():
+		return
+	if record_undo:
+		push_undo_snapshot()
+	if not m.has("part_outlines") or not (m["part_outlines"] is Dictionary):
+		m["part_outlines"] = {}
+	(m["part_outlines"] as Dictionary)[part_name] = _encode_part_outline_dict(enabled, erode_du, outline_du, color, respect_seams)
+	_dirty = true
+
+
+func get_head_outline(head_key: String, from_baseline: bool = false) -> Dictionary:
+	var src: Dictionary = _baseline_heads_meta if from_baseline else _heads_meta
+	return parse_part_outline_from_meta(src, head_key)
+
+
+func set_head_outline(
+	head_key: String,
+	enabled: bool,
+	erode_du: float,
+	outline_du: float,
+	color: Color,
+	respect_seams: bool,
+	record_undo: bool = true
+) -> void:
+	if _heads_meta.is_empty():
+		return
+	if record_undo:
+		push_undo_snapshot()
+	if not _heads_meta.has("part_outlines") or not (_heads_meta["part_outlines"] is Dictionary):
+		_heads_meta["part_outlines"] = {}
+	var encoded: Dictionary = _encode_part_outline_dict(enabled, erode_du, outline_du, color, respect_seams)
+	(_heads_meta["part_outlines"] as Dictionary)[head_key] = encoded
+	if head_key == "head_side_r":
+		(_heads_meta["part_outlines"] as Dictionary)["head_side"] = encoded.duplicate(true)
+	_dirty = true
+
+
+func copy_part_outline_to_view(view_key: String, src_part_name: String) -> void:
+	var src_o: Dictionary = get_part_outline(view_key, src_part_name, false)
+	push_undo_snapshot()
+	for pk: String in PART_KEYS:
+		set_part_outline(
+			view_key,
+			pk,
+			bool(src_o["enabled"]),
+			float(src_o["erode_du"]),
+			float(src_o["outline_du"]),
+			src_o["color"] as Color,
+			bool(src_o["respect_seams"]),
+			false
+		)
+
+
+func copy_part_outline_to_all_views(src_view_key: String, part_name: String) -> void:
+	var src_o: Dictionary = get_part_outline(src_view_key, part_name, false)
+	push_undo_snapshot()
+	for vk: String in VIEW_ORDER:
+		set_part_outline(
+			vk,
+			part_name,
+			bool(src_o["enabled"]),
+			float(src_o["erode_du"]),
+			float(src_o["outline_du"]),
+			src_o["color"] as Color,
+			bool(src_o["respect_seams"]),
+			false
+		)
+
+
+func copy_head_outline_to_all_heads(src_head_key: String) -> void:
+	var src_o: Dictionary = get_head_outline(src_head_key, false)
+	push_undo_snapshot()
+	for hk: String in HEAD_OUTLINE_KEYS:
+		set_head_outline(
+			hk,
+			bool(src_o["enabled"]),
+			float(src_o["erode_du"]),
+			float(src_o["outline_du"]),
+			src_o["color"] as Color,
+			bool(src_o["respect_seams"]),
+			false
+		)
+
+
 func symmetrize_lr_in_view(view_key: String, copy_from_side: String = "r") -> bool:
 	if view_key != "s" and view_key != "n":
 		return false
@@ -690,6 +873,22 @@ func symmetrize_lr_in_view(view_key: String, copy_from_side: String = "r") -> bo
 			if soff.size() >= 2:
 				dtf["sprite_offset"] = [snappedf(-float(soff[0]), 0.0001), snappedf(float(soff[1]), 0.0001)]
 			dtf["scale"] = snappedf(float(stf.get("scale", 1.0)), 0.001)
+
+	for base_ko: String in ["arm", "leg", "pauldron"]:
+		var sp_o: String = base_ko + src_suf
+		var dp_o: String = base_ko + dst_suf
+		var src_po: Dictionary = get_part_outline(view_key, sp_o, false)
+		if bool(src_po["enabled"]) or ((m.get("part_outlines", {}) as Dictionary).has(dp_o)):
+			set_part_outline(
+				view_key,
+				dp_o,
+				bool(src_po["enabled"]),
+				float(src_po["erode_du"]),
+				float(src_po["outline_du"]),
+				src_po["color"] as Color,
+				bool(src_po["respect_seams"]),
+				false
+			)
 
 	_dirty = true
 	return true
@@ -744,6 +943,7 @@ func _build_overrides_payload() -> Dictionary:
 			"z_orders": (m.get("z_orders", {}) as Dictionary).duplicate(true),
 			"rects": (m.get("rects", {}) as Dictionary).duplicate(true),
 			"bones": (m.get("bones", []) as Array).duplicate(true),
+			"part_outlines": (m.get("part_outlines", {}) as Dictionary).duplicate(true),
 		}
 	return {
 		"format_version": 1,

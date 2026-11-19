@@ -285,6 +285,19 @@
         11.5,
         -16.03
       ]
+    },
+    "part_outlines": {
+      "head_front": {
+        "color": [
+          0.015,
+          0.015,
+          0.025
+        ],
+        "enabled": true,
+        "erode_du": 0.6,
+        "outline_du": 0.6,
+        "respect_seams": false
+      }
     }
   },
   "views": {
@@ -439,6 +452,7 @@
         254.8,
         177.0
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           192.1667,
@@ -648,6 +662,7 @@
         260.0,
         179.2
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           174.9,
@@ -857,6 +872,7 @@
         253.7,
         171.8
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           174.0,
@@ -1066,6 +1082,7 @@
         265.5,
         172.8
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           179.5333,
@@ -1275,6 +1292,7 @@
         259.8,
         182.5
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           276.2,
@@ -1484,6 +1502,7 @@
         256.2,
         182.7
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           276.3333,
@@ -1693,6 +1712,7 @@
         263.1,
         181.0
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           272.1334,
@@ -1902,6 +1922,7 @@
         261.9,
         176.0
       ],
+      "part_outlines": {},
       "rects": {
         "arm_l": [
           245.7,

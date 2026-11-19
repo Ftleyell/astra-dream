@@ -486,16 +486,30 @@ func _apply_head_combo_transform(view_key: String, head_key: String) -> void:
 		var meta: Dictionary = h_dict.get("meta", {}) as Dictionary
 		var combos: Dictionary = meta.get("combo_transforms", {}) as Dictionary
 		var view_combos: Dictionary = combos.get(view_key, {}) as Dictionary
+		var cur_off: Vector2 = base_off
+		var cur_s: float = 1.0
 		if view_combos.has(head_key):
 			var tf: Dictionary = view_combos[head_key] as Dictionary
 			var off_arr: Array = tf.get("sprite_offset", [base_off.x, base_off.y]) as Array
-			var s_val: float = float(tf.get("scale", 1.0))
+			cur_s = float(tf.get("scale", 1.0))
 			if off_arr.size() >= 2:
-				spr.position = Vector2(float(off_arr[0]), float(off_arr[1]))
-			spr.scale = base_scale * s_val
+				cur_off = Vector2(float(off_arr[0]), float(off_arr[1]))
+			spr.position = cur_off
+			spr.scale = base_scale * cur_s
 		else:
 			spr.position = base_off
 			spr.scale = base_scale
+		if spr.material is ShaderMaterial:
+			var h_entry: Dictionary = meta.get(head_key, {}) as Dictionary
+			var d_arr: Array = h_entry.get("disp_size", [110.0, 120.0]) as Array
+			if d_arr.size() >= 2:
+				var scaled_sz := Vector2(float(d_arr[0]), float(d_arr[1])) * cur_s
+				var neck_rel: Vector2 = (_views[view_key] as Dictionary).get("neck_rel", Vector2.ZERO) as Vector2 if _views.has(view_key) else Vector2.ZERO
+				var h_orig: Vector2 = neck_rel + cur_off - scaled_sz * 0.5
+				(spr.material as ShaderMaterial).set_shader_parameter(
+					"part_rig_rect",
+					Vector4(h_orig.x / 490.0, h_orig.y / 490.0, scaled_sz.x / 490.0, scaled_sz.y / 490.0)
+				)
 
 
 func _sync_rig_space_matrices() -> void:

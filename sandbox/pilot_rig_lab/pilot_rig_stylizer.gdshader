@@ -163,8 +163,14 @@ uniform float hair_effect_strength : hint_range(0.0, 1.0) = 0.90;
 uniform float hair_cut_height : hint_range(0.05, 0.85) = 0.42;
 uniform float hair_cut_softness : hint_range(0.01, 0.40) = 0.14;
 
-// Inspector Rayos-X (0=Final, 1=Clown-Pass ID, 2=Luminancia, 3=Solo Tinta, 4=Normales 2.5D, 5=Profundidad 2.5D)
-uniform int debug_view_mode : hint_range(0, 5) = 0;
+// Inspector Rayos-X (0=Final, 1=Clown-Pass ID, 2=Luminancia, 3=Solo Tinta, 4=Normales 2.5D, 5=Profundidad 2.5D, 6=ILM Mask)
+uniform int debug_view_mode : hint_range(0, 6) = 0;
+
+// Máscara ILM opcional (ArcSys / Guilty Gear: R=Spec, G=ShadowBias/AO, B=RimWeight, A=Emissive)
+uniform sampler2D ilm_mask_tex : hint_default_white, filter_linear_mipmap;
+uniform bool has_ilm_mask = false;
+uniform float ilm_shadow_bias_strength : hint_range(0.0, 1.0) = 0.65;
+uniform float ilm_spec_strength : hint_range(0.0, 1.5) = 0.75;
 
 // Pipeline 2.5D Normal + Depth + Conic Rim + HDR (Opcional, retrocompatible si use_normal_depth = false)
 uniform sampler2D normal_depth_tex : hint_default_white, filter_linear_mipmap;
@@ -202,6 +208,12 @@ uniform float inward_outline_px : hint_range(0.0, 4.0) = 1.35;
 uniform vec4 inward_outline_color : source_color = vec4(0.015, 0.015, 0.025, 1.0);
 uniform bool inward_outline_on_head = false;
 uniform bool inward_outline_centered = false;
+// Ajuste Fino de Outline por Pieza (Borde transparente que borra PNG + Outline hacia afuera desde el nuevo borde)
+uniform bool enable_part_edge_outline = false;
+uniform float part_edge_erode_du : hint_range(0.0, 8.0) = 0.0;
+uniform float part_edge_outline_du : hint_range(0.0, 8.0) = 0.0;
+uniform vec4 part_edge_outline_color : source_color = vec4(0.015, 0.015, 0.025, 1.0);
+uniform bool part_edge_respect_seams = false;
 uniform bool enable_hip_cast_shadow = false;
 uniform sampler2D hip_cast_body_tex : hint_default_transparent;
 uniform vec4 hip_cast_body_rect = vec4(0.0, 0.0, 1.0, 1.0);
@@ -236,6 +248,47 @@ uniform vec4 deep_mignola_ink : source_color = vec4(0.015, 0.015, 0.025, 1.0);
 uniform float fold_inner_side = 1.0;
 uniform float joint_v_coord : hint_range(0.0, 1.0) = 0.5;
 uniform float joint_flexion : hint_range(0.0, 1.0) = 0.0;
+
+// Muestreo morfológico de alfa en radio con signo (unidades de rig `du`):
+// r_du > 0.0 -> erosión (borde transparente hacia adentro)
+// r_du < 0.0 -> dilatación (expansión de outline hacia afuera)
+float sample_morph_alpha(sampler2D tex, vec2 uv, vec2 du_to_uv, float r_du, float base_a) {
+	if (abs(r_du) <= 0.001) {
+		return base_a;
+	}
+	bool is_erode = (r_du > 0.0);
+	float abs_r = abs(r_du);
+	vec2 rad_uv = du_to_uv * abs_r;
+	float acc = base_a;
+	for (int i = 0; i < 16; i++) {
+		float ang = float(i) * 0.3926990817;
+		vec2 dir = vec2(cos(ang), sin(ang));
+		vec2 suv = uv + dir * rad_uv;
+		float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
+		acc = is_erode ? min(acc, a) : max(acc, a);
+	}
+	if (abs_r > 0.75) {
+		vec2 mid_uv = rad_uv * 0.55;
+		for (int j = 0; j < 8; j++) {
+			float ang = float(j) * 0.7853981634 + 0.1963495408;
+			vec2 dir = vec2(cos(ang), sin(ang));
+			vec2 suv = uv + dir * mid_uv;
+			float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
+			acc = is_erode ? min(acc, a) : max(acc, a);
+		}
+	}
+	if (abs_r > 2.2) {
+		vec2 in_uv = rad_uv * 0.28;
+		for (int k = 0; k < 8; k++) {
+			float ang = float(k) * 0.7853981634;
+			vec2 dir = vec2(cos(ang), sin(ang));
+			vec2 suv = uv + dir * in_uv;
+			float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
+			acc = is_erode ? min(acc, a) : max(acc, a);
+		}
+	}
+	return acc;
+}
 
 void fragment() {
 	vec2 sample_uv = UV;
@@ -376,7 +429,20 @@ void fragment() {
 	}
 
 	bool allow_head_outline = (head_layer_pass != 1) || (head_over_face_keep < 0.5) || (is_hair < 0.5);
-	if (base.a < 0.02) {
+	bool use_part_edge_outline = enable_part_edge_outline && (part_edge_erode_du > 0.001 || part_edge_outline_du > 0.001);
+	float part_edge_fill_a = base.a;
+	float part_edge_total_a = base.a;
+	if (use_part_edge_outline) {
+		vec2 du_to_uv = 1.0 / max(part_rig_rect.zw * 490.0, vec2(1.0));
+		float r_outer_du = part_edge_erode_du - part_edge_outline_du;
+		part_edge_total_a = sample_morph_alpha(TEXTURE, sample_uv, du_to_uv, r_outer_du, base.a);
+		if (part_edge_total_a < 0.02) {
+			discard;
+		}
+		part_edge_fill_a = (part_edge_erode_du > 0.001)
+			? ((base.a < 0.02) ? 0.0 : sample_morph_alpha(TEXTURE, sample_uv, du_to_uv, part_edge_erode_du, base.a))
+			: base.a;
+	} else if (base.a < 0.02) {
 		discard;
 	}
 
@@ -405,16 +471,17 @@ void fragment() {
 	float is_hair_pass = 0.0;
 	if (is_head_part && head_layer_pass > 0) {
 		is_hair_pass = is_hair;
+		float eff_head_a = use_part_edge_outline ? max(base.a, part_edge_total_a) : base.a;
 		if (head_layer_pass == 1) {
 			// Pass 1 (Detrás del torso): renderizar solo cuello azul y empalme inferior bajo mentón/nuca, descartando cráneo/pelo superior para evitar fantasmas o manchas tras Pass 2.
 			float neck_or_seam = max(is_collar_blue, smoothstep(0.55, 0.72, UV.y));
-			layer_alpha = neck_or_seam * mix(1.0, smoothstep(0.82, 0.98, base.a), is_hair);
+			layer_alpha = neck_or_seam * mix(1.0, smoothstep(0.82, 0.98, eff_head_a), is_hair);
 		} else if (head_layer_pass == 2) {
 			// Pass 2 (Sobre el torso): descartar estrictamente el cuello azul en todas las vistas, manteniendo pelo real y rostro/mentón encima.
 			float is_collar = smoothstep(0.25, 0.45, is_collar_blue) * (1.0 - smoothstep(0.35, 0.65, raw_mask.a));
 			if (head_over_face_keep < 0.5) {
 				float is_face_skin = smoothstep(0.35, 0.65, w_skin) * (1.0 - is_collar);
-				layer_alpha = max(is_hair, is_face_skin) * (1.0 - is_collar) * smoothstep(0.0, 0.12, base.a);
+				layer_alpha = max(is_hair, is_face_skin) * (1.0 - is_collar) * smoothstep(0.0, 0.12, eff_head_a);
 			} else {
 				layer_alpha = 1.0 - is_collar;
 			}
@@ -528,12 +595,29 @@ void fragment() {
 	float hair_fx_luma = clamp((orig_luma - 0.48) / 0.36, 0.0, 1.0) * 0.42 + 0.14;
 	float fx_luma = is_head_part ? mix(orig_luma, hair_fx_luma, mask.a) : orig_luma;
 
+	vec4 ilm_sample = has_ilm_mask ? textureLod(ilm_mask_tex, sample_uv, 0.0) : vec4(0.15, 0.5, 1.0, 0.0);
+	float ilm_spec = has_ilm_mask ? ilm_sample.r : 0.0;
+	float ilm_shadow_bias = has_ilm_mask ? (ilm_sample.g - 0.5) * 2.0 : 0.0;
+	float ilm_rim_weight = has_ilm_mask ? ilm_sample.b : 1.0;
+	float ilm_emissive = has_ilm_mask ? ilm_sample.a : 0.0;
+
 	float eff_cel_step = cel_step_strength;
 	if (eff_cel_step > 0.01) {
-		float b1 = smoothstep(0.20, 0.24, fx_luma);
-		float b2 = smoothstep(0.37, 0.42, fx_luma);
+		float cel_luma = clamp(fx_luma + ilm_shadow_bias * 0.22 * ilm_shadow_bias_strength, 0.0, 1.0);
+		float b1 = smoothstep(0.20, 0.24, cel_luma);
+		float b2 = smoothstep(0.37, 0.42, cel_luma);
 		float stepped_factor = (0.72 + b1 * 0.22 + b2 * 0.22);
 		rgb = mix(rgb, clamp(rgb * stepped_factor, vec3(0.0), vec3(1.0)), armor_suit_weight * eff_cel_step);
+	}
+	if (has_ilm_mask && debug_view_mode == 0) {
+		// Sombra AO permanente (G < 0.25) y especular duro ILM (R) + emisivo (A)
+		float ao_dark = clamp((0.30 - ilm_sample.g) / 0.30, 0.0, 1.0) * ilm_shadow_bias_strength;
+		rgb = mix(rgb, rgb * srgb_to_linear(shadow_indigo_tint.rgb * 0.65), ao_dark * 0.72);
+		float spec_ndl = smoothstep(0.52, 0.78, ndl);
+		rgb = clamp(rgb + vec3(spec_ndl * ilm_spec * ilm_spec_strength * 0.35), vec3(0.0), vec3(max(crt_hdr_boost, 1.25)));
+		if (ilm_emissive > 0.05) {
+			rgb += accent_color.rgb * ilm_emissive * max(glow_intensity - 0.5, 0.2) * 0.65;
+		}
 	}
 
 	if (noir_shadow_crush > 0.01) {
@@ -664,7 +748,7 @@ void fragment() {
 			float key_rim = smoothstep(0.32, 0.86, key_align);
 			float fill_rim = smoothstep(0.32, 0.86, 1.0 - key_align) * 0.42 + front_leg_factor * 0.35;
 			vec3 rim_split = conic_col * (key_rim + fill_rim * srgb_to_linear(vec3(0.65, 0.82, 1.0)));
-			rgb += rim_split * grazing * depth_pop * normal_rim_strength * ink_protect * rim_scale;
+			rgb += rim_split * grazing * depth_pop * normal_rim_strength * ink_protect * rim_scale * ilm_rim_weight;
 		}
 
 		// Transición Estilizada 1: Barrido de sombra cel direccional + Rim Fresnel siguiendo las Normales 3D
@@ -794,9 +878,24 @@ void fragment() {
 		}
 	}
 
-	// 10.5 Outline Fino (Hacia Adentro o Centrado en el Borde, crisp y unificado)
+	// 10.5 Outline Fino (Per-Piece Erosión + Outline Externo o Legacy Inward Outline)
 	float centered_outer_alpha = 0.0;
-	if (enable_inward_outline && debug_view_mode == 0 && (!is_head_part || inward_outline_on_head)) {
+	float part_edge_final_alpha = base.a;
+	if (use_part_edge_outline) {
+		float edge_aa = clamp(max(fwidth(part_edge_fill_a), fwidth(part_edge_total_a)) * 0.75, 0.06, 0.35);
+		float crisp_fill = smoothstep(0.5 - edge_aa, 0.5 + edge_aa, part_edge_fill_a);
+		float crisp_total = smoothstep(0.5 - edge_aa, 0.5 + edge_aa, part_edge_total_a);
+		float seam_mult = part_edge_respect_seams ? (1.0 - outline_seam_keep) : 1.0;
+		if (part_edge_respect_seams && is_head_part && suppress_head_collar_ink) {
+			seam_mult = 0.0;
+		}
+		part_edge_final_alpha = mix(crisp_fill, crisp_total, seam_mult);
+		if (part_edge_outline_du > 0.001 && debug_view_mode == 0) {
+			vec3 edge_ink_lin = srgb_to_linear(part_edge_outline_color.rgb);
+			float outline_mix = (1.0 - crisp_fill) * seam_mult;
+			rgb = mix(rgb, edge_ink_lin, outline_mix);
+		}
+	} else if (enable_inward_outline && debug_view_mode == 0 && (!is_head_part || inward_outline_on_head)) {
 		float half_scale = inward_outline_centered ? 0.55 : 1.0;
 		float radius_tex = clamp(inward_outline_px * half_scale * clamp(screen_px_in_texels * 0.65, 1.15, 3.2), 0.75, 4.5);
 		vec2 o_px = TEXTURE_PIXEL_SIZE * radius_tex;
@@ -851,6 +950,9 @@ void fragment() {
 	} else if (debug_view_mode == 5) {
 		// Mapa de Profundidad 2.5D (Depth-Anything-V2)
 		rgb = vec3(nd_sample.a);
+	} else if (debug_view_mode == 6) {
+		// Mapa ILM (R=Spec, G=ShadowBias/AO, B=RimWeight, A=Emissive en Magenta)
+		rgb = has_ilm_mask ? mix(ilm_sample.rgb, vec3(1.0, 0.0, 1.0), ilm_sample.a) : vec3(0.18, 0.18, 0.22);
 	}
 
 	if (hit_flash > 0.0) {
@@ -860,6 +962,6 @@ void fragment() {
 	float zoom_out_bias = is_head_part ? 0.0 : smoothstep(2.0, 5.5, screen_px_in_texels);
 	float alpha_mid = mix(0.50, 0.46, zoom_out_bias);
 	float crisp_base_a = mix(smoothstep(max(alpha_mid - aa_a, 0.02), min(alpha_mid + aa_a, 0.98), base.a), base.a, seam_feather_keep);
-	float final_alpha = max(crisp_base_a, centered_outer_alpha);
+	float final_alpha = use_part_edge_outline ? part_edge_final_alpha : max(crisp_base_a, centered_outer_alpha);
 	COLOR = vec4(rgb, final_alpha * v_modulate_alpha * layer_alpha);
 }
