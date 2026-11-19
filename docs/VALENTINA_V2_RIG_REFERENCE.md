@@ -2,7 +2,8 @@
 
 > **Única Fuente de Verdad Runtime:** Este documento refleja el estado actual real del rig **Valentina v2** (`valentina` v1 eliminado). Para reglas rápidas de edición y tabla contractual sin relecturas, consultar [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md).
 > **Estado actual:** Rig purgado y exclusivo de **Valentina v2**. Todas las animaciones procedurales de locomoción/idle/combate, deformaciones 2.5D en vértice y físicas secundarias están desactivadas. **Únicamente están activos el cambio de dirección 8-dir nativo y su animación de transición de orientación** (enrutado de cuerpo + cabeza desacoplada + cono cervical + backpedal + `PlanarRigTransitionController` Modos 4/5/6 con squash/stretch, smear/flash/holo-sweep, afterimage de giro y micro-snap de cabeza) junto con el pipeline de render estático.
-> **Escena de Laboratorio:** [`sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn`](../sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn)
+> **Escenas de Laboratorio:** [`planar_combat_rig_proto.tscn`](../sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn) · [`planar_shader_lab.tscn`](../sandbox/pilot_rig_lab/shader_lab/planar_shader_lab.tscn) (A/B Shaders) · [`planar_anim_test.tscn`](../sandbox/pilot_rig_lab/proto/planar_anim_test.tscn) (Animación 2.5D)
+> **Backup Inmutable Baseline:** [`backups/valentina_v2_clean_baseline/`](../sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/) + [`restore_valentina_v2_baseline.ps1`](../sandbox/pilot_rig_lab/backups/restore_valentina_v2_baseline.ps1) + tag Git `valentina-v2-clean-baseline`
 > **Suite de Verificación:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"`
 
 ---
@@ -94,6 +95,7 @@ Para las 7 piezas (`body_core`, `arm_r`, `arm_l`, `leg_r`, `leg_l`, `pauldron_r`
 | `<part>.png` | **GPU Pasada 1** (`TEXTURE`, mipmaps + aniso) | RGBA sRGB pre-saneado con Voronoi bleed en alfa 0. | Textura albedo base; ya incluye underlap geodésico (`10–14 px`) para rotación articular sin grietas. |
 | `<part>_id_mask.png` | **GPU Pasada 1** (`id_mask_tex`, mipmaps) | `R`=acentos carmesí/emisivos<br>`G`=armadura/paneles<br>`B`=traje oscuro<br>`A`=medias nylon (en piernas)<br>`1-(R+G+B+A)`=piel | Permite animar efectos por material (ej. pulso emisivo en `mask.r`, brillo de armadura `mask.g`, o reacciones localizadas por zona). |
 | `<part>_normal_depth.png` | **GPU Pasada 1** (`normal_depth_tex`, mipmaps) | `RGB`=normal 2.5D tangente (`0.5, 0.5, 1.0` neutro)<br>`A`=profundidad `80..239` (normalizada `0..1`) | Permite sombreado dinámico direccional al rotar/inclinar el rig, oclusión por profundidad y parallax 2.5D (`depth_parallax_px`). |
+| `<part>_ilm_mask.png` | **GPU Pasada 1** (`ilm_mask_tex`, mipmaps, `has_ilm_mask = true`) | `R`=especularidad metal/nylon<br>`G`=shadow bias / AO fija (`<0.25` sombra cel permanente, `>0.85` piel protegida)<br>`B`=peso de rim-light<br>`A`=emisivo/glow | Control artístico estilo ArcSys/Guilty Gear de corte cel, AO en pliegues, brillo metálico/nylon y protección de piel/rostro. |
 | `<limb>_anim_mask.png` *(arm_r/l, leg_r/l)* | **CPU Skinning** (`use_mipmaps = false`) | `R`=peso hueso proximal (`Shoulder`/`Thigh`)<br>`G`=peso bisagra (`Elbow`/`Knee`)<br>`B`=peso distal (`Wrist`/`Ankle`)<br>`A`=**`seam_fade` horneado en Python** | **RGB activo** para pesos de `Polygon2D` en `PlanarRigMeshBuilder._bind_parts5_weights`. **Nota:** el canal `A` (`seam_fade`) está disponible en la textura pero aún no se consume en shader/CPU. |
 | `body_core_secondary_mask.png` | **GPU Pasada 1** (`secondary_jiggle_mask_tex`, sin mipmaps) | `R`=zona blanda izquierda<br>`G`=zona blanda derecha<br>*(busto en `s/se/sw/e/w`; glúteos en `n/ne/nw`)* | Ya cargada en `body_core_mat` (`enable_secondary_jiggle = true`). Solo requiere alimentar `secondary_jiggle_l_px` / `secondary_jiggle_r_px` para respiración de busto o física secundaria en busto/glúteos. |
 | `body_core_pauldron_mask.png` | **GPU Pasada 1** (`pauldron_mask_tex`, sin mipmaps) | Escala de grises (`R`): área bajo hombrera sobre `body_core`. | Activa (`has_pauldron_mask = true`). Proyecta sombra de contacto de hombreras sobre el torso según `light_dir_2d`. |
@@ -106,8 +108,9 @@ Claves disponibles: `head_front`, `head_front_r`, `head_front_l`, `head_side_r`,
 | Archivo | Uso Actual | Canales / Formato | Cómo aprovecharlo al re-animar |
 |---|---|---|---|
 | `<head>.png` | **GPU Pasada 1** (`TEXTURE`, mipmaps) | RGBA `0.885x` calibrado (`HEAD_PAD_PX = 24`). | Se instancia doble: `DecoupledHeadUnderMount` (`head_layer_pass = 1`) y `DecoupledHeadMount` (`head_layer_pass = 2`). |
-| `<head>_id_mask.png` | **GPU Pasada 1** (`id_mask_tex`, mipmaps) | `R`=acentos (monóculo)<br>`G`=accesorios/armadura<br>`B`=cuello/collar azul (`is_collar_blue`)<br>`A`=cabello (`is_hair`)<br>`1-(R+G+B+A)`=piel facial | Separa automáticamente cuello detrás del collar vs rostro/cabello por delante en `head_layer_pass = 1/2`. |
-| `<head>_normal_depth.png` | **GPU Pasada 1** (`normal_depth_tex`, mipmaps) | `RGB`=normal 2.5D facial/pelo<br>`A`=profundidad | Iluminación 2.5D + parallax + rim cónico en cara y mechones. |
+| `<head>_id_mask.png` | **GPU Pasada 1** (`id_mask_tex`, mipmaps) | `R`=acentos (monóculo)<br>`G`=accesorios/armadura<br>`B`=**cuello inferior (`is_collar_blue`, Pass 1 bajo torso)**<br>`A`=cabello (`is_hair`)<br>`1-(R+G+B+A)`=piel facial | Separa automáticamente cuello detrás del torso vs rostro/cabello por delante en `head_layer_pass = 1/2`. **Invariante:** al regenerar ID de cabezas, preservar siempre el canal `B` del cuello (`ingest_piece_mask_sheets.py` lo hace automáticamente). |
+| `<head>_normal_depth.png` | **GPU Pasada 1** (`normal_depth_tex`, mipmaps) | `RGB`=normal 2.5D facial/pelo (óvalo anime suave)<br>`A`=profundidad | Iluminación 2.5D + parallax + rim cónico en cara y mechones. |
+| `<head>_ilm_mask.png` | **GPU Pasada 1** (`ilm_mask_tex`, mipmaps, `has_ilm_mask = true`) | `R`=Angel Ring/spec pelo<br>`G`=AO bajo mentón/flequillo vs rostro protegido<br>`B`=peso rim<br>`A`=monóculo emisivo | Control ArcSys de rostro limpio, sombra bajo mentón/nuca, Angel Ring en pelo y glow en monóculo. |
 | `<head>_hair_jiggle_mask.png` | **Cargada en GPU** (`secondary_jiggle_mask_tex`, sin mipmaps) | `R` / `G` = zonas reactivas de mechones de cabello | **Lista para usar:** actualmente desactivada (`enable_secondary_jiggle = false`, offset `ZERO`). Al reconstruir física capilar, activar en **ambos** (`_head_data` y `_head_under_data`) sincronizados. |
 | `<head>_outline_sdf.png` | **GPU Pasada 1** (`outline_sdf_tex`, sin mipmaps) | Campo de distancia firmado (`sdf_pad_px = 32.0`, `head_outline_width_px = 4.0`) | Dibuja contorno interno nítido de cabeza/pelo independiente de la escala (`compute_head_sdf_ink`). |
 | `heads_metadata.json` | **CPU Rig Builder** | `_outline_pad_px`, `disp_size`, `neck_pivot_px`, `sprite_offset` | Define el pivote exacto del cuello para evitar bamboleo al rotar `_head_anchor`. |
@@ -121,6 +124,7 @@ Para re-generar o ajustar bordes/segmentación con [`build_valentina_v2_rig_asse
 - `04_limb_anim_masks/split_results/*_limb_segments.png` — Regiones proximal/bisagra/distal de entrada al solucionador armónico.
 - `05_secondary_jiggle_masks/split_results/*_secondary_jiggle_mask.png` — Busto (`s/se/sw`) y glúteos (`n/ne/nw`).
 - `manual_fix_overlays/` — Fixes de mentón (`01`), glúteos perfil (`02`), brazo trasero (`03`), caps (`04`), hombreras (`06`/`07`) y cuellos HD (`07_torso_neck_regen_16x9`).
+- `06_piece_mask_regen/` — Pipeline HQ directo sobre piezas finales calibradas (`export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py --kind <id|normal|ilm>`): 7 hojas estándar (`5 × 16:9` en `2560×1440` + `2 × 1:1` en `2048×2048`), prompts anti-outline (`PROMPT_A/B/C_*.md`), auditorías visuales (`audit_id/normal/ilm.png`) y espejado automático `SE→SW`, `E→W`, `NE→NW` (`L↔R` + `Nx = -Nx` en normales).
 
 ---
 
@@ -138,6 +142,8 @@ Para re-generar o ajustar bordes/segmentación con [`build_valentina_v2_rig_asse
 - **Reloj y FX:**
   - `q_time` (tiempo cuantizado para pulsos/brillos escalonados).
   - `transition_fx_mode` (`0..3`), `transition_fx_strength`, `transition_turn_dir`, `holo_sweep_pos/dir`, `hit_flash`.
+- **Máscara ILM (ArcSys / Guilty Gear):**
+  - `ilm_mask_tex`, `has_ilm_mask`, `ilm_shadow_bias_strength`, `ilm_spec_strength`, más `debug_view_mode = 6` (Inspector Rayos-X ILM).
 
 ### 5.2 Uniformes Listos en Pasada 2 (`pilot_rig_pass2.gdshader` sobre `UnifiedCharacterGroup`)
 - `smear_strength`, `smear_dir`, `smear_tint` (smear direccional unificado sobre la silueta completa).

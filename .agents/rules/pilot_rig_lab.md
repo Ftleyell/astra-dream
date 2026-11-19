@@ -44,6 +44,8 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 | **Materiales, skins, pelo, estilos, `hit_flash`, `debug_view_mode`** | `proto/planar_rig_material_controller.gd` | **Activo** |
 | **UI del Lab y selector de pilotos/inspección** | `proto/planar_lab_hud_builder.gd` + `proto/planar_combat_rig_proto.gd` | **Activo** |
 | **Laboratorio de Animación 2.5D (aislado)** | `proto/planar_anim_test.tscn` + `proto/planar_anim_test.gd` + `proto/leg_*_persp_mask.png` | **Activo (I+D)** (Brújula 8-Dir, zoom/paneo, 16 máscaras de pierna y rotación de cabezas) |
+| **Laboratorio A/B de Shaders (aislado)** | `shader_lab/planar_shader_lab.tscn` + `shader_lab/planar_shader_lab.gd` + `shader_lab/shader_lab_hud.gd` + `shader_lab/shader_lab_backdrop.gd` | **Activo (I+D)** (Comparativa A/B, panel izquierdo con 4 pestañas, luz giratoria, Rayos-X `0..6`, guardado `.tres`) |
+| **Backup Inmutable Baseline Calibrado** | `backups/valentina_v2_clean_baseline/` + `backups/restore_valentina_v2_baseline.ps1` | **Activo** (Snapshot SHA256 con `.gdignore` + tag Git `valentina-v2-clean-baseline`; soporta `-MetaOnly` / `-ShadersOnly` / `-DryRun`) |
 | **Animación esquelética procedural** | `proto/planar_rig_animator.gd` | **Purgado (Rest Pose)** |
 | **Perspectiva 2.5D en vértice** | `proto/planar_rig_perspective_controller.gd` | **Purgado (`persp_mode = 0`, solo `leg_depth_phase` en `e/w`)** |
 | **Física secundaria (jiggle/whiplash)** | `proto/planar_rig_secondary_physics.gd` | **Purgado (`ZERO`)** |
@@ -54,6 +56,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 - **Librería modular v2:** `sandbox/pilot_rig_lab/tools/rig_v2_lib/` (`constants.py`, `mask_and_matting.py`, `skeleton_and_normals.py`, `heads_builder.py`, `part_exporter.py`, `limb_cap_stages.py`, `torso_pauldron_stages.py`, `limb_seal_stages.py`, `audit_renderer.py`, `mask_workspace_prompts.py`).
 - **Orquestador CLI de ensamblado:** `sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py` (ejecutar con `C:\Python314\python.exe` si usa `scipy`).
 - **Workspaces de máscaras IA:** `sandbox/pilot_rig_lab/tools/prepare_ai_mask_workspaces.py` (ejecutar con `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe`).
+- **Regeneración HQ de máscaras por pieza (`ID`, `Normal/Depth`, `ILM`):** `sandbox/pilot_rig_lab/tools/export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py` + `rig_v2_lib/piece_mask_prompts.py` (7 hojas estándar `16:9` y `1:1` bajo `source_refs/valentina_v2_8dir/06_piece_mask_regen/`, ejecutar con `C:\Python314\python.exe`).
 - **Scripts legacy v1 / ingesta puntual:** `tools/legacy_v1/` o módulos de etapa previa (`prepare_8dir_sheets.py`, `ingest_*_16x9.py`). No tocarlos salvo regeneración explícita de fuentes crudas.
 
 ---
@@ -63,6 +66,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 2. **Solo Valentina v2 (8-Dir Nativo):** `body_flip_x` y `head_flip_x` siempre `false` en vistas nativas `s, se, e, ne, n, nw, w, sw`.
 3. **Aislamiento de Producción:** Todo bajo `sandbox/pilot_rig_lab/` permanece aislado; prohibido enlazar directo en `scenes/combat/`.
 4. **Aislamiento del Laboratorio de Animación:** Toda nueva prueba de animación o falsa perspectiva 2.5D se desarrolla en `proto/planar_anim_test.tscn` (o futuros clips bajo `anim_lab/`), usando `calibration_manual_pose = true`. Prohibido ensuciar `planar_rig_perspective_controller.gd` / `planar_rig_animator.gd` (deben mantener `persp_mode = 0` en el rig purgado para que `test_pilot_rig_lab.tscn` siga en PASS).
+5. **Canal `B` del Cuello en `heads/head_*_id_mask.png`:** En las 8 cabezas, el canal azul (`B = 255`) de `*_id_mask.png` marca el cuello inferior para dividir `head_layer_pass = 1` (bajo el torso) vs. `head_layer_pass = 2` (sobre el torso). Toda regeneración/ingesta de ID de cabezas **DEBE preservar** ese canal `B` en la zona de piel del cuello (`not hair` y `not monocle`) para que los cuellos no se dibujen por encima del torso.
 
 ---
 

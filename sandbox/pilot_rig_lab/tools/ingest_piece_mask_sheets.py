@@ -323,6 +323,13 @@ def main() -> None:
                 mask_bgra = _process_normal_depth(aligned, orig_bgra)
 
             dst = _dest_path_for(assets_dir, slot, kind, mirrored=False)
+            # En cabezas, el canal B de *_id_mask.png marca el cuello (Pass 1 bajo torso vs Pass 2 sobre torso);
+            # preservar el canal B existente si ya existe para no romper el orden de capas del cuello.
+            if kind == "id" and slot["kind"] == "head" and dst.exists():
+                prev_m = cv2.imread(str(dst), cv2.IMREAD_UNCHANGED)
+                if prev_m is not None and prev_m.shape == mask_bgra.shape:
+                    not_hair_or_red = (mask_bgra[:, :, 3] < 128) & (mask_bgra[:, :, 2] < 128)
+                    mask_bgra[:, :, 0] = np.where(not_hair_or_red, prev_m[:, :, 0], 0)
             if not args.dry_run:
                 cv2.imwrite(str(dst), mask_bgra)
             written_files += 1
