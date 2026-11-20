@@ -16,6 +16,7 @@ Outputs under:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -32,6 +33,7 @@ from rig_v2_lib.piece_mask_prompts import (  # noqa: E402
     build_prompt_a_id_mask,
     build_prompt_b_normal_depth,
     build_prompt_c_ilm_mask,
+    build_prompt_d_ink_lineart,
 )
 
 BASE_5_VIEWS: list[str] = ["s", "se", "e", "ne", "n"]
@@ -239,6 +241,14 @@ def _render_sheet(
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Export 7 piece mask sheets and AI prompt guides for Valentina v2.")
+    parser.add_argument(
+        "--prompts-only",
+        action="store_true",
+        help="Only create output folders and write PROMPT_*.md guides without re-rendering input sheets.",
+    )
+    args = parser.parse_args()
+
     assets_dir = DEFAULT_OUT_DIR
     out_root = DEFAULT_SOURCE_DIR / WORK_SUBDIR
     inputs_dir = out_root / "inputs"
@@ -251,25 +261,30 @@ def main() -> None:
         out_root / "outputs_id",
         out_root / "outputs_normal",
         out_root / "outputs_ilm",
+        out_root / "outputs_ink",
     ):
         d.mkdir(parents=True, exist_ok=True)
 
-    manifest: dict[str, dict] = {}
-    for spec in _piece_specs(assets_dir):
-        manifest[spec["sheet_name"]] = _render_sheet(spec, inputs_dir, inputs_normal_dir, guides_dir)
+    if not args.prompts_only:
+        manifest: dict[str, dict] = {}
+        for spec in _piece_specs(assets_dir):
+            manifest[spec["sheet_name"]] = _render_sheet(spec, inputs_dir, inputs_normal_dir, guides_dir)
 
-    manifest_path = out_root / "piece_sheets_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        manifest_path = out_root / "piece_sheets_manifest.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     (out_root / "PROMPT_A_ID_MASK.md").write_text(build_prompt_a_id_mask(), encoding="utf-8")
     (out_root / "PROMPT_B_NORMAL_DEPTH.md").write_text(build_prompt_b_normal_depth(), encoding="utf-8")
     (out_root / "PROMPT_C_ILM_MASK.md").write_text(build_prompt_c_ilm_mask(), encoding="utf-8")
+    (out_root / "PROMPT_D_INK_LINEART.md").write_text(build_prompt_d_ink_lineart(), encoding="utf-8")
 
     print(f"\nWorkspace listo en: {out_root}")
-    print("  - 7 hojas limpias (#FFFFFF): inputs/")
-    print("  - 7 hojas normales (#8080FF): inputs_normal/")
-    print("  - 7 guías rotuladas: guides/")
-    print("  - 3 guías de prompts: PROMPT_A_ID_MASK.md, PROMPT_B_NORMAL_DEPTH.md, PROMPT_C_ILM_MASK.md")
+    if not args.prompts_only:
+        print("  - 7 hojas limpias (#FFFFFF): inputs/")
+        print("  - 7 hojas normales (#8080FF): inputs_normal/")
+        print("  - 7 guías rotuladas: guides/")
+    print("  - Carpetas de salida: outputs_id/, outputs_normal/, outputs_ilm/, outputs_ink/")
+    print("  - 4 guías de prompts: PROMPT_A_ID_MASK.md, PROMPT_B_NORMAL_DEPTH.md, PROMPT_C_ILM_MASK.md, PROMPT_D_INK_LINEART.md")
 
 
 if __name__ == "__main__":

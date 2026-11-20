@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PilotJigglePhysicsConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_jiggle_physics_config.gd" id="1_jig"]
+
+[resource]
+script = ExtResource("1_jig")
+anim_id = "jiggle_physics_subtle_zero_g"
+display_name = "Jiggle Physics Sutil — Busto & Glúteos"
+master_intensity = 1.0
+normal_light_strength = 0.015
+preview_pulse_interval_sec = 1.15
+enable_bust_jiggle = true
+bust_idle_amp_px = 1.35
+bust_freq_hz = 2.15
+bust_damping_ratio = 0.28
+bust_inertia_gain = 1.35
+bust_lr_asymmetry = 0.24
+bust_max_clamp_px = 7.5
+enable_glute_jiggle = true
+glute_idle_amp_px = 0.95
+glute_freq_hz = 2.85
+glute_damping_ratio = 0.36
+glute_inertia_gain = 1.25
+glute_thigh_coupling = 0.95
+glute_lr_asymmetry = 0.32
+glute_max_clamp_px = 6.2
+family_multipliers = {
+"e": {
+"bust_scale": 0.95,
+"glute_scale": 0.95
+},
+"n": {
+"bust_scale": 1.0,
+"glute_scale": 1.0
+},
+"ne": {
+"bust_scale": 1.0,
+"glute_scale": 1.0
+},
+"s": {
+"bust_scale": 1.0,
+"glute_scale": 1.0
+},
+"se": {
+"bust_scale": 1.0,
+"glute_scale": 1.0
+}
+}

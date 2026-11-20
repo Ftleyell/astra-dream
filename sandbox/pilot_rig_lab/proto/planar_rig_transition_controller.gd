@@ -15,7 +15,11 @@ var snap_active: bool = false
 var snap_t: float = 1.0
 var snap_swapped: bool = true
 var snap_turn_dir: float = 1.0
+var snap_turn_mag: float = 1.0
 var snap_scale_xy: Vector2 = Vector2.ONE
+var custom_body_dur_sec: float = 0.0
+var custom_body_swap_pt: float = 0.0
+var custom_head_dur_sec: float = 0.0
 var snap_from_view: String = "s"
 var snap_to_view: String = "s"
 var snap_from_flip: bool = false
@@ -39,11 +43,62 @@ func reset() -> void:
 	snap_active = false
 	snap_t = 1.0
 	snap_swapped = true
+	snap_turn_mag = 1.0
 	snap_scale_xy = Vector2.ONE
 	head_micro_snap_t = 1.0
 	head_micro_snap_active = false
 	head_micro_snap_scale = Vector2.ONE
 	head_micro_turn_dir = 0.0
+
+
+## Configura duraciones y punto de corte personalizados para giros snappy desde `.tres`.
+func set_custom_timings(body_dur: float, swap_pt: float, head_dur: float) -> void:
+	custom_body_dur_sec = maxf(body_dur, 0.0)
+	custom_body_swap_pt = clampf(swap_pt, 0.0, 0.65)
+	custom_head_dur_sec = maxf(head_dur, 0.0)
+
+
+func _resolve_body_dur() -> float:
+	if custom_body_dur_sec > 0.03:
+		return custom_body_dur_sec
+	return 0.115 if transition_style == TransitionStyle.WHIP_SNAP_AFTERIMAGE else (0.095 if transition_style == TransitionStyle.MICRO_FLASH_SNAP else 0.110)
+
+
+func _resolve_body_swap_pt() -> float:
+	if custom_body_swap_pt > 0.05:
+		return clampf(custom_body_swap_pt, 0.15, 0.65)
+	return 0.35 if transition_style == TransitionStyle.WHIP_SNAP_AFTERIMAGE else (0.18 if transition_style == TransitionStyle.MICRO_FLASH_SNAP else 0.45)
+
+
+## Retorna una instantánea de fase y dirección activa de giro para cuerpo y cabeza.
+func get_turn_anim_state() -> Dictionary:
+	return {
+		"body_active": snap_active,
+		"body_t": snap_t if snap_active else 1.0,
+		"body_swap_pt": _resolve_body_swap_pt(),
+		"body_swapped": snap_swapped,
+		"body_turn_dir": snap_turn_dir,
+		"body_turn_mag": snap_turn_mag,
+		"head_active": head_micro_snap_active,
+		"head_t": head_micro_snap_t if head_micro_snap_active else 1.0,
+		"head_turn_dir": head_micro_turn_dir,
+	}
+
+
+func _compute_head_turn_dir(from_head: String, to_head: String, from_flip: bool, to_flip: bool, fallback_dir: float) -> float:
+	if to_flip != from_flip:
+		return -1.0 if to_flip else 1.0
+	var h_from_v: Vector2 = PlanarRigViewRouter.HEAD_DIR_VECTORS.get(from_head, Vector2.DOWN) as Vector2
+	var h_to_v: Vector2 = PlanarRigViewRouter.HEAD_DIR_VECTORS.get(to_head, Vector2.DOWN) as Vector2
+	var dx_head: float = h_to_v.x - h_from_v.x
+	if absf(dx_head) > 0.05:
+		return signf(dx_head)
+	var ang_head: float = h_from_v.angle_to(h_to_v)
+	if absf(ang_head) > 0.05:
+		return signf(ang_head)
+	if absf(fallback_dir) > 0.01:
+		return signf(fallback_dir)
+	return -1.0 if to_head.ends_with("_l") else 1.0
 
 
 func compute_snap_curve(style: int, t: float) -> Dictionary:
@@ -122,7 +177,8 @@ func update(delta: float, router: PlanarRigViewRouter, defer_head_to_clock: bool
 	}
 
 	if head_micro_snap_active:
-		head_micro_snap_t += delta / 0.075
+		var head_dur: float = custom_head_dur_sec if custom_head_dur_sec > 0.02 else 0.075
+		head_micro_snap_t += delta / head_dur
 		if head_micro_snap_t >= 1.0:
 			head_micro_snap_t = 1.0
 			head_micro_snap_active = false
@@ -147,18 +203,29 @@ func update(delta: float, router: PlanarRigViewRouter, defer_head_to_clock: bool
 			var from_vec: Vector2 = PlanarRigViewRouter.get_body_dir_vector(snap_from_view)
 			var to_vec: Vector2 = PlanarRigViewRouter.get_body_dir_vector(snap_to_view)
 			var cross_ang: float = from_vec.angle_to(to_vec)
+			var dx_body: float = to_vec.x - from_vec.x
 			if snap_to_flip != snap_from_flip:
 				snap_turn_dir = -1.0 if snap_to_flip else 1.0
+			elif absf(dx_body) > 0.08:
+				snap_turn_dir = signf(dx_body)
 			elif absf(cross_ang) > 0.05 and absf(cross_ang) < PI - 0.05:
 				snap_turn_dir = signf(cross_ang)
 			else:
 				snap_turn_dir = -1.0 if (snap_to_view in ["n", "nw", "w", "sw"]) else 1.0
+			snap_turn_mag = clampf(absf(cross_ang) / (PI * 0.25), 0.85, 1.45)
 			events["started_snap"] = true
+			if head_changed:
+				head_micro_snap_active = true
+				head_micro_snap_t = 0.0
+				head_micro_snap_scale = Vector2(0.89, 1.07)
+				head_micro_turn_dir = _compute_head_turn_dir(router.active_head_key, router.target_head_key, router.head_flip_x, router.target_head_flip_x, snap_turn_dir)
+				events["head_micro_snap"] = true
+				events["head_turn_dir"] = head_micro_turn_dir
 		elif head_changed:
 			head_micro_snap_active = true
 			head_micro_snap_t = 0.0
 			head_micro_snap_scale = Vector2(0.89, 1.07)
-			head_micro_turn_dir = (-1.0 if router.target_head_flip_x else 1.0) if (router.target_head_flip_x != router.head_flip_x) else (-1.0 if router.target_head_key.ends_with("_l") else 1.0)
+			head_micro_turn_dir = _compute_head_turn_dir(router.active_head_key, router.target_head_key, router.head_flip_x, router.target_head_flip_x, snap_turn_dir)
 			events["head_micro_snap"] = true
 			events["head_turn_dir"] = head_micro_turn_dir
 	else:
@@ -166,8 +233,8 @@ func update(delta: float, router: PlanarRigViewRouter, defer_head_to_clock: bool
 		snap_to_flip = router.target_body_flip_x
 		snap_to_head = router.target_head_key
 		snap_to_head_flip = router.target_head_flip_x
-		var dur: float = 0.115 if transition_style == TransitionStyle.WHIP_SNAP_AFTERIMAGE else (0.095 if transition_style == TransitionStyle.MICRO_FLASH_SNAP else 0.110)
-		var swap_pt: float = 0.35 if transition_style == TransitionStyle.WHIP_SNAP_AFTERIMAGE else (0.18 if transition_style == TransitionStyle.MICRO_FLASH_SNAP else 0.45)
+		var dur: float = _resolve_body_dur()
+		var swap_pt: float = _resolve_body_swap_pt()
 		snap_t += delta / dur
 		if not snap_swapped and snap_t >= swap_pt:
 			snap_swapped = true

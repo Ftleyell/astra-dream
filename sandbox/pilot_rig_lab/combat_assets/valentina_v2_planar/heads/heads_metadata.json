@@ -291,8 +291,8 @@
         0.015,
         0.025
       ],
-      "enabled": true,
-      "erode_du": 0.6,
+      "enabled": false,
+      "erode_du": 1.0,
       "outline_du": 0.6,
       "respect_seams": false
     }

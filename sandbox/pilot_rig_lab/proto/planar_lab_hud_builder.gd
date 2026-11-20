@@ -1,16 +1,12 @@
 class_name PlanarLabHudBuilder
 extends RefCounted
-## Constructor desacoplado del panel HUD para el Pilot Rig Lab.
-## Escanea pilotos `.tres` en `pilots/*/*.tres` y expone controles de estilo,
-## iluminación 2.5D, hit_flash, transiciones snappy (4..6) e inspección estática.
+## Constructor desacoplado del panel HUD para el Planar Combat Rig Lab.
+## Expone únicamente las secciones activas:
+## - 1. Estilo & Skins (estilos .tres, skins, método recolor, pelo)
+## - 3. Dirección 8-Dir & Transición (modos 4..6, slow-mo, órbita auto)
+## - 4. Inspección & Escena (Rayos-X, zoom, fondo, dron orbitando)
 
 const PILOTS_ROOT_DIR: String = "res://sandbox/pilot_rig_lab/pilots"
-const BODY_KEYS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]
-const HEAD_KEYS: Array[String] = [
-	"head_front", "head_front_l", "head_front_r",
-	"head_side_l", "head_side_r",
-	"head_back", "head_back_l", "head_back_r",
-]
 
 
 static func scan_pilot_profiles() -> Array[PilotRigProfile]:
@@ -41,28 +37,15 @@ static func scan_pilot_profiles() -> Array[PilotRigProfile]:
 	return profiles
 
 
-static func rebuild_static_body_options(body_opt: OptionButton, rig: PlanarCombatRig) -> Array[String]:
-	if body_opt == null:
-		return []
-	var prev_key: String = ""
-	if body_opt.has_meta("view_keys"):
-		var old_keys: Variant = body_opt.get_meta("view_keys")
-		if old_keys is Array and body_opt.selected >= 0 and body_opt.selected < (old_keys as Array).size():
-			prev_key = str((old_keys as Array)[body_opt.selected])
-	body_opt.clear()
-	var view_keys: Array[String] = rig.get_available_view_keys() if rig != null else []
-	if view_keys.is_empty():
-		view_keys.assign(BODY_KEYS)
-	for i: int in range(view_keys.size()):
-		body_opt.add_item("Cuerpo %s" % view_keys[i].to_upper(), i)
-	body_opt.set_meta("view_keys", view_keys)
-	var restore_idx: int = view_keys.find(prev_key)
-	body_opt.select(restore_idx if restore_idx >= 0 else 0)
-	return view_keys
-
-
-static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -> Dictionary:
+static func build_hud(
+	host: Node,
+	rig: PlanarCombatRig,
+	styles: Array[RigStyleProfile],
+	callbacks: Dictionary
+) -> Dictionary:
 	var hud_layer := CanvasLayer.new()
+	hud_layer.name = "CombatLabHudLayer"
+	hud_layer.layer = 10
 	host.add_child(hud_layer)
 
 	var panel := PanelContainer.new()
@@ -71,7 +54,7 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	panel.anchor_top = 0.0
 	panel.anchor_bottom = 1.0
 	panel.offset_left = 12.0
-	panel.offset_right = 352.0
+	panel.offset_right = 336.0
 	panel.offset_top = 12.0
 	panel.offset_bottom = -12.0
 	hud_layer.add_child(panel)
@@ -103,61 +86,41 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	status_lbl.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(status_lbl)
 
-	# --- 0. PILOTO ---
-	_add_section_header(vbox, "0. PILOTO (.tres)")
-	var profiles: Array[PilotRigProfile] = scan_pilot_profiles()
-	var pilot_opt := OptionButton.new()
-	for p: PilotRigProfile in profiles:
-		pilot_opt.add_item("%s (%s)" % [p.display_name, p.pilot_id])
-	if profiles.is_empty():
-		pilot_opt.add_item("(Sin perfiles .tres)")
-	_add_opt_with_steppers(vbox, pilot_opt)
+	# --- 1. ESTILO & SKINS ---
+	_add_section_header(vbox, "1. ESTILO & SKINS")
 
-	# --- 1. ESTILO & RECOLOR ---
-	_add_section_header(vbox, "1. ESTILO & RECOLOR")
-
-	var halftone_slider := HSlider.new()
+	var active_profile: PilotRigProfile = rig.pilot_profile as PilotRigProfile if rig != null else null
 	var profile_opt := OptionButton.new()
 	var skin_opt := OptionButton.new()
 	var hair_opt := OptionButton.new()
 
-	var populate_presets: Callable = func(p: PilotRigProfile) -> void:
-		profile_opt.clear()
-		skin_opt.clear()
-		hair_opt.clear()
-		if p == null:
-			return
-		for sp: RigStyleProfile in p.style_profiles:
-			if sp != null:
-				profile_opt.add_item(sp.label)
-		for sk: PilotSkinPreset in p.skins:
+	for sp: RigStyleProfile in styles:
+		if sp != null:
+			profile_opt.add_item(sp.label if not sp.label.is_empty() else sp.id)
+	if active_profile != null:
+		for sk: PilotSkinPreset in active_profile.skins:
 			if sk != null:
 				skin_opt.add_item(sk.label)
-		for hp: PilotHairPreset in p.hair_presets:
+		for hp: PilotHairPreset in active_profile.hair_presets:
 			if hp != null:
 				hair_opt.add_item(hp.label)
 
-	var active_profile: Array = [profiles[0] if not profiles.is_empty() else (rig.pilot_profile as PilotRigProfile)]
-	populate_presets.call(active_profile[0] as PilotRigProfile)
-
+	var on_style_selected: Callable = callbacks.get("on_style_selected", Callable())
 	profile_opt.item_selected.connect(func(idx: int) -> void:
-		var p: PilotRigProfile = active_profile[0] as PilotRigProfile
-		if p == null or idx < 0 or idx >= p.style_profiles.size():
-			return
-		var sp: RigStyleProfile = p.style_profiles[idx]
-		rig.apply_style_profile(sp)
-		halftone_slider.set_value_no_signal(sp.halftone_strength)
+		if on_style_selected.is_valid():
+			on_style_selected.call(idx)
+		elif rig != null and idx >= 0 and idx < styles.size():
+			rig.apply_style_profile(styles[idx])
 	)
 	_add_opt_with_steppers(vbox, profile_opt)
 
 	skin_opt.item_selected.connect(func(idx: int) -> void:
-		var p: PilotRigProfile = active_profile[0] as PilotRigProfile
-		if p == null or idx < 0 or idx >= p.skins.size():
+		if rig == null or active_profile == null or idx < 0 or idx >= active_profile.skins.size():
 			return
-		var sk: PilotSkinPreset = p.skins[idx]
+		var sk: PilotSkinPreset = active_profile.skins[idx]
 		rig.apply_skin_preset(sk)
-		if hair_opt.selected > 0 and hair_opt.selected < p.hair_presets.size():
-			rig.apply_hair_preset(p.hair_presets[hair_opt.selected], sk.hair_color)
+		if hair_opt.selected > 0 and hair_opt.selected < active_profile.hair_presets.size():
+			rig.apply_hair_preset(active_profile.hair_presets[hair_opt.selected], sk.hair_color)
 	)
 	_add_opt_with_steppers(vbox, skin_opt)
 
@@ -172,17 +135,17 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 		recolor_method_opt.add_item(rm_lbl)
 	recolor_method_opt.selected = 1
 	recolor_method_opt.item_selected.connect(func(idx: int) -> void:
-		rig.set_recolor_method(idx)
+		if rig != null:
+			rig.set_recolor_method(idx)
 	)
 	vbox.add_child(recolor_method_opt)
 
 	hair_opt.item_selected.connect(func(idx: int) -> void:
-		var p: PilotRigProfile = active_profile[0] as PilotRigProfile
-		if p == null or idx < 0 or idx >= p.hair_presets.size():
+		if rig == null or active_profile == null or idx < 0 or idx >= active_profile.hair_presets.size():
 			return
-		var sk_idx: int = clampi(skin_opt.selected, 0, maxi(p.skins.size() - 1, 0))
-		var skin_hair: Color = p.skins[sk_idx].hair_color if not p.skins.is_empty() else Color.WHITE
-		rig.apply_hair_preset(p.hair_presets[idx], skin_hair)
+		var sk_idx: int = clampi(skin_opt.selected, 0, maxi(active_profile.skins.size() - 1, 0))
+		var skin_hair: Color = active_profile.skins[sk_idx].hair_color if not active_profile.skins.is_empty() else Color.WHITE
+		rig.apply_hair_preset(active_profile.hair_presets[idx], skin_hair)
 	)
 	_add_opt_with_steppers(vbox, hair_opt)
 
@@ -195,144 +158,12 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	]:
 		hair_style_opt.add_item(hs_lbl)
 	hair_style_opt.item_selected.connect(func(idx: int) -> void:
-		rig.set_hair_style_mode(idx)
+		if rig != null:
+			rig.set_hair_style_mode(idx)
 	)
 	vbox.add_child(hair_style_opt)
 
-	var ht_lbl := Label.new()
-	ht_lbl.text = "Fuerza Semitono / Trama"
-	vbox.add_child(ht_lbl)
-	halftone_slider.min_value = 0.0
-	halftone_slider.max_value = 1.0
-	halftone_slider.step = 0.05
-	halftone_slider.value = 0.0
-	halftone_slider.value_changed.connect(func(v: float) -> void:
-		rig.set_shader_param_all("enable_halftone", v > 0.01)
-		rig.set_shader_param_all("halftone_strength", v)
-	)
-	vbox.add_child(halftone_slider)
-
-	# --- 2. ILUMINACIÓN 2.5D, HIT FLASH & OUTLINE ---
-	_add_section_header(vbox, "2. ILUMINACIÓN 2.5D, FX & OUTLINE")
-
-	var normal_chk := CheckBox.new()
-	normal_chk.text = "Iluminación 2.5D + Rim Cónico"
-	normal_chk.button_pressed = true
-	vbox.add_child(normal_chk)
-
-	var light_lbl := Label.new()
-	light_lbl.text = "Ángulo Luz 2.5D"
-	vbox.add_child(light_lbl)
-	var light_slider := HSlider.new()
-	light_slider.min_value = -180.0
-	light_slider.max_value = 180.0
-	light_slider.value = -125.0
-	vbox.add_child(light_slider)
-
-	var cel_infl_lbl := Label.new()
-	cel_infl_lbl.text = "Influencia Cel 2.5D"
-	vbox.add_child(cel_infl_lbl)
-	var cel_infl_slider := HSlider.new()
-	cel_infl_slider.min_value = 0.0
-	cel_infl_slider.max_value = 1.0
-	cel_infl_slider.step = 0.05
-	cel_infl_slider.value = 0.52
-	cel_infl_slider.value_changed.connect(func(v: float) -> void: rig.set_shader_param_all("normal_cel_influence", v))
-	vbox.add_child(cel_infl_slider)
-
-	var hdr_lbl := Label.new()
-	hdr_lbl.text = "HDR Glow / Rim Boost"
-	vbox.add_child(hdr_lbl)
-	var hdr_slider := HSlider.new()
-	hdr_slider.min_value = 1.0
-	hdr_slider.max_value = 2.2
-	hdr_slider.step = 0.05
-	hdr_slider.value = 1.15
-	vbox.add_child(hdr_slider)
-
-	var sync_lighting: Callable = callbacks.get("sync_lighting", Callable())
-	if sync_lighting.is_valid():
-		normal_chk.toggled.connect(func(_v: bool) -> void: sync_lighting.call())
-		light_slider.value_changed.connect(func(_v: float) -> void: sync_lighting.call())
-		hdr_slider.value_changed.connect(func(_v: float) -> void: sync_lighting.call())
-
-	var flash_row := HBoxContainer.new()
-	vbox.add_child(flash_row)
-	var flash_btn := Button.new()
-	flash_btn.text = "Pulso Hit Flash"
-	flash_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	flash_btn.pressed.connect(func() -> void: rig.trigger_hit_flash(1.0))
-	flash_row.add_child(flash_btn)
-
-	var flash_hold_chk := CheckBox.new()
-	flash_hold_chk.text = "Hold 1.0"
-	flash_hold_chk.toggled.connect(func(v: bool) -> void: rig.set_hit_flash(1.0 if v else 0.0))
-	flash_row.add_child(flash_hold_chk)
-
-	var impact_btn := Button.new()
-	impact_btn.text = "Impact Frame + Hit-Stop (55ms)"
-	impact_btn.pressed.connect(func() -> void: rig.trigger_impact_frame(55.0, 6.0))
-	vbox.add_child(impact_btn)
-
-	var pass2_out_str_lbl := Label.new()
-	pass2_out_str_lbl.text = "Outline Pasada 2 — Fuerza: 1.00"
-	vbox.add_child(pass2_out_str_lbl)
-	var pass2_out_str_slider := HSlider.new()
-	pass2_out_str_slider.min_value = 0.0
-	pass2_out_str_slider.max_value = 1.0
-	pass2_out_str_slider.step = 0.05
-	pass2_out_str_slider.value = 1.0
-	vbox.add_child(pass2_out_str_slider)
-
-	var pass2_out_w_lbl := Label.new()
-	pass2_out_w_lbl.text = "Outline Pasada 2 — Grosor: 1.45 px"
-	vbox.add_child(pass2_out_w_lbl)
-	var pass2_out_w_slider := HSlider.new()
-	pass2_out_w_slider.min_value = 0.0
-	pass2_out_w_slider.max_value = 8.0
-	pass2_out_w_slider.step = 0.05
-	pass2_out_w_slider.value = 1.45
-	vbox.add_child(pass2_out_w_slider)
-
-	var sync_pass2_outline: Callable = func(_v: float = 0.0) -> void:
-		var s_val: float = pass2_out_str_slider.value
-		var w_val: float = pass2_out_w_slider.value
-		rig.set_outer_outline_params(s_val > 0.01 and w_val > 0.01, w_val, s_val)
-		pass2_out_str_lbl.text = "Outline Pasada 2 — Fuerza: %.2f" % s_val
-		pass2_out_w_lbl.text = "Outline Pasada 2 — Grosor: %.2f px" % w_val
-	pass2_out_str_slider.value_changed.connect(sync_pass2_outline)
-	pass2_out_w_slider.value_changed.connect(sync_pass2_outline)
-	sync_pass2_outline.call()
-
-	var refresh_static_ui: Array[Callable] = [Callable()]
-	var sync_clock_ui: Array[Callable] = [Callable()]
-	pilot_opt.item_selected.connect(func(idx: int) -> void:
-		if idx < 0 or idx >= profiles.size():
-			return
-		var p: PilotRigProfile = profiles[idx]
-		active_profile[0] = p
-		rig.load_pilot_profile(p)
-		populate_presets.call(p)
-		if not p.style_profiles.is_empty():
-			rig.apply_style_profile(p.style_profiles[0])
-			halftone_slider.set_value_no_signal(p.style_profiles[0].halftone_strength)
-		if not p.skins.is_empty():
-			rig.apply_skin_preset(p.skins[0])
-		rig.set_recolor_method(recolor_method_opt.selected)
-		rig.set_hair_style_mode(hair_style_opt.selected)
-		rig.set_shader_param_all("normal_cel_influence", cel_infl_slider.value)
-		if flash_hold_chk.button_pressed:
-			rig.set_hit_flash(1.0)
-		sync_pass2_outline.call()
-		if sync_lighting.is_valid():
-			sync_lighting.call()
-		if refresh_static_ui[0].is_valid():
-			refresh_static_ui[0].call()
-		if sync_clock_ui[0].is_valid():
-			sync_clock_ui[0].call()
-	)
-
-	# --- 3. DIRECCIÓN 8-DIR + TRANSICIÓN DE ORIENTACIÓN ---
+	# --- 3. DIRECCIÓN 8-DIR & TRANSICIÓN ---
 	_add_section_header(vbox, "3. DIRECCIÓN 8-DIR & TRANSICIÓN")
 
 	var transition_opt := OptionButton.new()
@@ -341,7 +172,8 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	transition_opt.add_item("Transición 6: Holo-Snap Acelerado (65ms)", 6)
 	transition_opt.select(0)
 	transition_opt.item_selected.connect(func(idx: int) -> void:
-		rig.set_transition_style(transition_opt.get_item_id(idx))
+		if rig != null:
+			rig.set_transition_style(transition_opt.get_item_id(idx))
 	)
 	vbox.add_child(transition_opt)
 
@@ -354,12 +186,122 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	vbox.add_child(slowmo_chk)
 
 	var auto_demo_chk := CheckBox.new()
-	auto_demo_chk.text = "Demo Auto 8-Dir + Aim"
+	auto_demo_chk.text = "Órbita Auto (Estrella + Mira Fija)"
 	auto_demo_chk.button_pressed = true
+	auto_demo_chk.focus_mode = Control.FOCUS_NONE
+	var manual_control_chk := CheckBox.new()
+	manual_control_chk.text = "Control Manual (WASD + Ratón)"
+	manual_control_chk.button_pressed = false
+	manual_control_chk.focus_mode = Control.FOCUS_NONE
+
 	var on_auto_demo: Callable = callbacks.get("on_auto_demo", Callable())
-	if on_auto_demo.is_valid():
-		auto_demo_chk.toggled.connect(on_auto_demo)
+	var on_manual_control: Callable = callbacks.get("on_manual_control", Callable())
+	auto_demo_chk.toggled.connect(func(v: bool) -> void:
+		manual_control_chk.set_pressed_no_signal(not v)
+		if on_auto_demo.is_valid():
+			on_auto_demo.call(v)
+	)
+	manual_control_chk.toggled.connect(func(v: bool) -> void:
+		auto_demo_chk.set_pressed_no_signal(not v)
+		if on_manual_control.is_valid():
+			on_manual_control.call(v)
+		elif on_auto_demo.is_valid():
+			on_auto_demo.call(not v)
+	)
 	vbox.add_child(auto_demo_chk)
+	vbox.add_child(manual_control_chk)
+
+	var pose_row := HBoxContainer.new()
+	pose_row.add_theme_constant_override("separation", 4)
+	vbox.add_child(pose_row)
+
+	var pose_mode_opt := OptionButton.new()
+	pose_mode_opt.add_item("Pose Base: Guardia Zero-G (Huesos + 2.5D)", 0)
+	pose_mode_opt.add_item("Pose Base: Guardia Zero-G (Solo Huesos 2D)", 1)
+	pose_mode_opt.add_item("Pose Base: Guardia Zero-G (Solo 2.5D)", 2)
+	pose_mode_opt.add_item("Pose Base: Default Rig (Rest Pose)", 3)
+	pose_mode_opt.select(0)
+	pose_mode_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pose_mode_opt.clip_text = true
+	var on_pose_mode: Callable = callbacks.get("on_pose_mode_selected", Callable())
+	if on_pose_mode.is_valid():
+		pose_mode_opt.item_selected.connect(on_pose_mode)
+	pose_row.add_child(pose_mode_opt)
+
+	var reload_pose_btn := Button.new()
+	reload_pose_btn.text = "↺ .tres"
+	reload_pose_btn.tooltip_text = "Recargar Pose Base, Idle, Vuelo, Giros, Jiggle y Facial desde .tres"
+	var on_reload_pose: Callable = callbacks.get("on_reload_base_pose", Callable())
+	if on_reload_pose.is_valid():
+		reload_pose_btn.pressed.connect(on_reload_pose)
+	pose_row.add_child(reload_pose_btn)
+
+	var idle_anim_chk := CheckBox.new()
+	idle_anim_chk.text = "Animación Idle Zero-G (.tres)"
+	idle_anim_chk.button_pressed = true
+	var on_idle_anim: Callable = callbacks.get("on_idle_anim_toggled", Callable())
+	if on_idle_anim.is_valid():
+		idle_anim_chk.toggled.connect(on_idle_anim)
+	vbox.add_child(idle_anim_chk)
+
+	var loco_anim_chk := CheckBox.new()
+	loco_anim_chk.text = "Movimiento & Freno Suave (.tres)"
+	loco_anim_chk.button_pressed = true
+	var on_loco_anim: Callable = callbacks.get("on_loco_anim_toggled", Callable())
+	if on_loco_anim.is_valid():
+		loco_anim_chk.toggled.connect(on_loco_anim)
+	vbox.add_child(loco_anim_chk)
+
+	var kiting_anim_chk := CheckBox.new()
+	kiting_anim_chk.text = "Kiting 360° & Reversa (.tres)"
+	kiting_anim_chk.button_pressed = true
+	var on_kiting_anim: Callable = callbacks.get("on_kiting_anim_toggled", Callable())
+	if on_kiting_anim.is_valid():
+		kiting_anim_chk.toggled.connect(on_kiting_anim)
+	vbox.add_child(kiting_anim_chk)
+
+	var turn_anim_chk := CheckBox.new()
+	turn_anim_chk.text = "Giros Snappy & Whip Cabeza (.tres)"
+	turn_anim_chk.button_pressed = true
+	var on_turn_anim: Callable = callbacks.get("on_turn_anim_toggled", Callable())
+	if on_turn_anim.is_valid():
+		turn_anim_chk.toggled.connect(on_turn_anim)
+	vbox.add_child(turn_anim_chk)
+
+	var jiggle_anim_chk := CheckBox.new()
+	jiggle_anim_chk.text = "Jiggle Busto & Glúteos (.tres)"
+	jiggle_anim_chk.button_pressed = true
+	var on_jiggle_anim: Callable = callbacks.get("on_jiggle_anim_toggled", Callable())
+	if on_jiggle_anim.is_valid():
+		jiggle_anim_chk.toggled.connect(on_jiggle_anim)
+	vbox.add_child(jiggle_anim_chk)
+
+	var face_anim_chk := CheckBox.new()
+	face_anim_chk.text = "Rig Facial Vivo & Personalidad (.tres)"
+	face_anim_chk.button_pressed = true
+	var on_face_anim: Callable = callbacks.get("on_face_anim_toggled", Callable())
+	if on_face_anim.is_valid():
+		face_anim_chk.toggled.connect(on_face_anim)
+	vbox.add_child(face_anim_chk)
+
+	var face_personality_opt := OptionButton.new()
+	face_personality_opt.add_item("Personalidad: Táctica Fría (Estoica)", 0)
+	face_personality_opt.add_item("Personalidad: Piloto Ace Confiada", 1)
+	face_personality_opt.add_item("Personalidad: Anime Dinámico", 2)
+	face_personality_opt.select(0)
+	var on_face_pers: Callable = callbacks.get("on_face_personality_selected", Callable())
+	if on_face_pers.is_valid():
+		face_personality_opt.item_selected.connect(func(idx: int) -> void:
+			on_face_pers.call(face_personality_opt.get_item_id(idx))
+		)
+	vbox.add_child(face_personality_opt)
+
+	var face_comms_btn := Button.new()
+	face_comms_btn.text = "Comms Táctico (C)"
+	var on_face_comms: Callable = callbacks.get("on_face_comms_pressed", Callable())
+	if on_face_comms.is_valid():
+		face_comms_btn.pressed.connect(on_face_comms)
+	vbox.add_child(face_comms_btn)
 
 	# --- 4. INSPECCIÓN & ESCENA ---
 	_add_section_header(vbox, "4. INSPECCIÓN & ESCENA")
@@ -372,17 +314,23 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 		"X-Ray 3: Solo Tinta",
 		"X-Ray 4: Normales 2.5D",
 		"X-Ray 5: Profundidad 2.5D",
+		"X-Ray 6: Máscara ILM",
+		"X-Ray 7: Face Live Mask (R/G/B/A)",
+		"X-Ray 8: Hair 3-Zone (R/G/B)",
 	]:
 		debug_opt.add_item(lbl)
 	debug_opt.item_selected.connect(func(idx: int) -> void:
-		rig.set_debug_view_mode(idx)
+		if rig != null:
+			rig.set_debug_view_mode(idx)
 	)
 	vbox.add_child(debug_opt)
 
 	var zoom_opt := OptionButton.new()
 	zoom_opt.add_item("Zoom: Close-Up (2.0x)")
+	zoom_opt.add_item("Zoom: Estudio (1.45x)")
 	zoom_opt.add_item("Zoom: Combat (1.15x)")
 	zoom_opt.add_item("Zoom: Escuadrón (0.65x)")
+	zoom_opt.select(1)
 	var on_zoom: Callable = callbacks.get("on_zoom", Callable())
 	if on_zoom.is_valid():
 		zoom_opt.item_selected.connect(on_zoom)
@@ -393,7 +341,7 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 	white_bg_chk.button_pressed = false
 	var space_nebula_chk := CheckBox.new()
 	space_nebula_chk.text = "Fondo Espacial / Nebulosa (HDR)"
-	space_nebula_chk.button_pressed = false
+	space_nebula_chk.button_pressed = true
 	var on_white_bg: Callable = callbacks.get("on_white_bg", Callable())
 	var on_space_nebula: Callable = callbacks.get("on_space_nebula", Callable())
 	white_bg_chk.toggled.connect(func(v: bool) -> void:
@@ -419,82 +367,34 @@ static func build_hud(host: Node, rig: PlanarCombatRig, callbacks: Dictionary) -
 		orbit_enemy_chk.toggled.connect(on_orbit_enemy)
 	vbox.add_child(orbit_enemy_chk)
 
-	var static_inspect_chk := CheckBox.new()
-	static_inspect_chk.text = "Inspección Estática (Cuerpo + Cabeza)"
-	static_inspect_chk.button_pressed = false
-	vbox.add_child(static_inspect_chk)
-
-	var combo_row := HBoxContainer.new()
-	vbox.add_child(combo_row)
-
-	var static_body_opt := OptionButton.new()
-	rebuild_static_body_options(static_body_opt, rig)
-	static_body_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	combo_row.add_child(static_body_opt)
-
-	var static_head_opt := OptionButton.new()
-	for i: int in range(HEAD_KEYS.size()):
-		static_head_opt.add_item(HEAD_KEYS[i], i)
-	static_head_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	combo_row.add_child(static_head_opt)
-
-	var on_static_apply: Callable = callbacks.get("on_static_apply", Callable())
-	var on_static_step: Callable = callbacks.get("on_static_step", Callable())
-	refresh_static_ui[0] = func() -> void:
-		rebuild_static_body_options(static_body_opt, rig)
-		if static_inspect_chk.button_pressed and on_static_apply.is_valid():
-			on_static_apply.call()
-	if on_static_apply.is_valid():
-		static_inspect_chk.toggled.connect(func(_v: bool) -> void: on_static_apply.call())
-		static_body_opt.item_selected.connect(func(_idx: int) -> void:
-			if not static_inspect_chk.button_pressed:
-				static_inspect_chk.button_pressed = true
-			else:
-				on_static_apply.call()
-		)
-		static_head_opt.item_selected.connect(func(_idx: int) -> void:
-			if not static_inspect_chk.button_pressed:
-				static_inspect_chk.button_pressed = true
-			else:
-				on_static_apply.call()
-		)
-
-	var nav_row := HBoxContainer.new()
-	vbox.add_child(nav_row)
-	var prev_btn := Button.new()
-	prev_btn.text = "<- Anterior"
-	prev_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if on_static_step.is_valid():
-		prev_btn.pressed.connect(func() -> void: on_static_step.call(-1))
-	nav_row.add_child(prev_btn)
-
-	var next_btn := Button.new()
-	next_btn.text = "Siguiente ->"
-	next_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if on_static_step.is_valid():
-		next_btn.pressed.connect(func() -> void: on_static_step.call(1))
-	nav_row.add_child(next_btn)
-
-	var static_combo_lbl := Label.new()
-	static_combo_lbl.text = "Combo: (Modo Dinámico)"
-	static_combo_lbl.add_theme_font_size_override("font_size", 11)
-	vbox.add_child(static_combo_lbl)
-
 	return {
 		"hud_layer": hud_layer,
-		"pilot_opt": pilot_opt,
-		"pilot_profiles": profiles,
 		"status_lbl": status_lbl,
-		"normal_chk": normal_chk,
-		"light_slider": light_slider,
-		"hdr_slider": hdr_slider,
+		"profile_opt": profile_opt,
+		"skin_opt": skin_opt,
+		"recolor_method_opt": recolor_method_opt,
+		"hair_opt": hair_opt,
+		"hair_style_opt": hair_style_opt,
+		"transition_opt": transition_opt,
+		"slowmo_chk": slowmo_chk,
 		"auto_demo_chk": auto_demo_chk,
-		"static_inspect_chk": static_inspect_chk,
-		"static_body_opt": static_body_opt,
-		"static_head_opt": static_head_opt,
-		"static_combo_lbl": static_combo_lbl,
-		"active_profile": active_profile[0],
-		"flash_hold_chk": flash_hold_chk,
+		"manual_control_chk": manual_control_chk,
+		"pose_mode_opt": pose_mode_opt,
+		"reload_pose_btn": reload_pose_btn,
+		"idle_anim_chk": idle_anim_chk,
+		"loco_anim_chk": loco_anim_chk,
+		"kiting_anim_chk": kiting_anim_chk,
+		"turn_anim_chk": turn_anim_chk,
+		"jiggle_anim_chk": jiggle_anim_chk,
+		"face_anim_chk": face_anim_chk,
+		"face_personality_opt": face_personality_opt,
+		"face_comms_btn": face_comms_btn,
+		"debug_opt": debug_opt,
+		"zoom_opt": zoom_opt,
+		"white_bg_chk": white_bg_chk,
+		"space_nebula_chk": space_nebula_chk,
+		"orbit_enemy_chk": orbit_enemy_chk,
+		"active_profile": active_profile,
 	}
 
 

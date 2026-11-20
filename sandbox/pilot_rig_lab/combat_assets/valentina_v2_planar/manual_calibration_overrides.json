@@ -293,8 +293,8 @@
           0.015,
           0.025
         ],
-        "enabled": true,
-        "erode_du": 0.6,
+        "enabled": false,
+        "erode_du": 1.0,
         "outline_du": 0.6,
         "respect_seams": false
       }
@@ -452,11 +452,89 @@
         254.8,
         177.0
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
-          192.1667,
-          181.8333,
+          191.1667,
+          190.8333,
           81.0,
           174.3333
         ],
@@ -502,13 +580,13 @@
         284.3
       ],
       "z_orders": {
-        "arm_l": 1.0,
-        "arm_r": 5.0,
+        "arm_l": -1.0,
+        "arm_r": 7.0,
         "body_core": 4.0,
         "leg_l": 0.0,
-        "leg_r": 7.0,
+        "leg_r": 6.0,
         "pauldron_l": 2.0,
-        "pauldron_r": 6.0
+        "pauldron_r": 7.0
       }
     },
     "n": {
@@ -662,7 +740,85 @@
         260.0,
         179.2
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           174.9,
@@ -872,7 +1028,85 @@
         253.7,
         171.8
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           174.0,
@@ -1082,7 +1316,85 @@
         265.5,
         172.8
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           179.5333,
@@ -1103,8 +1415,8 @@
           176.0
         ],
         "leg_l": [
-          183.5333,
-          298.0569,
+          182.5333,
+          299.0569,
           84.0,
           237.6667
         ],
@@ -1292,7 +1604,74 @@
         259.8,
         182.5
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           276.2,
@@ -1502,7 +1881,85 @@
         256.2,
         182.7
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           276.3333,
@@ -1523,14 +1980,14 @@
           159.0
         ],
         "leg_l": [
-          253.6667,
-          266.6667,
+          257.6667,
+          267.6667,
           93.0,
           260.6667
         ],
         "leg_r": [
-          191.0,
-          271.0,
+          192.0,
+          270.0,
           80.6667,
           276.6667
         ],
@@ -1712,7 +2169,85 @@
         263.1,
         181.0
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           272.1334,
@@ -1733,14 +2268,14 @@
           159.3333
         ],
         "leg_l": [
-          248.3,
-          269.3,
+          249.3,
+          272.3,
           76.0,
           277.6667
         ],
         "leg_r": [
           169.9666,
-          265.9667,
+          269.9667,
           93.6667,
           262.0
         ],
@@ -1922,7 +2457,85 @@
         261.9,
         176.0
       ],
-      "part_outlines": {},
+      "part_outlines": {
+        "arm_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "arm_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.2,
+          "respect_seams": false
+        },
+        "body_core": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 0.3,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "leg_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": true,
+          "erode_du": 1.5,
+          "outline_du": 0.3,
+          "respect_seams": false
+        },
+        "pauldron_l": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        },
+        "pauldron_r": {
+          "color": [
+            0.015,
+            0.015,
+            0.025
+          ],
+          "enabled": false,
+          "erode_du": 0.3,
+          "outline_du": 0.15,
+          "respect_seams": false
+        }
+      },
       "rects": {
         "arm_l": [
           245.7,
@@ -1931,8 +2544,8 @@
           174.0
         ],
         "arm_r": [
-          243.8666,
-          180.8333,
+          244.8666,
+          189.8333,
           80.6667,
           174.3333
         ],
@@ -1972,12 +2585,12 @@
         283.3
       ],
       "z_orders": {
-        "arm_l": 5.0,
-        "arm_r": 1.0,
+        "arm_l": 6.0,
+        "arm_r": 0,
         "body_core": 4.0,
-        "leg_l": 7.0,
-        "leg_r": 0.0,
-        "pauldron_l": 6.0,
+        "leg_l": 5.0,
+        "leg_r": 1.0,
+        "pauldron_l": 7.0,
         "pauldron_r": 2.0
       }
     }

@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="PilotIdleAnimConfig" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_idle_anim_config.gd" id="1_idle"]
+
+[resource]
+script = ExtResource("1_idle")
+head_gyro_lag_px = 0.8
+waist_sway_rot = 0.012
+shoulder_wave_rot = 0.02
+ankle_wave_rot = 0.02
+arm_phi1_wave = 0.026
+arm_phi2_wave = 0.04
+leg_distal_wave = 0.022
+hair_float_amp_px = 4.5
+family_multipliers = {
+"e": {
+"arms_scale": 0.85,
+"float_scale": 1.0,
+"legs_scale": 1.0,
+"persp_25d_scale": 1.0,
+"secondary_scale": 1.0
+},
+"n": {
+"arms_scale": 1.0,
+"float_scale": 1.0,
+"legs_scale": 0.65,
+"persp_25d_scale": 1.0,
+"secondary_scale": 1.0
+},
+"ne": {
+"arms_scale": 1.0,
+"float_scale": 1.0,
+"legs_scale": 1.0,
+"persp_25d_scale": 1.0,
+"secondary_scale": 1.0
+},
+"s": {
+"arms_scale": 2.0,
+"float_scale": 2.0,
+"legs_scale": 2.0,
+"persp_25d_scale": 2.0,
+"secondary_scale": 2.0
+},
+"se": {
+"arms_scale": 1.0,
+"float_scale": 1.0,
+"legs_scale": 1.0,
+"persp_25d_scale": 1.0,
+"secondary_scale": 1.0
+}
+}

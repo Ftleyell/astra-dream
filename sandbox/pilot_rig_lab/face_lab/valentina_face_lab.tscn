@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dqpttgkp0u83w"]
+
+[ext_resource type="Script" uid="uid://cu34ge155lgom" path="res://sandbox/pilot_rig_lab/face_lab/valentina_face_lab.gd" id="1_face_lab"]
+
+[node name="ValentinaFaceLab" type="Node2D" unique_id=1173075380]
+script = ExtResource("1_face_lab")

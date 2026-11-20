@@ -1,40 +1,26 @@
 // Módulo de iluminación estilizada, normales cilíndricas RNM, sombras analíticas ILM,
-// cuñas Mignola, Open Anime Ink, SSS cálido, Nylon Fresnel y SDF de cabeza.
+// sombreado perceptual ArcSys, cuñas Mignola y SDF de cabeza.
 
-float compute_halftone_pattern(vec2 frag_coord, float scale, int pat_type, float angle_deg) {
-	float rad = radians(angle_deg);
-	float c = cos(rad);
-	float s = sin(rad);
-	vec2 rot_uv = vec2(
-		frag_coord.x * c - frag_coord.y * s,
-		frag_coord.x * s + frag_coord.y * c
-	) / (1080.0 / max(scale, 10.0));
-
-	if (pat_type == 0) {
-		vec2 cell = fract(rot_uv) - vec2(0.5);
-		return 1.0 - smoothstep(0.28, 0.38, length(cell));
-	} else if (pat_type == 1) {
-		float wave = abs(fract(rot_uv.x * 1.15) - 0.5);
-		return 1.0 - smoothstep(0.17, 0.27, wave);
-	} else if (pat_type == 2) {
-		vec2 cell = abs(fract(rot_uv) - vec2(0.5));
-		float line_a = 1.0 - smoothstep(0.14, 0.22, cell.x);
-		float line_b = 1.0 - smoothstep(0.14, 0.22, cell.y);
-		return max(line_a, line_b);
-	} else if (pat_type == 3) {
-		vec2 grid = rot_uv * 1.35;
-		grid.x += 0.5 * step(0.5, fract(grid.y * 0.5));
-		vec2 cell = fract(grid) - vec2(0.5);
-		return 1.0 - smoothstep(0.24, 0.34, length(cell));
-	} else if (pat_type == 4) {
-		vec2 q = vec2(rot_uv.x * 1.1547, rot_uv.y + rot_uv.x * 0.57735);
-		vec2 cell = abs(fract(q) - vec2(0.5));
-		float hex_d = max(cell.x, cell.y);
-		return smoothstep(0.32, 0.44, hex_d);
-	} else {
-		float scan = abs(fract(frag_coord.y / (1080.0 / max(scale, 20.0))) - 0.5);
-		return 1.0 - smoothstep(0.16, 0.28, scan);
+// Sombra perceptual ArcSys en espacio sRGB: evita aplastar el traje oscuro a negro
+// mientras da un hue-shift frío rico (o cálido en piel) y compensa sombra pre-horneada.
+vec3 compute_arcsys_shadow_srgb(vec3 base_srgb, vec3 tint_srgb, float de_shade, float orig_luma, bool is_skin) {
+	float not_ink = smoothstep(0.08, 0.20, orig_luma);
+	vec3 comp = mix(base_srgb, pow(max(base_srgb, vec3(0.001)), vec3(0.76)), de_shade * not_ink);
+	float max_c = max(max(tint_srgb.r, tint_srgb.g), max(tint_srgb.b, 0.001));
+	vec3 tint_chroma = tint_srgb / max_c;
+	if (is_skin) {
+		vec3 skin_mul = mix(tint_srgb, tint_chroma * 0.88, 0.35);
+		return clamp(comp * skin_mul + tint_srgb * 0.06 * not_ink, vec3(0.0), vec3(1.0));
 	}
+	vec3 mul_col = mix(tint_srgb, tint_chroma * 0.72, 0.65);
+	return clamp(comp * mul_col + tint_srgb * 0.14 * not_ink, vec3(0.0), vec3(1.0));
+}
+
+// Color grading cinematográfico suave en espacio sRGB (contraste S + vibrancia rec.709).
+vec3 apply_cinematic_grade_srgb(vec3 srgb, float contrast, float sat) {
+	vec3 c = clamp((srgb - vec3(0.5)) * contrast + vec3(0.5), vec3(0.0), vec3(1.0));
+	float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+	return clamp(mix(vec3(l), c, sat), vec3(0.0), vec3(1.0));
 }
 
 // Reoriented Normal Mapping (RNM)
@@ -80,7 +66,7 @@ vec3 compute_cylindrical_rnm_normal(
 
 	vec3 n_tex = n_tex_raw * 2.0 - vec3(1.0);
 	n_tex.x *= flip_x;
-	n_tex.y *= seam_env;
+	n_tex.y = -n_tex.y * seam_env;
 	n_tex = normalize(mix(vec3(0.0, 0.0, 1.0), n_tex, 0.35 + 0.65 * seam_env));
 
 	vec3 n_local = blend_rnm(n_cyl, n_tex);

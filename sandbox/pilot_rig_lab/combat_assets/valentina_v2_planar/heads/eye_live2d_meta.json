@@ -1,0 +1,112 @@
+{
+  "head_front": {
+    "native_size": [
+      303,
+      356
+    ],
+    "eye_center_uv": [
+      0.357426,
+      0.463483
+    ],
+    "eye_iris_size_uv": [
+      0.072419,
+      0.063563
+    ],
+    "eye_patch_rect_uv": [
+      0.221122,
+      0.348315,
+      0.264026,
+      0.224719
+    ],
+    "iris_fill_frac": 0.875,
+    "eye_palette": "deep_amethyst"
+  },
+  "head_front_r": {
+    "native_size": [
+      302,
+      358
+    ],
+    "eye_center_uv": [
+      0.489404,
+      0.463128
+    ],
+    "eye_iris_size_uv": [
+      0.075686,
+      0.064485
+    ],
+    "eye_patch_rect_uv": [
+      0.347682,
+      0.349162,
+      0.264901,
+      0.223464
+    ],
+    "iris_fill_frac": 0.875,
+    "eye_palette": "deep_amethyst"
+  },
+  "head_front_l": {
+    "native_size": [
+      297,
+      357
+    ],
+    "eye_center_uv": [
+      0.270034,
+      0.471709
+    ],
+    "eye_iris_size_uv": [
+      0.056181,
+      0.058263
+    ],
+    "eye_patch_rect_uv": [
+      0.124579,
+      0.352941,
+      0.26936,
+      0.22409
+    ],
+    "iris_fill_frac": 0.875,
+    "eye_palette": "deep_amethyst"
+  },
+  "head_side_r": {
+    "native_size": [
+      280,
+      353
+    ],
+    "eye_center_uv": [
+      0.736429,
+      0.450425
+    ],
+    "eye_iris_size_uv": [
+      0.037551,
+      0.057628
+    ],
+    "eye_patch_rect_uv": [
+      0.585714,
+      0.325779,
+      0.285714,
+      0.226629
+    ],
+    "iris_fill_frac": 0.875,
+    "eye_palette": "deep_amethyst"
+  },
+  "head_side": {
+    "native_size": [
+      280,
+      353
+    ],
+    "eye_center_uv": [
+      0.736429,
+      0.450425
+    ],
+    "eye_iris_size_uv": [
+      0.037551,
+      0.057628
+    ],
+    "eye_patch_rect_uv": [
+      0.585714,
+      0.325779,
+      0.285714,
+      0.226629
+    ],
+    "iris_fill_frac": 0.875,
+    "eye_palette": "deep_amethyst"
+  }
+}

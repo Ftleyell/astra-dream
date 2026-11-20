@@ -1,0 +1,1284 @@
+{
+  "01_heads_front_2x2": {
+    "file": "01_heads_front_2x2.png",
+    "category": "heads",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 2,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "head",
+        "label": "head_front",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_front.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          960
+        ],
+        "piece_rect": [
+          169,
+          104,
+          749,
+          880
+        ],
+        "orig_size": [
+          303,
+          356
+        ],
+        "scale": 2.47191,
+        "head_key": "head_front"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "head",
+        "label": "head_front_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_front_r.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          960
+        ],
+        "piece_rect": [
+          1133,
+          104,
+          742,
+          880
+        ],
+        "orig_size": [
+          302,
+          358
+        ],
+        "scale": 2.4581,
+        "head_key": "head_front_r"
+      },
+      {
+        "index": 2,
+        "row": 1,
+        "col": 0,
+        "kind": "head",
+        "label": "head_front_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_front_l.png",
+        "slot_rect": [
+          64,
+          1024,
+          960,
+          960
+        ],
+        "piece_rect": [
+          178,
+          1064,
+          732,
+          880
+        ],
+        "orig_size": [
+          297,
+          357
+        ],
+        "scale": 2.46499,
+        "head_key": "head_front_l"
+      },
+      {
+        "index": 3,
+        "row": 1,
+        "col": 1,
+        "kind": "head",
+        "label": "head_side_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_side_r.png",
+        "slot_rect": [
+          1024,
+          1024,
+          960,
+          960
+        ],
+        "piece_rect": [
+          1155,
+          1064,
+          698,
+          880
+        ],
+        "orig_size": [
+          280,
+          353
+        ],
+        "scale": 2.49292,
+        "head_key": "head_side_r"
+      }
+    ]
+  },
+  "02_heads_back_2x2": {
+    "file": "02_heads_back_2x2.png",
+    "category": "heads",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 2,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "head",
+        "label": "head_side_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_side_l.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          960
+        ],
+        "piece_rect": [
+          196,
+          104,
+          696,
+          880
+        ],
+        "orig_size": [
+          279,
+          353
+        ],
+        "scale": 2.49292,
+        "head_key": "head_side_l"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "head",
+        "label": "head_back_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_back_r.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          960
+        ],
+        "piece_rect": [
+          1164,
+          104,
+          680,
+          880
+        ],
+        "orig_size": [
+          275,
+          356
+        ],
+        "scale": 2.47191,
+        "head_key": "head_back_r"
+      },
+      {
+        "index": 2,
+        "row": 1,
+        "col": 0,
+        "kind": "head",
+        "label": "head_back_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_back_l.png",
+        "slot_rect": [
+          64,
+          1024,
+          960,
+          960
+        ],
+        "piece_rect": [
+          205,
+          1064,
+          678,
+          880
+        ],
+        "orig_size": [
+          275,
+          357
+        ],
+        "scale": 2.46499,
+        "head_key": "head_back_l"
+      },
+      {
+        "index": 3,
+        "row": 1,
+        "col": 1,
+        "kind": "head",
+        "label": "head_back",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/head_back.png",
+        "slot_rect": [
+          1024,
+          1024,
+          960,
+          960
+        ],
+        "piece_rect": [
+          1130,
+          1064,
+          747,
+          880
+        ],
+        "orig_size": [
+          302,
+          356
+        ],
+        "scale": 2.47191,
+        "head_key": "head_back"
+      }
+    ]
+  },
+  "03_body_core_front_1x3": {
+    "file": "03_body_core_front_1x3.png",
+    "category": "body_core",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S body_core",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/body_core.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          459,
+          560,
+          1129
+        ],
+        "orig_size": [
+          237,
+          478
+        ],
+        "scale": 2.36287,
+        "view": "s",
+        "part": "body_core"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE body_core",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/body_core.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          744,
+          500,
+          560,
+          1048
+        ],
+        "orig_size": [
+          255,
+          477
+        ],
+        "scale": 2.19608,
+        "view": "se",
+        "part": "body_core"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E body_core",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/body_core.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          1384,
+          498,
+          560,
+          1052
+        ],
+        "orig_size": [
+          248,
+          466
+        ],
+        "scale": 2.25806,
+        "view": "e",
+        "part": "body_core"
+      }
+    ]
+  },
+  "04_body_core_back_1x2": {
+    "file": "04_body_core_back_1x2.png",
+    "category": "body_core",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "NE body_core",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/body_core.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          298,
+          880,
+          1452
+        ],
+        "orig_size": [
+          323,
+          533
+        ],
+        "scale": 2.72446,
+        "view": "ne",
+        "part": "body_core"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "N body_core",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/body_core.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          1064,
+          340,
+          880,
+          1367
+        ],
+        "orig_size": [
+          336,
+          522
+        ],
+        "scale": 2.61905,
+        "view": "n",
+        "part": "body_core"
+      }
+    ]
+  },
+  "05_legs_R_front_1x3": {
+    "file": "05_legs_R_front_1x3.png",
+    "category": "legs",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S leg_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/leg_r.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          169,
+          560,
+          1709
+        ],
+        "orig_size": [
+          271,
+          827
+        ],
+        "scale": 2.06642,
+        "view": "s",
+        "part": "leg_r"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE leg_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/leg_r.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          756,
+          104,
+          536,
+          1840
+        ],
+        "orig_size": [
+          242,
+          830
+        ],
+        "scale": 2.21687,
+        "view": "se",
+        "part": "leg_r"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E leg_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/leg_r.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          1423,
+          104,
+          481,
+          1840
+        ],
+        "orig_size": [
+          214,
+          819
+        ],
+        "scale": 2.24664,
+        "view": "e",
+        "part": "leg_r"
+      }
+    ]
+  },
+  "06_legs_R_back_1x2": {
+    "file": "06_legs_R_back_1x2.png",
+    "category": "legs",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "NE leg_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/leg_r.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          205,
+          104,
+          677,
+          1840
+        ],
+        "orig_size": [
+          262,
+          712
+        ],
+        "scale": 2.58427,
+        "view": "ne",
+        "part": "leg_r"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "N leg_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/leg_r.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          1181,
+          104,
+          646,
+          1840
+        ],
+        "orig_size": [
+          252,
+          718
+        ],
+        "scale": 2.56267,
+        "view": "n",
+        "part": "leg_r"
+      }
+    ]
+  },
+  "07_legs_L_front_1x3": {
+    "file": "07_legs_L_front_1x3.png",
+    "category": "legs",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S leg_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/leg_l.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          164,
+          560,
+          1720
+        ],
+        "orig_size": [
+          269,
+          826
+        ],
+        "scale": 2.08178,
+        "view": "s",
+        "part": "leg_l"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE leg_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/leg_l.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          744,
+          239,
+          560,
+          1570
+        ],
+        "orig_size": [
+          279,
+          782
+        ],
+        "scale": 2.00717,
+        "view": "se",
+        "part": "leg_l"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E leg_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/leg_l.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          1428,
+          104,
+          472,
+          1840
+        ],
+        "orig_size": [
+          210,
+          819
+        ],
+        "scale": 2.24664,
+        "view": "e",
+        "part": "leg_l"
+      }
+    ]
+  },
+  "08_legs_L_back_1x2": {
+    "file": "08_legs_L_back_1x2.png",
+    "category": "legs",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "NE leg_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/leg_l.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          230,
+          104,
+          627,
+          1840
+        ],
+        "orig_size": [
+          240,
+          704
+        ],
+        "scale": 2.61364,
+        "view": "ne",
+        "part": "leg_l"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "N leg_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/leg_l.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          1180,
+          104,
+          647,
+          1840
+        ],
+        "orig_size": [
+          252,
+          717
+        ],
+        "scale": 2.56625,
+        "view": "n",
+        "part": "leg_l"
+      }
+    ]
+  },
+  "09_arms_R_front_1x3": {
+    "file": "09_arms_R_front_1x3.png",
+    "category": "arms",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S arm_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/arm_r.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          365,
+          560,
+          1317
+        ],
+        "orig_size": [
+          219,
+          515
+        ],
+        "scale": 2.55708,
+        "view": "s",
+        "part": "arm_r"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE arm_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/arm_r.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          744,
+          372,
+          560,
+          1303
+        ],
+        "orig_size": [
+          223,
+          519
+        ],
+        "scale": 2.51121,
+        "view": "se",
+        "part": "arm_r"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E arm_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/arm_r.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          1384,
+          422,
+          560,
+          1203
+        ],
+        "orig_size": [
+          243,
+          522
+        ],
+        "scale": 2.30453,
+        "view": "e",
+        "part": "arm_r"
+      }
+    ]
+  },
+  "10_arms_R_back_1x2": {
+    "file": "10_arms_R_back_1x2.png",
+    "category": "arms",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "NE arm_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/arm_r.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          142,
+          104,
+          804,
+          1840
+        ],
+        "orig_size": [
+          226,
+          517
+        ],
+        "scale": 3.55899,
+        "view": "ne",
+        "part": "arm_r"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "N arm_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/arm_r.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          1112,
+          104,
+          783,
+          1840
+        ],
+        "orig_size": [
+          220,
+          517
+        ],
+        "scale": 3.55899,
+        "view": "n",
+        "part": "arm_r"
+      }
+    ]
+  },
+  "11_arms_L_front_1x3": {
+    "file": "11_arms_L_front_1x3.png",
+    "category": "arms",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S arm_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/arm_l.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          104,
+          365,
+          560,
+          1317
+        ],
+        "orig_size": [
+          219,
+          515
+        ],
+        "scale": 2.55708,
+        "view": "s",
+        "part": "arm_l"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE arm_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/arm_l.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          744,
+          408,
+          560,
+          1232
+        ],
+        "orig_size": [
+          225,
+          495
+        ],
+        "scale": 2.48889,
+        "view": "se",
+        "part": "arm_l"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E arm_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/arm_l.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          1920
+        ],
+        "piece_rect": [
+          1384,
+          421,
+          560,
+          1205
+        ],
+        "orig_size": [
+          243,
+          523
+        ],
+        "scale": 2.30453,
+        "view": "e",
+        "part": "arm_l"
+      }
+    ]
+  },
+  "12_arms_L_back_1x2": {
+    "file": "12_arms_L_back_1x2.png",
+    "category": "arms",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 1,
+    "cols": 2,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "NE arm_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/arm_l.png",
+        "slot_rect": [
+          64,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          184,
+          104,
+          720,
+          1840
+        ],
+        "orig_size": [
+          201,
+          514
+        ],
+        "scale": 3.57977,
+        "view": "ne",
+        "part": "arm_l"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "N arm_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/arm_l.png",
+        "slot_rect": [
+          1024,
+          64,
+          960,
+          1920
+        ],
+        "piece_rect": [
+          1120,
+          104,
+          768,
+          1840
+        ],
+        "orig_size": [
+          217,
+          520
+        ],
+        "scale": 3.53846,
+        "view": "n",
+        "part": "arm_l"
+      }
+    ]
+  },
+  "13_pauldrons_3x3": {
+    "file": "13_pauldrons_3x3.png",
+    "category": "pauldrons",
+    "size": [
+      2048,
+      2048
+    ],
+    "rows": 3,
+    "cols": 3,
+    "slots": [
+      {
+        "index": 0,
+        "row": 0,
+        "col": 0,
+        "kind": "body",
+        "label": "S pauldron_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/pauldron_r.png",
+        "slot_rect": [
+          64,
+          64,
+          640,
+          640
+        ],
+        "piece_rect": [
+          117,
+          104,
+          534,
+          560
+        ],
+        "orig_size": [
+          143,
+          150
+        ],
+        "scale": 3.73333,
+        "view": "s",
+        "part": "pauldron_r"
+      },
+      {
+        "index": 1,
+        "row": 0,
+        "col": 1,
+        "kind": "body",
+        "label": "SE pauldron_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/pauldron_r.png",
+        "slot_rect": [
+          704,
+          64,
+          640,
+          640
+        ],
+        "piece_rect": [
+          755,
+          104,
+          537,
+          560
+        ],
+        "orig_size": [
+          142,
+          148
+        ],
+        "scale": 3.78378,
+        "view": "se",
+        "part": "pauldron_r"
+      },
+      {
+        "index": 2,
+        "row": 0,
+        "col": 2,
+        "kind": "body",
+        "label": "E pauldron_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/e/parts_5/pauldron_r.png",
+        "slot_rect": [
+          1344,
+          64,
+          640,
+          640
+        ],
+        "piece_rect": [
+          1399,
+          104,
+          529,
+          560
+        ],
+        "orig_size": [
+          136,
+          144
+        ],
+        "scale": 3.88889,
+        "view": "e",
+        "part": "pauldron_r"
+      },
+      {
+        "index": 3,
+        "row": 1,
+        "col": 0,
+        "kind": "body",
+        "label": "NE pauldron_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/pauldron_r.png",
+        "slot_rect": [
+          64,
+          704,
+          640,
+          640
+        ],
+        "piece_rect": [
+          132,
+          744,
+          503,
+          560
+        ],
+        "orig_size": [
+          132,
+          147
+        ],
+        "scale": 3.80952,
+        "view": "ne",
+        "part": "pauldron_r"
+      },
+      {
+        "index": 4,
+        "row": 1,
+        "col": 1,
+        "kind": "body",
+        "label": "N pauldron_r",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/pauldron_r.png",
+        "slot_rect": [
+          704,
+          704,
+          640,
+          640
+        ],
+        "piece_rect": [
+          755,
+          744,
+          537,
+          560
+        ],
+        "orig_size": [
+          142,
+          148
+        ],
+        "scale": 3.78378,
+        "view": "n",
+        "part": "pauldron_r"
+      },
+      {
+        "index": 5,
+        "row": 1,
+        "col": 2,
+        "kind": "body",
+        "label": "S pauldron_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/s/parts_5/pauldron_l.png",
+        "slot_rect": [
+          1344,
+          704,
+          640,
+          640
+        ],
+        "piece_rect": [
+          1397,
+          744,
+          534,
+          560
+        ],
+        "orig_size": [
+          143,
+          150
+        ],
+        "scale": 3.73333,
+        "view": "s",
+        "part": "pauldron_l"
+      },
+      {
+        "index": 6,
+        "row": 2,
+        "col": 0,
+        "kind": "body",
+        "label": "SE pauldron_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/se/parts_5/pauldron_l.png",
+        "slot_rect": [
+          64,
+          1344,
+          640,
+          640
+        ],
+        "piece_rect": [
+          128,
+          1384,
+          512,
+          560
+        ],
+        "orig_size": [
+          128,
+          140
+        ],
+        "scale": 4.0,
+        "view": "se",
+        "part": "pauldron_l"
+      },
+      {
+        "index": 7,
+        "row": 2,
+        "col": 1,
+        "kind": "body",
+        "label": "NE pauldron_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/ne/parts_5/pauldron_l.png",
+        "slot_rect": [
+          704,
+          1344,
+          640,
+          640
+        ],
+        "piece_rect": [
+          787,
+          1384,
+          473,
+          560
+        ],
+        "orig_size": [
+          119,
+          141
+        ],
+        "scale": 3.97163,
+        "view": "ne",
+        "part": "pauldron_l"
+      },
+      {
+        "index": 8,
+        "row": 2,
+        "col": 2,
+        "kind": "body",
+        "label": "N pauldron_l",
+        "source_rel": "sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/n/parts_5/pauldron_l.png",
+        "slot_rect": [
+          1344,
+          1344,
+          640,
+          640
+        ],
+        "piece_rect": [
+          1395,
+          1384,
+          537,
+          560
+        ],
+        "orig_size": [
+          142,
+          148
+        ],
+        "scale": 3.78378,
+        "view": "n",
+        "part": "pauldron_l"
+      }
+    ]
+  }
+}

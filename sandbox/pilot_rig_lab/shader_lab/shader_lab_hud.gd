@@ -8,6 +8,7 @@ signal head_cycle_toggled(enabled: bool)
 signal compare_mode_changed(mode_idx: int)
 signal anim_toggled(playing: bool)
 signal backdrop_changed(mode_idx: int)
+signal supersampling_changed(scale_factor: float)
 signal debug_view_changed(mode_idx: int)
 signal pinch_debug_toggled(enabled: bool)
 
@@ -17,29 +18,28 @@ signal hair_preset_selected(index: int)
 signal hair_style_mode_changed(mode_idx: int)
 signal recolor_method_changed(method_idx: int)
 signal reset_style_requested()
+signal definitive_style_requested()
 signal save_preset_requested(preset_name: String)
 
 signal light_options_changed()
+signal counter_rim_options_changed()
 signal shader_param_changed(param_name: String, value: Variant)
 signal pass2_param_changed(param_name: String, value: Variant)
-signal inward_outline_changed()
 
 const DIRECTIONS_8: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]
-const PANEL_WIDTH: float = 312.0
+const PANEL_WIDTH: float = 324.0
 
 var _root_ctrl: Control = null
 var _side_panel: PanelContainer = null
 var _toggle_btn: Button = null
 var _status_label: Label = null
 var _head_label: Label = null
+var _backdrop_opt: OptionButton = null
 var _style_opt: OptionButton = null
 var _skin_opt: OptionButton = null
 var _hair_opt: OptionButton = null
 var _hair_mode_opt: OptionButton = null
 var _recolor_opt: OptionButton = null
-var _pipeline_opt: OptionButton = null
-var _halftone_pat_opt: OptionButton = null
-var _halftone_zone_opt: OptionButton = null
 var _save_name_edit: LineEdit = null
 var _save_feedback_lbl: Label = null
 
@@ -47,6 +47,7 @@ var _dir_buttons: Dictionary = {}
 var _sliders: Dictionary = {}
 var _slider_labels: Dictionary = {}
 var _checks: Dictionary = {}
+var _colors: Dictionary = {}
 var _suppress_signals: bool = false
 var _panel_open: bool = true
 
@@ -110,13 +111,13 @@ func build_ui(
 	drawer_vb.add_child(tabs)
 
 	var tab_look: VBoxContainer = _make_tab_page(tabs, "Look")
-	var tab_light: VBoxContainer = _make_tab_page(tabs, "Luz/Cel")
-	var tab_fx: VBoxContainer = _make_tab_page(tabs, "Trama")
+	var tab_cel: VBoxContainer = _make_tab_page(tabs, "Cel/Luz")
+	var tab_mat: VBoxContainer = _make_tab_page(tabs, "Mat/Borde")
 	var tab_dbg: VBoxContainer = _make_tab_page(tabs, "Extra")
 
 	_build_look_tab(tab_look, style_labels, skin_labels, hair_labels)
-	_build_light_cel_tab(tab_light)
-	_build_trama_outline_tab(tab_fx)
+	_build_cel_light_tab(tab_cel)
+	_build_materials_outline_tab(tab_mat)
 	_build_extra_debug_tab(tab_dbg)
 
 	# Botón flotante para reabrir el panel cuando está oculto
@@ -188,31 +189,73 @@ func refresh_style_list(style_labels: Array[String], select_idx: int) -> void:
 	_suppress_signals = false
 
 
+func set_backdrop_index(idx: int) -> void:
+	if _backdrop_opt == null:
+		return
+	_suppress_signals = true
+	_backdrop_opt.select(clampi(idx, 0, _backdrop_opt.item_count - 1))
+	_suppress_signals = false
+
+
 func sync_from_style_profile(profile: RigStyleProfile) -> void:
 	if profile == null:
 		return
 	_suppress_signals = true
-	if _pipeline_opt != null:
-		_pipeline_opt.select(clampi(profile.pipeline_mode, 0, _pipeline_opt.item_count - 1))
-	_set_check_val("enable_halftone", profile.enable_halftone)
-	if _halftone_pat_opt != null:
-		_halftone_pat_opt.select(clampi(profile.halftone_pattern_type, 0, _halftone_pat_opt.item_count - 1))
-	if _halftone_zone_opt != null:
-		_halftone_zone_opt.select(clampi(profile.halftone_zone_mode, 0, _halftone_zone_opt.item_count - 1))
-	_set_slider_val("halftone_scale", profile.halftone_scale)
-	_set_slider_val("halftone_strength", profile.halftone_strength)
-	_set_slider_val("halftone_angle_deg", profile.halftone_angle_deg)
-	_set_slider_val("halftone_threshold", profile.halftone_threshold)
-	_set_slider_val("ink_boost", profile.ink_boost)
-	_set_slider_val("cel_step_strength", profile.cel_step_strength)
-	_set_slider_val("noir_shadow_crush", profile.noir_shadow_crush)
-	_set_slider_val("noir_shadow_threshold", profile.noir_shadow_threshold)
-	_set_slider_val("metal_sheen_strength", profile.metal_sheen_strength)
-	_set_slider_val("rim_light_strength", profile.rim_light_strength)
-	_set_slider_val("rim_width_px", profile.rim_width_px)
-	_set_slider_val("dual_rim_strength", profile.dual_rim_strength)
-	_set_slider_val("glow_intensity", profile.glow_intensity)
+	_set_check_val("stylize_enabled", profile.stylize_enabled)
+	_set_check_val("use_normal_depth", profile.use_normal_depth)
+	_set_slider_val("cel_strength", profile.cel_strength)
+	_set_slider_val("cel_threshold", profile.cel_threshold)
+	_set_slider_val("cel_softness", profile.cel_softness)
+	_set_slider_val("cel_mid_band_strength", profile.cel_mid_band_strength)
+	_set_slider_val("albedo_de_shade", profile.albedo_de_shade)
+	_set_slider_val("ilm_shadow_bias_strength", profile.ilm_shadow_bias_strength)
+	_set_slider_val("ilm_ao_strength", profile.ilm_ao_strength)
+	_set_slider_val("face_shadow_protect", profile.face_shadow_protect)
+	_set_color_val("key_light_tint", profile.key_light_tint)
+	_set_color_val("shadow_tint", profile.shadow_tint)
+	_set_color_val("ao_tint", profile.ao_tint)
+	_set_color_val("skin_shadow_tint", profile.skin_shadow_tint)
+	_set_color_val("sss_skin_color", profile.sss_skin_color)
+	_set_slider_val("sss_strength", profile.sss_strength)
+	_set_slider_val("color_contrast", profile.color_contrast)
+	_set_slider_val("color_saturation", profile.color_saturation)
+	_set_slider_val("key_light_boost", profile.key_light_boost)
+	_set_slider_val("armor_spec_strength", profile.armor_spec_strength)
+	_set_slider_val("armor_spec_threshold", profile.armor_spec_threshold)
+	_set_slider_val("suit_satin_strength", profile.suit_satin_strength)
+	_set_slider_val("nylon_sheen_strength", profile.nylon_sheen_strength)
+	_set_slider_val("stocking_denier", profile.stocking_denier)
+	_set_slider_val("hair_angel_ring_strength", profile.hair_angel_ring_strength)
+	_set_slider_val("emissive_glow_strength", profile.emissive_glow_strength)
+	_set_slider_val("hdr_cap", profile.hdr_cap)
+	_set_slider_val("albedo_lod_bias", profile.albedo_lod_bias)
+	_set_slider_val("ink_strength", profile.ink_strength)
+	_set_slider_val("ink_color_tint_mix", profile.ink_color_tint_mix)
+	_set_color_val("ink_skin_tint", profile.ink_skin_tint)
+	_set_color_val("ink_cool_tint", profile.ink_cool_tint)
+	_set_slider_val("ink_sdf_bias_px", profile.ink_sdf_bias_px)
+	_set_slider_val("ink_sdf_softness", profile.ink_sdf_softness)
+	_set_slider_val("normal_rim_strength", profile.normal_rim_strength)
+	_set_slider_val("silhouette_rim_strength", profile.silhouette_rim_strength)
+	_set_slider_val("silhouette_rim_width_px", profile.silhouette_rim_width_px)
+	_set_slider_val("counter_rim_strength", profile.counter_rim_strength)
+	_set_color_val("rim_key_color", profile.rim_key_color)
+	_set_check_val("counter_rim_use_skin_accent", profile.counter_rim_use_skin_accent)
+	_set_color_val("counter_rim_override_color", profile.counter_rim_override_color)
+	_set_check_val("enable_outer_outline", profile.enable_outer_outline)
+	_set_slider_val("outer_outline_width_px", profile.outer_outline_width_px)
+	_set_slider_val("outline_min_px", profile.outline_min_px)
+	_set_slider_val("outline_max_px", profile.outline_max_px)
+	_set_slider_val("outer_outline_strength", profile.outer_outline_strength)
 	_set_slider_val("outer_outline_tint_mix", profile.outer_outline_tint_mix)
+	_set_slider_val("outline_calligraphy_amount", profile.outline_calligraphy_amount)
+	_set_slider_val("outline_crispness", profile.outline_crispness)
+	_set_slider_val("outline_inward_replace", profile.outline_inward_replace)
+	_set_slider_val("ign_jitter_strength", profile.ign_jitter_strength)
+	_set_color_val("outer_outline_color", profile.outer_outline_color)
+	_set_slider_val("hdr_light_wrap_strength", profile.hdr_light_wrap_strength)
+	_set_slider_val("hdr_threshold", profile.hdr_threshold)
+	_set_slider_val("cas_sharpen_strength", profile.cas_sharpen_strength)
 	_suppress_signals = false
 
 
@@ -220,24 +263,61 @@ func export_current_style_profile(preset_id: String, preset_label: String) -> Ri
 	var p := RigStyleProfile.new()
 	p.id = preset_id
 	p.label = preset_label
-	p.pipeline_mode = _pipeline_opt.selected if _pipeline_opt != null else 0
-	p.enable_halftone = get_check_val("enable_halftone")
-	p.halftone_pattern_type = _halftone_pat_opt.selected if _halftone_pat_opt != null else 0
-	p.halftone_zone_mode = _halftone_zone_opt.selected if _halftone_zone_opt != null else 0
-	p.halftone_scale = get_slider_val("halftone_scale", 165.0)
-	p.halftone_strength = get_slider_val("halftone_strength", 0.0)
-	p.halftone_angle_deg = get_slider_val("halftone_angle_deg", 45.0)
-	p.halftone_threshold = get_slider_val("halftone_threshold", 0.38)
-	p.ink_boost = get_slider_val("ink_boost", 0.10)
-	p.cel_step_strength = get_slider_val("cel_step_strength", 0.0)
-	p.noir_shadow_crush = get_slider_val("noir_shadow_crush", 0.0)
-	p.noir_shadow_threshold = get_slider_val("noir_shadow_threshold", 0.24)
-	p.metal_sheen_strength = get_slider_val("metal_sheen_strength", 0.0)
-	p.rim_light_strength = get_slider_val("rim_light_strength", 0.12)
-	p.rim_width_px = get_slider_val("rim_width_px", 4.5)
-	p.dual_rim_strength = get_slider_val("dual_rim_strength", 0.0)
-	p.glow_intensity = get_slider_val("glow_intensity", 1.05)
-	p.outer_outline_tint_mix = get_slider_val("outer_outline_tint_mix", 0.55)
+	p.stylize_enabled = get_check_val("stylize_enabled", true)
+	p.use_normal_depth = get_check_val("use_normal_depth", true)
+	p.cel_strength = get_slider_val("cel_strength", 0.88)
+	p.cel_threshold = get_slider_val("cel_threshold", 0.05)
+	p.cel_softness = get_slider_val("cel_softness", 0.038)
+	p.cel_mid_band_strength = get_slider_val("cel_mid_band_strength", 0.42)
+	p.albedo_de_shade = get_slider_val("albedo_de_shade", 0.34)
+	p.ilm_shadow_bias_strength = get_slider_val("ilm_shadow_bias_strength", 0.74)
+	p.ilm_ao_strength = get_slider_val("ilm_ao_strength", 0.82)
+	p.face_shadow_protect = get_slider_val("face_shadow_protect", 0.88)
+	p.key_light_tint = get_color_val("key_light_tint", Color(1.05, 1.02, 0.96, 1.0))
+	p.shadow_tint = get_color_val("shadow_tint", Color(0.180, 0.169, 0.361, 1.0))
+	p.ao_tint = get_color_val("ao_tint", Color(0.098, 0.078, 0.196, 1.0))
+	p.skin_shadow_tint = get_color_val("skin_shadow_tint", Color(0.68, 0.43, 0.50, 1.0))
+	p.sss_skin_color = get_color_val("sss_skin_color", Color(0.97, 0.37, 0.30, 1.0))
+	p.sss_strength = get_slider_val("sss_strength", 0.48)
+	p.color_contrast = get_slider_val("color_contrast", 1.09)
+	p.color_saturation = get_slider_val("color_saturation", 1.12)
+	p.key_light_boost = get_slider_val("key_light_boost", 1.08)
+	p.armor_spec_strength = get_slider_val("armor_spec_strength", 0.92)
+	p.armor_spec_threshold = get_slider_val("armor_spec_threshold", 0.65)
+	p.suit_satin_strength = get_slider_val("suit_satin_strength", 0.34)
+	p.nylon_sheen_strength = get_slider_val("nylon_sheen_strength", 0.68)
+	p.stocking_denier = get_slider_val("stocking_denier", 0.34)
+	p.hair_angel_ring_strength = get_slider_val("hair_angel_ring_strength", 0.88)
+	p.emissive_glow_strength = get_slider_val("emissive_glow_strength", 1.35)
+	p.hdr_cap = get_slider_val("hdr_cap", 1.85)
+	p.albedo_lod_bias = get_slider_val("albedo_lod_bias", 0.0)
+	p.ink_strength = get_slider_val("ink_strength", 0.68)
+	p.ink_color_tint_mix = get_slider_val("ink_color_tint_mix", 0.78)
+	p.ink_skin_tint = get_color_val("ink_skin_tint", Color(0.24, 0.11, 0.12, 1.0))
+	p.ink_cool_tint = get_color_val("ink_cool_tint", Color(0.055, 0.055, 0.130, 1.0))
+	p.ink_sdf_bias_px = get_slider_val("ink_sdf_bias_px", -0.05)
+	p.ink_sdf_softness = get_slider_val("ink_sdf_softness", 0.55)
+	p.normal_rim_strength = get_slider_val("normal_rim_strength", 0.78)
+	p.silhouette_rim_strength = get_slider_val("silhouette_rim_strength", 0.62)
+	p.silhouette_rim_width_px = get_slider_val("silhouette_rim_width_px", 1.45)
+	p.counter_rim_strength = get_slider_val("counter_rim_strength", 0.52)
+	p.rim_key_color = get_color_val("rim_key_color", Color(0.94, 0.97, 1.0, 1.0))
+	p.counter_rim_use_skin_accent = get_check_val("counter_rim_use_skin_accent", true)
+	p.counter_rim_override_color = get_color_val("counter_rim_override_color", Color(0.86, 0.18, 0.32, 1.0))
+	p.enable_outer_outline = get_check_val("enable_outer_outline", true)
+	p.outer_outline_width_px = get_slider_val("outer_outline_width_px", 0.78)
+	p.outline_min_px = get_slider_val("outline_min_px", 0.48)
+	p.outline_max_px = get_slider_val("outline_max_px", 1.15)
+	p.outer_outline_strength = get_slider_val("outer_outline_strength", 0.92)
+	p.outer_outline_tint_mix = get_slider_val("outer_outline_tint_mix", 0.78)
+	p.outline_calligraphy_amount = get_slider_val("outline_calligraphy_amount", 0.65)
+	p.outline_crispness = get_slider_val("outline_crispness", 0.42)
+	p.outline_inward_replace = get_slider_val("outline_inward_replace", 0.12)
+	p.ign_jitter_strength = get_slider_val("ign_jitter_strength", 0.0)
+	p.outer_outline_color = get_color_val("outer_outline_color", Color(0.045, 0.040, 0.095, 1.0))
+	p.hdr_light_wrap_strength = get_slider_val("hdr_light_wrap_strength", 0.58)
+	p.hdr_threshold = get_slider_val("hdr_threshold", 1.05)
+	p.cas_sharpen_strength = get_slider_val("cas_sharpen_strength", 0.0)
 	return p
 
 
@@ -249,6 +329,11 @@ func get_slider_val(key: String, fallback: float = 0.0) -> float:
 func get_check_val(key: String, fallback: bool = false) -> bool:
 	var c: CheckBox = _checks.get(key, null) as CheckBox
 	return c.button_pressed if c != null else fallback
+
+
+func get_color_val(key: String, fallback: Color = Color.WHITE) -> Color:
+	var p: ColorPickerButton = _colors.get(key, null) as ColorPickerButton
+	return p.color if p != null else fallback
 
 
 func set_light_angle_deg_ui(angle_deg: float) -> void:
@@ -335,10 +420,23 @@ func _build_look_tab(
 	])
 	cmp_opt.item_selected.connect(func(idx: int) -> void: compare_mode_changed.emit(idx))
 
-	var bg_opt: OptionButton = _add_option_row(parent, "Fondo", [
+	_backdrop_opt = _add_option_row(parent, "Fondo", [
 		"Oscuro Neutro", "Claro Estudio", "Grilla Damero", "Espacio / Nebulosa"
 	])
-	bg_opt.item_selected.connect(func(idx: int) -> void: backdrop_changed.emit(idx))
+	_backdrop_opt.select(3)
+	_backdrop_opt.item_selected.connect(func(idx: int) -> void:
+		if not _suppress_signals:
+			backdrop_changed.emit(idx)
+	)
+	var ssaa_opt: OptionButton = _add_option_row(parent, "SSAA", [
+		"1.0× Nativo", "1.5× HQ", "2.0× Ultra (SubViewport)"
+	])
+	ssaa_opt.select(2)
+	ssaa_opt.item_selected.connect(func(idx: int) -> void:
+		if not _suppress_signals:
+			var scales: Array[float] = [1.0, 1.5, 2.0]
+			supersampling_changed.emit(scales[clampi(idx, 0, scales.size() - 1)])
+	)
 
 	_add_section_title(parent, "Presets de Apariencia")
 	_style_opt = _add_option_row(parent, "Estilo", style_labels)
@@ -361,7 +459,7 @@ func _build_look_tab(
 	var save_row := HBoxContainer.new()
 	parent.add_child(save_row)
 	_save_name_edit = LineEdit.new()
-	_save_name_edit.placeholder_text = "09_mi_estilo"
+	_save_name_edit.placeholder_text = "01_valentina_definitive"
 	_save_name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	save_row.add_child(_save_name_edit)
 	var save_btn := Button.new()
@@ -369,18 +467,32 @@ func _build_look_tab(
 	save_btn.pressed.connect(func() -> void: save_preset_requested.emit(_save_name_edit.text.strip_edges()))
 	save_row.add_child(save_btn)
 
+	var quick_row := HBoxContainer.new()
+	parent.add_child(quick_row)
 	var reset_btn := Button.new()
-	reset_btn.text = "Volver a 00_original"
+	reset_btn.text = "Baseline (00)"
+	reset_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	reset_btn.pressed.connect(func() -> void: reset_style_requested.emit())
-	parent.add_child(reset_btn)
+	quick_row.add_child(reset_btn)
+	var def_btn := Button.new()
+	def_btn.text = "Definitivo (01)"
+	def_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	def_btn.pressed.connect(func() -> void: definitive_style_requested.emit())
+	quick_row.add_child(def_btn)
 
 	_save_feedback_lbl = Label.new()
 	_save_feedback_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(_save_feedback_lbl)
 
 
-func _build_light_cel_tab(parent: VBoxContainer) -> void:
+func _build_cel_light_tab(parent: VBoxContainer) -> void:
 	_add_section_title(parent, "Luz Direccional 2.5D")
+	var sty_chk := _add_check(parent, "stylize_enabled", "Activar Estilizado Definitivo", true)
+	sty_chk.toggled.connect(func(on: bool) -> void:
+		if not _suppress_signals:
+			shader_param_changed.emit("stylize_enabled", on)
+	)
+
 	var row := HBoxContainer.new()
 	parent.add_child(row)
 	var nd_chk := _add_check_inline(row, "use_normal_depth", "Normales 2.5D", true)
@@ -396,127 +508,183 @@ func _build_light_cel_tab(parent: VBoxContainer) -> void:
 	_add_slider(parent, "light_z_tilt", "Elevación Z", 0.10, 2.0, 0.02, 0.58, func(v: float) -> void:
 		shader_param_changed.emit("light_z_tilt", v)
 	)
-	_add_slider(parent, "normal_cel_influence", "Fuerza Normales", 0.0, 1.0, 0.02, 0.52, func(v: float) -> void:
-		shader_param_changed.emit("normal_cel_influence", v)
-	)
-	_add_slider(parent, "normal_rim_strength", "Rim Normal 2.5D", 0.0, 2.5, 0.05, 0.45, func(_v: float) -> void:
-		light_options_changed.emit()
-	)
 
-	_add_section_title(parent, "Cel-Shading y Rim Light")
-	_pipeline_opt = _add_option_row(parent, "Modo", [
-		"0: Original", "1: Trigger Cel", "2: Skullgirls", "3: Guilty Gear",
-		"4: Spider-Verse", "5: Persona 5 Noir", "6: Edgerunners",
-		"7: Kill la Kill", "8: Arcane Metal"
-	])
-	_pipeline_opt.item_selected.connect(func(idx: int) -> void:
-		if not _suppress_signals:
-			shader_param_changed.emit("pipeline_style_mode", idx)
+	_add_section_title(parent, "Corte Cel & ILM (ArcSys)")
+	_add_slider(parent, "cel_strength", "Fuerza Cel", 0.0, 1.0, 0.02, 0.88, func(v: float) -> void:
+		shader_param_changed.emit("cel_strength", v)
 	)
-
-	_add_slider(parent, "cel_step_strength", "Escalón Cel", 0.0, 1.0, 0.02, 0.0, func(v: float) -> void:
-		shader_param_changed.emit("cel_step_strength", v)
+	_add_slider(parent, "cel_threshold", "Umbral Corte Cel", -0.60, 0.60, 0.01, 0.05, func(v: float) -> void:
+		shader_param_changed.emit("cel_threshold", v)
 	)
-	_add_slider(parent, "ink_boost", "Refuerzo de Tinta", 0.0, 1.0, 0.02, 0.10, func(v: float) -> void:
-		shader_param_changed.emit("ink_boost", v)
+	_add_slider(parent, "cel_softness", "Suavidad Terminador", 0.005, 0.25, 0.005, 0.038, func(v: float) -> void:
+		shader_param_changed.emit("cel_softness", v)
 	)
-	_add_slider(parent, "noir_shadow_crush", "Sombras Noir", 0.0, 1.0, 0.02, 0.0, func(v: float) -> void:
-		shader_param_changed.emit("noir_shadow_crush", v)
+	_add_slider(parent, "cel_mid_band_strength", "Banda Intermedia", 0.0, 1.0, 0.02, 0.42, func(v: float) -> void:
+		shader_param_changed.emit("cel_mid_band_strength", v)
 	)
-	_add_slider(parent, "noir_shadow_threshold", "Umbral Noir", 0.10, 0.45, 0.01, 0.24, func(v: float) -> void:
-		shader_param_changed.emit("noir_shadow_threshold", v)
+	_add_slider(parent, "albedo_de_shade", "Compensación Albedo", 0.0, 1.0, 0.02, 0.34, func(v: float) -> void:
+		shader_param_changed.emit("albedo_de_shade", v)
 	)
-	_add_slider(parent, "metal_sheen_strength", "Brillo Metálico", 0.0, 1.5, 0.05, 0.0, func(v: float) -> void:
-		shader_param_changed.emit("metal_sheen_strength", v)
-	)
-	_add_slider(parent, "rim_light_strength", "Rim Light", 0.0, 1.5, 0.05, 0.12, func(v: float) -> void:
-		shader_param_changed.emit("rim_light_strength", v)
-	)
-	_add_slider(parent, "rim_width_px", "Ancho Rim (px)", 1.0, 14.0, 0.25, 4.5, func(v: float) -> void:
-		shader_param_changed.emit("rim_width_px", v)
-	)
-	_add_slider(parent, "dual_rim_strength", "Dual Rim", 0.0, 1.5, 0.05, 0.0, func(v: float) -> void:
-		shader_param_changed.emit("dual_rim_strength", v)
-	)
-	_add_slider(parent, "glow_intensity", "Glow Emisivo", 0.0, 3.0, 0.05, 1.05, func(v: float) -> void:
-		shader_param_changed.emit("glow_intensity", v)
-	)
-	_add_slider(parent, "crt_hdr_boost", "Boost HDR", 1.0, 3.0, 0.05, 1.0, func(_v: float) -> void:
-		light_options_changed.emit()
-	)
-	_add_slider(parent, "ilm_shadow_bias_strength", "ILM Shadow Bias", 0.0, 1.0, 0.02, 0.65, func(v: float) -> void:
+	_add_slider(parent, "ilm_shadow_bias_strength", "ILM Shadow Bias", 0.0, 1.0, 0.02, 0.74, func(v: float) -> void:
 		shader_param_changed.emit("ilm_shadow_bias_strength", v)
 	)
-	_add_slider(parent, "ilm_spec_strength", "ILM Especular", 0.0, 1.5, 0.05, 0.75, func(v: float) -> void:
-		shader_param_changed.emit("ilm_spec_strength", v)
+	_add_slider(parent, "ilm_ao_strength", "ILM Deep AO", 0.0, 1.0, 0.02, 0.82, func(v: float) -> void:
+		shader_param_changed.emit("ilm_ao_strength", v)
+	)
+	_add_slider(parent, "face_shadow_protect", "Protección Rostro", 0.0, 1.0, 0.02, 0.88, func(v: float) -> void:
+		shader_param_changed.emit("face_shadow_protect", v)
+	)
+
+	_add_section_title(parent, "Paleta y Color Grading")
+	_add_color_row(parent, "key_light_tint", "Tinte Luz Clave", Color(1.05, 1.02, 0.96, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("key_light_tint", col)
+	)
+	_add_color_row(parent, "shadow_tint", "Sombra Principal", Color(0.180, 0.169, 0.361, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("shadow_tint", col)
+	)
+	_add_color_row(parent, "ao_tint", "Oclusión AO", Color(0.098, 0.078, 0.196, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("ao_tint", col)
+	)
+	_add_color_row(parent, "skin_shadow_tint", "Sombra Piel", Color(0.68, 0.43, 0.50, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("skin_shadow_tint", col)
+	)
+	_add_color_row(parent, "sss_skin_color", "SSS Terminador", Color(0.97, 0.37, 0.30, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("sss_skin_color", col)
+	)
+	_add_slider(parent, "sss_strength", "Intensidad SSS", 0.0, 1.5, 0.02, 0.48, func(v: float) -> void:
+		shader_param_changed.emit("sss_strength", v)
+	)
+	_add_slider(parent, "color_contrast", "Contraste Final", 0.7, 1.6, 0.01, 1.09, func(v: float) -> void:
+		shader_param_changed.emit("color_contrast", v)
+	)
+	_add_slider(parent, "color_saturation", "Saturación Final", 0.5, 1.8, 0.02, 1.12, func(v: float) -> void:
+		shader_param_changed.emit("color_saturation", v)
+	)
+	_add_slider(parent, "key_light_boost", "Boost Luz Clave", 0.8, 1.5, 0.01, 1.08, func(v: float) -> void:
+		shader_param_changed.emit("key_light_boost", v)
 	)
 
 
-func _build_trama_outline_tab(parent: VBoxContainer) -> void:
-	_add_section_title(parent, "Semitono / Trama Manga")
-	var ht_chk := _add_check(parent, "enable_halftone", "Activar Trama / Halftone", false)
-	ht_chk.toggled.connect(func(on: bool) -> void:
-		if not _suppress_signals:
-			shader_param_changed.emit("enable_halftone", on)
+func _build_materials_outline_tab(parent: VBoxContainer) -> void:
+	_add_section_title(parent, "Materiales (ID + ILM)")
+	_add_slider(parent, "armor_spec_strength", "Especular Armadura", 0.0, 2.0, 0.02, 0.92, func(v: float) -> void:
+		shader_param_changed.emit("armor_spec_strength", v)
 	)
-
-	_halftone_pat_opt = _add_option_row(parent, "Patrón", [
-		"Puntos", "Líneas Manga", "Crosshatch", "Diamantes", "Ben-Day", "Hex"
-	])
-	_halftone_pat_opt.item_selected.connect(func(idx: int) -> void:
-		if not _suppress_signals:
-			shader_param_changed.emit("halftone_pattern_type", idx)
+	_add_slider(parent, "armor_spec_threshold", "Umbral Armadura", 0.25, 0.95, 0.01, 0.65, func(v: float) -> void:
+		shader_param_changed.emit("armor_spec_threshold", v)
 	)
-	_halftone_zone_opt = _add_option_row(parent, "Zona", [
-		"Sombras", "Medios", "Toda Silueta", "Bordes"
-	])
-	_halftone_zone_opt.item_selected.connect(func(idx: int) -> void:
-		if not _suppress_signals:
-			shader_param_changed.emit("halftone_zone_mode", idx)
+	_add_slider(parent, "suit_satin_strength", "Satén Traje", 0.0, 1.5, 0.02, 0.34, func(v: float) -> void:
+		shader_param_changed.emit("suit_satin_strength", v)
 	)
-
-	_add_slider(parent, "halftone_strength", "Intensidad", 0.0, 1.0, 0.02, 0.0, func(v: float) -> void:
-		shader_param_changed.emit("halftone_strength", v)
+	_add_slider(parent, "nylon_sheen_strength", "Brillo Nylon Medias", 0.0, 1.5, 0.02, 0.68, func(v: float) -> void:
+		shader_param_changed.emit("nylon_sheen_strength", v)
 	)
-	_add_slider(parent, "halftone_scale", "Densidad", 40.0, 320.0, 2.0, 165.0, func(v: float) -> void:
-		shader_param_changed.emit("halftone_scale", v)
-	)
-	_add_slider(parent, "halftone_angle_deg", "Ángulo (°)", 0.0, 180.0, 1.0, 45.0, func(v: float) -> void:
-		shader_param_changed.emit("halftone_angle_deg", v)
-	)
-	_add_slider(parent, "halftone_threshold", "Umbral", 0.15, 0.85, 0.01, 0.38, func(v: float) -> void:
-		shader_param_changed.emit("halftone_threshold", v)
-	)
-
-	_add_section_title(parent, "Color y Outline")
-	_add_slider(parent, "recolor_contrast", "Contraste", 0.4, 2.2, 0.02, 1.0, func(v: float) -> void:
-		shader_param_changed.emit("recolor_contrast", v)
-	)
-	_add_slider(parent, "recolor_saturation", "Saturación", 0.0, 2.0, 0.02, 1.0, func(v: float) -> void:
-		shader_param_changed.emit("recolor_saturation", v)
-	)
-	_add_slider(parent, "recolor_highlight", "Highlight", 0.0, 2.0, 0.02, 1.0, func(v: float) -> void:
-		shader_param_changed.emit("recolor_highlight", v)
-	)
-	_add_slider(parent, "stocking_denier", "Denier Medias", 0.0, 1.0, 0.02, 0.35, func(v: float) -> void:
+	_add_slider(parent, "stocking_denier", "Denier Medias", 0.0, 1.0, 0.02, 0.34, func(v: float) -> void:
 		shader_param_changed.emit("stocking_denier", v)
 	)
-
-	var out_row := HBoxContainer.new()
-	parent.add_child(out_row)
-	var in_chk := _add_check_inline(out_row, "inward_outline", "Outline Int.", true)
-	in_chk.toggled.connect(func(_on: bool) -> void: inward_outline_changed.emit())
-	var hd_chk := _add_check_inline(out_row, "inward_on_head", "+Cabeza", false)
-	hd_chk.toggled.connect(func(_on: bool) -> void: inward_outline_changed.emit())
-
-	_add_slider(parent, "inward_outline_px", "Grosor Interno (px)", 0.0, 4.0, 0.05, 1.35, func(_v: float) -> void:
-		inward_outline_changed.emit()
+	_add_slider(parent, "hair_angel_ring_strength", "Angel Ring Cabello", 0.0, 2.0, 0.02, 0.88, func(v: float) -> void:
+		shader_param_changed.emit("hair_angel_ring_strength", v)
 	)
-	_add_slider(parent, "outer_outline_tint_mix", "Pass2 Tint Mix", 0.0, 1.0, 0.02, 0.55, func(v: float) -> void:
+	_add_slider(parent, "emissive_glow_strength", "Glow Emisivos", 0.0, 3.0, 0.05, 1.35, func(v: float) -> void:
+		shader_param_changed.emit("emissive_glow_strength", v)
+	)
+	_add_slider(parent, "hdr_cap", "HDR Cap", 1.0, 3.0, 0.05, 1.85, func(_v: float) -> void:
+		light_options_changed.emit()
+	)
+
+	_add_section_title(parent, "Rim-Light Híbrido (Pasada 1 + 2)")
+	_add_slider(parent, "normal_rim_strength", "Rim Normal 2.5D (P1)", 0.0, 2.5, 0.02, 0.78, func(_v: float) -> void:
+		light_options_changed.emit()
+	)
+	_add_slider(parent, "silhouette_rim_strength", "Rim Silueta Clave (P2)", 0.0, 1.5, 0.02, 0.62, func(v: float) -> void:
+		pass2_param_changed.emit("silhouette_rim_strength", v)
+	)
+	_add_slider(parent, "silhouette_rim_width_px", "Ancho Rim Silueta (px)", 0.5, 4.0, 0.05, 1.45, func(v: float) -> void:
+		pass2_param_changed.emit("silhouette_rim_width_px", v)
+	)
+	_add_slider(parent, "counter_rim_strength", "Contra-Rim (P1+P2)", 0.0, 1.5, 0.02, 0.52, func(v: float) -> void:
+		shader_param_changed.emit("counter_rim_strength", v)
+		pass2_param_changed.emit("counter_rim_strength", v)
+	)
+	_add_color_row(parent, "rim_key_color", "Color Rim Clave", Color(0.94, 0.97, 1.0, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("rim_key_color", col)
+		pass2_param_changed.emit("rim_key_color", col)
+	)
+	var ctr_acc_chk := _add_check(parent, "counter_rim_use_skin_accent", "Contra-Rim usa Accent Skin", true)
+	ctr_acc_chk.toggled.connect(func(_on: bool) -> void:
+		if not _suppress_signals:
+			counter_rim_options_changed.emit()
+	)
+	_add_color_row(parent, "counter_rim_override_color", "Color Contra-Rim Manual", Color(0.86, 0.18, 0.32, 1.0), func(_col: Color) -> void:
+		counter_rim_options_changed.emit()
+	)
+
+	_add_section_title(parent, "Lineart Interno, Nitidez y Silueta Caligráfica")
+	_add_slider(parent, "albedo_lod_bias", "LOD Bias Albedo (P1)", -1.5, 0.5, 0.05, 0.0, func(v: float) -> void:
+		shader_param_changed.emit("albedo_lod_bias_offset", v)
+	)
+	_add_slider(parent, "ink_strength", "Fuerza Tinta Interna", 0.0, 1.0, 0.02, 0.68, func(v: float) -> void:
+		shader_param_changed.emit("ink_strength", v)
+	)
+	_add_slider(parent, "ink_color_tint_mix", "Colored Line Art Mix", 0.0, 1.0, 0.02, 0.78, func(v: float) -> void:
+		shader_param_changed.emit("ink_color_tint_mix", v)
+	)
+	_add_slider(parent, "ink_sdf_bias_px", "Bias SDF Tinta (px)", -1.5, 2.0, 0.02, 0.15, func(v: float) -> void:
+		shader_param_changed.emit("ink_sdf_bias_px", v)
+	)
+	_add_slider(parent, "ink_sdf_softness", "Suavidad SDF Tinta", 0.10, 2.0, 0.02, 0.50, func(v: float) -> void:
+		shader_param_changed.emit("ink_sdf_softness", v)
+	)
+	_add_color_row(parent, "ink_skin_tint", "Tinta Piel", Color(0.24, 0.11, 0.12, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("ink_skin_tint", col)
+	)
+	_add_color_row(parent, "ink_cool_tint", "Tinta Traje/Pelo", Color(0.055, 0.055, 0.130, 1.0), func(col: Color) -> void:
+		shader_param_changed.emit("ink_cool_tint", col)
+	)
+
+	var out_chk := _add_check(parent, "enable_outer_outline", "Silueta Caligráfica (Pasada 2)", true)
+	out_chk.toggled.connect(func(on: bool) -> void:
+		if not _suppress_signals:
+			pass2_param_changed.emit("enable_outer_outline", on)
+	)
+	_add_slider(parent, "outer_outline_width_px", "Grosor Silueta (px)", 0.0, 8.0, 0.05, 0.78, func(v: float) -> void:
+		pass2_param_changed.emit("outer_outline_width_px", v)
+	)
+	_add_slider(parent, "outline_min_px", "Grosor Mín Silueta (px)", 0.1, 4.0, 0.02, 0.48, func(v: float) -> void:
+		pass2_param_changed.emit("outline_min_px", v)
+	)
+	_add_slider(parent, "outline_max_px", "Grosor Máx Silueta (px)", 0.2, 8.0, 0.05, 1.15, func(v: float) -> void:
+		pass2_param_changed.emit("outline_max_px", v)
+	)
+	_add_slider(parent, "outer_outline_strength", "Opacidad Silueta", 0.0, 1.0, 0.02, 0.92, func(v: float) -> void:
+		pass2_param_changed.emit("outer_outline_strength", v)
+	)
+	_add_slider(parent, "outer_outline_tint_mix", "Colored Outline Mix", 0.0, 1.0, 0.02, 0.78, func(v: float) -> void:
 		pass2_param_changed.emit("outer_outline_tint_mix", v)
 	)
-	_add_slider(parent, "hdr_light_wrap_strength", "Pass2 HDR Wrap", 0.0, 1.0, 0.02, 0.42, func(v: float) -> void:
+	_add_slider(parent, "outline_calligraphy_amount", "Caligrafía Luz/Sombra", 0.0, 1.0, 0.02, 0.65, func(v: float) -> void:
+		pass2_param_changed.emit("outline_calligraphy_amount", v)
+	)
+	_add_slider(parent, "outline_crispness", "Crispness Silueta (AA)", 0.05, 0.65, 0.01, 0.42, func(v: float) -> void:
+		pass2_param_changed.emit("outline_crispness", v)
+	)
+	_add_slider(parent, "outline_inward_replace", "Inward Replace Silueta", 0.0, 1.0, 0.02, 0.12, func(v: float) -> void:
+		pass2_param_changed.emit("outline_inward_replace", v)
+	)
+	_add_slider(parent, "ign_jitter_strength", "Ruido IGN Silueta", 0.0, 1.0, 0.02, 0.0, func(v: float) -> void:
+		pass2_param_changed.emit("ign_jitter_strength", v)
+	)
+	_add_color_row(parent, "outer_outline_color", "Color Base Silueta", Color(0.045, 0.040, 0.095, 1.0), func(col: Color) -> void:
+		pass2_param_changed.emit("outer_outline_color", col)
+	)
+	_add_slider(parent, "hdr_light_wrap_strength", "Light-Wrap HDR (P2)", 0.0, 1.0, 0.02, 0.58, func(v: float) -> void:
 		pass2_param_changed.emit("hdr_light_wrap_strength", v)
+	)
+	_add_slider(parent, "hdr_threshold", "Umbral HDR Wrap", 1.0, 1.5, 0.01, 1.05, func(v: float) -> void:
+		pass2_param_changed.emit("hdr_threshold", v)
+	)
+	_add_slider(parent, "cas_sharpen_strength", "CAS Sharpen (P2)", 0.0, 1.0, 0.02, 0.0, func(v: float) -> void:
+		pass2_param_changed.emit("cas_sharpen_strength", v)
 	)
 
 
@@ -541,6 +709,18 @@ func _build_extra_debug_tab(parent: VBoxContainer) -> void:
 	_recolor_opt.item_selected.connect(func(idx: int) -> void:
 		if not _suppress_signals:
 			recolor_method_changed.emit(idx)
+	)
+	_add_slider(parent, "recolor_contrast", "Contraste Recolor", 0.4, 2.2, 0.02, 1.0, func(v: float) -> void:
+		shader_param_changed.emit("recolor_contrast", v)
+	)
+	_add_slider(parent, "recolor_saturation", "Saturación Recolor", 0.0, 2.0, 0.02, 1.0, func(v: float) -> void:
+		shader_param_changed.emit("recolor_saturation", v)
+	)
+	_add_slider(parent, "recolor_highlight", "Highlight Recolor", 0.0, 2.0, 0.02, 1.0, func(v: float) -> void:
+		shader_param_changed.emit("recolor_highlight", v)
+	)
+	_add_slider(parent, "stocking_tint_strength", "Tinte Nylon Recolor", 0.0, 1.0, 0.02, 0.28, func(v: float) -> void:
+		shader_param_changed.emit("stocking_tint_strength", v)
 	)
 
 	_add_section_title(parent, "Inspector Rayos-X")
@@ -648,6 +828,29 @@ func _add_slider(
 	_slider_labels[key] = val_lbl
 
 
+func _add_color_row(parent: VBoxContainer, key: String, title: String, init_col: Color, cb: Callable) -> ColorPickerButton:
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(row)
+	var lbl := Label.new()
+	lbl.text = title
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.modulate = Color(0.86, 0.90, 0.96)
+	row.add_child(lbl)
+	var picker := ColorPickerButton.new()
+	picker.custom_minimum_size = Vector2(72.0, 22.0)
+	picker.color = init_col
+	picker.edit_alpha = false
+	picker.color_changed.connect(func(col: Color) -> void:
+		if not _suppress_signals:
+			cb.call(col)
+	)
+	row.add_child(picker)
+	_colors[key] = picker
+	return picker
+
+
 func _set_slider_val(key: String, val: float) -> void:
 	var s: HSlider = _sliders.get(key, null) as HSlider
 	if s != null:
@@ -661,3 +864,9 @@ func _set_check_val(key: String, val: bool) -> void:
 	var c: CheckBox = _checks.get(key, null) as CheckBox
 	if c != null:
 		c.button_pressed = val
+
+
+func _set_color_val(key: String, col: Color) -> void:
+	var p: ColorPickerButton = _colors.get(key, null) as ColorPickerButton
+	if p != null:
+		p.color = col

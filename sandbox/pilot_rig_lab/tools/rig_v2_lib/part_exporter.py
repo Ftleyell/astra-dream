@@ -13,7 +13,7 @@ from process_limb_anim_masks import MASK_SCALE
 from process_masked_5parts import TEX_SCALE
 
 from .constants import CANONICAL_W, DEFAULT_SOURCE_DIR, LIMB_PARTS, PART_PAD_PX, PX_H, PX_W
-from .mask_and_matting import _apply_rear_depth_darkening
+from .mask_and_matting import _apply_rear_depth_darkening, _expand_secondary_mask_over_ink_and_margin
 from .skeleton_and_normals import (
     _bake_geodesic_anim_mask_with_crease_cut,
     _build_part_bone_chain_3d,
@@ -167,16 +167,21 @@ def _export_part_patch(
             over_p.unlink()
 
     if pname == "body_core":
+        view_name = str(meta_bones_dict.get("view", ""))
         if sec_jiggle_full is not None:
-            sec_crop = sec_jiggle_full[y0:y1, x0:x1].copy()
-            bc_fg = part_rgba[:, :, 3] >= 64
-            sec_crop[~bc_fg, :3] = 0
-            sec_crop[:, :, 3] = np.where(bc_fg, 255, 0).astype(np.uint8)
+            sec_crop_raw = sec_jiggle_full[y0:y1, x0:x1].copy()
+            bones_local_px = {
+                str(b["name"]): (
+                    float(b["pos"][0]) * float(TEX_SCALE) - float(x0_shifted),
+                    float(b["pos"][1]) * float(TEX_SCALE) - float(y0_shifted),
+                )
+                for b in meta_bones_dict.get("bones", [])
+            }
+            sec_crop = _expand_secondary_mask_over_ink_and_margin(sec_crop_raw, part_rgba, view_name, bones_local_px)
         else:
             sec_crop = np.zeros((ph, pw, 4), dtype=np.uint8)
             sec_crop[:, :, 3] = 255
         cv2.imwrite(str(parts_dir / "body_core_secondary_mask.png"), sec_crop)
-        view_name = str(meta_bones_dict.get("view", ""))
         if pauldron_mask_full is not None and pauldron_mask_full.shape[:2] == (PX_H, PX_W):
             crop_pm = pauldron_mask_full[y0:y1, x0:x1]
             if crop_pm.shape[:2] != (ph, pw):

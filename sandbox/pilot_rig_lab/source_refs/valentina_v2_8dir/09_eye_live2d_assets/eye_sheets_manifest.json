@@ -1,0 +1,198 @@
+{
+  "sheet_name": "eyes_4dir_zoom_1x1",
+  "aspect": "1:1",
+  "sheet_size": [
+    2048,
+    2048
+  ],
+  "rows": 2,
+  "cols": 2,
+  "margin_px": 40,
+  "gap_px": 48,
+  "panel_px": 960,
+  "crop_px": 80,
+  "scale_factor": 12.0,
+  "cy_lift_px": 4,
+  "heads": {
+    "head_front": {
+      "label": "1. head_front (S)",
+      "slot_rc": [
+        0,
+        0
+      ],
+      "panel_rect": [
+        40,
+        40,
+        960,
+        960
+      ],
+      "native_img_size": [
+        303,
+        356
+      ],
+      "native_crop_rect": [
+        67,
+        124,
+        80,
+        80
+      ],
+      "socket_bbox_native": [
+        92,
+        160,
+        121,
+        177
+      ],
+      "socket_size_native": [
+        30,
+        18
+      ],
+      "socket_center_native": [
+        106.759,
+        167.529
+      ],
+      "socket_center_uv": [
+        0.35234,
+        0.470588
+      ],
+      "socket_center_in_panel": [
+        477.11,
+        522.35
+      ]
+    },
+    "head_front_r": {
+      "label": "2. head_front_r (SE)",
+      "slot_rc": [
+        0,
+        1
+      ],
+      "panel_rect": [
+        1048,
+        40,
+        960,
+        960
+      ],
+      "native_img_size": [
+        302,
+        358
+      ],
+      "native_crop_rect": [
+        105,
+        125,
+        80,
+        80
+      ],
+      "socket_bbox_native": [
+        129,
+        161,
+        160,
+        177
+      ],
+      "socket_size_native": [
+        32,
+        17
+      ],
+      "socket_center_native": [
+        144.74,
+        168.546
+      ],
+      "socket_center_uv": [
+        0.479271,
+        0.470799
+      ],
+      "socket_center_in_panel": [
+        476.88,
+        522.55
+      ]
+    },
+    "head_front_l": {
+      "label": "3. head_front_l (SW)",
+      "slot_rc": [
+        1,
+        0
+      ],
+      "panel_rect": [
+        40,
+        1048,
+        960,
+        960
+      ],
+      "native_img_size": [
+        297,
+        357
+      ],
+      "native_crop_rect": [
+        37,
+        126,
+        80,
+        80
+      ],
+      "socket_bbox_native": [
+        68,
+        163,
+        86,
+        178
+      ],
+      "socket_size_native": [
+        19,
+        16
+      ],
+      "socket_center_native": [
+        76.894,
+        170.286
+      ],
+      "socket_center_uv": [
+        0.258902,
+        0.476991
+      ],
+      "socket_center_in_panel": [
+        478.73,
+        531.43
+      ]
+    },
+    "head_side_r": {
+      "label": "4. head_side_r (E)",
+      "slot_rc": [
+        1,
+        1
+      ],
+      "panel_rect": [
+        1048,
+        1048,
+        960,
+        960
+      ],
+      "native_img_size": [
+        280,
+        353
+      ],
+      "native_crop_rect": [
+        164,
+        115,
+        80,
+        80
+      ],
+      "socket_bbox_native": [
+        195,
+        152,
+        212,
+        168
+      ],
+      "socket_size_native": [
+        18,
+        17
+      ],
+      "socket_center_native": [
+        204.089,
+        159.054
+      ],
+      "socket_center_uv": [
+        0.728888,
+        0.450578
+      ],
+      "socket_center_in_panel": [
+        481.06,
+        528.65
+      ]
+    }
+  }
+}

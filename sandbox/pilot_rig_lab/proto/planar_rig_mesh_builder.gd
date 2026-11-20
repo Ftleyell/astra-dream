@@ -6,6 +6,7 @@ extends RefCounted
 
 const ASSETS_ROOT: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar"
 const SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_stylizer.gdshader"
+const CalibStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
 
 const PARTS_5_ORDER: Array[String] = ["leg_r", "leg_l", "arm_r", "arm_l", "pelvis", "torso", "body_core", "pauldron_r", "pauldron_l"]
 const HEAD_KEYS: Array[String] = [
@@ -19,6 +20,9 @@ const HEAD_KEYS: Array[String] = [
 	"head_back_l",
 	"head_back_r",
 ]
+
+static var _texture_cache: Dictionary = {}
+static var _image_cache: Dictionary = {}
 
 
 static func create_conic_rim_lut() -> GradientTexture2D:
@@ -54,6 +58,9 @@ static func load_json_dict(res_path: String) -> Dictionary:
 
 
 static func load_texture_res(res_path: String, fix_alpha: bool = false, use_mipmaps: bool = true) -> Texture2D:
+	var cache_key: String = "%s|%d|%d" % [res_path, int(fix_alpha), int(use_mipmaps)]
+	if _texture_cache.has(cache_key) and _texture_cache[cache_key] != null:
+		return _texture_cache[cache_key] as Texture2D
 	var img: Image = null
 	var abs_path: String = ProjectSettings.globalize_path(res_path)
 	if FileAccess.file_exists(abs_path):
@@ -70,20 +77,27 @@ static func load_texture_res(res_path: String, fix_alpha: bool = false, use_mipm
 		img.fix_alpha_edges()
 	if use_mipmaps:
 		img.generate_mipmaps()
-	return ImageTexture.create_from_image(img)
+	var tex: Texture2D = ImageTexture.create_from_image(img)
+	_texture_cache[cache_key] = tex
+	return tex
 
 
 static func load_image_res(res_path: String) -> Image:
+	if _image_cache.has(res_path) and _image_cache[res_path] != null:
+		return _image_cache[res_path] as Image
+	var img: Image = null
 	var abs_path: String = ProjectSettings.globalize_path(res_path)
 	if FileAccess.file_exists(abs_path):
-		return Image.load_from_file(abs_path)
-	if ResourceLoader.exists(res_path):
+		img = Image.load_from_file(abs_path)
+	elif ResourceLoader.exists(res_path):
 		var loaded: Resource = ResourceLoader.load(res_path)
 		if loaded is Texture2D:
-			return (loaded as Texture2D).get_image()
-		if loaded is Image:
-			return loaded as Image
-	return null
+			img = (loaded as Texture2D).get_image()
+		elif loaded is Image:
+			img = loaded as Image
+	if img != null and not img.is_empty():
+		_image_cache[res_path] = img
+	return img
 
 
 static func build_body_view_rig(
@@ -198,9 +212,10 @@ static func _build_parts5_rig(
 		var dh: float = float(rect_arr[3])
 
 		var col_tex: Texture2D = load_texture_res("%s/%s.png" % [parts5_dir, p_name], true, true)
-		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [parts5_dir, p_name], false, true)
+		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [parts5_dir, p_name], false, false)
 		var nd_tex: Texture2D = load_texture_res("%s/%s_normal_depth.png" % [parts5_dir, p_name], false, true)
 		var ilm_tex: Texture2D = load_texture_res("%s/%s_ilm_mask.png" % [parts5_dir, p_name], false, true)
+		var ink_sdf_tex: Texture2D = load_texture_res("%s/%s_ink_sdf.png" % [parts5_dir, p_name], false, false)
 		if col_tex == null:
 			continue
 
@@ -245,6 +260,9 @@ static func _build_parts5_rig(
 		if ilm_tex != null:
 			mat.set_shader_parameter("ilm_mask_tex", ilm_tex)
 		mat.set_shader_parameter("has_ilm_mask", ilm_tex != null)
+		if ink_sdf_tex != null:
+			mat.set_shader_parameter("ink_sdf_tex", ink_sdf_tex)
+		mat.set_shader_parameter("has_ink_sdf", ink_sdf_tex != null)
 		if conic_lut != null:
 			mat.set_shader_parameter("conic_rim_lut", conic_lut)
 		mat.set_shader_parameter("use_normal_depth", nd_tex != null)
@@ -321,6 +339,43 @@ static func _build_parts5_rig(
 				"anim_mask_img": anim_mask_img,
 				"mat": mat_st,
 			})
+
+	var bc_poly: Polygon2D = poly_refs.get("body_core", null) as Polygon2D
+	if bc_poly != null and bc_poly.material is ShaderMaterial:
+		var bc_tex: Texture2D = bc_poly.texture
+		var bc_rect: Variant = (bc_poly.material as ShaderMaterial).get_shader_parameter("part_rig_rect")
+		var sh_cfg: Dictionary = CalibStoreScript.parse_hip_cast_shadow_from_meta(meta, view_key)
+		var sp_cfg: Dictionary = CalibStoreScript.parse_stocking_pinch_from_meta(meta)
+		var use_cast: bool = bool(sh_cfg.get("enabled", true)) and bc_tex != null
+		var use_pinch: bool = bool(sp_cfg.get("enabled", true))
+		var cached_center_u: Dictionary = {}
+		for leg_key: String in ["leg_r", "leg_l", "leg_r_stocking", "leg_l_stocking"]:
+			var l_poly: Polygon2D = poly_refs.get(leg_key, null) as Polygon2D
+			if l_poly == null or not (l_poly.material is ShaderMaterial):
+				continue
+			var l_mat: ShaderMaterial = l_poly.material as ShaderMaterial
+			l_mat.set_shader_parameter("enable_hip_cast_shadow", use_cast)
+			if use_cast:
+				l_mat.set_shader_parameter("hip_cast_body_tex", bc_tex)
+				l_mat.set_shader_parameter("hip_cast_body_rect", bc_rect)
+				l_mat.set_shader_parameter("hip_cast_pelvis_delta", Vector2.ZERO)
+				l_mat.set_shader_parameter("hip_cast_shadow_offset_px", sh_cfg["offset"] as Vector2)
+				l_mat.set_shader_parameter("hip_cast_shadow_color", sh_cfg["color"] as Color)
+			l_mat.set_shader_parameter("enable_stocking_pinch", use_pinch)
+			if use_pinch:
+				var is_left_leg: bool = leg_key.begins_with("leg_l")
+				var v_key_sp: String = "v_l" if is_left_leg else "v_r"
+				var tilt_key: String = "tilt_l" if is_left_leg else "tilt_r"
+				var v_val_sp: float = float(sp_cfg[v_key_sp])
+				var side_id: String = "l" if is_left_leg else "r"
+				if not cached_center_u.has(side_id):
+					cached_center_u[side_id] = CalibStoreScript.compute_pinch_center_u(l_poly.texture, v_val_sp)
+				l_mat.set_shader_parameter("stocking_pinch_v", v_val_sp)
+				l_mat.set_shader_parameter("stocking_pinch_center_u", float(cached_center_u[side_id]))
+				l_mat.set_shader_parameter("stocking_pinch_tilt", float(sp_cfg[tilt_key]))
+				l_mat.set_shader_parameter("stocking_pinch_strength", float(sp_cfg["strength"]))
+				l_mat.set_shader_parameter("stocking_pinch_width", float(sp_cfg["width"]))
+				l_mat.set_shader_parameter("stocking_pinch_shadow", float(sp_cfg["shadow"]))
 
 	var view_neck_rel := Vector2(-12.9, -122.0)
 	var na_meta_val: Variant = meta.get("neck_anchor", null)
@@ -616,6 +671,7 @@ static func build_decoupled_heads(
 ) -> Dictionary:
 	var heads_dir: String = "%s/heads" % pilot_root
 	var meta: Dictionary = load_json_dict("%s/heads_metadata.json" % heads_dir)
+	var eye_meta: Dictionary = load_json_dict("%s/eye_live2d_meta.json" % heads_dir)
 	var parts5_meta: Dictionary = load_json_dict("%s/s/parts_5/parts_5_meta.json" % pilot_root)
 	var neck_rel := Vector2(-12.9, -122.0)
 	if parts5_meta.has("rig_origin") and parts5_meta.has("neck_anchor"):
@@ -627,13 +683,16 @@ static func build_decoupled_heads(
 	var materials: Array[ShaderMaterial] = []
 	var base_scales: Dictionary = {}
 	var base_offsets: Dictionary = {}
+	var tex_per_du: Dictionary = {}
 
 	for h_key: String in HEAD_KEYS:
 		var col_tex: Texture2D = load_texture_res("%s/%s.png" % [heads_dir, h_key], true, true)
-		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [heads_dir, h_key], false, true)
+		var id_tex: Texture2D = load_texture_res("%s/%s_id_mask.png" % [heads_dir, h_key], false, false)
 		var nd_tex: Texture2D = load_texture_res("%s/%s_normal_depth.png" % [heads_dir, h_key], false, true)
 		var ilm_tex: Texture2D = load_texture_res("%s/%s_ilm_mask.png" % [heads_dir, h_key], false, true)
+		var ink_sdf_tex: Texture2D = load_texture_res("%s/%s_ink_sdf.png" % [heads_dir, h_key], false, false)
 		var jiggle_tex: Texture2D = load_texture_res("%s/%s_hair_jiggle_mask.png" % [heads_dir, h_key], false, false)
+		var flm_tex: Texture2D = load_texture_res("%s/%s_face_live_mask.png" % [heads_dir, h_key], false, false)
 		var sdf_tex: Texture2D = load_texture_res("%s/%s_outline_sdf.png" % [heads_dir, h_key], false, false)
 		if col_tex == null:
 			continue
@@ -643,10 +702,12 @@ static func build_decoupled_heads(
 		var disp_size := Vector2(float(disp_sz_arr[0]), float(disp_sz_arr[1]))
 		var off_arr: Array = entry.get("sprite_offset", [0.0, -45.0]) as Array
 		var sprite_off := Vector2(float(off_arr[0]), float(off_arr[1]))
+		var np_uv := Vector2(0.5, 0.72)
 		if entry.has("neck_pivot_px") and entry["neck_pivot_px"] is Array and (entry["neck_pivot_px"] as Array).size() >= 2:
 			var np_arr: Array = entry["neck_pivot_px"] as Array
 			# Alinear el eje X del cuello exactamente sobre el pivote anatómico para evitar bamboleo al rotar.
 			sprite_off.x = disp_size.x * 0.5 - float(np_arr[0])
+			np_uv = Vector2(float(np_arr[0]) / maxf(disp_size.x, 1.0), float(np_arr[1]) / maxf(disp_size.y, 1.0))
 
 		var spr := Sprite2D.new()
 		spr.name = h_key
@@ -657,6 +718,7 @@ static func build_decoupled_heads(
 		var tex_sz: Vector2 = col_tex.get_size()
 		spr.scale = Vector2(disp_size.x / maxf(tex_sz.x, 1.0), disp_size.y / maxf(tex_sz.y, 1.0))
 		spr.visible = (h_key == "head_front")
+		tex_per_du[h_key] = Vector2(tex_sz.x / maxf(disp_size.x, 1.0), tex_sz.y / maxf(disp_size.y, 1.0))
 
 		var mat := ShaderMaterial.new()
 		mat.shader = shader_res
@@ -667,8 +729,15 @@ static func build_decoupled_heads(
 		if ilm_tex != null:
 			mat.set_shader_parameter("ilm_mask_tex", ilm_tex)
 		mat.set_shader_parameter("has_ilm_mask", ilm_tex != null)
+		if ink_sdf_tex != null:
+			mat.set_shader_parameter("ink_sdf_tex", ink_sdf_tex)
+		mat.set_shader_parameter("has_ink_sdf", ink_sdf_tex != null)
 		if jiggle_tex != null:
 			mat.set_shader_parameter("secondary_jiggle_mask_tex", jiggle_tex)
+		if flm_tex != null:
+			mat.set_shader_parameter("face_live_mask_tex", flm_tex)
+		mat.set_shader_parameter("neck_pivot_uv", np_uv)
+		_bind_head_eye_live2d_assets(heads_dir, h_key, eye_meta, mat)
 		if sdf_tex != null:
 			mat.set_shader_parameter("outline_sdf_tex", sdf_tex)
 			mat.set_shader_parameter("has_outline_sdf", true)
@@ -697,7 +766,36 @@ static func build_decoupled_heads(
 		"meta": meta,
 		"base_scales": base_scales,
 		"base_offsets": base_offsets,
+		"tex_per_du": tex_per_du,
 	}
+
+
+static func _bind_head_eye_live2d_assets(
+	heads_dir: String,
+	head_key: String,
+	eye_meta: Dictionary,
+	mat: ShaderMaterial
+) -> void:
+	if mat == null:
+		return
+	if not eye_meta.has(head_key):
+		mat.set_shader_parameter("has_eye_live2d_assets", false)
+		return
+	var iris_tex: Texture2D = load_texture_res("%s/%s_eye_iris.png" % [heads_dir, head_key], false, true)
+	var closed_tex: Texture2D = load_texture_res("%s/%s_eye_closed.png" % [heads_dir, head_key], false, true)
+	if iris_tex == null or closed_tex == null:
+		mat.set_shader_parameter("has_eye_live2d_assets", false)
+		return
+	var em: Dictionary = eye_meta[head_key] as Dictionary
+	var c_arr: Array = em.get("eye_center_uv", [0.35, 0.47]) as Array
+	var s_arr: Array = em.get("eye_iris_size_uv", [0.065, 0.058]) as Array
+	var r_arr: Array = em.get("eye_patch_rect_uv", [0.22, 0.35, 0.26, 0.22]) as Array
+	mat.set_shader_parameter("eye_iris_tex", iris_tex)
+	mat.set_shader_parameter("eye_closed_tex", closed_tex)
+	mat.set_shader_parameter("eye_center_uv", Vector2(float(c_arr[0]), float(c_arr[1])))
+	mat.set_shader_parameter("eye_iris_size_uv", Vector2(float(s_arr[0]), float(s_arr[1])))
+	mat.set_shader_parameter("eye_patch_rect_uv", Vector4(float(r_arr[0]), float(r_arr[1]), float(r_arr[2]), float(r_arr[3])))
+	mat.set_shader_parameter("has_eye_live2d_assets", true)
 
 
 static func _apply_part_edge_outline_from_meta(mat: ShaderMaterial, meta: Dictionary, item_key: String) -> void:

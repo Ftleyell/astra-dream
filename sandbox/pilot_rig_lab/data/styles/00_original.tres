@@ -5,4 +5,7 @@
 [resource]
 script = ExtResource("1_7ny4j")
 id = "00_original"
-label = "Perfil 0: Original Upscayl 4x (Referencia Pura)"
+label = "00 — Original (Baseline Limpio)"
+stylize_enabled = false
+use_normal_depth = false
+enable_outer_outline = false

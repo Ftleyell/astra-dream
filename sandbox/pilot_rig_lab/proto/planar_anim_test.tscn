@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://vt03224oihqc"]
 
-[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/proto/planar_anim_test.gd" id="1_anim"]
+[ext_resource type="Script" uid="uid://dnmthtjyv5dd7" path="res://sandbox/pilot_rig_lab/proto/planar_anim_test.gd" id="1_anim"]
 
-[node name="PlanarAnimTest" type="Node2D"]
+[node name="PlanarAnimTest" type="Node2D" unique_id=1536551168]
 script = ExtResource("1_anim")

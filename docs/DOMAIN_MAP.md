@@ -365,14 +365,16 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 | `proto/planar_combat_rig.gd` | Orquestador del rig limpio (Valentina v2), `UnifiedCharacterGroup` (`CanvasGroup`) y `HeadContactShadow`. |
 | `proto/planar_rig_mesh_builder.gd` | Construye mallas `Polygon2D` + `Skeleton2D` (18 huesos) desde `parts_5_meta.json`, pesos desde `*_anim_mask.png`, y cabezas en 2 pasadas (`head_layer_pass = 1/2`). |
 | `proto/planar_rig_view_router.gd` | **Activo:** Enrutado 8-dir nativo (`valentina_v2`, `body_flip_x = false`), cono cervical `±65°`, histéresis y backpedal anti-exorcista. |
-| `proto/planar_rig_transition_controller.gd` | **Activo:** Transiciones snappy de cambio de orientación (Modos 4..6: `WHIP_SNAP_AFTERIMAGE`, `MICRO_FLASH_SNAP`, `HOLO_SNAP_FAST`) + micro-snap de cabeza. |
+| `proto/planar_rig_transition_controller.gd` | **Activo:** Transiciones snappy de cambio de orientación (Modos 4..6), estado 2.5D/cascada (`get_turn_anim_state`) y whip cervical de cabeza. |
 | `proto/planar_rig_wings_vfx.gd` | **Parcial:** Solo `spawn_snap_afterimage` para el modo 4 de transición; alas, propulsores y estela Sandevistan purgados. |
 | `proto/planar_rig_animator.gd` | **Purgado (Rest Pose):** Mantiene huesos en `rest_rots` y `BodyPivot` sin traslación/rotación; conserva `AnimState`, `step_spring` y límites `*_limits` para reconstrucción. |
 | `proto/planar_rig_perspective_controller.gd` | **Purgado (`persp_mode = 0`):** Desactiva escorzos 2.5D en vértice; conserva solo `leg_depth_phase` estático en perfiles `e`/`w`. |
 | `proto/planar_rig_secondary_physics.gd` | **Purgado:** Mantiene `secondary_jiggle_*_px = ZERO` sin whiplash ni resortes. |
 | `proto/planar_rig_material_controller.gd` | Aplica `RigStyleProfile`, `PilotSkinPreset`, `PilotHairPreset`, Pasada 2, rayos-X, `hit_flash` e `impact_frame_phase`. |
-| `proto/planar_lab_hud_builder.gd` | UI del Lab y escaneo automático de `pilots/*/*.tres`. |
-| `data/` & `proto/*_config.gd` | Recursos `.tres`: `PilotRigProfile`, `PilotSkinPreset`, `PilotHairPreset`, `RigStyleProfile`, `PlanarRigAnimConfig`, `RigPerspectiveConfig`. |
+| `proto/planar_lab_hud_builder.gd` | UI del Lab de Combate (`pose_mode_opt`, `idle_anim_chk`, `loco_anim_chk`, `turn_anim_chk`, `jiggle_anim_chk`) y escaneo automático de `pilots/*/*.tres`. |
+| `proto/planar_rig_base_pose_evaluator.gd` | Evaluador A/B de Pose Base Zero-G, Idle, Locomoción/Freno, Giros Snappy y Jiggle Physics Busto/Glúteos (`step_live_jiggle_physics`). |
+| `proto/planar_anim_test.gd` + `proto/planar_pose_lab_hud.gd` | Brújula 8-Dir interactiva con estilo `02_valentina_razor_sharp` y HUD de 5 pestañas (`Pose` / `Idle` / `Vuelo` / `Giros` / `Jiggle`) con guardado `.tres`. |
+| `data/` & `proto/*_config.gd` | Recursos `.tres`: `PilotRigProfile`, `PilotSkinPreset`, `PilotHairPreset`, `RigStyleProfile`, `PilotBasePoseConfig`, `PilotIdleAnimConfig`, `PilotLocomotionAnimConfig`, `PilotTurnAnimConfig`, `PilotJigglePhysicsConfig`, `PlanarRigAnimConfig`, `RigPerspectiveConfig`. |
 
 ### 17.2 Shaders y Máscaras Activas
 - **Pasada 1 (por pieza/cabeza):** `pilot_rig_stylizer.gdshader` + `shaders/rig_color_recolor.gdshaderinc`, `shaders/rig_stylized_lighting.gdshaderinc`, `shaders/rig_perspective_25d.gdshaderinc`.

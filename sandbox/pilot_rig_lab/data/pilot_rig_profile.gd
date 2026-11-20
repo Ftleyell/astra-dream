@@ -13,6 +13,15 @@ extends Resource
 @export var head_outline_width_px: float = 4.0
 @export var stepped_fps: float = 15.0
 
+@export_group("Animaciones del Rig (.tres)")
+@export var base_pose_config: Resource = null
+@export var idle_anim_config: Resource = null
+@export var locomotion_anim_config: Resource = null
+@export var kiting_anim_config: Resource = null
+@export var turn_anim_config: Resource = null
+@export var jiggle_physics_config: Resource = null
+@export var face_anim_config: Resource = null
+
 @export_group("Presets Asociados")
 @export var skins: Array[PilotSkinPreset] = []
 @export var hair_presets: Array[PilotHairPreset] = []

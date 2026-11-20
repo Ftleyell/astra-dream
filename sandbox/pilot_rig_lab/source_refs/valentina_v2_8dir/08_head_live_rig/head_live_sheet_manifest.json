@@ -1,0 +1,342 @@
+{
+  "sheet_name": "heads_8dir_live_mask_16x9",
+  "aspect": "16:9",
+  "size": [
+    2560,
+    1440
+  ],
+  "rows": 2,
+  "cols": 4,
+  "padding": {
+    "left": 48,
+    "right": 48,
+    "top": 28,
+    "bottom": 108
+  },
+  "uniform_scale": 1.7,
+  "swatch_bar_y_start": 1332,
+  "palette": {
+    "background": {
+      "hex": "#000000",
+      "rgb": [
+        0,
+        0,
+        0
+      ],
+      "label": "Fondo",
+      "role": "Exterior vacio (alpha 0)"
+    },
+    "face_skin": {
+      "hex": "#FFD000",
+      "rgb": [
+        255,
+        208,
+        0
+      ],
+      "label": "Piel Rostro",
+      "role": "Cara y orejas rigidas"
+    },
+    "neck": {
+      "hex": "#0055FF",
+      "rgb": [
+        0,
+        85,
+        255
+      ],
+      "label": "Cuello",
+      "role": "Soldadura cervical Pass 1"
+    },
+    "iris_pupil": {
+      "hex": "#00FFFF",
+      "rgb": [
+        0,
+        255,
+        255
+      ],
+      "label": "Iris/Pupila",
+      "role": "face_anim.g (mirada/sacadas)"
+    },
+    "eyelid": {
+      "hex": "#FFFFFF",
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "label": "Parpado",
+      "role": "face_anim.r (parpadeo/squint)"
+    },
+    "eyebrow": {
+      "hex": "#FF6600",
+      "rgb": [
+        255,
+        102,
+        0
+      ],
+      "label": "Cejas",
+      "role": "face_anim.b (expresion)"
+    },
+    "mouth": {
+      "hex": "#FF0055",
+      "rgb": [
+        255,
+        0,
+        85
+      ],
+      "label": "Boca/Labios",
+      "role": "face_anim.a (respiracion/gesto)"
+    },
+    "monocle": {
+      "hex": "#AA00FF",
+      "rgb": [
+        170,
+        0,
+        255
+      ],
+      "label": "Monoculo",
+      "role": "Parallax frontal + HUD vivo"
+    },
+    "hair_crown": {
+      "hex": "#606878",
+      "rgb": [
+        96,
+        104,
+        120
+      ],
+      "label": "Pelo Rigido",
+      "role": "Coronilla anclada al craneo"
+    },
+    "hair_bangs": {
+      "hex": "#00FF66",
+      "rgb": [
+        0,
+        255,
+        102
+      ],
+      "label": "Flequillo",
+      "role": "hair_jiggle.r (frontal)"
+    },
+    "hair_sides": {
+      "hex": "#FF00FF",
+      "rgb": [
+        255,
+        0,
+        255
+      ],
+      "label": "Mechones Lat",
+      "role": "hair_jiggle.g (mejillas/sienes)"
+    },
+    "hair_back": {
+      "hex": "#80FF00",
+      "rgb": [
+        128,
+        255,
+        0
+      ],
+      "label": "Puntas/Nuca",
+      "role": "hair_jiggle.b (estela trasera)"
+    }
+  },
+  "slots": [
+    {
+      "index": 0,
+      "row": 0,
+      "col": 0,
+      "head_key": "head_front",
+      "has_visible_face": true,
+      "source_rel": "heads/head_front.png",
+      "slot_rect": [
+        48,
+        28,
+        616,
+        652
+      ],
+      "piece_rect": [
+        98,
+        51,
+        515,
+        605
+      ],
+      "orig_size": [
+        303,
+        356
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 1,
+      "row": 0,
+      "col": 1,
+      "head_key": "head_front_r",
+      "has_visible_face": true,
+      "source_rel": "heads/head_front_r.png",
+      "slot_rect": [
+        664,
+        28,
+        616,
+        652
+      ],
+      "piece_rect": [
+        715,
+        49,
+        513,
+        609
+      ],
+      "orig_size": [
+        302,
+        358
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 2,
+      "row": 0,
+      "col": 2,
+      "head_key": "head_front_l",
+      "has_visible_face": true,
+      "source_rel": "heads/head_front_l.png",
+      "slot_rect": [
+        1280,
+        28,
+        616,
+        652
+      ],
+      "piece_rect": [
+        1335,
+        50,
+        505,
+        607
+      ],
+      "orig_size": [
+        297,
+        357
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 3,
+      "row": 0,
+      "col": 3,
+      "head_key": "head_side_r",
+      "has_visible_face": true,
+      "source_rel": "heads/head_side_r.png",
+      "slot_rect": [
+        1896,
+        28,
+        616,
+        652
+      ],
+      "piece_rect": [
+        1966,
+        54,
+        476,
+        600
+      ],
+      "orig_size": [
+        280,
+        353
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 4,
+      "row": 1,
+      "col": 0,
+      "head_key": "head_side_l",
+      "has_visible_face": true,
+      "source_rel": "heads/head_side_l.png",
+      "slot_rect": [
+        48,
+        680,
+        616,
+        652
+      ],
+      "piece_rect": [
+        119,
+        706,
+        474,
+        600
+      ],
+      "orig_size": [
+        279,
+        353
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 5,
+      "row": 1,
+      "col": 1,
+      "head_key": "head_back_r",
+      "has_visible_face": false,
+      "source_rel": "heads/head_back_r.png",
+      "slot_rect": [
+        664,
+        680,
+        616,
+        652
+      ],
+      "piece_rect": [
+        738,
+        703,
+        468,
+        605
+      ],
+      "orig_size": [
+        275,
+        356
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 6,
+      "row": 1,
+      "col": 2,
+      "head_key": "head_back_l",
+      "has_visible_face": false,
+      "source_rel": "heads/head_back_l.png",
+      "slot_rect": [
+        1280,
+        680,
+        616,
+        652
+      ],
+      "piece_rect": [
+        1354,
+        702,
+        468,
+        607
+      ],
+      "orig_size": [
+        275,
+        357
+      ],
+      "scale": 1.7
+    },
+    {
+      "index": 7,
+      "row": 1,
+      "col": 3,
+      "head_key": "head_back",
+      "has_visible_face": false,
+      "source_rel": "heads/head_back.png",
+      "slot_rect": [
+        1896,
+        680,
+        616,
+        652
+      ],
+      "piece_rect": [
+        1947,
+        703,
+        513,
+        605
+      ],
+      "orig_size": [
+        302,
+        356
+      ],
+      "scale": 1.7
+    }
+  ]
+}
