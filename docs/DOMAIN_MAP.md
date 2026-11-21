@@ -337,11 +337,13 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 
-# Laboratorio de Arte, Rigs Multi-Pieza y Shaders de Pilotos (Sandbox I+D)
+# Laboratorio de Arte, Rigs Multi-Pieza, Rostro y VFX de Pilotos (Sandbox I+D)
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"
 ```
 
-> **Zona Sandbox Multi-Piloto (`sandbox/pilot_rig_lab/`):** Contiene el Lab interactivo 2.5D (`proto/planar_combat_rig_proto.tscn`, `proto/planar_combat_rig.gd` y controladores modulares), shaders de doble pase (`pilot_rig_stylizer.gdshader` + `pilot_rig_pass2.gdshader`), pipeline CLI v2 8-dir (`tools/prepare_8dir_sheets.py`, `prepare_ai_mask_workspaces.py`, `build_valentina_v2_rig_assets.py`), referencias (`source_refs/`), asset packs compilados (`combat_assets/` y `pilots/<id>/`) y documentación en [`docs/PILOT_RIG_ARCHITECTURE.md`](PILOT_RIG_ARCHITECTURE.md), [`docs/PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md) y [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md). Prohibido enlazar directo a `scenes/combat/` hasta su promoción oficial.
+> **Zona Sandbox Multi-Piloto (`sandbox/pilot_rig_lab/`):** Contiene el Lab interactivo 2.5D (`proto/planar_combat_rig_proto.tscn`, `proto/planar_combat_rig.gd` y controladores modulares), Pose Lab (`proto/planar_anim_test.tscn`), Face Lab (`face_lab/valentina_face_lab.tscn`), Shader Lab A/B (`shader_lab/planar_shader_lab.tscn`), VFX Lab (`vfx_lab/valentina_vfx_lab.tscn`), shaders de doble pase (`pilot_rig_stylizer.gdshader` + `pilot_rig_pass2.gdshader`), pipeline CLI v2 8-dir (`tools/build_valentina_v2_rig_assets.py`, `tools/ink_hq_pipeline.py`, `tools/build_valentina_v2_wings.py`), referencias (`source_refs/`), asset packs compilados (`combat_assets/` y `pilots/<id>/`) y documentación en [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](VALENTINA_V2_MILESTONE_STATUS.md), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) y [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](VALENTINA_PROPULSION_VFX_SPEC.md). Prohibido enlazar directo a `scenes/combat/` hasta su promoción oficial.
 
 ### Verificación Integral Final (Solo antes de dar por cerrada una tarea)
 
@@ -356,36 +358,39 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 
 > **Aislamiento:** Todo reside en `sandbox/pilot_rig_lab/` (prohibido enlazar a `scenes/combat/` hasta su promoción).
 > **Contrato rápido anti-relectura:** [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md) *(tabla parámetro/responsabilidad → archivo exacto y zonas prohibidas)*.
-> **Estado actual:** Solo **Valentina v2 (8-Dir Nativo)** (v1 eliminado). Animaciones de locomoción/combate/física purgadas dejando activos el **cambio de dirección 8-dir** y su **animación de transición de orientación** (`PlanarRigTransitionController` Modos 4/5/6 + afterimage de giro). Ver referencia completa de máscaras, huesos y hooks en [`docs/VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md).
-> **Escena de Laboratorio:** `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` · **Suite:** `tools/run_tests.ps1 -Test "pilot_rig_lab"`
+> **Estado de Milestone y Hoja de Ruta:** [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](VALENTINA_V2_MILESTONE_STATUS.md) — **Valentina v2 (8-Dir Nativo)** consolidada con controladores legacy purgados en rest pose y pipeline aditivo data-driven `.tres` activo (enrutado 8-dir + transiciones snappy Modos 4/5/6, Pose Base Zero-G, Idle 3-capas, Locomoción/Freno, Kiting 360° Hover-Slide, Giros 2.5D + Whip Cervical, Jiggle Busto/Glúteos, Rig Facial Vivo + Cabello 3-Zonas + Ojos Amatista Profundo, Alas Psíquicas & Propulsión Base Multi-Piloto, VFX Power-Up Sandevistan y tinta interna Ink SDF 2×). Ver referencia runtime en [`docs/VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md).
+> **Escenas de Laboratorio:** `proto/planar_combat_rig_proto.tscn` · `proto/planar_anim_test.tscn` · `face_lab/valentina_face_lab.tscn` · `shader_lab/planar_shader_lab.tscn` · `vfx_lab/valentina_vfx_lab.tscn`
+> **Suites:** `tools/run_tests.ps1 -Test "pilot_rig_lab"` · `-Test "valentina_face_lab"` · `-Test "valentina_vfx_lab"`
 
-### 17.1 Módulos GDScript (`proto/` y `data/`)
+### 17.1 Módulos GDScript (`proto/`, `face_lab/`, `shader_lab/`, `vfx_lab/` y `data/`)
 | Archivo | Responsabilidad |
 |---|---|
-| `proto/planar_combat_rig.gd` | Orquestador del rig limpio (Valentina v2), `UnifiedCharacterGroup` (`CanvasGroup`) y `HeadContactShadow`. |
+| `proto/planar_combat_rig.gd` | Orquestador del rig limpio (Valentina v2), `UnifiedCharacterGroup` (`CanvasGroup`), `HeadContactShadow` y hooks opt-in de rostro vivo y alas base. |
 | `proto/planar_rig_mesh_builder.gd` | Construye mallas `Polygon2D` + `Skeleton2D` (18 huesos) desde `parts_5_meta.json`, pesos desde `*_anim_mask.png`, y cabezas en 2 pasadas (`head_layer_pass = 1/2`). |
 | `proto/planar_rig_view_router.gd` | **Activo:** Enrutado 8-dir nativo (`valentina_v2`, `body_flip_x = false`), cono cervical `±65°`, histéresis y backpedal anti-exorcista. |
 | `proto/planar_rig_transition_controller.gd` | **Activo:** Transiciones snappy de cambio de orientación (Modos 4..6), estado 2.5D/cascada (`get_turn_anim_state`) y whip cervical de cabeza. |
-| `proto/planar_rig_wings_vfx.gd` | **Parcial:** Solo `spawn_snap_afterimage` para el modo 4 de transición; alas, propulsores y estela Sandevistan purgados. |
-| `proto/planar_rig_animator.gd` | **Purgado (Rest Pose):** Mantiene huesos en `rest_rots` y `BodyPivot` sin traslación/rotación; conserva `AnimState`, `step_spring` y límites `*_limits` para reconstrucción. |
-| `proto/planar_rig_perspective_controller.gd` | **Purgado (`persp_mode = 0`):** Desactiva escorzos 2.5D en vértice; conserva solo `leg_depth_phase` estático en perfiles `e`/`w`. |
-| `proto/planar_rig_secondary_physics.gd` | **Purgado:** Mantiene `secondary_jiggle_*_px = ZERO` sin whiplash ni resortes. |
-| `proto/planar_rig_material_controller.gd` | Aplica `RigStyleProfile`, `PilotSkinPreset`, `PilotHairPreset`, Pasada 2, rayos-X, `hit_flash` e `impact_frame_phase`. |
-| `proto/planar_lab_hud_builder.gd` | UI del Lab de Combate (`pose_mode_opt`, `idle_anim_chk`, `loco_anim_chk`, `turn_anim_chk`, `jiggle_anim_chk`) y escaneo automático de `pilots/*/*.tres`. |
-| `proto/planar_rig_base_pose_evaluator.gd` | Evaluador A/B de Pose Base Zero-G, Idle, Locomoción/Freno, Giros Snappy y Jiggle Physics Busto/Glúteos (`step_live_jiggle_physics`). |
-| `proto/planar_anim_test.gd` + `proto/planar_pose_lab_hud.gd` | Brújula 8-Dir interactiva con estilo `02_valentina_razor_sharp` y HUD de 5 pestañas (`Pose` / `Idle` / `Vuelo` / `Giros` / `Jiggle`) con guardado `.tres`. |
-| `data/` & `proto/*_config.gd` | Recursos `.tres`: `PilotRigProfile`, `PilotSkinPreset`, `PilotHairPreset`, `RigStyleProfile`, `PilotBasePoseConfig`, `PilotIdleAnimConfig`, `PilotLocomotionAnimConfig`, `PilotTurnAnimConfig`, `PilotJigglePhysicsConfig`, `PlanarRigAnimConfig`, `RigPerspectiveConfig`. |
+| `proto/planar_rig_face_controller.gd` | **Activo (Opt-In):** Controlador facial vivo, ojos Live2D, parpadeo, 6 expresiones + comms, cabello 3-zonas y monóculo HUD. |
+| `vfx_lab/valentina_base_propulsion_controller.gd` | **Activo (Opt-In Multi-Piloto):** Alas psíquicas 8-dir por cuchillas (`WingsUnderMount`/`WingsOverMount`), bloom HDR externo, apertura lineal, empuje Newtoniano y 12 cintas. |
+| `vfx_lab/sandevistan_trail_controller.gd` | **Activo (I+D Power-Up):** Estela Sandevistan Ping-Pong con tintado SDF 2× y aberración cromática controlada por `PilotPropulsionVfxConfig`. |
+| `proto/planar_rig_wings_vfx.gd` | **Parcial:** Solo `spawn_snap_afterimage` para el modo 4 de transición. |
+| `proto/planar_rig_animator.gd` / `perspective_controller.gd` / `secondary_physics.gd` | **Purgados (Rest Pose):** Baseline neutro preservado para compatibilidad de pruebas y calibración. |
+| `proto/planar_rig_material_controller.gd` | Aplica `RigStyleProfile` (3 estilos), `PilotSkinPreset` (10), `PilotHairPreset` (10), Pasada 2, Ink SDF 2×, rayos-X (`0..8`), `hit_flash` e `impact_frame_phase`. |
+| `proto/planar_rig_base_pose_evaluator.gd` + `planar_rig_kiting_evaluator.gd` | Evaluadores data-driven de Pose Base Zero-G, Idle 3-capas, Locomoción/Freno, Kiting 360° Hover-Slide/Strafe, Giros Snappy y Jiggle Busto/Glúteos. |
+| `proto/planar_lab_hud_builder.gd` + `proto/planar_pose_lab_hud.gd` | HUD de Arena Principal (`planar_combat_rig_proto`) y HUD de 6 pestañas en `planar_anim_test.tscn` con guardado `.tres`. |
+| `face_lab/` · `shader_lab/` · `vfx_lab/` | Laboratorios aislados con HUD dedicado y guardado directo a `.tres`. |
+| `data/` & `proto/*_config.gd` | Recursos `.tres`: `PilotRigProfile`, `PilotSkinPreset`, `PilotHairPreset`, `RigStyleProfile`, `PilotBasePoseConfig`, `PilotIdleAnimConfig`, `PilotLocomotionAnimConfig`, `PilotKitingAnimConfig`, `PilotTurnAnimConfig`, `PilotJigglePhysicsConfig`, `PilotFaceAnimConfig`, `PilotBasePropulsionConfig`, `PilotPropulsionVfxConfig`, `PlanarRigAnimConfig`, `RigPerspectiveConfig`. |
 
 ### 17.2 Shaders y Máscaras Activas
-- **Pasada 1 (por pieza/cabeza):** `pilot_rig_stylizer.gdshader` + `shaders/rig_color_recolor.gdshaderinc`, `shaders/rig_stylized_lighting.gdshaderinc`, `shaders/rig_perspective_25d.gdshaderinc`.
+- **Pasada 1 (por pieza/cabeza):** `pilot_rig_stylizer.gdshader` + `shaders/rig_color_recolor.gdshaderinc`, `shaders/rig_stylized_lighting.gdshaderinc`, `shaders/rig_perspective_25d.gdshaderinc`, `shaders/rig_face_live.gdshaderinc`.
 - **Pasada 2 (silueta unificada):** `pilot_rig_pass2.gdshader` sobre `UnifiedCharacterGroup`.
+- **VFX Alas y Power-Up:** `vfx_lab/wing_red_glow.gdshader`, `vfx_lab/sandevistan_{ghost,ghost_part,edge_aberration}.gdshader`.
 - **Tabla rápida de máscaras en uso** *(detalle por canal en [`docs/PILOT_RIG_ARCHITECTURE.md`](PILOT_RIG_ARCHITECTURE.md#51-inventario-de-máscaras-en-uso-offline-vs-runtime))*:
-  - **Runtime GPU (Pasada 1):** `*_id_mask.png` (`RGBA`: acentos/armadura/traje/medias-pelo, `0`=piel), `*_normal_depth.png` (`RGB`=normal, `A`=profundidad), `body_core_secondary_mask.png` y `*_hair_jiggle_mask.png` (`RG`=jiggle L/R), `body_core_pauldron_mask.png` (sombra de hombrera en torso), `*_outline_sdf.png` (contorno SDF cabeza), `conic_rim_lut` (gradiente procedural).
-  - **Runtime CPU (`Skeleton2D`):** `*_anim_mask.png` (`RGB`=pesos proximal/bisagra/distal; canal `A=seam_fade` horneado pero aún no consumido).
-  - **Offline Python (corte/ingesta):** `01_parts_5_despiece` (`*_parts5_mask.png`), `02_id_mask_bodies`, `03_id_mask_heads`, `04_limb_anim_masks`, `05_secondary_jiggle_masks`, `06_torso_and_leg_e_16x9/ingested_1560x1680/*_pauldron_mask.png`.
+  - **Runtime GPU (Pasada 1):** `*_id_mask.png` (`RGBA`: acentos/armadura/traje/medias-pelo, `0`=piel; canal `B` cuello en cabezas), `*_normal_depth.png`, `*_ilm.png`, `*_ink_sdf.png` (`2×`, sin mipmaps), `body_core_secondary_mask.png` y `*_hair_jiggle_mask.png`, `body_core_pauldron_mask.png`, `*_outline_sdf.png`, `leg_*_persp_mask.png` (16 máscaras 2.5D), `conic_rim_lut`.
+  - **Runtime CPU (`Skeleton2D`):** `*_anim_mask.png` (`RGB`=pesos proximal/bisagra/distal).
+  - **Offline Python (corte/ingesta/tinta/alas):** `tools/rig_v2_lib/`, `tools/build_valentina_v2_rig_assets.py`, `tools/ink_hq_pipeline.py`, `tools/ingest_eye_live2d_assets.py`, `tools/build_valentina_v2_wings.py`.
 
 ### 17.3 Carpetas de Arte Crudo vs Compilado (Valentina v2)
-- **Base cruda sin procesar (preservada para regenerar):** `source_refs/valentina_v2_8dir/00_raw/` (incluyendo `00_raw/overlays_hd/` con originales `2752x1536` de torsos, piernas, hombreras y cabezas).
-- **Overlays HD procesados (Upscayl 4x):** `source_refs/valentina_v2_8dir/05_mask_ai_workspaces/manual_fix_overlays/` (`04_cap_sheets_16x9/`, `06_torso_and_leg_e_16x9/`, `07_pauldron_polish_16x9/`, `07_torso_neck_regen_16x9/`).
-- **Asset Pack compilado para Godot:** `combat_assets/valentina_v2_planar/` (`s..sw/parts_5/`, `heads/`, `hd_torsos/`, `*.tres`, `*.json`).
-- **Pipeline de reconstrucción HD:** Ver orden exacto de scripts en [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md#3-runbook-paso-a-paso-reproducción-y-reconstrucción-rápida).
+- **Base cruda sin procesar (preservada para regenerar):** `source_refs/valentina_v2_8dir/00_raw/`, `source_refs/valentina_v2_wings/`.
+- **Asset Pack compilado para Godot:** `combat_assets/valentina_v2_planar/` (`s..sw/parts_5/`, `heads/`, `wings/`, `hd_torsos/`, `*.tres`, `*.json`).
+- **Backup inmutable de baseline:** `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + `restore_valentina_v2_baseline.ps1`.
+- **Pipeline de reconstrucción HD:** Ver [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md) (histórico) y [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) (alas).

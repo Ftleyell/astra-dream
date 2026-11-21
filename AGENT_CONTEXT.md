@@ -52,11 +52,11 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 ---
 
 ## 🎭 PilotRigLab / Valentina v2 (I+D en Sandbox)
-- **Estado:** Rig exclusivo de **Valentina v2 (8-Dir Nativo)** bajo [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/) con enrutado 8-dir (`±65°`), transiciones snappy (Modos 4/5/6 + whip cervical), pipeline de animación data-driven (Pose Base Zero-G, Idle multicapa, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle sutil), **Rig Facial Vivo & Cabello 3-Zonas** (`face_lab/` + `planar_rig_face_controller.gd`, paleta ocular *Amatista Profundo*) y tinta interna **Ink SDF 2×** (`00_original`, `01_valentina_definitive`, `02_valentina_razor_sharp`). Los controladores legacy (`planar_rig_animator.gd`, `perspective_controller.gd`, `secondary_physics.gd`) permanecen purgados en rest pose.
+- **Estado:** Rig exclusivo de **Valentina v2 (8-Dir Nativo)** bajo [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/) con enrutado 8-dir (`±65°`), transiciones snappy (Modos 4/5/6 + whip cervical), pipeline de animación data-driven (Pose Base Zero-G, Idle multicapa, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle sutil), **Rig Facial Vivo & Cabello 3-Zonas** (`face_lab/` + `planar_rig_face_controller.gd`, paleta ocular *Amatista Profundo*), **Alas Psíquicas & Propulsión Base Multi-Piloto** (`enable_base_propulsion_wings` opt-in en `PlanarCombatRig`, `PilotBasePropulsionConfig`, capa HDR externa + 12 cintas + polvo estelar) y tinta interna **Ink SDF 2×** (`00_original`, `01_valentina_definitive`, `02_valentina_razor_sharp`). Los controladores legacy (`planar_rig_animator.gd`, `perspective_controller.gd`, `secondary_physics.gd`) permanecen purgados en rest pose.
 - **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
-  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (rig de cuerpo y animaciones) y [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md) (rig facial vivo y ojos Live2D).
+  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md) (estado del milestone y próximos pasos), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (rig de cuerpo y animaciones), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md) (rig facial vivo y ojos Live2D), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) (alas multi-piloto) y [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](docs/VALENTINA_PROPULSION_VFX_SPEC.md) (VFX Power-Up Sandevistan).
   - Para ajustar escalas, poses, animaciones, rostro, skins, pelo o estilos, editar **directamente** los `.tres` en `sandbox/pilot_rig_lab/pilots/valentina_v2/` y `sandbox/pilot_rig_lab/data/`.
-  - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/` o `tools/models/`.
+  - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/`, `backups/` o `tools/models/`.
 
 ---
 
@@ -68,7 +68,8 @@ preprocess/                            <- Fuentes crudas de arte no procesadas
 sandbox/pilot_rig_lab/tools/.venv/     <- Entorno virtual Python (30,351+ archivos)
 sandbox/pilot_rig_lab/tools/models/    <- Pesos ONNX / modelos locales
 sandbox/pilot_rig_lab/source_refs/     <- Arte crudo IA y workspaces offline (505+ archivos)
-sandbox/pilot_rig_lab/combat_assets/   <- Asset packs PNG/JSON compilados (293+ archivos)
+sandbox/pilot_rig_lab/combat_assets/   <- Asset packs PNG/JSON compilados (550+ archivos)
+sandbox/pilot_rig_lab/backups/         <- Snapshot inmutable de baseline calibrado
 ```
 
 ---
@@ -104,6 +105,7 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Bifurcaciones de Run (Forks)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"` |
 | **Estudio Arte / PilotRigLab (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"` |
 | **Face Lab / Rig Facial (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"` |
+| **VFX Lab / Alas + Sandevistan (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 
 ---

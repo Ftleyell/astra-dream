@@ -96,6 +96,7 @@ func _ready() -> void:
 	_rig = PlanarRigScript.new()
 	_rig.name = "PilotPlanarRig"
 	_rig.pilot_profile = _profile
+	_rig.enable_base_propulsion_wings = true
 	_rig.position = Vector2(ORBIT_RADIUS, 0.0)
 	_world_vp.add_child(_rig)
 

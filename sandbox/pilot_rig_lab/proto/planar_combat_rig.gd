@@ -26,6 +26,8 @@ const ImpactCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_i
 const FaceCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_face_controller.gd")
 const FaceConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_anim_config.gd")
 const AnimRuntimeScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_animation_runtime.gd")
+const BasePropCtrlScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_base_propulsion_controller.gd")
+const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
 
 enum TransitionStyle {
 	WHIP_SNAP_AFTERIMAGE = 4,
@@ -43,6 +45,7 @@ enum TransitionStyle {
 @export var stepped_fps: float = 15.0
 @export var enable_live_animations: bool = true
 @export var enable_face_live: bool = false
+@export var enable_base_propulsion_wings: bool = false
 
 var _animator: RigAnimator = null
 var _anim_runtime: AnimRuntimeScript = null
@@ -58,6 +61,9 @@ var _perspective: PerspectiveCtrlScript = null
 var _impact: ImpactCtrlScript = null
 var _face_ctrl: FaceCtrlScript = null
 var _external_face_step: bool = false
+var _base_prop_ctrl: BasePropCtrlScript = null
+var _has_prev_wing_pos: bool = false
+var _prev_wing_world_pos: Vector2 = Vector2.ZERO
 
 var _conic_lut: GradientTexture2D = null
 var _unified_canvas_group: CanvasGroup = null
@@ -101,6 +107,8 @@ func build_rig() -> void:
 		remove_child(child)
 		child.queue_free()
 	_views.clear()
+	_base_prop_ctrl = null
+	_has_prev_wing_pos = false
 
 	if _router == null:
 		_router = ViewRouterScript.new()
@@ -212,6 +220,8 @@ func build_rig() -> void:
 	_anim_runtime_initialized = false
 	if _face_ctrl != null and not enable_face_live:
 		_face_ctrl.clear_on_head_materials(_head_data, _head_under_data)
+	if enable_base_propulsion_wings:
+		_ensure_base_propulsion_wings_ready()
 
 
 func set_transition_style(style_idx: int) -> void:
@@ -445,6 +455,19 @@ func _process(delta: float) -> void:
 		_body_pivot
 	)
 
+	if enable_base_propulsion_wings:
+		_ensure_base_propulsion_wings_ready()
+		if _base_prop_ctrl != null:
+			var cur_p: Vector2 = global_position
+			var wing_vel: Vector2 = Vector2.ZERO
+			if _has_prev_wing_pos:
+				wing_vel = (cur_p - _prev_wing_world_pos) / maxf(delta, 0.001)
+			_prev_wing_world_pos = cur_p
+			_has_prev_wing_pos = true
+			if wing_vel.length_squared() < 4.0 and _smooth_speed > 0.05:
+				wing_vel = _smooth_move_dir * _smooth_speed * 320.0
+			_base_prop_ctrl.step(delta, self, wing_vel, _is_turbo)
+
 
 func _apply_transition_visual_state(flush_head_latch: bool = true) -> void:
 	_transitions.apply_visual_state(_body_pivot, _views, Vector2.ONE, _router, _head_data, _head_under_data)
@@ -579,6 +602,8 @@ func _sync_rig_space_matrices() -> void:
 
 func apply_skin_preset(skin: PilotSkinPreset) -> void:
 	_materials.apply_skin_preset(skin)
+	if _base_prop_ctrl != null:
+		_base_prop_ctrl.sync_materials_from_rig(self)
 
 
 func apply_hair_preset(hair: PilotHairPreset, skin_hair_col: Color) -> void:
@@ -587,6 +612,8 @@ func apply_hair_preset(hair: PilotHairPreset, skin_hair_col: Color) -> void:
 
 func apply_style_profile(profile: RigStyleProfile) -> void:
 	_materials.apply_style_profile(profile)
+	if _base_prop_ctrl != null:
+		_base_prop_ctrl.sync_materials_from_rig(self)
 
 
 func set_hair_style_mode(mode_idx: int) -> void:
@@ -872,6 +899,32 @@ func set_face_anim_config(cfg: FaceConfigScript) -> void:
 func set_face_personality_profile(profile_id: int) -> void:
 	if _face_ctrl != null:
 		_face_ctrl.set_personality_profile(profile_id)
+
+
+func set_base_propulsion_wings_enabled(enabled: bool) -> void:
+	enable_base_propulsion_wings = enabled
+	if enabled:
+		_ensure_base_propulsion_wings_ready()
+	elif _base_prop_ctrl != null:
+		_base_prop_ctrl.detach_from_rig()
+		_base_prop_ctrl.queue_free()
+		_base_prop_ctrl = null
+
+
+func get_base_propulsion_controller() -> BasePropCtrlScript:
+	return _base_prop_ctrl
+
+
+func _ensure_base_propulsion_wings_ready() -> void:
+	if not enable_base_propulsion_wings or _base_prop_ctrl != null:
+		return
+	_base_prop_ctrl = BasePropCtrlScript.new()
+	_base_prop_ctrl.name = "BasePropulsionWings"
+	_base_prop_ctrl.z_index = -2
+	add_child(_base_prop_ctrl)
+	if pilot_profile != null and pilot_profile.base_propulsion_config is BasePropConfigScript:
+		_base_prop_ctrl.set_config(pilot_profile.base_propulsion_config as BasePropConfigScript)
+	_base_prop_ctrl.attach_to_rig(self)
 
 
 func get_face_controller() -> FaceCtrlScript:

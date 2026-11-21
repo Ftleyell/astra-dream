@@ -6,7 +6,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 # Reglas de Desarrollo — PilotRigLab & Valentina v2 (`sandbox/pilot_rig_lab/`)
 
 > **Ámbito de aplicación:** Se aplica siempre que se trabaje en `PlanarCombatRig`, shaders del rig 2.5D, presets de piloto/skin/estilo o el pipeline Python de Valentina v2 (`sandbox/pilot_rig_lab/`).
-> **Fuente de verdad técnica del rig runtime:** [`docs/VALENTINA_V2_RIG_REFERENCE.md`](../../docs/VALENTINA_V2_RIG_REFERENCE.md).
+> **Índice de milestone y hoja de ruta:** [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](../../docs/VALENTINA_V2_MILESTONE_STATUS.md) · **Fuente de verdad técnica del rig runtime:** [`docs/VALENTINA_V2_RIG_REFERENCE.md`](../../docs/VALENTINA_V2_RIG_REFERENCE.md).
 
 ---
 
@@ -14,8 +14,9 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 - **PROHIBIDO** listar recursivamente, hacer `grep`/`Select-String` o abrir archivos de forma ciega dentro de:
   - `sandbox/pilot_rig_lab/tools/.venv/` *(30,351 archivos)*
   - `sandbox/pilot_rig_lab/tools/models/` *(modelos ONNX/pesos)*
-  - `sandbox/pilot_rig_lab/source_refs/` *(505 archivos de arte crudo y workspaces)*
-  - `sandbox/pilot_rig_lab/combat_assets/` *(293 PNGs/JSONs compilados — leer solo `body_metrics.json` o `parts_5_meta.json` puntuales si hace falta)*
+  - `sandbox/pilot_rig_lab/source_refs/` *(505+ archivos de arte crudo y workspaces)*
+  - `sandbox/pilot_rig_lab/combat_assets/` *(550+ PNGs/JSONs compilados — leer solo `body_metrics.json`, `parts_5_meta.json` o `wings_metadata.json` puntuales si hace falta)*
+  - `sandbox/pilot_rig_lab/backups/` *(snapshot inmutable de baseline calibrado)*
 - **PROHIBIDO** leer completos los scripts Python o GDScript largos: consultar la tabla contractual inferior y leer acotado (máx. 100–200 líneas).
 
 ---
@@ -33,6 +34,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 | **Giros Snappy 2.5D & Whip Cervical** | `sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_turn_anim.tres` | Esquema `PilotTurnAnimConfig` (Puente 2.5D pre/post-corte, overshoot de torso, cascada brazos/piernas/pelo, whip cabeza desacoplada) |
 | **Jiggle Physics Sutil (Busto & Glúteos)** | `sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_jiggle_physics.tres` | Esquema `PilotJigglePhysicsConfig` (dinámica diferenciada busto/glúteos, micro-luz 2.5D normal, asimetría L/R, topes elásticos) |
 | **Rig Facial Vivo & Cabello 3-Zonas** | `sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_face_anim.tres` | Esquema `PilotFaceAnimConfig` (ojos/parpadeo, 6 presets expresión + comms, soldadura cervical, parallax 2.5D Live2D, 3 resortes cabello, monóculo HUD) |
+| **Propulsión Base & Alas Psíquicas** | `sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_propulsion.tres` | Esquema `PilotBasePropulsionConfig` (escala, flotación orbital, apertura lineal, empuje Newtoniano, glow HDR, 12 cintas, polvo estelar) |
 | **Configuración de animación/suavizado** | `sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_anim_config.tres` | `dir_smooth_rate`, `aim_smooth_rate`, `speed_smooth_rate`, `*_limits` |
 | **Configuración 2.5D (purgada a neutro)** | `sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/valentina_v2_perspective_config.tres` | Parámetros `RigPerspectiveConfig` |
 | **Paletas de Skin (10 presets)** | `sandbox/pilot_rig_lab/pilots/valentina_v2/skins/*.tres` | `accent_color`, `panel_color`, `suit_dark_color`, `hair_color`, `is_base_skin` |
@@ -47,6 +49,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 | **Enrutado 8-dir nativo, cono `±65°`, histéresis, backpedal** | `proto/planar_rig_view_router.gd` | **Activo** |
 | **Transiciones snappy de giro (Modos 4/5/6 + whip cabeza)** | `proto/planar_rig_transition_controller.gd` | **Activo** (`get_turn_anim_state`, `set_custom_timings`, tiempos configurables desde `.tres`) |
 | **Controlador Facial Vivo & Personalidad de Combate** | `proto/planar_rig_face_controller.gd` | **Activo** (opt-in en `PlanarCombatRig`; activo por defecto en `planar_combat_rig_proto` y `planar_anim_test`) |
+| **Propulsión Base & Alas Psíquicas (Estándar Multi-Piloto)** | `vfx_lab/valentina_base_propulsion_controller.gd` + `vfx_lab/wing_red_glow.gdshader` | **Activo** (opt-in `enable_base_propulsion_wings` en `PlanarCombatRig`; activo en `planar_combat_rig_proto` y `valentina_vfx_lab`; ver `docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`) |
 | **Afterimage de giro (`spawn_snap_afterimage`)** | `proto/planar_rig_wings_vfx.gd` | **Parcial** (alas/Sandevistan purgados) |
 | **Montaje `Skeleton2D` (18 huesos), `Polygon2D`, `head_layer_pass`** | `proto/planar_rig_mesh_builder.gd` | **Activo** |
 | **Materiales, skins, pelo, estilos, `hit_flash`, `debug_view_mode`** | `proto/planar_rig_material_controller.gd` | **Activo** |
@@ -56,6 +59,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 | **Laboratorio Pose Base, Idle, Vuelo, Giros, Jiggle & Kiting** | `proto/planar_anim_test.tscn` + `proto/planar_anim_test.gd` + `proto/planar_pose_lab_hud.gd` + `proto/leg_*_persp_mask.png` | **Activo (I+D)** (Brújula 8-Dir con `02_valentina_razor_sharp`, HUD 6 pestañas, Slow-Mo `M`, A/B `Tab`, guardado `.tres`) |
 | **Laboratorio Rig Facial Vivo (aislado)** | `face_lab/valentina_face_lab.tscn` + `face_lab/valentina_face_{lab,rig,animator,lab_hud}.gd` + `shaders/rig_face_live.gdshaderinc` | **Activo (I+D)** (Hero Close-Up + Galería 8-Dir, Torso Ref `T`, Rayos-X `7..8`, guardado `.tres`; ver `docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`) |
 | **Laboratorio A/B de Shaders (aislado)** | `shader_lab/planar_shader_lab.tscn` + `shader_lab/planar_shader_lab.gd` + `shader_lab/shader_lab_hud.gd` + `shader_lab/shader_lab_backdrop.gd` | **Activo (I+D)** (Comparativa A/B, panel izquierdo con 4 pestañas, luz giratoria, Rayos-X `0..6`, guardado `.tres`) |
+| **Laboratorio VFX Power-Up Sandevistan (aislado)** | `vfx_lab/valentina_vfx_lab.tscn` + `vfx_lab/sandevistan_trail_controller.gd` + `vfx_lab/sandevistan_{ghost,ghost_part,edge_aberration}.gdshader` + `pilots/valentina_v2/valentina_v2_propulsion_vfx.tres` | **Activo (I+D — Power-Up)** (Pincel Ping-Pong Turquesa↔Bordó↔Amatista, tinta interna SDF 2×, HUD + guardado `.tres`; ver `docs/VALENTINA_PROPULSION_VFX_SPEC.md`) |
 | **Backup Inmutable Baseline Calibrado** | `backups/valentina_v2_clean_baseline/` + `backups/restore_valentina_v2_baseline.ps1` | **Activo** (Snapshot SHA256 con `.gdignore` + tag Git `valentina-v2-clean-baseline`; soporta `-MetaOnly` / `-ShadersOnly` / `-DryRun`) |
 | **Animación esquelética procedural** | `proto/planar_rig_animator.gd` | **Purgado (Rest Pose)** |
 | **Perspectiva 2.5D en vértice** | `proto/planar_rig_perspective_controller.gd` | **Purgado (`persp_mode = 0`, solo `leg_depth_phase` en `e/w`)** |
@@ -69,6 +73,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 - **Workspaces de máscaras IA:** `sandbox/pilot_rig_lab/tools/prepare_ai_mask_workspaces.py` (ejecutar con `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe`).
 - **Regeneración HQ de máscaras por pieza (`ID`, `Normal/Depth`, `ILM`):** `sandbox/pilot_rig_lab/tools/export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py` (`--kind id|normal|ilm|ink`) + `rig_v2_lib/piece_mask_prompts.py` (7 hojas estándar `16:9` y `1:1` bajo `source_refs/valentina_v2_8dir/06_piece_mask_regen/`, ejecutar con `C:\Python314\python.exe`).
 - **Pipeline HQ Ink SDF `2×` (`*_ink_sdf.png`):** `sandbox/pilot_rig_lab/tools/ink_hq_pipeline.py` (`--action export|test|apply --sheet <hoja>`): 13 hojas `1:1` (`2048×2048`) con doble referencia (`inputs_color/` + `inputs_anchor/`) bajo `source_refs/valentina_v2_8dir/07_ink_hq_regen/`, post-procesadas con **Upscayl `digital-art-4x` + ECC Afín + Flujo Óptico Farneback acotado** y horneadas en `*_ink_sdf.png` a resolución **`2×`** (distancias codificadas en texels nativos `±8.0`).
+- **Compilador de Alas Multi-Piloto (3 vistas `#808080` → 8-dir por cuchillas):** `sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py` (`--sheet`, `--out-dir`, `--audit`): Upscayl `4×`, separación por cuchilla (`6` por ala), extracción de 5 mapas (`albedo`, `id`, `ilm`, `normal_depth`, `ink_sdf 2×`), espejado con `Nx = -Nx` y `wings_metadata.json` (`schema_version = 2`). Ver guía en `docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`.
 - **Scripts legacy v1 / ingesta puntual:** `tools/legacy_v1/` o módulos de etapa previa (`prepare_8dir_sheets.py`, `ingest_*_16x9.py`). No tocarlos salvo regeneración explícita de fuentes crudas.
 
 ---
@@ -85,5 +90,8 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 ---
 
 ## 4. 🧪 Verificación Rápida
-- **Suite única del dominio:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"` *(~8 s)* · **Face Lab:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"` *(~5 s)*.
-- **Verificación Python tras editar `tools/`:** `C:\Python314\python.exe -m py_compile sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py` (y módulos modificados en `rig_v2_lib/`).
+- **Suites del dominio:**
+  - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"` *(~8 s)*
+  - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"` *(~5 s)*
+  - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"` *(~5 s)*
+- **Verificación Python tras editar `tools/`:** `C:\Python314\python.exe -m py_compile sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py` (y módulos modificados en `rig_v2_lib/`).

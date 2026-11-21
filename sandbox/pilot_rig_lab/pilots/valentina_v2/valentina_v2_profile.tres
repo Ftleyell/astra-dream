@@ -35,6 +35,7 @@
 [ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_turn_anim.tres" id="32_turnanim"]
 [ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_jiggle_physics.tres" id="33_jiggle"]
 [ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_face_anim.tres" id="34_faceanim"]
+[ext_resource type="Resource" path="res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_propulsion.tres" id="36_baseprop"]
 
 [resource]
 script = ExtResource("13_74smy")
@@ -54,6 +55,8 @@ kiting_anim_config = ExtResource("35_kitanim")
 turn_anim_config = ExtResource("32_turnanim")
 jiggle_physics_config = ExtResource("33_jiggle")
 face_anim_config = ExtResource("34_faceanim")
+base_propulsion_config = ExtResource("36_baseprop")
+wings_assets_subdir = "wings"
 skins = Array[ExtResource("14_a07hi")]([ExtResource("15_56wdj"), ExtResource("16_6uaex"), ExtResource("17_lktno"), ExtResource("18_ip2dl"), ExtResource("19_ah4bm"), ExtResource("20_3otyc"), ExtResource("21_2cpcy"), ExtResource("22_o0lbb"), ExtResource("23_7ogi5"), ExtResource("24_srq3m")])
 hair_presets = Array[ExtResource("2_hljdw")]([ExtResource("3_5me0u"), ExtResource("4_45qvs"), ExtResource("5_1h62b"), ExtResource("6_5h0su"), ExtResource("7_egvmk"), ExtResource("8_re0g3"), ExtResource("9_pq6ot"), ExtResource("10_ln3m5"), ExtResource("11_yc4ts"), ExtResource("12_ibjwl")])
 style_profiles = Array[ExtResource("25_gc80d")]([ExtResource("26_oj5dp"), ExtResource("27_valdef"), ExtResource("28_valsharp")])

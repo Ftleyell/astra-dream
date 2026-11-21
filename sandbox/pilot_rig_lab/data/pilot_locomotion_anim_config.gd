@@ -36,6 +36,7 @@ const PHASE_BASE_KEYS: Array[String] = [
 @export var flight_idle_float_atten: float = 0.35
 @export var flight_wake_freq_mul: float = 1.35
 @export var flight_wake_amp_mul: float = 1.15
+@export var fwd_leg_sync_blend: float = 0.85
 @export var auto_cycle_duration_sec: float = 4.4
 
 @export var families: Dictionary = {}
@@ -68,10 +69,10 @@ static func build_default_families() -> Dictionary:
 			"fwd_head_lag_px": -1.2, "fwd_head_rot": -0.025,
 			"fwd_shoulder_lead_rot": -0.08, "fwd_elbow_lead_rot": -0.14, "fwd_wrist_lead_rot": -0.05,
 			"fwd_shoulder_trail_rot": 0.11, "fwd_elbow_trail_rot": -0.12, "fwd_wrist_trail_rot": -0.04,
-			"fwd_thigh_lead_rot": -0.095, "fwd_knee_lead_rot": 0.165, "fwd_ankle_lead_rot": 0.085,
-			"fwd_thigh_trail_rot": 0.120, "fwd_knee_trail_rot": 0.095, "fwd_ankle_trail_rot": 0.110,
+			"fwd_thigh_lead_rot": 0.355, "fwd_knee_lead_rot": -0.235, "fwd_ankle_lead_rot": 0.095,
+			"fwd_thigh_trail_rot": 0.140, "fwd_knee_trail_rot": -0.195, "fwd_ankle_trail_rot": 0.095,
 			"fwd_torso_trap": -0.018, "fwd_torso_yaw": 0.015,
-			"fwd_leg_lead_phi_shin": -0.045, "fwd_leg_trail_phi_shin": -0.065, "fwd_leg_trail_distal_amp": -0.035,
+			"fwd_leg_lead_phi_shin": -0.045, "fwd_leg_trail_phi_shin": -0.055, "fwd_leg_trail_distal_amp": -0.035,
 			"fwd_hair_drag_x_px": -2.4, "fwd_hair_drag_y_px": 0.8, "fwd_torso_sec_drag_y_px": 0.75,
 
 			"brk_pelvis_shift_x": 1.6, "brk_pelvis_shift_y": 1.8,
@@ -101,10 +102,10 @@ static func build_default_families() -> Dictionary:
 			"fwd_waist_rot": 0.038, "fwd_chest_rot": 0.045, "fwd_neck_rot": -0.078,
 			"fwd_shoulder_lead_rot": -0.032, "fwd_elbow_lead_rot": -0.035,
 			"fwd_shoulder_trail_rot": 0.035, "fwd_elbow_trail_rot": -0.030,
-			"fwd_thigh_lead_rot": -0.006, "fwd_knee_lead_rot": 0.065, "fwd_ankle_lead_rot": 0.065,
-			"fwd_thigh_trail_rot": 0.004, "fwd_knee_trail_rot": 0.085, "fwd_ankle_trail_rot": 0.080,
+			"fwd_thigh_lead_rot": 0.260, "fwd_knee_lead_rot": -0.065, "fwd_ankle_lead_rot": 0.075,
+			"fwd_thigh_trail_rot": 0.015, "fwd_knee_trail_rot": -0.145, "fwd_ankle_trail_rot": 0.105,
 			"fwd_torso_trap": -0.024, "fwd_torso_yaw": 0.018,
-			"fwd_leg_lead_phi_shin": -0.075, "fwd_leg_trail_phi_shin": -0.095, "fwd_leg_trail_distal_amp": -0.045,
+			"fwd_leg_lead_phi_shin": -0.095, "fwd_leg_trail_phi_shin": -0.110, "fwd_leg_trail_distal_amp": -0.055,
 			"fwd_hair_drag_x_px": -1.7, "fwd_hair_drag_y_px": -1.4, "fwd_torso_sec_drag_y_px": -0.85,
 
 			"brk_pelvis_shift_x": -1.0, "brk_pelvis_shift_y": 1.6,
@@ -129,10 +130,10 @@ static func build_default_families() -> Dictionary:
 			"fwd_chest_rot": 0.010, "fwd_neck_rot": -0.012, "fwd_head_lag_px": -1.4,
 			"fwd_shoulder_lead_rot": 0.032, "fwd_elbow_lead_rot": -0.025,
 			"fwd_shoulder_trail_rot": -0.032, "fwd_elbow_trail_rot": 0.025,
-			"fwd_knee_lead_rot": 0.028, "fwd_ankle_lead_rot": 0.065,
-			"fwd_knee_trail_rot": -0.024, "fwd_ankle_trail_rot": -0.055,
+			"fwd_thigh_lead_rot": -0.115, "fwd_knee_lead_rot": -0.118, "fwd_ankle_lead_rot": 0.075,
+			"fwd_thigh_trail_rot": 0.125, "fwd_knee_trail_rot": 0.098, "fwd_ankle_trail_rot": -0.065,
 			"fwd_torso_trap": -0.028,
-			"fwd_leg_lead_phi_shin": -0.085, "fwd_leg_trail_phi_shin": -0.105, "fwd_leg_trail_distal_amp": -0.055,
+			"fwd_leg_lead_phi_shin": -0.115, "fwd_leg_trail_phi_shin": -0.125, "fwd_leg_trail_distal_amp": -0.070,
 			"fwd_hair_drag_y_px": -2.2, "fwd_torso_sec_drag_y_px": -1.1,
 
 			"brk_pelvis_shift_y": 1.5, "brk_head_lag_px": 1.4,
@@ -154,10 +155,10 @@ static func build_default_families() -> Dictionary:
 			"fwd_waist_rot": 0.036, "fwd_chest_rot": 0.042, "fwd_neck_rot": -0.072,
 			"fwd_shoulder_lead_rot": 0.075, "fwd_elbow_lead_rot": 0.085,
 			"fwd_shoulder_trail_rot": -0.085, "fwd_elbow_trail_rot": -0.110,
-			"fwd_thigh_lead_rot": -0.020, "fwd_knee_lead_rot": 0.038, "fwd_ankle_lead_rot": 0.035,
-			"fwd_thigh_trail_rot": 0.038, "fwd_knee_trail_rot": 0.095, "fwd_ankle_trail_rot": 0.085,
+			"fwd_thigh_lead_rot": 0.040, "fwd_knee_lead_rot": -0.120, "fwd_ankle_lead_rot": 0.095,
+			"fwd_thigh_trail_rot": 0.220, "fwd_knee_trail_rot": -0.020, "fwd_ankle_trail_rot": 0.050,
 			"fwd_torso_trap": 0.022, "fwd_torso_yaw": -0.016,
-			"fwd_leg_lead_phi_shin": 0.095, "fwd_leg_trail_phi_shin": 0.090, "fwd_leg_trail_distal_amp": 0.045,
+			"fwd_leg_lead_phi_shin": 0.115, "fwd_leg_trail_phi_shin": 0.110, "fwd_leg_trail_distal_amp": 0.055,
 			"fwd_hair_drag_x_px": -1.7, "fwd_hair_drag_y_px": 1.4, "fwd_torso_sec_drag_y_px": 0.80,
 
 			"brk_pelvis_shift_x": -1.0, "brk_pelvis_shift_y": 1.4,
@@ -181,10 +182,10 @@ static func build_default_families() -> Dictionary:
 			"fwd_pelvis_shift_y": -2.0, "fwd_head_lag_px": 1.3,
 			"fwd_shoulder_lead_rot": -0.032, "fwd_elbow_lead_rot": -0.025,
 			"fwd_shoulder_trail_rot": 0.032, "fwd_elbow_trail_rot": 0.025,
-			"fwd_knee_lead_rot": -0.028, "fwd_ankle_lead_rot": 0.060,
-			"fwd_knee_trail_rot": 0.024, "fwd_ankle_trail_rot": -0.050,
+			"fwd_thigh_lead_rot": 0.138, "fwd_knee_lead_rot": 0.150, "fwd_ankle_lead_rot": 0.065,
+			"fwd_thigh_trail_rot": -0.134, "fwd_knee_trail_rot": -0.134, "fwd_ankle_trail_rot": -0.055,
 			"fwd_torso_trap": 0.026,
-			"fwd_leg_lead_phi_shin": 0.080, "fwd_leg_trail_phi_shin": 0.100, "fwd_leg_trail_distal_amp": 0.050,
+			"fwd_leg_lead_phi_shin": 0.110, "fwd_leg_trail_phi_shin": 0.120, "fwd_leg_trail_distal_amp": 0.065,
 			"fwd_hair_drag_y_px": 2.2, "fwd_torso_sec_drag_y_px": 1.0,
 
 			"brk_pelvis_shift_y": 1.5, "brk_head_lag_px": -1.3,
@@ -226,6 +227,7 @@ func reset_to_defaults() -> void:
 	flight_idle_float_atten = 0.35
 	flight_wake_freq_mul = 1.35
 	flight_wake_amp_mul = 1.15
+	fwd_leg_sync_blend = 0.85
 	auto_cycle_duration_sec = 4.4
 	families = build_default_families()
 

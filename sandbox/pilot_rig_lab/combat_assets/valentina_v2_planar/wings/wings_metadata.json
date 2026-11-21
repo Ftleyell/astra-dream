@@ -1,0 +1,994 @@
+{
+  "schema_version": 2,
+  "wing_style": "astral_seraph_psychic_blades",
+  "tex_scale": 3,
+  "ink_sdf_scale": 2,
+  "ink_sdf_range_px": 8.0,
+  "shards_per_wing": 6,
+  "wings": {
+    "wing_0deg_r": [
+      {
+        "id": "wing_0deg_r_s0",
+        "shard_index": 0,
+        "size_px": [
+          426,
+          484
+        ],
+        "pivot_px": [
+          16.0,
+          465.7
+        ],
+        "tip_offset_px": [
+          409.4,
+          16.0
+        ],
+        "rest_offset_px": [
+          0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_0deg_r_s1",
+        "shard_index": 1,
+        "size_px": [
+          369,
+          238
+        ],
+        "pivot_px": [
+          16.0,
+          220.9
+        ],
+        "tip_offset_px": [
+          353.0,
+          17.0
+        ],
+        "rest_offset_px": [
+          119.2,
+          -89.3
+        ],
+        "length_norm": 0.659
+      },
+      {
+        "id": "wing_0deg_r_s2",
+        "shard_index": 2,
+        "size_px": [
+          353,
+          113
+        ],
+        "pivot_px": [
+          16.5,
+          86.3
+        ],
+        "tip_offset_px": [
+          336.1,
+          16.5
+        ],
+        "rest_offset_px": [
+          111.7,
+          -43.9
+        ],
+        "length_norm": 0.547
+      },
+      {
+        "id": "wing_0deg_r_s3",
+        "shard_index": 3,
+        "size_px": [
+          314,
+          114
+        ],
+        "pivot_px": [
+          16.0,
+          18.0
+        ],
+        "tip_offset_px": [
+          297.7,
+          95.7
+        ],
+        "rest_offset_px": [
+          93.7,
+          -18.9
+        ],
+        "length_norm": 0.489
+      },
+      {
+        "id": "wing_0deg_r_s4",
+        "shard_index": 4,
+        "size_px": [
+          252,
+          201
+        ],
+        "pivot_px": [
+          16.0,
+          17.0
+        ],
+        "tip_offset_px": [
+          235.3,
+          184.0
+        ],
+        "rest_offset_px": [
+          58.3,
+          3.0
+        ],
+        "length_norm": 0.461
+      },
+      {
+        "id": "wing_0deg_r_s5",
+        "shard_index": 5,
+        "size_px": [
+          170,
+          283
+        ],
+        "pivot_px": [
+          16.0,
+          16.5
+        ],
+        "tip_offset_px": [
+          152.6,
+          266.3
+        ],
+        "rest_offset_px": [
+          19.9,
+          19.9
+        ],
+        "length_norm": 0.477
+      }
+    ],
+    "wing_0deg_l": [
+      {
+        "id": "wing_0deg_l_s0",
+        "shard_index": 0,
+        "size_px": [
+          426,
+          484
+        ],
+        "pivot_px": [
+          409.0,
+          465.7
+        ],
+        "tip_offset_px": [
+          15.6,
+          16.0
+        ],
+        "rest_offset_px": [
+          -0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_0deg_l_s1",
+        "shard_index": 1,
+        "size_px": [
+          369,
+          238
+        ],
+        "pivot_px": [
+          352.0,
+          220.9
+        ],
+        "tip_offset_px": [
+          15.0,
+          17.0
+        ],
+        "rest_offset_px": [
+          -119.2,
+          -89.3
+        ],
+        "length_norm": 0.659
+      },
+      {
+        "id": "wing_0deg_l_s2",
+        "shard_index": 2,
+        "size_px": [
+          353,
+          113
+        ],
+        "pivot_px": [
+          335.5,
+          86.3
+        ],
+        "tip_offset_px": [
+          15.9,
+          16.5
+        ],
+        "rest_offset_px": [
+          -111.7,
+          -43.9
+        ],
+        "length_norm": 0.547
+      },
+      {
+        "id": "wing_0deg_l_s3",
+        "shard_index": 3,
+        "size_px": [
+          314,
+          114
+        ],
+        "pivot_px": [
+          297.0,
+          18.0
+        ],
+        "tip_offset_px": [
+          15.3,
+          95.7
+        ],
+        "rest_offset_px": [
+          -93.7,
+          -18.9
+        ],
+        "length_norm": 0.489
+      },
+      {
+        "id": "wing_0deg_l_s4",
+        "shard_index": 4,
+        "size_px": [
+          252,
+          201
+        ],
+        "pivot_px": [
+          235.0,
+          17.0
+        ],
+        "tip_offset_px": [
+          15.7,
+          184.0
+        ],
+        "rest_offset_px": [
+          -58.3,
+          3.0
+        ],
+        "length_norm": 0.461
+      },
+      {
+        "id": "wing_0deg_l_s5",
+        "shard_index": 5,
+        "size_px": [
+          170,
+          283
+        ],
+        "pivot_px": [
+          153.0,
+          16.5
+        ],
+        "tip_offset_px": [
+          16.4,
+          266.3
+        ],
+        "rest_offset_px": [
+          -19.9,
+          19.9
+        ],
+        "length_norm": 0.477
+      }
+    ],
+    "wing_45deg_far": [
+      {
+        "id": "wing_45deg_far_s0",
+        "shard_index": 0,
+        "size_px": [
+          341,
+          491
+        ],
+        "pivot_px": [
+          324.6,
+          472.7
+        ],
+        "tip_offset_px": [
+          16.5,
+          16.0
+        ],
+        "rest_offset_px": [
+          0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_45deg_far_s1",
+        "shard_index": 1,
+        "size_px": [
+          305,
+          248
+        ],
+        "pivot_px": [
+          287.7,
+          231.4
+        ],
+        "tip_offset_px": [
+          16.0,
+          17.0
+        ],
+        "rest_offset_px": [
+          -77.3,
+          -84.8
+        ],
+        "length_norm": 0.628
+      },
+      {
+        "id": "wing_45deg_far_s2",
+        "shard_index": 2,
+        "size_px": [
+          287,
+          122
+        ],
+        "pivot_px": [
+          270.7,
+          96.7
+        ],
+        "tip_offset_px": [
+          16.0,
+          16.5
+        ],
+        "rest_offset_px": [
+          -68.8,
+          -41.9
+        ],
+        "length_norm": 0.485
+      },
+      {
+        "id": "wing_45deg_far_s3",
+        "shard_index": 3,
+        "size_px": [
+          238,
+          114
+        ],
+        "pivot_px": [
+          221.9,
+          18.4
+        ],
+        "tip_offset_px": [
+          16.0,
+          94.2
+        ],
+        "rest_offset_px": [
+          -56.8,
+          -19.4
+        ],
+        "length_norm": 0.398
+      },
+      {
+        "id": "wing_45deg_far_s4",
+        "shard_index": 4,
+        "size_px": [
+          177,
+          206
+        ],
+        "pivot_px": [
+          160.1,
+          18.0
+        ],
+        "tip_offset_px": [
+          16.5,
+          189.0
+        ],
+        "rest_offset_px": [
+          -33.4,
+          -1.5
+        ],
+        "length_norm": 0.405
+      },
+      {
+        "id": "wing_45deg_far_s5",
+        "shard_index": 5,
+        "size_px": [
+          123,
+          279
+        ],
+        "pivot_px": [
+          105.2,
+          16.0
+        ],
+        "tip_offset_px": [
+          16.5,
+          262.3
+        ],
+        "rest_offset_px": [
+          -17.5,
+          17.5
+        ],
+        "length_norm": 0.475
+      }
+    ],
+    "wing_45deg_far_flip": [
+      {
+        "id": "wing_45deg_far_flip_s0",
+        "shard_index": 0,
+        "size_px": [
+          341,
+          491
+        ],
+        "pivot_px": [
+          15.4,
+          472.7
+        ],
+        "tip_offset_px": [
+          323.5,
+          16.0
+        ],
+        "rest_offset_px": [
+          -0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_45deg_far_flip_s1",
+        "shard_index": 1,
+        "size_px": [
+          305,
+          248
+        ],
+        "pivot_px": [
+          16.3,
+          231.4
+        ],
+        "tip_offset_px": [
+          288.0,
+          17.0
+        ],
+        "rest_offset_px": [
+          77.3,
+          -84.8
+        ],
+        "length_norm": 0.628
+      },
+      {
+        "id": "wing_45deg_far_flip_s2",
+        "shard_index": 2,
+        "size_px": [
+          287,
+          122
+        ],
+        "pivot_px": [
+          15.3,
+          96.7
+        ],
+        "tip_offset_px": [
+          270.0,
+          16.5
+        ],
+        "rest_offset_px": [
+          68.8,
+          -41.9
+        ],
+        "length_norm": 0.485
+      },
+      {
+        "id": "wing_45deg_far_flip_s3",
+        "shard_index": 3,
+        "size_px": [
+          238,
+          114
+        ],
+        "pivot_px": [
+          15.1,
+          18.4
+        ],
+        "tip_offset_px": [
+          221.0,
+          94.2
+        ],
+        "rest_offset_px": [
+          56.8,
+          -19.4
+        ],
+        "length_norm": 0.398
+      },
+      {
+        "id": "wing_45deg_far_flip_s4",
+        "shard_index": 4,
+        "size_px": [
+          177,
+          206
+        ],
+        "pivot_px": [
+          15.9,
+          18.0
+        ],
+        "tip_offset_px": [
+          159.5,
+          189.0
+        ],
+        "rest_offset_px": [
+          33.4,
+          -1.5
+        ],
+        "length_norm": 0.405
+      },
+      {
+        "id": "wing_45deg_far_flip_s5",
+        "shard_index": 5,
+        "size_px": [
+          123,
+          279
+        ],
+        "pivot_px": [
+          16.8,
+          16.0
+        ],
+        "tip_offset_px": [
+          105.5,
+          262.3
+        ],
+        "rest_offset_px": [
+          17.5,
+          17.5
+        ],
+        "length_norm": 0.475
+      }
+    ],
+    "wing_45deg_near": [
+      {
+        "id": "wing_45deg_near_s0",
+        "shard_index": 0,
+        "size_px": [
+          215,
+          458
+        ],
+        "pivot_px": [
+          16.0,
+          436.8
+        ],
+        "tip_offset_px": [
+          163.0,
+          16.0
+        ],
+        "rest_offset_px": [
+          0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_45deg_near_s1",
+        "shard_index": 1,
+        "size_px": [
+          171,
+          112
+        ],
+        "pivot_px": [
+          16.0,
+          89.8
+        ],
+        "tip_offset_px": [
+          154.6,
+          17.0
+        ],
+        "rest_offset_px": [
+          38.9,
+          -36.4
+        ],
+        "length_norm": 0.351
+      },
+      {
+        "id": "wing_45deg_near_s2",
+        "shard_index": 2,
+        "size_px": [
+          157,
+          104
+        ],
+        "pivot_px": [
+          16.5,
+          22.4
+        ],
+        "tip_offset_px": [
+          140.6,
+          81.8
+        ],
+        "rest_offset_px": [
+          29.9,
+          -11.5
+        ],
+        "length_norm": 0.309
+      },
+      {
+        "id": "wing_45deg_near_s3",
+        "shard_index": 3,
+        "size_px": [
+          129,
+          282
+        ],
+        "pivot_px": [
+          16.5,
+          30.4
+        ],
+        "tip_offset_px": [
+          86.3,
+          265.3
+        ],
+        "rest_offset_px": [
+          13.0,
+          16.5
+        ],
+        "length_norm": 0.55
+      }
+    ],
+    "wing_45deg_near_flip": [
+      {
+        "id": "wing_45deg_near_flip_s0",
+        "shard_index": 0,
+        "size_px": [
+          215,
+          458
+        ],
+        "pivot_px": [
+          198.0,
+          436.8
+        ],
+        "tip_offset_px": [
+          51.0,
+          16.0
+        ],
+        "rest_offset_px": [
+          -0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_45deg_near_flip_s1",
+        "shard_index": 1,
+        "size_px": [
+          171,
+          112
+        ],
+        "pivot_px": [
+          154.0,
+          89.8
+        ],
+        "tip_offset_px": [
+          15.4,
+          17.0
+        ],
+        "rest_offset_px": [
+          -38.9,
+          -36.4
+        ],
+        "length_norm": 0.351
+      },
+      {
+        "id": "wing_45deg_near_flip_s2",
+        "shard_index": 2,
+        "size_px": [
+          157,
+          104
+        ],
+        "pivot_px": [
+          139.5,
+          22.4
+        ],
+        "tip_offset_px": [
+          15.4,
+          81.8
+        ],
+        "rest_offset_px": [
+          -29.9,
+          -11.5
+        ],
+        "length_norm": 0.309
+      },
+      {
+        "id": "wing_45deg_near_flip_s3",
+        "shard_index": 3,
+        "size_px": [
+          129,
+          282
+        ],
+        "pivot_px": [
+          111.5,
+          30.4
+        ],
+        "tip_offset_px": [
+          41.7,
+          265.3
+        ],
+        "rest_offset_px": [
+          -13.0,
+          16.5
+        ],
+        "length_norm": 0.55
+      }
+    ],
+    "wing_90deg": [
+      {
+        "id": "wing_90deg_s0",
+        "shard_index": 0,
+        "size_px": [
+          293,
+          480
+        ],
+        "pivot_px": [
+          276.7,
+          457.7
+        ],
+        "tip_offset_px": [
+          18.9,
+          16.0
+        ],
+        "rest_offset_px": [
+          0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_90deg_s1",
+        "shard_index": 1,
+        "size_px": [
+          278,
+          231
+        ],
+        "pivot_px": [
+          261.8,
+          213.9
+        ],
+        "tip_offset_px": [
+          16.0,
+          18.0
+        ],
+        "rest_offset_px": [
+          -72.3,
+          -73.8
+        ],
+        "length_norm": 0.615
+      },
+      {
+        "id": "wing_90deg_s2",
+        "shard_index": 2,
+        "size_px": [
+          276,
+          111
+        ],
+        "pivot_px": [
+          258.8,
+          82.3
+        ],
+        "tip_offset_px": [
+          16.0,
+          17.5
+        ],
+        "rest_offset_px": [
+          -72.3,
+          -31.9
+        ],
+        "length_norm": 0.491
+      },
+      {
+        "id": "wing_90deg_s3",
+        "shard_index": 3,
+        "size_px": [
+          256,
+          119
+        ],
+        "pivot_px": [
+          239.8,
+          18.9
+        ],
+        "tip_offset_px": [
+          16.0,
+          98.7
+        ],
+        "rest_offset_px": [
+          -58.3,
+          -11.5
+        ],
+        "length_norm": 0.465
+      },
+      {
+        "id": "wing_90deg_s4",
+        "shard_index": 4,
+        "size_px": [
+          216,
+          201
+        ],
+        "pivot_px": [
+          199.9,
+          18.0
+        ],
+        "tip_offset_px": [
+          16.5,
+          183.0
+        ],
+        "rest_offset_px": [
+          -40.4,
+          10.0
+        ],
+        "length_norm": 0.483
+      },
+      {
+        "id": "wing_90deg_s5",
+        "shard_index": 5,
+        "size_px": [
+          149,
+          279
+        ],
+        "pivot_px": [
+          131.6,
+          17.5
+        ],
+        "tip_offset_px": [
+          17.0,
+          261.8
+        ],
+        "rest_offset_px": [
+          -22.4,
+          21.9
+        ],
+        "length_norm": 0.528
+      }
+    ],
+    "wing_90deg_flip": [
+      {
+        "id": "wing_90deg_flip_s0",
+        "shard_index": 0,
+        "size_px": [
+          293,
+          480
+        ],
+        "pivot_px": [
+          15.3,
+          457.7
+        ],
+        "tip_offset_px": [
+          273.1,
+          16.0
+        ],
+        "rest_offset_px": [
+          -0.0,
+          0.0
+        ],
+        "length_norm": 1.0
+      },
+      {
+        "id": "wing_90deg_flip_s1",
+        "shard_index": 1,
+        "size_px": [
+          278,
+          231
+        ],
+        "pivot_px": [
+          15.2,
+          213.9
+        ],
+        "tip_offset_px": [
+          261.0,
+          18.0
+        ],
+        "rest_offset_px": [
+          72.3,
+          -73.8
+        ],
+        "length_norm": 0.615
+      },
+      {
+        "id": "wing_90deg_flip_s2",
+        "shard_index": 2,
+        "size_px": [
+          276,
+          111
+        ],
+        "pivot_px": [
+          16.2,
+          82.3
+        ],
+        "tip_offset_px": [
+          259.0,
+          17.5
+        ],
+        "rest_offset_px": [
+          72.3,
+          -31.9
+        ],
+        "length_norm": 0.491
+      },
+      {
+        "id": "wing_90deg_flip_s3",
+        "shard_index": 3,
+        "size_px": [
+          256,
+          119
+        ],
+        "pivot_px": [
+          15.2,
+          18.9
+        ],
+        "tip_offset_px": [
+          239.0,
+          98.7
+        ],
+        "rest_offset_px": [
+          58.3,
+          -11.5
+        ],
+        "length_norm": 0.465
+      },
+      {
+        "id": "wing_90deg_flip_s4",
+        "shard_index": 4,
+        "size_px": [
+          216,
+          201
+        ],
+        "pivot_px": [
+          15.1,
+          18.0
+        ],
+        "tip_offset_px": [
+          198.5,
+          183.0
+        ],
+        "rest_offset_px": [
+          40.4,
+          10.0
+        ],
+        "length_norm": 0.483
+      },
+      {
+        "id": "wing_90deg_flip_s5",
+        "shard_index": 5,
+        "size_px": [
+          149,
+          279
+        ],
+        "pivot_px": [
+          16.4,
+          17.5
+        ],
+        "tip_offset_px": [
+          131.0,
+          261.8
+        ],
+        "rest_offset_px": [
+          22.4,
+          21.9
+        ],
+        "length_norm": 0.528
+      }
+    ]
+  },
+  "views": {
+    "s": {
+      "wing_l": "wing_0deg_l",
+      "wing_r": "wing_0deg_r",
+      "layer": "behind_body"
+    },
+    "n": {
+      "wing_l": "wing_0deg_l",
+      "wing_r": "wing_0deg_r",
+      "layer": "over_back"
+    },
+    "se": {
+      "wing_l": "wing_45deg_far",
+      "wing_r": "wing_45deg_near",
+      "layer": "behind_body"
+    },
+    "sw": {
+      "wing_l": "wing_45deg_near_flip",
+      "wing_r": "wing_45deg_far_flip",
+      "layer": "behind_body"
+    },
+    "ne": {
+      "wing_l": "wing_45deg_far",
+      "wing_r": "wing_45deg_near",
+      "layer": "over_back"
+    },
+    "nw": {
+      "wing_l": "wing_45deg_near_flip",
+      "wing_r": "wing_45deg_far_flip",
+      "layer": "over_back"
+    },
+    "e": {
+      "wing_l": "wing_90deg",
+      "wing_r": "wing_90deg",
+      "layer": "split_profile",
+      "rear_darken": 0.85
+    },
+    "w": {
+      "wing_l": "wing_90deg_flip",
+      "wing_r": "wing_90deg_flip",
+      "layer": "split_profile",
+      "rear_darken": 0.85
+    }
+  }
+}

@@ -40,6 +40,7 @@ func _run_test() -> void:
 	_test_shader_lab_scene()
 	_test_base_pose_config_and_evaluator(planar)
 	_test_kiting_360_system(profile, planar)
+	_test_forward_flight_parallel_legs(planar)
 	pass_suite("Valentina v2 (8-Dir) purged rig + pure direction routing + masks + Lab HUD + Calibrator + ShaderLab + BasePose + Kiting 360 verified.")
 
 
@@ -1250,6 +1251,74 @@ func _test_kiting_360_system(profile: PilotRigProfile, test_rig: PlanarCombatRig
 	combat_rig.set_kiting_anim_enabled(false)
 	assert_true(combat_rig.get_live_kiting_weights().is_empty(), "set_kiting_anim_enabled(false) must clear live kiting weights")
 	combat_rig.queue_free()
+
+
+func _test_forward_flight_parallel_legs(test_rig: PlanarCombatRig) -> void:
+	var pose_cfg: BasePoseConfigScript = (ResourceLoader.load(ValentinaV2BasePosePath) as BasePoseConfigScript).duplicate(true) as BasePoseConfigScript
+	var idle_cfg: IdleAnimConfigScript = (ResourceLoader.load(ValentinaV2IdleAnimPath) as IdleAnimConfigScript).duplicate(true) as IdleAnimConfigScript
+	var loco_cfg: LocomotionAnimConfigScript = (ResourceLoader.load(ValentinaV2LocomotionPath) as LocomotionAnimConfigScript).duplicate(true) as LocomotionAnimConfigScript
+	assert_true(loco_cfg != null and loco_cfg.fwd_leg_sync_blend >= 0.7, "valentina_v2_locomotion_anim.tres must enable fwd_leg_sync_blend >= 0.7 (got %.2f)" % (loco_cfg.fwd_leg_sync_blend if loco_cfg != null else -1.0))
+
+	var evaluator := BasePoseEvaluatorScript.new()
+	evaluator.ensure_assets_loaded()
+	var views: Dictionary = test_rig.get_views()
+	var fwd_weights: Dictionary = {"fwd": 1.0, "brk": 0.0, "rev": 0.0}
+	var brk_weights: Dictionary = {"fwd": 0.0, "brk": 1.0, "rev": 0.0}
+
+	var inv_rig_scale: float = 1.0 / maxf(test_rig.scale.x, 0.001)
+	test_rig.calibration_manual_pose = true
+
+	# 1. Paralelismo real en espacio de mundo en las 8 vistas (compensando A-pose del rest pose)
+	var all_8_views: Array[Array] = [
+		["s", "head_front"], ["se", "head_front_r"], ["e", "head_side_r"], ["ne", "head_back_r"],
+		["n", "head_back"], ["nw", "head_back_l"], ["w", "head_side"], ["sw", "head_front_l"],
+	]
+	for vc: Array in all_8_views:
+		var v_key: String = str(vc[0])
+		var h_key: String = str(vc[1])
+		test_rig.set_static_inspection(true, v_key, h_key)
+		var vd: Dictionary = views[v_key] as Dictionary
+		var bones: Dictionary = vd["bones"] as Dictionary
+		evaluator.apply_pose_to_rig_view(test_rig, v_key, pose_cfg, BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D, 1.0, false, 0.0, idle_cfg, loco_cfg, fwd_weights)
+		var th_l_vec: Vector2 = ((bones["Knee_L"] as Bone2D).global_position - (bones["Thigh_L"] as Bone2D).global_position) * inv_rig_scale
+		var th_r_vec: Vector2 = ((bones["Knee_R"] as Bone2D).global_position - (bones["Thigh_R"] as Bone2D).global_position) * inv_rig_scale
+		var sh_l_vec: Vector2 = ((bones["Ankle_L"] as Bone2D).global_position - (bones["Knee_L"] as Bone2D).global_position) * inv_rig_scale
+		var sh_r_vec: Vector2 = ((bones["Ankle_R"] as Bone2D).global_position - (bones["Knee_R"] as Bone2D).global_position) * inv_rig_scale
+		var th_diff: float = absf(th_l_vec.angle_to(th_r_vec))
+		var sh_diff: float = absf(sh_l_vec.angle_to(sh_r_vec))
+		assert_true(th_diff < 0.08, "Forward flight '%s' world-space thighs must be parallel (< 0.08 rad, got %.3f)" % [v_key, th_diff])
+		assert_true(sh_diff < 0.08, "Forward flight '%s' world-space shins must be parallel (< 0.08 rad, got %.3f)" % [v_key, sh_diff])
+		if v_key == "e":
+			assert_true(th_l_vec.x < -10.0 and th_r_vec.x < -10.0, "Forward flight 'e' thighs must sweep backward (dx_L=%.1f, dx_R=%.1f)" % [th_l_vec.x, th_r_vec.x])
+		elif v_key == "w":
+			assert_true(th_l_vec.x > 10.0 and th_r_vec.x > 10.0, "Forward flight 'w' thighs must sweep backward (dx_L=%.1f, dx_R=%.1f)" % [th_l_vec.x, th_r_vec.x])
+		elif v_key == "s" or v_key == "n":
+			var th_l_vert: float = absf(th_l_vec.angle_to(Vector2.DOWN))
+			var th_r_vert: float = absf(th_r_vec.angle_to(Vector2.DOWN))
+			var sh_l_vert: float = absf(sh_l_vec.angle_to(Vector2.DOWN))
+			var sh_r_vert: float = absf(sh_r_vec.angle_to(Vector2.DOWN))
+			assert_true(th_l_vert < 0.06 and th_r_vert < 0.06, "Forward flight '%s' thighs must be vertical without A-pose (L=%.3f, R=%.3f)" % [v_key, th_l_vert, th_r_vert])
+			assert_true(sh_l_vert < 0.06 and sh_r_vert < 0.06, "Forward flight '%s' shins must be vertical without A-pose (L=%.3f, R=%.3f)" % [v_key, sh_l_vert, sh_r_vert])
+
+	# 2. Sincronización de Idle en vuelo 'fwd' (e en t=0.0 y t=0.8) + no-regresión de freno 'brk'
+	test_rig.set_static_inspection(true, "e", "head_side_r")
+	var evd: Dictionary = views["e"] as Dictionary
+	var ebones: Dictionary = evd["bones"] as Dictionary
+	for sample_t: float in [0.0, 0.8]:
+		evaluator.apply_pose_to_rig_view(test_rig, "e", pose_cfg, BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D, 1.0, true, sample_t, idle_cfg, loco_cfg, fwd_weights)
+		var ith_l: Vector2 = (ebones["Knee_L"] as Bone2D).global_position - (ebones["Thigh_L"] as Bone2D).global_position
+		var ith_r: Vector2 = (ebones["Knee_R"] as Bone2D).global_position - (ebones["Thigh_R"] as Bone2D).global_position
+		var idiff: float = absf(ith_l.angle_to(ith_r))
+		assert_true(idiff < 0.08, "Idle + Forward cruise at t=%.1f on 'e' must keep world-space thighs parallel (diff=%.3f)" % [sample_t, idiff])
+
+	evaluator.apply_pose_to_rig_view(test_rig, "e", pose_cfg, BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D, 1.0, false, 0.0, idle_cfg)
+	var base_chest_e: float = (ebones["Chest"] as Bone2D).rotation
+	var base_thigh_l_e: float = (ebones["Thigh_L"] as Bone2D).rotation
+	evaluator.apply_pose_to_rig_view(test_rig, "e", pose_cfg, BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D, 1.0, false, 0.0, idle_cfg, loco_cfg, brk_weights)
+	assert_true((ebones["Chest"] as Bone2D).rotation < base_chest_e - 0.04 and (ebones["Thigh_L"] as Bone2D).rotation < base_thigh_l_e - 0.08, "Brake counter-pitch (brk=1.0) must remain unaffected")
+
+	test_rig.calibration_manual_pose = false
+	test_rig.set_static_inspection(false)
 
 
 func _assert_dual_ew_secondary_mask(mat: ShaderMaterial, view_label: String) -> void:

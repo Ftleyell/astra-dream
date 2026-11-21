@@ -1,10 +1,10 @@
 # Referencia Completa del Rig Limpio — Valentina v2 (8-Dir Nativo)
 
-> **Única Fuente de Verdad Runtime:** Este documento refleja el estado actual real del rig **Valentina v2** (`valentina` v1 eliminado). Para reglas rápidas de edición y tabla contractual sin relecturas, consultar [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md).
-> **Estado actual:** Rig purgado y exclusivo de **Valentina v2**. Todas las animaciones procedurales de locomoción/idle/combate, deformaciones 2.5D en vértice y físicas secundarias están desactivadas. **Únicamente están activos el cambio de dirección 8-dir nativo y su animación de transición de orientación** (enrutado de cuerpo + cabeza desacoplada + cono cervical + backpedal + `PlanarRigTransitionController` Modos 4/5/6 con squash/stretch, smear/flash/holo-sweep, afterimage de giro y micro-snap de cabeza) junto con el pipeline de render estático.
-> **Escenas de Laboratorio:** [`planar_combat_rig_proto.tscn`](../sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn) · [`planar_shader_lab.tscn`](../sandbox/pilot_rig_lab/shader_lab/planar_shader_lab.tscn) (A/B Shaders) · [`planar_anim_test.tscn`](../sandbox/pilot_rig_lab/proto/planar_anim_test.tscn) (Animación 2.5D) · [`valentina_face_lab.tscn`](../sandbox/pilot_rig_lab/face_lab/valentina_face_lab.tscn) (Rig Facial Vivo — ver [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md))
+> **Única Fuente de Verdad Runtime:** Este documento refleja el estado actual real del rig **Valentina v2** (`valentina` v1 eliminado). Para el índice de milestone y hoja de ruta, ver [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](VALENTINA_V2_MILESTONE_STATUS.md); para reglas rápidas de edición y tabla contractual sin relecturas, consultar [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md).
+> **Estado actual:** Rig exclusivo de **Valentina v2 (8-Dir Nativo)**. Los controladores legacy (`planar_rig_animator.gd`, `planar_rig_perspective_controller.gd`, `planar_rig_secondary_physics.gd`) permanecen purgados en rest pose; sobre ese baseline limpio operan el **enrutado 8-dir nativo + transiciones snappy (Modos 4/5/6 + whip cervical)**, el **pipeline de animación data-driven `.tres`** (Pose Base Zero-G, Idle 3-capas, Locomoción/Freno, Kiting 360°, Giros 2.5D y Jiggle Busto/Glúteos — Sección 6), el **Rig Facial Vivo** (`VALENTINA_V2_FACE_RIG_REFERENCE.md`), las **Alas Psíquicas Base** (`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`) y el **Power-Up Sandevistan** (`VALENTINA_PROPULSION_VFX_SPEC.md`).
+> **Escenas de Laboratorio:** [`planar_combat_rig_proto.tscn`](../sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn) · [`planar_shader_lab.tscn`](../sandbox/pilot_rig_lab/shader_lab/planar_shader_lab.tscn) (A/B Shaders) · [`planar_anim_test.tscn`](../sandbox/pilot_rig_lab/proto/planar_anim_test.tscn) (Animación 2.5D) · [`valentina_face_lab.tscn`](../sandbox/pilot_rig_lab/face_lab/valentina_face_lab.tscn) (Rig Facial Vivo) · [`valentina_vfx_lab.tscn`](../sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab.tscn) (Alas + VFX Sandevistan)
 > **Backup Inmutable Baseline:** [`backups/valentina_v2_clean_baseline/`](../sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/) + [`restore_valentina_v2_baseline.ps1`](../sandbox/pilot_rig_lab/backups/restore_valentina_v2_baseline.ps1) + tag Git `valentina-v2-clean-baseline`
-> **Suite de Verificación:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"`
+> **Suites de Verificación:** `tools/run_tests.ps1 -Test "pilot_rig_lab"` · `-Test "valentina_face_lab"` · `-Test "valentina_vfx_lab"`
 
 ---
 
@@ -13,9 +13,10 @@
 | Sistema | Estado | Archivo / Módulo | Notas para reconstrucción |
 |---|---|---|---|
 | **Enrutado 8-Dir Cuerpo + Cabeza** | **ACTIVO** | [`planar_rig_view_router.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_view_router.gd) | 8 vistas nativas (`s, se, e, ne, n, nw, w, sw`, `body_flip_x = false`) + 8 cabezas asimétricas (`head_flip_x = false`), cono cervical `±65°`, histéresis de giro y backpedal (`BACKPEDAL_ENTER_DOT_8DIR = 0.56`, `EXIT = 0.68`). |
-| **Animación de Cambio de Orientación** | **ACTIVO** | [`planar_rig_transition_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_transition_controller.gd), [`planar_rig_wings_vfx.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_wings_vfx.gd) | Modos snappy 4/5/6 (`WHIP_SNAP_AFTERIMAGE`, `MICRO_FLASH_SNAP`, `HOLO_SNAP_FAST`): `snap_scale_xy` en `BodyPivot`/`HeadAnchor`, smear en Pasada 2, flash/holo-sweep en Pasada 1, afterimage de giro (`spawn_snap_afterimage`) y micro-snap de cabeza. *(Estela Sandevistan y alas/propulsores permanecen purgados).* |
+| **Animación de Cambio de Orientación** | **ACTIVO** | [`planar_rig_transition_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_transition_controller.gd), [`planar_rig_wings_vfx.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_wings_vfx.gd) | Modos snappy 4/5/6 (`WHIP_SNAP_AFTERIMAGE`, `MICRO_FLASH_SNAP`, `HOLO_SNAP_FAST`): `snap_scale_xy` en `BodyPivot`/`HeadAnchor`, smear en Pasada 2, flash/holo-sweep en Pasada 1, afterimage de giro (`spawn_snap_afterimage`) y micro-snap de cabeza. *(Estela Sandevistan en `vfx_lab/`; alas estandarizadas vía `enable_base_propulsion_wings`)*. |
+| **Alas Psíquicas & Propulsión Base (Multi-Piloto)** | **ACTIVO (Opt-In)** | [`valentina_base_propulsion_controller.gd`](../sandbox/pilot_rig_lab/vfx_lab/valentina_base_propulsion_controller.gd), [`pilot_base_propulsion_config.gd`](../sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd) | Enlazado vía `PilotRigProfile` (`base_propulsion_config`, `wings_assets_subdir`). Monta `WingsUnderMount`/`WingsOverMount` en `UnifiedCharacterGroup` (`z_index = 0`) + capas HDR externas (`WingsGlowUnder`/`WingsGlowOver`), apertura lineal cohesiva, empuje Newtoniano y 12 cintas rojas. Ver [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md). |
 | **Montaje de Mallas y Pesos** | **ACTIVO** | [`planar_rig_mesh_builder.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_mesh_builder.gd) | Construye `Skeleton2D` (18 huesos), mallas `Polygon2D`, pesos desde `*_anim_mask.png`, blends de cadera/hombro/hombrera y cabezas en 2 pasadas (`head_layer_pass = 1/2`). |
-| **Materiales, Recolor, Iluminación 2.5D, Outlines, Hit Flash / Impact Frame** | **ACTIVO** | [`planar_rig_material_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_material_controller.gd) | Skins (10), Cabello (10), Estilos (2: `00_original` + `01_valentina_definitive` ArcSys Cosmos), `use_normal_depth`, Pasada 2 unificada, rayos-X (`debug_view_mode = 0..6`), `leg_depth_phase` estático en `e`/`w`. |
+| **Materiales, Recolor, Iluminación 2.5D, Outlines, Hit Flash / Impact Frame** | **ACTIVO** | [`planar_rig_material_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_material_controller.gd) | Skins (10), Cabello (10), Estilos (3: `00_original`, `01_valentina_definitive` ArcSys Cosmos y `02_valentina_razor_sharp`), tinta interna Ink SDF 2×, `use_normal_depth`, Pasada 2 unificada, rayos-X (`debug_view_mode = 0..8`), `leg_depth_phase` estático en `e`/`w`. |
 | **Animación Esquelética Procedural** | **PURGADO (Rest Pose)** | [`planar_rig_animator.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_animator.gd) | Mantiene `BodyPivot.position = ZERO`, `rotation = 0` y los 18 `Bone2D` en `rest_rots` (`BodyPivot.scale` recibe únicamente `snap_scale_xy` durante giros). Conserva enum `AnimState`, `ANIM_BONES`, `step_spring()` y lectura de límites `*_limits` en `.tres`. |
 | **Perspectiva 2.5D Post-Skinning** | **PURGADO (`persp_mode = 0`)** | [`planar_rig_perspective_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_perspective_controller.gd) | Fuerza `persp_mode = 0`, `poly.position = ZERO`, `bone_chain_angles = ZERO`, `joint_flexion = 0`, `Pauldron_R/L.position = rest_pos`, `Bone2D.scale = ONE`. Solo conserva `leg_depth_phase` estático en `e`/`w` (`0.65` / `-0.75`). |
 | **Física Secundaria (Jiggle / Whiplash)** | **PURGADO** | [`planar_rig_secondary_physics.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_secondary_physics.gd) | Fija `secondary_jiggle_l_px = ZERO` y `secondary_jiggle_r_px = ZERO` en `body_core` y cabezas (`enable_secondary_jiggle = false` en cabezas; textura cargada y lista en `body_core`). |
@@ -28,17 +29,22 @@
 
 ```text
 PlanarCombatRig (Node2D, scale = display_scale = 0.378)
+├── BasePropulsionWings (ValentinaBasePropulsionController, z_index = -2) [opt-in]
+├── WingsGlowUnder (Node2D, z_index = -1) [opt-in HDR Bloom]
 ├── VFXBehindLayer (Node2D, z_index = -1)
-└── UnifiedCharacterGroup (CanvasGroup, z_index = 0, use_mipmaps = true, fit/clear_margin = 64.0) [Pasada 2]
-    ├── DecoupledHeadUnderMount (Node2D, z_index = 0)  [9 Sprite2D, head_layer_pass = 1]
-    ├── BodyPivot (Node2D, z_index = 0)
-    │   ├── BodyView_S .. BodyView_SW (8x Node2D)
-    │   │   ├── Skeleton2D (18 Bone2D)
-    │   │   └── Meshes (Node2D, todos los hijos con z_index = 0 ordenados por z_orders)
-    │   │       ├── Part_arm_* / Part_leg_* / Part_body_core / Part_pauldron_*
-    │   │       └── Part_leg_*_stocking (solo en s, se, e, w, sw; leg_layer_pass = 2 sobre body_core)
-    │   └── HeadContactShadow (Sprite2D, z_index = 0, último hijo; oculto en n, ne, nw)
-    └── DecoupledHeadMount (Node2D, z_index = 0)       [9 Sprite2D, head_layer_pass = 2]
+├── UnifiedCharacterGroup (CanvasGroup, z_index = 0, use_mipmaps = true, fit/clear_margin = 64.0) [Pasada 2]
+│   ├── WingsUnderMount (Node2D, z_index = 0)        [Alas detrás del torso: s, se, sw, ala lejana e/w]
+│   ├── DecoupledHeadUnderMount (Node2D, z_index = 0)  [9 Sprite2D, head_layer_pass = 1]
+│   ├── BodyPivot (Node2D, z_index = 0)
+│   │   ├── BodyView_S .. BodyView_SW (8x Node2D)
+│   │   │   ├── Skeleton2D (18 Bone2D)
+│   │   │   └── Meshes (Node2D, todos los hijos con z_index = 0 ordenados por z_orders)
+│   │   │       ├── Part_arm_* / Part_leg_* / Part_body_core / Part_pauldron_*
+│   │   │       └── Part_leg_*_stocking (solo en s, se, e, w, sw; leg_layer_pass = 2 sobre body_core)
+│   │   └── HeadContactShadow (Sprite2D, z_index = 0, último hijo; oculto en n, ne, nw)
+│   ├── WingsOverMount (Node2D, z_index = 0)         [Alas sobre espalda bajo cabeza: n, ne, nw, ala cercana e/w]
+│   └── DecoupledHeadMount (Node2D, z_index = 0)       [9 Sprite2D, head_layer_pass = 2]
+└── WingsGlowOver (Node2D, z_index = 1) [opt-in HDR Bloom]
 ```
 
 > **Regla crítica de `CanvasGroup`:** todos los nodos dentro de `UnifiedCharacterGroup` deben mantener `z_index = 0`. El orden de dibujado se controla exclusivamente mediante el orden de hijos en `Meshes` (dictado por `z_orders` en `parts_5_meta.json`).

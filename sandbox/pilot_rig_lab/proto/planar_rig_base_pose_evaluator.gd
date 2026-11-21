@@ -584,6 +584,9 @@ func _compute_idle_motion(
 		float_atten = lerpf(1.0, atten_cfg, loco_blend)
 		wake_freq = wf_cfg
 		wake_amp = lerpf(1.0, wa_cfg, loco_blend)
+	var fwd_w: float = float(loco_weights.get("fwd", 0.0)) if (loco_cfg != null and not loco_weights.is_empty()) else 0.0
+	var leg_sync: float = clampf(fwd_w * (loco_cfg.fwd_leg_sync_blend if loco_cfg != null else 0.85), 0.0, 1.0)
+	var leg_fwd_damp: float = lerpf(1.0, 0.25, leg_sync)
 
 	var times: Vector2 = _resolve_cadence_times(anim_time, cfg.cadence_mode)
 	var t_float: float = times.x
@@ -635,11 +638,17 @@ func _compute_idle_motion(
 			var ls_sign: float = float(leg_pair[1]) * mirror_sign * back_sign
 			var l_ph: float = float(leg_pair[2])
 			var d_leg: Dictionary = out[lk] as Dictionary
-			d_leg["th"] = sample_harmonic_wave(ph_pose - 0.15 + l_ph, asym) * cfg.thigh_wave_rot * ls_sign * m_legs * float_atten
-			d_leg["kn"] = -sample_harmonic_wave(ph_pose - 0.15 - cfg.leg_chain_phase_lag + l_ph, asym) * cfg.knee_wave_rot * ls_sign * m_legs * float_atten
+			d_leg["th"] = sample_harmonic_wave(ph_pose - 0.15 + l_ph, asym) * cfg.thigh_wave_rot * ls_sign * m_legs * float_atten * leg_fwd_damp
+			d_leg["kn"] = -sample_harmonic_wave(ph_pose - 0.15 - cfg.leg_chain_phase_lag + l_ph, asym) * cfg.knee_wave_rot * ls_sign * m_legs * float_atten * leg_fwd_damp
 			var an_base: float = sample_harmonic_wave(ph_pose - 0.15 - cfg.leg_chain_phase_lag * 2.0 + l_ph, asym)
 			var an_wake: float = sample_harmonic_wave(ph_wake - 0.15 - cfg.leg_chain_phase_lag * 2.0 + l_ph, asym)
 			d_leg["an"] = lerpf(an_base, an_wake, loco_blend) * cfg.ankle_wave_rot * ls_sign * m_legs * wake_amp
+		if leg_sync > 0.001:
+			var d_lead_sync: Dictionary = out["leg_lead"] as Dictionary
+			var d_trail_sync: Dictionary = out["leg_trail"] as Dictionary
+			d_trail_sync["th"] = lerpf(float(d_trail_sync["th"]), float(d_lead_sync["th"]), leg_sync)
+			d_trail_sync["kn"] = lerpf(float(d_trail_sync["kn"]), float(d_lead_sync["kn"]), leg_sync)
+			d_trail_sync["an"] = lerpf(float(d_trail_sync["an"]), float(d_lead_sync["an"]), leg_sync)
 
 	if cfg.enable_25d_layer:
 		out["persp_active"] = true
@@ -655,7 +664,7 @@ func _compute_idle_motion(
 
 		for leg_pair: Array in [["leg_lead", 0.0], ["leg_trail", cfg.leg_scissor_phase_offset]]:
 			var lk: String = str(leg_pair[0])
-			var l_ph: float = float(leg_pair[1])
+			var l_ph: float = lerpf(float(leg_pair[1]), 0.0, leg_sync) if lk == "leg_trail" else float(leg_pair[1])
 			var d_leg: Dictionary = out[lk] as Dictionary
 			var w_th: float = sample_harmonic_wave(ph_pose - 0.15 + l_ph, asym)
 			var w_sh: float = sample_harmonic_wave(ph_pose - 0.15 - cfg.leg_chain_phase_lag + l_ph, asym)

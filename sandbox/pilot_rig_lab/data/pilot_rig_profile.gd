@@ -21,6 +21,8 @@ extends Resource
 @export var turn_anim_config: Resource = null
 @export var jiggle_physics_config: Resource = null
 @export var face_anim_config: Resource = null
+@export var base_propulsion_config: Resource = null
+@export var wings_assets_subdir: String = "wings"
 
 @export_group("Presets Asociados")
 @export var skins: Array[PilotSkinPreset] = []
