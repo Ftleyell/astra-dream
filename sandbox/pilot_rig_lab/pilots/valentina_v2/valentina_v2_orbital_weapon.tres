@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="PilotOrbitalWeaponConfig" format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_orbital_weapon_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+ring_center_offset = Vector2(0, 6)
+ring_radius_x = 122.0
+ring_radius_y = 48.0
+ring_tilt_deg = -5.0
+ring_thickness_px = 2.6
+ring_secondary_scale = 0.9
+ring_tick_count = 36
+ring_color_primary = Color(0.22, 0.86, 1, 0.78)
+ring_color_accent = Color(0.95, 0.22, 0.38, 0.92)
+ring_back_alpha_mult = 0.42
+ring_front_alpha_mult = 0.95
+ring_anchor_glow_radius = 16.0
+weapon_base_scale = 0.145
+weapon_pivot_u = 0.44
+weapon_muzzle_u = 0.97
+weapon_radial_offset_px = 14.0
+weapon_vertical_bob_px = 2.5
+weapon_bob_speed = 2.4
+perspective_scale_amp = 0.24
+foreshorten_min_x = 0.46
+foreshorten_strength = 0.85
+aim_pitch_compression = 0.58
+trapezoid_strength = 0.42
+extrude_depth_px = 5.5
+extrude_tint = Color(0.1, 0.16, 0.28, 0.92)
+depth_back_dim = 0.28
+depth_back_tint = Color(0.32, 0.36, 0.62, 1)
+rim_strength = 0.55
+specular_sweep_strength = 0.38
+orbit_speed_rad = 1.35
+mouse_follow_rate = 11.0
+weapon_count = 1
+recoil_kick_px = 18.0
+recoil_recover_rate = 14.0
+recoil_pitch_kick_deg = 6.5
+fire_glow_boost = 1.45
+auto_fire_interval_sec = 0.42
+tracer_speed_px = 1250.0
+tracer_length_px = 72.0

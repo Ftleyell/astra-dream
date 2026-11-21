@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://crg20p3vam2rx"]
+
+[ext_resource type="Script" uid="uid://yrs0pxhhc8m5" path="res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab.gd" id="1_guns_lab"]
+
+[node name="ValentinaGunsLab" type="Node2D" unique_id=874941131]
+script = ExtResource("1_guns_lab")

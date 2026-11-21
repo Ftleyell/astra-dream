@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab.gd" id="1_banner_lab"]
+
+[node name="ValentinaBannerLab" type="Node2D"]
+script = ExtResource("1_banner_lab")

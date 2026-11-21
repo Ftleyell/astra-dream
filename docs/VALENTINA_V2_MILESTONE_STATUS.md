@@ -17,6 +17,8 @@
 | **Rig Facial Vivo + Cabello 3-Zonas + Ojos Amatista** | **Cerrado** | `planar_rig_face_controller.gd`, `face_lab/`, `valentina_v2_face_anim.tres`, `rig_face_live.gdshaderinc` | [`VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md) |
 | **Alas Psíquicas & Propulsión Base Multi-Piloto** | **Cerrado** | `valentina_base_propulsion_controller.gd`, `wing_red_glow.gdshader`, `valentina_v2_base_propulsion.tres`, `tools/build_valentina_v2_wings.py` | [`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) |
 | **VFX Power-Up Sandevistan (Estela Ping-Pong)** | **Cerrado (I+D)** | `vfx_lab/sandevistan_trail_controller.gd`, `sandevistan_*.gdshader`, `valentina_v2_propulsion_vfx.tres` | [`VALENTINA_PROPULSION_VFX_SPEC.md`](VALENTINA_PROPULSION_VFX_SPEC.md) |
+| **Anillo Orbital 2.5D & Guns Lab (Base Armas)** | **Base Activa (I+D)** | `guns_lab/valentina_guns_lab.tscn`, `orbital_weapon_ring_controller.gd`, `orbital_weapon_25d.gdshader`, `valentina_v2_orbital_weapon.tres` | `.agents/rules/pilot_rig_lab.md` |
+| **Live Banner 2.5D & Banner Lab (Splash Select)** | **Base Activa (I+D)** | `banner_lab/valentina_banner_lab.tscn`, `pilot_live_banner_controller.gd`, `pilot_live_banner.gdshader`, `tools/build_valentina_live_banner.py`, `valentina_v2_live_banner.tres` | `.agents/rules/pilot_rig_lab.md` |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
 
 ---
@@ -29,12 +31,16 @@
 3. **Laboratorio Facial Aislado:** `face_lab/valentina_face_lab.tscn` — Hero Close-Up, Galería 8-Dir, expresiones, cabello 3-zonas y guardado `.tres`.
 4. **Laboratorio A/B de Shaders:** `shader_lab/planar_shader_lab.tscn` — Comparativa A/B, luz rotatoria, Rayos-X `0..6` y guardado `.tres`.
 5. **Laboratorio VFX Alas + Sandevistan:** `vfx_lab/valentina_vfx_lab.tscn` — Calibración de alas base, estela Sandevistan, danmaku simulado y guardado `.tres`.
+6. **Laboratorio de Armamento Orbital 2.5D (Guns Lab):** `guns_lab/valentina_guns_lab.tscn` — Base oficial para el rework de armas (anillo orbital 3D con Z-sorting atrás/delante, 1–4 slots, deformación trapezoidal/escorzo/extrusión 2.5D, recoil, HUD y guardado `.tres`).
+7. **Laboratorio Live Banner 2.5D (Banner Lab):** `banner_lab/valentina_banner_lab.tscn` — Base oficial para el Splash Art vivo de Character Select + icono `1:1` (`512×512`) compilados vía `tools/build_valentina_live_banner.py` con 4 máscaras IA (`refs/mask1..4_*.png`), `UnifiedBannerGroup` (`CanvasGroup` + `pilot_rig_pass2.gdshader`), brazo libre bajo hombrera estática, ojo Amatista Profundo con parpadeo anatómico, iluminación roja direccional y despliegue firme de las 12 cuchillas de alas con 2-phase Impact Frames (`Enter` / `E`).
 
 ### Comandos Rápidos de Verificación (`tests/sandbox/`)
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_guns_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"
 ```
 
 ---

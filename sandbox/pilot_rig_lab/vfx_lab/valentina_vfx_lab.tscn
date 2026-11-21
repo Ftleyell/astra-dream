@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://divgyallwdyqk"]
 
-[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab.gd" id="1_vfx_lab"]
+[ext_resource type="Script" uid="uid://go0lucvximdm" path="res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab.gd" id="1_vfx_lab"]
 
-[node name="ValentinaVFXLab" type="Node2D"]
+[node name="ValentinaVFXLab" type="Node2D" unique_id=1982535706]
 script = ExtResource("1_vfx_lab")
