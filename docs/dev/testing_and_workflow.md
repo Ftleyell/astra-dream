@@ -24,27 +24,33 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "<subcadena>"
 | **Slots Analíticos y Binding** | `"gameplay_orbital_binding"` | `tests/unit/test_gameplay_orbital_binding.tscn` |
 | **Fachada Host Cósmica** | `"cosmos_host_controller"` | `tests/unit/test_cosmos_host_controller.tscn` |
 | **Smoke Packaging Cosmos** | `"cosmos_packaging_smoke"` | `tests/unit/test_cosmos_packaging_smoke.tscn` |
-| **HUD / Dragon Radar** | `"dragon_radar"` | `tests/test_dragon_radar_runner.tscn` |
-| **HUD / Radar Satelital** | `"satellite_edge_indicator"` | `tests/test_satellite_edge_indicator_runner.tscn` |
-| **HUD / Polish General** | `"phase1_ui_polish"` | `tests/test_phase1_ui_polish_runner.tscn` |
-| **Armas y Balística** | `"weapons"` | `tests/test_weapons_runner.tscn` |
-| **Jefes y Encuentros** | `"boss"` | `tests/test_boss_runner.tscn` |
-| **Jefe Rival** | `"rival_engagement_rules"` | `tests/test_rival_engagement_rules_runner.tscn` |
-| **Persistencia y Serialización** | `"persistence"` | `tests/test_persistence_runner.tscn` |
-| **Satélites y Tiendas** | `"satellite_items"` | `tests/test_satellite_items_runner.tscn` |
-| **Cofres y Economía** | `"chest_economy"` | `tests/test_chest_economy_runner.tscn` |
-| **Tragamonedas y Gacha** | `"slot_machine_and_gacha"` | `tests/test_slot_machine_and_gacha_runner.tscn` |
-| **Pausa y Tokens** | `"pause_arbitrator"` | `tests/test_pause_arbitrator_runner.tscn` |
+| **HUD / Dragon Radar** | `"dragon_radar"` | `tests/unit/test_dragon_radar_runner.tscn` |
+| **HUD / Radar Satelital** | `"satellite_edge_indicator"` | `tests/integration/test_satellite_edge_indicator_runner.tscn` |
+| **HUD / Polish General** | `"phase1_ui_polish"` | `tests/integration/test_phase1_ui_polish_runner.tscn` |
+| **Armas y Balística** | `"weapons"` | `tests/integration/test_weapons_runner.tscn` |
+| **Jefes y Encuentros** | `"boss"` | `tests/integration/test_boss_runner.tscn` |
+| **Jefe Rival** | `"rival_engagement_rules"` | `tests/unit/test_rival_engagement_rules_runner.tscn` |
+| **Persistencia y Serialización** | `"persistence"` | `tests/integration/test_persistence_runner.tscn` |
+| **Satélites y Tiendas** | `"satellite_items"` | `tests/integration/test_satellite_items_runner.tscn` |
+| **Cofres y Economía** | `"chest_economy"` | `tests/integration/test_chest_economy_runner.tscn` |
+| **Tragamonedas y Gacha** | `"slot_machine_and_gacha"` | `tests/integration/test_slot_machine_and_gacha_runner.tscn` |
+| **Pausa y Tokens** | `"pause_arbitrator"` | `tests/integration/test_pause_arbitrator_runner.tscn` |
 
 ### Verificación Integral (Pre-Commit / Fin de Tarea)
 Para verificar la suite completa antes de integrar cambios:
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 ```
-*(Ejecuta las 23 suites clave con timeout de 15s por suite y reporte resumido).*
+*(Ejecuta las 24 suites clave con timeout de 15s por suite y reporte resumido).*
 
 ### Contrato de Nuevas Pruebas
 Toda nueva suite de pruebas unitarias o de integración debe heredar de `BaseTestSuite` (`tests/base_test_suite.gd`).
+- **Organización de `tests/`:**
+  - `tests/base_test_suite.gd` (raíz): clase base compartida por todas las suites.
+  - `tests/unit/`: micro-tests unitarios rápidos (`tools/run_unit_fast.ps1`) y suites de contrato/sistema puras.
+  - `tests/integration/`: suites de integración de juego, progresión, UI y combate.
+  - `tests/audits/`: capturas visuales, estrés, empirical harnesses y auditorías puntuales.
+  - `tests/sandbox/`: verificación de Workbenches, Combat Gym, Pilot Rig Labs y streams experimentales.
 
 ---
 

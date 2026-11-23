@@ -1,4 +1,4 @@
-# PowerShell Headless Test Harness — Astra Dream
+﻿# PowerShell Headless Test Harness — Astra Dream
 [CmdletBinding()]
 param(
     [string]$Test = "",
@@ -71,30 +71,30 @@ if ($Test) {
 } elseif ($CoreOnly) {
     # Conjunto clave de regresion rapida para iteracion de agentes
     $coreNames = @(
-        "test_weapons_runner.tscn",
-        "test_run_stats_and_shop_inventory_runner.tscn",
-        "test_satellite_items_runner.tscn",
-        "test_chest_economy_runner.tscn",
-        "test_hybrid_chest_economy_runner.tscn",
-        "test_proc_coefficients_and_osp_runner.tscn",
-        "test_pause_arbitrator_runner.tscn",
-        "test_persistence_runner.tscn",
-        "test_slot_machine_and_gacha_runner.tscn",
-        "test_weapon_swap_and_hud_runner.tscn",
-        "test_level_up_queue_runner.tscn",
-        "test_boss_runner.tscn",
-        "test_dialogue_skip_runner.tscn",
-        "test_tomes_and_infinite_weapons_runner.tscn",
-        "test_phase1_ui_polish_runner.tscn",
-        "test_phase2_tactical_focus_runner.tscn",
-        "test_phase3_charger_rework_runner.tscn",
-        "test_phase4_gold_and_chests_runner.tscn",
-        "test_phase5_boss_and_bullets_runner.tscn",
-        "test_phase6_tomes_and_dossier_runner.tscn",
-        "test_arsenal_banlist_modal_runner.tscn",
-        "test_dragon_radar_runner.tscn",
+        "integration/test_weapons_runner.tscn",
+        "integration/test_run_stats_and_shop_inventory_runner.tscn",
+        "integration/test_satellite_items_runner.tscn",
+        "integration/test_chest_economy_runner.tscn",
+        "integration/test_hybrid_chest_economy_runner.tscn",
+        "integration/test_proc_coefficients_and_osp_runner.tscn",
+        "integration/test_pause_arbitrator_runner.tscn",
+        "integration/test_persistence_runner.tscn",
+        "integration/test_slot_machine_and_gacha_runner.tscn",
+        "integration/test_weapon_swap_and_hud_runner.tscn",
+        "integration/test_level_up_queue_runner.tscn",
+        "integration/test_boss_runner.tscn",
+        "integration/test_dialogue_skip_runner.tscn",
+        "integration/test_tomes_and_infinite_weapons_runner.tscn",
+        "integration/test_phase1_ui_polish_runner.tscn",
+        "integration/test_phase2_tactical_focus_runner.tscn",
+        "integration/test_phase3_charger_rework_runner.tscn",
+        "integration/test_phase4_gold_and_chests_runner.tscn",
+        "integration/test_phase5_boss_and_bullets_runner.tscn",
+        "integration/test_phase6_tomes_and_dossier_runner.tscn",
+        "integration/test_arsenal_banlist_modal_runner.tscn",
+        "unit/test_dragon_radar_runner.tscn",
         "unit/test_space_environment_integration.tscn",
-        "test_run_fork_system_runner.tscn"
+        "unit/test_run_fork_system_runner.tscn"
     )
     foreach ($cn in $coreNames) {
         $p = Join-Path $testsDir $cn
