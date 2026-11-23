@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="CosmosPlanetArchetype" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/planet_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/moons/moon_cryo_albedo.png" id="2_albedo"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/moons/moon_cryo_maps.png" id="3_maps"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/moons/moon_cryo_normal.png" id="4_normal"]
+
+[resource]
+script = ExtResource("1_script")
+archetype_id = &"moon_cryo"
+display_name = "Luna Crío-Cristalina"
+zone = 3
+spawn_weight = 1.0
+is_magma_moon = false
+is_cryo_moon = true
+albedo_texture = ExtResource("2_albedo")
+surface_maps_texture = ExtResource("3_maps")
+normal_ao_texture = ExtResource("4_normal")
+diameter_range = Vector2(44, 62)
+axial_tilt_deg = 10.0
+spin_speed_range = Vector2(0.030, 0.052)
+cloud_coverage = 0.0
+cloud_height_parallax = 0.0
+atmosphere_color = Color(0.45, 0.9, 1, 1)
+atmosphere_intensity = 0.38
+outer_atmosphere_thickness = 0.008
+twilight_scatter_color = Color(0.68, 0.42, 1, 1)
+twilight_scatter_strength = 0.35
+night_emissive_color = Color(0.75, 0.96, 1, 1)
+night_emissive_strength = 0.8
+night_emissive_day_keep = 0.12
+night_emissive_albedo_mix = 0.85
+specular_strength = 0.75
+specular_shininess = 44.0
+bump_strength = 0.88
+ao_strength = 0.56
+aurora_strength = 0.0
+ring_probability = 0.0

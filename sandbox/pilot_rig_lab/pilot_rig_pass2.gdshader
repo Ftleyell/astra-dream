@@ -345,8 +345,8 @@ void fragment() {
 		c.rgb = mix(c.rgb, holo_beam_color.rgb * 1.8, clamp(beam * 0.85, 0.0, 1.0));
 	}
 
-	// --- 3.5 CAS (Contrast Adaptive Sharpening) protegido por alfa ---
-	if (cas_sharpen_strength > 0.005 && orig_c_a > 0.85) {
+	// --- 3.5 CAS (Contrast Adaptive Sharpening) protegido por alfa (desactivado durante Impact Frame) ---
+	if (impact_frame_phase == 0 && cas_sharpen_strength > 0.005 && orig_c_a > 0.85) {
 		vec4 cn_e = textureLod(screen_texture, clamp(SCREEN_UV + vec2(px.x, 0.0), vec2(0.0), vec2(1.0)), 0.0);
 		vec4 cn_w = textureLod(screen_texture, clamp(SCREEN_UV - vec2(px.x, 0.0), vec2(0.0), vec2(1.0)), 0.0);
 		vec4 cn_s = textureLod(screen_texture, clamp(SCREEN_UV + vec2(0.0, px.y), vec2(0.0), vec2(1.0)), 0.0);
@@ -368,19 +368,29 @@ void fragment() {
 		}
 	}
 
-	// --- 4. Impact Frames (2 frames: B/N directo -> invertido con rayos radiales) ---
+	// --- 4. Impact Frames (2 frames anime en bloques limpios B/N + acento carmesí HDR, cero rayas sucias) ---
 	if (impact_frame_phase > 0 && c.a > 0.05) {
-		vec3 srgb_c = pow(clamp(c.rgb, vec3(0.0), vec3(1.0)), vec3(1.0 / 2.2));
+		vec2 d_s = px * 1.35;
+		vec3 avg_lin = c.rgb * 0.40
+			+ sample_unpremul(SCREEN_UV + vec2(d_s.x, 0.0)).rgb * 0.15
+			+ sample_unpremul(SCREEN_UV - vec2(d_s.x, 0.0)).rgb * 0.15
+			+ sample_unpremul(SCREEN_UV + vec2(0.0, d_s.y)).rgb * 0.15
+			+ sample_unpremul(SCREEN_UV - vec2(0.0, d_s.y)).rgb * 0.15;
+		vec3 srgb_c = p2_linear_to_srgb(clamp(avg_lin, vec3(0.0), vec3(1.0)));
 		float luma = dot(srgb_c, vec3(0.2126, 0.7152, 0.0722));
-		float bw = step(0.14, luma);
+		float red_accent = smoothstep(0.14, 0.32, srgb_c.r - max(srgb_c.g, srgb_c.b));
+		float bw = smoothstep(0.22, 0.34, luma);
 		if (impact_frame_phase == 1) {
-			c.rgb = vec3(bw * 1.45);
+			vec3 dark_ink = vec3(0.012, 0.008, 0.022);
+			vec3 lit_white = vec3(1.48, 1.44, 1.52);
+			vec3 crimson_hdr = vec3(1.85, 0.10, 0.28);
+			vec3 frame1 = mix(dark_ink, lit_white, bw);
+			c.rgb = mix(frame1, crimson_hdr, red_accent * 0.92);
 		} else {
-			vec2 d_center = SCREEN_UV - impact_center_uv;
-			float ang = atan(d_center.y, d_center.x);
-			float ray = step(0.45, fract(ang * 5.729578 + 0.35));
 			float inv_bw = 1.0 - bw;
-			c.rgb = vec3(mix(inv_bw, 1.0 - inv_bw, ray * 0.65) * 1.45);
+			vec3 frame2 = mix(vec3(0.015, 0.008, 0.028), vec3(1.42, 0.22, 0.40), inv_bw * 0.85);
+			frame2 = mix(frame2, vec3(1.55), smoothstep(0.68, 0.85, luma));
+			c.rgb = mix(frame2, vec3(1.65, 0.92, 1.02), red_accent * 0.90);
 		}
 	}
 

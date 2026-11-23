@@ -11,6 +11,7 @@ extends Resource
 @export var color_deep_space: Color = Color(0.01, 0.01, 0.03, 1.0)
 @export var color_gas_primary: Color = Color(0.18, 0.04, 0.28, 0.8)
 @export var color_gas_secondary: Color = Color(0.02, 0.22, 0.38, 0.6)
+@export var color_ionization_ridge: Color = Color(0.90, 0.62, 0.92, 1.0)
 @export var color_star_tint: Color = Color(0.85, 0.92, 1.0, 1.0)
 
 @export_group("Parámetros de Ruido FBM")
@@ -18,6 +19,7 @@ extends Resource
 @export_range(1, 6, 1) var noise_octaves: int = 4
 @export_range(0.1, 3.0, 0.05) var gas_density: float = 2.0
 @export_range(0.5, 4.0, 0.1) var gas_contrast: float = 1.8
+@export_range(0.0, 1.0, 0.02) var galactic_band_strength: float = 0.34
 
 @export_group("Óptica")
 @export_range(0.0, 0.02, 0.0005) var chromatic_aberration_strength: float = 0.003

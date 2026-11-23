@@ -76,7 +76,15 @@ static func load_texture_res(res_path: String, fix_alpha: bool = false, use_mipm
 	if fix_alpha:
 		img.fix_alpha_edges()
 	if use_mipmaps:
-		img.generate_mipmaps()
+		var w: int = img.get_width()
+		var h: int = img.get_height()
+		if w > 16 and h > 16:
+			if (w % 32) != 0 or (h % 32) != 0:
+				var tw: int = ((w + 31) / 32) * 32
+				var th: int = ((h + 31) / 32) * 32
+				var interp: Image.Interpolation = Image.INTERPOLATE_LANCZOS if fix_alpha else Image.INTERPOLATE_BILINEAR
+				img.resize(tw, th, interp)
+			img.generate_mipmaps()
 	var tex: Texture2D = ImageTexture.create_from_image(img)
 	_texture_cache[cache_key] = tex
 	return tex

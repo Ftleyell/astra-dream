@@ -19,6 +19,10 @@ const CosmicPoiConfig = preload("res://scenes/combat/environment/cosmos/resource
 const CosmicBiomeBlender = preload("res://scenes/combat/environment/cosmos/core/cosmic_biome_blender.gd")
 const CosmosOrbitSlot = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbit_slot.gd")
 const CosmosOrbitalSlotTracker = preload("res://scenes/combat/environment/cosmos/core/cosmos_orbital_slot_tracker.gd")
+const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
+const CosmicLightingSamplerScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sampler.gd")
+const CosmicRigLightingConfigScript = preload("res://scenes/combat/environment/cosmos/resources/cosmic_rig_lighting_config.gd")
+const DEFAULT_RIG_LIGHTING_PATH: String = "res://scenes/combat/environment/cosmos/resources/data/default_rig_lighting.tres"
 
 signal region_changed(region_id: StringName, biome_config: CosmosBiomeConfig)
 signal freeze_state_changed(is_frozen: bool)
@@ -32,6 +36,7 @@ signal solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 		_connect_cosmos_root_signals()
 @export var default_region_id: StringName = &"perseus_rift"
 @export var auto_connect_pause_arbitrator: bool = true
+@export var rig_lighting_config: CosmicRigLightingConfigScript = null
 
 var _biome_blender: CosmicBiomeBlender = null
 var _slot_tracker: CosmosOrbitalSlotTracker = null
@@ -62,6 +67,9 @@ func _ready() -> void:
 	if default_region_id != &"":
 		change_region(default_region_id, 0.0)
 
+	if rig_lighting_config == null and ResourceLoader.exists(DEFAULT_RIG_LIGHTING_PATH):
+		rig_lighting_config = load(DEFAULT_RIG_LIGHTING_PATH) as CosmicRigLightingConfigScript
+
 func _find_or_validate_cosmos_root() -> void:
 	if cosmos_root == null:
 		cosmos_root = get_node_or_null("CosmosRoot") as CosmosRootNode
@@ -91,6 +99,11 @@ func _on_solar_system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i) ->
 func get_active_solar_systems() -> Dictionary:
 	if cosmos_root != null and cosmos_root.solar_streamer != null:
 		return cosmos_root.solar_streamer.get_active_systems()
+	return {}
+
+func get_active_non_stellar_sectors() -> Dictionary:
+	if cosmos_root != null and cosmos_root.non_stellar_streamer != null:
+		return cosmos_root.non_stellar_streamer.get_active_sectors()
 	return {}
 
 func _initialize_blender() -> void:
@@ -223,3 +236,9 @@ func get_planet_orbit_slots(world_position: Vector2, search_radius: float = 6000
 ## Proyecta un slot analítico a coordenadas del mundo de GameplayWorld sincronizadas con la cámara
 func project_slot_to_world(slot: CosmosOrbitSlot, global_time: float, camera: Camera2D) -> Vector2:
 	return CosmosOrbitalSlotTracker.project_slot_to_world(slot, global_time, camera)
+
+## Muestrea analíticamente la iluminación estelar, de bioma y de eclipse para una posición de GameplayWorld (zero-allocation si se pasa out_sample).
+func sample_lighting_at(world_pos: Vector2, out_sample: CosmicLightingSampleScript = null) -> CosmicLightingSampleScript:
+	if rig_lighting_config == null and ResourceLoader.exists(DEFAULT_RIG_LIGHTING_PATH):
+		rig_lighting_config = load(DEFAULT_RIG_LIGHTING_PATH) as CosmicRigLightingConfigScript
+	return CosmicLightingSamplerScript.sample_at(cosmos_root, world_pos, rig_lighting_config, out_sample)

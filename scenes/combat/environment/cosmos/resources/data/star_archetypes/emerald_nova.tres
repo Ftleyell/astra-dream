@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="CosmosStarArchetype" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/star_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stars/star_emerald_nova.png" id="2_star_nova"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/biomes/biome_03_carina_abyss.tres" id="3_biome"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"emerald_nova"
+display_name = "Nova Esmeralda"
+name_prefixes = ["CARINA", "EMERALD-IX", "ETA-NOVA", "VERIDIAN"]
+spawn_weight = 1.6
+star_textures = [ExtResource("2_star_nova")]
+star_color = Color(0.28, 1.0, 0.78, 1.0)
+flat_core_color = Color(0.76, 1.0, 0.92, 1.0)
+flat_core_radius = 0.26
+flat_core_feather = 0.035
+star_core_radius = 390.0
+axial_rotation_speed = 0.016
+heat_distortion_strength = 0.020
+pulse_speed = 3.2
+corona_size_multiplier = 1.35
+corona_intensity = 1.38
+core_brightness = 1.45
+star_signature_mode = 4
+anomaly_primary_color = Color(0.24, 1.0, 0.78, 1.0)
+anomaly_secondary_color = Color(0.32, 0.84, 1.0, 1.0)
+biome_config = ExtResource("3_biome")
+orbit_radius_min = 1040.0
+orbit_radius_max = 3080.0
+min_orbital_spacing = 350.0
+planet_theta_jitter_degrees = 20.0
+light_field_radius_multiplier = 1.18
+light_field_intensity = 0.46
+heliosphere_noise_strength = 0.50
+heliosphere_edge_feather = 0.24
+planet_day_tint_strength = 0.68
+planet_atmo_tint_strength = 0.74

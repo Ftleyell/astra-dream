@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "name": "valentina_rail_lance",
+  "source": "source_refs/valentina_v2_weapons/rail_lance_autonomo_master.jpg",
+  "size_px": [
+    1024,
+    370
+  ],
+  "ink_sdf_scale": 2,
+  "ink_sdf_range_px": 8.0,
+  "pivot_u": 0.355,
+  "muzzle_u": 0.966
+}

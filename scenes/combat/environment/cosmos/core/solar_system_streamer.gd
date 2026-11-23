@@ -15,6 +15,7 @@ signal system_unstreamed(system: CosmosSolarSystem2D, cell: Vector2i)
 @export var camera: Camera2D
 var poi_registry: CosmicPoiRegistry = null
 @export var is_frozen: bool = false
+@export var time_scale: float = 1.0
 @export var run_seed: int = 428175
 @export var pool_size: int = 8
 @export var cell_size: float = 16000.0
@@ -31,6 +32,8 @@ var _shadow_expansion_factor: float = 1.05
 var _shadow_heliopause_fade: float = 0.70
 var _planet_day_exposure: float = 1.30
 var _star_core_brightness: float = 1.25
+var _graphics_quality: int = 2
+var _orbit_guides_visible: bool = false
 
 var _has_camera_override: bool = false
 var _override_cam_pos: Vector2 = Vector2.ZERO
@@ -88,8 +91,25 @@ func _initialize_system_pool() -> void:
 func _process(delta: float) -> void:
 	if is_frozen:
 		return
-	_global_time += delta
+	_global_time += delta * time_scale
 	_update_streaming_and_orbits(_global_time)
+
+## Regla SSOT determinista que decide si una celda del macro-grid aloja un sistema estelar.
+## Vector2i.ZERO siempre es solar (salvo override explícito por POI no-solar) para garantizar anclaje inicial estable.
+static func is_cell_solar(
+	cell: Vector2i,
+	grid: CosmosMacroGrid,
+	effective_spawn_chance: float,
+	p_poi_registry: CosmicPoiRegistry = null
+) -> bool:
+	if p_poi_registry != null and p_poi_registry.has_poi(cell):
+		var poi: CosmicPoiConfig = p_poi_registry.get_poi(cell)
+		return poi == null or poi.poi_type == CosmicPoiConfig.PoiType.SOLAR_SYSTEM
+	if cell == Vector2i.ZERO:
+		return true
+	if grid == null:
+		return true
+	return grid.get_cell_pseudorandom_float(cell, 9091) <= effective_spawn_chance
 
 ## Ejecuta la lógica de streaming analítico y evaluación orbital determinista
 func _update_streaming_and_orbits(current_time: float) -> void:
@@ -122,15 +142,8 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 	for ox: int in range(-1, 2):
 		for oy: int in range(-1, 2):
 			var candidate_cell: Vector2i = current_cell + Vector2i(ox, oy)
-			var has_override: bool = poi_registry != null and poi_registry.has_poi(candidate_cell)
-			if not has_override:
-				# Probabilidad determinista de spawn de sistema solar en la celda
-				if _macro_grid.get_cell_pseudorandom_float(candidate_cell, 9091) > effective_spawn_chance:
-					continue
-			else:
-				var poi: CosmicPoiConfig = poi_registry.get_poi(candidate_cell)
-				if poi != null and poi.poi_type != CosmicPoiConfig.PoiType.SOLAR_SYSTEM:
-					continue
+			if not is_cell_solar(candidate_cell, _macro_grid, effective_spawn_chance, poi_registry):
+				continue
 
 			var system_pos: Vector2 = get_system_position_for_cell(candidate_cell)
 
@@ -161,10 +174,12 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 				if poi_override != null and poi_override.seed_override >= 0:
 					cell_seed = poi_override.seed_override
 				sys_to_acquire.build_system(cell_seed, poi_override)
+				sys_to_acquire.apply_graphics_quality(_graphics_quality)
 				sys_to_acquire.set_shadows_enabled(_shadows_enabled)
 				sys_to_acquire.set_shadow_opacity(_shadow_opacity)
 				sys_to_acquire.set_planet_day_exposure(_planet_day_exposure)
 				sys_to_acquire.set_star_core_brightness(_star_core_brightness)
+				sys_to_acquire.set_orbit_guides_visible(_orbit_guides_visible)
 				
 				sys_to_acquire.position = get_system_position_for_cell(req_cell)
 				sys_to_acquire.visible = true
@@ -180,6 +195,10 @@ func _update_streaming_and_orbits(current_time: float) -> void:
 func get_system_position_for_cell(cell_coords: Vector2i) -> Vector2:
 	if cell_coords == Vector2i.ZERO:
 		return Vector2(2100.0, 540.0)
+	if _macro_grid == null:
+		if system_profile != null and system_profile.cell_size > 0.0:
+			cell_size = system_profile.cell_size
+		_initialize_macro_grid()
 	var cell_center: Vector2 = _macro_grid.grid_to_world_center(cell_coords)
 	var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(cell_coords.x, cell_coords.y, 777)
 	var poi_override: CosmicPoiConfig = poi_registry.get_poi(cell_coords) if (poi_registry != null and poi_registry.has_poi(cell_coords)) else null
@@ -188,7 +207,7 @@ func get_system_position_for_cell(cell_coords: Vector2i) -> Vector2:
 		arch = poi_override.star_archetype
 	elif system_profile != null:
 		arch = system_profile.get_archetype_for_seed(cell_seed)
-	var sys_reach: float = (arch.orbit_radius_max if arch != null else (system_profile.orbit_radius_max if system_profile != null else 4400.0)) + 400.0
+	var sys_reach: float = (arch.orbit_radius_max if arch != null else (system_profile.orbit_radius_max if system_profile != null else 4400.0)) + 1300.0
 	var padding: float = system_profile.cell_boundary_padding if system_profile != null else 250.0
 	var safe_half: float = (cell_size * 0.5) - padding
 	var max_jitter_dist: float = maxf(safe_half - sys_reach, 0.0)
@@ -276,3 +295,17 @@ func set_star_core_brightness(p_core: float) -> void:
 		sys.set_star_core_brightness(p_core)
 	for sys: CosmosSolarSystem2D in _pool:
 		sys.set_star_core_brightness(p_core)
+
+func apply_graphics_quality(quality_level: int) -> void:
+	_graphics_quality = clampi(quality_level, 0, 2)
+	for sys: CosmosSolarSystem2D in _active_systems.values():
+		sys.apply_graphics_quality(_graphics_quality)
+	for sys: CosmosSolarSystem2D in _pool:
+		sys.apply_graphics_quality(_graphics_quality)
+
+func set_orbit_guides_visible(p_visible: bool) -> void:
+	_orbit_guides_visible = p_visible
+	for sys: CosmosSolarSystem2D in _active_systems.values():
+		sys.set_orbit_guides_visible(p_visible)
+	for sys: CosmosSolarSystem2D in _pool:
+		sys.set_orbit_guides_visible(p_visible)

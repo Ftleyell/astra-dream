@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="CosmosPlanetArchetype" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/planet_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_gas_giant_storm_albedo.png" id="2_albedo"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_gas_giant_storm_maps.png" id="3_maps"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/rings/ring_crystal_ice.png" id="4_ring"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_gas_giant_storm_normal.png" id="5_normal"]
+
+[resource]
+script = ExtResource("1_script")
+archetype_id = &"planet_gas_giant_storm"
+display_name = "Gigante Tormentoso"
+zone = 2
+spawn_weight = 1.1
+is_magma_moon = false
+is_cryo_moon = false
+albedo_texture = ExtResource("2_albedo")
+surface_maps_texture = ExtResource("3_maps")
+normal_ao_texture = ExtResource("5_normal")
+ring_texture = ExtResource("4_ring")
+diameter_range = Vector2(290, 350)
+axial_tilt_deg = 22.0
+spin_speed_range = Vector2(0.034, 0.052)
+cloud_spin_speed_offset = 0.022
+cloud_coverage = 0.48
+cloud_tint = Color(0.86, 0.94, 1, 1)
+cloud_shadow_offset = 0.008
+cloud_height_parallax = 0.018
+gas_band_shear = 0.032
+atmosphere_color = Color(0.45, 0.72, 1, 1)
+atmosphere_intensity = 1.85
+outer_atmosphere_thickness = 0.034
+twilight_scatter_color = Color(1, 0.34, 0.78, 1)
+twilight_scatter_strength = 0.72
+night_emissive_strength = 0.0
+night_emissive_day_keep = 0.0
+night_emissive_albedo_mix = 0.0
+specular_strength = 0.22
+specular_shininess = 24.0
+bump_strength = 0.42
+ao_strength = 0.28
+aurora_color = Color(0.22, 1, 0.88, 1)
+aurora_strength = 0.95
+ring_probability = 0.85
+ring_inner_radius = 1.26
+ring_outer_radius = 1.88
+ring_tilt_x_deg = 69.0
+ring_roll_deg_range = Vector2(-28, 28)
+ring_tint = Color(0.95, 0.92, 1, 1)
+ring_spin_speed = 0.012
+ring_opacity = 0.94

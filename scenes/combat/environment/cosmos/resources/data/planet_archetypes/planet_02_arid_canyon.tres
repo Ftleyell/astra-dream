@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="CosmosPlanetArchetype" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/planet_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_arid_canyon_albedo.png" id="2_albedo"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_arid_canyon_maps.png" id="3_maps"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/rings/ring_gold_debris.png" id="4_ring"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_arid_canyon_normal.png" id="5_normal"]
+
+[resource]
+script = ExtResource("1_script")
+archetype_id = &"planet_arid_canyon"
+display_name = "Cañón Árido"
+zone = 0
+spawn_weight = 1.0
+is_magma_moon = false
+is_cryo_moon = false
+albedo_texture = ExtResource("2_albedo")
+surface_maps_texture = ExtResource("3_maps")
+normal_ao_texture = ExtResource("5_normal")
+ring_texture = ExtResource("4_ring")
+diameter_range = Vector2(195, 245)
+axial_tilt_deg = 16.0
+spin_speed_range = Vector2(0.022, 0.038)
+cloud_spin_speed_offset = 0.015
+cloud_coverage = 0.24
+cloud_tint = Color(1, 0.86, 0.68, 1)
+cloud_shadow_offset = 0.01
+cloud_height_parallax = 0.014
+gas_band_shear = 0.0
+atmosphere_color = Color(1, 0.64, 0.3, 1)
+atmosphere_intensity = 1.1
+outer_atmosphere_thickness = 0.02
+twilight_scatter_color = Color(1, 0.44, 0.32, 1)
+twilight_scatter_strength = 0.52
+night_emissive_strength = 0.0
+night_emissive_day_keep = 0.0
+night_emissive_albedo_mix = 0.0
+specular_strength = 0.38
+specular_shininess = 32.0
+bump_strength = 0.88
+ao_strength = 0.58
+aurora_strength = 0.0
+ring_probability = 0.35
+ring_inner_radius = 1.28
+ring_outer_radius = 1.88
+ring_tilt_x_deg = 66.0
+ring_roll_deg_range = Vector2(-24, 24)
+ring_tint = Color(1, 0.88, 0.7, 1)
+ring_spin_speed = 0.011
+ring_opacity = 0.88

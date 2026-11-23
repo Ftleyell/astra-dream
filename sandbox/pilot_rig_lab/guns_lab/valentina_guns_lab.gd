@@ -12,9 +12,21 @@ const HUDScript = preload("res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_l
 const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
 const CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
 const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
+const RING_TEXTURE_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_mecha_ring_packed.png"
 
 const WEAPON_CATALOG: Array[Dictionary] = [
-	{"label": "Valentina — Railgun Base (HD)", "path": "res://assets/characters/weapons/weapon_valentina_hd.png"},
+	{
+		"label": "Valentina v2 — Rail-Lance 3D Cel-Shaded (360° Real)",
+		"mode": "3d_rail_lance",
+	},
+	{
+		"label": "Valentina v2 — Rail-Lance 2.5D (Multi-Mapa)",
+		"path": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance.png",
+		"id_mask": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_id_mask.png",
+		"ilm_mask": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_ilm_mask.png",
+		"ink_sdf": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_ink_sdf.png",
+	},
+	{"label": "Legacy — Valentina Railgun (HD)", "path": "res://assets/characters/weapons/weapon_valentina_hd.png"},
 	{"label": "Echo — Rifle (HD)", "path": "res://assets/characters/weapons/weapon_echo_hd.png"},
 	{"label": "Kira — Rifle (HD)", "path": "res://assets/characters/weapons/weapon_kira_hd.png"},
 	{"label": "Nova — Cañón (HD)", "path": "res://assets/characters/weapons/weapon_nova_hd.png"},
@@ -54,7 +66,14 @@ func _ready() -> void:
 	_build_environment()
 	_build_scene_nodes()
 	_configure_rig_defaults()
+	var ring_tex: Texture2D = _load_tex(RING_TEXTURE_PATH, true)
+	if ring_tex != null and _ring_ctrl != null:
+		_ring_ctrl.set_ring_texture(ring_tex)
 	_load_weapon_index(0)
+
+	var skin_choices: Array[PilotSkinPreset] = []
+	if _profile != null:
+		skin_choices = _profile.skins
 
 	_hud_refs = HUDScript.build_hud(self, _config, WEAPON_CATALOG, {
 		"on_mode_selected": Callable(self, "_on_mode_selected"),
@@ -64,12 +83,15 @@ func _ready() -> void:
 		"on_orbit_pause_toggled": Callable(self, "_on_orbit_pause_toggled"),
 		"on_auto_fire_toggled": Callable(self, "_on_auto_fire_toggled"),
 		"on_show_ring_toggled": Callable(self, "_on_show_ring_toggled"),
+		"on_ring_follow_skin_toggled": Callable(self, "_on_ring_follow_skin_toggled"),
+		"on_ring_use_texture_toggled": Callable(self, "_on_ring_use_texture_toggled"),
 		"on_view_selected": Callable(self, "_on_view_selected"),
+		"on_skin_selected": Callable(self, "_on_skin_selected"),
 		"on_wings_toggled": Callable(self, "_on_wings_toggled"),
 		"on_idle_toggled": Callable(self, "_on_idle_toggled"),
 		"on_save_config": Callable(self, "_on_save_config"),
 		"on_reload_config": Callable(self, "_on_reload_config"),
-	})
+	}, skin_choices)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -196,9 +218,11 @@ func _configure_rig_defaults() -> void:
 		_rig.apply_style_profile(latest_style)
 	if _profile != null and not _profile.skins.is_empty():
 		_rig.apply_skin_preset(_profile.skins[0])
+		if _ring_ctrl != null:
+			_ring_ctrl.apply_skin_preset(_profile.skins[0])
 
 	_rig.set_idle_anim_enabled(_idle_enabled)
-	_rig.set_base_propulsion_wings_enabled(_wings_enabled)
+	_rig.set_3d_wings_enabled(_wings_enabled)
 	_apply_rig_view(_current_view_key)
 
 
@@ -210,15 +234,44 @@ func _apply_rig_view(view_key: String) -> void:
 	_rig.set_locomotion_state(dir_vec, 0.0, dir_vec, true)
 
 
+func _load_tex(res_path: String, disable_mipmaps: bool = false) -> Texture2D:
+	if res_path.is_empty():
+		return null
+	if not disable_mipmaps and ResourceLoader.exists(res_path):
+		var loaded: Texture2D = ResourceLoader.load(res_path) as Texture2D
+		if loaded != null:
+			return loaded
+	var abs_path: String = ProjectSettings.globalize_path(res_path)
+	if not FileAccess.file_exists(res_path) and not FileAccess.file_exists(abs_path):
+		return null
+	var img := Image.new()
+	var err: Error = img.load(abs_path)
+	if err != OK:
+		return null
+	return ImageTexture.create_from_image(img)
+
+
 func _load_weapon_index(idx: int) -> void:
 	if idx < 0 or idx >= WEAPON_CATALOG.size() or _ring_ctrl == null:
 		return
-	var path: String = String(WEAPON_CATALOG[idx].get("path", ""))
-	if path.is_empty() or not ResourceLoader.exists(path):
+	var entry: Dictionary = WEAPON_CATALOG[idx]
+	if String(entry.get("mode", "")) == "3d_rail_lance":
+		_ring_ctrl.set_weapon_3d_enabled(true)
 		return
-	var tex: Texture2D = ResourceLoader.load(path) as Texture2D
-	if tex != null:
-		_ring_ctrl.set_weapon_texture(tex)
+	var path: String = String(entry.get("path", ""))
+	var albedo: Texture2D = _load_tex(path, false)
+	if albedo == null:
+		return
+	var id_path: String = String(entry.get("id_mask", ""))
+	var ilm_path: String = String(entry.get("ilm_mask", ""))
+	var sdf_path: String = String(entry.get("ink_sdf", ""))
+	if id_path.is_empty() or ilm_path.is_empty() or sdf_path.is_empty():
+		_ring_ctrl.set_weapon_texture(albedo)
+		return
+	var id_tex: Texture2D = _load_tex(id_path, true)
+	var ilm_tex: Texture2D = _load_tex(ilm_path, true)
+	var sdf_tex: Texture2D = _load_tex(sdf_path, true)
+	_ring_ctrl.set_weapon_asset_bundle(albedo, id_tex, ilm_tex, sdf_tex)
 
 
 func _update_telemetry() -> void:
@@ -263,6 +316,30 @@ func _on_show_ring_toggled(visible_flag: bool) -> void:
 		_ring_ctrl.set_show_ring(visible_flag)
 
 
+func _on_ring_follow_skin_toggled(enabled: bool) -> void:
+	if _config != null:
+		_config.ring_follow_skin = enabled
+	if _ring_ctrl != null:
+		_ring_ctrl.set_config(_config)
+
+
+func _on_ring_use_texture_toggled(enabled: bool) -> void:
+	if _config != null:
+		_config.ring_use_texture = enabled
+	if _ring_ctrl != null:
+		_ring_ctrl.set_config(_config)
+
+
+func _on_skin_selected(skin_idx: int) -> void:
+	if _profile == null or skin_idx < 0 or skin_idx >= _profile.skins.size():
+		return
+	var skin: PilotSkinPreset = _profile.skins[skin_idx]
+	if _rig != null:
+		_rig.apply_skin_preset(skin)
+	if _ring_ctrl != null:
+		_ring_ctrl.apply_skin_preset(skin)
+
+
 func _on_view_selected(view_key: String) -> void:
 	_apply_rig_view(view_key)
 
@@ -270,7 +347,7 @@ func _on_view_selected(view_key: String) -> void:
 func _on_wings_toggled(enabled: bool) -> void:
 	_wings_enabled = enabled
 	if _rig != null:
-		_rig.set_base_propulsion_wings_enabled(enabled)
+		_rig.set_3d_wings_enabled(enabled)
 
 
 func _on_idle_toggled(enabled: bool) -> void:
@@ -298,6 +375,12 @@ func _on_reload_config() -> void:
 		if _ring_ctrl != null:
 			_ring_ctrl.set_config(_config)
 		HUDScript.sync_sliders_from_config(_hud_refs, _config)
+		var sync_chk: CheckBox = _hud_refs.get("ring_sync_chk", null) as CheckBox
+		if is_instance_valid(sync_chk):
+			sync_chk.set_pressed_no_signal(_config.ring_follow_skin)
+		var tex_chk: CheckBox = _hud_refs.get("ring_tex_chk", null) as CheckBox
+		if is_instance_valid(tex_chk):
+			tex_chk.set_pressed_no_signal(_config.ring_use_texture)
 		var status: Label = _hud_refs.get("status_label", null) as Label
 		if is_instance_valid(status):
 			status.text = "Recargado desde .tres"

@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="CosmosLivingUniverseConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/living_universe_config.gd" id="1_living"]
+
+[resource]
+script = ExtResource("1_living")
+weight_rogue_world = 0.30
+weight_derelict_armada = 0.25
+weight_warp_relay = 0.25
+weight_ion_nursery = 0.20
+sector_pool_size = 8
+sector_bound_radius = 4200.0
+sector_jitter_margin = 2300.0
+rogue_diameter_multiplier = 1.18
+rogue_night_ambient = 0.14
+rogue_day_exposure = 0.42
+rogue_emissive_boost = 1.65
+rogue_biome_tint_intensity = 0.34
+rogue_moon_count_range = Vector2i(1, 2)
+rogue_moon_size_ratio = 0.20
+rogue_ring_probability = 0.65
+derelict_core_diameter = 540.0
+derelict_scrap_count = 64
+derelict_vortex_radius_range = Vector2(240, 1280)
+derelict_vortex_angular_speed = 0.032
+derelict_beacon_drone_count = Vector2i(2, 3)
+derelict_plasma_arc_radius = 880.0
+derelict_distress_color = Color(1, 0.24, 0.18, 1)
+derelict_plasma_color = Color(0.28, 0.78, 1, 1)
+relay_core_diameter = 460.0
+relay_gate_aura_radius = 1150.0
+relay_escort_count = Vector2i(2, 3)
+relay_escort_orbit_range = Vector2(320, 620)
+relay_primary_color = Color(0.22, 0.88, 1, 1)
+relay_accent_color = Color(0.74, 0.42, 1, 1)
+nursery_cloud_radius = 1650.0
+nursery_protostar_count = Vector2i(2, 3)
+nursery_crystal_count = 56
+nursery_crystal_radius_range = Vector2(260, 2250)
+nursery_lightning_intensity = 1.35
+nursery_primary_color = Color(0.26, 0.72, 1, 1)
+nursery_protostar_color = Color(1, 0.76, 0.42, 1)
+nursery_arc_color = Color(0.68, 0.92, 1, 1)
+enable_interstellar_corridors = true
+corridor_max_link_distance_mult = 1.55
+hyperspace_lane_probability = 0.75
+hyperspace_beacons_per_lane = 16
+hyperspace_convoys_per_lane = 7
+hyperspace_slipstream_alpha = 0.04
+hyperspace_convoy_speed = 280.0
+hyperspace_lane_color = Color(0.28, 0.86, 1, 1)
+hyperspace_convoy_color = Color(1, 0.84, 0.52, 1)
+meteor_shower_count_per_cell = 16
+interstellar_comet_probability = 0.65
+bow_shock_max_distance_mult = 1.28
+bow_shock_intensity = 0.72

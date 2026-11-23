@@ -12,9 +12,19 @@
 [ext_resource type="Script" uid="uid://cuq6hya2k2o1u" path="res://scenes/combat/environment/cosmos/core/debris_streamer_2d.gd" id="10_debris_streamer"]
 [ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_debris_layer.tres" id="11_debris_res"]
 [ext_resource type="Shader" uid="uid://c63kkhg8y1vwg" path="res://scenes/combat/environment/cosmos/shaders/deep_starfield.gdshader" id="12_starfield_shader"]
-[ext_resource type="Texture2D" uid="uid://6cx51x683kae" path="res://assets/environments/parallax_space/nebula_seamless_0.png" id="13_nebula_tile_tex"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/nebulae/nebula_anime_filaments.png" id="13_nebula_tile_tex"]
 [ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_cosmos_environment.tres" id="14_cosmos_env"]
 [ext_resource type="Script" path="res://scenes/combat/environment/cosmos/core/starfield_backdrop_controller.gd" id="15_starfield_ctrl"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/nebulae/nebula_anime_wisps.png" id="16_nebula_wisp_tex"]
+[ext_resource type="Shader" path="res://scenes/combat/environment/cosmos/shaders/cosmic_dust_mid.gdshader" id="17_dust_mid_shader"]
+[ext_resource type="Shader" path="res://scenes/combat/environment/cosmos/shaders/cosmic_foreground_atmosphere.gdshader" id="18_fg_atmo_shader"]
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/core/cosmos_atmosphere_layers_controller.gd" id="19_atmo_ctrl"]
+[ext_resource type="Shader" path="res://scenes/combat/environment/cosmos/shaders/cosmic_post_grade.gdshader" id="20_post_grade_shader"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_debris_far_layer.tres" id="21_debris_far_res"]
+[ext_resource type="Shader" path="res://scenes/combat/environment/cosmos/shaders/cosmic_volumetric_haze.gdshader" id="22_vol_haze_shader"]
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/core/cosmos_non_stellar_streamer_2d.gd" id="23_living_streamer"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_living_universe.tres" id="24_living_res"]
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/core/cosmos_interstellar_corridor_controller_2d.gd" id="25_corridor_ctrl"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nebula"]
 shader = ExtResource("2_nebula_shader")
@@ -38,16 +48,18 @@ shader_parameter/mid_stars_sparkle_intensity = 1.4
 shader_parameter/mid_stars_halo_radius = 1.8
 shader_parameter/mid_stars_gas_interaction = 0.85
 shader_parameter/nebula_tile_texture = ExtResource("13_nebula_tile_tex")
-shader_parameter/nebula_tile_scale = 0.00035
-shader_parameter/nebula_tile_mix = 0.45
-shader_parameter/biome_a_color_deep = Color(0.01, 0.01, 0.03, 1)
-shader_parameter/biome_a_color_gas_primary = Color(0.18, 0.04, 0.28, 0.8)
-shader_parameter/biome_a_color_gas_secondary = Color(0.02, 0.22, 0.38, 0.6)
+shader_parameter/nebula_wisps_texture = ExtResource("16_nebula_wisp_tex")
+shader_parameter/nebula_tile_scale = 0.0004
+shader_parameter/nebula_tile_mix = 0.72
+shader_parameter/dark_dust_lane_strength = 0.62
+shader_parameter/biome_a_color_deep = Color(0.003, 0.004, 0.018, 1)
+shader_parameter/biome_a_color_gas_primary = Color(0.28, 0.06, 0.52, 0.88)
+shader_parameter/biome_a_color_gas_secondary = Color(0.03, 0.38, 0.62, 0.72)
 shader_parameter/biome_a_density = 2.0
 shader_parameter/biome_a_frequency = 0.00045
-shader_parameter/biome_b_color_deep = Color(0.02, 0.01, 0.01, 1)
-shader_parameter/biome_b_color_gas_primary = Color(0.35, 0.12, 0.03, 0.85)
-shader_parameter/biome_b_color_gas_secondary = Color(0.4, 0.28, 0.05, 0.65)
+shader_parameter/biome_b_color_deep = Color(0.015, 0.008, 0.024, 1)
+shader_parameter/biome_b_color_gas_primary = Color(0.36, 0.10, 0.08, 0.85)
+shader_parameter/biome_b_color_gas_secondary = Color(0.45, 0.28, 0.08, 0.68)
 shader_parameter/biome_b_density = 2.0
 shader_parameter/biome_b_frequency = 0.00055
 shader_parameter/biome_blend_factor = 0.0
@@ -69,17 +81,60 @@ shader_parameter/tint_red_star = Color(1.8, 0.4, 0.2, 1)
 shader_parameter/tint_yellow_star = Color(1.7, 1.4, 0.35, 1)
 shader_parameter/tint_blue_star = Color(0.5, 1.1, 2.1, 1)
 
-[node name="CosmosRootNode" type="Node2D" unique_id=1328222445 node_paths=PackedStringArray("nebula_controller", "parallax_macro_galaxies", "galaxy_streamer", "parallax_starfield_8k", "parallax_solar_systems", "solar_streamer", "parallax_debris_belt", "debris_streamer")]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dust_mid"]
+shader = ExtResource("17_dust_mid_shader")
+shader_parameter/dust_texture = ExtResource("16_nebula_wisp_tex")
+shader_parameter/camera_world_position = Vector2(0, 0)
+shader_parameter/viewport_resolution = Vector2(1920, 1080)
+shader_parameter/camera_zoom = 1.0
+shader_parameter/global_time = 0.0
+shader_parameter/parallax_factor = 0.38
+shader_parameter/opacity_scale = 0.24
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fg_atmo"]
+shader = ExtResource("18_fg_atmo_shader")
+shader_parameter/camera_world_position = Vector2(0, 0)
+shader_parameter/viewport_resolution = Vector2(1920, 1080)
+shader_parameter/global_time = 0.0
+shader_parameter/parallax_factor = 1.12
+shader_parameter/enable_solar_veil = true
+shader_parameter/motes_intensity = 0.34
+shader_parameter/veil_intensity = 0.09
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_post_grade"]
+shader = ExtResource("20_post_grade_shader")
+shader_parameter/viewport_resolution = Vector2(1920, 1080)
+shader_parameter/global_time = 0.0
+shader_parameter/enable_optical_wash = true
+shader_parameter/vignette_strength = 0.24
+shader_parameter/directional_wash_strength = 0.11
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vol_haze"]
+shader = ExtResource("22_vol_haze_shader")
+shader_parameter/dust_texture = ExtResource("16_nebula_wisp_tex")
+shader_parameter/camera_world_position = Vector2(0, 0)
+shader_parameter/viewport_resolution = Vector2(1920, 1080)
+shader_parameter/camera_zoom = 1.0
+shader_parameter/global_time = 0.0
+shader_parameter/parallax_factor = 0.72
+shader_parameter/opacity_scale = 0.17
+
+[node name="CosmosRootNode" type="Node2D" unique_id=1328222445 node_paths=PackedStringArray("nebula_controller", "parallax_macro_galaxies", "galaxy_streamer", "parallax_starfield_8k", "parallax_debris_far", "debris_far_streamer", "parallax_solar_systems", "solar_streamer", "non_stellar_streamer", "corridor_controller", "parallax_debris_belt", "debris_streamer", "atmosphere_layers")]
 script = ExtResource("1_root")
 environment_profile = ExtResource("14_cosmos_env")
 nebula_controller = NodePath("ParallaxNebulaDeep/NebulaBackdrop")
 parallax_macro_galaxies = NodePath("ParallaxMacroGalaxies")
 galaxy_streamer = NodePath("ParallaxMacroGalaxies/CosmosGalaxyStreamer2D")
 parallax_starfield_8k = NodePath("CanvasLayerStarfield/StarfieldBackdrop")
+parallax_debris_far = NodePath("ParallaxDebrisFar")
+debris_far_streamer = NodePath("ParallaxDebrisFar/CosmosDebrisFarStreamer2D")
 parallax_solar_systems = NodePath("ParallaxSolarSystems")
 solar_streamer = NodePath("ParallaxSolarSystems/CosmosSolarSystemStreamer")
+non_stellar_streamer = NodePath("ParallaxSolarSystems/CosmosNonStellarStreamer2D")
+corridor_controller = NodePath("ParallaxSolarSystems/CosmosInterstellarCorridorController2D")
 parallax_debris_belt = NodePath("ParallaxDebrisBelt")
 debris_streamer = NodePath("ParallaxDebrisBelt/CosmosDebrisStreamer2D")
+atmosphere_layers = NodePath("CosmosAtmosphereLayersController")
 
 [node name="ParallaxNebulaDeep" type="CanvasLayer" parent="." unique_id=561466014]
 layer = -100
@@ -98,14 +153,17 @@ biome_blend_factor = 0.2
 parallax_factor = 0.01
 
 [node name="ParallaxMacroGalaxies" type="Parallax2D" parent="." unique_id=814767259]
-scroll_scale = Vector2(0.1, 0.1)
-
-
+z_index = -30
+scroll_scale = Vector2(0.055, 0.055)
 
 [node name="CosmosGalaxyStreamer2D" type="Node2D" parent="ParallaxMacroGalaxies" unique_id=1605695872 node_paths=PackedStringArray("parallax_layer")]
 script = ExtResource("5_galaxy_streamer")
 landmark_profile = ExtResource("6_galaxy_res")
 parallax_layer = NodePath("..")
+
+[node name="DustMidSprite" type="Sprite2D" parent="."]
+z_index = -25
+material = SubResource("ShaderMaterial_dust_mid")
 
 [node name="CanvasLayerStarfield" type="CanvasLayer" parent="." unique_id=1791499758]
 layer = -105
@@ -120,6 +178,26 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("15_starfield_ctrl")
 
+[node name="ParallaxDebrisFar" type="Parallax2D" parent="."]
+z_index = -20
+scroll_scale = Vector2(0.18, 0.18)
+
+[node name="CosmosDebrisFarStreamer2D" type="Node2D" parent="ParallaxDebrisFar" node_paths=PackedStringArray("parallax_layer")]
+script = ExtResource("10_debris_streamer")
+profile = ExtResource("21_debris_far_res")
+parallax_layer = NodePath("..")
+depth_haze_strength = 0.72
+
+[node name="ParallaxDebrisBelt" type="Parallax2D" parent="." unique_id=740035540]
+z_index = -10
+scroll_scale = Vector2(0.45, 0.45)
+
+[node name="CosmosDebrisStreamer2D" type="Node2D" parent="ParallaxDebrisBelt" unique_id=1001749389 node_paths=PackedStringArray("parallax_layer")]
+script = ExtResource("10_debris_streamer")
+profile = ExtResource("11_debris_res")
+parallax_layer = NodePath("..")
+depth_haze_strength = 0.34
+
 [node name="ParallaxSolarSystems" type="Parallax2D" parent="." unique_id=1236841986]
 scroll_scale = Vector2(1.0, 1.0)
 
@@ -128,11 +206,51 @@ script = ExtResource("8_solar_streamer")
 system_profile = ExtResource("9_solar_res")
 parallax_layer = NodePath("..")
 
-[node name="ParallaxDebrisBelt" type="Parallax2D" parent="." unique_id=740035540]
-scroll_scale = Vector2(0.25, 0.25)
-
-[node name="CosmosDebrisStreamer2D" type="Node2D" parent="ParallaxDebrisBelt" unique_id=1001749389 node_paths=PackedStringArray("parallax_layer")]
-script = ExtResource("10_debris_streamer")
-profile = ExtResource("11_debris_res")
+[node name="CosmosNonStellarStreamer2D" type="Node2D" parent="ParallaxSolarSystems" node_paths=PackedStringArray("parallax_layer", "solar_streamer")]
+script = ExtResource("23_living_streamer")
+system_profile = ExtResource("9_solar_res")
+living_config = ExtResource("24_living_res")
+debris_profile = ExtResource("11_debris_res")
+solar_streamer = NodePath("../CosmosSolarSystemStreamer")
 parallax_layer = NodePath("..")
 
+[node name="CosmosInterstellarCorridorController2D" type="Node2D" parent="ParallaxSolarSystems" node_paths=PackedStringArray("parallax_layer", "solar_streamer", "non_stellar_streamer")]
+z_index = -3
+script = ExtResource("25_corridor_ctrl")
+system_profile = ExtResource("9_solar_res")
+living_config = ExtResource("24_living_res")
+solar_streamer = NodePath("../CosmosSolarSystemStreamer")
+non_stellar_streamer = NodePath("../CosmosNonStellarStreamer2D")
+parallax_layer = NodePath("..")
+
+[node name="VolumetricHazeSprite" type="Sprite2D" parent="."]
+z_index = 2
+material = SubResource("ShaderMaterial_vol_haze")
+
+[node name="CanvasLayerForegroundAtmo" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="ForegroundAtmoOverlay" type="ColorRect" parent="CanvasLayerForegroundAtmo"]
+material = SubResource("ShaderMaterial_fg_atmo")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PostGradeOverlay" type="ColorRect" parent="CanvasLayerForegroundAtmo"]
+material = SubResource("ShaderMaterial_post_grade")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CosmosAtmosphereLayersController" type="Node" parent="." node_paths=PackedStringArray("dust_mid_rect", "foreground_rect", "post_grade_rect", "volumetric_haze_sprite")]
+script = ExtResource("19_atmo_ctrl")
+dust_mid_rect = NodePath("../DustMidSprite")
+foreground_rect = NodePath("../CanvasLayerForegroundAtmo/ForegroundAtmoOverlay")
+post_grade_rect = NodePath("../CanvasLayerForegroundAtmo/PostGradeOverlay")
+volumetric_haze_sprite = NodePath("../VolumetricHazeSprite")

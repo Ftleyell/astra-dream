@@ -37,7 +37,10 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 ---
 
 ## 🌌 Cosmos Engine en Producción (Entorno Espacial de MainGame)
-- **Estado:** Promovido y blindado en producción bajo [`scenes/combat/environment/cosmos/`](scenes/combat/environment/cosmos/). Enlazado como entorno por defecto en `MainGame` vía [`SpaceEnvironmentHost`](scenes/combat/environment/space_environment_host.gd) y [`CosmosCombatEnvironment`](scenes/combat/environment/cosmos_combat_environment.gd).
+- **Estado:** **v3.2c Completo (Fase 1 Cerrada — Listo para Fase 2 Promoción Valentina v2)** bajo [`scenes/combat/environment/cosmos/`](scenes/combat/environment/cosmos/). Enlazado en `MainGame` vía [`SpaceEnvironmentHost`](scenes/combat/environment/space_environment_host.gd) y [`CosmosCombatEnvironment`](scenes/combat/environment/cosmos_combat_environment.gd). Incluye:
+  - Órbitas 3D orgánicas keplerianas, rotación planetaria multi-mapa + anillos estilizados, cometas tangentes a `-vel.normalized()` y guías `[O]`/`[G]` (`CosmosOrbitGuidesOverlay2D`).
+  - 7 arquetipos estelares (`black_hole` con lente gravitacional y `emerald_nova`), 4 sectores no estelares (~35% de parcelas: `Rogue World`, `Derelict Armada`, `Warp Relay`, `Ion Nursery`), corredores interestelares (`hyperspace`, `bow-shocks`, meteoros, ríos laminares de asteroides) y landmarks lejanos en perspectiva 3D detrás de `DustMidSprite` (`z_index = -25`).
+  - Puente analítico zero-alloc [`CosmicLightingSampler`](scenes/combat/environment/cosmos/core/cosmic_lighting_sampler.gd) (`sample_lighting_at(...)` desde `CosmosHostController`) calibrado en `sandbox/pilot_rig_lab/cosmos_lighting_lab/valentina_cosmos_lab.tscn`.
 - **Contratos Arquitectónicos Blindados:**
   1. **Floating Origin:** Desactivado asertivamente en combate para salvaguardar la memoria contigua de `BulletServer`.
   2. **Slots Orbitales:** `CosmosOrbitSlot` opera como *Value Object* puramente analítico $\mathcal{O}(1)$ sin punteros al SceneTree.
@@ -54,7 +57,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 ## 🎭 PilotRigLab / Valentina v2 (I+D en Sandbox)
 - **Estado:** Rig exclusivo de **Valentina v2 (8-Dir Nativo)** bajo [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/) con enrutado 8-dir (`±65°`), transiciones snappy (Modos 4/5/6 + whip cervical), pipeline de animación data-driven (Pose Base Zero-G, Idle multicapa, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle sutil), **Rig Facial Vivo & Cabello 3-Zonas** (`face_lab/` + `planar_rig_face_controller.gd`, paleta ocular *Amatista Profundo*), **Alas Psíquicas & Propulsión Base Multi-Piloto** (`enable_base_propulsion_wings` opt-in en `PlanarCombatRig`, `PilotBasePropulsionConfig`, capa HDR externa + 12 cintas + polvo estelar) y tinta interna **Ink SDF 2×** (`00_original`, `01_valentina_definitive`, `02_valentina_razor_sharp`). Los controladores legacy (`planar_rig_animator.gd`, `perspective_controller.gd`, `secondary_physics.gd`) permanecen purgados en rest pose.
 - **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
-  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md) (estado del milestone y próximos pasos), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (rig de cuerpo y animaciones), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md) (rig facial vivo y ojos Live2D), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) (alas multi-piloto) y [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](docs/VALENTINA_PROPULSION_VFX_SPEC.md) (VFX Power-Up Sandevistan).
+  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md) (estado del milestone y próximos pasos), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (rig de cuerpo y animaciones), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md) (rig facial vivo y ojos Live2D), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) (alas multi-piloto), [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](docs/VALENTINA_PROPULSION_VFX_SPEC.md) (VFX Power-Up Sandevistan), [`docs/VALENTINA_ORBITAL_WEAPON_SPEC.md`](docs/VALENTINA_ORBITAL_WEAPON_SPEC.md) (Anillo Orbital 2.5D & Armamento 3D Cel-Shaded / Multi-Mapa), [`docs/VALENTINA_3D_LAB_SPEC.md`](docs/VALENTINA_3D_LAB_SPEC.md) (3D Lab & Alas 3D Cel-Shaded estandarizadas en `PlanarCombatRig`), [`docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md`](docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md) (guía maestra multi-piloto para crear nuevas alas 3D) y [`docs/VALENTINA_LIVE_BANNER_SPEC.md`](docs/VALENTINA_LIVE_BANNER_SPEC.md) (Live Banner 2.5D / Banner Lab).
   - Para ajustar escalas, poses, animaciones, rostro, skins, pelo o estilos, editar **directamente** los `.tres` en `sandbox/pilot_rig_lab/pilots/valentina_v2/` y `sandbox/pilot_rig_lab/data/`.
   - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/`, `backups/` o `tools/models/`.
 
@@ -95,6 +98,10 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | Sistema Modificado | Comando PowerShell Específico |
 |---|---|
 | **Cosmos / Fondo Espacial** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "space_environment"` |
+| **Órbitas 3D & Cometas (Cosmos v3.1)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "kepler_3d_orbits"` |
+| **Sectores No Estelares (Cosmos v3.2)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "living_universe_sectors"` |
+| **Corredores Interestelares (Cosmos v3.2c)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "interstellar_corridors"` |
+| **Luz Dinámica Cosmos ↔ Rig** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_lighting_sampler"` |
 | **Órbitas / Parallax Seguidor** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "orbital_binding_events"` |
 | **HUD / Dragon Radar** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "dragon_radar"` |
 | **HUD / Radar Satelital** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "satellite_edge_indicator"` |
@@ -107,6 +114,7 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Face Lab / Rig Facial (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"` |
 | **VFX Lab / Alas + Sandevistan (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"` |
 | **Guns Lab / Anillo Orbital 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_guns_lab"` |
+| **3D Lab / Alas 3D Cel-Shaded (Estándar)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"` |
 | **Banner Lab / Live Splash 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 

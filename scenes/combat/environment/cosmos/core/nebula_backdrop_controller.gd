@@ -47,19 +47,23 @@ func apply_biome_configurations() -> void:
 		_shader_mat.set_shader_parameter("biome_a_color_deep", biome_a.color_deep_space)
 		_shader_mat.set_shader_parameter("biome_a_color_gas_primary", biome_a.color_gas_primary)
 		_shader_mat.set_shader_parameter("biome_a_color_gas_secondary", biome_a.color_gas_secondary)
+		_shader_mat.set_shader_parameter("biome_a_color_ridge", biome_a.color_ionization_ridge)
 		_shader_mat.set_shader_parameter("biome_a_star_tint", biome_a.color_star_tint)
 		_shader_mat.set_shader_parameter("biome_a_density", biome_a.gas_density)
 		_shader_mat.set_shader_parameter("biome_a_contrast", biome_a.gas_contrast)
 		_shader_mat.set_shader_parameter("biome_a_frequency", biome_a.noise_frequency)
+		_shader_mat.set_shader_parameter("biome_a_band_strength", biome_a.galactic_band_strength)
 
 	if biome_b != null:
 		_shader_mat.set_shader_parameter("biome_b_color_deep", biome_b.color_deep_space)
 		_shader_mat.set_shader_parameter("biome_b_color_gas_primary", biome_b.color_gas_primary)
 		_shader_mat.set_shader_parameter("biome_b_color_gas_secondary", biome_b.color_gas_secondary)
+		_shader_mat.set_shader_parameter("biome_b_color_ridge", biome_b.color_ionization_ridge)
 		_shader_mat.set_shader_parameter("biome_b_star_tint", biome_b.color_star_tint)
 		_shader_mat.set_shader_parameter("biome_b_density", biome_b.gas_density)
 		_shader_mat.set_shader_parameter("biome_b_contrast", biome_b.gas_contrast)
 		_shader_mat.set_shader_parameter("biome_b_frequency", biome_b.noise_frequency)
+		_shader_mat.set_shader_parameter("biome_b_band_strength", biome_b.galactic_band_strength)
 
 ## Configura reactivamente el Bioma B (bioma solar objetivo) en el material del shader
 func set_biome_b(config: CosmosBiomeConfig) -> void:
@@ -71,10 +75,12 @@ func set_biome_b(config: CosmosBiomeConfig) -> void:
 	_shader_mat.set_shader_parameter("biome_b_color_deep", biome_b.color_deep_space)
 	_shader_mat.set_shader_parameter("biome_b_color_gas_primary", biome_b.color_gas_primary)
 	_shader_mat.set_shader_parameter("biome_b_color_gas_secondary", biome_b.color_gas_secondary)
+	_shader_mat.set_shader_parameter("biome_b_color_ridge", biome_b.color_ionization_ridge)
 	_shader_mat.set_shader_parameter("biome_b_star_tint", biome_b.color_star_tint)
 	_shader_mat.set_shader_parameter("biome_b_density", biome_b.gas_density)
 	_shader_mat.set_shader_parameter("biome_b_contrast", biome_b.gas_contrast)
 	_shader_mat.set_shader_parameter("biome_b_frequency", biome_b.noise_frequency)
+	_shader_mat.set_shader_parameter("biome_b_band_strength", biome_b.galactic_band_strength)
 
 	if tile_texture != null:
 		_shader_mat.set_shader_parameter("nebula_tile_texture", tile_texture)

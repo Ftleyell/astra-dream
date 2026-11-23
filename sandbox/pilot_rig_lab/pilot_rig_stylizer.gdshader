@@ -288,46 +288,7 @@ uniform float fold_inner_side = 1.0;
 uniform float joint_v_coord : hint_range(0.0, 1.0) = 0.5;
 uniform float joint_flexion : hint_range(0.0, 1.0) = 0.0;
 
-// Muestreo morfológico de alfa en radio con signo (unidades de rig `du`):
-// r_du > 0.0 -> erosión (borde transparente hacia adentro)
-// r_du < 0.0 -> dilatación (expansión de outline hacia afuera)
-float sample_morph_alpha(sampler2D tex, vec2 uv, vec2 du_to_uv, float r_du, float base_a) {
-	if (abs(r_du) <= 0.001) {
-		return base_a;
-	}
-	bool is_erode = (r_du > 0.0);
-	float abs_r = abs(r_du);
-	vec2 rad_uv = du_to_uv * abs_r;
-	float acc = base_a;
-	for (int i = 0; i < 16; i++) {
-		float ang = float(i) * 0.3926990817;
-		vec2 dir = vec2(cos(ang), sin(ang));
-		vec2 suv = uv + dir * rad_uv;
-		float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
-		acc = is_erode ? min(acc, a) : max(acc, a);
-	}
-	if (abs_r > 0.75) {
-		vec2 mid_uv = rad_uv * 0.55;
-		for (int j = 0; j < 8; j++) {
-			float ang = float(j) * 0.7853981634 + 0.1963495408;
-			vec2 dir = vec2(cos(ang), sin(ang));
-			vec2 suv = uv + dir * mid_uv;
-			float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
-			acc = is_erode ? min(acc, a) : max(acc, a);
-		}
-	}
-	if (abs_r > 2.2) {
-		vec2 in_uv = rad_uv * 0.28;
-		for (int k = 0; k < 8; k++) {
-			float ang = float(k) * 0.7853981634;
-			vec2 dir = vec2(cos(ang), sin(ang));
-			vec2 suv = uv + dir * in_uv;
-			float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(tex, suv, 0.0).a;
-			acc = is_erode ? min(acc, a) : max(acc, a);
-		}
-	}
-	return acc;
-}
+// Muestreo morfológico de alfa inlined en fragment() para evitar pasar TEXTURE como sampler2D (error Vulkan custom_samplers).
 
 void fragment() {
 	vec2 sample_uv = UV;
@@ -517,13 +478,74 @@ void fragment() {
 	if (use_part_edge_outline) {
 		vec2 du_to_uv = 1.0 / max(part_rig_rect.zw * 490.0, vec2(1.0));
 		float r_outer_du = part_edge_erode_du - part_edge_outline_du;
-		part_edge_total_a = sample_morph_alpha(TEXTURE, sample_uv, du_to_uv, r_outer_du, base.a);
+		if (abs(r_outer_du) > 0.001) {
+			bool is_erode_o = (r_outer_du > 0.0);
+			float abs_ro = abs(r_outer_du);
+			vec2 rad_uv_o = du_to_uv * abs_ro;
+			float acc_o = base.a;
+			for (int i = 0; i < 16; i++) {
+				float ang = float(i) * 0.3926990817;
+				vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * rad_uv_o;
+				float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+				acc_o = is_erode_o ? min(acc_o, a) : max(acc_o, a);
+			}
+			if (abs_ro > 0.75) {
+				vec2 mid_uv_o = rad_uv_o * 0.55;
+				for (int j = 0; j < 8; j++) {
+					float ang = float(j) * 0.7853981634 + 0.1963495408;
+					vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * mid_uv_o;
+					float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+					acc_o = is_erode_o ? min(acc_o, a) : max(acc_o, a);
+				}
+			}
+			if (abs_ro > 2.2) {
+				vec2 in_uv_o = rad_uv_o * 0.28;
+				for (int k = 0; k < 8; k++) {
+					float ang = float(k) * 0.7853981634;
+					vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * in_uv_o;
+					float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+					acc_o = is_erode_o ? min(acc_o, a) : max(acc_o, a);
+				}
+			}
+			part_edge_total_a = acc_o;
+		}
 		if (part_edge_total_a < 0.02) {
 			discard;
 		}
-		part_edge_fill_a = (part_edge_erode_du > 0.001)
-			? ((base.a < 0.02) ? 0.0 : sample_morph_alpha(TEXTURE, sample_uv, du_to_uv, part_edge_erode_du, base.a))
-			: base.a;
+		if (part_edge_erode_du > 0.001) {
+			if (base.a < 0.02) {
+				part_edge_fill_a = 0.0;
+			} else {
+				float abs_re = part_edge_erode_du;
+				vec2 rad_uv_e = du_to_uv * abs_re;
+				float acc_e = base.a;
+				for (int i = 0; i < 16; i++) {
+					float ang = float(i) * 0.3926990817;
+					vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * rad_uv_e;
+					float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+					acc_e = min(acc_e, a);
+				}
+				if (abs_re > 0.75) {
+					vec2 mid_uv_e = rad_uv_e * 0.55;
+					for (int j = 0; j < 8; j++) {
+						float ang = float(j) * 0.7853981634 + 0.1963495408;
+						vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * mid_uv_e;
+						float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+						acc_e = min(acc_e, a);
+					}
+				}
+				if (abs_re > 2.2) {
+					vec2 in_uv_e = rad_uv_e * 0.28;
+					for (int k = 0; k < 8; k++) {
+						float ang = float(k) * 0.7853981634;
+						vec2 suv = sample_uv + vec2(cos(ang), sin(ang)) * in_uv_e;
+						float a = (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) ? 0.0 : textureLod(TEXTURE, suv, 0.0).a;
+						acc_e = min(acc_e, a);
+					}
+				}
+				part_edge_fill_a = acc_e;
+			}
+		}
 	} else if (base.a < 0.02) {
 		discard;
 	}

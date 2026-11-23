@@ -67,6 +67,11 @@ extends Resource
 		debris_profile = v
 		emit_changed()
 
+@export var living_universe_profile: CosmosLivingUniverseConfig:
+	set(v):
+		living_universe_profile = v
+		emit_changed()
+
 @export_group("Parámetros de Shader: Nebulosa")
 @export_range(0.0, 3.0, 0.05) var nebula_deep_stars_intensity: float = 0.55:
 	set(v):

@@ -26,6 +26,9 @@ extends Resource
 @export_range(1.0, 2.5, 0.05) var corona_size_multiplier: float = 1.35
 @export_range(0.0, 2.5, 0.05) var corona_intensity: float = 1.30
 @export_range(0.8, 2.5, 0.05) var core_brightness: float = 1.25
+@export_enum("Estándar:0", "Magnetar (Disco + Jets):1", "Enana Blanca (Nebulosa Planetaria):2", "Agujero Negro (Singularidad + Lente):3", "Nova Esmeralda (Ondas de Choque):4") var star_signature_mode: int = 0
+@export var anomaly_primary_color: Color = Color(0.72, 0.35, 1.0, 1.0)
+@export var anomaly_secondary_color: Color = Color(0.28, 0.94, 1.0, 1.0)
 
 @export_group("Bioma Estelar")
 @export var biome_config: CosmosBiomeConfig
@@ -59,6 +62,9 @@ func get_effective_visual_config() -> CosmosStarVisualConfig:
 	cfg.corona_size_multiplier = corona_size_multiplier
 	cfg.corona_intensity = corona_intensity
 	cfg.core_brightness = core_brightness
+	cfg.star_signature_mode = star_signature_mode
+	cfg.anomaly_primary_color = anomaly_primary_color
+	cfg.anomaly_secondary_color = anomaly_secondary_color
 	cfg.light_field_radius_multiplier = light_field_radius_multiplier
 	cfg.light_field_intensity = light_field_intensity
 	cfg.heliosphere_noise_strength = heliosphere_noise_strength

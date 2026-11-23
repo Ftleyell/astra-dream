@@ -67,15 +67,19 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	if _camera != null:
-		var cur_z: float = _camera.zoom.x
-		var next_z: float = lerpf(cur_z, _target_zoom, clampf(delta * 10.0, 0.0, 1.0))
-		_camera.zoom = Vector2(next_z, next_z)
-		if _banner_ctrl != null:
-			_banner_ctrl.set_zoom_scale(next_z)
-
 	if _banner_ctrl != null:
 		_banner_ctrl.step(delta)
+
+	if _camera != null:
+		var cur_z: float = _camera.zoom.x
+		var punch_mul: float = 1.0 + (_banner_ctrl.get_camera_zoom_punch() if _banner_ctrl != null else 0.0)
+		var desired_z: float = _target_zoom * punch_mul
+		var next_z: float = lerpf(cur_z, desired_z, clampf(delta * 14.0, 0.0, 1.0))
+		_camera.zoom = Vector2(next_z, next_z)
+		var shake_off: Vector2 = _banner_ctrl.get_camera_shake_offset() if _banner_ctrl != null else Vector2.ZERO
+		_camera.position = Vector2(-140.0, 0.0) + shake_off
+		if _banner_ctrl != null:
+			_banner_ctrl.set_zoom_scale(next_z)
 
 
 func get_banner_controller() -> BannerCtrlScript:

@@ -28,6 +28,10 @@ const FaceConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_an
 const AnimRuntimeScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_animation_runtime.gd")
 const BasePropCtrlScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_base_propulsion_controller.gd")
 const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
+const Wings3DCtrlScript = preload("res://sandbox/pilot_rig_lab/3d_lab/astral_wings_3d_controller.gd")
+const Wings3DConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_wings_3d_config.gd")
+const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
+const CosmicRigLightingConfigScript = preload("res://scenes/combat/environment/cosmos/resources/cosmic_rig_lighting_config.gd")
 
 enum TransitionStyle {
 	WHIP_SNAP_AFTERIMAGE = 4,
@@ -46,6 +50,7 @@ enum TransitionStyle {
 @export var enable_live_animations: bool = true
 @export var enable_face_live: bool = false
 @export var enable_base_propulsion_wings: bool = false
+@export var enable_3d_wings: bool = false
 
 var _animator: RigAnimator = null
 var _anim_runtime: AnimRuntimeScript = null
@@ -62,6 +67,8 @@ var _impact: ImpactCtrlScript = null
 var _face_ctrl: FaceCtrlScript = null
 var _external_face_step: bool = false
 var _base_prop_ctrl: BasePropCtrlScript = null
+var _wings_3d_ctrl: Wings3DCtrlScript = null
+var _last_skin_preset: PilotSkinPreset = null
 var _has_prev_wing_pos: bool = false
 var _prev_wing_world_pos: Vector2 = Vector2.ZERO
 
@@ -86,6 +93,8 @@ var calibration_manual_pose: bool = false
 var _manual_head_offset: Vector2 = Vector2.ZERO
 var _manual_head_rot: float = 0.0
 var _synced_profile: PilotRigProfile = null
+var _smoothed_cosmic_lighting: CosmicLightingSampleScript = null
+var _has_cosmic_lighting_init: bool = false
 
 
 func _ready() -> void:
@@ -108,6 +117,7 @@ func build_rig() -> void:
 		child.queue_free()
 	_views.clear()
 	_base_prop_ctrl = null
+	_wings_3d_ctrl = null
 	_has_prev_wing_pos = false
 
 	if _router == null:
@@ -220,7 +230,9 @@ func build_rig() -> void:
 	_anim_runtime_initialized = false
 	if _face_ctrl != null and not enable_face_live:
 		_face_ctrl.clear_on_head_materials(_head_data, _head_under_data)
-	if enable_base_propulsion_wings:
+	if enable_3d_wings:
+		_ensure_3d_wings_ready()
+	elif enable_base_propulsion_wings:
 		_ensure_base_propulsion_wings_ready()
 
 
@@ -455,7 +467,18 @@ func _process(delta: float) -> void:
 		_body_pivot
 	)
 
-	if enable_base_propulsion_wings:
+	if enable_3d_wings:
+		_ensure_3d_wings_ready()
+		if _wings_3d_ctrl != null:
+			var cur_p3: Vector2 = global_position
+			var delta_p3: Vector2 = (cur_p3 - _prev_wing_world_pos) if _has_prev_wing_pos else Vector2.ZERO
+			var wing_vel3: Vector2 = delta_p3 / maxf(delta, 0.001)
+			_prev_wing_world_pos = cur_p3
+			_has_prev_wing_pos = true
+			if wing_vel3.length_squared() < 4.0 and _smooth_speed > 0.05:
+				wing_vel3 = _smooth_move_dir * _smooth_speed * 320.0
+			_wings_3d_ctrl.step_attached_rig(delta, _router.active_view_key, _smooth_speed, wing_vel3, _is_turbo, delta_p3, false)
+	elif enable_base_propulsion_wings:
 		_ensure_base_propulsion_wings_ready()
 		if _base_prop_ctrl != null:
 			var cur_p: Vector2 = global_position
@@ -601,9 +624,12 @@ func _sync_rig_space_matrices() -> void:
 # --- API Pública de Materiales, Presets, Combate e Inspección ---
 
 func apply_skin_preset(skin: PilotSkinPreset) -> void:
+	_last_skin_preset = skin
 	_materials.apply_skin_preset(skin)
 	if _base_prop_ctrl != null:
 		_base_prop_ctrl.sync_materials_from_rig(self)
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.apply_skin_preset(skin)
 
 
 func apply_hair_preset(hair: PilotHairPreset, skin_hair_col: Color) -> void:
@@ -614,6 +640,48 @@ func apply_style_profile(profile: RigStyleProfile) -> void:
 	_materials.apply_style_profile(profile)
 	if _base_prop_ctrl != null:
 		_base_prop_ctrl.sync_materials_from_rig(self)
+		if _has_cosmic_lighting_init and _smoothed_cosmic_lighting != null and _base_prop_ctrl.has_method("apply_cosmic_lighting"):
+			_base_prop_ctrl.apply_cosmic_lighting(_smoothed_cosmic_lighting)
+
+
+func apply_cosmic_lighting(
+	sample: CosmicLightingSampleScript,
+	delta: float = 0.0,
+	config: CosmicRigLightingConfigScript = null
+) -> void:
+	if sample == null:
+		_has_cosmic_lighting_init = false
+		if _materials != null:
+			_materials.reset_cosmic_lighting()
+		if _base_prop_ctrl != null and _base_prop_ctrl.has_method("apply_cosmic_lighting"):
+			_base_prop_ctrl.apply_cosmic_lighting(null)
+		if _wings_3d_ctrl != null:
+			_wings_3d_ctrl.apply_cosmic_lighting(null)
+		return
+
+	if _smoothed_cosmic_lighting == null:
+		_smoothed_cosmic_lighting = CosmicLightingSampleScript.new()
+
+	if delta <= 0.0 or not _has_cosmic_lighting_init:
+		_smoothed_cosmic_lighting.copy_from(sample)
+		_has_cosmic_lighting_init = true
+	else:
+		var dir_rate: float = config.dir_smooth_rate if config != null else 8.0
+		var col_rate: float = config.color_smooth_rate if config != null else 5.0
+		var dir_t: float = 1.0 - exp(-dir_rate * delta)
+		var col_t: float = 1.0 - exp(-col_rate * delta)
+		_smoothed_cosmic_lighting.smooth_toward(sample, dir_t, col_t)
+
+	if _materials != null:
+		_materials.apply_cosmic_lighting(_smoothed_cosmic_lighting)
+	if _base_prop_ctrl != null and _base_prop_ctrl.has_method("apply_cosmic_lighting"):
+		_base_prop_ctrl.apply_cosmic_lighting(_smoothed_cosmic_lighting)
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.apply_cosmic_lighting(_smoothed_cosmic_lighting)
+
+
+func get_last_cosmic_lighting() -> CosmicLightingSampleScript:
+	return _smoothed_cosmic_lighting
 
 
 func set_hair_style_mode(mode_idx: int) -> void:
@@ -904,6 +972,8 @@ func set_face_personality_profile(profile_id: int) -> void:
 func set_base_propulsion_wings_enabled(enabled: bool) -> void:
 	enable_base_propulsion_wings = enabled
 	if enabled:
+		if _wings_3d_ctrl != null:
+			set_3d_wings_enabled(false)
 		_ensure_base_propulsion_wings_ready()
 	elif _base_prop_ctrl != null:
 		_base_prop_ctrl.detach_from_rig()
@@ -913,6 +983,51 @@ func set_base_propulsion_wings_enabled(enabled: bool) -> void:
 
 func get_base_propulsion_controller() -> BasePropCtrlScript:
 	return _base_prop_ctrl
+
+
+func set_3d_wings_enabled(enabled: bool) -> void:
+	enable_3d_wings = enabled
+	if enabled:
+		if _base_prop_ctrl != null:
+			set_base_propulsion_wings_enabled(false)
+		_ensure_3d_wings_ready()
+	elif _wings_3d_ctrl != null:
+		_wings_3d_ctrl.queue_free()
+		_wings_3d_ctrl = null
+
+
+func get_3d_wings_controller() -> Wings3DCtrlScript:
+	return _wings_3d_ctrl
+
+
+func set_3d_wings_anim_state(state: int, snap_now: bool = false) -> void:
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.set_anim_state(state, snap_now)
+
+
+func trigger_3d_wings_pulse() -> void:
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.trigger_pulse(-1)
+
+
+func _ensure_3d_wings_ready() -> void:
+	if not enable_3d_wings or _wings_3d_ctrl != null:
+		return
+	_wings_3d_ctrl = Wings3DCtrlScript.new()
+	_wings_3d_ctrl.name = "AstralWings3D"
+	var inv_s: float = 1.0 / maxf(display_scale, 0.05)
+	_wings_3d_ctrl.scale = Vector2(inv_s, inv_s)
+	_wings_3d_ctrl.set_z_layer_offsets(-2, -1, 1, 2)
+	if pilot_profile != null and pilot_profile.wings_3d_config is Wings3DConfigScript:
+		_wings_3d_ctrl.set_config(pilot_profile.wings_3d_config as Wings3DConfigScript)
+	add_child(_wings_3d_ctrl)
+	if _last_skin_preset != null:
+		_wings_3d_ctrl.apply_skin_preset(_last_skin_preset)
+	elif pilot_profile != null and not pilot_profile.skins.is_empty():
+		_wings_3d_ctrl.apply_skin_preset(pilot_profile.skins[0])
+	if _has_cosmic_lighting_init and _smoothed_cosmic_lighting != null:
+		_wings_3d_ctrl.apply_cosmic_lighting(_smoothed_cosmic_lighting)
+	_wings_3d_ctrl.step_attached_rig(0.0, _router.active_view_key, _smooth_speed, Vector2.ZERO, _is_turbo, Vector2.ZERO, true)
 
 
 func _ensure_base_propulsion_wings_ready() -> void:
@@ -925,6 +1040,8 @@ func _ensure_base_propulsion_wings_ready() -> void:
 	if pilot_profile != null and pilot_profile.base_propulsion_config is BasePropConfigScript:
 		_base_prop_ctrl.set_config(pilot_profile.base_propulsion_config as BasePropConfigScript)
 	_base_prop_ctrl.attach_to_rig(self)
+	if _has_cosmic_lighting_init and _smoothed_cosmic_lighting != null and _base_prop_ctrl.has_method("apply_cosmic_lighting"):
+		_base_prop_ctrl.apply_cosmic_lighting(_smoothed_cosmic_lighting)
 
 
 func get_face_controller() -> FaceCtrlScript:
@@ -966,6 +1083,8 @@ func trigger_dash_burst(dir: Vector2 = Vector2.ZERO) -> void:
 			_anim_runtime.trigger_dash_burst(dir if dir.length_squared() > 0.01 else _smooth_move_dir)
 	if enable_face_live and _face_ctrl != null:
 		_face_ctrl.trigger_dash_burst(dir)
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.trigger_pulse(-1)
 
 
 func trigger_attack_recoil(aim_dir: Vector2 = Vector2.ZERO, strength: float = 1.0) -> void:
@@ -991,6 +1110,8 @@ func trigger_air_brake(strength: float = 1.0) -> void:
 		ensure_live_animations_ready()
 		if _anim_runtime != null:
 			_anim_runtime.trigger_air_brake(strength)
+	if _wings_3d_ctrl != null:
+		_wings_3d_ctrl.trigger_pulse(-1)
 
 
 func is_launch_active() -> bool:

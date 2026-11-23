@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="CosmosDebrisLayerProfile" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/debris_layer_profile.gd" id="1_debris"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/debris/debris_asteroids_v2.png" id="2_debris_tex"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/debris/debris_mecha_ruins_v2.png" id="3_scrap_tex"]
+
+[resource]
+script = ExtResource("1_debris")
+rock_texture = ExtResource("2_debris_tex")
+scrap_texture = ExtResource("3_scrap_tex")
+mesh_texture = ExtResource("2_debris_tex")
+metadata_json_path = "res://assets/environments/cosmos_v2/debris/debris_metadata_v2.json"
+instance_count = 64
+scrap_instance_count = 32
+field_bounding_box = Vector2(12000, 12000)
+micro_ratio = 0.35
+medium_ratio = 0.45
+macro_ratio = 0.20
+micro_scale_range = Vector2(0.35, 0.55)
+medium_scale_range = Vector2(0.42, 0.68)
+macro_scale_range = Vector2(0.50, 0.74)
+scale_range = Vector2(0.40, 0.80)
+max_initial_rotation = 6.28318
+alpha_modulation = Color(0.62, 0.68, 0.82, 0.44)
+micro_alpha_multiplier = 0.42
+medium_alpha_multiplier = 0.56
+macro_alpha_multiplier = 0.68
+kuiper_belt_ratio = 0.20
+border_corridor_ratio = 0.30
+ambient_space_ratio = 0.50
+kuiper_belt_width = 1500.0
+kuiper_inner_padding = 360.0
+kuiper_default_radius = 3400.0
+border_corridor_width = 1600.0
+rock_micro_max_area = 7000.0
+rock_medium_max_area = 25000.0
+scrap_micro_max_area = 9000.0
+scrap_medium_max_area = 28000.0

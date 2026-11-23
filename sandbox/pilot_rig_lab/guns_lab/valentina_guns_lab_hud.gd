@@ -15,7 +15,8 @@ static func build_hud(
 	parent: Node,
 	config: ConfigScript,
 	weapon_choices: Array[Dictionary],
-	callbacks: Dictionary
+	callbacks: Dictionary,
+	skin_choices: Array[PilotSkinPreset] = []
 ) -> Dictionary:
 	var layer := CanvasLayer.new()
 	layer.name = "GunsLabHUDLayer"
@@ -167,6 +168,26 @@ static func build_hud(
 	toggles_row.add_child(ring_chk)
 	vbox.add_child(toggles_row)
 
+	var ring_sync_chk := CheckBox.new()
+	ring_sync_chk.text = "Sync Anillo y VFX con Skin"
+	ring_sync_chk.button_pressed = config.ring_follow_skin
+	ring_sync_chk.toggled.connect(func(v: bool) -> void:
+		var cb: Callable = callbacks.get("on_ring_follow_skin_toggled", Callable())
+		if cb.is_valid():
+			cb.call(v)
+	)
+	vbox.add_child(ring_sync_chk)
+
+	var ring_tex_chk := CheckBox.new()
+	ring_tex_chk.text = "Anillo Textura IA (Mecha)"
+	ring_tex_chk.button_pressed = config.ring_use_texture
+	ring_tex_chk.toggled.connect(func(v: bool) -> void:
+		var cb: Callable = callbacks.get("on_ring_use_texture_toggled", Callable())
+		if cb.is_valid():
+			cb.call(v)
+	)
+	vbox.add_child(ring_tex_chk)
+
 	vbox.add_child(HSeparator.new())
 
 	# --- Sección 2: Valentina v2 (Rig estático + toggles) ---
@@ -190,6 +211,28 @@ static func build_hud(
 	)
 	view_row.add_child(view_opt)
 	vbox.add_child(view_row)
+
+	var skin_opt: OptionButton = null
+	if not skin_choices.is_empty():
+		var skin_row := HBoxContainer.new()
+		skin_row.add_theme_constant_override("separation", 6)
+		var skin_lbl := Label.new()
+		skin_lbl.text = "Skin:"
+		skin_lbl.add_theme_font_size_override("font_size", 12)
+		skin_row.add_child(skin_lbl)
+		skin_opt = OptionButton.new()
+		skin_opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		for si: int in range(skin_choices.size()):
+			var sk: PilotSkinPreset = skin_choices[si]
+			skin_opt.add_item(sk.label if not sk.label.is_empty() else ("Skin %d" % si), si)
+		skin_opt.select(0)
+		skin_opt.item_selected.connect(func(idx: int) -> void:
+			var cb: Callable = callbacks.get("on_skin_selected", Callable())
+			if cb.is_valid():
+				cb.call(idx)
+		)
+		skin_row.add_child(skin_opt)
+		vbox.add_child(skin_row)
 
 	var rig_toggles := HBoxContainer.new()
 	rig_toggles.add_theme_constant_override("separation", 8)
@@ -234,6 +277,12 @@ static func build_hud(
 	sliders["orbit_speed_rad"] = _add_slider(vbox, "Velocidad Órbita", 0.0, 4.0, 0.05, config.orbit_speed_rad, func(v: float) -> void:
 		config.orbit_speed_rad = v
 	)
+	sliders["ring_inner_arc_speed"] = _add_slider(vbox, "Vel. Arcos Astrolabio", -2.0, 2.0, 0.05, config.ring_inner_arc_speed, func(v: float) -> void:
+		config.ring_inner_arc_speed = v
+	)
+	sliders["ring_diamond_size_px"] = _add_slider(vbox, "Cristales Anclaje (px)", 4.0, 18.0, 0.5, config.ring_diamond_size_px, func(v: float) -> void:
+		config.ring_diamond_size_px = v
+	)
 
 	vbox.add_child(HSeparator.new())
 
@@ -259,6 +308,9 @@ static func build_hud(
 	)
 	sliders["rim_strength"] = _add_slider(vbox, "Rim Light", 0.0, 1.2, 0.02, config.rim_strength, func(v: float) -> void:
 		config.rim_strength = v
+	)
+	sliders["ink_sdf_strength"] = _add_slider(vbox, "Tinta SDF 2×", 0.0, 1.0, 0.02, config.ink_sdf_strength, func(v: float) -> void:
+		config.ink_sdf_strength = v
 	)
 	sliders["recoil_kick_px"] = _add_slider(vbox, "Recoil (px)", 0.0, 40.0, 0.5, config.recoil_kick_px, func(v: float) -> void:
 		config.recoil_kick_px = v
@@ -304,6 +356,9 @@ static func build_hud(
 		"status_label": status_label,
 		"pause_btn": pause_btn,
 		"mode_opt": mode_opt,
+		"skin_opt": skin_opt,
+		"ring_sync_chk": ring_sync_chk,
+		"ring_tex_chk": ring_tex_chk,
 		"sliders": sliders,
 	}
 
@@ -317,6 +372,8 @@ static func sync_sliders_from_config(hud_refs: Dictionary, config: ConfigScript)
 	_set_slider_val(sliders, "ring_tilt_deg", config.ring_tilt_deg)
 	_set_slider_val(sliders, "ring_offset_y", config.ring_center_offset.y)
 	_set_slider_val(sliders, "orbit_speed_rad", config.orbit_speed_rad)
+	_set_slider_val(sliders, "ring_inner_arc_speed", config.ring_inner_arc_speed)
+	_set_slider_val(sliders, "ring_diamond_size_px", config.ring_diamond_size_px)
 	_set_slider_val(sliders, "weapon_base_scale", config.weapon_base_scale)
 	_set_slider_val(sliders, "perspective_scale_amp", config.perspective_scale_amp)
 	_set_slider_val(sliders, "foreshorten_min_x", config.foreshorten_min_x)
@@ -324,6 +381,7 @@ static func sync_sliders_from_config(hud_refs: Dictionary, config: ConfigScript)
 	_set_slider_val(sliders, "extrude_depth_px", config.extrude_depth_px)
 	_set_slider_val(sliders, "depth_back_dim", config.depth_back_dim)
 	_set_slider_val(sliders, "rim_strength", config.rim_strength)
+	_set_slider_val(sliders, "ink_sdf_strength", config.ink_sdf_strength)
 	_set_slider_val(sliders, "recoil_kick_px", config.recoil_kick_px)
 
 

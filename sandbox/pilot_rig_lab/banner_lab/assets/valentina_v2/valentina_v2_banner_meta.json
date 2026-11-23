@@ -3,17 +3,33 @@
     1106,
     1536
   ],
+  "ink_sdf_size": [
+    2212,
+    3072
+  ],
+  "has_ilm": true,
+  "has_ai_normal": true,
   "chest_center_uv": [
     0.4969,
     0.2736
   ],
   "eye_center_uv": [
-    0.4712,
-    0.1217
+    0.4633,
+    0.1294
   ],
   "iris_center_uv": [
-    0.4712,
-    0.1217
+    0.4633,
+    0.1294
+  ],
+  "eye_almond_bounds_uv": [
+    0.4485,
+    0.1257,
+    0.4774,
+    0.1335
+  ],
+  "eye_iris_size_uv": [
+    0.0145,
+    0.0104
   ],
   "right_shoulder_uv": [
     0.3671,

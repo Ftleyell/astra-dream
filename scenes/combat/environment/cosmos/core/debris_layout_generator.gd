@@ -71,6 +71,8 @@ static func generate_cell_layout(
 	var sub_grid_dim: int = maxi(1, int(ceil(sqrt(float(maxi(1, n_ambient))))))
 	var sub_cell_size: float = cell_size / float(sub_grid_dim)
 
+	var flow_angle_bias: float = 0.0
+
 	for i: int in range(count):
 		var cell_hash_seed: int = (cell.x * 73856093) ^ (cell.y * 19349663) ^ (i * 83492791) ^ run_seed ^ atlas_seed_offset
 		var r_rot: float = CosmosHasher.hash_2d_float(cell.x + 3 * i, cell.y + 5 * i, cell_hash_seed + 554401)
@@ -81,6 +83,7 @@ static func generate_cell_layout(
 		var r_spin: float = CosmosHasher.hash_2d_float(cell.x - 17 * i, cell.y + 19 * i, cell_hash_seed + 4419)
 
 		var pos_local: Vector2 = Vector2.ZERO
+		flow_angle_bias = 0.0
 
 		if i < n_kuiper:
 			# Patrón 1: Cinturón de Kuiper
@@ -92,27 +95,48 @@ static func generate_cell_layout(
 			var radius: float = kuiper_inner_radius + (r_rad * kuiper_w)
 			pos_local = star_offset + Vector2(cos(theta) * radius, sin(theta) * radius)
 		elif i < (n_kuiper + n_border):
-			# Patrón 2: Franjas perimetrales de frontera entre celdas
+			# Patrón 2: Ríos laminares sinusoidales continuos compartidos entre celdas vecinas
 			var b_idx: int = i - n_kuiper
 			var side: int = b_idx % 4
 			var slot_in_side: int = b_idx / 4
 			var slots_per_side: int = maxi(1, int(ceil(float(n_border) / 4.0)))
-			var slot_len: float = cell_size / float(slots_per_side)
 
 			var r_lin: float = CosmosHasher.hash_2d_float(cell.x + b_idx, cell.y - b_idx, cell_hash_seed + 303)
 			var r_lat: float = CosmosHasher.hash_2d_float(cell.x - b_idx, cell.y + b_idx, cell_hash_seed + 404)
-			var linear_pos: float = - (cell_size * 0.5) + (float(slot_in_side) + r_lin * 0.70) * slot_len
-			var lateral_offset: float = r_lat * border_w
+			var lin_norm: float = clampf((float(slot_in_side) + r_lin * 0.72) / float(slots_per_side), 0.0, 1.0)
+			var linear_pos: float = (lin_norm - 0.5) * cell_size
+
+			var nb_cell: Vector2i = cell
+			match side:
+				0: nb_cell = cell + Vector2i(0, -1)
+				1: nb_cell = cell + Vector2i(0, 1)
+				2: nb_cell = cell + Vector2i(-1, 0)
+				3: nb_cell = cell + Vector2i(1, 0)
+			var ca: Vector2i = cell if (cell.x < nb_cell.x or (cell.x == nb_cell.x and cell.y <= nb_cell.y)) else nb_cell
+			var cb: Vector2i = nb_cell if ca == cell else cell
+			var edge_seed: int = (ca.x * 73856093) ^ (ca.y * 19349663) ^ (cb.x * 83492791) ^ (cb.y * 297121507) ^ run_seed
+			var edge_phase: float = CosmosHasher.hash_2d_float(edge_seed, 419, 89) * TAU
+
+			var river_wave: float = sin(lin_norm * TAU * 1.5 + edge_phase)
+			var river_amp: float = border_w * 0.34
+			var lat_center: float = (r_lat - 0.5)
+			var core_lat: float = lat_center * absf(lat_center) * 2.0 * (border_w * 0.42)
+			var lateral_offset: float = clampf((river_amp * (1.0 + river_wave)) * 0.5 + core_lat, 12.0, border_w)
+			var tangent_slope: float = cos(lin_norm * TAU * 1.5 + edge_phase) * 0.42
 
 			match side:
 				0: # Borde Superior (-Y)
 					pos_local = Vector2(linear_pos, -(cell_size * 0.5) + lateral_offset)
+					flow_angle_bias = tangent_slope
 				1: # Borde Inferior (+Y)
 					pos_local = Vector2(linear_pos, (cell_size * 0.5) - lateral_offset)
+					flow_angle_bias = -tangent_slope
 				2: # Borde Izquierdo (-X)
 					pos_local = Vector2(-(cell_size * 0.5) + lateral_offset, linear_pos)
+					flow_angle_bias = PI * 0.5 + tangent_slope
 				3: # Borde Derecho (+X)
 					pos_local = Vector2((cell_size * 0.5) - lateral_offset, linear_pos)
+					flow_angle_bias = PI * 0.5 - tangent_slope
 		else:
 			# Patrón 3: Espacio abierto (sub-rejilla uniforme con jitter acotado)
 			var a_idx: int = i - n_kuiper - n_border
@@ -123,8 +147,13 @@ static func generate_cell_layout(
 			var sub_x: float = -(cell_size * 0.5) + (float(gx) + 0.15 + r_jx * 0.70) * sub_cell_size
 			var sub_y: float = -(cell_size * 0.5) + (float(gy) + 0.15 + r_jy * 0.70) * sub_cell_size
 			pos_local = Vector2(sub_x, sub_y)
+			if has_star:
+				var to_star: Vector2 = pos_local - star_offset
+				if to_star.length() < kuiper_inner_radius * 0.45:
+					var push_dir: Vector2 = to_star.normalized() if to_star.length_squared() > 1.0 else Vector2(cos(r_rot * TAU), sin(r_rot * TAU))
+					pos_local = star_offset + push_dir * (kuiper_inner_radius + r_scale * kuiper_w)
 
-		var rotation_angle: float = r_rot * max_rot
+		var rotation_angle: float = (flow_angle_bias + (r_rot - 0.5) * 0.85) if (i >= n_kuiper and i < n_kuiper + n_border) else (r_rot * max_rot)
 
 		var piece: Dictionary
 		var scale_val: float = 1.0

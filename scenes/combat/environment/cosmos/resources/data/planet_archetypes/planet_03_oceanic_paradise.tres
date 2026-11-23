@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="CosmosPlanetArchetype" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/planet_archetype.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_oceanic_paradise_albedo.png" id="2_albedo"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_oceanic_paradise_maps.png" id="3_maps"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/rings/ring_crystal_ice.png" id="4_ring"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/planets/planet_oceanic_paradise_normal.png" id="5_normal"]
+
+[resource]
+script = ExtResource("1_script")
+archetype_id = &"planet_oceanic_paradise"
+display_name = "Paraíso Oceánico"
+zone = 1
+spawn_weight = 1.15
+is_magma_moon = false
+is_cryo_moon = false
+albedo_texture = ExtResource("2_albedo")
+surface_maps_texture = ExtResource("3_maps")
+normal_ao_texture = ExtResource("5_normal")
+ring_texture = ExtResource("4_ring")
+diameter_range = Vector2(225, 275)
+axial_tilt_deg = 14.0
+spin_speed_range = Vector2(0.024, 0.040)
+cloud_spin_speed_offset = 0.020
+cloud_coverage = 0.48
+cloud_tint = Color(0.97, 0.99, 1, 1)
+cloud_shadow_offset = 0.012
+cloud_height_parallax = 0.020
+gas_band_shear = 0.0
+atmosphere_color = Color(0.28, 0.78, 1, 1)
+atmosphere_intensity = 1.75
+outer_atmosphere_thickness = 0.03
+twilight_scatter_color = Color(1, 0.46, 0.62, 1)
+twilight_scatter_strength = 0.68
+night_emissive_color = Color(1, 0.78, 0.36, 1)
+night_emissive_strength = 1.65
+night_emissive_day_keep = 0.0
+night_emissive_albedo_mix = 0.0
+specular_strength = 0.85
+specular_shininess = 34.0
+bump_strength = 0.72
+ao_strength = 0.44
+aurora_color = Color(0.25, 1, 0.75, 1)
+aurora_strength = 0.35
+ring_probability = 0.25
+ring_inner_radius = 1.30
+ring_outer_radius = 1.92
+ring_tilt_x_deg = 68.0
+ring_roll_deg_range = Vector2(-26, 26)
+ring_tint = Color(0.88, 0.97, 1, 1)
+ring_spin_speed = 0.012
+ring_opacity = 0.9

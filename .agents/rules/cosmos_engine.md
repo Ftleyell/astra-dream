@@ -22,9 +22,12 @@ Toda modificación numérica o estética DEBE realizarse directamente en el recu
 | **Órbitas, Planetas, Lunas y Estaciones** | `scenes/combat/environment/cosmos/resources/data/default_planetary_system.tres` | `cell_size`, `cell_boundary_padding`, `min_orbital_spacing`, `planet_theta_jitter_degrees`, `planet_size_multiplier`, `moon_spawn_probability`, `moon_size_ratio`, `station_spawn_probability`, `station_size_ratio` |
 | **Composición General de Sistemas Solares** | `scenes/combat/environment/cosmos/resources/data/default_celestial_system.tres` | Agregador de `star_visual_config`, `shadow_system_config`, `planetary_system_config` y `star_archetypes` |
 | **Biomas de Nebulosa & Paletas de Gas** | `scenes/combat/environment/cosmos/resources/data/biomes/<biome>.tres` o `default_cosmic_biome.tres` | `primary_gas_color`, `secondary_gas_color`, `nebula_density`, `turbulence_speed`, `nebula_tile_scale`, `nebula_tile_mix`, `nebula_deep_stars_*` |
-| **Escombros Espaciales MultiMesh** | `scenes/combat/environment/cosmos/resources/data/default_debris_layer.tres` | `instance_count`, `scrap_instance_count`, `micro_ratio`, `medium_ratio`, `macro_ratio`, `micro_scale_range`, `medium_scale_range`, `macro_scale_range`, `cell_size` |
-| **Macro-Galaxias de Fondo** | `scenes/combat/environment/cosmos/resources/data/default_galaxy_landmark.tres` | `spawn_chance`, `maximum_bounding_radius`, `safety_padding`, `base_scale_range`, `scroll_scale`, `max_drift_rotation_speed`, `shader_spin_speed`, `overall_brightness` |
-| **Perfil Parallax Maestro Unificado** | `scenes/combat/environment/cosmos/resources/data/default_cosmos_environment.tres` | `nebula_scroll_scale`, `starfield_scroll_scale`, `galaxy_scroll_scale`, `debris_scroll_scale`, `solar_system_scroll_scale` |
+| **Escombros Espaciales MultiMesh** | `scenes/combat/environment/cosmos/resources/data/default_debris_layer.tres` / `default_debris_far_layer.tres` | `instance_count`, `scrap_instance_count`, `micro_ratio`, `medium_ratio`, `macro_ratio`, `micro_scale_range`, `medium_scale_range`, `macro_scale_range`, `cell_size` |
+| **Macro-Galaxias & Perspectiva 3D** | `scenes/combat/environment/cosmos/resources/data/default_galaxy_landmark.tres` | `spawn_chance`, `maximum_bounding_radius`, `safety_padding`, `base_scale_range`, `scroll_scale`, `max_drift_rotation_speed`, `shader_spin_speed`, `overall_brightness`, `perspective_fov`, `tilt_angle_range`, `depth_fade_strength` |
+| **Arquetipos Estelares** | `scenes/combat/environment/cosmos/resources/data/star_archetypes/<tipo>.tres` (`yellow_dwarf`, `blue_giant`, `red_dwarf`, `white_dwarf`, `magnetar`, `emerald_nova`, `black_hole`) | `star_radius`, `orbit_radius_min`, `orbit_radius_max`, `min_orbital_spacing`, `star_color`, `corona_tint`, `is_black_hole` |
+| **Universo Vivo (Sectores y Corredores v3.2)** | `scenes/combat/environment/cosmos/resources/data/default_living_universe.tres` | Pesos de 4 sectores no estelares (`rogue_world`, `derelict_armada`, `warp_relay`, `ion_nursery`), `hyperspace_beacons_per_lane`, `hyperspace_convoys_per_lane`, `hyperspace_slipstream_alpha`, `meteor_shower_count_per_cell`, `bow_shock_intensity` |
+| **Iluminación Cósmica sobre Rig** | `scenes/combat/environment/cosmos/resources/data/default_rig_lighting.tres` | Curvas de mezcla solar, tinte de eclipse planetario, ambiente mínimo combat-safe |
+| **Perfil Parallax Maestro Unificado** | `scenes/combat/environment/cosmos/resources/data/default_cosmos_environment.tres` | `nebula_parallax_factor`, `starfield_scroll_scale`, `galaxy_scroll_scale`, `debris_scroll_scale`, `solar_scroll_scale`, `living_universe_profile` |
 | **Inyección Determinista de POIs (Narrativa)** | `scenes/combat/environment/cosmos/resources/data/pois/<poi>.tres` | `poi_id`, `star_archetype`, `forced_planet_count`, `hazard_level`, `custom_label`, `seed_override` |
 
 *(Nota: Los archivos equivalentes bajo `sandbox/resources/data/` aplican únicamente al experimentar en la escena aislada del sandbox).*
@@ -35,12 +38,16 @@ Toda modificación numérica o estética DEBE realizarse directamente en el recu
 - Prohibido ejecutar suites globales o `-CoreOnly` durante la iteración activa en Cosmos Engine.
 - Usar **únicamente** el test específico del componente tocado (búsqueda recursiva habilitada):
   - **Integración con MainGame y Semillas:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "space_environment"` (~4.3s)
+  - **Órbitas 3D Keplerianas & Cometas:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "kepler_3d_orbits"` (~3.5s)
+  - **Sectores No Estelares v3.2:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "living_universe_sectors"` (~4.0s)
+  - **Corredores, Balizas & Convoyes v3.2c:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "interstellar_corridors"` (~3.9s)
+  - **Puente Analítico Rig ↔ Cosmos:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_lighting_sampler"` (~7.0s)
   - **Órbitas, Anti-snapping y Parallax:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "orbital_binding_events"` (~6.3s)
   - **Slots Analíticos y Binding de Entidades:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "gameplay_orbital_binding"` (~4.1s)
   - **Controlador Host & Biomas (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmos_host_controller"` (~4.1s)
   - **Smoke Packaging Cosmos:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmos_packaging_smoke"` (~4.0s)
   - **Inyección POIs Narrativos (Producción):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_poi_registry"` (~4.1s)
-  - **Sandbox Experimental (I+D):** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "tests/sandbox/test_cosmos_engine_integration.tscn"`
+  - **Streaming Macro-Galaxias:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "galaxy_streaming"` (~2.0s)
 
 ---
 

@@ -22,6 +22,14 @@ var layer_scroll_scale: Vector2 = Vector2(0.20, 0.20)
 var host_orbit_radius: float = 0.0
 var host_initial_theta: float = 0.0
 var host_angular_velocity: float = 0.0
+var orbit_eccentricity: float = 0.0
+var orbit_periapsis_angle: float = 0.0
+var orbit_plane_tilt: float = 0.0
+var orbit_plane_squash: float = 1.0
+var host_eccentricity: float = 0.0
+var host_periapsis_angle: float = 0.0
+var host_plane_tilt: float = 0.0
+var host_plane_squash: float = 1.0
 
 func _init(
 	p_type: SlotCenterType = SlotCenterType.STAR,
@@ -50,14 +58,50 @@ func _init(
 	host_initial_theta = p_host_theta
 	host_angular_velocity = p_host_ang_vel
 
+func configure_3d_orbit(
+	p_ecc: float,
+	p_periapsis: float,
+	p_tilt: float,
+	p_squash: float
+) -> void:
+	orbit_eccentricity = p_ecc
+	orbit_periapsis_angle = p_periapsis
+	orbit_plane_tilt = p_tilt
+	orbit_plane_squash = p_squash
+
+func configure_host_3d_orbit(
+	p_ecc: float,
+	p_periapsis: float,
+	p_tilt: float,
+	p_squash: float
+) -> void:
+	host_eccentricity = p_ecc
+	host_periapsis_angle = p_periapsis
+	host_plane_tilt = p_tilt
+	host_plane_squash = p_squash
+
 ## Evalúa la posición analítica local en la capa cósmica en el instante t_global de forma determinista O(1)
 func calculate_layer_position(global_time: float) -> Vector2:
 	var rel_orbit: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(
-		orbit_radius, initial_phase, angular_velocity, global_time
+		orbit_radius,
+		initial_phase,
+		angular_velocity,
+		global_time,
+		orbit_eccentricity,
+		orbit_periapsis_angle,
+		orbit_plane_tilt,
+		orbit_plane_squash
 	)
 	if center_type == SlotCenterType.PLANET:
 		var host_planet_orbit: Vector2 = CosmosKeplerOrbitMath.calculate_orbit_position(
-			host_orbit_radius, host_initial_theta, host_angular_velocity, global_time
+			host_orbit_radius,
+			host_initial_theta,
+			host_angular_velocity,
+			global_time,
+			host_eccentricity,
+			host_periapsis_angle,
+			host_plane_tilt,
+			host_plane_squash
 		)
 		return center_layer_position + host_planet_orbit + rel_orbit
 	return center_layer_position + rel_orbit

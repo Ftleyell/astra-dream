@@ -6,6 +6,8 @@ extends Resource
 @export_group("Visuales")
 @export var galaxy_id: StringName = &"spiral_andromeda_type"
 @export var galaxy_textures: Array[Texture2D] = []
+## Modo por textura: 0=Galaxia Espiral, 1=Supernova Remnant, 2=Pilares de Polvo, 3=Galaxia de Canto
+@export var landmark_modes: PackedInt32Array = PackedInt32Array([0, 1, 2, 3])
 
 @export_group("Dimensiones y Frustum")
 @export var maximum_bounding_radius: float = 2000.0
@@ -29,3 +31,8 @@ extends Resource
 	Color(1.0, 0.85, 0.95, 1.0),
 	Color(0.75, 1.0, 0.90, 1.0)
 ]
+
+@export_group("Perspectiva 3D")
+@export_range(0.0, 1.0, 0.05) var perspective_fov: float = 0.56
+@export var tilt_angle_range: Vector2 = Vector2(0.32, 0.78)
+@export_range(0.0, 0.6, 0.02) var depth_fade_strength: float = 0.34

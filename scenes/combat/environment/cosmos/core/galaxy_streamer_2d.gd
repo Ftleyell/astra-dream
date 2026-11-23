@@ -11,6 +11,7 @@ const CosmicPoiRegistry = preload("res://scenes/combat/environment/cosmos/core/c
 ##   simultáneas en pantalla de forma coherente con cualquier nivel de zoom.
 
 const GALAXY_DEEP_SHADER: Shader = preload("res://scenes/combat/environment/galaxy_deep.gdshader")
+const LANDMARK_DUST_PILLAR_SHADER: Shader = preload("res://scenes/combat/environment/cosmos/shaders/landmark_dust_pillar.gdshader")
 
 @export var landmark_profile: CosmosGalaxyLandmarkProfile
 @export var parallax_layer: Parallax2D
@@ -34,6 +35,9 @@ var _cached_screen_center_layer: Vector2 = Vector2.ZERO
 var _has_camera_override: bool = false
 var _override_cam_pos: Vector2 = Vector2.ZERO
 var _override_zoom: Vector2 = Vector2.ONE
+var _global_time: float = 0.0
+var _biome_color: Color = Color(0.24, 0.45, 0.85, 1.0)
+var _biome_harmony_mix: float = 0.44
 
 func set_camera_override(cam_pos: Vector2, zoom: Vector2) -> void:
 	_has_camera_override = true
@@ -91,6 +95,9 @@ func set_run_seed(p_seed: int) -> void:
 
 func _initialize_node_pool() -> void:
 	var count: int = landmark_profile.pool_size if (landmark_profile != null and landmark_profile.pool_size > 0) else pool_size
+	var spin_spd: float = landmark_profile.shader_spin_speed if landmark_profile != null else 0.006
+	var brightness: float = landmark_profile.overall_brightness if landmark_profile != null else 1.28
+	var pulse_int: float = landmark_profile.core_pulse_intensity if landmark_profile != null else 0.42
 	for i: int in range(count):
 		var sprite: Sprite2D = Sprite2D.new()
 		sprite.name = "PooledGalaxySprite_" + str(i)
@@ -98,19 +105,28 @@ func _initialize_node_pool() -> void:
 		sprite.visible = false
 		sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
 
+		var mat_lum: ShaderMaterial = null
 		if GALAXY_DEEP_SHADER != null:
-			var mat: ShaderMaterial = ShaderMaterial.new()
-			mat.shader = GALAXY_DEEP_SHADER
-			var spin_spd: float = landmark_profile.shader_spin_speed if landmark_profile != null else 0.015
-			var brightness: float = landmark_profile.overall_brightness if landmark_profile != null else 1.45
-			var pulse_int: float = landmark_profile.core_pulse_intensity if landmark_profile != null else 0.35
-			mat.set_shader_parameter("spin_speed", spin_spd)
-			mat.set_shader_parameter("overall_brightness", brightness)
-			mat.set_shader_parameter("core_pulse_intensity", pulse_int)
-			mat.set_shader_parameter("radial_fade_start", 0.38)
-			mat.set_shader_parameter("radial_fade_end", 0.49)
-			sprite.material = mat
+			mat_lum = ShaderMaterial.new()
+			mat_lum.shader = GALAXY_DEEP_SHADER
+			mat_lum.set_shader_parameter("landmark_mode", 0)
+			mat_lum.set_shader_parameter("spin_speed", spin_spd)
+			mat_lum.set_shader_parameter("overall_brightness", brightness)
+			mat_lum.set_shader_parameter("core_pulse_intensity", pulse_int)
+			mat_lum.set_shader_parameter("radial_fade_start", 0.28)
+			mat_lum.set_shader_parameter("radial_fade_end", 0.485)
+			sprite.set_meta(&"mat_luminous", mat_lum)
+			sprite.material = mat_lum
 
+		if LANDMARK_DUST_PILLAR_SHADER != null:
+			var mat_pil: ShaderMaterial = ShaderMaterial.new()
+			mat_pil.shader = LANDMARK_DUST_PILLAR_SHADER
+			mat_pil.set_shader_parameter("overall_brightness", 1.06)
+			mat_pil.set_shader_parameter("radial_fade_start", 0.34)
+			mat_pil.set_shader_parameter("radial_fade_end", 0.49)
+			sprite.set_meta(&"mat_pillar", mat_pil)
+
+		sprite.set_meta(&"landmark_mode", 0)
 		add_child(sprite)
 		_pool.append(sprite)
 
@@ -187,9 +203,11 @@ func _evaluate_frustum_and_stream(delta: float) -> void:
 				_configure_galaxy_instance(req_cell, g_pos, sprite)
 				_active_galaxies[req_cell] = sprite
 
-	# 3. Animar rotación y fade-in de las galaxias activas
+	# 3. Animar rotación (solo fallback sin textura) y fade-in de los landmarks activos
 	for sprite: Sprite2D in _active_galaxies.values():
-		sprite.rotation += landmark_profile.max_drift_rotation_speed * delta
+		var drift_spd: float = float(sprite.get_meta(&"drift_speed", landmark_profile.max_drift_rotation_speed))
+		if drift_spd != 0.0:
+			sprite.rotation += drift_spd * delta
 		if sprite.modulate.a < 1.0:
 			sprite.modulate.a = move_toward(sprite.modulate.a, 1.0, delta * 1.5)
 
@@ -198,13 +216,43 @@ func _intersects_frustum(pos: Vector2, center: Vector2, half_extents: Vector2) -
 	var boundary: Vector2 = half_extents + Vector2.ONE * (landmark_profile.maximum_bounding_radius + landmark_profile.safety_padding)
 	return delta_pos.x <= boundary.x and delta_pos.y <= boundary.y
 
+func _resolve_landmark_mode(tex: Texture2D, tex_idx: int) -> int:
+	if tex != null:
+		var p: String = tex.resource_path.to_lower()
+		if p.contains("edge_galaxy"):
+			return 3
+		if p.contains("dust_pillars"):
+			return 2
+		if p.contains("supernova"):
+			return 1
+		if p.contains("spiral_galaxy"):
+			return 0
+	if landmark_profile != null and tex_idx >= 0 and tex_idx < landmark_profile.landmark_modes.size():
+		return clampi(int(landmark_profile.landmark_modes[tex_idx]), 0, 3)
+	return 0
+
 func _configure_galaxy_instance(cell: Vector2i, layer_pos: Vector2, sprite: Sprite2D) -> void:
 	sprite.position = layer_pos
 
+	var lm_mode: int = 0
 	if not landmark_profile.galaxy_textures.is_empty():
 		var tex_idx: int = int(_macro_grid.get_cell_pseudorandom_float(cell, 11) * float(landmark_profile.galaxy_textures.size()))
 		tex_idx = clampi(tex_idx, 0, landmark_profile.galaxy_textures.size() - 1)
 		sprite.texture = landmark_profile.galaxy_textures[tex_idx]
+		lm_mode = _resolve_landmark_mode(sprite.texture, tex_idx)
+
+	sprite.set_meta(&"landmark_mode", lm_mode)
+	var drift_spd: float = 0.0
+	if sprite.texture == null:
+		drift_spd = landmark_profile.max_drift_rotation_speed
+	elif lm_mode == 0 or lm_mode == 1:
+		var sign_rot: float = 1.0 if _macro_grid.get_cell_pseudorandom_float(cell, 79) >= 0.5 else -1.0
+		drift_spd = clampf(landmark_profile.max_drift_rotation_speed * 0.8, 0.0, 0.0016) * sign_rot
+	sprite.set_meta(&"drift_speed", drift_spd)
+	if lm_mode == 2 and sprite.has_meta(&"mat_pillar"):
+		sprite.material = sprite.get_meta(&"mat_pillar") as ShaderMaterial
+	elif sprite.has_meta(&"mat_luminous"):
+		sprite.material = sprite.get_meta(&"mat_luminous") as ShaderMaterial
 
 	var scale_factor: float = lerpf(
 		landmark_profile.base_scale_range.x,
@@ -212,7 +260,13 @@ func _configure_galaxy_instance(cell: Vector2i, layer_pos: Vector2, sprite: Spri
 		_macro_grid.get_cell_pseudorandom_float(cell, 22)
 	)
 	sprite.scale = Vector2.ONE * scale_factor
-	sprite.rotation = _macro_grid.get_cell_pseudorandom_float(cell, 33) * TAU
+	var rot_rnd: float = _macro_grid.get_cell_pseudorandom_float(cell, 33)
+	if lm_mode == 2:
+		sprite.rotation = (rot_rnd - 0.5) * 0.60
+	elif lm_mode == 3:
+		sprite.rotation = (rot_rnd - 0.5) * 1.56
+	else:
+		sprite.rotation = rot_rnd * TAU
 
 	var color_count: int = landmark_profile.modulate_colors.size()
 	var chosen_color: Color = Color.WHITE
@@ -221,16 +275,69 @@ func _configure_galaxy_instance(cell: Vector2i, layer_pos: Vector2, sprite: Spri
 		color_idx = clampi(color_idx, 0, color_count - 1)
 		chosen_color = landmark_profile.modulate_colors[color_idx]
 
-	sprite.modulate = chosen_color
+	var phase_off: float = _macro_grid.get_cell_pseudorandom_float(cell, 73) * 80.0
+	var fov: float = landmark_profile.perspective_fov
+	var t_range: Vector2 = landmark_profile.tilt_angle_range
+	var d_fade: float = landmark_profile.depth_fade_strength
+	var tilt_factor: float = 1.0
+	match lm_mode:
+		1:
+			tilt_factor = 0.80
+		2:
+			tilt_factor = 0.62
+		3:
+			tilt_factor = 0.50
+		_:
+			tilt_factor = 1.0
+	var sgn_x: float = 1.0 if _macro_grid.get_cell_pseudorandom_float(cell, 103) >= 0.5 else -1.0
+	var sgn_y: float = 1.0 if _macro_grid.get_cell_pseudorandom_float(cell, 109) >= 0.5 else -1.0
+	var eff_tilt_x: float = lerpf(t_range.x, t_range.y, _macro_grid.get_cell_pseudorandom_float(cell, 91)) * sgn_x * tilt_factor
+	var eff_tilt_y: float = lerpf(t_range.x, t_range.y, _macro_grid.get_cell_pseudorandom_float(cell, 97)) * sgn_y * tilt_factor
+
+	sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	if sprite.material is ShaderMaterial:
 		var smat: ShaderMaterial = sprite.material as ShaderMaterial
 		smat.set_shader_parameter("tint_color", chosen_color)
-		if landmark_profile != null:
+		smat.set_shader_parameter("phase_offset", phase_off)
+		smat.set_shader_parameter("global_time", _global_time)
+		smat.set_shader_parameter("biome_tint_color", _biome_color)
+		smat.set_shader_parameter("tilt_x", eff_tilt_x)
+		smat.set_shader_parameter("tilt_y", eff_tilt_y)
+		smat.set_shader_parameter("perspective_fov", fov)
+		smat.set_shader_parameter("depth_fade_strength", d_fade)
+		if lm_mode == 2 and sprite.has_meta(&"mat_pillar"):
+			smat.set_shader_parameter("overall_brightness", clampf(landmark_profile.overall_brightness * 0.96, 0.85, 1.18))
+			smat.set_shader_parameter("anim_speed", 1.05)
+			smat.set_shader_parameter("rim_pulse_strength", 0.36)
+			smat.set_shader_parameter("biome_harmony_mix", clampf(_biome_harmony_mix * 1.45, 0.0, 0.78))
+		else:
+			smat.set_shader_parameter("landmark_mode", lm_mode)
 			smat.set_shader_parameter("spin_speed", landmark_profile.shader_spin_speed)
-			smat.set_shader_parameter("overall_brightness", landmark_profile.overall_brightness)
 			smat.set_shader_parameter("core_pulse_intensity", landmark_profile.core_pulse_intensity)
+			smat.set_shader_parameter("biome_harmony_mix", clampf(_biome_harmony_mix * 1.30, 0.0, 0.68))
+			match lm_mode:
+				3:
+					smat.set_shader_parameter("dark_edge_dissolve", 0.94)
+					smat.set_shader_parameter("depth_haze_strength", 0.68)
+					smat.set_shader_parameter("max_opacity", 0.50)
+					smat.set_shader_parameter("halo_glow_strength", 0.42)
+					smat.set_shader_parameter("anim_speed", 1.15)
+					smat.set_shader_parameter("overall_brightness", landmark_profile.overall_brightness * 0.96)
+				1:
+					smat.set_shader_parameter("dark_edge_dissolve", 0.90)
+					smat.set_shader_parameter("depth_haze_strength", 0.62)
+					smat.set_shader_parameter("max_opacity", 0.54)
+					smat.set_shader_parameter("halo_glow_strength", 0.48)
+					smat.set_shader_parameter("anim_speed", 1.10)
+					smat.set_shader_parameter("overall_brightness", landmark_profile.overall_brightness * 1.02)
+				_:
+					smat.set_shader_parameter("dark_edge_dissolve", 0.92)
+					smat.set_shader_parameter("depth_haze_strength", 0.66)
+					smat.set_shader_parameter("max_opacity", 0.50)
+					smat.set_shader_parameter("halo_glow_strength", 0.44)
+					smat.set_shader_parameter("anim_speed", 1.05)
+					smat.set_shader_parameter("overall_brightness", landmark_profile.overall_brightness * 0.98)
 
-	sprite.modulate.a = 0.0
 	sprite.visible = true
 
 ## Evalúa la posición analítica determinista de una galaxia en su macro-sector
@@ -241,6 +348,37 @@ func evaluate_galaxy_layer_position(cell: Vector2i) -> Vector2:
 	var offset_norm: Vector2 = _macro_grid.get_cell_normalized_offset(cell, 883)
 	var jitter: Vector2 = (offset_norm - Vector2(0.5, 0.5)) * max_jitter
 	return cell_base_center + jitter
+
+## Actualiza el tinte armónico del bioma en todas las galaxias del pool sin asignaciones
+func update_biome_harmony(biome_color: Color, harmony_mix: float = 0.30) -> void:
+	_biome_color = biome_color
+	_biome_harmony_mix = harmony_mix
+	for sprite: Sprite2D in _pool:
+		_apply_biome_to_sprite_mats(sprite, biome_color, harmony_mix)
+	for sprite_var: Variant in _active_galaxies.values():
+		_apply_biome_to_sprite_mats(sprite_var as Sprite2D, biome_color, harmony_mix)
+
+func _apply_biome_to_sprite_mats(sprite: Sprite2D, biome_color: Color, harmony_mix: float) -> void:
+	if sprite == null:
+		return
+	if sprite.has_meta(&"mat_luminous"):
+		var m_lum: ShaderMaterial = sprite.get_meta(&"mat_luminous") as ShaderMaterial
+		if m_lum != null:
+			m_lum.set_shader_parameter("biome_tint_color", biome_color)
+			m_lum.set_shader_parameter("biome_harmony_mix", clampf(harmony_mix * 1.30, 0.0, 0.68))
+	if sprite.has_meta(&"mat_pillar"):
+		var m_pil: ShaderMaterial = sprite.get_meta(&"mat_pillar") as ShaderMaterial
+		if m_pil != null:
+			m_pil.set_shader_parameter("biome_tint_color", biome_color)
+			m_pil.set_shader_parameter("biome_harmony_mix", clampf(harmony_mix * 1.45, 0.0, 0.78))
+
+## Sincroniza el tiempo global cósmico en los shaders activos sin asignaciones
+func update_global_time(p_time: float) -> void:
+	_global_time = p_time
+	for sprite_var: Variant in _active_galaxies.values():
+		var sprite: Sprite2D = sprite_var as Sprite2D
+		if sprite != null and sprite.material is ShaderMaterial:
+			(sprite.material as ShaderMaterial).set_shader_parameter("global_time", p_time)
 
 ## Métodos públicos de consulta para introspección, gizmos y testing
 func get_active_galaxies() -> Dictionary:

@@ -2,6 +2,7 @@
 
 > **Propósito:** Índice ejecutivo liviano del milestone alcanzado en **Valentina v2 (8-Dir Nativo)** bajo `sandbox/pilot_rig_lab/`.
 > Permite retomar el desarrollo en sesiones futuras con cero exploración ciega y saber qué está cerrado, qué labs/tests existen y cuáles son los siguientes pasos hacia producción.
+> **Plan Maestro de Integración (Fase 1 Completada — Próximo: Fase 2 Promoción a Producción):** [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md)
 > **Reglas de edición y tabla contractual:** [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md)
 
 ---
@@ -17,8 +18,9 @@
 | **Rig Facial Vivo + Cabello 3-Zonas + Ojos Amatista** | **Cerrado** | `planar_rig_face_controller.gd`, `face_lab/`, `valentina_v2_face_anim.tres`, `rig_face_live.gdshaderinc` | [`VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md) |
 | **Alas Psíquicas & Propulsión Base Multi-Piloto** | **Cerrado** | `valentina_base_propulsion_controller.gd`, `wing_red_glow.gdshader`, `valentina_v2_base_propulsion.tres`, `tools/build_valentina_v2_wings.py` | [`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) |
 | **VFX Power-Up Sandevistan (Estela Ping-Pong)** | **Cerrado (I+D)** | `vfx_lab/sandevistan_trail_controller.gd`, `sandevistan_*.gdshader`, `valentina_v2_propulsion_vfx.tres` | [`VALENTINA_PROPULSION_VFX_SPEC.md`](VALENTINA_PROPULSION_VFX_SPEC.md) |
-| **Anillo Orbital 2.5D & Guns Lab (Base Armas)** | **Base Activa (I+D)** | `guns_lab/valentina_guns_lab.tscn`, `orbital_weapon_ring_controller.gd`, `orbital_weapon_25d.gdshader`, `valentina_v2_orbital_weapon.tres` | `.agents/rules/pilot_rig_lab.md` |
-| **Live Banner 2.5D & Banner Lab (Splash Select)** | **Base Activa (I+D)** | `banner_lab/valentina_banner_lab.tscn`, `pilot_live_banner_controller.gd`, `pilot_live_banner.gdshader`, `tools/build_valentina_live_banner.py`, `valentina_v2_live_banner.tres` | `.agents/rules/pilot_rig_lab.md` |
+| **Anillo Orbital 2.5D & Guns Lab (Base Armas)** | **Base Activa (I+D)** | `guns_lab/valentina_guns_lab.tscn`, `orbital_weapon_ring_controller.gd`, `orbital_weapon_25d.gdshader`, `valentina_v2_orbital_weapon.tres` | [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md) |
+| **3D Lab & Alas 3D Cel-Shaded (*Astral Seraph*)** | **Cerrado (Estándar)** | `3d_lab/valentina_3d_lab.tscn`, `astral_wings_3d_{mesh_builder,controller}.gd`, `astral_wing_{toon_3d,outline_3d,post_2d}.gdshader`, `valentina_v2_wings_3d.tres` | [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md) · [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) |
+| **Live Banner 2.5D & Banner Lab (Splash Select)** | **Base Activa (I+D)** | `banner_lab/valentina_banner_lab.tscn`, `pilot_live_banner_controller.gd`, `pilot_live_banner.gdshader`, `tools/build_valentina_live_banner.py`, `valentina_v2_live_banner.tres` | [`VALENTINA_LIVE_BANNER_SPEC.md`](VALENTINA_LIVE_BANNER_SPEC.md) |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
 
 ---
@@ -33,14 +35,21 @@
 5. **Laboratorio VFX Alas + Sandevistan:** `vfx_lab/valentina_vfx_lab.tscn` — Calibración de alas base, estela Sandevistan, danmaku simulado y guardado `.tres`.
 6. **Laboratorio de Armamento Orbital 2.5D (Guns Lab):** `guns_lab/valentina_guns_lab.tscn` — Base oficial para el rework de armas (anillo orbital 3D con Z-sorting atrás/delante, 1–4 slots, deformación trapezoidal/escorzo/extrusión 2.5D, recoil, HUD y guardado `.tres`).
 7. **Laboratorio Live Banner 2.5D (Banner Lab):** `banner_lab/valentina_banner_lab.tscn` — Base oficial para el Splash Art vivo de Character Select + icono `1:1` (`512×512`) compilados vía `tools/build_valentina_live_banner.py` con 4 máscaras IA (`refs/mask1..4_*.png`), `UnifiedBannerGroup` (`CanvasGroup` + `pilot_rig_pass2.gdshader`), brazo libre bajo hombrera estática, ojo Amatista Profundo con parpadeo anatómico, iluminación roja direccional y despliegue firme de las 12 cuchillas de alas con 2-phase Impact Frames (`Enter` / `E`).
+8. **Laboratorio 3D Cel-Shaded / Alas 3D (3D Lab — Estándar):** `3d_lab/valentina_3d_lab.tscn` — Estándar oficial Multi-Piloto de las Alas *Astral Seraph* 3D (`enable_3d_wings` en `PlanarCombatRig`, activo en `planar_combat_rig_proto.tscn` y `valentina_guns_lab.tscn`), dual-pass `768×768` Back/Front, canales rojos enmarcados con glow HDR + flujo raíz→punta, *crease ink*, Post-Pass 2D (`CAS Sharpen` + contorno caligráfico), 6 animaciones (`1`–`6`), Turntable 360° (`T`), comparativa A/B (`B`), sync 10 skins + iluminación `Cosmos` y guardado `.tres` (ver [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md) y [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md)).
+9. **Laboratorio de Iluminación Cósmica (Cosmos Lighting Lab — Fase 1 Completada):** `cosmos_lighting_lab/valentina_cosmos_lab.tscn` — Banco integrado sobre Cosmos Engine v3.2c (`CosmicLightingSampler`, biomas `[B]`, eclipses/soles `[T]`, sectores `[N]`, guías 3D `[O]`/`[G]`, skins `[K]` y calidades `0/1/2`), validado visualmente en Vulkan 1.4 antes de iniciar la **Fase 2** (promoción a producción en `scenes/pilots/`).
 
-### Comandos Rápidos de Verificación (`tests/sandbox/`)
+### Comandos Rápidos de Verificación (`tests/sandbox/` & `tests/unit/`)
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_face_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vfx_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_guns_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_lighting_sampler"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "kepler_3d_orbits"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "living_universe_sectors"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "interstellar_corridors"
 ```
 
 ---

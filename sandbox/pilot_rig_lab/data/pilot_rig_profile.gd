@@ -23,6 +23,8 @@ extends Resource
 @export var face_anim_config: Resource = null
 @export var base_propulsion_config: Resource = null
 @export var wings_assets_subdir: String = "wings"
+@export var wings_3d_config: Resource = null
+@export var prefer_3d_wings: bool = true
 
 @export_group("Presets Asociados")
 @export var skins: Array[PilotSkinPreset] = []

@@ -12,6 +12,11 @@ extends Resource
 @export_range(0.005, 0.1, 0.005) var flat_core_feather: float = 0.035
 @export var star_core_radius: float = 420.0
 
+@export_group("Firma Visual Especial (Arquetipo)")
+@export_enum("Estándar:0", "Magnetar (Disco + Jets):1", "Enana Blanca (Nebulosa Planetaria):2", "Agujero Negro (Singularidad + Lente):3", "Nova Esmeralda (Ondas de Choque):4") var star_signature_mode: int = 0
+@export var anomaly_primary_color: Color = Color(0.72, 0.35, 1.0, 1.0)
+@export var anomaly_secondary_color: Color = Color(0.28, 0.94, 1.0, 1.0)
+
 @export_group("Dinámica de Plasma y Rotación")
 @export_range(0.001, 0.1, 0.001) var axial_rotation_speed: float = 0.008
 @export_range(0.0, 0.15, 0.005) var heat_distortion_strength: float = 0.045

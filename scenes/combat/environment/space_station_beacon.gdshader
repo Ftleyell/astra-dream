@@ -39,10 +39,20 @@ uniform float beacon_4_radius : hint_range(0.002, 0.05) = 0.018;
 // Intensidad global de destello
 uniform float beacon_intensity : hint_range(0.0, 5.0) = 2.2;
 
-// Perspectiva Aérea Cósmica (Ofuscación de distancia, velo ambiental y levantamiento de sombras)
+// Perspectiva Aérea Cósmica e Iluminación Solar Direccional Unificada
 uniform vec4 ambient_haze_color : source_color = vec4(0.06, 0.09, 0.18, 1.0);
-uniform float ambient_haze_intensity : hint_range(0.0, 1.0) = 0.38;
-uniform float distance_desaturation : hint_range(0.0, 1.0) = 0.25;
+uniform float ambient_haze_intensity : hint_range(0.0, 1.0) = 0.20;
+uniform float distance_desaturation : hint_range(0.0, 1.0) = 0.08;
+uniform vec2 light_direction = vec2(0.85, -0.52);
+uniform vec4 star_light_color : source_color = vec4(1.0, 0.90, 0.72, 1.0);
+uniform vec4 biome_tint_color : source_color = vec4(0.18, 0.28, 0.55, 1.0);
+uniform float eclipse_shadow : hint_range(0.0, 1.0) = 0.0;
+
+varying vec2 v_world_dir;
+
+void vertex() {
+	v_world_dir = (MODEL_MATRIX * vec4(VERTEX, 0.0, 0.0)).xy;
+}
 
 
 float calculate_strobe_pulse(float time, float period, float phase_offset) {
@@ -90,14 +100,27 @@ void fragment() {
 
 	float beacon_alpha = clamp(length(beacon_light) * 0.5, 0.0, 1.0);
 
-	// Perspectiva aérea cósmica: fundir sombras con la niebla ambiental para disimular imperfecciones
+	// Perspectiva aérea cósmica + iluminación direccional 2.5D + eclipse orbital
 	vec3 station_rgb = base_color.rgb;
 	if (base_color.a > 0.01) {
 		float luma = dot(station_rgb, vec3(0.299, 0.587, 0.114));
 		station_rgb = mix(station_rgb, vec3(luma), distance_desaturation);
 
-		float shadow_mask = 1.0 - clamp(luma * 1.6, 0.0, 1.0);
-		station_rgb = mix(station_rgb, ambient_haze_color.rgb, ambient_haze_intensity * (0.35 + shadow_mask * 0.65));
+		vec2 ldir = normalize(light_direction + vec2(0.0001, 0.0));
+		vec2 wdir = (length(v_world_dir) > 0.0001) ? normalize(v_world_dir) : vec2(0.0, -1.0);
+		float facing = dot(wdir, ldir);
+		float shade = smoothstep(-0.60, 0.55, facing) * (1.0 - eclipse_shadow * 0.78);
+
+		// Conservar parcialmente ventanas/reactores auto-iluminados sin apagarlos en sombra
+		float emissive_keep = smoothstep(0.62, 0.96, max(base_color.r, max(base_color.g, base_color.b))) * 0.65;
+		vec3 key_col = mix(vec3(1.0), star_light_color.rgb, 0.45);
+		vec3 lit_station = station_rgb * mix(vec3(0.22, 0.24, 0.36), key_col * 1.12, max(shade, emissive_keep));
+		float rim_crescent = smoothstep(0.35, 0.92, facing) * (1.0 - eclipse_shadow * 0.85) * luma;
+		lit_station += star_light_color.rgb * rim_crescent * 0.24;
+
+		vec3 haze_col = mix(ambient_haze_color.rgb, biome_tint_color.rgb * 0.65, 0.45);
+		float shadow_mask = 1.0 - clamp(shade * 0.85 + luma * 0.25, 0.0, 1.0);
+		station_rgb = mix(lit_station, haze_col, ambient_haze_intensity * (0.28 + shadow_mask * 0.72));
 	}
 
 	// Composición final: cuerpo difuminado a la distancia + balizas nítidas

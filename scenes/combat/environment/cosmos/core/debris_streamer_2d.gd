@@ -12,14 +12,8 @@ const ATLAS_DIR_PATH: String = "res://assets/environments/parallax_space/atlas_t
 const ATLAS_SIZE: Vector2 = Vector2(2048.0, 2048.0)
 const SHADER_PATH: String = "res://scenes/combat/environment/cosmos/shaders/debris_cutout.gdshader"
 
-# Caché estática compartida en memoria para evitar I/O redundante entre instancias (latencia <1ms)
-static var _cached_metadata_ready: bool = false
-static var _cached_rock_micro: Array[Dictionary] = []
-static var _cached_rock_medium: Array[Dictionary] = []
-static var _cached_rock_macro: Array[Dictionary] = []
-static var _cached_scrap_micro: Array[Dictionary] = []
-static var _cached_scrap_medium: Array[Dictionary] = []
-static var _cached_scrap_macro: Array[Dictionary] = []
+# Caché estática compartida por ruta de metadatos para evitar I/O redundante entre instancias y no colisionar v2 vs legacy
+static var _cached_metadata_by_path: Dictionary = {}
 
 class DebrisCellChunk:
 	var root: Node2D = null
@@ -41,6 +35,7 @@ class DebrisCellChunk:
 @export var solar_streamer: CosmosSolarSystemStreamer = null
 @export var pool_size: int = 9
 @export var is_frozen: bool = false
+@export_range(0.0, 0.85, 0.01) var depth_haze_strength: float = 0.24
 
 var _global_time: float = 0.0
 var _multimesh_instance: MultiMeshInstance2D = null
@@ -50,6 +45,8 @@ var _scrap_multimesh: MultiMesh = null
 
 var _pool: Array[DebrisCellChunk] = []
 var _active_chunks: Dictionary = {} # Vector2i -> DebrisCellChunk
+var _cached_rock_mats: Array[ShaderMaterial] = []
+var _cached_scrap_mats: Array[ShaderMaterial] = []
 
 var _macro_grid: CosmosMacroGrid = null
 var _current_cell: Vector2i = Vector2i(2147483647, 2147483647)
@@ -116,14 +113,19 @@ func _load_atlas_metadata() -> void:
 	_scrap_medium.clear()
 	_scrap_macro.clear()
 
-	# Usar caché estática si ya fue computada en esta sesión
-	if _cached_metadata_ready:
-		_rock_micro.append_array(_cached_rock_micro)
-		_rock_medium.append_array(_cached_rock_medium)
-		_rock_macro.append_array(_cached_rock_macro)
-		_scrap_micro.append_array(_cached_scrap_micro)
-		_scrap_medium.append_array(_cached_scrap_medium)
-		_scrap_macro.append_array(_cached_scrap_macro)
+	var meta_path: String = METADATA_PATH
+	if profile != null and not profile.metadata_json_path.is_empty():
+		meta_path = profile.metadata_json_path
+
+	# Usar caché estática por ruta si ya fue computada en esta sesión
+	if _cached_metadata_by_path.has(meta_path):
+		var cached: Dictionary = _cached_metadata_by_path[meta_path] as Dictionary
+		_rock_micro.append_array(cached.get("rock_micro", []))
+		_rock_medium.append_array(cached.get("rock_medium", []))
+		_rock_macro.append_array(cached.get("rock_macro", []))
+		_scrap_micro.append_array(cached.get("scrap_micro", []))
+		_scrap_medium.append_array(cached.get("scrap_medium", []))
+		_scrap_macro.append_array(cached.get("scrap_macro", []))
 		return
 
 	var rock_micro_max: float = profile.rock_micro_max_area if profile != null else 7000.0
@@ -131,9 +133,9 @@ func _load_atlas_metadata() -> void:
 	var scrap_micro_max: float = profile.scrap_micro_max_area if profile != null else 9000.0
 	var scrap_med_max: float = profile.scrap_medium_max_area if profile != null else 28000.0
 
-	# 1. Ruta rápida: leer debris_metadata.json pre-extraído en un solo archivo (0.2 ms)
-	if FileAccess.file_exists(METADATA_PATH):
-		var meta_file: FileAccess = FileAccess.open(METADATA_PATH, FileAccess.READ)
+	# 1. Ruta rápida: leer JSON de metadatos de atlas (0.2 ms)
+	if FileAccess.file_exists(meta_path):
+		var meta_file: FileAccess = FileAccess.open(meta_path, FileAccess.READ)
 		if meta_file != null:
 			var json_content: String = meta_file.get_as_text()
 			var parsed_meta: Variant = JSON.parse_string(json_content)
@@ -169,9 +171,9 @@ func _load_atlas_metadata() -> void:
 								else:
 									_scrap_macro.append(item)
 
-	# Si se cargó exitosamente desde metadata.json, guardar en caché estática y finalizar
+	# Si se cargó exitosamente desde JSON, guardar en caché estática y finalizar
 	if not _rock_micro.is_empty() or not _rock_medium.is_empty() or not _rock_macro.is_empty():
-		_finalize_and_cache_metadata()
+		_finalize_and_cache_metadata(meta_path)
 		return
 
 	var loaded_paths: Array[String] = []
@@ -229,9 +231,9 @@ func _load_atlas_metadata() -> void:
 					else:
 						_scrap_macro.append(item)
 
-	_finalize_and_cache_metadata()
+	_finalize_and_cache_metadata(meta_path)
 
-func _finalize_and_cache_metadata() -> void:
+func _finalize_and_cache_metadata(meta_path: String = METADATA_PATH) -> void:
 	var fallback_item: Dictionary = {
 		"uv_rect": Rect2(0.0, 0.0, 1.0, 1.0),
 		"pixel_size": Vector2(32.0, 32.0),
@@ -250,21 +252,14 @@ func _finalize_and_cache_metadata() -> void:
 	if _scrap_macro.is_empty():
 		_scrap_macro.append(fallback_item)
 
-	_cached_rock_micro.clear()
-	_cached_rock_micro.append_array(_rock_micro)
-	_cached_rock_medium.clear()
-	_cached_rock_medium.append_array(_rock_medium)
-	_cached_rock_macro.clear()
-	_cached_rock_macro.append_array(_rock_macro)
-
-	_cached_scrap_micro.clear()
-	_cached_scrap_micro.append_array(_scrap_micro)
-	_cached_scrap_medium.clear()
-	_cached_scrap_medium.append_array(_scrap_medium)
-	_cached_scrap_macro.clear()
-	_cached_scrap_macro.append_array(_scrap_macro)
-
-	_cached_metadata_ready = true
+	_cached_metadata_by_path[meta_path] = {
+		"rock_micro": _rock_micro.duplicate(),
+		"rock_medium": _rock_medium.duplicate(),
+		"rock_macro": _rock_macro.duplicate(),
+		"scrap_micro": _scrap_micro.duplicate(),
+		"scrap_medium": _scrap_medium.duplicate(),
+		"scrap_macro": _scrap_macro.duplicate(),
+	}
 
 func _initialize_multimesh() -> void:
 	# Quad unitario normalizado de 1.0 x 1.0 para respetar píxeles exactos en Transform2D
@@ -281,6 +276,8 @@ func _initialize_multimesh() -> void:
 	_last_scrap_instance_count = scrap_count
 	_pool.clear()
 	_active_chunks.clear()
+	_cached_rock_mats.clear()
+	_cached_scrap_mats.clear()
 
 	for i: int in range(maxi(pool_size, 1)):
 		var chunk: DebrisCellChunk = DebrisCellChunk.new()
@@ -306,7 +303,9 @@ func _initialize_multimesh() -> void:
 			mat_rock.shader = shader_res
 			if rock_tex != null:
 				mat_rock.set_shader_parameter("atlas_texture", rock_tex)
+			mat_rock.set_shader_parameter("depth_haze_strength", depth_haze_strength)
 			chunk.rock_multimesh_instance.material = mat_rock
+			_cached_rock_mats.append(mat_rock)
 
 		chunk.root.add_child(chunk.rock_multimesh_instance)
 
@@ -327,7 +326,9 @@ func _initialize_multimesh() -> void:
 				var mat_scrap: ShaderMaterial = ShaderMaterial.new()
 				mat_scrap.shader = shader_res
 				mat_scrap.set_shader_parameter("atlas_texture", scrap_tex)
+				mat_scrap.set_shader_parameter("depth_haze_strength", depth_haze_strength)
 				chunk.scrap_multimesh_instance.material = mat_scrap
+				_cached_scrap_mats.append(mat_scrap)
 
 			chunk.root.add_child(chunk.scrap_multimesh_instance)
 
@@ -347,11 +348,48 @@ func _process(delta: float) -> void:
 	_evaluate_and_stream()
 
 func _update_shader_time() -> void:
-	for chunk: DebrisCellChunk in _pool:
-		if chunk.rock_multimesh_instance != null and chunk.rock_multimesh_instance.material is ShaderMaterial:
-			(chunk.rock_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
-		if chunk.scrap_multimesh_instance != null and chunk.scrap_multimesh_instance.material is ShaderMaterial:
-			(chunk.scrap_multimesh_instance.material as ShaderMaterial).set_shader_parameter("global_time", _global_time)
+	for mat: ShaderMaterial in _cached_rock_mats:
+		mat.set_shader_parameter("global_time", _global_time)
+	for mat: ShaderMaterial in _cached_scrap_mats:
+		mat.set_shader_parameter("global_time", _global_time)
+
+## Sincroniza iluminación direccional solar, perspectiva aérea del bioma, eclipses y oclusores sin asignaciones
+func update_atmospheric_lighting(
+	light_dir: Vector2,
+	star_col: Color,
+	star_inf: float,
+	biome_haze: Color,
+	eclipse_val: float = 0.0,
+	star_screen_uv: Vector2 = Vector2(0.5, 0.5),
+	viewport_aspect: float = 1.7778,
+	planet_occluders: Array[Vector4] = [],
+	occluder_count: int = 0
+) -> void:
+	var eff_occ_count: int = mini(occluder_count, planet_occluders.size())
+	for mat: ShaderMaterial in _cached_rock_mats:
+		mat.set_shader_parameter("light_direction", light_dir)
+		mat.set_shader_parameter("star_light_color", star_col)
+		mat.set_shader_parameter("star_influence", star_inf)
+		mat.set_shader_parameter("biome_haze_color", biome_haze)
+		mat.set_shader_parameter("depth_haze_strength", depth_haze_strength)
+		mat.set_shader_parameter("eclipse_shadow", eclipse_val)
+		mat.set_shader_parameter("star_screen_uv", star_screen_uv)
+		mat.set_shader_parameter("viewport_aspect", viewport_aspect)
+		mat.set_shader_parameter("planet_occluder_count", eff_occ_count)
+		if eff_occ_count > 0:
+			mat.set_shader_parameter("planet_occluders", planet_occluders)
+	for mat: ShaderMaterial in _cached_scrap_mats:
+		mat.set_shader_parameter("light_direction", light_dir)
+		mat.set_shader_parameter("star_light_color", star_col)
+		mat.set_shader_parameter("star_influence", star_inf)
+		mat.set_shader_parameter("biome_haze_color", biome_haze)
+		mat.set_shader_parameter("depth_haze_strength", depth_haze_strength)
+		mat.set_shader_parameter("eclipse_shadow", eclipse_val)
+		mat.set_shader_parameter("star_screen_uv", star_screen_uv)
+		mat.set_shader_parameter("viewport_aspect", viewport_aspect)
+		mat.set_shader_parameter("planet_occluder_count", eff_occ_count)
+		if eff_occ_count > 0:
+			mat.set_shader_parameter("planet_occluders", planet_occluders)
 
 ## Obtiene la posición lógica en el plano del estrato de paralaje
 func get_layer_focal_position() -> Vector2:
@@ -477,9 +515,8 @@ func _fill_multimesh_buffer(
 	var kuiper_pad: float = profile.kuiper_inner_padding if profile != null else 300.0
 
 	if solar_streamer != null:
-		var sys_rnd: float = _macro_grid.get_cell_pseudorandom_float(cell, 9091)
 		var spawn_chance: float = celestial_profile.spawn_chance if celestial_profile != null else 0.75
-		if sys_rnd <= spawn_chance:
+		if CosmosSolarSystemStreamer.is_cell_solar(cell, _macro_grid, spawn_chance, solar_streamer.poi_registry):
 			cell_has_star = true
 			var sys_world_pos: Vector2 = solar_streamer.get_system_position_for_cell(cell)
 			star_offset = sys_world_pos - cell_center
@@ -488,8 +525,7 @@ func _fill_multimesh_buffer(
 			var base_max_orbit: float = arch.orbit_radius_max if arch != null else (celestial_profile.orbit_radius_max if celestial_profile != null else 4400.0)
 			kuiper_r_inner = base_max_orbit + kuiper_pad
 	elif celestial_profile != null:
-		var sys_rnd: float = _macro_grid.get_cell_pseudorandom_float(cell, 9091)
-		if sys_rnd <= celestial_profile.spawn_chance:
+		if CosmosSolarSystemStreamer.is_cell_solar(cell, _macro_grid, celestial_profile.spawn_chance, null):
 			cell_has_star = true
 			var cell_seed: int = run_seed ^ CosmosHasher.hash_2d(cell.x, cell.y, 777)
 			var arch: CosmosStarArchetype = celestial_profile.get_archetype_for_seed(cell_seed)
@@ -578,8 +614,8 @@ func has_star_in_cell(cell: Vector2i) -> bool:
 		return true
 	if _macro_grid == null:
 		_initialize_macro_grid()
-	var sys_rnd: float = _macro_grid.get_cell_pseudorandom_float(cell, 9091)
-	return sys_rnd <= celestial_profile.spawn_chance
+	var reg: CosmicPoiRegistry = solar_streamer.poi_registry if solar_streamer != null else null
+	return CosmosSolarSystemStreamer.is_cell_solar(cell, _macro_grid, celestial_profile.spawn_chance, reg)
 
 ## Devuelve el desplazamiento determinista de la estrella en la celda indicada respecto al centro (0, 0)
 func get_star_offset_for_cell(cell: Vector2i) -> Vector2:

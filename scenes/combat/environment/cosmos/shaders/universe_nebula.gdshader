@@ -29,28 +29,34 @@ uniform float mid_stars_sparkle_intensity : hint_range(0.0, 3.0) = 1.4;
 uniform float mid_stars_halo_radius : hint_range(0.1, 4.0) = 1.8;
 uniform float mid_stars_gas_interaction : hint_range(0.0, 2.0) = 0.85;
 
-// Textura de nebulosa seamless en tiles (2048x2048) modulada con FBM
-uniform sampler2D nebula_tile_texture : repeat_enable, filter_linear;
-uniform float nebula_tile_scale : hint_range(0.00005, 0.005) = 0.00035;
-uniform float nebula_tile_mix : hint_range(0.0, 1.0) = 0.45;
+// Texturas de nebulosa anime seamless (1024x1024) moduladas con FBM
+uniform sampler2D nebula_tile_texture : repeat_enable, filter_linear_mipmap;
+uniform sampler2D nebula_wisps_texture : repeat_enable, filter_linear_mipmap;
+uniform float nebula_tile_scale : hint_range(0.00005, 0.005) = 0.00040;
+uniform float nebula_tile_mix : hint_range(0.0, 1.0) = 0.72;
+uniform float dark_dust_lane_strength : hint_range(0.0, 1.0) = 0.62;
 
 // Configuración Bioma A
-uniform vec4 biome_a_color_deep : source_color = vec4(0.01, 0.01, 0.03, 1.0);
-uniform vec4 biome_a_color_gas_primary : source_color = vec4(0.18, 0.04, 0.28, 0.8);
-uniform vec4 biome_a_color_gas_secondary : source_color = vec4(0.02, 0.22, 0.38, 0.6);
+uniform vec4 biome_a_color_deep : source_color = vec4(0.004, 0.005, 0.020, 1.0);
+uniform vec4 biome_a_color_gas_primary : source_color = vec4(0.24, 0.06, 0.48, 0.86);
+uniform vec4 biome_a_color_gas_secondary : source_color = vec4(0.04, 0.30, 0.56, 0.78);
+uniform vec4 biome_a_color_ridge : source_color = vec4(0.96, 0.50, 0.86, 1.0);
 uniform vec4 biome_a_star_tint : source_color = vec4(0.90, 0.94, 1.0, 1.0);
-uniform float biome_a_density : hint_range(0.1, 3.0) = 2.00;
-uniform float biome_a_contrast : hint_range(0.5, 4.0) = 1.8;
-uniform float biome_a_frequency : hint_range(0.00001, 0.005) = 0.00045;
+uniform float biome_a_density : hint_range(0.1, 3.0) = 1.28;
+uniform float biome_a_contrast : hint_range(0.5, 4.0) = 2.40;
+uniform float biome_a_frequency : hint_range(0.00001, 0.005) = 0.00062;
+uniform float biome_a_band_strength : hint_range(0.0, 1.0) = 0.38;
 
 // Configuración Bioma B
-uniform vec4 biome_b_color_deep : source_color = vec4(0.02, 0.01, 0.01, 1.0);
-uniform vec4 biome_b_color_gas_primary : source_color = vec4(0.35, 0.12, 0.03, 0.85);
-uniform vec4 biome_b_color_gas_secondary : source_color = vec4(0.40, 0.28, 0.05, 0.65);
-uniform vec4 biome_b_star_tint : source_color = vec4(0.90, 0.94, 1.0, 1.0);
-uniform float biome_b_density : hint_range(0.1, 3.0) = 2.00;
-uniform float biome_b_contrast : hint_range(0.5, 4.0) = 1.8;
-uniform float biome_b_frequency : hint_range(0.00001, 0.005) = 0.00055;
+uniform vec4 biome_b_color_deep : source_color = vec4(0.007, 0.004, 0.016, 1.0);
+uniform vec4 biome_b_color_gas_primary : source_color = vec4(0.36, 0.05, 0.16, 0.86);
+uniform vec4 biome_b_color_gas_secondary : source_color = vec4(0.56, 0.22, 0.05, 0.76);
+uniform vec4 biome_b_color_ridge : source_color = vec4(1.0, 0.80, 0.38, 1.0);
+uniform vec4 biome_b_star_tint : source_color = vec4(1.0, 0.90, 0.70, 1.0);
+uniform float biome_b_density : hint_range(0.1, 3.0) = 1.26;
+uniform float biome_b_contrast : hint_range(0.5, 4.0) = 2.55;
+uniform float biome_b_frequency : hint_range(0.00001, 0.005) = 0.00068;
+uniform float biome_b_band_strength : hint_range(0.0, 1.0) = 0.36;
 
 // Factor de mezcla continua entre Bioma A y Bioma B [0.0 = Solo A, 1.0 = Solo B]
 uniform float biome_blend_factor : hint_range(0.0, 1.0) = 0.0;
@@ -65,6 +71,12 @@ uniform int star_light_count : hint_range(0, 4) = 0;
 // Parámetros ópticos y dispersión
 uniform float chromatic_dispersion : hint_range(0.0, 0.05) = 0.004;
 uniform float flow_drift_speed : hint_range(0.0, 0.1) = 0.012;
+
+// Estilizado Anime Space-Opera y protección de legibilidad danmaku
+uniform float stylized_banding_strength : hint_range(0.0, 1.0) = 0.12;
+uniform float filament_sharpness : hint_range(0.5, 3.0) = 1.65;
+uniform float nebula_vibrance : hint_range(0.5, 1.8) = 1.28;
+uniform float max_bg_luma : hint_range(0.25, 1.2) = 0.52;
 
 // Generador de gradiente pseudoaleatorio 2D
 vec2 hash2(vec2 p) {
@@ -139,27 +151,73 @@ void fragment() {
 	float gas_b_b = sample_starfield_anti_tile(sample_p + offset_b, biome_b_frequency);
 	float gas_b = (gas_b_r + gas_b_g + gas_b_b) * 0.333333;
 
-	// Modulación con textura seamless en tiles (2048x2048) si nebula_tile_mix > 0.0
+	// Warp de dominio orgánico + dual-depth anime filaments/wisps + crestas de fotoionización JWST/Shinkai
+	vec2 warp = vec2(
+		gradient_noise(sample_p * biome_a_frequency * 1.45),
+		gradient_noise(sample_p * biome_a_frequency * 1.45 + vec2(37.2, 81.9))
+	) * 340.0;
+	float hue_field = fbm_nebula(sample_p + vec2(913.4, -521.7) + warp * 0.40, (biome_a_frequency + biome_b_frequency) * 0.44);
+	float carve_field = fbm_nebula(sample_p + vec2(-412.6, 678.3) - warp * 0.30, (biome_a_frequency + biome_b_frequency) * 0.72);
+
+	float dust_carve = 1.0;
+	float anime_cloud = 0.55;
+	float fil_density = 0.40;
+	float wisp_density = 0.35;
+	float ridge_mask = 0.0;
 	if (nebula_tile_mix > 0.001) {
-		vec2 tile_uv = sample_p * nebula_tile_scale;
-		vec3 tile_tex_rgb = texture(nebula_tile_texture, tile_uv).rgb;
-		float tile_density = dot(tile_tex_rgb, vec3(0.299, 0.587, 0.114));
-		float modulated_density = tile_density * 1.8;
-		gas_a = mix(gas_a, gas_a * modulated_density, nebula_tile_mix);
-		gas_b = mix(gas_b, gas_b * modulated_density, nebula_tile_mix);
+		vec2 centered_sc = screen_coord - viewport_resolution * 0.5;
+		vec2 far_p = camera_world_position * (parallax_factor * 0.35) + centered_sc + flow_vec * 0.45 + warp * 0.65;
+		vec2 near_p = camera_world_position * (parallax_factor * 1.85) + centered_sc + vec2(drift * 1.25, -drift * 0.85) - warp * 0.45;
+		vec2 tile_uv = far_p * nebula_tile_scale;
+		vec2 wisp_uv = (mat2(vec2(0.866, -0.5), vec2(0.5, 0.866)) * near_p) * (nebula_tile_scale * 1.37);
+		fil_density = texture(nebula_tile_texture, tile_uv).r;
+		wisp_density = texture(nebula_wisps_texture, wisp_uv).r;
+
+		vec2 illum_dir = vec2(-0.72, -0.69);
+		float fil_off = texture(nebula_tile_texture, tile_uv - illum_dir * 0.015).r;
+		float wisp_off = texture(nebula_wisps_texture, wisp_uv - illum_dir * 0.018).r;
+		float cloud_off = clamp(fil_off * 0.66 + wisp_off * 0.54, 0.0, 1.35);
+
+		float nebula_breath = 0.94 + 0.06 * sin(global_time * 0.24 + fil_density * 4.5);
+		anime_cloud = clamp(fil_density * 0.66 + wisp_density * 0.54, 0.0, 1.35) * nebula_breath;
+
+		// Conservar el cuerpo amplio FBM para bóvedas ricas de nebulosa + tallar grietas oscuras específicas sin apagar el cielo
+		float macro_a = clamp(gas_a * 0.82 + anime_cloud * 0.44, 0.0, 1.35);
+		float macro_b = clamp(gas_b * 0.82 + anime_cloud * 0.44, 0.0, 1.35);
+		gas_a = mix(gas_a, macro_a, nebula_tile_mix);
+		gas_b = mix(gas_b, macro_b, nebula_tile_mix);
+
+		float dark_pocket = (1.0 - smoothstep(0.06, 0.28, fil_density + wisp_density * 0.35)) * (1.0 - smoothstep(0.28, 0.62, carve_field));
+		dust_carve = 1.0 - dark_pocket * dark_dust_lane_strength;
+		ridge_mask = clamp((anime_cloud - cloud_off) * 3.0, 0.0, 1.0) * smoothstep(0.10, 0.68, anime_cloud) * dust_carve;
 	}
 
-	// Curvas y contraste de gas según bioma
-	float intensity_a = pow(smoothstep(0.25, 0.85, gas_a * biome_a_density), biome_a_contrast * 0.5);
-	float intensity_b = pow(smoothstep(0.25, 0.85, gas_b * biome_b_density), biome_b_contrast * 0.5);
+	// Curvas volumétricas pictóricas de 3 temperaturas (sin bloques planos ni vaciado excesivo)
+	float raw_a = smoothstep(0.10, 0.84, gas_a * biome_a_density);
+	float raw_b = smoothstep(0.10, 0.84, gas_b * biome_b_density);
+	float cont_a = pow(raw_a, biome_a_contrast * 0.36);
+	float cont_b = pow(raw_b, biome_b_contrast * 0.36);
+	float cel_a = (smoothstep(0.14, 0.34, raw_a) * 0.34 + smoothstep(0.40, 0.62, raw_a) * 0.38 + smoothstep(0.68, 0.90, raw_a) * 0.28);
+	float cel_b = (smoothstep(0.14, 0.34, raw_b) * 0.34 + smoothstep(0.40, 0.62, raw_b) * 0.38 + smoothstep(0.68, 0.90, raw_b) * 0.28);
+	float intensity_a = mix(cont_a, cel_a, stylized_banding_strength) * dust_carve;
+	float intensity_b = mix(cont_b, cel_b, stylized_banding_strength) * dust_carve;
 
-	// Gradación de color para Bioma A
-	vec3 col_gas_a = mix(biome_a_color_gas_primary.rgb, biome_a_color_gas_secondary.rgb, gas_a_b);
-	vec3 final_a = mix(biome_a_color_deep.rgb, col_gas_a, intensity_a);
+	float fil_a = pow(clamp(raw_a * (1.0 - raw_a) * 4.0, 0.0, 1.0), filament_sharpness);
+	float fil_b = pow(clamp(raw_b * (1.0 - raw_b) * 4.0, 0.0, 1.0), filament_sharpness);
 
-	// Gradación de color para Bioma B
-	vec3 col_gas_b = mix(biome_b_color_gas_primary.rgb, biome_b_color_gas_secondary.rgb, gas_b_b);
-	vec3 final_b = mix(biome_b_color_deep.rgb, col_gas_b, intensity_b);
+	// Dos temperaturas tejidas + cresta de fotoionización luminosa sobre bordes de polvo oscuro
+	float temp_mix_a = clamp(smoothstep(0.20, 0.80, hue_field * 0.60 + wisp_density * 0.40), 0.0, 1.0);
+	float temp_mix_b = clamp(smoothstep(0.20, 0.80, (1.0 - hue_field * 0.50) * 0.50 + wisp_density * 0.50), 0.0, 1.0);
+
+	vec3 col_gas_a = mix(biome_a_color_gas_primary.rgb, biome_a_color_gas_secondary.rgb, mix(gas_a_b, temp_mix_a, 0.72));
+	col_gas_a = mix(col_gas_a, biome_a_color_ridge.rgb, clamp(ridge_mask * 0.68 + fil_a * 0.14, 0.0, 0.80));
+	vec3 final_a = mix(biome_a_color_deep.rgb, col_gas_a * 1.15, intensity_a);
+	final_a += biome_a_color_ridge.rgb * (ridge_mask * 0.30 * (0.30 + intensity_a * 0.70));
+
+	vec3 col_gas_b = mix(biome_b_color_gas_primary.rgb, biome_b_color_gas_secondary.rgb, mix(gas_b_b, temp_mix_b, 0.72));
+	col_gas_b = mix(col_gas_b, biome_b_color_ridge.rgb, clamp(ridge_mask * 0.68 + fil_b * 0.14, 0.0, 0.80));
+	vec3 final_b = mix(biome_b_color_deep.rgb, col_gas_b * 1.15, intensity_b);
+	final_b += biome_b_color_ridge.rgb * (ridge_mask * 0.30 * (0.30 + intensity_b * 0.70));
 
 	// Transición suave entre biomas según biome_blend_factor (smoothstep)
 	float blend = smoothstep(0.0, 1.0, biome_blend_factor);
@@ -170,7 +228,28 @@ void fragment() {
 		blend
 	);
 
-	// Iluminación y teñido cromático del gas nebular por soles activos cercanos
+	// Espina Galáctica / Río de Vía Láctea diagonal periódico con nubes estelares y grietas oscuras
+	float eff_band_str = mix(biome_a_band_strength, biome_b_band_strength, blend);
+	float galactic_mask = 0.0;
+	if (eff_band_str > 0.01) {
+		vec2 spine_p = camera_world_position * (parallax_factor * 0.22) + (screen_coord - viewport_resolution * 0.5);
+		vec2 spine_rot = mat2(vec2(0.848, -0.530), vec2(0.530, 0.848)) * spine_p * 0.00038;
+		float wrapped_y = (fract(spine_rot.y * 0.28 + 0.5) - 0.5) / 0.28;
+		float spine_y = wrapped_y + sin(spine_rot.x * 1.8) * 0.22 + (hue_field - 0.5) * 0.34;
+		float gal_core = exp(-pow(spine_y * 1.35, 2.0)) * (0.58 + 0.42 * clamp(anime_cloud + fil_density * 0.5, 0.0, 1.2));
+		float rift_carve = 1.0 - 0.60 * exp(-pow((spine_y - 0.06) * 5.8, 2.0)) * clamp(1.0 - wisp_density * 0.85, 0.0, 1.0);
+		galactic_mask = gal_core * rift_carve * eff_band_str;
+		vec3 active_sec = mix(biome_a_color_gas_secondary.rgb, biome_b_color_gas_secondary.rgb, blend);
+		vec3 active_ridge = mix(biome_a_color_ridge.rgb, biome_b_color_ridge.rgb, blend);
+		vec3 spine_col = mix(active_sec * 0.95, active_ridge * 1.1, 0.52) * (galactic_mask * 0.68);
+		combined_color += spine_col;
+	}
+
+	// Iluminación acumulada lineal C² sin costuras entre soles (un único tone-map posterior)
+	vec3 star_tint_accum = vec3(0.0);
+	vec3 star_scatter_accum = vec3(0.0);
+	float star_weight_sum = 0.0;
+	float gas_presence = clamp(max(intensity_a, intensity_b) * 0.85 + ridge_mask * 0.35 + galactic_mask * 0.25, 0.0, 1.0);
 	for (int i = 0; i < MAX_STAR_LIGHTS; i++) {
 		if (i >= star_light_count) {
 			break;
@@ -180,21 +259,30 @@ void fragment() {
 		float s_rad = max(star_light_radii[i], 1.0);
 		float s_dist = length(screen_coord - s_pos);
 		if (s_dist < s_rad) {
-			float norm_dist = s_dist / s_rad;
-			// Atenuación suave cúbica-cuadrática
-			float star_inf = pow(1.0 - norm_dist, 1.3);
-			float edge_feather = smoothstep(1.0, 0.75, norm_dist);
-			float light_factor = star_inf * edge_feather * s_col.a;
-			// 1. Teñir el gas existente con el espectro estelar del sol preservando contraste cromático
-			vec3 tinted_gas = mix(combined_color, combined_color * s_col.rgb * 1.5, light_factor * 0.75);
-			// 2. Dispersión lumínica atmosférica (ambient scattering) suave sobre el polvo nebular
-			vec3 ambient_scatter = s_col.rgb * light_factor * 0.45 * (intensity_a + intensity_b + 0.25);
-			// 3. Fusión suave con compresión de altas luces (evita el quemado plano a blanco puro)
-			vec3 lit_result = tinted_gas + ambient_scatter;
-			combined_color = lit_result / (vec3(1.0) + lit_result * 0.20);
-			// 4. Aumentar densidad lumínica
-			combined_alpha = max(combined_alpha, combined_alpha + light_factor * 0.35);
+			float u = clamp(1.0 - (s_dist / s_rad), 0.0, 1.0);
+			float quintic = u * u * u * (u * (u * 6.0 - 15.0) + 10.0);
+			float w = pow(quintic, 1.15) * s_col.a;
+			star_tint_accum += s_col.rgb * w;
+			star_scatter_accum += s_col.rgb * (w * 0.16 * gas_presence);
+			star_weight_sum += w;
 		}
+	}
+	if (star_weight_sum > 0.0005) {
+		vec3 avg_star_col = star_tint_accum / max(star_weight_sum, 0.0005);
+		float eff_tint_w = clamp(star_weight_sum * 0.62, 0.0, 0.72);
+		vec3 tinted_gas = mix(combined_color, combined_color * avg_star_col * 1.32, eff_tint_w);
+		vec3 lit_result = tinted_gas + star_scatter_accum;
+		combined_color = lit_result / (vec3(1.0) + lit_result * 0.18);
+		combined_alpha = clamp(combined_alpha + min(star_weight_sum, 1.0) * 0.10 * gas_presence, 0.0, 1.0);
+	}
+
+	// Vibrancia cromática del gas y tope suave de luminancia para legibilidad danmaku
+	float gas_luma = dot(combined_color, vec3(0.2126, 0.7152, 0.0722));
+	combined_color = max(vec3(0.0), mix(vec3(gas_luma), combined_color, nebula_vibrance));
+	float luma_post = dot(combined_color, vec3(0.2126, 0.7152, 0.0722));
+	if (luma_post > max_bg_luma) {
+		float soft_luma = max_bg_luma + (luma_post - max_bg_luma) * 0.22;
+		combined_color *= soft_luma / max(luma_post, 0.0001);
 	}
 
 	// Muestreo continuo bilineal directo del lecho de micro-estrellas (nivel MIP 0 estable sin aliasing):
@@ -356,7 +444,7 @@ void fragment() {
 		}
 	}
 
-	// Translucidez volumétrica: el gas denso cubre las capas de fondo, mientras que el espacio oscuro deja pasar las estrellas en layer -105
-	float nebula_alpha = clamp(combined_alpha * 1.5 + 0.15, 0.0, 1.0);
+	// Translucidez volumétrica: deja respirar las estrellas 8K en layer -105 a través del vacío abisal
+	float nebula_alpha = clamp(combined_alpha * 1.08 + galactic_mask * 0.16, 0.0, 0.90);
 	COLOR = vec4(combined_color, nebula_alpha);
 }

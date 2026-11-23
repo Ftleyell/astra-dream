@@ -11,3 +11,7 @@ extends Resource
 @export var shadow_tint: Color = Color(0.18, 0.18, 0.24, 1.0)
 @export var shadow_base_width_scale: float = 1.0
 @export var shadow_tip_curvature: float = 0.40
+@export_range(0.0, 1.0, 0.05) var umbra_convergence: float = 0.42
+@export_range(0.0, 1.0, 0.05) var shadow_dust_noise_strength: float = 0.24
+@export_range(0.0, 1.0, 0.05) var atmospheric_refraction_strength: float = 0.55
+@export_range(0.0, 1.0, 0.05) var crepuscular_rim_strength: float = 0.45

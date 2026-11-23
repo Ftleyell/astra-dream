@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="CosmosStarVisualConfig" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/star_visual_config.gd" id="1_star"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star.jpg" id="2_star_0"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 0.jpg" id="3_star_1"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Star 1.jpg" id="4_star_2"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stars/star_yellow_dwarf_v3.png" id="2_star_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stars/star_red_dwarf_v3.png" id="3_star_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stars/star_blue_giant_v3.png" id="4_star_2"]
 
 [resource]
 script = ExtResource("1_star")
@@ -18,11 +18,11 @@ axial_rotation_speed = 0.008
 heat_distortion_strength = 0.045
 pulse_speed = 1.4
 corona_size_multiplier = 1.35
-corona_intensity = 1.18
-core_brightness = 1.25
+corona_intensity = 1.24
+core_brightness = 1.28
 light_field_radius_multiplier = 1.05
 light_field_intensity = 0.45
 heliosphere_noise_strength = 0.40
 heliosphere_edge_feather = 0.22
-planet_day_tint_strength = 0.60
-planet_atmo_tint_strength = 0.65
+planet_day_tint_strength = 0.64
+planet_atmo_tint_strength = 0.72

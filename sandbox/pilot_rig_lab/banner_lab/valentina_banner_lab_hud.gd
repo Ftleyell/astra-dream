@@ -93,6 +93,7 @@ static func build_hud(
 	debug_opt.add_item("Debug: Depth Map (Gris)", 3)
 	debug_opt.add_item("Debug: Normal Map (RGB)", 4)
 	debug_opt.add_item("Debug: Ink SDF (Tinta)", 5)
+	debug_opt.add_item("Debug: ILM Map (Metal/AO/Satin)", 6)
 	debug_opt.select(0)
 	debug_opt.item_selected.connect(func(idx: int) -> void:
 		var cb: Callable = callbacks.get("on_debug_view_selected", Callable())

@@ -12,6 +12,7 @@ const WINGS_META_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valen
 const STYLIZER_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_stylizer.gdshader"
 const RED_GLOW_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/vfx_lab/wing_red_glow.gdshader"
 const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
+const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
 const MAX_SHARDS: int = 6
 
 enum TurnBridgePhase {
@@ -98,6 +99,9 @@ var _turn_scale_x_l: float = 1.0
 var _turn_scale_x_r: float = 1.0
 var _turn_scale_y_l: float = 1.0
 var _turn_scale_y_r: float = 1.0
+var _cosmic_lighting_active: bool = false
+var _cosmic_emissive_mult: float = 1.0
+var _last_cosmic_sample: CosmicLightingSampleScript = null
 
 
 func _ready() -> void:
@@ -211,6 +215,50 @@ func sync_materials_from_rig(rig: Node2D) -> void:
 		_glow_mats_l[piece_id] = _build_glow_material(bundle)
 		_glow_mats_r[piece_id] = _build_glow_material(bundle)
 	_apply_view_direction(_current_dir, true)
+	if _cosmic_lighting_active and _last_cosmic_sample != null:
+		apply_cosmic_lighting(_last_cosmic_sample)
+
+
+func apply_cosmic_lighting(sample: CosmicLightingSampleScript) -> void:
+	if sample == null:
+		_cosmic_lighting_active = false
+		_cosmic_emissive_mult = 1.0
+		_last_cosmic_sample = null
+		if _attached_rig != null:
+			sync_materials_from_rig(_attached_rig)
+		return
+
+	_cosmic_lighting_active = true
+	_cosmic_emissive_mult = maxf(sample.emissive_boost_mult, 1.0)
+	if _last_cosmic_sample == null:
+		_last_cosmic_sample = CosmicLightingSampleScript.new()
+	_last_cosmic_sample.copy_from(sample)
+
+	var n_dir: Vector2 = sample.light_dir_2d.normalized() if sample.light_dir_2d.length_squared() > 0.0001 else Vector2(-0.58, -0.81).normalized()
+	var eclipse: float = clampf(sample.eclipse_factor, 0.0, 1.0)
+	var floor_v: float = clampf(sample.visibility_floor, 0.25, 1.0)
+	var eff_key_tint: Color = Color(1.04, 1.02, 0.97, 1.0).lerp(sample.key_light_tint, clampf(sample.star_tint_weight, 0.0, 1.0))
+	var eff_key_boost: float = maxf(
+		1.04 * (1.0 + clampf(sample.star_proximity, 0.0, 1.0) * 0.10) * lerpf(1.0, floor_v, eclipse),
+		floor_v
+	)
+	var eff_rim_col: Color = Color(0.87, 0.95, 1.0, 1.0).lerp(sample.rim_key_color, clampf(sample.rim_tint_weight, 0.0, 1.0))
+	var eff_rim_str: float = 0.88 * lerpf(1.0, 0.35, eclipse)
+	var eff_shadow_tint: Color = Color(0.145, 0.145, 0.335, 1.0).lerp(sample.shadow_tint, clampf(sample.biome_shadow_weight, 0.0, 1.0)).darkened(eclipse * 0.16)
+	var eff_ao_tint: Color = Color(0.078, 0.064, 0.175, 1.0).lerp(sample.ao_tint, clampf(sample.biome_shadow_weight, 0.0, 1.0)).darkened(eclipse * 0.18)
+
+	for mat_dict: Dictionary in [_side_materials_l, _side_materials_r]:
+		for mat_v: Variant in mat_dict.values():
+			var sm: ShaderMaterial = mat_v as ShaderMaterial
+			if sm == null:
+				continue
+			sm.set_shader_parameter("light_dir_2d", n_dir)
+			sm.set_shader_parameter("key_light_tint", eff_key_tint)
+			sm.set_shader_parameter("key_light_boost", eff_key_boost)
+			sm.set_shader_parameter("rim_key_color", eff_rim_col)
+			sm.set_shader_parameter("normal_rim_strength", eff_rim_str)
+			sm.set_shader_parameter("shadow_tint", eff_shadow_tint)
+			sm.set_shader_parameter("ao_tint", eff_ao_tint)
 
 
 func clear_trails() -> void:
@@ -819,6 +867,8 @@ func _apply_side_effort_shader(
 	var emissive_val: float = lerpf(config.idle_emissive_boost, config.thrust_emissive_boost, eff_curve)
 	if is_burst_active:
 		emissive_val *= 1.25
+	if _cosmic_lighting_active:
+		emissive_val *= _cosmic_emissive_mult
 	var rim_val: float = lerpf(0.25, config.effort_rim_strength, eff_curve)
 	for mat_v: Variant in mat_dict.values():
 		var sm: ShaderMaterial = mat_v as ShaderMaterial
@@ -831,11 +881,21 @@ func _apply_side_effort_shader(
 	var base_glow: float = lerpf(config.red_glow_idle_intensity, config.red_glow_thrust_intensity, pow(clampf(effort, 0.0, 1.0), 1.1))
 	if _brake_pulse > 0.05 or is_burst_active:
 		base_glow = maxf(base_glow, config.red_glow_brake_intensity * (1.0 if is_burst_active else _brake_pulse))
+	if _cosmic_lighting_active:
+		base_glow *= lerpf(1.0, _cosmic_emissive_mult, 0.85)
+	var shader_glow: float = maxf(base_glow, 0.42) if base_glow > 0.05 else base_glow
+	var pulse_spd: float = lerpf(3.4, 6.2, clampf(effort, 0.0, 1.0))
+	var pulse_str: float = lerpf(0.65, 1.15, clampf(effort, 0.0, 1.0))
+	var ign_flash: float = clampf(_brake_pulse * 1.2 + (1.2 if is_burst_active else 0.0), 0.0, 2.5)
 	for gmat_v: Variant in glow_dict.values():
 		var gm: ShaderMaterial = gmat_v as ShaderMaterial
 		if gm != null:
-			gm.set_shader_parameter("glow_intensity", base_glow)
+			gm.set_shader_parameter("glow_intensity", shader_glow)
 			gm.set_shader_parameter("glow_color", config.red_glow_color)
+			gm.set_shader_parameter("pulse_time", _sim_time)
+			gm.set_shader_parameter("pulse_speed", pulse_spd)
+			gm.set_shader_parameter("pulse_strength", pulse_str)
+			gm.set_shader_parameter("ignition_flash", ign_flash)
 	return base_glow
 
 
@@ -1306,7 +1366,11 @@ func _build_glow_material(bundle: Dictionary) -> ShaderMaterial:
 	mat.shader = _glow_shader
 	mat.set_shader_parameter("ilm_mask_tex", bundle["ilm"] as Texture2D)
 	mat.set_shader_parameter("glow_color", config.red_glow_color if config != null else Color(1.0, 0.08, 0.22, 1.0))
-	mat.set_shader_parameter("glow_intensity", config.red_glow_idle_intensity if config != null else 0.12)
+	var init_glow: float = config.red_glow_idle_intensity if config != null else 0.12
+	mat.set_shader_parameter("glow_intensity", maxf(init_glow, 0.42) if init_glow > 0.05 else init_glow)
+	mat.set_shader_parameter("blade_pivot_uv", bundle.get("blade_pivot_uv", Vector2(0.05, 0.95)))
+	mat.set_shader_parameter("blade_tip_uv", bundle.get("blade_tip_uv", Vector2(0.95, 0.05)))
+	mat.set_shader_parameter("pulse_phase_offset", float(bundle.get("shard_index", 0)) * 0.17)
 	return mat
 
 
@@ -1346,12 +1410,21 @@ func _load_assets() -> void:
 			var pid: String = str(sinfo["id"])
 			if _shard_textures.has(pid):
 				continue
+			var sz_arr: Array = sinfo.get("size_px", [256, 256]) as Array
+			var piv_arr: Array = sinfo.get("pivot_px", [0.0, 256.0]) as Array
+			var tip_arr: Array = sinfo.get("tip_offset_px", [256.0, 0.0]) as Array
+			var tex_sz := Vector2(maxf(1.0, float(sz_arr[0])), maxf(1.0, float(sz_arr[1])))
+			var piv_px := Vector2(float(piv_arr[0]), float(piv_arr[1]))
+			var tip_px := Vector2(float(tip_arr[0]), float(tip_arr[1]))
 			_shard_textures[pid] = {
 				"albedo": _load_tex("%s/%s.png" % [_assets_dir, pid], true),
 				"id": _load_tex("%s/%s_id_mask.png" % [_assets_dir, pid], true),
 				"ilm": _load_tex("%s/%s_ilm_mask.png" % [_assets_dir, pid], true),
 				"normal": _load_tex("%s/%s_normal_depth.png" % [_assets_dir, pid], true),
 				"ink_sdf": _load_tex("%s/%s_ink_sdf.png" % [_assets_dir, pid], false),
+				"blade_pivot_uv": (piv_px / tex_sz).clamp(Vector2.ZERO, Vector2.ONE),
+				"blade_tip_uv": (tip_px / tex_sz).clamp(Vector2.ZERO, Vector2.ONE),
+				"shard_index": int(sinfo.get("shard_index", 0)),
 			}
 
 

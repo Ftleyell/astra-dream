@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CosmosPlanetarySystemConfig" load_steps=12 format=3]
+[gd_resource type="Resource" script_class="CosmosPlanetarySystemConfig" load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/planetary_system_config.gd" id="1_planetary"]
 [ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Desert.jpg" id="2_p_desert"]
@@ -8,32 +8,72 @@
 [ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Planet_Life_0.jpg" id="6_p_life_0"]
 [ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Moon_0.jpg" id="7_moon_0"]
 [ext_resource type="Texture2D" path="res://assets/environments/parallax_space/Moon_1.jpg" id="8_moon_1"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_0.png" id="9_station_0"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_1.png" id="10_station_1"]
-[ext_resource type="Texture2D" path="res://assets/environments/parallax_space/space_station_2.png" id="11_station_2"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stations/station_ring_citadel.png" id="9_station_0"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stations/station_spire_relay.png" id="10_station_1"]
+[ext_resource type="Texture2D" path="res://assets/environments/cosmos_v2/stations/station_shipyard_dock.png" id="11_station_2"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_01_volcanic_forge.tres" id="12_arch_volc"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_02_arid_canyon.tres" id="13_arch_arid"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_03_oceanic_paradise.tres" id="14_arch_ocean"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_04_cyber_ecumenopolis.tres" id="15_arch_cyber"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_05_gas_giant_storm.tres" id="16_arch_gas"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_06_cryo_crystal.tres" id="17_arch_cryo"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/moon_01_crater.tres" id="18_arch_moon_c"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/moon_02_magma.tres" id="19_arch_moon_m"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/moon_03_cryo.tres" id="20_arch_moon_i"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_07_shattered_core.tres" id="21_arch_shattered"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_08_biolum_jungle.tres" id="22_arch_biolum"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_09_crimson_gas_giant.tres" id="23_arch_crimson"]
+[ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/planet_archetypes/planet_10_relic_dyson.tres" id="24_arch_dyson"]
 
 [resource]
 script = ExtResource("1_planetary")
 min_planets = 3
-max_planets = 6
-orbit_radius_min = 980.0
-orbit_radius_max = 2760.0
-min_orbital_spacing = 440.0
+max_planets = 4
+orbit_radius_min = 1080.0
+orbit_radius_max = 3200.0
+min_orbital_spacing = 380.0
 planet_theta_jitter_degrees = 25.0
-planet_size_multiplier = 1.15
-planet_night_ambient = 0.22
-planet_day_exposure = 1.30
+planet_size_multiplier = 1.92
+planet_night_ambient = 0.15
+planet_day_exposure = 1.32
 planet_textures = [ExtResource("2_p_desert"), ExtResource("3_p_gas"), ExtResource("4_p_ice"), ExtResource("5_p_life"), ExtResource("6_p_life_0")]
 interior_planet_textures = [ExtResource("2_p_desert"), ExtResource("3_p_gas")]
 habitable_planet_textures = [ExtResource("5_p_life"), ExtResource("6_p_life_0")]
 exterior_planet_textures = [ExtResource("4_p_ice"), ExtResource("3_p_gas")]
-moon_spawn_probability = 0.65
-moon_orbit_radius_range = Vector2(120.0, 200.0)
-moon_size_ratio = 0.20
+planet_archetypes = Array[Resource("res://scenes/combat/environment/cosmos/resources/planet_archetype.gd")]([ExtResource("12_arch_volc"), ExtResource("13_arch_arid"), ExtResource("14_arch_ocean"), ExtResource("15_arch_cyber"), ExtResource("16_arch_gas"), ExtResource("17_arch_cryo"), ExtResource("21_arch_shattered"), ExtResource("22_arch_biolum"), ExtResource("23_arch_crimson"), ExtResource("24_arch_dyson")])
+moon_archetypes = Array[Resource("res://scenes/combat/environment/cosmos/resources/planet_archetype.gd")]([ExtResource("18_arch_moon_c"), ExtResource("19_arch_moon_m"), ExtResource("20_arch_moon_i")])
+moon_spawn_probability = 0.58
+moon_orbit_radius_range = Vector2(150.0, 260.0)
+moon_size_ratio = 0.14
 moon_textures = [ExtResource("7_moon_0"), ExtResource("8_moon_1")]
 normal_moon_texture = ExtResource("7_moon_0")
 magma_moon_texture = ExtResource("8_moon_1")
 station_spawn_probability = 1.0
-station_orbit_radius_range = Vector2(130.0, 220.0)
+station_orbit_radius_range = Vector2(160.0, 280.0)
 station_size_ratio = 0.15
 space_station_textures = [ExtResource("9_station_0"), ExtResource("10_station_1"), ExtResource("11_station_2")]
+system_ecliptic_squash_range = Vector2(0.80, 0.93)
+planet_tilt_scatter_rad = 0.10
+planet_eccentricity_range = Vector2(0.03, 0.09)
+eccentric_archetype_ecc_range = Vector2(0.06, 0.14)
+planet_depth_scale_amp = 0.07
+retrograde_outer_planet_chance = 0.25
+moon_squash_range = Vector2(0.26, 0.56)
+moon_eccentricity_range = Vector2(0.04, 0.18)
+moon_depth_scale_amp = 0.18
+moon_retrograde_chance = 0.22
+station_squash_range = Vector2(0.24, 0.54)
+station_eccentricity_range = Vector2(0.02, 0.10)
+station_depth_scale_amp = 0.17
+enable_orbital_trails = true
+moon_trail_arc_radians = 1.45
+station_trail_arc_radians = 1.05
+trail_base_opacity = 0.54
+comet_spawn_probability = 0.80
+max_comets_per_system = 2
+comet_eccentricity_range = Vector2(0.44, 0.64)
+comet_squash_range = Vector2(0.48, 0.84)
+comet_depth_scale_amp = 0.15
+trojan_cluster_probability = 0.55
+trojan_bodies_per_pocket = Vector2i(2, 4)
+shepherd_moonlet_probability = 0.80

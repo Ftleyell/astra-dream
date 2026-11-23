@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CosmicRigLightingConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmic_rig_lighting_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+fallback_light_dir_2d = Vector2(-0.58, -0.81)
+light_z_3d = 0.55
+dir_smooth_rate = 8.0
+color_smooth_rate = 5.0
+max_star_tint_mix = 0.62
+max_rim_tint_mix = 0.88
+max_biome_shadow_mix = 0.68
+star_near_boost = 0.18
+star_influence_radius_multiplier = 1.55
+eclipse_min_visibility_floor = 0.58
+eclipse_emissive_boost = 1.88
+eclipse_rim_attenuation = 0.62
+rig_eclipse_receiver_radius = 18.0

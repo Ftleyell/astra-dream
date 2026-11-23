@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab.gd" id="1_3d_lab"]
+
+[node name="Valentina3DLab" type="Node2D"]
+script = ExtResource("1_3d_lab")

@@ -55,18 +55,27 @@ func _run_tests() -> void:
 	assert_true(char_root != null and absf(char_root.rotation) > 0.001, "El Idle autónomo 2.5D debe oscilar suavemente sin mover el mouse")
 	assert_true(char_root.z_index == 0 and ctrl.get_banner_sprite().z_index == 0, "Invariante CanvasGroup: hijos deben mantener z_index = 0")
 
-	# 4. Secuencia "Elegir Piloto": carga 12 cuchillas de alas, dispara impact frames 1->2->0 y despliega alas firmes
+	# 4. Secuencia Lock-In "Full Anime Overdrive": cascada 6x2 -> trabado con Impact Frames 1->2->0 + chispas
 	assert_true(ctrl.get_wing_shard_count() == 12, "Debe cargar las 12 cuchillas reales de alas psíquicas (actual=%d)" % ctrl.get_wing_shard_count())
 	ctrl.trigger_select_sequence()
-	ctrl.step(0.02)
-	assert_true(ctrl.get_impact_frame_phase() == 1, "Al iniciar selección debe activar Impact Frame fase 1")
+	ctrl.step(0.05)
+	assert_true(ctrl.is_pilot_selected() and ctrl.get_impact_frame_phase() == 0, "Durante la cascada inicial aún no debe dispararse Impact Frame")
+	assert_true(ctrl.get_wings_deploy() > 0.0 and ctrl.get_wings_deploy() < 0.99, "Durante la cascada las alas deben estar abriéndose progresivamente")
+	ctrl.step(cfg.wings_cascade_duration_sec - 0.03)
+	assert_true(ctrl.get_impact_frame_phase() == 1, "Al trabar la cascada debe dispararse Impact Frame fase 1")
+	assert_true(ctrl.get_lock_eye_flare() > 0.8, "Al trabar debe encenderse el brillo amatista del ojo")
+	assert_true(ctrl.get_active_ember_count() > 0, "Al trabar deben generarse chispas carmesí")
 	ctrl.step(cfg.impact_frame_1_sec)
 	assert_true(ctrl.get_impact_frame_phase() == 2, "Debe pasar a Impact Frame fase 2")
-	ctrl.step(cfg.impact_frame_2_sec + cfg.wings_deploy_duration_sec)
+	ctrl.step(cfg.impact_frame_2_sec + 0.12)
 	assert_true(ctrl.get_impact_frame_phase() == 0, "Tras impact frames debe volver a fase normal 0")
 	assert_true(ctrl.get_wings_deploy() >= 0.99, "Las alas deben quedar desplegadas firmes (deploy=%.2f)" % ctrl.get_wings_deploy())
+	assert_true(ctrl.get_active_ember_count() > 0, "Mientras siga seleccionada deben persistir chispas carmesí")
 	ctrl.reset_select_sequence()
-	assert_true(not ctrl.is_pilot_selected() and ctrl.get_wings_deploy() == 0.0, "reset_select_sequence debe plegar las alas")
+	assert_true(
+		not ctrl.is_pilot_selected() and ctrl.get_wings_deploy() == 0.0 and ctrl.get_active_ember_count() == 0,
+		"reset_select_sequence debe plegar las alas y limpiar las chispas"
+	)
 
 	lab.queue_free()
 	await get_tree().process_frame

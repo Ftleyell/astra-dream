@@ -10,6 +10,8 @@ extends Resource
 @export var scrap_texture: Texture2D
 ## Textura base (compatibilidad legacy)
 @export var mesh_texture: Texture2D
+## Ruta opcional al JSON de slices compilado (vacío usa METADATA_PATH legacy)
+@export var metadata_json_path: String = ""
 
 @export_group("Instanciación GPU")
 ## Cantidad de instancias para el estrato de rocas
