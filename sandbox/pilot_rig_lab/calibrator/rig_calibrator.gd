@@ -9,7 +9,10 @@ const OverlayScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibr
 const HudScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibrator_hud.gd")
 const LayerBuilderScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibrator_layer_builder.gd")
 const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 const ProfilePath: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+
+@export var pilot_profile_override: String = ""
 
 var _store: RigCalibrationStore = null
 var _rig: PlanarCombatRig = null
@@ -57,8 +60,13 @@ var _toast_timer: float = 0.0
 
 
 func _ready() -> void:
+	var active_profile_path: String = PilotLabSelectorScript.resolve_profile_path(pilot_profile_override, ProfilePath)
+	if ResourceLoader.exists(active_profile_path):
+		_active_profile = ResourceLoader.load(active_profile_path) as PilotRigProfile
+
+	var assets_root: String = _active_profile.assets_root if (_active_profile != null and not _active_profile.assets_root.is_empty()) else StoreScript.DEFAULT_ASSETS_ROOT
 	_store = StoreScript.new()
-	_store.load_from_root(StoreScript.DEFAULT_ASSETS_ROOT)
+	_store.load_from_root(assets_root)
 
 	_build_backdrop()
 	_camera = Camera2D.new()
@@ -75,8 +83,7 @@ func _ready() -> void:
 	_rig = PlanarRigScript.new()
 	_rig.name = "CalibratorPlanarRig"
 	_rig.calibration_manual_pose = true
-	if ResourceLoader.exists(ProfilePath):
-		_active_profile = ResourceLoader.load(ProfilePath) as PilotRigProfile
+	if _active_profile != null:
 		_rig.pilot_profile = _active_profile
 	add_child(_rig)
 	_rig.enable_afterimage = false

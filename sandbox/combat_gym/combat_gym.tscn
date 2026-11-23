@@ -1,0 +1,67 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://sandbox/combat_gym/combat_gym.gd" id="1_combat_gym"]
+[ext_resource type="PackedScene" path="res://scenes/combat/environment/cosmos_combat_environment.tscn" id="2_cosmos"]
+[ext_resource type="Script" path="res://scenes/combat/environment/game_camera.gd" id="3_camera"]
+[ext_resource type="Script" path="res://core/autoloads/bullet_server.gd" id="4_bullet_server"]
+[ext_resource type="Script" path="res://scenes/combat/player/player.gd" id="5_player"]
+[ext_resource type="Script" path="res://scenes/combat/player/weapon_controller.gd" id="6_weapon_ctrl"]
+[ext_resource type="PackedScene" path="res://scenes/combat/player/overhead_health_bar.tscn" id="7_overhp"]
+[ext_resource type="PackedScene" path="res://scenes/combat/player/laser_charge_bar.tscn" id="8_laserchg"]
+[ext_resource type="PackedScene" path="res://scenes/combat/player/aim_mode_indicator.tscn" id="9_aimind"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/hud.tscn" id="10_hud"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_core"]
+radius = 5.0
+
+[node name="CombatGym" type="Node2D"]
+script = ExtResource("1_combat_gym")
+
+[node name="SpaceBackground" parent="." instance=ExtResource("2_cosmos")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+script = ExtResource("3_camera")
+uncap_zoom = true
+
+[node name="BulletServer" type="MultiMeshInstance2D" parent="."]
+script = ExtResource("4_bullet_server")
+
+[node name="Player" type="CharacterBody2D" parent="." node_paths=PackedStringArray("bullet_server")]
+position = Vector2(960, 540)
+script = ExtResource("5_player")
+bullet_server = NodePath("../BulletServer")
+
+[node name="VisualPlaceholder" type="Polygon2D" parent="Player"]
+color = Color(0.2, 0.7, 1, 1)
+polygon = PackedVector2Array(-14, 16, 0, -20, 14, 16, 0, 8)
+
+[node name="HitboxCore" type="Polygon2D" parent="Player"]
+color = Color(1, 0.2, 0.4, 1)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("CircleShape2D_core")
+
+[node name="WeaponController" type="Node2D" parent="Player" node_paths=PackedStringArray("player")]
+z_index = 20
+z_as_relative = false
+script = ExtResource("6_weapon_ctrl")
+player = NodePath("..")
+
+[node name="WeaponVisual" type="Polygon2D" parent="Player/WeaponController"]
+position = Vector2(16, 0)
+color = Color(1, 0.8, 0.2, 1)
+polygon = PackedVector2Array(-6, -3, 12, -2, 12, 2, -6, 3)
+
+[node name="OverheadHealthBar" parent="Player" node_paths=PackedStringArray("player") instance=ExtResource("7_overhp")]
+player = NodePath("..")
+
+[node name="LaserChargeBar" parent="Player" node_paths=PackedStringArray("weapon_controller") instance=ExtResource("8_laserchg")]
+weapon_controller = NodePath("../WeaponController")
+
+[node name="AimModeIndicator" parent="Player" node_paths=PackedStringArray("weapon_controller") instance=ExtResource("9_aimind")]
+weapon_controller = NodePath("../WeaponController")
+
+[node name="HUD" parent="." node_paths=PackedStringArray("player") instance=ExtResource("10_hud")]
+player = NodePath("../Player")

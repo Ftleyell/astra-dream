@@ -9,10 +9,16 @@ const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_la
 const WingsCtrlScript = preload("res://scenes/pilots/vfx/astral_wings_3d_controller.gd")
 const ConfigScript = preload("res://data/pilots/schemas/pilot_wings_3d_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_wings_3d.tres"
 const STYLES_DIR: String = "res://data/pilots/styles"
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_config_path: String = CONFIG_PATH
 
 const VIEW_YAW_DEG: Dictionary = {
 	"s": 0.0,
@@ -177,10 +183,17 @@ func get_config() -> ConfigScript:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
-	if ResourceLoader.exists(CONFIG_PATH):
-		_config = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"wings_3d": CONFIG_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_config_path = str(cfgs.get("wings_3d", CONFIG_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
+	if ResourceLoader.exists(_active_config_path):
+		_config = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 	if _config == null:
 		_config = ConfigScript.new()
 	_config.ensure_defaults()
@@ -360,15 +373,15 @@ func _on_skin_selected(idx: int) -> void:
 func _on_save_config() -> void:
 	if _config == null:
 		return
-	var err: Error = ResourceSaver.save(_config, CONFIG_PATH)
+	var err: Error = ResourceSaver.save(_config, _active_config_path)
 	var lbl: Label = _hud_refs.get("status_label", null) as Label
 	if is_instance_valid(lbl):
-		lbl.text = "Guardado OK: valentina_v2_wings_3d.tres" if err == OK else "Error al guardar (%d)" % err
+		lbl.text = ("Guardado OK: %s" % _active_config_path.get_file()) if err == OK else "Error al guardar (%d)" % err
 
 
 func _on_reload_config() -> void:
-	if ResourceLoader.exists(CONFIG_PATH):
-		var reloaded: ConfigScript = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	if ResourceLoader.exists(_active_config_path):
+		var reloaded: ConfigScript = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 		if reloaded != null:
 			_config = reloaded
 			_config.ensure_defaults()
@@ -376,4 +389,4 @@ func _on_reload_config() -> void:
 				_wings_ctrl.set_config(_config)
 	var lbl: Label = _hud_refs.get("status_label", null) as Label
 	if is_instance_valid(lbl):
-		lbl.text = "Recargado: valentina_v2_wings_3d.tres"
+		lbl.text = "Recargado: %s" % _active_config_path.get_file()

@@ -14,6 +14,7 @@ const CalibStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_cal
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
 const HudBuilder = preload("res://sandbox/pilot_rig_lab/proto/planar_lab_hud_builder.gd")
 const LabStarScript = preload("res://sandbox/pilot_rig_lab/proto/planar_lab_star.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const STYLES_DIR: String = "res://data/pilots/styles"
@@ -24,6 +25,9 @@ const ORBIT_RADIUS: float = 165.0
 const ORBIT_ANGULAR_SPEED: float = 0.82
 const AUTO_ORBIT_BRAKE_CYCLE_SEC: float = 3.8
 
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
 var _profile: PilotRigProfile = null
 var _styles: Array[RigStyleProfile] = []
 var _hip_shadows: Dictionary = {}
@@ -130,8 +134,9 @@ func _ready() -> void:
 
 
 func _load_profile_and_styles() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	_active_profile_path = PilotLabSelectorScript.resolve_profile_path(pilot_profile_override, PROFILE_PATH)
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
 
 	_styles.clear()
 	var dir: DirAccess = DirAccess.open(STYLES_DIR)
@@ -152,8 +157,9 @@ func _load_profile_and_styles() -> void:
 			if st != null:
 				_styles.append(st)
 
+	var assets_root: String = _profile.assets_root if (_profile != null and not _profile.assets_root.is_empty()) else MeshBuilderScript.ASSETS_ROOT
 	for v_key: String in ALL_VIEWS:
-		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [MeshBuilderScript.ASSETS_ROOT, v_key]
+		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [assets_root, v_key]
 		var meta_d: Dictionary = MeshBuilderScript.load_json_dict(meta_path)
 		_hip_shadows[v_key] = CalibStoreScript.parse_hip_cast_shadow_from_meta(meta_d, v_key)
 		_stocking_pinches[v_key] = CalibStoreScript.parse_stocking_pinch_from_meta(meta_d)

@@ -6,9 +6,15 @@ extends Node2D
 const BannerCtrlScript = preload("res://scenes/pilots/banner/pilot_live_banner_controller.gd")
 const ConfigScript = preload("res://data/pilots/schemas/pilot_live_banner_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_live_banner.tres"
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_config_path: String = CONFIG_PATH
 
 var _profile: PilotRigProfile = null
 var _config: ConfigScript = null
@@ -91,10 +97,17 @@ func get_config() -> ConfigScript:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
-	if ResourceLoader.exists(CONFIG_PATH):
-		_config = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"live_banner": CONFIG_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_config_path = str(cfgs.get("live_banner", CONFIG_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
+	if ResourceLoader.exists(_active_config_path):
+		_config = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 	if _config == null:
 		_config = ConfigScript.new()
 	_config.ensure_defaults()
@@ -169,16 +182,16 @@ func _on_auto_mouse_toggled(enabled: bool) -> void:
 func _on_save_config() -> void:
 	if _config == null:
 		return
-	var err: Error = ResourceSaver.save(_config, CONFIG_PATH)
+	var err: Error = ResourceSaver.save(_config, _active_config_path)
 	var status: Label = _hud_refs.get("status_label", null) as Label
 	if is_instance_valid(status):
-		status.text = "Guardado OK: valentina_v2_live_banner.tres" if err == OK else ("Error al guardar: %d" % err)
+		status.text = ("Guardado OK: %s" % _active_config_path.get_file()) if err == OK else ("Error al guardar: %d" % err)
 
 
 func _on_reload_config() -> void:
-	if not ResourceLoader.exists(CONFIG_PATH):
+	if not ResourceLoader.exists(_active_config_path):
 		return
-	var reloaded: ConfigScript = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	var reloaded: ConfigScript = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 	if reloaded != null:
 		_config = reloaded
 		_config.ensure_defaults()

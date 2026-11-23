@@ -10,11 +10,14 @@ const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosm
 const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const RingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
 const OrbitalConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const STYLE_PATH: String = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
 const ORBITAL_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
 const RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
+
+@export var pilot_profile_override: String = ""
 
 const BASE_SPEED_PX_S: float = 540.0
 const TURBO_SPEED_PX_S: float = 2200.0
@@ -95,10 +98,17 @@ func _build_pilot_and_ring() -> void:
 	_camera.zoom = Vector2(_target_zoom, _target_zoom)
 	_pilot_anchor.add_child(_camera)
 
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
-	if ResourceLoader.exists(ORBITAL_CONFIG_PATH):
-		_orbital_cfg = ResourceLoader.load(ORBITAL_CONFIG_PATH) as OrbitalConfigScript
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"orbital_weapon": ORBITAL_CONFIG_PATH,
+	})
+	var active_profile_path: String = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	var active_orb_path: String = str(cfgs.get("orbital_weapon", ORBITAL_CONFIG_PATH))
+
+	if ResourceLoader.exists(active_profile_path):
+		_profile = ResourceLoader.load(active_profile_path) as PilotRigProfile
+	if ResourceLoader.exists(active_orb_path):
+		_orbital_cfg = ResourceLoader.load(active_orb_path) as OrbitalConfigScript
 	if _orbital_cfg == null:
 		_orbital_cfg = OrbitalConfigScript.new()
 	_orbital_cfg.ensure_defaults()
@@ -124,7 +134,12 @@ func _build_pilot_and_ring() -> void:
 	_ring_ctrl.set_orbit_mode(RingCtrlScript.OrbitMode.MOUSE_AIM)
 	_pilot_anchor.add_child(_ring_ctrl)
 
-	var ring_tex: Texture2D = _load_tex_mipmap(RING_TEXTURE_PATH)
+	var ring_path: String = RING_TEXTURE_PATH
+	if _profile != null and _profile.combat_rig_config != null and "ring_texture_path" in _profile.combat_rig_config:
+		var cand_ring: String = str(_profile.combat_rig_config.get("ring_texture_path"))
+		if not cand_ring.is_empty() and ResourceLoader.exists(cand_ring):
+			ring_path = cand_ring
+	var ring_tex: Texture2D = _load_tex_mipmap(ring_path)
 	if ring_tex != null:
 		_ring_ctrl.set_ring_texture(ring_tex)
 

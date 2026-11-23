@@ -9,6 +9,7 @@ const MeshBuilderScript = preload("res://scenes/pilots/rig/planar_rig_mesh_build
 const CalibStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
 const HudScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const STYLES_DIR: String = "res://data/pilots/styles"
@@ -25,6 +26,9 @@ enum CompareMode {
 	STACKED_TAB = 2,
 }
 
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
 var _profile: PilotRigProfile = null
 var _styles: Array[RigStyleProfile] = []
 var _skins: Array[PilotSkinPreset] = []
@@ -209,8 +213,9 @@ func _create_world_tag(txt: String, pos: Vector2, col: Color) -> Label:
 
 
 func _load_profile_and_assets() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	_active_profile_path = PilotLabSelectorScript.resolve_profile_path(pilot_profile_override, PROFILE_PATH)
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
 	if _profile != null:
 		for s: PilotSkinPreset in _profile.skins:
 			if s != null:
@@ -221,10 +226,11 @@ func _load_profile_and_assets() -> void:
 
 	_reload_styles_from_disk()
 
+	var assets_root: String = _profile.assets_root if (_profile != null and not _profile.assets_root.is_empty()) else MeshBuilderScript.ASSETS_ROOT
 	for v_key: String in ALL_VIEWS:
 		_zone_masks["%s_r" % v_key] = _load_png_tex("res://assets/pilots/shared/persp_masks/leg_r_%s_persp_mask.png" % v_key)
 		_zone_masks["%s_l" % v_key] = _load_png_tex("res://assets/pilots/shared/persp_masks/leg_l_%s_persp_mask.png" % v_key)
-		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [MeshBuilderScript.ASSETS_ROOT, v_key]
+		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [assets_root, v_key]
 		var meta_d: Dictionary = MeshBuilderScript.load_json_dict(meta_path)
 		_hip_shadows[v_key] = CalibStoreScript.parse_hip_cast_shadow_from_meta(meta_d, v_key)
 		_stocking_pinches[v_key] = CalibStoreScript.parse_stocking_pinch_from_meta(meta_d)

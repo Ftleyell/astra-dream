@@ -7,9 +7,15 @@ const FaceRigScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_fa
 const FaceAnimatorScript = preload("res://scenes/pilots/rig/valentina_face_animator.gd")
 const FaceHudScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_lab_hud.gd")
 const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const FACE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_face_anim.tres"
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_face_anim_path: String = FACE_ANIM_PATH
 
 const HERO_POS := Vector2(160.0, 20.0)
 const HERO_SCALE: float = 4.0
@@ -148,15 +154,22 @@ func _build_gallery_8dir() -> void:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"face_anim": FACE_ANIM_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_face_anim_path = str(cfgs.get("face_anim", FACE_ANIM_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
 	_face_cfg = _load_face_cfg_from_disk()
 
 
 func _load_face_cfg_from_disk() -> FaceConfigScript:
 	var cfg: FaceConfigScript = null
-	if ResourceLoader.exists(FACE_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(FACE_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_face_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_face_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is FaceConfigScript:
 			cfg = (loaded as FaceConfigScript).duplicate(true) as FaceConfigScript
 	if cfg == null:
@@ -393,10 +406,10 @@ func _on_ab_toggled(pressed: bool) -> void:
 func _save_face_tres() -> void:
 	if _face_cfg == null:
 		return
-	var err: Error = _face_cfg.save_to_path(FACE_ANIM_PATH)
+	var err: Error = _face_cfg.save_to_path(_active_face_anim_path)
 	if _hud != null:
 		if err == OK:
-			_hud.set_feedback("Guardado OK en valentina_v2_face_anim.tres", true)
+			_hud.set_feedback("Guardado OK en %s" % _active_face_anim_path.get_file(), true)
 		else:
 			_hud.set_feedback("Error guardando .tres (code %d)" % err, false)
 
@@ -405,7 +418,7 @@ func _reload_face_tres() -> void:
 	_face_cfg = _load_face_cfg_from_disk()
 	_sync_hud()
 	if _hud != null:
-		_hud.set_feedback("Recargado valentina_v2_face_anim.tres", true)
+		_hud.set_feedback("Recargado %s" % _active_face_anim_path.get_file(), true)
 
 
 func _reset_face_defaults() -> void:

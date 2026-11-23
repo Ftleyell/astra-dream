@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://sandbox/workbenches/dialogue_workbench/dialogue_workbench.gd" id="1_dlg_wb"]
+
+[node name="DialogueWorkbench" type="Node2D"]
+script = ExtResource("1_dlg_wb")

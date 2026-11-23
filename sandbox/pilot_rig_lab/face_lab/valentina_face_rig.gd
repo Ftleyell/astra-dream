@@ -5,6 +5,7 @@ extends Node2D
 
 const MeshBuilderScript = preload("res://scenes/pilots/rig/planar_rig_mesh_builder.gd")
 const MaterialCtrlScript = preload("res://scenes/pilots/rig/planar_rig_material_controller.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const SHADER_PATH: String = "res://scenes/pilots/shaders/pilot_rig_stylizer.gdshader"
 const PASS2_SHADER_PATH: String = "res://scenes/pilots/shaders/pilot_rig_pass2.gdshader"
@@ -61,6 +62,7 @@ var _active_head_key: String = "head_front"
 var _show_torso_ref: bool = true
 var _profile: PilotRigProfile = null
 var _style_profile: RigStyleProfile = null
+@export var pilot_profile_override: String = ""
 
 
 func _ready() -> void:
@@ -68,7 +70,7 @@ func _ready() -> void:
 		build_face_rig()
 
 
-func build_face_rig(pilot_root: String = MeshBuilderScript.ASSETS_ROOT) -> void:
+func build_face_rig(pilot_root: String = "") -> void:
 	for child: Node in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -83,8 +85,11 @@ func build_face_rig(pilot_root: String = MeshBuilderScript.ASSETS_ROOT) -> void:
 	_head_tex_per_du.clear()
 
 	_materials = MaterialCtrlScript.new()
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	var active_profile_path: String = PilotLabSelectorScript.resolve_profile_path(pilot_profile_override, PROFILE_PATH)
+	if ResourceLoader.exists(active_profile_path):
+		_profile = ResourceLoader.load(active_profile_path) as PilotRigProfile
+	if pilot_root.is_empty():
+		pilot_root = _profile.assets_root if (_profile != null and not _profile.assets_root.is_empty()) else MeshBuilderScript.ASSETS_ROOT
 	if ResourceLoader.exists(STYLE_SHARP_PATH):
 		_style_profile = ResourceLoader.load(STYLE_SHARP_PATH) as RigStyleProfile
 	if _profile != null:

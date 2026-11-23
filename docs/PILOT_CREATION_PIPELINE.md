@@ -1,86 +1,126 @@
-# Pilot Creation Pipeline — De Arte Base a `.tres` en el Lab
+# Playbook Integral Multi-Piloto v2 — De Scaffold a Combate In-Game
 
-> Guía paso a paso para crear un nuevo piloto compatible con `PlanarCombatRig` (soporte **Estándar v2: 8-Dir Nativo** y legado **v1: 2-Dir S/N + Flip-H**).
-> Para el registro operativo completo de la creación de **Valentina v2** y la guía de ajustes finos, consultar [`docs/PILOT_V2_8DIR_HANDOFF.md`](PILOT_V2_8DIR_HANDOFF.md).
-
----
-
-## 0. Estrategia Estándar Recomendada (v2 — 8-Dir Nativo)
-
-Para evitar la deriva angular de modelos generativos al pedir 8 cuerpos desde cero, el estándar consolidado separa **cuerpo simétrico (generación mínima + espejado en Python)** y **cabeza asimétrica (8 vistas completas closeup)**:
-
-1. **Arte base de cuerpo (solo 5 vistas IA: `S, SE, E, NE, N`):**
-   - Cámara elevada consistente (`45°–60°` / `~30°–45°` 3/4 combate), altura alineada y pose abierta (*Zero-G A-Pose*, brazos despejados 30°–45°, fondo `#808080` sin sombra al suelo).
-   - Ver plantillas base en [Guía Técnica de Generación de Personajes 2.5D](art/character_25d_generation_guide.md) y [GOOGLE_AI_PROMPTS.md](../sandbox/pilot_rig_lab/reference_templates/GOOGLE_AI_PROMPTS.md).
-   - Las 3 vistas simétricas restantes (`SW, W, NW`) se reconstruyen en Python por espejado horizontal e intercambio `L/R` con alineación IoU.
-2. **Cabeza asimétrica (8 vistas completas en hoja 4x2):**
-   - Generadas en closeup sobre grilla 4x2 con escala unificada (`build_head_and_body_gen_kit.py`) y procesadas a `1024x1024` (`process_sw_and_8dir_heads.py`, empalmando la cabeza auténtica `SW` sobre el cuerpo `flip(SE)`).
-3. **Máscaras de segmentación por IA en bloques estándar (`16:9`, `4:3`, `1:1`):**
-   - Exportar las 5 carpetas en blanco puro (`#FFFFFF`) con relaciones exactas (`prepare_ai_mask_workspaces.py --export`): `01_parts_5_despiece`, `02_id_mask_bodies`, `03_id_mask_heads`, `04_limb_anim_masks`, `05_secondary_jiggle_masks`. Cada carpeta genera su propio `PROMPT_GUIDE.md`.
-   - Devolver resultados en `<carpeta>/masked_outputs/` como `<lote>_mask.{png,jpeg}` (o `<lote>_masked.*` / mismo nombre que `inputs/`) y ejecutar `--ingest all`: Python cuantiza a paleta RGB pura, filtra motas aisladas, limpia antialiasing y genera automáticamente `SW/W/NW` + auditorías en `split_results/`.
-4. **Ajustes locales e inyección de miembros traseros en `e`/`w` (`source_refs/<pilot_dir>/05_mask_ai_workspaces/manual_fix_overlays/`):**
-   - Corrección dirigida de máscaras de mentón (`01_cabezas_menton_se_sw/`), auditoría de pivote glúteo (`02_perfiles_gluteo_e_w/`) y reconstrucción del brazo trasero medial (`03_brazo_trasero_e_w/` → Upscayl 4x + alineación `1560x1680` + clonado de pierna trasera `leg_l`/`leg_r`) documentados en [PILOT_V2_8DIR_HANDOFF.md](PILOT_V2_8DIR_HANDOFF.md).
-5. **Ingesta HD de Overlays (Upscayl 4x sobre torsos, caps de extremidades y hombreras):**
-   - `ingest_hd_torsos_16x9.py` (desde `07_torso_neck_regen_16x9/torsos_8dir_regen_raw.jpg` `2752x1536` → Upscayl 4x `11008x6144` → `combat_assets/<id>_planar/hd_torsos/`).
-   - `ingest_cap_sheets_16x9.py` (desde `04_cap_sheets_16x9/Joints/` → Upscayl 4x en `upscayl_4x/` → `capped_rgba_1560x1680/`).
-   - `ingest_pauldron_polish_16x9.py` (desde `07_pauldron_polish_16x9/inputs/01_pauldrons_unique_8_16x9_hd.jpg` → Upscayl 4x → `06_torso_and_leg_e_16x9/hd_pauldrons/`).
-6. **Ensamblado del asset pack (`build_valentina_v2_rig_assets.py` con `C:\Python314\python.exe`):**
-   - Construye `sandbox/pilot_rig_lab/combat_assets/<pilot_id>_planar/` usando `scipy` (corte de pliegue de Neumann en `_anim_mask.png` con canal `A=seam_fade`), helpers de `polish_outlines.py`, limpieza `_clean_edge_matting_bgra` y suavizado subglúteo en `N/NE/NW`, generando las 8 carpetas `<dir>/parts_5/` (incluyendo `pauldron_r/l` independientes, `body_core_pauldron_mask.png`, `body_core_secondary_mask.png`, `*_normal_depth.png` en orden BGRA), `heads/` (8 cabezas × 5 mapas + alias `head_side`), `body_metrics.json`, `head_outline_config.json`, `parts_5_meta.json`, `heads_metadata.json` y láminas en `05_mask_ai_workspaces/final_rig_audit/` (sin `arm_*_over_mask.png`, retirado en v2).
+> **Propósito:** Guía operativa definitiva para construir el resto del cast (**Nova, Kira, Selene, Roxy, Echo, Nyx**) replicando el estándar consolidado de **Valentina v2** hasta producción (`CharacterSelectUI`, `HubRigAvatar3D`, `CosmeticsManager`, `Dialogic` y `MainGame`).
+> **Índice de scripts Python:** [`sandbox/pilot_rig_lab/tools/README.md`](../sandbox/pilot_rig_lab/tools/README.md) · **Reglas del dominio:** [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md).
 
 ---
 
-## 1. Estructura de Carpetas del Nuevo Piloto
+## Mapa Rápido del Flujo (Etapas 0–9)
 
-1. **Fuentes crudas sin procesar (fuera del import de Godot):** `sandbox/pilot_rig_lab/source_refs/<pilot_dir>/` (protegido con `.gdignore`), con toda la base sin procesar en `00_raw/` (incluyendo `00_raw/overlays_hd/` para torsos, piernas, brazos, hombreras y cabezas HD originales).
-2. **Assets procesados de combate:** `sandbox/pilot_rig_lab/combat_assets/<pilot_id>_planar/`
-   - **8-Dir Nativo (v2):** `s/`, `se/`, `e/`, `ne/`, `n/`, `nw/`, `w/`, `sw/`, cada uno con `parts_5/` (`body_core`, `arm_r`, `arm_l`, `leg_r`, `leg_l`, `pauldron_r`, `pauldron_l` en RGBA + `_id_mask.png` + `_normal_depth.png`, más `*_anim_mask.png`, `body_core_secondary_mask.png`, `body_core_pauldron_mask.png` y `parts_5_meta.json`). *(En modo legado v1: solo `s/` y `n/`)*.
-   - **Cabezas:** `heads/` con `head_{front,front_l,front_r,side_l,side_r,back,back_l,back_r}` (RGBA + `_id_mask.png` + `_normal_depth.png` + `_hair_jiggle_mask.png` + `_outline_sdf.png`) y `heads_metadata.json`.
-   - **Raíz del pack:** `.gdignore`, `body_metrics.json`, `head_outline_config.json`, `<pilot_id>_anim_config.tres`, `valentina_v2_perspective_config.tres`, `hd_torsos/` *(caché de torsos HD alineados)*.
-3. **Perfil y Skins `.tres`:** `sandbox/pilot_rig_lab/pilots/<pilot_id>/`
-   - `<pilot_id>_profile.tres` (`PilotRigProfile`)
-   - `skins/*.tres` (`PilotSkinPreset`, pueden reutilizarse o definirse propios)
-
----
-
-## 2. Scripts Activos del Pipeline Python (`sandbox/pilot_rig_lab/tools/`)
-
-Usar `.venv/Scripts/python.exe` para etapas 1–5 y **`C:\Python314\python.exe`** (con `scipy`) para `build_valentina_v2_rig_assets.py`.
-
-### Ruta Estándar v2 (8-Dir Nativo + Overlays HD + Ensamblado)
-
-| Orden | Script | Función |
-|---|---|---|
-| 1 | `prepare_8dir_sheets.py` | Upscaling 4x (Upscayl), recorte adaptativo por valles, mateado híbrido `#808080` + IS-Net, alineación canónica `1560x1680` y borradores CIELAB `id_mask_auto_draft/`. |
-| 2 | `build_head_and_body_gen_kit.py` | Exporta plantillas de referencia grises `2x2` (cabezas), `4x2` hueco `SW` y tira mínima 5-cuerpos (`S, SE, E, NE, N`). |
-| 3 | `process_sw_and_8dir_heads.py` | Normaliza las 8 cabezas a `1024x1024`, injerta la cabeza `SW` sobre cuerpo `flip(SE)` y completa las 8 vistas `canonical`/`native`. |
-| 4 | `prepare_ai_mask_workspaces.py` | `--export`: crea bloques `16:9`/`4:3`/`1:1` + `PROMPT_GUIDE.md`. `--ingest <key \| all>`: desparasita, cuantiza paleta, realinea por IoU y genera `SW/W/NW` automáticamente. |
-| 5 | `ingest_hd_torsos_16x9.py` / `ingest_cap_sheets_16x9.py` / `ingest_pauldron_polish_16x9.py` | Procesan con **Upscayl 4x** los overlays HD de torsos (`hd_torsos/`), caps de extremidades (`capped_rgba_1560x1680/`) y hombreras únicas (`hd_pauldrons/`). *(Sus exportadores previos fueron `export_cap_sheets_16x9.py`, `export_torso_and_profile_leg_sheets_16x9.py`, `export_pauldron_*_16x9.py`)*. |
-| 6 | `build_valentina_v2_rig_assets.py` | Ensambla las 8 vistas `parts_5/` (incluyendo `pauldron_r/l`, brazo/pierna traseros `e/w`, mapas BGRA `_normal_depth.png`, `_anim_mask.png` con corte de pliegue, `body_core_pauldron_mask.png`), 8 cabezas + alias `head_side` y láminas en `final_rig_audit/`. |
-
-### Scripts Base / Compatibilidad v1 (2-Dir `S`/`N`)
-
-Los scripts modulares originales siguen activos como librería compartida o para rigs 2-dir legacy:
-
-| Script | Función / Uso |
-|---|---|
-| `generate_mask_sheets.py`, `process_masked_5parts.py`, `process_parts5_1to1_maps.py` | Flujo v1 `S`/`N` y helpers compartidos (`TEX_SCALE`, `_align_mask_to_ref`, `_place_on_canvas`). |
-| `id_mask_ink_refiner.py`, `ml_stage_processors.py` | Refinamiento CIELAB/SLIC bloqueado a tinta y etapa ML compartida (`clear_vram`, IS-Net/Sapiens). |
-| `process_limb_anim_masks.py`, `process_secondary_mask.py`, `build_head_8dir_guide.py`, `process_head_8dir_sheet.py` | Helpers reutilizados por v2 (`MASK_SCALE`, `_build_clean_head_normal_depth`, `_build_hair_jiggle_mask`). |
-| `clean_edge_matting.py`, `polish_outlines.py` | `polish_outlines.py` exporta helpers reutilizados por v2 (`alpha_bleed_and_defringe`, `_voronoi_fill`, `restore_body_core_neck_rgb`, `fade_body_core_neck_top`, `HEAD_PAD_PX`); sus pases *standalone* (`polish_parts_5`, `normalize_back_arm_outlines`) y `clean_edge_matting.py` (`w * 0.42`) siguen acoplados a v1 `s`/`n` (con respaldo `_backup_before_outline_polish/`). |
-
----
-
-## 3. Registro en el Lab (Cero Código)
-
-1. Crear `res://sandbox/pilot_rig_lab/pilots/<pilot_id>/<pilot_id>_profile.tres` de tipo `PilotRigProfile`.
-2. Asignar `pilot_id`, `display_name`, `assets_root`, `anim_config` (`PlanarRigAnimConfig`), `skins`, `hair_presets` (pueden reutilizarse los de `data/hair/`) y `style_profiles` (`data/styles/`).
-3. Abrir `planar_combat_rig_proto.tscn`: `PlanarLabHudBuilder` escanea `pilots/*/*.tres` automáticamente y muestra al nuevo piloto en el selector **0. PILOTO (.tres)**.
-
----
-
-## 4. Verificación
-
-Ejecutar siempre tras añadir o modificar un piloto:
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
+```mermaid
+flowchart LR
+    E0["0. Scaffold (.tres + dirs)"] --> E1["1. Arte Base 8-Dir (5 cuerpos + 8 cabezas)"]
+    E1 --> E2["2. Máscaras IA + Rig Pack"]
+    E2 --> E3["3. Ink SDF 2x"]
+    E3 --> E4["4. Rig Facial + Ojos Live2D"]
+    E4 --> E5["5. Alas 3D/2D + VFX"]
+    E5 --> E6["6. Arma & Anillo Orbital"]
+    E6 --> E7["7. Live Banner + Icono + Dialogic"]
+    E7 --> E8["8. Calibración en Labs (WorkbenchHub)"]
+    E8 --> E9["9. Activación en CharacterData + Tests"]
 ```
+
+### Entornos Python
+- **CV / Scipy / Upscayl / Scaffold (`build_*`, `ink_hq_pipeline.py`, `scaffold_new_pilot.py`):** `python` (`C:\Python313\python.exe` en este equipo)
+- **Segmentación ML (`prepare_8dir_sheets.py`, `prepare_ai_mask_workspaces.py`):** `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe`
+
+---
+
+## Etapa 0 — Scaffold del Nuevo Piloto (Cero copia manual)
+Ejecutar el generador usando `data/pilots/valentina_v2/` como plantilla base:
+```powershell
+python sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py `
+  --pilot-id nova_v2 `
+  --display-name "Nova v2 (8-Dir)" `
+  --char-id nova `
+  --accent-hex "#FF661A"
+```
+Esto crea automáticamente:
+- `data/pilots/<pilot_id>/` con los `17` `.tres` raíz (`<pilot_id>_profile.tres`, `base_pose`, `idle_anim`, `locomotion_anim`, `kiting_anim`, `turn_anim`, `jiggle_physics`, `face_anim`, `base_propulsion`, `wings_3d`, `propulsion_vfx`, `orbital_weapon`, `live_banner`, `combat_rig`, `skin_catalog`, `anim_config`, `perspective_config`) + `skins/00_base..09_*.tres`.
+- `assets/pilots/<pilot_id>/{planar,banner}` y `sandbox/pilot_rig_lab/source_refs/<pilot_id>/00_raw/` (protegido con `.gdignore`).
+
+---
+
+## Etapa 1 — Arte Base 8-Dir (5 Cuerpos + 8 Cabezas 4×2)
+Para evitar deriva angular al pedir 8 cuerpos completos desde cero:
+1. **Plantillas de referencia:** `build_head_and_body_gen_kit.py` genera tiras limpias para IA (`S, SE, E, NE, N` en Zero-G A-Pose sobre `#808080`, más grilla `4×2` para 8 cabezas closeup). Ver prompts en [`docs/art/character_25d_generation_guide.md`](art/character_25d_generation_guide.md) y [`GOOGLE_AI_PROMPTS.md`](../sandbox/pilot_rig_lab/reference_templates/GOOGLE_AI_PROMPTS.md).
+2. **Mateado y normalización:**
+   - `prepare_8dir_sheets.py` → Upscayl 4× + mateado `#808080`/IS-Net + canvas `1560×1680` + reconstrucción simétrica `SW/W/NW` por espejado e intercambio `L/R`.
+   - `process_sw_and_8dir_heads.py` → normaliza las 8 cabezas a `1024×1024` y empalma cabeza auténtica `SW` sobre el cuerpo `flip(SE)`.
+
+---
+
+## Etapa 2 — Máscaras IA, Overlays HD y Ensamblado del Rig
+1. **Workspaces IA estándar:** `prepare_ai_mask_workspaces.py --export` crea `01_parts_5_despiece`, `02_id_mask_bodies`, `03_id_mask_heads`, `04_limb_anim_masks`, `05_secondary_jiggle_masks`; tras procesar con IA se ejecuta `--ingest all`.
+2. **Regeneración HQ de máscaras por pieza (`ID`, `Normal/Depth`, `ILM`):** `export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py --kind id|normal|ilm` (ver `rig_v2_lib/piece_mask_prompts.py`).
+3. **Invariante crítico de cabezas:** En `heads/head_*_id_mask.png`, el canal azul (`B = 255`) marca el cuello inferior para separar `head_layer_pass = 1` (bajo torso) vs `2` (sobre torso).
+4. **Ensamblado del pack:** `python sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py` (apuntando al directorio destino en `assets/pilots/<pilot_id>/planar/`) exporta `parts_5/`, `heads/`, `parts_5_meta.json`, `heads_metadata.json`, `body_metrics.json` y láminas de auditoría. *(Si hacen falta retoques locales de torsos/caps/hombreras, usar `ingest_hd_torsos_16x9.py`, `ingest_cap_sheets_16x9.py` y `ingest_pauldron_polish_16x9.py`).*
+
+---
+
+## Etapa 3 — Tinta Interna HQ `Ink SDF 2×`
+- Ejecutar `ink_hq_pipeline.py --action export|test|apply --sheet <hoja>` sobre `07_ink_hq_regen/` (doble referencia `inputs_color/` + `inputs_anchor/` → Upscayl 4× → ECC Afín + Farneback → SDF `2×`).
+- **Invariante:** Los mapas `*_ink_sdf.png` deben cargarse **sin mipmaps** (`use_mipmaps = false`) y mantener el relleno de traje oscuro/botas/guantes en `#FFFFFF` puro (solo trazos negros `#000000`).
+
+---
+
+## Etapa 4 — Rig Facial Vivo + Ojos Live2D
+1. **Máscaras faciales (`rig_face_live.gdshaderinc`):** `export_head_live_mask_sheet.py` → `fuse_head_live_mask_sheet.py` → `ingest_head_live_rig_assets.py`.
+2. **Ojos Live2D e injerto `4× SSAA`:** `export_eye_live2d_sheets.py` → `ingest_eye_live2d_assets.py` genera capas oculares animables (`head_front_eye_iris.png`, `head_front_eye_closed.png`, etc.) y respalda las cabezas nativas.
+3. Verificar expresiones, parpadeo, soldadura cervical y cabello 3-zonas en **Face Lab** (`face_lab/valentina_face_lab.tscn`) guardando en `<pilot_id>_face_anim.tres`.
+
+---
+
+## Etapa 5 — Alas 3D Cel-Shaded / Alas 2D Base & VFX
+- **Estándar Multi-Piloto (Alas 3D):** Consultar [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) y [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md). Calibrar `<pilot_id>_wings_3d.tres` en **3D Lab** (`3d_lab/valentina_3d_lab.tscn`).
+- **Alternativa 2D por cuchillas (`enable_base_propulsion_wings`):** Compilar 3 vistas `#808080` con `build_valentina_v2_wings.py --sheet <hoja> --out-dir assets/pilots/<pilot_id>/planar/wings --audit` (ver [`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md)).
+- **Estela / Power-Up VFX:** Ajustar `<pilot_id>_propulsion_vfx.tres` y `<pilot_id>_base_propulsion.tres` en **VFX Lab** (`vfx_lab/valentina_vfx_lab.tscn`).
+
+---
+
+## Etapa 6 — Armamento Orbital 2.5D/3D
+- **Arma característica:** Compilar sprite `#808080` con `build_valentina_weapon.py --src <png> --out-dir assets/pilots/<pilot_id>/planar/weapons --name <weapon_name>` o reutilizar/personalizar la malla 3D (`orbital_weapon_3d_renderer.gd`).
+- **Anillo Orbital:** Generar textura RGBA empaquetada `1:1` con `build_orbital_ring_texture.py --src <png> --out-dir assets/pilots/<pilot_id>/planar/weapons --name <char_id>_mecha_ring` (actualiza `ring_texture_path` en `<pilot_id>_combat_rig.tres`).
+- Calibrar `<pilot_id>_orbital_weapon.tres` en **Guns Lab** (`guns_lab/valentina_guns_lab.tscn`). Ver [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md).
+
+---
+
+## Etapa 7 — Live Banner 2.5D, Icono `512×512` y Retratos de Diálogo
+1. **Splash Art + 4 Máscaras (`parts`, `mat`, `depth`, `ink`):** Compilar con:
+   ```powershell
+   python sandbox/pilot_rig_lab/tools/build_valentina_live_banner.py `
+     --src <splash.png> --mask-parts <m1.png> --mask-mat <m2.png> `
+     --mask-depth <m3.png> --mask-ink <m4.png> `
+     --out-dir assets/pilots/<pilot_id>/banner --prefix <pilot_id>
+   ```
+   Ver prompts y spec en [`VALENTINA_LIVE_BANNER_SPEC.md`](VALENTINA_LIVE_BANNER_SPEC.md) y [`VALENTINA_LIVE_BANNER_PROMPTS.md`](VALENTINA_LIVE_BANNER_PROMPTS.md).
+2. **Icono `1:1` (`512×512`):** Refinar close-up facial tomando `<pilot_id>_icon_1x1.png` como referencia para `portrait_icon`/`avatar_icon` en `CharacterData`.
+3. **Retratos de Diálogo (`.dch`):** Actualizar `narrative/characters/<char_id>.dch` con los retratos del personaje y validarlos en **Dialogue Workbench** (`sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn`).
+
+---
+
+## Etapa 8 — Calibración Integral en Labs & Catálogo de Skins
+1. Abrir `sandbox/workbenches/workbench_hub.tscn` (`F6`), elegir el nuevo piloto en el selector superior **Piloto Activo (Cast v2)** y recorrer:
+   - **Proto (`planar_combat_rig_proto.tscn`):** validar 8 vistas `s..sw`, escala `display_scale`, sin flip horizontal (`body_flip_x = false`).
+   - **Anim Lab (`planar_anim_test.tscn`):** calibrar Pose Base, Idle, Locomoción, Kiting, Giros y Jiggle guardando directo en `data/pilots/<pilot_id>/*.tres`.
+   - **Shader Lab (`planar_shader_lab.tscn`) & Cosmos Lighting Lab (`valentina_cosmos_lab.tscn`):** validar `02_valentina_razor_sharp.tres`, skins e iluminación cósmica.
+   - **Banner Lab (`valentina_banner_lab.tscn`):** ajustar pivotes `chest_center_uv`, `right_shoulder_uv`, alas y Lock-In en `<pilot_id>_live_banner.tres`.
+2. **Skins Shader:** Ajustar paletas en `data/pilots/<pilot_id>/skins/*.tres` y `<pilot_id>_skin_catalog.tres` (`pilot` / `wings` / `weapon`).
+
+---
+
+## Etapa 9 — Activación en Producción (`CharacterData`) y Verificación
+1. Editar `data/characters/roster/<char_id>.tres`:
+   - `pilot_rig_profile` → `res://data/pilots/<pilot_id>/<pilot_id>_profile.tres`
+   - `live_banner_config` → `res://data/pilots/<pilot_id>/<pilot_id>_live_banner.tres`
+   - `shader_skin_catalog` → `res://data/pilots/<pilot_id>/<pilot_id>_skin_catalog.tres`
+   - `portrait_icon` / `avatar_icon` → `res://assets/pilots/<pilot_id>/banner/<pilot_id>_icon_1x1.png`
+   - `is_playable_rework_ready = true`
+2. Validar en **Character Select Workbench**, **Dialogue Workbench**, **Combat Gym** (1–4 armas + Overfocus + `OverheadHealthBar`), `HubWorld` y tests:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"
+   powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"
+   powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"
+   powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"
+   powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
+   ```

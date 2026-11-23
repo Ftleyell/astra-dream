@@ -9,12 +9,19 @@ const TrailCtrlScript = preload("res://scenes/pilots/vfx/sandevistan_trail_contr
 const BasePropCtrlScript = preload("res://scenes/pilots/vfx/valentina_base_propulsion_controller.gd")
 const BasePropConfigScript = preload("res://data/pilots/schemas/pilot_base_propulsion_config.gd")
 const VFXLabHUDScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const VFX_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres"
 const BASE_PROPULSION_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_propulsion.tres"
 const STYLES_DIR: String = "res://data/pilots/styles"
 const ABERRATION_SHADER_PATH: String = "res://scenes/pilots/shaders/sandevistan_edge_aberration.gdshader"
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_vfx_config_path: String = VFX_CONFIG_PATH
+var _active_base_prop_path: String = BASE_PROPULSION_CONFIG_PATH
 
 const MANUAL_MAX_SPEED_PX: float = 340.0
 const MANUAL_ACCEL: float = 1650.0
@@ -185,15 +192,24 @@ func get_base_propulsion_config() -> BasePropConfigScript:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
-	if ResourceLoader.exists(VFX_CONFIG_PATH):
-		_vfx_config = ResourceLoader.load(VFX_CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as PilotPropulsionVFXConfig
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"propulsion_vfx": VFX_CONFIG_PATH,
+		"base_propulsion": BASE_PROPULSION_CONFIG_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_vfx_config_path = str(cfgs.get("propulsion_vfx", VFX_CONFIG_PATH))
+	_active_base_prop_path = str(cfgs.get("base_propulsion", BASE_PROPULSION_CONFIG_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
+	if ResourceLoader.exists(_active_vfx_config_path):
+		_vfx_config = ResourceLoader.load(_active_vfx_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as PilotPropulsionVFXConfig
 	if _vfx_config == null:
 		_vfx_config = PilotPropulsionVFXConfig.new()
 	_vfx_config.ensure_defaults()
-	if ResourceLoader.exists(BASE_PROPULSION_CONFIG_PATH):
-		_base_prop_config = ResourceLoader.load(BASE_PROPULSION_CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as BasePropConfigScript
+	if ResourceLoader.exists(_active_base_prop_path):
+		_base_prop_config = ResourceLoader.load(_active_base_prop_path, "", ResourceLoader.CACHE_MODE_IGNORE) as BasePropConfigScript
 	if _base_prop_config == null:
 		_base_prop_config = BasePropConfigScript.new()
 
@@ -437,28 +453,28 @@ func _on_sandevistan_toggled(enabled: bool) -> void:
 func _on_save_config() -> void:
 	if _vfx_config == null:
 		return
-	var err_s: Error = ResourceSaver.save(_vfx_config, VFX_CONFIG_PATH)
+	var err_s: Error = ResourceSaver.save(_vfx_config, _active_vfx_config_path)
 	var err_b: Error = OK
 	if _base_prop_config != null:
-		err_b = ResourceSaver.save(_base_prop_config, BASE_PROPULSION_CONFIG_PATH)
+		err_b = ResourceSaver.save(_base_prop_config, _active_base_prop_path)
 	var status: Label = _hud_refs.get("status_label", null) as Label
 	if status != null:
-		status.text = "Guardados Sandevistan + Propulsión Base (.tres)" if (err_s == OK and err_b == OK) else "Error al guardar (%d/%d)" % [err_s, err_b]
+		status.text = "Guardados %s + %s" % [_active_vfx_config_path.get_file(), _active_base_prop_path.get_file()] if (err_s == OK and err_b == OK) else "Error al guardar (%d/%d)" % [err_s, err_b]
 
 
 func _on_reload_config() -> void:
-	if ResourceLoader.exists(VFX_CONFIG_PATH):
+	if ResourceLoader.exists(_active_vfx_config_path):
 		var reloaded: PilotPropulsionVFXConfig = ResourceLoader.load(
-			VFX_CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE
+			_active_vfx_config_path, "", ResourceLoader.CACHE_MODE_IGNORE
 		) as PilotPropulsionVFXConfig
 		if reloaded != null:
 			reloaded.ensure_defaults()
 			_vfx_config = reloaded
 			if _trail_ctrl != null:
 				_trail_ctrl.set_config(_vfx_config)
-	if ResourceLoader.exists(BASE_PROPULSION_CONFIG_PATH):
+	if ResourceLoader.exists(_active_base_prop_path):
 		var reloaded_b: BasePropConfigScript = ResourceLoader.load(
-			BASE_PROPULSION_CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE
+			_active_base_prop_path, "", ResourceLoader.CACHE_MODE_IGNORE
 		) as BasePropConfigScript
 		if reloaded_b != null:
 			_base_prop_config = reloaded_b

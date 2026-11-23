@@ -8,11 +8,18 @@ const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_la
 const RingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
 const ConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
 const STYLES_DIR: String = "res://data/pilots/styles"
 const RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_config_path: String = CONFIG_PATH
+var _active_ring_tex_path: String = RING_TEXTURE_PATH
 
 const WEAPON_CATALOG: Array[Dictionary] = [
 	{
@@ -66,7 +73,7 @@ func _ready() -> void:
 	_build_environment()
 	_build_scene_nodes()
 	_configure_rig_defaults()
-	var ring_tex: Texture2D = _load_tex(RING_TEXTURE_PATH, true)
+	var ring_tex: Texture2D = _load_tex(_active_ring_tex_path, true)
 	if ring_tex != null and _ring_ctrl != null:
 		_ring_ctrl.set_ring_texture(ring_tex)
 	_load_weapon_index(0)
@@ -151,13 +158,24 @@ func get_config() -> ConfigScript:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
-	if ResourceLoader.exists(CONFIG_PATH):
-		_config = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"orbital_weapon": CONFIG_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_config_path = str(cfgs.get("orbital_weapon", CONFIG_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
+	if ResourceLoader.exists(_active_config_path):
+		_config = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 	if _config == null:
 		_config = ConfigScript.new()
 	_config.ensure_defaults()
+	if _profile != null and _profile.combat_rig_config != null and "ring_texture_path" in _profile.combat_rig_config:
+		var cand_ring: String = str(_profile.combat_rig_config.get("ring_texture_path"))
+		if not cand_ring.is_empty() and ResourceLoader.exists(cand_ring):
+			_active_ring_tex_path = cand_ring
 
 
 func _build_environment() -> void:
@@ -359,16 +377,16 @@ func _on_idle_toggled(enabled: bool) -> void:
 func _on_save_config() -> void:
 	if _config == null:
 		return
-	var err: Error = ResourceSaver.save(_config, CONFIG_PATH)
+	var err: Error = ResourceSaver.save(_config, _active_config_path)
 	var status: Label = _hud_refs.get("status_label", null) as Label
 	if is_instance_valid(status):
-		status.text = "Guardado OK: valentina_v2_orbital_weapon.tres" if err == OK else ("Error al guardar: %d" % err)
+		status.text = ("Guardado OK: %s" % _active_config_path.get_file()) if err == OK else ("Error al guardar: %d" % err)
 
 
 func _on_reload_config() -> void:
-	if not ResourceLoader.exists(CONFIG_PATH):
+	if not ResourceLoader.exists(_active_config_path):
 		return
-	var reloaded: ConfigScript = ResourceLoader.load(CONFIG_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
+	var reloaded: ConfigScript = ResourceLoader.load(_active_config_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ConfigScript
 	if reloaded != null:
 		_config = reloaded
 		_config.ensure_defaults()

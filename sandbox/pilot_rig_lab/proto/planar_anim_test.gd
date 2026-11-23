@@ -13,6 +13,7 @@ const FaceAnimConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_
 const BasePoseEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_base_pose_evaluator.gd")
 const KitingEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_kiting_evaluator.gd")
 const PoseLabHudScript = preload("res://sandbox/pilot_rig_lab/proto/planar_pose_lab_hud.gd")
+const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
 
 const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 const BASE_POSE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_pose.tres"
@@ -30,6 +31,17 @@ const HEAD_CYCLE_SEC: float = 1.4
 const DEFAULT_CAM_POS := Vector2(-120.0, 0.0)
 const DEFAULT_CAM_ZOOM: float = 0.85
 const SLOWMO_SCALES: Array[float] = [1.0, 0.5, 0.25, 0.12]
+
+@export var pilot_profile_override: String = ""
+
+var _active_profile_path: String = PROFILE_PATH
+var _active_base_pose_path: String = BASE_POSE_PATH
+var _active_idle_anim_path: String = IDLE_ANIM_PATH
+var _active_loco_anim_path: String = LOCO_ANIM_PATH
+var _active_kiting_anim_path: String = KITING_ANIM_PATH
+var _active_turn_anim_path: String = TURN_ANIM_PATH
+var _active_jiggle_physics_path: String = JIGGLE_PHYSICS_PATH
+var _active_face_anim_path: String = FACE_ANIM_PATH
 
 var _profile: PilotRigProfile = null
 var _style_profile: RigStyleProfile = null
@@ -184,8 +196,27 @@ func _ready() -> void:
 
 
 func _load_resources() -> void:
-	if ResourceLoader.exists(PROFILE_PATH):
-		_profile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	var resolved: Dictionary = PilotLabSelectorScript.resolve_active_paths(pilot_profile_override, PROFILE_PATH, {
+		"base_pose": BASE_POSE_PATH,
+		"idle_anim": IDLE_ANIM_PATH,
+		"locomotion_anim": LOCO_ANIM_PATH,
+		"kiting_anim": KITING_ANIM_PATH,
+		"turn_anim": TURN_ANIM_PATH,
+		"jiggle_physics": JIGGLE_PHYSICS_PATH,
+		"face_anim": FACE_ANIM_PATH,
+	})
+	_active_profile_path = str(resolved.get("profile_path", PROFILE_PATH))
+	var cfgs: Dictionary = resolved.get("configs", {}) as Dictionary
+	_active_base_pose_path = str(cfgs.get("base_pose", BASE_POSE_PATH))
+	_active_idle_anim_path = str(cfgs.get("idle_anim", IDLE_ANIM_PATH))
+	_active_loco_anim_path = str(cfgs.get("locomotion_anim", LOCO_ANIM_PATH))
+	_active_kiting_anim_path = str(cfgs.get("kiting_anim", KITING_ANIM_PATH))
+	_active_turn_anim_path = str(cfgs.get("turn_anim", TURN_ANIM_PATH))
+	_active_jiggle_physics_path = str(cfgs.get("jiggle_physics", JIGGLE_PHYSICS_PATH))
+	_active_face_anim_path = str(cfgs.get("face_anim", FACE_ANIM_PATH))
+
+	if ResourceLoader.exists(_active_profile_path):
+		_profile = ResourceLoader.load(_active_profile_path) as PilotRigProfile
 	if ResourceLoader.exists(STYLE_SHARP_PATH):
 		_style_profile = ResourceLoader.load(STYLE_SHARP_PATH) as RigStyleProfile
 	elif _profile != null and not _profile.style_profiles.is_empty():
@@ -202,8 +233,8 @@ func _load_resources() -> void:
 
 func _load_face_cfg_from_disk() -> FaceAnimConfigScript:
 	var cfg: FaceAnimConfigScript = null
-	if ResourceLoader.exists(FACE_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(FACE_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_face_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_face_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is FaceAnimConfigScript:
 			cfg = (loaded as FaceAnimConfigScript).duplicate(true) as FaceAnimConfigScript
 	if cfg == null:
@@ -213,8 +244,8 @@ func _load_face_cfg_from_disk() -> FaceAnimConfigScript:
 
 func _load_pose_cfg_from_disk() -> BasePoseConfigScript:
 	var cfg: BasePoseConfigScript = null
-	if ResourceLoader.exists(BASE_POSE_PATH):
-		var loaded: Resource = ResourceLoader.load(BASE_POSE_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_base_pose_path):
+		var loaded: Resource = ResourceLoader.load(_active_base_pose_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is BasePoseConfigScript:
 			cfg = (loaded as BasePoseConfigScript).duplicate(true) as BasePoseConfigScript
 	if cfg == null:
@@ -225,8 +256,8 @@ func _load_pose_cfg_from_disk() -> BasePoseConfigScript:
 
 func _load_idle_cfg_from_disk() -> IdleAnimConfigScript:
 	var cfg: IdleAnimConfigScript = null
-	if ResourceLoader.exists(IDLE_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(IDLE_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_idle_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_idle_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is IdleAnimConfigScript:
 			cfg = (loaded as IdleAnimConfigScript).duplicate(true) as IdleAnimConfigScript
 	if cfg == null:
@@ -237,8 +268,8 @@ func _load_idle_cfg_from_disk() -> IdleAnimConfigScript:
 
 func _load_loco_cfg_from_disk() -> LocomotionAnimConfigScript:
 	var cfg: LocomotionAnimConfigScript = null
-	if ResourceLoader.exists(LOCO_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(LOCO_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_loco_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_loco_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is LocomotionAnimConfigScript:
 			cfg = (loaded as LocomotionAnimConfigScript).duplicate(true) as LocomotionAnimConfigScript
 	if cfg == null:
@@ -249,8 +280,8 @@ func _load_loco_cfg_from_disk() -> LocomotionAnimConfigScript:
 
 func _load_kiting_cfg_from_disk() -> KitingAnimConfigScript:
 	var cfg: KitingAnimConfigScript = null
-	if ResourceLoader.exists(KITING_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(KITING_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_kiting_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_kiting_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is KitingAnimConfigScript:
 			cfg = (loaded as KitingAnimConfigScript).duplicate(true) as KitingAnimConfigScript
 	if cfg == null:
@@ -261,8 +292,8 @@ func _load_kiting_cfg_from_disk() -> KitingAnimConfigScript:
 
 func _load_turn_cfg_from_disk() -> TurnAnimConfigScript:
 	var cfg: TurnAnimConfigScript = null
-	if ResourceLoader.exists(TURN_ANIM_PATH):
-		var loaded: Resource = ResourceLoader.load(TURN_ANIM_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_turn_anim_path):
+		var loaded: Resource = ResourceLoader.load(_active_turn_anim_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is TurnAnimConfigScript:
 			cfg = (loaded as TurnAnimConfigScript).duplicate(true) as TurnAnimConfigScript
 	if cfg == null:
@@ -273,8 +304,8 @@ func _load_turn_cfg_from_disk() -> TurnAnimConfigScript:
 
 func _load_jiggle_cfg_from_disk() -> JigglePhysicsConfigScript:
 	var cfg: JigglePhysicsConfigScript = null
-	if ResourceLoader.exists(JIGGLE_PHYSICS_PATH):
-		var loaded: Resource = ResourceLoader.load(JIGGLE_PHYSICS_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if ResourceLoader.exists(_active_jiggle_physics_path):
+		var loaded: Resource = ResourceLoader.load(_active_jiggle_physics_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if loaded is JigglePhysicsConfigScript:
 			cfg = (loaded as JigglePhysicsConfigScript).duplicate(true) as JigglePhysicsConfigScript
 	if cfg == null:
@@ -982,13 +1013,13 @@ func _save_resource_tres(res: Resource, path: String, label: String) -> void:
 
 
 func _save_pose_tres() -> void:
-	_save_resource_tres(_pose_cfg, BASE_POSE_PATH, "valentina_v2_base_pose.tres")
+	_save_resource_tres(_pose_cfg, _active_base_pose_path, _active_base_pose_path.get_file())
 
 
 func _reload_pose_tres() -> void:
-	if not ResourceLoader.exists(BASE_POSE_PATH):
+	if not ResourceLoader.exists(_active_base_pose_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_base_pose.tres", false)
+			_hud.set_feedback("No existe %s" % _active_base_pose_path.get_file(), false)
 		return
 	_pose_cfg = _load_pose_cfg_from_disk()
 	_face_cfg = _load_face_cfg_from_disk()
@@ -998,7 +1029,7 @@ func _reload_pose_tres() -> void:
 			rig.set_face_anim_config(_face_cfg.duplicate(true) as FaceAnimConfigScript)
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_base_pose.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_base_pose_path.get_file(), true)
 	_apply_all_poses()
 
 
@@ -1013,18 +1044,18 @@ func _reset_selected_family() -> void:
 
 
 func _save_idle_tres() -> void:
-	_save_resource_tres(_idle_cfg, IDLE_ANIM_PATH, "valentina_v2_idle_anim.tres")
+	_save_resource_tres(_idle_cfg, _active_idle_anim_path, _active_idle_anim_path.get_file())
 
 
 func _reload_idle_tres() -> void:
-	if not ResourceLoader.exists(IDLE_ANIM_PATH):
+	if not ResourceLoader.exists(_active_idle_anim_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_idle_anim.tres", false)
+			_hud.set_feedback("No existe %s" % _active_idle_anim_path.get_file(), false)
 		return
 	_idle_cfg = _load_idle_cfg_from_disk()
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_idle_anim.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_idle_anim_path.get_file(), true)
 	_apply_all_poses()
 
 
@@ -1039,18 +1070,18 @@ func _reset_idle_defaults() -> void:
 
 
 func _save_loco_tres() -> void:
-	_save_resource_tres(_loco_cfg, LOCO_ANIM_PATH, "valentina_v2_locomotion_anim.tres")
+	_save_resource_tres(_loco_cfg, _active_loco_anim_path, _active_loco_anim_path.get_file())
 
 
 func _reload_loco_tres() -> void:
-	if not ResourceLoader.exists(LOCO_ANIM_PATH):
+	if not ResourceLoader.exists(_active_loco_anim_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_locomotion_anim.tres", false)
+			_hud.set_feedback("No existe %s" % _active_loco_anim_path.get_file(), false)
 		return
 	_loco_cfg = _load_loco_cfg_from_disk()
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_locomotion_anim.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_loco_anim_path.get_file(), true)
 	_apply_all_poses()
 
 
@@ -1065,18 +1096,18 @@ func _reset_loco_family() -> void:
 
 
 func _save_turn_tres() -> void:
-	_save_resource_tres(_turn_cfg, TURN_ANIM_PATH, "valentina_v2_turn_anim.tres")
+	_save_resource_tres(_turn_cfg, _active_turn_anim_path, _active_turn_anim_path.get_file())
 
 
 func _reload_turn_tres() -> void:
-	if not ResourceLoader.exists(TURN_ANIM_PATH):
+	if not ResourceLoader.exists(_active_turn_anim_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_turn_anim.tres", false)
+			_hud.set_feedback("No existe %s" % _active_turn_anim_path.get_file(), false)
 		return
 	_turn_cfg = _load_turn_cfg_from_disk()
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_turn_anim.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_turn_anim_path.get_file(), true)
 	_apply_all_poses()
 
 
@@ -1091,18 +1122,18 @@ func _reset_turn_defaults() -> void:
 
 
 func _save_jiggle_tres() -> void:
-	_save_resource_tres(_jiggle_cfg, JIGGLE_PHYSICS_PATH, "valentina_v2_jiggle_physics.tres")
+	_save_resource_tres(_jiggle_cfg, _active_jiggle_physics_path, _active_jiggle_physics_path.get_file())
 
 
 func _reload_jiggle_tres() -> void:
-	if not ResourceLoader.exists(JIGGLE_PHYSICS_PATH):
+	if not ResourceLoader.exists(_active_jiggle_physics_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_jiggle_physics.tres", false)
+			_hud.set_feedback("No existe %s" % _active_jiggle_physics_path.get_file(), false)
 		return
 	_jiggle_cfg = _load_jiggle_cfg_from_disk()
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_jiggle_physics.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_jiggle_physics_path.get_file(), true)
 	_apply_all_poses()
 
 
@@ -1119,18 +1150,18 @@ func _reset_jiggle_defaults() -> void:
 
 
 func _save_kiting_tres() -> void:
-	_save_resource_tres(_kiting_cfg, KITING_ANIM_PATH, "valentina_v2_kiting_anim.tres")
+	_save_resource_tres(_kiting_cfg, _active_kiting_anim_path, _active_kiting_anim_path.get_file())
 
 
 func _reload_kiting_tres() -> void:
-	if not ResourceLoader.exists(KITING_ANIM_PATH):
+	if not ResourceLoader.exists(_active_kiting_anim_path):
 		if _hud != null:
-			_hud.set_feedback("No existe valentina_v2_kiting_anim.tres", false)
+			_hud.set_feedback("No existe %s" % _active_kiting_anim_path.get_file(), false)
 		return
 	_kiting_cfg = _load_kiting_cfg_from_disk()
 	_sync_hud_all()
 	if _hud != null:
-		_hud.set_feedback("Recargado desde valentina_v2_kiting_anim.tres", true)
+		_hud.set_feedback("Recargado desde %s" % _active_kiting_anim_path.get_file(), true)
 	_apply_all_poses()
 
 
