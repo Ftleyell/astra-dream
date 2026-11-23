@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CosmosEnvironmentProfile" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="CosmosEnvProfile" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/combat/environment/cosmos/resources/cosmos_environment_profile.gd" id="1_prof"]
 [ext_resource type="Resource" path="res://scenes/combat/environment/cosmos/resources/data/default_cosmic_biome.tres" id="2_biome"]

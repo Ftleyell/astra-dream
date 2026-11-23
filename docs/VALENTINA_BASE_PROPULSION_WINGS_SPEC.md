@@ -93,9 +93,9 @@ PRODUCTION PIPELINE CONSTRAINTS (CRITICAL):
 Guarda la hoja generada en `sandbox/pilot_rig_lab/source_refs/<pilot>_wings/<pilot>_wings_3views.png` y ejecuta:
 
 ```powershell
-C:\Python314\python.exe sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py `
+python sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py `
   --sheet sandbox/pilot_rig_lab/source_refs/<pilot>_wings/<pilot>_wings_3views.png `
-  --out-dir sandbox/pilot_rig_lab/combat_assets/<pilot>_planar/wings `
+  --out-dir assets/pilots/<pilot>/planar/wings `
   --audit sandbox/pilot_rig_lab/source_refs/<pilot>_wings/audit_wings_shards.png
 ```
 
@@ -117,9 +117,9 @@ C:\Python314\python.exe sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py 
 
 ### 2.3 Enlace Data-Driven al Rig de un Nuevo Piloto
 
-1. Duplica [`valentina_v2_base_propulsion.tres`](../sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_propulsion.tres) en `sandbox/pilot_rig_lab/pilots/<pilot>/<pilot>_base_propulsion.tres` y ajusta su escala, paleta de glow y cintas.
-2. En el `PilotRigProfile` del piloto (`<pilot>_profile.tres`), asigna:
-   - `assets_root = "res://sandbox/pilot_rig_lab/combat_assets/<pilot>_planar"`
+1. Tras correr [`scaffold_new_pilot.py`](../sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py) (ver [`PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md)), edita `data/pilots/<pilot>/<pilot>_base_propulsion.tres` para ajustar su escala, paleta de glow y cintas.
+2. En el `PilotRigProfile` del piloto (`data/pilots/<pilot>/<pilot>_profile.tres`), asigna:
+   - `assets_root = "res://assets/pilots/<pilot>/planar"`
    - `wings_assets_subdir = "wings"`
    - `base_propulsion_config = <pilot>_base_propulsion.tres`
 3. Activa `rig.enable_base_propulsion_wings = true` (o `set_base_propulsion_wings_enabled(true)`) en la escena o arena correspondiente.

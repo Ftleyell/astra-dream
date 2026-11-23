@@ -1,6 +1,6 @@
-# Reglas de Desarrollo — Cosmos Engine (Producción & Sandbox)
+# Reglas de Desarrollo — Cosmos Engine (Producción)
 
-> **Ámbito de aplicación:** Se aplica siempre que se interactúe con el entorno espacial en producción (`scenes/combat/environment/cosmos/`, `scenes/combat/environment/`) o el banco de pruebas experimental (`sandbox/`).
+> **Ámbito de aplicación:** Se aplica siempre que se interactúe con el entorno espacial en producción (`scenes/combat/environment/cosmos/`, `scenes/combat/environment/`).
 
 ---
 
@@ -29,8 +29,6 @@ Toda modificación numérica o estética DEBE realizarse directamente en el recu
 | **Iluminación Cósmica sobre Rig** | `scenes/combat/environment/cosmos/resources/data/default_rig_lighting.tres` | Curvas de mezcla solar, tinte de eclipse planetario, ambiente mínimo combat-safe |
 | **Perfil Parallax Maestro Unificado** | `scenes/combat/environment/cosmos/resources/data/default_cosmos_environment.tres` | `nebula_parallax_factor`, `starfield_scroll_scale`, `galaxy_scroll_scale`, `debris_scroll_scale`, `solar_scroll_scale`, `living_universe_profile` |
 | **Inyección Determinista de POIs (Narrativa)** | `scenes/combat/environment/cosmos/resources/data/pois/<poi>.tres` | `poi_id`, `star_archetype`, `forced_planet_count`, `hazard_level`, `custom_label`, `seed_override` |
-
-*(Nota: Los archivos equivalentes bajo `sandbox/resources/data/` aplican únicamente al experimentar en la escena aislada del sandbox).*
 
 ---
 

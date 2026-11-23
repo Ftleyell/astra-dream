@@ -31,8 +31,9 @@ if str(TOOLS_DIR) not in sys.path:
 from process_masked_5parts import upscale_with_upscayl  # noqa: E402
 
 PILOT_RIG_LAB_DIR = TOOLS_DIR.parent
+REPO_ROOT = PILOT_RIG_LAB_DIR.parent.parent
 DEFAULT_SRC = PILOT_RIG_LAB_DIR / "source_refs" / "valentina_v2_weapons" / "rail_lance_autonomo_master.jpg"
-DEFAULT_OUT_DIR = PILOT_RIG_LAB_DIR / "combat_assets" / "valentina_v2_planar" / "weapons"
+DEFAULT_OUT_DIR = REPO_ROOT / "assets" / "pilots" / "valentina_v2" / "planar" / "weapons"
 
 INK_SDF_RANGE_PX: float = 8.0
 DEFAULT_TARGET_WIDTH: int = 1024

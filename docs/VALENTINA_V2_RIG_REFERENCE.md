@@ -21,7 +21,7 @@
 | **Perspectiva 2.5D Post-Skinning** | **PURGADO (`persp_mode = 0`)** | [`planar_rig_perspective_controller.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_perspective_controller.gd) | Fuerza `persp_mode = 0`, `poly.position = ZERO`, `bone_chain_angles = ZERO`, `joint_flexion = 0`, `Pauldron_R/L.position = rest_pos`, `Bone2D.scale = ONE`. Solo conserva `leg_depth_phase` estático en `e`/`w` (`0.65` / `-0.75`). |
 | **Física Secundaria (Jiggle / Whiplash)** | **PURGADO** | [`planar_rig_secondary_physics.gd`](../sandbox/pilot_rig_lab/proto/planar_rig_secondary_physics.gd) | Fija `secondary_jiggle_l_px = ZERO` y `secondary_jiggle_r_px = ZERO` en `body_core` y cabezas (`enable_secondary_jiggle = false` en cabezas; textura cargada y lista en `body_core`). |
 | **Resortes de Cabeza / Pose Latch 15 FPS** | **PURGADO** | [`planar_combat_rig.gd`](../sandbox/pilot_rig_lab/proto/planar_combat_rig.gd) | `_head_anchor` y `_head_under_anchor` anclados a `Neck.global_position` (`rotation = 0`, `scale = snap_scale_xy / head_micro_snap_scale`), `q_time = 0`, `banking_tilt_2d = ZERO`. |
-| **Valentina v1 (2-Dir + Flip-H)** | **ELIMINADO** | — | Eliminados `pilots/valentina/` y `combat_assets/valentina_planar/`. Skins migradas a [`pilots/valentina_v2/skins/`](../sandbox/pilot_rig_lab/pilots/valentina_v2/skins/). |
+| **Valentina v1 (2-Dir + Flip-H)** | **ELIMINADO** | — | Eliminados `pilots/valentina/` y `combat_assets/` heredados. Skins promovidas a [`data/pilots/valentina_v2/skins/`](../data/pilots/valentina_v2/skins/). |
 
 ---
 
@@ -53,7 +53,7 @@ PlanarCombatRig (Node2D, scale = display_scale = 0.378)
 
 ## 3. Jerarquía de Huesos (18 Huesos) y Métricas Base
 
-Cada vista `s, se, e, ne, n, nw, w, sw` define sus pivotes y `rest_rots` en `combat_assets/valentina_v2_planar/<dir>/parts_5/parts_5_meta.json`.
+Cada vista `s, se, e, ne, n, nw, w, sw` define sus pivotes y `rest_rots` en `assets/pilots/valentina_v2/planar/<dir>/parts_5/parts_5_meta.json`.
 
 ### 3.1 Árbol Esquelético (`BONE_PARENTS`)
 ```text
@@ -90,7 +90,7 @@ Pelvis (raíz, en rig_origin)
 
 ## 4. Inventario Completo de Máscaras y Texturas Disponibles
 
-Ubicación base del asset pack: [`sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/`](../sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/)
+Ubicación base del asset pack: [`assets/pilots/valentina_v2/planar/`](../assets/pilots/valentina_v2/planar/)
 
 ### 4.1 Piezas de Cuerpo (`<dir>/parts_5/` — 28 archivos por vista × 8 vistas)
 
@@ -261,4 +261,4 @@ Tras consolidar **Pose Base Zero-G**, **Idle Zero-G Multicapa**, **Movimiento Co
      - `_segment_v2_head_id_ink_guided()` usa las líneas negras de tinta (`gray < 80`, excluyendo el rojo del monóculo) como barreras 4-conexas para clasificar cada celda cel-shaded con semillas validadas por color RGB y `cv2.watershed` en celdas abiertas/mixtas (p. ej. transición mejilla-cuello en perfiles). Los píxeles de tinta heredan etiqueta por prioridad (`monóculo > pelo > piel_cara > cuello_azul`) para conservar el outline del cabello sin arrastrar piel del cuello, y el cuello (`cls_map == 2`) se restringe a su componente conexa principal.
      - `_carve_cylindrical_neck_v2()` restringe la propagación perimetral azul a `yy >= ink_start_y & is_blue`, y `_fill_interior_alpha_holes()` rellena cualquier micro-hueco interno en el canal alfa tras el recorte y el reescalado a `240 px`.
    - **Cuello detrás del torso vs Cabeza encima:** el canal azul (`#0000FF`) de `*_id_mask.png` marca el cuello desnudo para dividir `head_layer_pass == 1` (`DecoupledHeadUnderMount`, menor orden que `body_core`) vs `head_layer_pass == 2` (`DecoupledHeadMount`, sobre `body_core`). En `pilot_rig_stylizer.gdshader`, `hair_cov = raw_mask.a` (sin dilatación de 4 px para no arrastrar piel del cuello al borde del cabello en Pass 2) y tras leer `is_collar_blue` se limpia `mask.b = 0.0` cuando `is_head_part` es verdadero para que el cuello conserve sombreado de piel y no se recoloree como traje oscuro.
-   - **Re-estandarización de ojos tras rebuilds de cabezas:** tras cualquier reconstrucción completa desde `heads_v2_base/`, re-ejecutar `C:\Python314\python.exe sandbox/pilot_rig_lab/tools/ingest_eye_live2d_assets.py` re-compila los `<head>_eye_iris.png` y vuelve a hornear de forma idempotente los ojos neutros **Amatista Profundo** en `heads/head_{front,front_r,front_l,side_r,side}.png`.
+   - **Re-estandarización de ojos tras rebuilds de cabezas:** tras cualquier reconstrucción completa desde `heads_v2_base/`, re-ejecutar `python sandbox/pilot_rig_lab/tools/ingest_eye_live2d_assets.py` re-compila los `<head>_eye_iris.png` y vuelve a hornear de forma idempotente los ojos neutros **Amatista Profundo** en `heads/head_{front,front_r,front_l,side_r,side}.png`.

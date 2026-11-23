@@ -8,6 +8,5 @@ preprocess/
 sandbox/pilot_rig_lab/tools/.venv/
 sandbox/pilot_rig_lab/tools/models/
 sandbox/pilot_rig_lab/source_refs/
-sandbox/pilot_rig_lab/combat_assets/
 sandbox/pilot_rig_lab/backups/
 tests/screenshots/

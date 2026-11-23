@@ -41,6 +41,10 @@
 | [`art/`](art/) | Guías de pipeline IA (`character_25d_generation_guide.md`, `character_style_pipeline_bible.md`, `Estilización 2.5D en Godot 4.md`, `art_pipeline_standards.md`, etc.). |
 | [`game_design/balance_and_mechanics.md`](game_design/balance_and_mechanics.md) | Balance de combate, economía y progresión. |
 | [`dev/testing_and_workflow.md`](dev/testing_and_workflow.md) | Flujo de tests headless y herramientas de verificación. |
+| [`tools/README.md`](../tools/README.md) | Índice de scripts de `tools/` (arnés de tests, launcher, procesadores activos y `legacy_art_experiments/`). |
+| [`sandbox/pilot_rig_lab/tools/README.md`](../sandbox/pilot_rig_lab/tools/README.md) | Entornos Python, `requirements.txt`, compiladores v2 (`assets/pilots/`) y `legacy_v1/`. |
+
+*(El árbol `sandbox/` queda acotado a 3 áreas limpias: `workbenches/`, `combat_gym/` y `pilot_rig_lab/`.)*
 
 ## 5. Archivo Histórico
 - [`archive/`](archive/): Planes de implementación cerrados y notas históricas de Cosmos Engine, Run Forks y el handoff inicial de Valentina v2.

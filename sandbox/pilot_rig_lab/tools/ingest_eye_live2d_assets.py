@@ -8,7 +8,7 @@ Consumes:
     - outputs/eyes_4dir_iris_360_1x1.png
     - outputs/eyes_4dir_closed_1x1.png
 
-Writes runtime assets to sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/:
+Writes runtime assets to assets/pilots/valentina_v2/planar/heads/:
   - <head>_eye_iris.png       (128x128 full 360° unclipped iris RGBA, dark-ink fringe decontaminated)
   - <head>_eye_closed.png     (256x256 aligned closed eyelid + lash RGBA patch, skin matched & guarded)
   - <head>_face_live_mask.png (refined G channel: upper eyelash overhang trimmed; R covers full socket)

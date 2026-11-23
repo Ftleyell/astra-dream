@@ -3,7 +3,7 @@ extends BaseTestSuite
 
 ## Test unitario aislado para DebrisLayoutGenerator
 
-const DebrisLayoutGeneratorScript = preload("res://sandbox/environment/debris_layout_generator.gd")
+const DebrisLayoutGeneratorScript = preload("res://scenes/combat/environment/cosmos/core/debris_layout_generator.gd")
 
 func _ready() -> void:
 	super._ready()
@@ -11,8 +11,8 @@ func _ready() -> void:
 	pass_suite("TestDebrisLayoutGeneratorSuite ejecutada con éxito")
 
 func test_debris_layout_generation() -> void:
-	var grid: CosmicMacroGrid = CosmicMacroGrid.new(12000.0, 771239)
-	var profile: DebrisLayerProfile = load("res://sandbox/resources/data/default_debris_layer.tres") as DebrisLayerProfile
+	var grid: CosmosMacroGrid = CosmosMacroGrid.new(12000.0, 771239)
+	var profile: CosmosDebrisLayerProfile = load("res://scenes/combat/environment/cosmos/resources/data/default_debris_layer.tres") as CosmosDebrisLayerProfile
 	assert_true(profile != null, "El perfil de debris debe existir")
 
 	var dummy_item: Dictionary = {

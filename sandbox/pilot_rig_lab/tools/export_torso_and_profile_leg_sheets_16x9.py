@@ -14,7 +14,8 @@ SHEET_H = 1440
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 LAB_DIR = SCRIPT_DIR.parent
-COMBAT_DIR = LAB_DIR / "combat_assets" / "valentina_v2_planar"
+REPO_ROOT = LAB_DIR.parent.parent
+COMBAT_DIR = REPO_ROOT / "assets" / "pilots" / "valentina_v2" / "planar"
 OUT_DIR = (
     LAB_DIR
     / "source_refs"

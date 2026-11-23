@@ -15,7 +15,7 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
   - `sandbox/pilot_rig_lab/tools/.venv/` *(30,351 archivos)*
   - `sandbox/pilot_rig_lab/tools/models/` *(modelos ONNX/pesos)*
   - `sandbox/pilot_rig_lab/source_refs/` *(505+ archivos de arte crudo y workspaces)*
-  - `sandbox/pilot_rig_lab/combat_assets/` *(550+ PNGs/JSONs compilados — leer solo `body_metrics.json`, `parts_5_meta.json` o `wings_metadata.json` puntuales si hace falta)*
+  - `assets/pilots/<pilot_id>/planar/` *(550+ PNGs/JSONs compilados — `combat_assets/` fue retirado; leer solo `body_metrics.json`, `parts_5_meta.json` o `wings_metadata.json` puntuales si hace falta)*
   - `sandbox/pilot_rig_lab/backups/` *(snapshot inmutable de baseline calibrado)*
 - **PROHIBIDO** leer completos los scripts Python o GDScript largos: consultar la tabla contractual inferior y leer acotado (máx. 100–200 líneas).
 
@@ -84,9 +84,9 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
 ### C. Pipeline Offline Python (`sandbox/pilot_rig_lab/tools/` — ver índice `tools/README.md`)
 - **Scaffold de Nuevo Piloto (Cero copia manual):** `sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py` (`--pilot-id <id>_v2 --display-name "..." --accent-hex "#RRGGBB"`): clona y reescribe los `.tres` plantilla en `data/pilots/<pilot_id>/` + directorios de `assets/pilots/` y `source_refs/`.
 - **Librería modular v2:** `sandbox/pilot_rig_lab/tools/rig_v2_lib/` (`constants.py`, `mask_and_matting.py`, `skeleton_and_normals.py`, `heads_builder.py`, `part_exporter.py`, `limb_cap_stages.py`, `torso_pauldron_stages.py`, `limb_seal_stages.py`, `audit_renderer.py`, `mask_workspace_prompts.py`).
-- **Orquestador CLI de ensamblado:** `sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py` (ejecutar con `C:\Python314\python.exe` si usa `scipy`).
+- **Orquestador CLI de ensamblado:** `sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py` (ejecutar con `python` / `C:\Python313\python.exe`).
 - **Workspaces de máscaras IA:** `sandbox/pilot_rig_lab/tools/prepare_ai_mask_workspaces.py` (ejecutar con `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe`).
-- **Regeneración HQ de máscaras por pieza (`ID`, `Normal/Depth`, `ILM`):** `sandbox/pilot_rig_lab/tools/export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py` (`--kind id|normal|ilm|ink`) + `rig_v2_lib/piece_mask_prompts.py` (7 hojas estándar `16:9` y `1:1` bajo `source_refs/valentina_v2_8dir/06_piece_mask_regen/`, ejecutar con `C:\Python314\python.exe`).
+- **Regeneración HQ de máscaras por pieza (`ID`, `Normal/Depth`, `ILM`):** `sandbox/pilot_rig_lab/tools/export_piece_mask_sheets.py` + `ingest_piece_mask_sheets.py` (`--kind id|normal|ilm|ink`) + `rig_v2_lib/piece_mask_prompts.py` (7 hojas estándar `16:9` y `1:1` bajo `source_refs/valentina_v2_8dir/06_piece_mask_regen/`, ejecutar con `python`).
 - **Pipeline HQ Ink SDF `2×` (`*_ink_sdf.png`):** `sandbox/pilot_rig_lab/tools/ink_hq_pipeline.py` (`--action export|test|apply --sheet <hoja>`): 13 hojas `1:1` (`2048×2048`) con doble referencia (`inputs_color/` + `inputs_anchor/`) bajo `source_refs/valentina_v2_8dir/07_ink_hq_regen/`, post-procesadas con **Upscayl `digital-art-4x` + ECC Afín + Flujo Óptico Farneback acotado** y horneadas en `*_ink_sdf.png` a resolución **`2×`** (distancias codificadas en texels nativos `±8.0`).
 - **Compilador de Alas Multi-Piloto (3 vistas `#808080` → 8-dir por cuchillas):** `sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py` (`--sheet`, `--out-dir`, `--audit`): Upscayl `4×`, separación por cuchilla (`6` por ala), extracción de 5 mapas (`albedo`, `id`, `ilm`, `normal_depth`, `ink_sdf 2×`), espejado con `Nx = -Nx` y `wings_metadata.json` (`schema_version = 2`). Ver guía en `docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`.
 - **Compilador de Armamento Multi-Mapa (`#808080` → `albedo`/`id`/`ilm`/`ink_sdf 2×`):** `sandbox/pilot_rig_lab/tools/build_valentina_weapon.py` (`--src`, `--out-dir`, `--name`, `--target-width`, `--no-upscayl`): segmentación `#808080`, separación 3-materiales (`R` acento/energía, `G` placas, `B` chasis), `ilm_mask`, `ink_sdf 2×` y `*_meta.json`. Ver guía en `docs/VALENTINA_ORBITAL_WEAPON_SPEC.md`.
@@ -119,4 +119,4 @@ description: "Reglas de desarrollo, tabla contractual directa, zonas prohibidas 
   - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"` *(~5 s)*
   - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"` *(~9 s)*
   - `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"` *(~7 s)*
-- **Verificación Python tras editar `tools/`:** `C:\Python314\python.exe -m py_compile sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py` (y módulos modificados en `rig_v2_lib/`).
+- **Verificación Python tras editar `tools/`:** `python -m py_compile sandbox/pilot_rig_lab/tools/build_valentina_v2_rig_assets.py sandbox/pilot_rig_lab/tools/build_valentina_v2_wings.py` (y módulos modificados en `rig_v2_lib/`).

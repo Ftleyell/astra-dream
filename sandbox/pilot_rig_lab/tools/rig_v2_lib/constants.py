@@ -20,8 +20,8 @@ def _canonical_rgba_path(work_dir: Path, view: str) -> Path:
 
 
 DEFAULT_SOURCE_DIR = Path("sandbox/pilot_rig_lab/source_refs/valentina_v2_8dir")
-DEFAULT_OUT_DIR = Path("sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar")
-DEFAULT_V1_DIR = Path("sandbox/pilot_rig_lab/combat_assets/valentina_planar")
+DEFAULT_OUT_DIR = Path("assets/pilots/valentina_v2/planar")
+DEFAULT_V1_DIR = Path("sandbox/pilot_rig_lab/source_refs/valentina_v2_8dir")
 
 CANONICAL_W = 520
 CANONICAL_H = 560

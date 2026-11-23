@@ -216,7 +216,7 @@ Cada hoja se pasa a **Gemini Web** con **2 imágenes** (o **1 imagen** de fallba
 3. Copia el **Prompt 2 Imágenes** de la categoría correspondiente y genera en **`1:1`**.
 4. **Fallback 1 Imagen** (si Gemini Web deforma o mezcla el grid con 2 entradas): sube **solo** `inputs_color/<hoja>.png` y usa el mismo prompt eliminando las frases que mencionan *Image 2* (en el bloque se indica dónde recortar).
 5. Guarda el resultado en `outputs_raw/<hoja>.png` (o `.jpg` / `.webp`) y corre:
-   `C:\Python314\python.exe sandbox/pilot_rig_lab/tools/ink_hq_pipeline.py --action test --sheet <hoja>`
+   `python sandbox/pilot_rig_lab/tools/ink_hq_pipeline.py --action test --sheet <hoja>`
 
 ---
 

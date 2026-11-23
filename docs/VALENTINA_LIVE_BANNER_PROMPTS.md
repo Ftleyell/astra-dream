@@ -20,7 +20,7 @@
 | **3 (Opcional)** | `mask4_ink_hq_raw.png` | Solo si el Master HQ alteró micro-detalles respecto a `mask4_ink_raw.png` (asegura `ink_sdf 2×` 100% alineado). |
 | **4 (Opcional)** | `mask6_normal_raw.png` | Normales 2.5D esculpidas con bordes duros en hombreras y relieve facial (superior al Sobel derivado de `depth`). |
 
-> **Nota sobre los ojos:** **NO hace falta generar assets de ojos con IA.** En la integración vamos a reutilizar directamente `head_front_eye_iris.png` y `head_front_eye_closed.png` del Face Lab (`combat_assets/valentina_v2_planar/heads/`) con el shader Live2D de 3 capas.
+> **Nota sobre los ojos:** **NO hace falta generar assets de ojos con IA.** En la integración vamos a reutilizar directamente `head_front_eye_iris.png` y `head_front_eye_closed.png` del Face Lab (`assets/pilots/valentina_v2/planar/heads/`) con el shader Live2D de 3 capas.
 
 ---
 

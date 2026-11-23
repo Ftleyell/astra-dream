@@ -61,7 +61,7 @@ def build_all(source_dir: Path, out_dir: Path, v1_dir: Path) -> None:
     ws_dir = source_dir / "05_mask_ai_workspaces"
 
     gdignore_src = v1_dir / ".gdignore"
-    if gdignore_src.exists():
+    if gdignore_src.exists() and "sandbox" in out_dir.parts:
         shutil.copy2(gdignore_src, out_dir / ".gdignore")
 
     head_outline_cfg = {"strength": 1.0, "width_px": HEAD_OUTLINE_DEFAULT_PX}

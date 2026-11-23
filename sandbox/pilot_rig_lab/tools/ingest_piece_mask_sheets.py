@@ -8,9 +8,9 @@ Valentina v2's calibrated live assets with:
   - Automatic visual audit contact sheet (`audit_<kind>.png`)
 
 Usage:
-  C:\\Python314\\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind id
-  C:\\Python314\\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind normal
-  C:\\Python314\\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind ilm --dry-run
+  python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind id
+  python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind normal
+  python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind ilm --dry-run
 """
 
 from __future__ import annotations

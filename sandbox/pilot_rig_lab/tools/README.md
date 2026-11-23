@@ -2,9 +2,11 @@
 
 > Guía de referencia rápida de scripts Python. Para el proceso completo de punta a punta, ver [`docs/PILOT_CREATION_PIPELINE.md`](../../../docs/PILOT_CREATION_PIPELINE.md).
 
-## Entornos Python
-- **Etapas estándar / CV / Upscayl / Scipy (`build_valentina_v2_rig_assets.py`, `ink_hq_pipeline.py`, `scaffold_new_pilot.py`, compiladores de alas/armas/banner):** `python` (`C:\Python313\python.exe` en este equipo)
-- **Etapas ML offline (`prepare_8dir_sheets.py`, `prepare_ai_mask_workspaces.py`, `ml_stage_processors.py`):** `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe` (o `python` según entorno instalado)
+## Entornos Python y Dependencias
+- **Etapas estándar / CV / Upscayl / Scipy (`build_valentina_v2_rig_assets.py`, `ink_hq_pipeline.py`, `scaffold_new_pilot.py`, compiladores de alas/armas/banner):** `python` (`C:\Python313\python.exe` en este equipo). Dependencias declaradas en [`requirements.txt`](requirements.txt) (`pip install -r sandbox/pilot_rig_lab/tools/requirements.txt`).
+- **Etapas ML offline (`prepare_8dir_sheets.py`, `prepare_ai_mask_workspaces.py`, `ml_stage_processors.py`):** `sandbox/pilot_rig_lab/tools/.venv/Scripts/python.exe` (o `python` con `rembg` y `onnxruntime` habilitados).
+- **Upscaler externo (Upscayl 4×):** `process_masked_5parts.py` lee opcionalmente las variables de entorno `UPSCAYL_BIN` y `UPSCAYL_MODELS` (fallback estándar `C:\Program Files\Upscayl\resources\...`; si no está presente, degrada con aviso sin bloquear).
+- **Ruta de salida por defecto (`DEFAULT_OUT_DIR`):** Todos los compiladores v2 (`rig_v2_lib/constants.py`, `build_valentina_v2_wings.py`, `build_valentina_weapon.py`, `build_orbital_ring_texture.py`, `ingest_hd_torsos_16x9.py`, `export_torso_and_profile_leg_sheets_16x9.py`) apuntan directamente a producción en `assets/pilots/valentina_v2/planar/` (sin pasar `.gdignore` a producción).
 
 ---
 

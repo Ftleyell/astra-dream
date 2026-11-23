@@ -4,10 +4,10 @@ extends BaseTestSuite
 ## Suite de pruebas para GalaxyStreamer2D:
 ## Valida arquitectura de Macro-Sectores 3x3, multi-galaxy pooling, frustum culling y zero-allocation.
 
-var _landmark_profile: GalaxyLandmarkProfile
+var _landmark_profile: CosmosGalaxyLandmarkProfile
 var _parallax_layer: Parallax2D
 var _camera: Camera2D
-var _streamer: GalaxyStreamer2D
+var _streamer: CosmosGalaxyStreamer2D
 
 func _ready() -> void:
 	super._ready()
@@ -22,7 +22,7 @@ func _run_galaxy_streaming_tests() -> void:
 	pass_suite("TestGalaxyStreaming completado con éxito (100% assertions pasadas).")
 
 func _setup_test_nodes() -> void:
-	_landmark_profile = GalaxyLandmarkProfile.new()
+	_landmark_profile = CosmosGalaxyLandmarkProfile.new()
 	_landmark_profile.galaxy_id = &"test_galaxy"
 	_landmark_profile.maximum_bounding_radius = 1600.0
 	_landmark_profile.safety_padding = 400.0
@@ -43,7 +43,7 @@ func _setup_test_nodes() -> void:
 	_parallax_layer.scroll_scale = Vector2(0.02, 0.02)
 	add_child(_parallax_layer)
 
-	_streamer = GalaxyStreamer2D.new()
+	_streamer = CosmosGalaxyStreamer2D.new()
 	_streamer.landmark_profile = _landmark_profile
 	_streamer.parallax_layer = _parallax_layer
 	_streamer.camera = _camera
@@ -82,8 +82,8 @@ func _test_spatial_sweep_and_streaming() -> void:
 		Vector2(999999.0, 123456.0)
 	]
 
-	var grid: CosmicMacroGrid = _streamer.get_macro_grid()
-	assert_true(grid != null, "CosmicMacroGrid debe estar instanciado en el streamer.")
+	var grid: CosmosMacroGrid = _streamer.get_macro_grid()
+	assert_true(grid != null, "CosmosMacroGrid debe estar instanciado en el streamer.")
 
 	for pos: Vector2 in sample_points:
 		_camera.position = pos

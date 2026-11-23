@@ -7,7 +7,7 @@ Consumes:
 - `08_head_live_rig/head_live_sheet_manifest.json`
 - Canonical `heads/<head>.png` and `heads/<head>_id_mask.png`
 
-Generates per head (plus `head_side` alias) in `combat_assets/valentina_v2_planar/heads/`:
+Generates per head (plus `head_side` alias) in `assets/pilots/valentina_v2/planar/heads/`:
 - `<head>_face_live_mask.png`    (RGBA: R=eyelid/blink, G=iris, B=eyebrows, A=mouth + neck weld)
 - `<head>_hair_jiggle_mask.png`  (RGB: R=bangs, G=side locks, B=rear/nape; crown=0, face=0)
 - `<head>_normal_depth.png`      (RGBA: RGB=70% cranial dome + 30% Sobel relief, A=depth [80..245])

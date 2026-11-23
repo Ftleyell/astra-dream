@@ -18,7 +18,8 @@ from polish_outlines import alpha_bleed_only  # noqa: E402
 from process_masked_5parts import upscale_with_upscayl  # noqa: E402
 
 ROOT = TOOLS_DIR.parent
-ASSETS_DIR = ROOT / "combat_assets" / "valentina_v2_planar"
+REPO_ROOT = ROOT.parent.parent
+ASSETS_DIR = REPO_ROOT / "assets" / "pilots" / "valentina_v2" / "planar"
 REGEN_DIR = (
     ROOT
     / "source_refs"
@@ -28,7 +29,7 @@ REGEN_DIR = (
     / "07_torso_neck_regen_16x9"
 )
 HD_TORSOS_DIR = ASSETS_DIR / "hd_torsos"
-RAW_CROPS_DIR = HD_TORSOS_DIR / "raw_crops"
+RAW_CROPS_DIR = ROOT / "source_refs" / "valentina_v2_8dir" / "hd_torsos_raw_crops"
 VIEWS: tuple[str, ...] = ("s", "se", "e", "ne", "n", "nw", "w", "sw")
 PX_W, PX_H = 1560, 1680
 

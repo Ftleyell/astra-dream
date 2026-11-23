@@ -135,7 +135,7 @@ Guarda el arte maestro en `sandbox/pilot_rig_lab/source_refs/<pilot>_weapons/<we
 ```powershell
 python sandbox/pilot_rig_lab/tools/build_valentina_weapon.py `
   --src sandbox/pilot_rig_lab/source_refs/<pilot>_weapons/<weapon_id>_master.jpg `
-  --out-dir sandbox/pilot_rig_lab/combat_assets/<pilot>_planar/weapons `
+  --out-dir assets/pilots/<pilot>/planar/weapons `
   --name <weapon_id> `
   --target-width 1024 `
   --no-upscayl
@@ -184,7 +184,7 @@ Guarda el arte maestro en `sandbox/pilot_rig_lab/source_refs/<pilot>_weapons/<ri
 ```powershell
 python sandbox/pilot_rig_lab/tools/build_orbital_ring_texture.py `
   --src sandbox/pilot_rig_lab/source_refs/<pilot>_weapons/<ring_id>_master.jpg `
-  --out-dir sandbox/pilot_rig_lab/combat_assets/<pilot>_planar/weapons `
+  --out-dir assets/pilots/<pilot>/planar/weapons `
   --name <ring_id> `
   --size 1024
 ```

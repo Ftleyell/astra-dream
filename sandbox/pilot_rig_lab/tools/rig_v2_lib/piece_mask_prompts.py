@@ -132,7 +132,7 @@ COLOR MAP:
 ## Ingesta automática en Python
 Cuando guardes tus hojas en `outputs_id/`, ejecuta:
 ```powershell
-C:\Python314\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind id
+python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind id
 ```
 """
 
@@ -192,7 +192,7 @@ CRITICAL ANIME FACE NORMAL RULES (ArcSys / Guilty Gear style):
 ## Ingesta automática en Python
 Cuando guardes tus hojas en `outputs_normal/`, ejecuta:
 ```powershell
-C:\Python314\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind normal
+python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind normal
 ```
 """
 
@@ -238,7 +238,7 @@ ILM ZONE COLOR MAP:
 ## Ingesta automática en Python
 Cuando guardes tus hojas en `outputs_ilm/`, ejecuta:
 ```powershell
-C:\Python314\python.exe sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind ilm
+python sandbox/pilot_rig_lab/tools/ingest_piece_mask_sheets.py --kind ilm
 ```
 """
 

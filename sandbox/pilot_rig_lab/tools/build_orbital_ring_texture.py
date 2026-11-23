@@ -21,8 +21,9 @@ import numpy as np
 
 TOOLS_DIR = Path(__file__).resolve().parent
 PILOT_RIG_LAB_DIR = TOOLS_DIR.parent
+REPO_ROOT = PILOT_RIG_LAB_DIR.parent.parent
 DEFAULT_SRC = PILOT_RIG_LAB_DIR / "source_refs" / "valentina_v2_weapons" / "reticula_tactica_mecha_master.jpg"
-DEFAULT_OUT_DIR = PILOT_RIG_LAB_DIR / "combat_assets" / "valentina_v2_planar" / "weapons"
+DEFAULT_OUT_DIR = REPO_ROOT / "assets" / "pilots" / "valentina_v2" / "planar" / "weapons"
 
 DEFAULT_SIZE_PX: int = 1024
 OUTER_UV_RADIUS: float = 0.445  # Leaves ~5.5% margin on all sides so rotation never clips

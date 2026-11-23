@@ -1,0 +1,14 @@
+# Core CV / Rig v2 Asset Compilers (`sandbox/pilot_rig_lab/tools/`)
+pillow>=10.0.0
+numpy>=1.26.0
+opencv-python>=4.9.0
+scipy>=1.12.0
+
+# Optional offline ML matting / workspace stages (used by .venv / prepare_8dir_sheets.py / prepare_ai_mask_workspaces.py)
+# rembg>=2.0.50
+# onnxruntime>=1.17.0
+
+# External binary dependency for 4x anime clean-up & ink SDF generation:
+# Install Upscayl and optionally override paths via environment variables:
+#   UPSCAYL_BIN=C:\Program Files\Upscayl\resources\bin\upscayl-bin.exe
+#   UPSCAYL_MODELS=C:\Program Files\Upscayl\resources\models

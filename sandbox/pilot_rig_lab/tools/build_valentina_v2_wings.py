@@ -38,8 +38,9 @@ if str(TOOLS_DIR) not in sys.path:
 from process_masked_5parts import upscale_with_upscayl  # noqa: E402
 
 PILOT_RIG_LAB_DIR = TOOLS_DIR.parent
+REPO_ROOT = PILOT_RIG_LAB_DIR.parent.parent
 DEFAULT_SOURCE_SHEET = PILOT_RIG_LAB_DIR / "source_refs" / "valentina_v2_wings" / "wings_3views_sheet.jpg"
-DEFAULT_OUT_DIR = PILOT_RIG_LAB_DIR / "combat_assets" / "valentina_v2_planar" / "wings"
+DEFAULT_OUT_DIR = REPO_ROOT / "assets" / "pilots" / "valentina_v2" / "planar" / "wings"
 DEFAULT_AUDIT_PATH = PILOT_RIG_LAB_DIR / "source_refs" / "valentina_v2_wings" / "audit_wings_shards.png"
 
 INK_SDF_RANGE_PX: float = 8.0

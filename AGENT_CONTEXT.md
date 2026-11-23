@@ -62,7 +62,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 - **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
   - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/README.md`](docs/README.md) (índice vivo), [`docs/PILOT_CREATION_PIPELINE.md`](docs/PILOT_CREATION_PIPELINE.md) (Playbook Cast v2 + `sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py`), [`docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) (Fases 1–5 completadas) y [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md) (M8/M9).
   - Para ajustar escalas, poses, animaciones, rostro, skins, pelo o estilos, editar **directamente** los `.tres` en `data/pilots/valentina_v2/` (o `data/pilots/<pilot_id>/`), `data/pilots/hair/`, `data/pilots/styles/`.
-  - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/`, `backups/` o `tools/models/`.
+  - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `assets/pilots/`, `backups/` o `tools/models/`.
 
 ---
 
@@ -73,8 +73,8 @@ addons/                                <- Plugins de motor y herramientas extern
 preprocess/                            <- Fuentes crudas de arte no procesadas
 sandbox/pilot_rig_lab/tools/.venv/     <- Entorno virtual Python (30,351+ archivos)
 sandbox/pilot_rig_lab/tools/models/    <- Pesos ONNX / modelos locales
-sandbox/pilot_rig_lab/source_refs/     <- Arte crudo IA y workspaces offline (505+ archivos)
-sandbox/pilot_rig_lab/combat_assets/   <- Asset packs PNG/JSON compilados (550+ archivos)
+sandbox/pilot_rig_lab/source_refs/     <- Arte crudo IA y workspaces offline (685+ archivos)
+assets/pilots/<pilot_id>/planar/       <- Asset packs PNG/JSON compilados en producción
 sandbox/pilot_rig_lab/backups/         <- Snapshot inmutable de baseline calibrado
 ```
 

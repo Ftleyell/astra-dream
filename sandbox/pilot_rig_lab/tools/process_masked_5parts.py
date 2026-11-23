@@ -5,14 +5,15 @@ Outputs 3x-resolution textures + id_mask + normal_depth while keeping canonical 
 """
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
 import cv2
 import numpy as np
 
-UPSCAYL_BIN = Path(r"C:\Program Files\Upscayl\resources\bin\upscayl-bin.exe")
-UPSCAYL_MODELS = Path(r"C:\Program Files\Upscayl\resources\models")
+UPSCAYL_BIN = Path(os.environ.get("UPSCAYL_BIN", r"C:\Program Files\Upscayl\resources\bin\upscayl-bin.exe"))
+UPSCAYL_MODELS = Path(os.environ.get("UPSCAYL_MODELS", r"C:\Program Files\Upscayl\resources\models"))
 TEX_SCALE = 3  # 3x canonical (1560x1680 canvas) for crisp in-game lineart
 
 COLOR_PALETTE = {
