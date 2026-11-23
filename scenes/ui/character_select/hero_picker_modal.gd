@@ -178,7 +178,15 @@ func _input(event: InputEvent) -> void:
 func _cycle_hero(dir: int) -> void:
 	if _roster.is_empty():
 		return
-	var next_idx: int = (_current_index + dir + _roster.size()) % _roster.size()
+	var count: int = _roster.size()
+	var next_idx: int = _current_index
+	for step: int in range(1, count + 1):
+		var candidate: int = (_current_index + dir * step + count * 4) % count
+		if _roster[candidate].is_playable_rework_ready:
+			next_idx = candidate
+			break
+	if next_idx == _current_index:
+		return
 	_select_index(next_idx)
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
@@ -188,6 +196,8 @@ func _cycle_hero(dir: int) -> void:
 
 func _select_index(idx: int) -> void:
 	if idx < 0 or idx >= _roster.size():
+		return
+	if not _roster[idx].is_playable_rework_ready:
 		return
 	_current_index = idx
 	_update_selected_hero()
@@ -210,19 +220,6 @@ func _confirm_selection() -> void:
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.15)
-
-	if live_banner_viewport != null and live_banner_viewport.visible:
-		live_banner_viewport.trigger_select_sequence()
-		if DisplayServer.get_name() != "headless":
-			if _confirm_tween and _confirm_tween.is_valid():
-				_confirm_tween.kill()
-			_confirm_tween = create_tween()
-			_confirm_tween.tween_interval(0.52)
-			_confirm_tween.tween_callback(func() -> void:
-				close_picker()
-				hero_confirmed.emit.call_deferred(cid)
-			)
-			return
 
 	close_picker()
 	hero_confirmed.emit.call_deferred(cid)
@@ -265,6 +262,14 @@ func _build_dock_cards() -> void:
 		btn.set_meta(&"roster_index", i)
 
 		if not is_rework_ready:
+			btn.disabled = true
+			btn.mouse_default_cursor_shape = Control.CURSOR_ARROW
+			var gray_shader := Shader.new()
+			gray_shader.code = "shader_type canvas_item;\nvoid fragment() {\n\tvec4 c = texture(TEXTURE, UV) * COLOR;\n\tfloat g = dot(c.rgb, vec3(0.299, 0.587, 0.114));\n\tCOLOR = vec4(vec3(g * 0.58), c.a * 0.72);\n}\n"
+			var gray_mat := ShaderMaterial.new()
+			gray_mat.shader = gray_shader
+			btn.material = gray_mat
+
 			var badge := Label.new()
 			badge.name = "ReworkBadge"
 			badge.text = "EN REWORK"
@@ -280,46 +285,46 @@ func _build_dock_cards() -> void:
 			badge.offset_right = -4.0
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			badge.add_theme_font_size_override("font_size", 10)
-			badge.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35, 1.0))
+			badge.add_theme_color_override("font_color", Color(0.75, 0.78, 0.82, 0.95))
 			var badge_bg := StyleBoxFlat.new()
-			badge_bg.bg_color = Color(0.05, 0.06, 0.10, 0.90)
+			badge_bg.bg_color = Color(0.06, 0.07, 0.09, 0.90)
 			badge_bg.set_corner_radius_all(4)
 			badge.add_theme_stylebox_override("normal", badge_bg)
 			btn.add_child(badge)
+		else:
+			var card_idx: int = i
+			btn.pressed.connect(func() -> void:
+				if not is_open or _is_confirming:
+					return
+				var now_msec: int = Time.get_ticks_msec()
+				if _last_clicked_index == card_idx and (now_msec - _last_click_msec) < 380:
+					_confirm_selection()
+				else:
+					_select_index(card_idx)
+				_last_clicked_index = card_idx
+				_last_click_msec = now_msec
+			)
 
-		var card_idx: int = i
-		btn.pressed.connect(func() -> void:
-			if not is_open or _is_confirming:
-				return
-			var now_msec: int = Time.get_ticks_msec()
-			if _last_clicked_index == card_idx and (now_msec - _last_click_msec) < 380:
-				_confirm_selection()
-			else:
-				_select_index(card_idx)
-			_last_clicked_index = card_idx
-			_last_click_msec = now_msec
-		)
-
-		btn.mouse_entered.connect(func() -> void:
-			if is_instance_valid(btn) and card_idx != _current_index:
-				if btn.has_meta(&"hover_tw"):
-					var tw: Tween = btn.get_meta(&"hover_tw") as Tween
-					if tw and tw.is_valid():
-						tw.kill()
-				var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-				tw.tween_property(btn, "scale", Vector2(1.06, 1.06), 0.12)
-				btn.set_meta(&"hover_tw", tw)
-		)
-		btn.mouse_exited.connect(func() -> void:
-			if is_instance_valid(btn) and card_idx != _current_index:
-				if btn.has_meta(&"hover_tw"):
-					var tw: Tween = btn.get_meta(&"hover_tw") as Tween
-					if tw and tw.is_valid():
-						tw.kill()
-				var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
-				btn.set_meta(&"hover_tw", tw)
-		)
+			btn.mouse_entered.connect(func() -> void:
+				if is_instance_valid(btn) and card_idx != _current_index:
+					if btn.has_meta(&"hover_tw"):
+						var tw: Tween = btn.get_meta(&"hover_tw") as Tween
+						if tw and tw.is_valid():
+							tw.kill()
+					var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+					tw.tween_property(btn, "scale", Vector2(1.06, 1.06), 0.12)
+					btn.set_meta(&"hover_tw", tw)
+			)
+			btn.mouse_exited.connect(func() -> void:
+				if is_instance_valid(btn) and card_idx != _current_index:
+					if btn.has_meta(&"hover_tw"):
+						var tw: Tween = btn.get_meta(&"hover_tw") as Tween
+						if tw and tw.is_valid():
+							tw.kill()
+					var tw := btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+					tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.12)
+					btn.set_meta(&"hover_tw", tw)
+			)
 
 		cards_container.add_child(btn)
 		_card_buttons.append(btn)
@@ -383,6 +388,7 @@ func _update_card_highlights() -> void:
 			hover_sb.bg_color = Color(0.035, 0.065, 0.1, 0.95)
 		btn.add_theme_stylebox_override("hover", hover_sb)
 		btn.add_theme_stylebox_override("pressed", sb)
+		btn.add_theme_stylebox_override("disabled", sb)
 
 
 func _update_selected_hero() -> void:

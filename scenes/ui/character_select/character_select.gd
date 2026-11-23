@@ -21,6 +21,20 @@ const DebugManagerScript = preload("res://core/autoloads/debug_manager.gd")
 
 const DEBUG_MENU_AVAILABLE: bool = true
 
+@export_group("Loadout Live Banner")
+@export var loadout_banner_offset: Vector2 = Vector2(-210.0, -88.0):
+	set(value):
+		loadout_banner_offset = value
+		_sync_loadout_banner_framing()
+@export_range(0.4, 2.0, 0.01) var loadout_banner_zoom_mult: float = 1.35:
+	set(value):
+		loadout_banner_zoom_mult = value
+		_sync_loadout_banner_framing()
+@export_range(0.0, 1.0, 0.01) var loadout_banner_rim_boost: float = 0.45:
+	set(value):
+		loadout_banner_rim_boost = value
+		_sync_loadout_banner_framing()
+
 var is_debug_active: bool:
 	get:
 		var dm = Engine.get_singleton("DebugManager") if Engine.has_singleton("DebugManager") else get_node_or_null("/root/DebugManager")
@@ -280,11 +294,20 @@ func _ready() -> void:
 
 func _init_components() -> void:
 	pilot_showcase.setup_from_root(self, Callable(self, "_on_pilot_button_pressed"))
+	_sync_loadout_banner_framing()
 	equipment_cards.setup_from_root(self, Callable(self, "_on_ship_card_pressed"), Callable(self, "_on_weapon_card_pressed"), Callable(self, "_on_pet_card_pressed"), Callable(self, "_on_navigator_card_pressed"))
 	display_manager.setup_from_root(self)
 	speed_selector.setup_from_root(self)
 	modal_router.setup_from_root(self)
 	modal_router.connect_modal_signals(self)
+
+
+func _sync_loadout_banner_framing() -> void:
+	if pilot_showcase == null or pilot_showcase.live_banner_viewport == null:
+		return
+	var vp: CharacterLiveBannerViewport = pilot_showcase.live_banner_viewport
+	vp.set_framing(loadout_banner_offset, loadout_banner_zoom_mult)
+	vp.set_showcase_lighting(loadout_banner_rim_boost, vp._showcase_rim_color, 0.14)
 
 
 func _configure_dock_and_initial_view() -> void:

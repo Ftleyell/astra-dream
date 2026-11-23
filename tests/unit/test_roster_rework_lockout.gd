@@ -110,7 +110,7 @@ func _test_character_select_and_live_banner() -> void:
 	assert_true(ui.hero_picker_modal != null and ui.hero_picker_modal.is_open, "HeroPickerModal debe iniciar abierto")
 	var picker: HeroPickerModal = ui.hero_picker_modal
 
-	# Bloqueo al intentar confirmar Nova o Roxy en HeroPickerModal
+	# Pilotos en rework no son navegables ni seleccionables en HeroPickerModal
 	var nova_idx: int = -1
 	var roxy_idx: int = -1
 	var val_idx: int = -1
@@ -125,12 +125,15 @@ func _test_character_select_and_live_banner() -> void:
 	assert_true(nova_idx >= 0 and roxy_idx >= 0 and val_idx >= 0, "Roster de HeroPickerModal debe contener nova, roxy y valentina")
 
 	picker._select_index(nova_idx)
-	picker._confirm_selection()
-	assert_true(picker.is_open == true, "HeroPickerModal debe bloquear confirmación de Nova")
+	assert_true(picker._current_index == val_idx, "HeroPickerModal no debe navegar hacia Nova (en rework)")
+	assert_true(picker._card_buttons[nova_idx].disabled == true, "Tarjeta de Nova debe estar deshabilitada")
 
 	picker._select_index(roxy_idx)
-	picker._confirm_selection()
-	assert_true(picker.is_open == true, "HeroPickerModal debe bloquear confirmación de Roxy")
+	assert_true(picker._current_index == val_idx, "HeroPickerModal no debe navegar hacia Roxy (en rework)")
+	assert_true(picker._card_buttons[roxy_idx].disabled == true, "Tarjeta de Roxy debe estar deshabilitada")
+
+	picker._cycle_hero(1)
+	assert_true(picker._current_index == val_idx, "HeroPickerModal._cycle_hero debe permanecer en Valentina cuando es la única rework-ready")
 
 	# Seleccionar Valentina -> LiveBanner activo con 12 cuchillas + CanvasGroup z_index = 0
 	picker._select_index(val_idx)
@@ -147,13 +150,14 @@ func _test_character_select_and_live_banner() -> void:
 	picker._confirm_selection()
 	await get_tree().process_frame
 	assert_true(confirmed_ids.size() == 1 and confirmed_ids[0] == &"valentina", "Confirmar Valentina debe emitir hero_confirmed(&'valentina')")
-	assert_true(picker_ctrl.is_pilot_selected() == true, "Confirmar Valentina debe disparar trigger_select_sequence()")
+	assert_true(picker_ctrl.is_pilot_selected() == false, "Confirmar Valentina en HeroPickerModal NO debe disparar trigger_select_sequence() (reservado para el launch)")
 
 	# Verificar Showcase principal de CharacterSelectUI
 	assert_true(ui.pilot_showcase != null and ui.pilot_showcase.live_banner_viewport != null and ui.pilot_showcase.live_banner_viewport.visible, "CharacterPilotShowcase debe mostrar CharacterLiveBannerViewport para Valentina")
-	ui.pilot_showcase.trigger_deploy_lock_in()
 	var showcase_ctrl: BannerControllerScript = ui.pilot_showcase.live_banner_viewport.get_banner_controller()
-	assert_true(showcase_ctrl != null and showcase_ctrl.is_pilot_selected() == true, "trigger_deploy_lock_in debe disparar secuencia de selección en showcase")
+	assert_true(showcase_ctrl != null and showcase_ctrl.is_pilot_selected() == false, "Showcase no debe iniciar con animación de launch activa")
+	ui.pilot_showcase.trigger_deploy_lock_in()
+	assert_true(showcase_ctrl.is_pilot_selected() == true, "trigger_deploy_lock_in debe disparar secuencia de launch en showcase")
 
 	# Verificar bloqueo de CharacterSelectLaunchController para pilotos no listos
 	SaveManager.set_selected_character(&"valentina")

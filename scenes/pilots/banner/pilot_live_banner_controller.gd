@@ -81,6 +81,9 @@ var _rng := RandomNumberGenerator.new()
 var _debug_view_mode: int = 0
 var _base_scale: float = 0.5
 var _stars: Array[Dictionary] = []
+var _showcase_rim_boost: float = 0.0
+var _showcase_rim_color: Color = Color(0.87, 0.95, 1.0, 1.0)
+var _showcase_light_wrap_boost: float = 0.0
 
 
 func _ready() -> void:
@@ -104,6 +107,13 @@ func set_config(cfg: ConfigScript) -> void:
 	if is_inside_tree():
 		reload_textures_from_config()
 		_push_shader_params()
+
+
+func set_showcase_rim_boost(rim_boost: float, rim_color: Color = Color(0.82, 0.96, 1.0, 1.0), light_wrap_boost: float = 0.12) -> void:
+	_showcase_rim_boost = maxf(rim_boost, 0.0)
+	_showcase_rim_color = rim_color
+	_showcase_light_wrap_boost = clampf(light_wrap_boost, 0.0, 0.6)
+	_push_shader_params()
 
 
 func get_config() -> ConfigScript:
@@ -670,7 +680,9 @@ func _push_shader_params() -> void:
 		_pass2_material.set_shader_parameter("light_dir_2d", Vector2(cos(l_rad), sin(l_rad)).normalized())
 		_pass2_material.set_shader_parameter("enable_outer_outline", _debug_view_mode == 0)
 		_pass2_material.set_shader_parameter("outer_outline_strength", _config.ink_strength if _debug_view_mode == 0 else 0.0)
-		_pass2_material.set_shader_parameter("silhouette_rim_strength", _config.rim_light_strength * 0.24 if _debug_view_mode == 0 else 0.0)
+		_pass2_material.set_shader_parameter("silhouette_rim_strength", (_config.rim_light_strength * 0.24 + _showcase_rim_boost) if _debug_view_mode == 0 else 0.0)
+		_pass2_material.set_shader_parameter("rim_key_color", _showcase_rim_color)
+		_pass2_material.set_shader_parameter("hdr_light_wrap_strength", 0.04 + _showcase_light_wrap_boost)
 		# Counter-rim asimétrico desactivado en Pass 2; la luz roja simétrica de alas viene de Pass 1
 		_pass2_material.set_shader_parameter("counter_rim_strength", 0.0)
 		_pass2_material.set_shader_parameter("impact_frame_phase", _impact_frame_phase if _debug_view_mode == 0 else 0)

@@ -9,6 +9,11 @@ extends RefCounted
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const LiveBannerViewportScript = preload("res://scenes/ui/character_select/components/character_live_banner_viewport.gd")
 
+const BASE_LIVE_BACKLIGHT_ALPHA: float = 0.42
+const HOVER_LIVE_BACKLIGHT_ALPHA: float = 0.72
+const LOADOUT_BANNER_OFFSET: Vector2 = Vector2(-210.0, -88.0)
+const LOADOUT_BANNER_ZOOM_MULT: float = 1.35
+
 var fullbody_texture: TextureRect = null
 var live_banner_viewport: CharacterLiveBannerViewport = null
 var backlight_glow: TextureRect = null
@@ -48,6 +53,9 @@ func setup(
 			live_banner_viewport = LiveBannerViewportScript.new() as CharacterLiveBannerViewport
 			live_banner_viewport.name = "CharacterLiveBannerViewport"
 			live_banner_viewport.visible = false
+			live_banner_viewport.set_framing(LOADOUT_BANNER_OFFSET, LOADOUT_BANNER_ZOOM_MULT)
+			live_banner_viewport.set_background_integration(false)
+			live_banner_viewport.framing_changed.connect(_update_backlight_position)
 			showcase_parent.add_child(live_banner_viewport)
 			showcase_parent.move_child(live_banner_viewport, fullbody_texture.get_index() + 1)
 
@@ -70,20 +78,43 @@ func _setup_pilot_backlight() -> void:
 	if not backlight_glow:
 		return
 	var grad := Gradient.new()
-	grad.set_color(0, Color(1, 1, 1, 0.85))
-	grad.set_color(1, Color(1, 1, 1, 0.0))
+	grad.offsets = PackedFloat32Array([0.0, 0.42, 0.78, 1.0])
+	grad.colors = PackedColorArray([
+		Color(1.0, 1.0, 1.0, 0.72),
+		Color(1.0, 1.0, 1.0, 0.28),
+		Color(1.0, 1.0, 1.0, 0.06),
+		Color(1.0, 1.0, 1.0, 0.0),
+	])
 	var grad_tex := GradientTexture2D.new()
 	grad_tex.gradient = grad
 	grad_tex.fill = GradientTexture2D.FILL_RADIAL
-	grad_tex.fill_from = Vector2(0.5, 0.45)
+	grad_tex.fill_from = Vector2(0.5, 0.5)
 	grad_tex.fill_to = Vector2(0.5, 0.0)
 	grad_tex.width = 512
-	grad_tex.height = 768
+	grad_tex.height = 512
 	backlight_glow.texture = grad_tex
+	backlight_glow.stretch_mode = TextureRect.STRETCH_SCALE
+	backlight_glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	var mat := CanvasItemMaterial.new()
 	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	backlight_glow.material = mat
 	backlight_glow.modulate.a = 0.0
+
+
+func _update_backlight_position() -> void:
+	if not is_instance_valid(backlight_glow) or not is_instance_valid(live_banner_viewport):
+		return
+	if not live_banner_viewport.visible:
+		return
+	var vp_size: Vector2 = live_banner_viewport.size
+	if vp_size.x < 8.0 or vp_size.y < 8.0:
+		return
+	var char_center: Vector2 = live_banner_viewport.get_character_local_center(Vector2(0.0, -55.0))
+	var glow_h: float = maxf(vp_size.y * 1.15, 520.0)
+	var glow_w: float = glow_h * 0.82
+	backlight_glow.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	backlight_glow.size = Vector2(glow_w, glow_h)
+	backlight_glow.position = char_center - Vector2(glow_w * 0.5, glow_h * 0.5)
 
 
 func on_mouse_entered() -> void:
@@ -94,7 +125,7 @@ func on_mouse_entered() -> void:
 			if _pilot_hover_tween and _pilot_hover_tween.is_valid():
 				_pilot_hover_tween.kill()
 			_pilot_hover_tween = backlight_glow.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.85, 0.22)
+			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", HOVER_LIVE_BACKLIGHT_ALPHA, 0.22)
 		var audio_live := live_banner_viewport.get_node_or_null("/root/AudioManager")
 		if audio_live and audio_live.has_method("play_sfx"):
 			audio_live.play_sfx(&"ui_hover", 0.0, 1.15)
@@ -121,7 +152,7 @@ func on_mouse_exited() -> void:
 			if _pilot_hover_tween and _pilot_hover_tween.is_valid():
 				_pilot_hover_tween.kill()
 			_pilot_hover_tween = backlight_glow.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.0, 0.22)
+			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", BASE_LIVE_BACKLIGHT_ALPHA, 0.22)
 		return
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
@@ -212,7 +243,9 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 			fullbody_texture.visible = false
 		if backlight_glow:
 			var live_glow_col: Color = pilot_preset.accent_color if (pilot_preset != null and not pilot_preset.is_base_skin) else (data.color if data else Color(0.2, 0.9, 1.0))
-			backlight_glow.modulate = Color(live_glow_col.r, live_glow_col.g, live_glow_col.b, backlight_glow.modulate.a)
+			backlight_glow.modulate = Color(live_glow_col.r, live_glow_col.g, live_glow_col.b, BASE_LIVE_BACKLIGHT_ALPHA)
+			live_banner_viewport.set_showcase_lighting(0.45, live_glow_col.lerp(Color.WHITE, 0.45), 0.14)
+			_update_backlight_position()
 		return
 
 	if live_banner_viewport != null:
@@ -259,4 +292,3 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 		backlight_glow.modulate = Color(glow_col.r, glow_col.g, glow_col.b, backlight_glow.modulate.a)
 
 	start_idle_breathing()
-

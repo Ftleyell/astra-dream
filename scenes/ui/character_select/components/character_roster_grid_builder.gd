@@ -47,6 +47,7 @@ static func populate_roster(
 		card_btn.add_theme_stylebox_override("normal", card_style)
 		card_btn.add_theme_stylebox_override("hover", card_style)
 		card_btn.add_theme_stylebox_override("pressed", card_style)
+		card_btn.add_theme_stylebox_override("disabled", card_style)
 
 		# Icono del avatar con expand_icon = true
 		card_btn.icon = char_data.get_avatar_texture()
@@ -56,9 +57,17 @@ static func populate_roster(
 		card_btn.tooltip_text = char_data.display_name.to_upper() if is_rework_ready else ("%s — EN REWORK" % char_data.display_name.to_upper())
 		card_btn.text = ""
 		card_btn.pivot_offset = Vector2(38, 38)
-		card_btn.modulate = Color.WHITE if is_rework_ready else Color(0.48, 0.50, 0.56, 0.78)
+		card_btn.modulate = Color.WHITE if is_rework_ready else Color(0.55, 0.56, 0.60, 0.72)
 
 		if not is_rework_ready:
+			card_btn.disabled = true
+			card_btn.mouse_default_cursor_shape = Control.CURSOR_ARROW
+			var gray_shader := Shader.new()
+			gray_shader.code = "shader_type canvas_item;\nvoid fragment() {\n\tvec4 c = texture(TEXTURE, UV) * COLOR;\n\tfloat g = dot(c.rgb, vec3(0.299, 0.587, 0.114));\n\tCOLOR = vec4(vec3(g * 0.58), c.a * 0.72);\n}\n"
+			var gray_mat := ShaderMaterial.new()
+			gray_mat.shader = gray_shader
+			card_btn.material = gray_mat
+
 			var badge := Label.new()
 			badge.name = "ReworkBadge"
 			badge.text = "EN REWORK"
@@ -74,31 +83,31 @@ static func populate_roster(
 			badge.offset_right = -2.0
 			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			badge.add_theme_font_size_override("font_size", 9)
-			badge.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35, 1.0))
+			badge.add_theme_color_override("font_color", Color(0.75, 0.78, 0.82, 0.95))
 			var badge_bg := StyleBoxFlat.new()
-			badge_bg.bg_color = Color(0.05, 0.06, 0.10, 0.88)
+			badge_bg.bg_color = Color(0.06, 0.07, 0.09, 0.88)
 			badge_bg.set_corner_radius_all(3)
 			badge.add_theme_stylebox_override("normal", badge_bg)
 			card_btn.add_child(badge)
+		else:
+			if on_character_selected.is_valid():
+				card_btn.pressed.connect(func() -> void:
+					on_character_selected.call(cid)
+				)
 
-		if on_character_selected.is_valid():
-			card_btn.pressed.connect(func() -> void:
-				on_character_selected.call(cid)
+			# Hover feedback: escala suave 1.08x centrada
+			card_btn.mouse_entered.connect(func() -> void:
+				if is_instance_valid(card_btn):
+					card_btn.pivot_offset = card_btn.size * 0.5
+					var tw: Tween = card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+					tw.tween_property(card_btn, "scale", Vector2(1.08, 1.08), 0.12)
 			)
-
-		# Hover feedback: escala suave 1.08x centrada
-		card_btn.mouse_entered.connect(func() -> void:
-			if is_instance_valid(card_btn):
-				card_btn.pivot_offset = card_btn.size * 0.5
-				var tw: Tween = card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-				tw.tween_property(card_btn, "scale", Vector2(1.08, 1.08), 0.12)
-		)
-		card_btn.mouse_exited.connect(func() -> void:
-			if is_instance_valid(card_btn):
-				card_btn.pivot_offset = card_btn.size * 0.5
-				var tw: Tween = card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-				tw.tween_property(card_btn, "scale", Vector2(1.0, 1.0), 0.12)
-		)
+			card_btn.mouse_exited.connect(func() -> void:
+				if is_instance_valid(card_btn):
+					card_btn.pivot_offset = card_btn.size * 0.5
+					var tw: Tween = card_btn.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+					tw.tween_property(card_btn, "scale", Vector2(1.0, 1.0), 0.12)
+			)
 
 		UIFocusHelper.apply_cyber_focus(card_btn)
 		container.add_child(card_btn)

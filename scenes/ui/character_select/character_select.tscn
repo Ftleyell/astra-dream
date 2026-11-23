@@ -10,8 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://c6dqt6uhac42w" path="res://scenes/ui/hub/character_skill_tree_modal.tscn" id="10_skillmodal"]
 [ext_resource type="PackedScene" uid="uid://n7y8dbscg6uu" path="res://scenes/ui/cosmetics/cosmetic_carousel_modal.tscn" id="11_cosmeticmodal"]
 [ext_resource type="PackedScene" uid="uid://23nq0fqrpq85" path="res://scenes/ui/character_select/hero_picker_modal.tscn" id="12_heromodal"]
-[ext_resource type="PackedScene" uid="uid://c7t8r6e5w4q1p" path="res://scenes/ui/components/orbital_terminal/orbital_ignition_terminal.tscn" id="13_orbital_terminal"]
 [ext_resource type="Environment" uid="uid://b8ortr7env001" path="res://scenes/ui/components/orbital_terminal/orbital_environment.tres" id="13_orbital_env"]
+[ext_resource type="PackedScene" uid="uid://c7t8r6e5w4q1p" path="res://scenes/ui/components/orbital_terminal/orbital_ignition_terminal.tscn" id="13_orbital_terminal"]
 [ext_resource type="PackedScene" uid="uid://cafxeilp0rlqe" path="res://scenes/ui/character_select/weapon_selection_modal.tscn" id="14_wpnmodal"]
 [ext_resource type="PackedScene" uid="uid://c6we3hrtqnufg" path="res://scenes/ui/character_select/arsenal_banlist_modal.tscn" id="15_arsenalmodal"]
 
@@ -47,54 +47,6 @@ content_margin_bottom = 18.0
 bg_color = Color(0.015, 0.025, 0.045, 0.94)
 border_width_top = 1
 border_color = Color(0, 0.75, 0.9, 0.4)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_normal"]
-bg_color = Color(0.05, 0.32, 0.35, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0.95, 0.8, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_pressed"]
-bg_color = Color(0.03, 0.22, 0.24, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0.8, 0.65, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_hover"]
-bg_color = Color(0.08, 0.48, 0.5, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 1, 0.9, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_launch_disabled"]
-bg_color = Color(0.08, 0.1, 0.12, 0.6)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.2, 0.25, 0.3, 0.5)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
 [node name="CharacterSelect" type="Control" unique_id=293892912]
 layout_mode = 3
@@ -889,17 +841,89 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dock")
 
-[node name="TerminalEnvironment" type="WorldEnvironment" parent="DockContainer"]
+[node name="TerminalEnvironment" type="WorldEnvironment" parent="DockContainer" unique_id=1049037622]
 environment = ExtResource("13_orbital_env")
 
-[node name="TerminalCenter" type="CenterContainer" parent="DockContainer"]
+[node name="TerminalCenter" type="CenterContainer" parent="DockContainer" unique_id=674673893]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="OrbitalIgnitionTerminal" parent="DockContainer/TerminalCenter" instance=ExtResource("13_orbital_terminal")]
-custom_minimum_size = Vector2(860, 52)
+[node name="OrbitalIgnitionTerminal" parent="DockContainer/TerminalCenter" unique_id=151211960 instance=ExtResource("13_orbital_terminal")]
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 2
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+oversampling_with_scale = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+custom_maximum_size = Vector2(-1, -1)
+propagate_maximum_size = false
+clip_contents = false
 layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 1
+size_flags_stretch_ratio = 1.0
+offset_transform_enabled = false
+offset_transform_position = Vector2(0, 0)
+offset_transform_position_ratio = Vector2(0, 0)
+offset_transform_scale = Vector2(1, 1)
+offset_transform_rotation = 0.0
+offset_transform_pivot = Vector2(0, 0)
+offset_transform_pivot_ratio = Vector2(0.5, 0.5)
+offset_transform_visual_only = true
+localize_numeral_system = true
+layout_direction = 0
+translation_context = &""
+tooltip_text = ""
+tooltip_auto_translate_mode = 0
+focus_neighbor_left = NodePath("")
+focus_neighbor_top = NodePath("")
+focus_neighbor_right = NodePath("")
+focus_neighbor_bottom = NodePath("")
+focus_next = NodePath("")
+focus_previous = NodePath("")
+focus_behavior_recursive = 0
+mouse_filter = 0
+mouse_behavior_recursive = 0
+mouse_force_pass_scroll_events = true
+mouse_default_cursor_shape = 0
+accessibility_name = ""
+accessibility_description = ""
+accessibility_live = 0
+accessibility_controls_nodes = Array[NodePath]([])
+accessibility_described_by_nodes = Array[NodePath]([])
+accessibility_labeled_by_nodes = Array[NodePath]([])
+accessibility_flow_to_nodes = Array[NodePath]([])
+theme = null
+theme_type_variation = &""
+disabled = false
+toggle_mode = false
+button_pressed = false
+action_mode = 1
+button_mask = 1
+keep_pressed_outside = false
+button_group = null
+shortcut = null
+shortcut_feedback = true
+shortcut_in_tooltip = true
 
 [node name="DockMargin" type="MarginContainer" parent="DockContainer" unique_id=775487468]
 layout_mode = 2
