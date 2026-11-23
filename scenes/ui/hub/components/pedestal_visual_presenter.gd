@@ -8,11 +8,15 @@ extends RefCounted
 
 const SaveManager = preload("res://core/autoloads/save_manager.gd")
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
+const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
 
-static func build_pedestals(hub: Node3D, roster: Array[Dictionary]) -> Array[Dictionary]:
+static func build_pedestals(hub: Node3D, roster: Array[Dictionary], config: HubDioramaConfigScript = null) -> Array[Dictionary]:
 	var vfx_data: Array[Dictionary] = []
 	if not is_instance_valid(hub):
 		return vfx_data
+
+	var cfg: HubDioramaConfigScript = config if config != null else DEFAULT_DIORAMA_CONFIG
 
 	var pedestals_group := hub.get_node_or_null("PilotPedestals")
 	if not pedestals_group:
@@ -22,9 +26,11 @@ static func build_pedestals(hub: Node3D, roster: Array[Dictionary]) -> Array[Dic
 
 	for i in range(roster.size()):
 		var char_data: Dictionary = roster[i]
-		var cid: String = String(char_data["id"])
+		var char_id_sn: StringName = char_data["id"]
+		var cid: String = String(char_id_sn)
 		var col: Color = char_data["color"]
 		var pos: Vector3 = char_data["pedestal_pos"]
+		var is_rework_ready: bool = CharacterData.is_character_playable_rework_ready(char_id_sn)
 
 		var ped_root_name := "Pedestal_" + cid.capitalize()
 		var ped_root: Node3D = pedestals_group.get_node_or_null(ped_root_name)
@@ -34,8 +40,7 @@ static func build_pedestals(hub: Node3D, roster: Array[Dictionary]) -> Array[Dic
 			pedestals_group.add_child(ped_root)
 
 		ped_root.position = Vector3(pos.x, 0.0, pos.z)
-		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
-		ped_root.visible = is_unlocked
+		ped_root.visible = true
 
 		# 1. Base Cilíndrica Metálica Sci-Fi
 		var base_mesh_node: MeshInstance3D = ped_root.get_node_or_null("BaseMesh")
@@ -88,14 +93,19 @@ static func build_pedestals(hub: Node3D, roster: Array[Dictionary]) -> Array[Dic
 			rim_node.position = Vector3(0, 0.16, 0)
 
 			rim_mat = StandardMaterial3D.new()
-			rim_mat.albedo_color = col
+			rim_mat.albedo_color = col if is_rework_ready else cfg.rework_rim_color
 			rim_mat.emission_enabled = true
-			rim_mat.emission = col
-			rim_mat.emission_energy_multiplier = 0.4
+			rim_mat.emission = col if is_rework_ready else cfg.rework_rim_color
+			rim_mat.emission_energy_multiplier = 0.4 if is_rework_ready else cfg.rework_rim_emission
 			rim_node.material_override = rim_mat
 			ped_root.add_child(rim_node)
 		else:
 			rim_mat = rim_node.material_override as StandardMaterial3D
+			if rim_mat != null:
+				rim_mat.albedo_color = col if is_rework_ready else cfg.rework_rim_color
+				rim_mat.emission = col if is_rework_ready else cfg.rework_rim_color
+				if not is_rework_ready:
+					rim_mat.emission_energy_multiplier = cfg.rework_rim_emission
 
 		# 3. Anillo Holográfico Interior Giratorio (Rotator Ring)
 		var rot_node: MeshInstance3D = ped_root.get_node_or_null("RotatorRing")
@@ -168,18 +178,27 @@ static func build_pedestals(hub: Node3D, roster: Array[Dictionary]) -> Array[Dic
 		if not badge_node:
 			badge_node = Label3D.new()
 			badge_node.name = "ActiveBadge"
-			badge_node.position = Vector3(0, 2.85, 0)
 			badge_node.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 			badge_node.no_depth_test = false
-			badge_node.text = "✦ EN DESPLIEGUE ✦"
 			badge_node.font_size = 22
 			badge_node.outline_size = 8
 			badge_node.outline_modulate = Color("#0A0A0E")
-			badge_node.modulate = col
-			badge_node.visible = false
 			ped_root.add_child(badge_node)
 
+		if is_rework_ready:
+			badge_node.position = Vector3(0.0, 2.85, 0.0)
+			badge_node.text = "✦ EN DESPLIEGUE ✦"
+			badge_node.modulate = col
+			badge_node.visible = false
+		else:
+			badge_node.position = Vector3(0.0, cfg.rework_badge_y, 0.0)
+			badge_node.text = "%s\nEN REWORK" % String(char_data["name"]).to_upper()
+			badge_node.modulate = cfg.rework_badge_color
+			badge_node.visible = true
+
 		vfx_data.append({
+			"character_id": char_id_sn,
+			"is_rework_ready": is_rework_ready,
 			"ped_root": ped_root,
 			"rim_mat": rim_mat,
 			"rotator_ring": rot_node,

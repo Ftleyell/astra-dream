@@ -7,14 +7,14 @@ extends Node2D
 const CosmosRootScene = preload("res://scenes/combat/environment/cosmos/scenes/cosmos_root.tscn")
 const CosmosHostControllerScript = preload("res://scenes/combat/environment/cosmos/core/cosmos_host_controller.gd")
 const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
-const RingCtrlScript = preload("res://sandbox/pilot_rig_lab/guns_lab/orbital_weapon_ring_controller.gd")
-const OrbitalConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_orbital_weapon_config.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
+const RingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
+const OrbitalConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const STYLE_PATH: String = "res://sandbox/pilot_rig_lab/data/styles/02_valentina_razor_sharp.tres"
-const ORBITAL_CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
-const RING_TEXTURE_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_mecha_ring_packed.png"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const STYLE_PATH: String = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
+const ORBITAL_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
+const RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
 
 const BASE_SPEED_PX_S: float = 540.0
 const TURBO_SPEED_PX_S: float = 2200.0

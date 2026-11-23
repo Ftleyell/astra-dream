@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="PilotCombatRigConfig" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_combat_rig_config.gd" id="1_cfg"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres" id="2_orb"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres" id="3_vfx"]
+
+[resource]
+script = ExtResource("1_cfg")
+combat_rig_scale = 0.9
+default_style_path = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
+orbital_weapon_config = ExtResource("2_orb")
+propulsion_vfx_config = ExtResource("3_vfx")
+ring_texture_path = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
+rig_z_offset = 5
+sandevistan_abs_z_index = 2
+turbo_speed_ratio_thresh = 0.92
+aim_min_dist_sq = 16.0
+muzzle_reaim_min_dist = 48.0
+aura_radius_px = 225.0
+aura_base_energy = 0.96
+aura_overfocus_bonus = 0.58
+aura_fire_pulse_bonus = 0.44
+aura_fire_decay_rate = 3.8
+aura_offset_px = Vector2(0, -20)
+overfocus_impact_ms = 42.0
+overfocus_impact_shake_px = 5.0
+overfocus_eye_monocle_boost = 1.25
+overfocus_aberration_layer = 2
+hit_impact_ms = 48.0
+hit_impact_shake_px = 5.5
+osp_impact_ms = 78.0
+osp_impact_shake_px = 8.5
+bomb_impact_ms = 65.0
+bomb_impact_shake_px = 7.0
+shield_absorb_wings_sec = 0.45
+bomb_wings_bloom_sec = 0.7
+active_fire_recoil_strength = 0.85
+passive_fire_recoil_strength = 0.35

@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="PilotTurnAnimConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_turn_anim_config.gd" id="1_turn"]
+
+[resource]
+script = ExtResource("1_turn")
+anim_id = "snappy_turn_whip_zero_g"
+display_name = "Giros Snappy 2.5D & Whip Cervical"
+master_intensity = 1.0
+body_turn_duration_sec = 0.135
+body_swap_point = 0.34
+head_turn_duration_sec = 0.085
+preview_step_interval_sec = 0.95
+pre_yaw_25d = 0.19
+post_catchup_yaw_25d = 0.22
+turn_torso_trap_pulse = 0.065
+pelvis_whip_shift_x_px = 2.8
+pelvis_bob_y_px = 1.35
+spine_overshoot_rot = 0.095
+limb_lag_phase = 0.28
+arm_whip_rot = 0.165
+leg_whip_rot = 0.135
+leg_shin_phi_pulse = 0.075
+body_turn_hair_whip_px = 3.4
+body_turn_chest_jiggle_px = 1.15
+head_lead_rot = 0.075
+head_whip_overshoot_rot = 0.085
+head_whip_offset_x_px = 1.45
+head_neck_kick_rot = 0.065
+head_sympathetic_chest_rot = 0.035
+head_whip_hair_px = 2.65
+family_multipliers = {
+"e": {
+"turn_scale": 0.95
+},
+"n": {
+"turn_scale": 0.9
+},
+"ne": {
+"turn_scale": 0.95
+},
+"s": {
+"turn_scale": 1.0
+},
+"se": {
+"turn_scale": 1.0
+}
+}

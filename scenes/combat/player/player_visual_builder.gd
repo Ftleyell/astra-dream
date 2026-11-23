@@ -11,9 +11,14 @@ extends RefCounted
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SaveManager = preload("res://core/autoloads/save_manager.gd")
 const SandevistanFlightVFXClass = preload("res://scenes/combat/player/sandevistan_flight_vfx.gd")
+const PlayerRigV2ControllerClass = preload("res://scenes/combat/player/player_rig_v2_controller.gd")
 
 func apply_visual_theme(player: CharacterBody2D, character_data: CharacterData) -> void:
 	if not character_data:
+		return
+
+	if character_data.pilot_rig_profile != null:
+		PlayerRigV2ControllerClass.hide_legacy_visuals(player)
 		return
 
 	var placeholder: Polygon2D = player.get_node_or_null("VisualPlaceholder") as Polygon2D
@@ -238,6 +243,8 @@ func update_omega_spin_rotation(player: CharacterBody2D, angle: float) -> void:
 
 
 func update_pilot_shader(player: CharacterBody2D, delta: float, is_moving: bool) -> void:
+	if player != null and player.has_method("has_rig_v2") and player.has_rig_v2():
+		return
 	var ship_spr: Sprite2D = player.get_node_or_null("ShipSprite") as Sprite2D
 	if not ship_spr or not (ship_spr.material is ShaderMaterial):
 		return

@@ -1,0 +1,322 @@
+[gd_resource type="Resource" script_class="PilotShaderSkinCatalog" load_steps=40 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_shader_skin_catalog.gd" id="1_cat"]
+[ext_resource type="Script" path="res://data/pilots/schemas/shader_skin_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/00_base.tres" id="3_s0"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/01_crimson_nebula.tres" id="4_s1"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/02_cyber_emerald.tres" id="5_s2"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/03_solar_valkyrie.tres" id="6_s3"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/04_void_amethyst.tres" id="7_s4"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/05_arctic_phantom.tres" id="8_s5"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/06_blood_eclipse.tres" id="9_s6"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/07_eva_unit_01.tres" id="10_s7"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/08_2b_yorha.tres" id="11_s8"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/skins/09_edgerunner_lucy.tres" id="12_s9"]
+
+[sub_resource type="Resource" id="Entry_pilot_1"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_crimson_nebula"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Nebulosa Carmesí"
+description = "Exo-traje de obsidiana sellado con telemetría láser rojo carmesí."
+rarity = "common"
+preset = ExtResource("4_s1")
+
+[sub_resource type="Resource" id="Entry_pilot_2"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_cyber_emerald"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Esmeralda Ciber"
+description = "Blindaje de titanio anodizado con circuitos de neón esmeralda."
+rarity = "common"
+preset = ExtResource("5_s2")
+
+[sub_resource type="Resource" id="Entry_pilot_3"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_arctic_phantom"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Fantasma Ártico"
+description = "Revestimiento criogénico blanco glaciar con óptica cian polar."
+rarity = "common"
+preset = ExtResource("8_s5")
+
+[sub_resource type="Resource" id="Entry_pilot_4"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_solar_valkyrie"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Valquiria Solar"
+description = "Placas de marfil real e incrustaciones doradas de comando orbital."
+rarity = "rare"
+preset = ExtResource("6_s3")
+
+[sub_resource type="Resource" id="Entry_pilot_5"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_void_amethyst"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Amatista del Vacío"
+description = "Traje índigo abisal resonando con energía magenta del vacío."
+rarity = "rare"
+preset = ExtResource("7_s4")
+
+[sub_resource type="Resource" id="Entry_pilot_6"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_blood_eclipse"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Eclipse de Sangre"
+description = "Coraza negra mate de sigilo táctico con trazos rubí incandescentes."
+rarity = "rare"
+preset = ExtResource("9_s6")
+
+[sub_resource type="Resource" id="Entry_pilot_7"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_eva_unit_01"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Mecha Unidad-01"
+description = "Armadura violeta de alta sincronización con reactores verde ácido."
+rarity = "epic"
+preset = ExtResource("10_s7")
+
+[sub_resource type="Resource" id="Entry_pilot_8"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_2b_yorha"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Gótico Androide"
+description = "Acabado terciopelo negro y plata lunar de unidad táctica de élite."
+rarity = "epic"
+preset = ExtResource("11_s8")
+
+[sub_resource type="Resource" id="Entry_pilot_9"]
+script = ExtResource("2_entry")
+id = "pilot_valentina_edgerunner_lucy"
+category = "pilot"
+target_id = &"valentina"
+target_name = "Valentina"
+skin_name = "Night City Netrunner"
+description = "Traje netrunner cian eléctrico con acentos holográficos amarillo neón."
+rarity = "epic"
+preset = ExtResource("12_s9")
+
+[sub_resource type="Resource" id="Entry_wings_1"]
+script = ExtResource("2_entry")
+id = "wings_valentina_crimson_nebula"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Nebulosa Carmesí"
+description = "12 cuchillas psíquicas de obsidiana con canales láser carmesí."
+rarity = "common"
+preset = ExtResource("4_s1")
+
+[sub_resource type="Resource" id="Entry_wings_2"]
+script = ExtResource("2_entry")
+id = "wings_valentina_cyber_emerald"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Esmeralda Ciber"
+description = "Cuchillas de titanio con estelas de plasma verde neón."
+rarity = "common"
+preset = ExtResource("5_s2")
+
+[sub_resource type="Resource" id="Entry_wings_3"]
+script = ExtResource("2_entry")
+id = "wings_valentina_arctic_phantom"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Fantasma Ártico"
+description = "Plumas cristalinas blanco glaciar con propulsión cian criogénica."
+rarity = "common"
+preset = ExtResource("8_s5")
+
+[sub_resource type="Resource" id="Entry_wings_4"]
+script = ExtResource("2_entry")
+id = "wings_valentina_solar_valkyrie"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Valquiria Solar"
+description = "Abanico serafín en marfil dorado y núcleos de fuego solar."
+rarity = "rare"
+preset = ExtResource("6_s3")
+
+[sub_resource type="Resource" id="Entry_wings_5"]
+script = ExtResource("2_entry")
+id = "wings_valentina_void_amethyst"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Amatista del Vacío"
+description = "Cuchillas de cuarzo índigo con estelas magenta del vacío."
+rarity = "rare"
+preset = ExtResource("7_s4")
+
+[sub_resource type="Resource" id="Entry_wings_6"]
+script = ExtResource("2_entry")
+id = "wings_valentina_blood_eclipse"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Eclipse de Sangre"
+description = "Abanico de acero oscuro coronado por canales rubí de sobrecarga."
+rarity = "rare"
+preset = ExtResource("9_s6")
+
+[sub_resource type="Resource" id="Entry_wings_7"]
+script = ExtResource("2_entry")
+id = "wings_valentina_eva_unit_01"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Mecha Unidad-01"
+description = "Alas biopoliméricas violeta con flujo energético verde ácido."
+rarity = "epic"
+preset = ExtResource("10_s7")
+
+[sub_resource type="Resource" id="Entry_wings_8"]
+script = ExtResource("2_entry")
+id = "wings_valentina_2b_yorha"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Gótico Androide"
+description = "Cuchillas negro terciopelo con filamentos luminosos plata lunar."
+rarity = "epic"
+preset = ExtResource("11_s8")
+
+[sub_resource type="Resource" id="Entry_wings_9"]
+script = ExtResource("2_entry")
+id = "wings_valentina_edgerunner_lucy"
+category = "wings"
+target_id = &"valentina"
+target_name = "Alas de Valentina"
+skin_name = "Alas Netrunner"
+description = "Propulsores cibernéticos cian con descargas de alto voltaje amarillo."
+rarity = "epic"
+preset = ExtResource("12_s9")
+
+[sub_resource type="Resource" id="Entry_weapon_1"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_crimson_nebula"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Nebulosa Carmesí"
+description = "Cañón orbital de obsidiana con cámara de aceleración rojo láser."
+rarity = "common"
+preset = ExtResource("4_s1")
+
+[sub_resource type="Resource" id="Entry_weapon_2"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_cyber_emerald"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Esmeralda Ciber"
+description = "Rieles de titanio con condensadores de plasma esmeralda."
+rarity = "common"
+preset = ExtResource("5_s2")
+
+[sub_resource type="Resource" id="Entry_weapon_3"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_arctic_phantom"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Fantasma Ártico"
+description = "Fusil orbital blanco criogénico con lentes cian de cero absoluto."
+rarity = "common"
+preset = ExtResource("8_s5")
+
+[sub_resource type="Resource" id="Entry_weapon_4"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_solar_valkyrie"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Valquiria Solar"
+description = "Chasis marfil ceremonial con núcleo balístico de oro solar."
+rarity = "rare"
+preset = ExtResource("6_s3")
+
+[sub_resource type="Resource" id="Entry_weapon_5"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_void_amethyst"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Amatista"
+description = "Armazón índigo gravitatorio con cristal de enfoque magenta."
+rarity = "rare"
+preset = ExtResource("7_s4")
+
+[sub_resource type="Resource" id="Entry_weapon_6"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_blood_eclipse"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Eclipse de Sangre"
+description = "Cañón de sigilo negro carbón con núcleo balístico rubí."
+rarity = "rare"
+preset = ExtResource("9_s6")
+
+[sub_resource type="Resource" id="Entry_weapon_7"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_eva_unit_01"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Unidad-01"
+description = "Lanza electromagnética violeta con cámara de positrones verde ácido."
+rarity = "epic"
+preset = ExtResource("10_s7")
+
+[sub_resource type="Resource" id="Entry_weapon_8"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_2b_yorha"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Gótico Androide"
+description = "Unidad orbital negro mate y plata cromada de precisión absoluta."
+rarity = "epic"
+preset = ExtResource("11_s8")
+
+[sub_resource type="Resource" id="Entry_weapon_9"]
+script = ExtResource("2_entry")
+id = "weapon_valentina_edgerunner_lucy"
+category = "weapon"
+target_id = &"valentina"
+target_name = "Rail-Lance de Valentina"
+skin_name = "Rail-Lance Netrunner"
+description = "Riel orbital cian overclocked con bobinas amarillo neón."
+rarity = "epic"
+preset = ExtResource("12_s9")
+
+[resource]
+script = ExtResource("1_cat")
+pilot_id = &"valentina"
+display_name = "Valentina"
+wings_slot_title = "ALAS / PROPULSIÓN"
+wings_slot_display_name = "Alas Astral Seraph"
+weapon_slot_title = "ARMA ORBITAL"
+weapon_slot_display_name = "Rail-Lance Orbital"
+base_preset = ExtResource("3_s0")
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_pilot_1"), SubResource("Entry_pilot_2"), SubResource("Entry_pilot_3"), SubResource("Entry_pilot_4"), SubResource("Entry_pilot_5"), SubResource("Entry_pilot_6"), SubResource("Entry_pilot_7"), SubResource("Entry_pilot_8"), SubResource("Entry_pilot_9"), SubResource("Entry_wings_1"), SubResource("Entry_wings_2"), SubResource("Entry_wings_3"), SubResource("Entry_wings_4"), SubResource("Entry_wings_5"), SubResource("Entry_wings_6"), SubResource("Entry_wings_7"), SubResource("Entry_wings_8"), SubResource("Entry_wings_9"), SubResource("Entry_weapon_1"), SubResource("Entry_weapon_2"), SubResource("Entry_weapon_3"), SubResource("Entry_weapon_4"), SubResource("Entry_weapon_5"), SubResource("Entry_weapon_6"), SubResource("Entry_weapon_7"), SubResource("Entry_weapon_8"), SubResource("Entry_weapon_9")])

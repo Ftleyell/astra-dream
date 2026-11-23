@@ -3,13 +3,13 @@ extends Node2D
 ## Rig facial independiente y modular para calibrar y validar vida facial,
 ## soldadura cervical, parallax 2.5D Live2D, cabello en 3 zonas y monóculo táctico.
 
-const MeshBuilderScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_mesh_builder.gd")
-const MaterialCtrlScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_material_controller.gd")
+const MeshBuilderScript = preload("res://scenes/pilots/rig/planar_rig_mesh_builder.gd")
+const MaterialCtrlScript = preload("res://scenes/pilots/rig/planar_rig_material_controller.gd")
 
-const SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_stylizer.gdshader"
-const PASS2_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/pilot_rig_pass2.gdshader"
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const STYLE_SHARP_PATH: String = "res://sandbox/pilot_rig_lab/data/styles/02_valentina_razor_sharp.tres"
+const SHADER_PATH: String = "res://scenes/pilots/shaders/pilot_rig_stylizer.gdshader"
+const PASS2_SHADER_PATH: String = "res://scenes/pilots/shaders/pilot_rig_pass2.gdshader"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const STYLE_SHARP_PATH: String = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
 
 const CANONICAL_HEADS: Array[String] = [
 	"head_front",

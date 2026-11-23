@@ -68,18 +68,22 @@ func apply_heroine_loadout(char_id: StringName) -> void:
 		SaveManager.unequip_skin("navigator:" + cur_nav_str)
 
 	var cid_str: String = String(char_id).to_lower()
-	var ship_skin: String = str(loadout.get("equipped_ship_skin", loadout.get("ship_skin", "base")))
-	if ship_skin.is_empty():
-		ship_skin = "base"
-	SaveManager.equip_skin("ship:" + cid_str, ship_skin)
+	var has_shader: bool = CosmeticsManager.has_shader_skin_catalog(char_id)
+	var default_sub: String = CosmeticsManager.FOLLOW_PILOT_SKIN_ID if has_shader else "base"
 
-	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", "base")))
-	if weapon_skin.is_empty():
-		weapon_skin = "base"
+	var ship_skin: String = str(loadout.get("equipped_wings_skin", loadout.get("equipped_ship_skin", loadout.get("ship_skin", default_sub))))
+	if ship_skin.is_empty() or CosmeticsManager.is_obsolete_shader_pilot_skin_id(ship_skin):
+		ship_skin = default_sub
+	var wings_slot_key: String = ("wings:" + cid_str) if has_shader else ("ship:" + cid_str)
+	SaveManager.equip_skin(wings_slot_key, ship_skin)
+
+	var weapon_skin: String = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", default_sub)))
+	if weapon_skin.is_empty() or CosmeticsManager.is_obsolete_shader_pilot_skin_id(weapon_skin):
+		weapon_skin = default_sub
 	SaveManager.equip_skin("weapon:" + cid_str, weapon_skin)
 
 	var pilot_skin: String = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "base")))
-	if pilot_skin.is_empty():
+	if pilot_skin.is_empty() or CosmeticsManager.is_obsolete_shader_pilot_skin_id(pilot_skin):
 		pilot_skin = "base"
 	SaveManager.equip_skin("pilot:" + cid_str, pilot_skin)
 
@@ -88,7 +92,8 @@ func open_ship_customization(current_character_id: StringName) -> void:
 	var char_data: CharacterData = roster_dict.get(current_character_id, null)
 	_save_focus()
 	if cosmetic_carousel_modal and char_data:
-		cosmetic_carousel_modal.open_modal("ship", current_character_id, char_data)
+		var cat: String = CosmeticsManager.normalize_category_for_target("ship", current_character_id)
+		cosmetic_carousel_modal.open_modal(cat, current_character_id, char_data)
 
 
 func open_weapon_customization(current_character_id: StringName) -> void:
@@ -119,7 +124,8 @@ func handle_cosmetic_carousel_closed(category: String, target_id: StringName, sk
 	var target_char: StringName = target_id if not target_id.is_empty() else fallback_character_id
 	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
 	match category:
-		"ship":
+		"ship", "wings":
+			loadout["equipped_wings_skin"] = skin_id
 			loadout["equipped_ship_skin"] = skin_id
 			loadout["ship_skin"] = skin_id
 		"weapon":
@@ -141,7 +147,8 @@ func handle_skin_selected(slot_key: String, skin_id: String, fallback_character_
 		target_char = StringName(parts[1])
 
 	var loadout: Dictionary = SaveManager.get_character_loadout(target_char)
-	if slot_key.begins_with("ship:"):
+	if slot_key.begins_with("ship:") or slot_key.begins_with("wings:"):
+		loadout["equipped_wings_skin"] = skin_id
 		loadout["equipped_ship_skin"] = skin_id
 		loadout["ship_skin"] = skin_id
 	elif slot_key.begins_with("weapon:"):

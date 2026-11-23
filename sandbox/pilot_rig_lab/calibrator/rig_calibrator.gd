@@ -3,13 +3,13 @@ extends Node2D
 ## Permite ajustar piezas, cabeza, neck_anchor, huesos y orden Z con reglas graduadas,
 ## guías arrastrables, snap, opacidad/aislamiento por capa, simetría y guardado en JSON.
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const StoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
 const OverlayScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibrator_overlay.gd")
 const HudScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibrator_hud.gd")
 const LayerBuilderScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibrator_layer_builder.gd")
-const ViewRouterScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_view_router.gd")
-const ProfilePath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
+const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
+const ProfilePath: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
 
 var _store: RigCalibrationStore = null
 var _rig: PlanarCombatRig = null

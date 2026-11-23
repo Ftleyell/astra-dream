@@ -155,6 +155,8 @@ func _switch_tab(tab_idx: int) -> void:
 		_gacha_content.show()
 		if _wardrobe_content:
 			_wardrobe_content.hide()
+		if _wardrobe_controller and _wardrobe_controller.has_method("pause_inspector_preview"):
+			_wardrobe_controller.pause_inspector_preview()
 		_tab_gacha_btn.modulate = Color(0.2, 1.0, 0.8, 1.0)
 		_tab_wardrobe_btn.modulate = Color(0.7, 0.7, 0.7, 1.0)
 		_refresh_banner_info()
@@ -265,6 +267,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_close_pressed() -> void:
+	if _wardrobe_controller and _wardrobe_controller.has_method("pause_inspector_preview"):
+		_wardrobe_controller.pause_inspector_preview()
 	hide()
 	get_tree().paused = false
 	modal_closed.emit()

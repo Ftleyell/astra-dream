@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="HubDioramaConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/hub/resources/hub_diorama_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+camera_fov = 38.0
+camera_pitch_deg = -42.0
+camera_offset = Vector3(0, 9.2, 10.2)
+camera_follow_smooth = 7.5
+camera_clamp_min = Vector3(-9.5, 8, 0.5)
+camera_clamp_max = Vector3(9.5, 11.5, 54)
+viewport_size = 512
+rig_camera_zoom = 2.4
+rig_camera_center_offset = Vector2(0, 12)
+avatar_pixel_size = 0.0055
+avatar_feet_offset_px = 206.0
+avatar_hover_height = 0.22
+avatar_tilt_deg = -22.0
+avatar_aspect_y_comp = 1.064
+avatar_idle_bob_amp = 0.032
+avatar_idle_bob_hz = 1.55
+default_profile_path = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+default_style_path = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
+hub_light_dir_2d = Vector2(0.45, -0.89)
+rework_rim_color = Color(0.28, 0.3, 0.36, 1)
+rework_rim_emission = 0.12
+rework_badge_color = Color(0.72, 0.76, 0.84, 0.85)
+rework_badge_y = 1.5

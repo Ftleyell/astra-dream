@@ -5,7 +5,7 @@ extends RefCounted
 ## del arma (escorzo, trapezoide, extrusión, escala perspectiva), cantidad de slots (1..4),
 ## vista 8-dir de Valentina y guardar/recargar el recurso .tres.
 
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_orbital_weapon_config.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
 
 const PANEL_WIDTH: float = 330.0
 const VIEW_KEYS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]

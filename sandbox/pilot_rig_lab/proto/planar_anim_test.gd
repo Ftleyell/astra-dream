@@ -1,28 +1,28 @@
 extends Node2D
 ## Laboratorio Interactivo de Pose Base, Idle Zero-G y Locomoción/Freno — Valentina v2 (8 Direcciones en Brújula).
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
-const ViewRouterScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_view_router.gd")
-const BasePoseConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_pose_config.gd")
-const IdleAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_idle_anim_config.gd")
-const LocomotionAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_locomotion_anim_config.gd")
-const KitingAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_kiting_anim_config.gd")
-const TurnAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_turn_anim_config.gd")
-const JigglePhysicsConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_jiggle_physics_config.gd")
-const FaceAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_anim_config.gd")
-const BasePoseEvaluatorScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_base_pose_evaluator.gd")
-const KitingEvaluatorScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_kiting_evaluator.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
+const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
+const BasePoseConfigScript = preload("res://data/pilots/schemas/pilot_base_pose_config.gd")
+const IdleAnimConfigScript = preload("res://data/pilots/schemas/pilot_idle_anim_config.gd")
+const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_locomotion_anim_config.gd")
+const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
+const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
+const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
+const FaceAnimConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
+const BasePoseEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_base_pose_evaluator.gd")
+const KitingEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_kiting_evaluator.gd")
 const PoseLabHudScript = preload("res://sandbox/pilot_rig_lab/proto/planar_pose_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const BASE_POSE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_pose.tres"
-const IDLE_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_idle_anim.tres"
-const LOCO_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
-const KITING_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
-const TURN_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_turn_anim.tres"
-const JIGGLE_PHYSICS_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
-const FACE_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_face_anim.tres"
-const STYLE_SHARP_PATH: String = "res://sandbox/pilot_rig_lab/data/styles/02_valentina_razor_sharp.tres"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const BASE_POSE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_pose.tres"
+const IDLE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_idle_anim.tres"
+const LOCO_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
+const KITING_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
+const TURN_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_turn_anim.tres"
+const JIGGLE_PHYSICS_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
+const FACE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_face_anim.tres"
+const STYLE_SHARP_PATH: String = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
 
 const ALL_VIEWS: Array[String] = ["n", "ne", "e", "se", "s", "sw", "w", "nw"]
 const COMPASS_RADIUS: float = 290.0

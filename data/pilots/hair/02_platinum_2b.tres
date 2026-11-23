@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_hair_preset.gd" id="1_5duh6"]
+
+[resource]
+script = ExtResource("1_5duh6")
+id = "02_platinum_2b"
+label = "Color Pelo 2: Blanco Platino Nier (2B)"
+override_color = true
+hair_color = Color(0.95, 0.96, 1, 1)
+hair_secondary_color = Color(0.2, 0.85, 1, 1)

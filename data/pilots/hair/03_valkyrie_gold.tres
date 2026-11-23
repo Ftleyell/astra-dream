@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_hair_preset.gd" id="1_m3giw"]
+
+[resource]
+script = ExtResource("1_m3giw")
+id = "03_valkyrie_gold"
+label = "Color Pelo 3: Rubio Dorado Valquiria"
+override_color = true
+hair_color = Color(1, 0.84, 0.32, 1)
+hair_secondary_color = Color(1, 0.28, 0.12, 1)

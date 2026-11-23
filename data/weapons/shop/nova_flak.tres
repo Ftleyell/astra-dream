@@ -28,3 +28,7 @@ passive_behavior_type = &"mortar"
 scales_with_projectile_count = true
 active_scales_with_projectiles = true
 passive_scales_with_projectiles = true
+orbital_armor_color = Color(0.94, 0.86, 0.82, 1)
+orbital_chassis_color = Color(0.2, 0.12, 0.14, 1)
+orbital_crystal_color = Color(1, 0.32, 0.28, 1)
+orbital_mesh_id = &"rail_lance"

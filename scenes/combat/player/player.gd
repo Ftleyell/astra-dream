@@ -24,6 +24,7 @@ const PlayerLocomotionControllerClass = preload("res://scenes/combat/player/play
 const PlayerEconomyComponentClass = preload("res://scenes/combat/player/player_economy_component.gd")
 const PlayerDamageProcessorClass = preload("res://scenes/combat/player/player_damage_processor.gd")
 const PlayerArcanaInventoryClass = preload("res://scenes/combat/player/player_arcana_inventory.gd")
+const PlayerRigV2ControllerClass = preload("res://scenes/combat/player/player_rig_v2_controller.gd")
 
 @export var character_data: CharacterData
 @export var bullet_server: BulletServer
@@ -50,6 +51,7 @@ var locomotion_controller: RefCounted = PlayerLocomotionControllerClass.new()
 var economy_component: Node = PlayerEconomyComponentClass.new()
 var damage_processor: RefCounted = PlayerDamageProcessorClass.new()
 var arcana_inventory: Node = PlayerArcanaInventoryClass.new()
+var rig_v2_controller: PlayerRigV2ControllerClass = null
 
 # Propiedades delegadas de Movilidad y Dash (PlayerDashController)
 var is_dashing: bool:
@@ -240,6 +242,7 @@ func _ready() -> void:
 
 	if visual_builder: visual_builder.setup_aim_mode_indicator(self)
 	_setup_hitbox_core_visuals()
+	_setup_rig_v2_controller()
 
 
 func _setup_components() -> void:
@@ -324,9 +327,49 @@ func _handle_movement(delta: float) -> void:
 
 func set_cinematic_duel_facing() -> void:
 	if locomotion_controller: locomotion_controller.set_cinematic_duel_facing(self)
+	if rig_v2_controller != null and is_instance_valid(rig_v2_controller):
+		rig_v2_controller.set_cinematic_duel_facing(Vector2.RIGHT)
 
 func resume_movement_control() -> void:
 	if locomotion_controller: locomotion_controller.resume_movement_control()
+	if rig_v2_controller != null and is_instance_valid(rig_v2_controller):
+		rig_v2_controller.resume_movement_control()
+
+
+func _setup_rig_v2_controller() -> void:
+	if character_data == null or character_data.pilot_rig_profile == null:
+		return
+	if rig_v2_controller != null and is_instance_valid(rig_v2_controller):
+		return
+	rig_v2_controller = PlayerRigV2ControllerClass.new()
+	rig_v2_controller.name = "PlayerRigV2Controller"
+	add_child(rig_v2_controller)
+	rig_v2_controller.setup(self, character_data)
+
+
+func has_rig_v2() -> bool:
+	return rig_v2_controller != null and is_instance_valid(rig_v2_controller)
+
+
+func get_rig_v2_controller() -> PlayerRigV2ControllerClass:
+	return rig_v2_controller
+
+
+func get_weapon_muzzle_world_pos(slot_idx: int) -> Vector2:
+	if has_rig_v2():
+		return rig_v2_controller.get_weapon_muzzle_world_pos(slot_idx)
+	return global_position
+
+
+func get_muzzle_reaim_min_dist() -> float:
+	if has_rig_v2():
+		return rig_v2_controller.get_muzzle_reaim_min_dist()
+	return 48.0
+
+
+func notify_weapon_fired(slot_idx: int, aim_dir: Vector2, is_active: bool) -> void:
+	if has_rig_v2():
+		rig_v2_controller.on_weapon_fired(slot_idx, aim_dir, is_active)
 
 func _on_dash_controller_updated(c: int, m: int, p: float, f: bool) -> void:
 	dash_updated.emit(c, m, p, f)

@@ -2,12 +2,12 @@ class_name PlanarPoseLabHud
 extends RefCounted
 ## Constructor modular del HUD lateral en 5 pestañas ([1. Pose], [2. Idle], [3. Vuelo], [4. Giros], [5. Jiggle]) para planar_anim_test.tscn.
 
-const BasePoseConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_pose_config.gd")
-const IdleAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_idle_anim_config.gd")
-const LocomotionAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_locomotion_anim_config.gd")
-const TurnAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_turn_anim_config.gd")
-const JigglePhysicsConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_jiggle_physics_config.gd")
-const KitingAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_kiting_anim_config.gd")
+const BasePoseConfigScript = preload("res://data/pilots/schemas/pilot_base_pose_config.gd")
+const IdleAnimConfigScript = preload("res://data/pilots/schemas/pilot_idle_anim_config.gd")
+const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_locomotion_anim_config.gd")
+const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
+const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
+const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
 
 const SLIDER_SPECS: Array[Dictionary] = [
 	{"sec": "torso", "key": "pelvis_rot", "label": "Pelvis Inclinación", "min": -0.18, "max": 0.18, "step": 0.002, "rad": true},

@@ -8,6 +8,8 @@ extends Control
 ## - Botón de salto rápido (ESC / Click) y pantalla de resumen final con cuadrícula.
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const ShaderSkinLivePreviewScript = preload("res://scenes/ui/cosmetics/components/shader_skin_live_preview.gd")
+const ShaderSkinSwatchScript = preload("res://scenes/ui/cosmetics/components/shader_skin_swatch.gd")
 
 signal sequence_finished()
 
@@ -194,6 +196,7 @@ func _build_results_layer(parent_panel: Control) -> void:
 
 func _show_next_capsule() -> void:
 	if _current_pull_idx >= _current_pull_queue.size():
+		_clear_reveal_cards()
 		_reveal_overlay.hide()
 		_display_pull_results(_current_pull_queue)
 		is_animating = false
@@ -253,7 +256,7 @@ func _on_capsule_opened() -> void:
 	_reveal_cards_container.show()
 	_reveal_cards_container.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	var card: Control = _create_reward_card(skin, upg)
+	var card: Control = _create_reward_card(skin, upg, true)
 	card.pivot_offset = Vector2(85, 115)
 	card.scale = Vector2(0.3, 0.3)
 	_reveal_cards_container.add_child(card)
@@ -277,7 +280,16 @@ func _on_reveal_overlay_gui_input(event: InputEvent) -> void:
 		else:
 			_show_next_capsule()
 
+func _clear_reveal_cards() -> void:
+	if _reveal_cards_container == null:
+		return
+	for child: Node in _reveal_cards_container.get_children():
+		_reveal_cards_container.remove_child(child)
+		child.queue_free()
+
+
 func _on_skip_reveal_pressed() -> void:
+	_clear_reveal_cards()
 	_reveal_overlay.hide()
 	_display_pull_results(_current_pull_queue)
 	is_animating = false
@@ -289,18 +301,19 @@ func _display_pull_results(results: Array[Dictionary]) -> void:
 	for res: Dictionary in results:
 		var skin: Dictionary = res.get("skin_data", {})
 		var upg: Dictionary = res.get("upgrade_data", {})
-		var card: Control = _create_reward_card(skin, upg)
+		var card: Control = _create_reward_card(skin, upg, false)
 		_results_grid.add_child(card)
 
 	_results_layer.show()
 
 func _on_results_closed() -> void:
+	_clear_reveal_cards()
 	_results_layer.hide()
 	_reveal_overlay.hide()
 	is_animating = false
 	sequence_finished.emit()
 
-func _create_reward_card(skin: Dictionary, upg: Dictionary) -> Control:
+func _create_reward_card(skin: Dictionary, upg: Dictionary, use_live_preview: bool = false) -> Control:
 	var frame := PanelContainer.new()
 	frame.custom_minimum_size = Vector2(170, 230)
 
@@ -324,15 +337,37 @@ func _create_reward_card(skin: Dictionary, upg: Dictionary) -> Control:
 	vbox.add_theme_constant_override("separation", 6)
 	frame.add_child(vbox)
 
-	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(84, 84)
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var tex: Texture2D = CosmeticsManager.get_skin_texture(skin)
-	if tex:
-		icon.texture = tex
-	CosmeticsManager.apply_skin_to_canvas_item(icon, skin.get("id", ""), stars, false)
-	vbox.add_child(icon)
+	if CosmeticsManager.is_shader_skin(skin):
+		var sid: String = str(skin.get("id", ""))
+		var cat: String = str(skin.get("category", "pilot"))
+		var tid: StringName = StringName(str(skin.get("target_id", "valentina")).to_lower())
+		var preset: PilotSkinPreset = CosmeticsManager.get_skin_preset(sid)
+		if use_live_preview:
+			var preview: ShaderSkinLivePreview = ShaderSkinLivePreviewScript.new() as ShaderSkinLivePreview
+			preview.custom_minimum_size = Vector2(124, 124)
+			preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			vbox.add_child(preview)
+			var roster: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
+			var cd: CharacterData = roster.get(tid, null)
+			var prof: PilotRigProfile = cd.pilot_rig_profile if cd != null else null
+			preview.configure(cat, prof, Vector2i(140, 140))
+			preview.apply_skin_preset(preset, stars, false)
+		else:
+			var swatch: ShaderSkinSwatch = ShaderSkinSwatchScript.new() as ShaderSkinSwatch
+			swatch.custom_minimum_size = Vector2(84, 84)
+			swatch.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			swatch.configure_swatch(preset, cat, stars, false, false)
+			vbox.add_child(swatch)
+	else:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(84, 84)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var tex: Texture2D = CosmeticsManager.get_skin_texture(skin)
+		if tex:
+			icon.texture = tex
+		CosmeticsManager.apply_skin_to_canvas_item(icon, skin.get("id", ""), stars, false)
+		vbox.add_child(icon)
 
 	var t_name := Label.new()
 	t_name.text = skin.get("target_name", "")

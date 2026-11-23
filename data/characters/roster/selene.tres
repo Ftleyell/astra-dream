@@ -15,6 +15,7 @@ starting_weapon = ExtResource("3_wpn")
 color = Color(0.75, 0.4, 1, 1)
 pts = PackedVector2Array(-40, -40, 40, -40, 50, 10, 0, 60, -50, 10)
 sort_order = 3
+is_playable_rework_ready = false
 stats_summary = "HP: 110 | Vel: 290 px/s | Daño: 38 | Crítico: 6% | Suerte: +20"
 max_health = 110.0
 health_regen = 0.8

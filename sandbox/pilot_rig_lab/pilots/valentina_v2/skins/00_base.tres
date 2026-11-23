@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="PilotSkinPreset" format=3]
-
-[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/data/pilot_skin_preset.gd" id="1_1ynht"]
-
-[resource]
-script = ExtResource("1_1ynht")
-label = "Skin 0: Base Original (Carmesí + Acero)"
-is_base_skin = true

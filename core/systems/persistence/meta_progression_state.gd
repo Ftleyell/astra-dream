@@ -6,6 +6,7 @@ extends RefCounted
 ## Árboles de talentos de heroínas, estadísticas de carrera y desbloqueo de personajes.
 
 const ProfileStorageScript = preload("res://core/systems/persistence/profile_storage.gd")
+const CharacterDataScript = preload("res://data/characters/character_data.gd")
 
 # ==============================================================================
 # ECONOMÍA: BIOMASA & ANTIMATERIA
@@ -27,7 +28,7 @@ static func add_biomass(amount: int, save_facade: Object) -> int:
 	var skills: Dictionary = profile.get("character_skills", {})
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, new_total, antimatter, skills, sel_char, dark_matter, trophies)
 	return new_total
 
@@ -38,7 +39,7 @@ static func set_biomass(amount: int, save_facade: Object) -> void:
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, maxi(0, amount), antimatter, skills, sel_char, dark_matter, trophies)
@@ -59,7 +60,7 @@ static func add_antimatter(amount: int, save_facade: Object) -> int:
 	var skills: Dictionary = profile.get("character_skills", {})
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, new_total, skills, sel_char, dark_matter, trophies)
 	return new_total
 
@@ -83,7 +84,7 @@ static func add_dark_matter(amount: int, save_facade: Object) -> int:
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_total, trophies)
 	return new_total
 
@@ -114,7 +115,7 @@ static func unlock_or_upgrade_trophy(trophy_id: StringName, mastery_level: int, 
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
 	var dark_matter: int = int(profile.get("dark_matter", 0))
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies)
 	return true
@@ -136,7 +137,7 @@ static func upgrade_trophy_with_dark_matter(trophy_id: StringName, cost: int, sa
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, new_dm, trophies)
 	return true
@@ -236,7 +237,7 @@ static func unlock_character_skill_node(char_id: StringName, node_id: StringName
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
 	return true
@@ -263,7 +264,7 @@ static func refund_character_skills(char_id: StringName, node_cost: int, save_fa
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, new_biomass, antimatter, skills, sel_char, dark_matter, trophies)
 	return refund_biomass
@@ -274,11 +275,14 @@ static func refund_character_skills(char_id: StringName, node_cost: int, save_fa
 
 static func get_selected_character() -> StringName:
 	var profile: Dictionary = ProfileStorageScript.load_profile()
-	return StringName(str(profile.get("selected_character", "nova")))
+	return StringName(str(profile.get("selected_character", "valentina")))
 
 static func set_selected_character(char_id: StringName, save_facade: Object) -> void:
 	if char_id == &"":
 		return
+	var effective_char: StringName = char_id
+	if not CharacterDataScript.is_character_playable_rework_ready(effective_char):
+		effective_char = CharacterDataScript.get_default_playable_character_id()
 	var profile: Dictionary = ProfileStorageScript.load_profile()
 	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
@@ -288,7 +292,7 @@ static func set_selected_character(char_id: StringName, save_facade: Object) -> 
 	var skills: Dictionary = profile.get("character_skills", {})
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
-	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, char_id, dark_matter, trophies)
+	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, effective_char, dark_matter, trophies)
 
 static func get_game_speed() -> float:
 	var profile: Dictionary = ProfileStorageScript.load_profile()
@@ -306,7 +310,7 @@ static func set_game_speed(speed: float, save_facade: Object) -> void:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	save_facade.save_profile(unlocked_items, bans, unlocked_chars, biomass, antimatter, skills, sel_char, dark_matter, trophies, speed)
@@ -337,7 +341,7 @@ static func unlock_character(char_id: StringName, save_facade: Object) -> bool:
 		var bio: int = int(prof.get("biomass", 0))
 		var anti: int = int(prof.get("antimatter", 0))
 		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
 		var dm: int = int(prof.get("dark_matter", 0))
 		var trophies: Dictionary = prof.get("trophies_unlocked", {})
 		var spd: float = float(prof.get("game_speed", 1.0))
@@ -361,7 +365,7 @@ static func lock_character(char_id: StringName, save_facade: Object) -> bool:
 		var bio: int = int(prof.get("biomass", 0))
 		var anti: int = int(prof.get("antimatter", 0))
 		var skills: Dictionary = prof.get("character_skills", {})
-		var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+		var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
 		var dm: int = int(prof.get("dark_matter", 0))
 		var trophies: Dictionary = prof.get("trophies_unlocked", {})
 		var spd: float = float(prof.get("game_speed", 1.0))
@@ -383,7 +387,7 @@ static func record_boss_kill(save_facade: Object) -> bool:
 	var bio: int = int(prof.get("biomass", 0))
 	var anti: int = int(prof.get("antimatter", 0))
 	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
 	var dm: int = int(prof.get("dark_matter", 0))
 	var trophies: Dictionary = prof.get("trophies_unlocked", {})
 	var spd: float = float(prof.get("game_speed", 1.0))
@@ -417,7 +421,7 @@ static func record_career_run_end(stats_data: Dictionary, save_facade: Object) -
 	var bio: int = int(prof.get("biomass", 0))
 	var anti: int = int(prof.get("antimatter", 0))
 	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
 	var dm: int = int(prof.get("dark_matter", 0))
 	var trophies: Dictionary = prof.get("trophies_unlocked", {})
 	var spd: float = float(prof.get("game_speed", 1.0))
@@ -441,9 +445,9 @@ static func reset_career_stats(save_facade: Object) -> void:
 	var bio: int = int(prof.get("biomass", 0))
 	var anti: int = int(prof.get("antimatter", 0))
 	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	if sel_char == &"nyx":
-		sel_char = &"nova"
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
+	if sel_char == &"nyx" or not CharacterDataScript.is_character_playable_rework_ready(sel_char):
+		sel_char = CharacterDataScript.get_default_playable_character_id()
 	var dm: int = int(prof.get("dark_matter", 0))
 	var trophies: Dictionary = prof.get("trophies_unlocked", {})
 	var spd: float = float(prof.get("game_speed", 1.0))
@@ -470,9 +474,9 @@ static func set_career_bosses_killed(count: int, save_facade: Object) -> void:
 	var bio: int = int(prof.get("biomass", 0))
 	var anti: int = int(prof.get("antimatter", 0))
 	var skills: Dictionary = prof.get("character_skills", {})
-	var sel_char: StringName = StringName(str(prof.get("selected_character", "nova")))
-	if count < 10 and sel_char == &"nyx":
-		sel_char = &"nova"
+	var sel_char: StringName = StringName(str(prof.get("selected_character", "valentina")))
+	if (count < 10 and sel_char == &"nyx") or not CharacterDataScript.is_character_playable_rework_ready(sel_char):
+		sel_char = CharacterDataScript.get_default_playable_character_id()
 	var dm: int = int(prof.get("dark_matter", 0))
 	var trophies: Dictionary = prof.get("trophies_unlocked", {})
 	var spd: float = float(prof.get("game_speed", 1.0))

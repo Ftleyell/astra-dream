@@ -9,6 +9,7 @@ extends RefCounted
 
 const PITY_THRESHOLD: int = 10
 const DEFAULT_EPIC_RATE: float = 0.15
+const CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
 
 const BANNERS_CONFIG := {
 	"general": {
@@ -18,8 +19,8 @@ const BANNERS_CONFIG := {
 		"featured_badge": "★ POOL COMPLETO"
 	},
 	"ships": {
-		"title": "🚀 HANGAR DE NAVES Y ARMAS",
-		"desc": "Especialización táctica. Mayor probabilidad de skins para naves de asalto y armamento.",
+		"title": "🪽 HANGAR DE ALAS, NAVES Y ARMAS",
+		"desc": "Especialización táctica. Mayor probabilidad de skins por shader para alas psíquicas y armamento.",
 		"color": Color(1.0, 0.5, 0.1, 1.0),
 		"featured_badge": "★ TÁCTICO NAVAL"
 	},
@@ -52,10 +53,12 @@ static func filter_skins_for_banner(all_skins: Dictionary, banner_id: String) ->
 	var filtered: Array[Dictionary] = []
 	for sid: String in all_skins.keys():
 		var s: Dictionary = all_skins[sid]
+		if not CosmeticsManagerScript.is_skin_eligible_for_gacha(s):
+			continue
 		var cat: String = s.get("category", "")
 		match banner_id:
 			"ships":
-				if cat == "ship" or cat == "weapon":
+				if cat == "ship" or cat == "wings" or cat == "weapon":
 					filtered.append(s)
 			"pilots":
 				if cat == "pilot" or cat == "navigator":

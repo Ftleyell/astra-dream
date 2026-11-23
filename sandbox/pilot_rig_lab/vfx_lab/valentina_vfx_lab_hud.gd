@@ -4,7 +4,7 @@ extends RefCounted
 ## y probar modos de vuelo/ráfaga en la escena aislada ValentinaVFXLab.
 
 
-const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
+const BasePropConfigScript = preload("res://data/pilots/schemas/pilot_base_propulsion_config.gd")
 
 
 static func build_hud(

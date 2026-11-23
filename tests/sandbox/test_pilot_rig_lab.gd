@@ -1,23 +1,23 @@
 extends BaseTestSuite
 
-const PlanarCombatRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const PlanarCombatRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const HudBuilderScript = preload("res://sandbox/pilot_rig_lab/proto/planar_lab_hud_builder.gd")
 const RigCalibrationStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
-const BasePoseConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_pose_config.gd")
-const IdleAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_idle_anim_config.gd")
-const LocomotionAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_locomotion_anim_config.gd")
-const KitingAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_kiting_anim_config.gd")
-const TurnAnimConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_turn_anim_config.gd")
-const JigglePhysicsConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_jiggle_physics_config.gd")
-const BasePoseEvaluatorScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_base_pose_evaluator.gd")
-const KitingEvaluatorScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_kiting_evaluator.gd")
-const ValentinaV2ProfilePath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const ValentinaV2BasePosePath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_pose.tres"
-const ValentinaV2IdleAnimPath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_idle_anim.tres"
-const ValentinaV2LocomotionPath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
-const ValentinaV2KitingPath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
-const ValentinaV2TurnAnimPath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_turn_anim.tres"
-const ValentinaV2JigglePath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
+const BasePoseConfigScript = preload("res://data/pilots/schemas/pilot_base_pose_config.gd")
+const IdleAnimConfigScript = preload("res://data/pilots/schemas/pilot_idle_anim_config.gd")
+const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_locomotion_anim_config.gd")
+const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
+const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
+const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
+const BasePoseEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_base_pose_evaluator.gd")
+const KitingEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_kiting_evaluator.gd")
+const ValentinaV2ProfilePath: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const ValentinaV2BasePosePath: String = "res://data/pilots/valentina_v2/valentina_v2_base_pose.tres"
+const ValentinaV2IdleAnimPath: String = "res://data/pilots/valentina_v2/valentina_v2_idle_anim.tres"
+const ValentinaV2LocomotionPath: String = "res://data/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
+const ValentinaV2KitingPath: String = "res://data/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
+const ValentinaV2TurnAnimPath: String = "res://data/pilots/valentina_v2/valentina_v2_turn_anim.tres"
+const ValentinaV2JigglePath: String = "res://data/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
 
 
 func _ready() -> void:
@@ -63,7 +63,7 @@ func _test_profile_and_metrics() -> PilotRigProfile:
 	assert_true(profile.anim_config != null and profile.anim_config.resource_path.ends_with("valentina_v2_anim_config.tres"), "Valentina v2 must use valentina_v2_anim_config.tres")
 	assert_true(absf(profile.head_outline_width_px - 4.0) < 0.05, "Valentina v2 calibrated head_outline_width_px must be ~4.0 px")
 
-	var metrics_file := FileAccess.open("res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/body_metrics.json", FileAccess.READ)
+	var metrics_file := FileAccess.open("res://assets/pilots/valentina_v2/planar/body_metrics.json", FileAccess.READ)
 	assert_true(metrics_file != null, "Expected Valentina v2 body_metrics.json to exist")
 	var metrics_json: Variant = JSON.parse_string(metrics_file.get_as_text())
 	assert_true(metrics_json is Dictionary, "Expected valid body_metrics.json dictionary")
@@ -254,13 +254,13 @@ func _test_masks_and_profile_geometry(planar: PlanarCombatRig) -> void:
 	]:
 		_assert_zero_upper_arm_peek(views, prof_case)
 
-	var hm_file := FileAccess.open("res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads/heads_metadata.json", FileAccess.READ)
+	var hm_file := FileAccess.open("res://assets/pilots/valentina_v2/planar/heads/heads_metadata.json", FileAccess.READ)
 	assert_true(hm_file != null, "Expected valentina_v2 heads_metadata.json")
 	var hm_dict: Dictionary = JSON.parse_string(hm_file.get_as_text()) as Dictionary
 	var hm_outlines: Dictionary = hm_dict.get("part_outlines", {}) as Dictionary
 	var hf_outline_cfg: Dictionary = hm_outlines.get("head_front", {}) as Dictionary
 	assert_true(not bool(hf_outline_cfg.get("enabled", false)), "Residual Pass 1 part_outlines.head_front must be disabled in heads_metadata.json")
-	var has_head_overrides: bool = FileAccess.file_exists("res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/manual_calibration_overrides.json")
+	var has_head_overrides: bool = FileAccess.file_exists("res://assets/pilots/valentina_v2/planar/manual_calibration_overrides.json")
 	for pair: Array in [["head_front_r", "head_front_l"], ["head_side_r", "head_side_l"], ["head_back_r", "head_back_l"]]:
 		var off_r: Array = (hm_dict[str(pair[0])] as Dictionary)["sprite_offset"] as Array
 		var off_l: Array = (hm_dict[str(pair[1])] as Dictionary)["sprite_offset"] as Array
@@ -289,7 +289,7 @@ func _test_masks_and_profile_geometry(planar: PlanarCombatRig) -> void:
 
 func _assert_zero_upper_arm_peek(views: Dictionary, prof_case: Dictionary) -> void:
 	var p_vk: String = str(prof_case["vk"])
-	var p_meta_f := FileAccess.open("res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/%s/parts_5/parts_5_meta.json" % p_vk, FileAccess.READ)
+	var p_meta_f := FileAccess.open("res://assets/pilots/valentina_v2/planar/%s/parts_5/parts_5_meta.json" % p_vk, FileAccess.READ)
 	assert_true(p_meta_f != null, "Expected %s parts_5_meta.json" % p_vk)
 	var p_meta: Dictionary = JSON.parse_string(p_meta_f.get_as_text()) as Dictionary
 	var ts_p: float = float(p_meta.get("tex_scale", 3.0))

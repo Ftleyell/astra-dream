@@ -12,10 +12,17 @@ const CATEGORY_FILES := {
 }
 const PALETTES_FILE := "res://data/cosmetics/categories/palettes.json"
 const GLOW_SHADER := preload("res://shaders/skin_glow_vfx.gdshader")
+const CharacterDataScript = preload("res://data/characters/character_data.gd")
+const PilotShaderSkinCatalogScript = preload("res://data/pilots/schemas/pilot_shader_skin_catalog.gd")
+const FOLLOW_PILOT_SKIN_ID := "follow_pilot"
+const VALENTINA_V2_CATALOG_PATH := "res://data/pilots/valentina_v2/valentina_v2_skin_catalog.tres"
+const LEGACY_RECOLOR_PALETTES: Array[String] = ["gotica", "soft_pastel", "poison", "solar_valkyrie", "glacial", "cyber_mecha", "crimson_blood"]
 
 static var _cached_database: Dictionary = {}
 static var _is_loaded: bool = false
 static var _discovered_category_files: Dictionary = {}
+static var _shader_catalogs: Dictionary = {}
+static var _shader_entries_by_id: Dictionary = {}
 
 static func discover_category_files() -> Dictionary:
 	var files: Dictionary = {}
@@ -45,6 +52,55 @@ static func discover_category_files() -> Dictionary:
 	_discovered_category_files = files
 	return files
 
+static func _ensure_shader_catalogs_loaded() -> void:
+	if not _shader_catalogs.is_empty():
+		return
+	var roster: Dictionary[StringName, CharacterData] = CharacterDataScript.load_roster()
+	for cid: StringName in roster.keys():
+		var cd: CharacterData = roster[cid]
+		if cd != null and cd.shader_skin_catalog != null:
+			_register_shader_catalog(String(cid).to_lower(), cd.shader_skin_catalog)
+	if not _shader_catalogs.has("valentina") and ResourceLoader.exists(VALENTINA_V2_CATALOG_PATH):
+		var fallback_cat: PilotShaderSkinCatalog = ResourceLoader.load(VALENTINA_V2_CATALOG_PATH) as PilotShaderSkinCatalog
+		if fallback_cat != null:
+			_register_shader_catalog("valentina", fallback_cat)
+
+
+static func _register_shader_catalog(tid_lower: String, catalog: PilotShaderSkinCatalog) -> void:
+	if catalog == null or tid_lower.is_empty():
+		return
+	_shader_catalogs[tid_lower] = catalog
+	for entry: ShaderSkinEntry in catalog.entries:
+		if entry != null and not entry.id.is_empty():
+			_shader_entries_by_id[entry.id] = entry
+
+
+static func _inject_shader_skins_into_dict(skins_dict: Dictionary) -> void:
+	_ensure_shader_catalogs_loaded()
+	if _shader_catalogs.is_empty():
+		return
+	var to_remove: Array[String] = []
+	for sid: Variant in skins_dict.keys():
+		var sid_str: String = str(sid)
+		var entry_v: Variant = skins_dict[sid]
+		if entry_v is Dictionary:
+			var s: Dictionary = entry_v as Dictionary
+			var cat: String = str(s.get("category", ""))
+			var tid: String = str(s.get("target_id", "")).to_lower()
+			if _shader_catalogs.has(tid) and (cat == "pilot" or cat == "ship" or cat == "wings" or cat == "weapon") and not bool(s.get("is_shader_skin", false)):
+				to_remove.append(sid_str)
+	for rem_id: String in to_remove:
+		skins_dict.erase(rem_id)
+
+	for tid: Variant in _shader_catalogs.keys():
+		var catalog: PilotShaderSkinCatalog = _shader_catalogs[tid] as PilotShaderSkinCatalog
+		if catalog == null:
+			continue
+		for entry: ShaderSkinEntry in catalog.entries:
+			if entry != null and not entry.id.is_empty():
+				skins_dict[entry.id] = entry.to_cosmetic_dict()
+
+
 static func load_database() -> Dictionary:
 	if _is_loaded and not _cached_database.is_empty():
 		return _cached_database
@@ -71,6 +127,7 @@ static func load_database() -> Dictionary:
 							merged_db["skins"][sid] = cat_skins[sid]
 					c_file.close()
 
+		_inject_shader_skins_into_dict(merged_db["skins"])
 		if not merged_db["skins"].is_empty():
 			_cached_database = merged_db
 			_is_loaded = true
@@ -85,6 +142,8 @@ static func load_database() -> Dictionary:
 			file.close()
 			if err == OK and parser.data is Dictionary:
 				_cached_database = parser.data
+				if _cached_database.has("skins") and _cached_database["skins"] is Dictionary:
+					_inject_shader_skins_into_dict(_cached_database["skins"])
 				_is_loaded = true
 				return _cached_database
 
@@ -94,20 +153,22 @@ static func load_database() -> Dictionary:
 static func get_category_skins(category: String) -> Dictionary:
 	var category_files := discover_category_files()
 	var path: String = category_files.get(category, "")
+	var result: Dictionary = {}
 	if path != "" and FileAccess.file_exists(path):
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f:
 			var d = JSON.parse_string(f.get_as_text())
 			f.close()
 			if d is Dictionary and d.has("skins"):
-				return d["skins"]
-	var result: Dictionary = {}
-	for s in get_skins_by_category(category):
+				result = (d["skins"] as Dictionary).duplicate()
+	for s: Dictionary in get_skins_by_category(category):
 		result[s.get("id", "")] = s
 	return result
 
 static func reload_database() -> Dictionary:
 	_cached_database.clear()
+	_shader_catalogs.clear()
+	_shader_entries_by_id.clear()
 	_is_loaded = false
 	return load_database()
 
@@ -128,26 +189,155 @@ static func get_skins_by_category(category: String) -> Array[Dictionary]:
 			result.append(s)
 	return result
 
+static func has_shader_skin_catalog(target_id: StringName) -> bool:
+	_ensure_shader_catalogs_loaded()
+	return _shader_catalogs.has(String(target_id).to_lower())
+
+
+static func get_shader_skin_catalog(target_id: StringName) -> PilotShaderSkinCatalog:
+	_ensure_shader_catalogs_loaded()
+	return _shader_catalogs.get(String(target_id).to_lower(), null) as PilotShaderSkinCatalog
+
+
+static func is_shader_skin(skin_or_id: Variant) -> bool:
+	if skin_or_id is Dictionary:
+		return bool((skin_or_id as Dictionary).get("is_shader_skin", false))
+	if skin_or_id is String or skin_or_id is StringName:
+		_ensure_shader_catalogs_loaded()
+		return _shader_entries_by_id.has(String(skin_or_id))
+	return false
+
+
+static func get_skin_preset(skin_id: String) -> PilotSkinPreset:
+	if skin_id.is_empty():
+		return null
+	_ensure_shader_catalogs_loaded()
+	if _shader_entries_by_id.has(skin_id):
+		var entry: ShaderSkinEntry = _shader_entries_by_id[skin_id] as ShaderSkinEntry
+		return entry.preset if entry != null else null
+	return null
+
+
+static func normalize_category_for_target(category: String, target_id: StringName) -> String:
+	if category == "ship" and has_shader_skin_catalog(target_id):
+		return "wings"
+	return category
+
+
+static func is_obsolete_shader_pilot_skin_id(skin_id: String) -> bool:
+	if skin_id.is_empty() or skin_id == "base" or skin_id == "default" or skin_id == FOLLOW_PILOT_SKIN_ID:
+		return false
+	_ensure_shader_catalogs_loaded()
+	if _shader_entries_by_id.has(skin_id):
+		return false
+	var parts: PackedStringArray = skin_id.split("_", false, 2)
+	if parts.size() < 3:
+		return false
+	var prefix: String = parts[0].to_lower()
+	var tid: String = parts[1].to_lower()
+	var pal: String = parts[2].to_lower()
+	if not _shader_catalogs.has(tid):
+		return false
+	if not (prefix in ["pilot", "ship", "wings", "weapon"]):
+		return false
+	return pal in LEGACY_RECOLOR_PALETTES
+
+
+static func resolve_equipped_skin_id(category: String, target_id: StringName) -> String:
+	var tid_lower: String = String(target_id).to_lower()
+	var has_shader: bool = has_shader_skin_catalog(target_id)
+	var norm_cat: String = normalize_category_for_target(category, target_id)
+	var default_id: String = FOLLOW_PILOT_SKIN_ID if (has_shader and (norm_cat == "wings" or norm_cat == "weapon")) else "base"
+	var sm_script: Variant = load("res://core/autoloads/save_manager.gd")
+	if sm_script == null:
+		return default_id
+
+	var eq: String = ""
+	if sm_script.has_method("get_equipped_skin"):
+		if norm_cat == "wings":
+			eq = str(sm_script.get_equipped_skin("wings:" + tid_lower))
+			if eq.is_empty():
+				eq = str(sm_script.get_equipped_skin("ship:" + tid_lower))
+		else:
+			eq = str(sm_script.get_equipped_skin(norm_cat + ":" + tid_lower))
+	if not eq.is_empty() and not is_obsolete_shader_pilot_skin_id(eq):
+		return eq
+
+	if sm_script.has_method("get_character_loadout"):
+		var loadout: Dictionary = sm_script.get_character_loadout(target_id)
+		var l_skin: String = ""
+		match norm_cat:
+			"pilot":
+				l_skin = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "")))
+			"wings", "ship":
+				l_skin = str(loadout.get("equipped_wings_skin", loadout.get("equipped_ship_skin", loadout.get("ship_skin", ""))))
+			"weapon":
+				l_skin = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", "")))
+		if not l_skin.is_empty() and not is_obsolete_shader_pilot_skin_id(l_skin):
+			return l_skin
+
+	return default_id
+
+
+static func resolve_pilot_skin_preset(target_id: StringName, slot_category: String = "pilot") -> PilotSkinPreset:
+	var catalog: PilotShaderSkinCatalog = get_shader_skin_catalog(target_id)
+	if catalog == null:
+		return null
+	var norm_cat: String = normalize_category_for_target(slot_category, target_id)
+	var skin_id: String = resolve_equipped_skin_id(norm_cat, target_id)
+	if (norm_cat == "wings" or norm_cat == "weapon") and (skin_id.is_empty() or skin_id == FOLLOW_PILOT_SKIN_ID):
+		skin_id = resolve_equipped_skin_id("pilot", target_id)
+	return catalog.resolve_preset(skin_id)
+
+
+static func resolve_equipped_skin_stars(category: String, target_id: StringName) -> int:
+	var norm_cat: String = normalize_category_for_target(category, target_id)
+	var skin_id: String = resolve_equipped_skin_id(norm_cat, target_id)
+	if (norm_cat == "wings" or norm_cat == "weapon") and (skin_id.is_empty() or skin_id == FOLLOW_PILOT_SKIN_ID):
+		skin_id = resolve_equipped_skin_id("pilot", target_id)
+	if skin_id.is_empty() or skin_id == "base" or skin_id == "default" or skin_id == FOLLOW_PILOT_SKIN_ID:
+		return 1
+	var sm_script: Variant = load("res://core/autoloads/save_manager.gd")
+	if sm_script != null and sm_script.has_method("get_skin_stars"):
+		var stars: int = int(sm_script.get_skin_stars(skin_id))
+		if stars > 0:
+			return clampi(stars, 1, 3)
+	return 1
+
+
 static func get_skins_for_target(category: String, target_id: String) -> Array[Dictionary]:
 	var skins := get_all_skins()
+	var tid_lower: String = target_id.to_lower()
+	var norm_cat: String = normalize_category_for_target(category, StringName(tid_lower))
 	var result: Array[Dictionary] = []
 	for sid in skins.keys():
 		var s: Dictionary = skins[sid]
-		if s.get("category", "") == category and s.get("target_id", "") == target_id:
+		if str(s.get("category", "")) == norm_cat and str(s.get("target_id", "")).to_lower() == tid_lower:
 			result.append(s)
 	return result
+
+static func is_skin_eligible_for_gacha(skin_data: Dictionary) -> bool:
+	var cat: String = str(skin_data.get("category", ""))
+	if cat == "pilot" or cat == "ship" or cat == "wings" or cat == "weapon":
+		var target_id: StringName = StringName(str(skin_data.get("target_id", "")).to_lower())
+		return CharacterDataScript.is_character_playable_rework_ready(target_id)
+	return true
 
 static func roll_random_skin() -> Dictionary:
 	var skins := get_all_skins()
 	if skins.is_empty():
 		return {}
 	
+	var eligible_skins: Array[Dictionary] = []
 	var common_pool: Array[Dictionary] = []
 	var rare_pool: Array[Dictionary] = []
 	var epic_pool: Array[Dictionary] = []
 	
 	for s_id in skins.keys():
 		var s: Dictionary = skins[s_id]
+		if not is_skin_eligible_for_gacha(s):
+			continue
+		eligible_skins.append(s)
 		var rarity: String = s.get("rarity", "common")
 		if rarity == "epic":
 			epic_pool.append(s)
@@ -155,6 +345,9 @@ static func roll_random_skin() -> Dictionary:
 			rare_pool.append(s)
 		else:
 			common_pool.append(s)
+
+	if eligible_skins.is_empty():
+		return {}
 			
 	var roll := randf()
 	if roll < 0.15 and not epic_pool.is_empty():
@@ -164,22 +357,23 @@ static func roll_random_skin() -> Dictionary:
 	elif not common_pool.is_empty():
 		return common_pool[randi() % common_pool.size()]
 		
-	var all_keys := skins.keys()
-	return skins[all_keys[randi() % all_keys.size()]]
+	return eligible_skins[randi() % eligible_skins.size()]
 
 static func roll_banner_skin(banner_id: String, is_pity: bool = false) -> Dictionary:
 	var skins := get_all_skins()
 	if skins.is_empty():
 		return {}
 
-	# Filtrar pool según el banner temático
+	# Filtrar pool según el banner temático y pilotos listos tras rework
 	var banner_skins: Array[Dictionary] = []
 	for sid in skins.keys():
 		var s: Dictionary = skins[sid]
+		if not is_skin_eligible_for_gacha(s):
+			continue
 		var cat: String = s.get("category", "")
 		match banner_id:
 			"ships":
-				if cat == "ship" or cat == "weapon":
+				if cat == "ship" or cat == "wings" or cat == "weapon":
 					banner_skins.append(s)
 			"pilots":
 				if cat == "pilot" or cat == "navigator":
@@ -236,6 +430,8 @@ static func load_texture(tex_path: String) -> Texture2D:
 	return null
 
 static func get_skin_texture(skin_data: Dictionary) -> Texture2D:
+	if bool(skin_data.get("is_shader_skin", false)):
+		return null
 	var tex_path: String = skin_data.get("texture_path", "")
 	if not tex_path.is_empty():
 		var tex := load_texture(tex_path)

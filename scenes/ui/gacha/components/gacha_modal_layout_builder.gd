@@ -113,7 +113,7 @@ func build_modal_ui(modal: GachaModal) -> void:
 	modal._gacha_content.add_child(modal._banner_buttons_box)
 
 	var banner_keys: Array[String] = ["general", "ships", "pilots"]
-	var banner_labels: Array[String] = ["🌌 BANNER GENERAL", "🚀 HANGAR NAVES", "👩‍✈️ ACADEMIA PILOTOS"]
+	var banner_labels: Array[String] = ["🌌 BANNER GENERAL", "🪽 ALAS Y ARMAS", "👩‍✈️ ACADEMIA PILOTOS"]
 	for i: int in range(banner_keys.size()):
 		var bid: String = banner_keys[i]
 		var b_btn := Button.new()

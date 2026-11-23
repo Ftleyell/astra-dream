@@ -112,3 +112,54 @@ static func get_candidates_in_range(origin: Vector2, radius: float, tree: SceneT
 		return origin.distance_squared_to(a.global_position) < origin.distance_squared_to(b.global_position)
 	)
 	return candidates
+
+
+static func select_passive_target_for_slot(
+	slot_idx: int,
+	target_mode: Enums.TargetMode,
+	origin: Vector2,
+	search_rad: float,
+	primary_target: Node2D,
+	tree: SceneTree
+) -> Node2D:
+	var candidates: Array[Node2D] = get_candidates_in_range(origin, search_rad, tree)
+	if candidates.is_empty():
+		if is_instance_valid(primary_target) and origin.distance_squared_to(primary_target.global_position) <= search_rad * search_rad:
+			return primary_target
+		return null
+
+	if slot_idx == 0 and target_mode == Enums.TargetMode.NEAREST and is_instance_valid(primary_target):
+		return primary_target
+
+	match target_mode:
+		Enums.TargetMode.LOWEST_HEALTH:
+			var lowest: Node2D = null
+			var lowest_hp: float = INF
+			for cand: Node2D in candidates:
+				if "current_health" in cand:
+					var hp: float = float(cand.get("current_health"))
+					if hp < lowest_hp:
+						lowest_hp = hp
+						lowest = cand
+			if lowest != null:
+				return lowest
+			return candidates[mini(maxi(slot_idx, 0), candidates.size() - 1)]
+		Enums.TargetMode.RANDOM:
+			var offset_idx: int = (maxi(slot_idx, 0) + candidates.size() / 2) % candidates.size()
+			return candidates[offset_idx]
+		Enums.TargetMode.HIGHEST_DENSITY:
+			var best_cand: Node2D = candidates[0]
+			var best_neighbors: int = -1
+			const CLUSTER_RAD_SQ: float = 180.0 * 180.0
+			for cand: Node2D in candidates:
+				var neighbors: int = 0
+				for other: Node2D in candidates:
+					if other != cand and cand.global_position.distance_squared_to(other.global_position) <= CLUSTER_RAD_SQ:
+						neighbors += 1
+				if neighbors > best_neighbors:
+					best_neighbors = neighbors
+					best_cand = cand
+			return best_cand
+		_:
+			var clamped_idx: int = mini(maxi(slot_idx, 0), candidates.size() - 1)
+			return candidates[clamped_idx]

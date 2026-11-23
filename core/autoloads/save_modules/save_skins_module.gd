@@ -21,7 +21,7 @@ static func add_gacha_tokens(amount: int, save_manager_ref: Object) -> int:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -55,7 +55,7 @@ static func spend_gacha_tokens(amount: int, save_manager_ref: Object) -> bool:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -110,7 +110,7 @@ static func set_skin_stars(skin_id: String, stars: int, save_manager_ref: Object
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -177,7 +177,7 @@ static func unlock_or_upgrade_skin(skin_id: String, save_manager_ref: Object) ->
 	var unlocked_chars: Array[StringName] = profile.get("unlocked_characters", [])
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -204,6 +204,20 @@ static func equip_skin(slot_key: String, skin_id: String, save_manager_ref: Obje
 		equipped.erase(slot_key)
 	else:
 		equipped[slot_key] = skin_id
+	if slot_key.begins_with("wings:"):
+		var tid: String = slot_key.trim_prefix("wings:")
+		if CosmeticsManager.has_shader_skin_catalog(StringName(tid)):
+			if skin_id.is_empty():
+				equipped.erase("ship:" + tid)
+			else:
+				equipped["ship:" + tid] = skin_id
+	elif slot_key.begins_with("ship:"):
+		var tid: String = slot_key.trim_prefix("ship:")
+		if CosmeticsManager.has_shader_skin_catalog(StringName(tid)):
+			if skin_id.is_empty():
+				equipped.erase("wings:" + tid)
+			else:
+				equipped["wings:" + tid] = skin_id
 
 	var unlocked_items: Array[StringName] = profile.get("unlocked_items", [])
 	var bans: Dictionary = profile.get("character_banlists", {})
@@ -211,7 +225,7 @@ static func equip_skin(slot_key: String, skin_id: String, save_manager_ref: Obje
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -229,13 +243,55 @@ static func equip_skin(slot_key: String, skin_id: String, save_manager_ref: Obje
 		dark_matter, trophies, speed, career, pet, pets, endings, nav, navs,
 		tokens, unlocked_skins, equipped
 	)
+	_sync_equipped_skin_to_loadout(slot_key, skin_id, save_manager_ref)
+
+
+static func _sync_equipped_skin_to_loadout(slot_key: String, skin_id: String, save_manager_ref: Object) -> void:
+	var parts: PackedStringArray = slot_key.split(":")
+	if parts.size() != 2:
+		return
+	var slot_cat: String = parts[0].to_lower()
+	var tid: String = parts[1].to_lower()
+	if tid.is_empty() or not (slot_cat in ["pilot", "wings", "ship", "weapon"]):
+		return
+	var char_id: StringName = StringName(tid)
+	var lo: Dictionary = save_manager_ref.get_character_loadout(char_id)
+	var has_shader: bool = CosmeticsManager.has_shader_skin_catalog(char_id)
+	var sub_default: String = CosmeticsManager.FOLLOW_PILOT_SKIN_ID if has_shader else "base"
+	var dirty: bool = false
+	if slot_cat == "pilot":
+		var pilot_val: String = skin_id if not skin_id.is_empty() else "base"
+		if str(lo.get("equipped_pilot_skin", "")) != pilot_val:
+			lo["equipped_pilot_skin"] = pilot_val
+			dirty = true
+	elif slot_cat == "wings" or slot_cat == "ship":
+		var wings_val: String = skin_id if not skin_id.is_empty() else sub_default
+		if str(lo.get("equipped_wings_skin", "")) != wings_val or str(lo.get("equipped_ship_skin", "")) != wings_val:
+			lo["equipped_wings_skin"] = wings_val
+			lo["equipped_ship_skin"] = wings_val
+			dirty = true
+	elif slot_cat == "weapon":
+		var wpn_val: String = skin_id if not skin_id.is_empty() else sub_default
+		if str(lo.get("equipped_weapon_skin", "")) != wpn_val:
+			lo["equipped_weapon_skin"] = wpn_val
+			dirty = true
+	if dirty:
+		save_manager_ref.set_character_loadout(char_id, lo)
 
 static func unequip_skin(slot_key: String, save_manager_ref: Object) -> void:
 	equip_skin(slot_key, "", save_manager_ref)
 
 static func get_equipped_skin(slot_key: String, profile: Dictionary) -> String:
 	var equipped: Dictionary = profile.get("equipped_skins", {})
-	return str(equipped.get(slot_key, ""))
+	var val: String = str(equipped.get(slot_key, ""))
+	if val.is_empty():
+		if slot_key.begins_with("wings:"):
+			val = str(equipped.get("ship:" + slot_key.trim_prefix("wings:"), ""))
+		elif slot_key.begins_with("ship:"):
+			var tid: String = slot_key.trim_prefix("ship:")
+			if CosmeticsManager.has_shader_skin_catalog(StringName(tid)):
+				val = str(equipped.get("wings:" + tid, ""))
+	return val
 
 static func get_equipped_skins(profile: Dictionary) -> Dictionary:
 	return profile.get("equipped_skins", {})
@@ -248,7 +304,7 @@ static func set_gacha_tokens(amount: int, save_manager_ref: Object) -> void:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -285,7 +341,7 @@ static func unlock_all_skins(star_level: int, save_manager_ref: Object) -> int:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -313,7 +369,7 @@ static func lock_all_skins(save_manager_ref: Object) -> void:
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -348,7 +404,7 @@ static func increment_banner_pity(banner_id: String, amount: int, save_manager_r
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))
@@ -380,7 +436,7 @@ static func reset_banner_pity(banner_id: String, save_manager_ref: Object) -> vo
 	var biomass: int = int(profile.get("biomass", 0))
 	var antimatter: int = int(profile.get("antimatter", 0))
 	var skills: Dictionary = profile.get("character_skills", {})
-	var sel_char: StringName = StringName(str(profile.get("selected_character", "nova")))
+	var sel_char: StringName = StringName(str(profile.get("selected_character", "valentina")))
 	var dark_matter: int = int(profile.get("dark_matter", 0))
 	var trophies: Dictionary = profile.get("trophies_unlocked", {})
 	var speed: float = float(profile.get("game_speed", 1.0))

@@ -2,17 +2,24 @@ class_name HubPlayerController3D
 extends CharacterBody3D
 
 ## HubPlayerController3D.gd
-## Controlador del personaje en tercera persona para explorar el Hub en 3D.
-## Soporta movimiento fluido con WASD, cámara orbital de seguimiento de aventura suave,
-## animación de balanceo para el recorte 2.5D y detección de interacción con [E].
+## Controlador del personaje en tercera persona para explorar el Hub en 2.5D Diorama.
+## Soporta movimiento directo WASD en 8 direcciones Zero-G usando HubRigAvatar3D,
+## cámara fija 2.5D Diorama y detección de interacción con [E].
+
+const HubRigAvatar3DScript = preload("res://scenes/ui/hub/components/hub_rig_avatar_3d.gd")
+const HubCameraController3DScript = preload("res://scenes/ui/hub/components/hub_camera_controller_3d.gd")
+const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
+const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
+const CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
 
 @export var move_speed: float = 7.0
 @export var acceleration: float = 24.0
 @export var friction: float = 18.0
 @export var gravity: float = 20.0
 
-@export var active_character_id: StringName = &"nova"
+@export var active_character_id: StringName = &"valentina"
 @export var is_movement_locked: bool = false
+@export var diorama_config: HubDioramaConfigScript = DEFAULT_DIORAMA_CONFIG
 
 @export_group("Slope & Step Assist")
 @export var max_step_height: float = 0.30 ## Altura máxima de escalón que el jugador sube automáticamente (metros)
@@ -22,15 +29,13 @@ extends CharacterBody3D
 var active_interactable: Area3D = null
 var nearby_interactables: Array[Area3D] = []
 
-@onready var visual_sprite: Sprite3D = $Sprite3D
-@onready var camera: Camera3D = $Camera3D
-@onready var collision_shape: CollisionShape3D = $CollisionShape3D
+var rig_avatar: HubRigAvatar3DScript = null
+var visual_sprite: Sprite3D = null
+@onready var camera: Camera3D = get_node_or_null("Camera3D") as Camera3D
+@onready var collision_shape: CollisionShape3D = get_node_or_null("CollisionShape3D") as CollisionShape3D
 var shadow_sprite: Sprite3D = null
 
-const SPRITE_BASE_Y: float = 0.04
-
-var _walk_cycle: float = 0.0
-var _cam_offset: Vector3 = Vector3(0.0, 3.2, 5.0)
+var _facing_dir_2d: Vector2 = Vector2.DOWN
 
 
 func _ready() -> void:
@@ -45,13 +50,17 @@ func _ready() -> void:
 	floor_block_on_wall = true
 
 	_setup_collision()
-	_setup_sprite()
+	_setup_avatar()
 	_setup_camera()
+
+
+func _resolve_diorama_config() -> HubDioramaConfigScript:
+	return diorama_config if diorama_config != null else DEFAULT_DIORAMA_CONFIG
 
 
 func _setup_collision() -> void:
 	if not collision_shape:
-		collision_shape = get_node_or_null("CollisionShape3D")
+		collision_shape = get_node_or_null("CollisionShape3D") as CollisionShape3D
 	if not collision_shape:
 		collision_shape = CollisionShape3D.new()
 		collision_shape.name = "CollisionShape3D"
@@ -63,25 +72,48 @@ func _setup_collision() -> void:
 		add_child(collision_shape)
 
 
-func _setup_sprite() -> void:
-	if not visual_sprite:
-		visual_sprite = get_node_or_null("Sprite3D")
-	if not visual_sprite:
-		visual_sprite = Sprite3D.new()
-		visual_sprite.name = "Sprite3D"
-		add_child(visual_sprite)
+func _setup_avatar() -> void:
+	var cfg: HubDioramaConfigScript = _resolve_diorama_config()
+	rig_avatar = get_node_or_null("HubRigAvatar3D") as HubRigAvatar3DScript
+	if rig_avatar == null:
+		rig_avatar = HubRigAvatar3DScript.new() as HubRigAvatar3DScript
+		rig_avatar.name = "HubRigAvatar3D"
+		rig_avatar.diorama_config = cfg
+		add_child(rig_avatar)
+	else:
+		rig_avatar.diorama_config = cfg
 
-	visual_sprite.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
-	visual_sprite.shaded = false
-	visual_sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
-	visual_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-	visual_sprite.pixel_size = 0.0013
-	visual_sprite.offset = Vector2(0, 800)
-	visual_sprite.position = Vector3(0, SPRITE_BASE_Y, 0)
-	visual_sprite.render_priority = 2
+	var legacy_sprite: Node = get_node_or_null("Sprite3D")
+	if legacy_sprite != null:
+		remove_child(legacy_sprite)
+		legacy_sprite.queue_free()
+
+	if not CharacterData.is_character_playable_rework_ready(active_character_id):
+		active_character_id = CharacterData.get_default_playable_character_id()
+
+	var profile: PilotRigProfile = _resolve_pilot_profile(active_character_id)
+	rig_avatar.load_pilot_profile(profile)
+	refresh_equipped_skin()
+	visual_sprite = rig_avatar.get_sprite_3d()
+
+	var light_dir: Vector3 = _get_light_direction()
+	var light_2d_raw := Vector2(-light_dir.x, light_dir.y)
+	var light_2d: Vector2 = light_2d_raw.normalized() if light_2d_raw.length_squared() > 0.0001 else cfg.hub_light_dir_2d
+	rig_avatar.set_light_dir_2d(light_2d)
+	rig_avatar.set_motion_state(_facing_dir_2d, 0.0, _facing_dir_2d, true)
 
 	_setup_shadow()
-	_update_character_texture()
+
+
+func _resolve_pilot_profile(char_id: StringName) -> PilotRigProfile:
+	var roster: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
+	var cd: CharacterData = roster.get(char_id, null)
+	if cd != null and cd.pilot_rig_profile != null:
+		return cd.pilot_rig_profile
+	var cfg: HubDioramaConfigScript = _resolve_diorama_config()
+	if ResourceLoader.exists(cfg.default_profile_path):
+		return ResourceLoader.load(cfg.default_profile_path) as PilotRigProfile
+	return null
 
 
 const SILHOUETTE_SHADOW_SHADER = preload("res://shaders/character_silhouette_shadow.gdshader")
@@ -121,7 +153,7 @@ func _setup_shadow() -> void:
 
 	shadow_sprite.axis = Vector3.AXIS_Y
 	shadow_sprite.shaded = false
-	shadow_sprite.pixel_size = 0.0013
+	shadow_sprite.pixel_size = _resolve_diorama_config().avatar_pixel_size
 	# Altura a 0.035 para descansar limpia sobre el suelo (top mesh en Y=0.0253)
 	shadow_sprite.position = Vector3(0.0, 0.035, 0.0)
 	shadow_sprite.render_priority = 1
@@ -163,25 +195,26 @@ func _update_shadow_projection() -> void:
 func _sync_shadow_texture() -> void:
 	if not shadow_sprite or not visual_sprite:
 		return
-	shadow_sprite.texture = visual_sprite.texture
-	shadow_sprite.flip_h = visual_sprite.flip_h
+	var tex: Texture2D = rig_avatar.get_viewport_texture() if rig_avatar != null else visual_sprite.texture
+	shadow_sprite.texture = tex
+	shadow_sprite.flip_h = false
 	shadow_sprite.pixel_size = visual_sprite.pixel_size
 	shadow_sprite.offset = visual_sprite.offset
-	if _shadow_mat and visual_sprite.texture:
-		_shadow_mat.set_shader_parameter("texture_albedo", visual_sprite.texture)
+	if _shadow_mat and tex:
+		_shadow_mat.set_shader_parameter("texture_albedo", tex)
 	_update_shadow_projection()
 
 
 func _update_shadow_hop(hop_factor: float, delta: float) -> void:
 	if not shadow_sprite:
 		return
-	# Contracción dinámica: al subir la piloto en el saltito, la sombra se contrae ~12%
+	# Contracción dinámica: al subir la piloto en levitación, la sombra se contrae ~12%
 	var scale_mult: float = 1.0 - (hop_factor * 0.12)
 	var target_scale := Vector3(_shadow_proj_scale.x * scale_mult, 1.0, _shadow_proj_scale.z * scale_mult)
 	shadow_sprite.scale = shadow_sprite.scale.lerp(target_scale, clampf(14.0 * delta, 0.0, 1.0))
 
 	# Atenuación dinámica: al subir, la sombra se hace sutilmente más tenue
-	var target_alpha := lerpf(SHADOW_BASE_ALPHA, SHADOW_HOP_ALPHA, hop_factor)
+	var target_alpha: float = lerpf(SHADOW_BASE_ALPHA, SHADOW_HOP_ALPHA, hop_factor)
 	_current_shadow_alpha = lerpf(_current_shadow_alpha, target_alpha, clampf(14.0 * delta, 0.0, 1.0))
 	if _shadow_mat:
 		_shadow_mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, _current_shadow_alpha))
@@ -189,83 +222,46 @@ func _update_shadow_hop(hop_factor: float, delta: float) -> void:
 
 func _setup_camera() -> void:
 	if not camera:
-		camera = get_node_or_null("Camera3D")
+		camera = get_node_or_null("Camera3D") as Camera3D
 	if not camera:
 		camera = Camera3D.new()
 		camera.name = "Camera3D"
 		add_child(camera)
 
-	camera.fov = 85.0
-	camera.current = true
-	camera.top_level = true # Desacoplar para seguimiento suave sin giros rígidos
-	camera.global_position = global_position + _cam_offset
-	camera.look_at(global_position + Vector3(0, 1.2, 0), Vector3.UP)
+	var target_pos: Vector3 = global_position if is_inside_tree() else position
+	HubCameraController3DScript.configure_diorama_camera(camera, target_pos, _resolve_diorama_config())
 
 
 func set_character(char_id: StringName) -> void:
-	active_character_id = char_id
-	_is_facing_back = false
-	_update_character_texture()
-
-
-const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
-
-var _is_facing_back: bool = false
-
-func _update_character_texture() -> void:
-	if not visual_sprite:
-		return
-	var cid := String(active_character_id).to_lower()
-	var slot_key := "pilot:" + cid
-	var equipped_skin := SaveManager.get_equipped_skin(slot_key)
-	if equipped_skin != "" and SaveManager.is_skin_unlocked(equipped_skin):
-		var stars := SaveManager.get_skin_stars(equipped_skin)
-		CosmeticsManager.apply_skin_to_sprite3d(visual_sprite, equipped_skin, stars, _is_facing_back, false)
-		visual_sprite.pixel_size = 0.0013
-		visual_sprite.offset = Vector2(0, 800)
-		_sync_shadow_texture()
-		return
-
-	# Fallback original (sin skin)
-	visual_sprite.material_override = null
-	if _is_facing_back:
-		var back_path := "res://assets/characters/fullbody/fullbody_%s_back.png" % cid
-		if ResourceLoader.exists(back_path):
-			visual_sprite.texture = load(back_path)
-			visual_sprite.pixel_size = 0.0013
-			visual_sprite.offset = Vector2(0, 800)
-			_sync_shadow_texture()
-			return
-
-	var fullbody_path := "res://assets/characters/fullbody/fullbody_%s.png" % cid
-	if ResourceLoader.exists(fullbody_path):
-		visual_sprite.texture = load(fullbody_path)
-		visual_sprite.pixel_size = 0.0013
-		visual_sprite.offset = Vector2(0, 800)
-	else:
-		var portrait_path := "res://assets/portraits/portrait_%s.png" % cid
-		if ResourceLoader.exists(portrait_path):
-			visual_sprite.texture = load(portrait_path)
-			visual_sprite.pixel_size = 0.005
-			visual_sprite.offset = Vector2(0, 256)
+	var resolved_id: StringName = char_id
+	if not CharacterData.is_character_playable_rework_ready(resolved_id):
+		resolved_id = CharacterData.get_default_playable_character_id()
+	active_character_id = resolved_id
+	if rig_avatar != null:
+		var profile: PilotRigProfile = _resolve_pilot_profile(resolved_id)
+		rig_avatar.load_pilot_profile(profile)
+		refresh_equipped_skin()
+		visual_sprite = rig_avatar.get_sprite_3d()
 	_sync_shadow_texture()
 
 
-# Orientación y transición de cámara en el Hangar Doble
-var _is_in_south_wing: bool = false
-var _cam_flip_t: float = 0.0 ## 0.0 = Mirando al Norte (Hangar Original), 1.0 = Mirando al Sur (Hangar Espejado)
+func refresh_equipped_skin() -> void:
+	if rig_avatar == null:
+		return
+	var preset: PilotSkinPreset = CosmeticsManagerScript.resolve_pilot_skin_preset(active_character_id, "pilot")
+	var stars: int = CosmeticsManagerScript.resolve_equipped_skin_stars("pilot", active_character_id)
+	if preset != null:
+		rig_avatar.apply_skin_preset(preset, stars)
+
+
+func set_input_direction_for_test(dir_xz: Vector2, speed_norm: float = 1.0, snap_instant: bool = true) -> void:
+	if dir_xz.length_squared() > 0.002:
+		_facing_dir_2d = dir_xz.normalized()
+	if rig_avatar != null:
+		rig_avatar.set_motion_state(_facing_dir_2d, clampf(speed_norm, 0.0, 1.5), _facing_dir_2d, snap_instant)
+
 
 func _physics_process(delta: float) -> void:
-	# Detección del hangar según posición Z con histeresis alrededor de la compuerta (Z = 16.8)
-	if not _is_in_south_wing and global_position.z > 17.6:
-		_is_in_south_wing = true
-	elif _is_in_south_wing and global_position.z < 16.0:
-		_is_in_south_wing = false
-
-	# Interpolación continua de la orientación de cámara (transición suave de 180°)
-	var target_flip: float = 1.0 if _is_in_south_wing else 0.0
-	_cam_flip_t = move_toward(_cam_flip_t, target_flip, delta * 2.8)
-
 	# Aplicar gravedad
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -275,62 +271,32 @@ func _physics_process(delta: float) -> void:
 	if is_movement_locked:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
+		if rig_avatar != null:
+			rig_avatar.set_motion_state(_facing_dir_2d, 0.0, _facing_dir_2d, false)
+			_update_shadow_hop(rig_avatar.get_hover_factor(), delta)
 		move_and_slide()
 		_update_camera(delta)
 		return
 
-	# Lectura de inputs de movimiento adaptados a la perspectiva de la cámara
-	# Al voltear la cámara 180°, 'W' (arriba en pantalla) avanza hacia el fondo visual (sur en el ala nueva, norte en la original)
-	# y 'D' (derecha en pantalla) mueve a la derecha de la perspectiva del jugador de forma 100% intuitiva.
+	# Lectura directa WASD en plano XZ alineada a la cámara fija 2.5D Diorama
 	var raw_x: float = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
 	var raw_z: float = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
-
-	# Detección de orientación frente/espalda respecto a la perspectiva de la cámara
-	# raw_z < -0.1 indica avance hacia el fondo (opuesto a la cámara)
-	# raw_z > 0.1 indica avance hacia el frente (en dirección a la cámara)
-	# Si abs(raw_z) <= 0.1 (movimiento puramente lateral o reposo), se conserva la orientación actual
-	if raw_z < -0.1:
-		if not _is_facing_back:
-			_is_facing_back = true
-			_update_character_texture()
-	elif raw_z > 0.1:
-		if _is_facing_back:
-			_is_facing_back = false
-			_update_character_texture()
-
-	# Ángulo de vista de cámara en el plano horizontal según _cam_flip_t (0° a 180°)
-	var cam_yaw: float = _cam_flip_t * PI
-	var input_x: float = raw_x * cos(cam_yaw) - raw_z * sin(cam_yaw)
-	var input_z: float = raw_x * sin(cam_yaw) + raw_z * cos(cam_yaw)
-
-	var input_dir := Vector3(input_x, 0.0, input_z).normalized()
+	var raw_vec := Vector3(raw_x, 0.0, raw_z)
+	var input_dir: Vector3 = raw_vec.normalized() if raw_vec.length_squared() > 0.01 else Vector3.ZERO
 
 	if input_dir.length_squared() > 0.01:
-		var target_vel := input_dir * move_speed
+		var target_vel: Vector3 = input_dir * move_speed
 		velocity.x = move_toward(velocity.x, target_vel.x, acceleration * delta)
 		velocity.z = move_toward(velocity.z, target_vel.z, acceleration * delta)
-
-		if absf(input_x) > 0.1:
-			var should_flip: bool = (input_x < 0.0)
-			if visual_sprite and visual_sprite.flip_h != should_flip:
-				visual_sprite.flip_h = should_flip
-				if shadow_sprite:
-					shadow_sprite.flip_h = should_flip
-
-		# Animación ligera de balanceo del recorte 2.5D al caminar
-		_walk_cycle += delta * 12.0
-		var hop_phase: float = absf(sin(_walk_cycle * 2.0))
-		if visual_sprite:
-			visual_sprite.rotation.z = sin(_walk_cycle) * 0.08
-			visual_sprite.position.y = SPRITE_BASE_Y + hop_phase * 0.06
-		_update_shadow_hop(hop_phase, delta)
+		_facing_dir_2d = Vector2(input_dir.x, input_dir.z).normalized()
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
-		if visual_sprite:
-			visual_sprite.rotation.z = move_toward(visual_sprite.rotation.z, 0.0, delta * 4.0)
-			visual_sprite.position.y = move_toward(visual_sprite.position.y, SPRITE_BASE_Y, delta * 2.0)
-		_update_shadow_hop(0.0, delta)
+
+	var speed_norm: float = clampf(Vector2(velocity.x, velocity.z).length() / maxf(move_speed, 0.01), 0.0, 1.0)
+	if rig_avatar != null:
+		rig_avatar.set_motion_state(_facing_dir_2d, speed_norm, _facing_dir_2d, false)
+		_update_shadow_hop(rig_avatar.get_hover_factor(), delta)
 
 	# Asistencia de ascenso automático de pequeños escalones y plataformas bajas
 	if auto_step_climb and is_on_floor() and not is_movement_locked:
@@ -377,47 +343,8 @@ func _handle_step_climb(delta: float) -> void:
 func _update_camera(delta: float) -> void:
 	if not camera:
 		return
-
-	# Factor de aproximación a los grandes ventanales exteriores:
-	# Ventanal Norte (Z = -10.0) y Ventanal Sur espejado (Z = 43.6)
-	var prox_north: float = clampf((-global_position.z - 2.0) / 7.5, 0.0, 1.0)
-	var prox_south: float = clampf((global_position.z - 33.5) / 7.5, 0.0, 1.0)
-	var window_proximity: float = maxf(prox_north, prox_south)
-
-	# 1. Zoom Dinámico: reduce el FOV al acercarse a cualquiera de los ventanales
-	var target_fov: float = lerpf(85.0, 68.0, window_proximity)
-	camera.fov = lerpf(camera.fov, target_fov, clampf(6.0 * delta, 0.0, 1.0))
-
-	# 2. Desplazamiento dinámico de cámara con inversión orbital de 180°
-	# Offset base Norte: (0, 3.2, 5.0) -> mirando hacia Z negativo
-	# Offset base Sur: (0, 3.2, -5.0) -> mirando hacia Z positivo
-	var cur_dist_z: float = lerpf(5.0, 3.8, window_proximity)
-	var cur_offset_y: float = lerpf(3.2, 3.6, window_proximity)
-
-	# Rotación continua del offset alrededor del eje Y entre 0 y PI
-	var flip_angle: float = _cam_flip_t * PI
-	var offset_x: float = cur_dist_z * sin(flip_angle) * 0.4 # leve arco para evitar atravesar la cabeza
-	var offset_z: float = cur_dist_z * cos(flip_angle)
-
-	var target_cam_pos := global_position + Vector3(offset_x, cur_offset_y, offset_z)
-
-	# Limitar cámara dentro de la nave extendida (de Z = -6.5 hasta Z = 40.0 en el ala sur, o Z = 13.0 en el hangar norte)
-	var max_z: float = 40.0 if _is_in_south_wing else 13.0
-	target_cam_pos.z = clampf(target_cam_pos.z, -6.5, max_z)
-	target_cam_pos.x = clampf(target_cam_pos.x, -9.0, 9.0)
-	target_cam_pos.y = clampf(target_cam_pos.y, 2.2, 4.8)
-
-	# Suavizado elástico en 3ª persona
-	var weight := clampf(7.5 * delta, 0.0, 1.0)
-	camera.global_position = camera.global_position.lerp(target_cam_pos, weight)
-	camera.global_position.z = clampf(camera.global_position.z, -6.5, max_z)
-	camera.global_position.x = clampf(camera.global_position.x, -9.0, 9.0)
-	camera.global_position.y = clampf(camera.global_position.y, 2.2, 4.8)
-
-	# 3. Elevación del punto de mira al acercarse a un ventanal panorámico
-	var look_y: float = lerpf(1.2, 1.9, window_proximity)
-	var look_target := global_position + Vector3(0.0, look_y, 0.0)
-	camera.look_at(look_target, Vector3.UP)
+	var target_pos: Vector3 = global_position if is_inside_tree() else position
+	HubCameraController3DScript.update_diorama_camera(camera, target_pos, delta, _resolve_diorama_config())
 
 
 func _check_interactables() -> void:

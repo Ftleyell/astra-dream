@@ -11,6 +11,8 @@ signal hero_cancelled()
 const SHOWCASE_SHADER: Shader = preload("res://shaders/pilot_showcase_hologram.gdshader")
 const SCREEN_BLUR_SHADER: Shader = preload("res://shaders/screen_blur.gdshader")
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const LiveBannerViewportScript = preload("res://scenes/ui/character_select/components/character_live_banner_viewport.gd")
+const DEFAULT_HINT_TEXT: String = "✦ [A / D] NAVEGAR  ✦  [ESPACIO / DOBLE CLIC] CONFIRMAR HÉROE  ✦  [ESC] SALIR"
 
 @onready var dim_overlay: ColorRect = $DimOverlay
 @onready var hero_preview_texture: TextureRect = $DimOverlay/CenterContainer/CenterVBox/PreviewHolder/HeroPreview
@@ -51,7 +53,9 @@ var _card_buttons: Array[Button] = []
 var _last_click_msec: int = 0
 var _last_clicked_index: int = -1
 var _preview_tween: Tween = null
+var _confirm_tween: Tween = null
 var _is_confirming: bool = false
+var live_banner_viewport: CharacterLiveBannerViewport = null
 
 
 func _ready() -> void:
@@ -68,6 +72,13 @@ func _ready() -> void:
 		dim_overlay.material = mat
 
 	_setup_backlight()
+	if hero_preview_texture and hero_preview_texture.get_parent():
+		live_banner_viewport = LiveBannerViewportScript.new() as CharacterLiveBannerViewport
+		live_banner_viewport.name = "HeroLiveBannerViewport"
+		live_banner_viewport.visible = false
+		var p_holder: Node = hero_preview_texture.get_parent()
+		p_holder.add_child(live_banner_viewport)
+		p_holder.move_child(live_banner_viewport, hero_preview_texture.get_index() + 1)
 
 
 func _setup_backlight() -> void:
@@ -96,9 +107,13 @@ func open_picker(p_roster: Array[CharacterData], p_current_id: StringName, p_ini
 	_is_confirming = false
 	show()
 
+	var target_id: StringName = p_current_id
+	if not CharacterData.is_character_playable_rework_ready(target_id):
+		target_id = CharacterData.get_default_playable_character_id()
+
 	_current_index = 0
 	for i in range(_roster.size()):
-		if _roster[i].character_id == p_current_id:
+		if _roster[i].character_id == target_id:
 			_current_index = i
 			break
 
@@ -113,10 +128,15 @@ func open_picker(p_roster: Array[CharacterData], p_current_id: StringName, p_ini
 func close_picker() -> void:
 	if not is_open:
 		return
+	var was_confirming: bool = _is_confirming
 	is_open = false
 	_is_confirming = false
 	if _preview_tween and _preview_tween.is_valid():
 		_preview_tween.kill()
+	if _confirm_tween and _confirm_tween.is_valid():
+		_confirm_tween.kill()
+	if live_banner_viewport != null and not was_confirming:
+		live_banner_viewport.reset_select_sequence()
 	hide()
 
 
@@ -177,13 +197,32 @@ func _select_index(idx: int) -> void:
 func _confirm_selection() -> void:
 	if not is_open or _is_confirming or _roster.is_empty():
 		return
-	_is_confirming = true
 	var char_data: CharacterData = _roster[_current_index]
 	var cid: StringName = char_data.character_id
+	if not char_data.is_playable_rework_ready or not SaveManager.is_character_unlocked(cid):
+		var audio_deny: Node = get_node_or_null("/root/AudioManager")
+		if audio_deny and audio_deny.has_method("play_sfx"):
+			audio_deny.play_sfx(&"ui_error", 0.0, 0.9)
+		return
+
+	_is_confirming = true
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx(&"ui_click", 0.0, 1.15)
+
+	if live_banner_viewport != null and live_banner_viewport.visible:
+		live_banner_viewport.trigger_select_sequence()
+		if DisplayServer.get_name() != "headless":
+			if _confirm_tween and _confirm_tween.is_valid():
+				_confirm_tween.kill()
+			_confirm_tween = create_tween()
+			_confirm_tween.tween_interval(0.52)
+			_confirm_tween.tween_callback(func() -> void:
+				close_picker()
+				hero_confirmed.emit.call_deferred(cid)
+			)
+			return
 
 	close_picker()
 	hero_confirmed.emit.call_deferred(cid)
@@ -211,7 +250,7 @@ func _build_dock_cards() -> void:
 	for i in range(_roster.size()):
 		var c_data: CharacterData = _roster[i]
 		var cid: StringName = c_data.character_id
-		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
+		var is_rework_ready: bool = c_data.is_playable_rework_ready
 
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(104, 104)
@@ -220,10 +259,33 @@ func _build_dock_cards() -> void:
 		btn.expand_icon = true
 		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		btn.tooltip_text = c_data.display_name.to_upper()
+		btn.tooltip_text = c_data.display_name.to_upper() if is_rework_ready else ("%s — EN REWORK" % c_data.display_name.to_upper())
 		btn.pivot_offset = Vector2(52, 52)
 		btn.set_meta(&"char_data", c_data)
 		btn.set_meta(&"roster_index", i)
+
+		if not is_rework_ready:
+			var badge := Label.new()
+			badge.name = "ReworkBadge"
+			badge.text = "EN REWORK"
+			badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			badge.anchor_left = 0.0
+			badge.anchor_top = 1.0
+			badge.anchor_right = 1.0
+			badge.anchor_bottom = 1.0
+			badge.offset_top = -20.0
+			badge.offset_bottom = -3.0
+			badge.offset_left = 4.0
+			badge.offset_right = -4.0
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.add_theme_font_size_override("font_size", 10)
+			badge.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35, 1.0))
+			var badge_bg := StyleBoxFlat.new()
+			badge_bg.bg_color = Color(0.05, 0.06, 0.10, 0.90)
+			badge_bg.set_corner_radius_all(4)
+			badge.add_theme_stylebox_override("normal", badge_bg)
+			btn.add_child(badge)
 
 		var card_idx: int = i
 		btn.pressed.connect(func() -> void:
@@ -278,6 +340,9 @@ func _update_card_highlights() -> void:
 			continue
 		var is_selected: bool = (roster_idx == _current_index)
 		var is_unlocked: bool = SaveManager.is_character_unlocked(c_data.character_id)
+		var is_rework_ready: bool = c_data.is_playable_rework_ready
+		var is_active_pilot: bool = is_unlocked and is_rework_ready
+		btn.modulate = Color.WHITE if is_rework_ready else Color(0.45, 0.48, 0.54, 0.78)
 
 		var sb := StyleBoxFlat.new()
 		sb.set_corner_radius_all(10)
@@ -296,9 +361,9 @@ func _update_card_highlights() -> void:
 			sb.border_width_top = 3
 			sb.border_width_right = 3
 			sb.border_width_bottom = 3
-			sb.border_color = c_data.color
+			sb.border_color = c_data.color if is_rework_ready else Color(0.42, 0.46, 0.54, 0.85)
 			sb.bg_color = Color(0.04, 0.09, 0.14, 0.98)
-			sb.shadow_color = c_data.color * Color(1, 1, 1, 0.5)
+			sb.shadow_color = (c_data.color * Color(1, 1, 1, 0.5)) if is_rework_ready else Color(0.25, 0.28, 0.35, 0.35)
 			sb.shadow_size = 8
 			btn.scale = Vector2(1.10, 1.10)
 		else:
@@ -306,14 +371,14 @@ func _update_card_highlights() -> void:
 			sb.border_width_top = 2
 			sb.border_width_right = 2
 			sb.border_width_bottom = 2
-			sb.border_color = (c_data.color * Color(1, 1, 1, 0.45) if is_unlocked else Color(0.25, 0.3, 0.35, 0.5))
+			sb.border_color = (c_data.color * Color(1, 1, 1, 0.45) if is_active_pilot else Color(0.32, 0.35, 0.42, 0.65))
 			sb.bg_color = Color(0.025, 0.04, 0.07, 0.92)
 			sb.shadow_size = 0
 			btn.scale = Vector2.ONE
 
 		btn.add_theme_stylebox_override("normal", sb)
 		var hover_sb := sb.duplicate() as StyleBoxFlat
-		if not is_selected and is_unlocked:
+		if not is_selected and is_active_pilot:
 			hover_sb.border_color = c_data.color * Color(1, 1, 1, 0.85)
 			hover_sb.bg_color = Color(0.035, 0.065, 0.1, 0.95)
 		btn.add_theme_stylebox_override("hover", hover_sb)
@@ -326,39 +391,75 @@ func _update_selected_hero() -> void:
 	var c_data: CharacterData = _roster[_current_index]
 	var cid: StringName = c_data.character_id
 	var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
+	var is_rework_ready: bool = c_data.is_playable_rework_ready
+	var is_active_pilot: bool = is_unlocked and is_rework_ready
 	var theme_col: Color = c_data.color if c_data else Color(0.2, 0.9, 1.0)
 
 	hero_name_label.text = c_data.display_name.to_upper()
-	hero_name_label.modulate = theme_col
-	hero_title_label.text = c_data.title if not c_data.title.is_empty() else "Piloto de la Flota Estelar"
+	hero_name_label.modulate = theme_col if is_rework_ready else Color(0.62, 0.66, 0.72, 1.0)
+	var base_title: String = c_data.title if not c_data.title.is_empty() else "Piloto de la Flota Estelar"
+	hero_title_label.text = base_title if is_rework_ready else ("%s  ·  [EN REWORK]" % base_title)
+
+	if hint_label:
+		if not is_rework_ready:
+			hint_label.text = "EN REWORK — PILOTO TEMPORALMENTE NO DISPONIBLE"
+			hint_label.modulate = Color(0.95, 0.72, 0.32, 1.0)
+		elif not is_unlocked:
+			hint_label.text = "PILOTO BLOQUEADA — DESBLOQUEA EN PROGRESIÓN"
+			hint_label.modulate = Color(0.95, 0.45, 0.45, 1.0)
+		else:
+			hint_label.text = DEFAULT_HINT_TEXT
+			hint_label.modulate = Color.WHITE
 
 	if hero_backlight:
-		hero_backlight.modulate = Color(theme_col.r, theme_col.g, theme_col.b, 0.55 if is_unlocked else 0.15)
+		hero_backlight.modulate = Color(theme_col.r, theme_col.g, theme_col.b, 0.55 if is_active_pilot else 0.12)
 
-	# Artwork y shader holográfico centrado
-	var tex: Texture2D = c_data.get_selection_texture(false) if c_data.has_method("get_selection_texture") else c_data.get_fullbody_texture(false)
-	if not tex:
-		tex = c_data.get_portrait_texture()
-	hero_preview_texture.texture = tex
+	if c_data.live_banner_config != null and live_banner_viewport != null:
+		if _preview_tween and _preview_tween.is_valid():
+			_preview_tween.kill()
+		live_banner_viewport.load_banner(c_data.live_banner_config, c_data.pilot_rig_profile)
+		var pilot_preset: PilotSkinPreset = CosmeticsManager.resolve_pilot_skin_preset(cid, "pilot")
+		var pilot_stars: int = CosmeticsManager.resolve_equipped_skin_stars("pilot", cid)
+		live_banner_viewport.apply_skin_preset(pilot_preset, pilot_stars)
+		var wings_skin_id: String = CosmeticsManager.resolve_equipped_skin_id("wings", cid)
+		var wings_override: PilotSkinPreset = null
+		var wings_stars: int = pilot_stars
+		if not wings_skin_id.is_empty() and wings_skin_id != CosmeticsManager.FOLLOW_PILOT_SKIN_ID:
+			wings_override = CosmeticsManager.resolve_pilot_skin_preset(cid, "wings")
+			wings_stars = CosmeticsManager.resolve_equipped_skin_stars("wings", cid)
+		live_banner_viewport.apply_wings_skin_preset(wings_override, wings_stars)
+		live_banner_viewport.reset_select_sequence()
+		live_banner_viewport.visible = true
+		live_banner_viewport.modulate = Color.WHITE if is_active_pilot else Color(0.32, 0.35, 0.42, 0.78)
+		hero_preview_texture.visible = false
+	else:
+		if live_banner_viewport != null:
+			live_banner_viewport.visible = false
+		hero_preview_texture.visible = true
+		# Artwork y shader holográfico centrado
+		var tex: Texture2D = c_data.get_selection_texture(false) if c_data.has_method("get_selection_texture") else c_data.get_fullbody_texture(false)
+		if not tex:
+			tex = c_data.get_portrait_texture()
+		hero_preview_texture.texture = tex
 
-	var mat := ShaderMaterial.new()
-	mat.shader = SHOWCASE_SHADER
-	mat.set_shader_parameter("rim_color", theme_col)
-	var is_valentina: bool = (cid == &"valentina")
-	mat.set_shader_parameter("bottom_fade_start", 0.78 if is_valentina else 0.90)
-	hero_preview_texture.material = mat
-	hero_preview_texture.modulate = Color.WHITE if is_unlocked else Color(0.25, 0.25, 0.35, 0.85)
+		var mat := ShaderMaterial.new()
+		mat.shader = SHOWCASE_SHADER
+		mat.set_shader_parameter("rim_color", theme_col)
+		var is_valentina: bool = (cid == &"valentina")
+		mat.set_shader_parameter("bottom_fade_start", 0.78 if is_valentina else 0.90)
+		hero_preview_texture.material = mat
+		hero_preview_texture.modulate = Color.WHITE if is_active_pilot else Color(0.32, 0.35, 0.42, 0.78)
 
-	# Animación de entrada suave
-	if _preview_tween and _preview_tween.is_valid():
-		_preview_tween.kill()
-	if hero_preview_texture.size != Vector2.ZERO:
-		hero_preview_texture.pivot_offset = hero_preview_texture.size * 0.5
-	hero_preview_texture.scale = Vector2(0.96, 0.96)
-	hero_preview_texture.modulate.a = 0.5
-	_preview_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_preview_tween.tween_property(hero_preview_texture, "scale", Vector2.ONE, 0.16)
-	_preview_tween.tween_property(hero_preview_texture, "modulate:a", 1.0, 0.16)
+		# Animación de entrada suave
+		if _preview_tween and _preview_tween.is_valid():
+			_preview_tween.kill()
+		if hero_preview_texture.size != Vector2.ZERO:
+			hero_preview_texture.pivot_offset = hero_preview_texture.size * 0.5
+		hero_preview_texture.scale = Vector2(0.96, 0.96)
+		hero_preview_texture.modulate.a = 0.5
+		_preview_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_preview_tween.tween_property(hero_preview_texture, "scale", Vector2.ONE, 0.16)
+		_preview_tween.tween_property(hero_preview_texture, "modulate:a", 1.0 if is_active_pilot else 0.78, 0.16)
 
 	_update_combat_dossier(c_data)
 

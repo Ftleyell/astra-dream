@@ -8,8 +8,8 @@ extends BaseTestSuite
 ## 5. Limpieza y expiración total de copias tras lifetime.
 
 const VFX_LAB_SCENE_PATH: String = "res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab.tscn"
-const BasePropCtrlScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_base_propulsion_controller.gd")
-const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
+const BasePropCtrlScript = preload("res://scenes/pilots/vfx/valentina_base_propulsion_controller.gd")
+const BasePropConfigScript = preload("res://data/pilots/schemas/pilot_base_propulsion_config.gd")
 
 
 func _ready() -> void:
@@ -241,8 +241,8 @@ func _run_tests() -> void:
 	)
 
 	# 8. Estandarización Multi-Piloto en PlanarCombatRig (enable_base_propulsion_wings = true vía PilotRigProfile)
-	var std_rig: PlanarCombatRig = (load("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd") as Script).new() as PlanarCombatRig
-	var std_profile: PilotRigProfile = load("res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres") as PilotRigProfile
+	var std_rig: PlanarCombatRig = (load("res://scenes/pilots/rig/planar_combat_rig.gd") as Script).new() as PlanarCombatRig
+	var std_profile: PilotRigProfile = load("res://data/pilots/valentina_v2/valentina_v2_profile.tres") as PilotRigProfile
 	assert_true(std_profile != null and std_profile.base_propulsion_config != null, "valentina_v2_profile.tres debe enlazar base_propulsion_config")
 	std_rig.pilot_profile = std_profile
 	std_rig.enable_base_propulsion_wings = true

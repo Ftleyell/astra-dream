@@ -2,10 +2,10 @@ extends BaseTestSuite
 ## Suite de verificación para el laboratorio 3D Cel-Shaded (Valentina3DLab — Alas Astral Seraph 3D).
 
 const LAB_SCENE_PATH: String = "res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab.tscn"
-const WingsCtrlScript = preload("res://sandbox/pilot_rig_lab/3d_lab/astral_wings_3d_controller.gd")
-const MeshBuilderScript = preload("res://sandbox/pilot_rig_lab/3d_lab/astral_wings_3d_mesh_builder.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_wings_3d_config.gd")
-const SkinPresetScript = preload("res://sandbox/pilot_rig_lab/data/pilot_skin_preset.gd")
+const WingsCtrlScript = preload("res://scenes/pilots/vfx/astral_wings_3d_controller.gd")
+const MeshBuilderScript = preload("res://scenes/pilots/vfx/astral_wings_3d_mesh_builder.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_wings_3d_config.gd")
+const SkinPresetScript = preload("res://data/pilots/schemas/pilot_skin_preset.gd")
 
 
 func _ready() -> void:
@@ -106,11 +106,11 @@ func _run_tests() -> void:
 	assert_true(ctrl.get_active_skin_id() == "emerald_test", "Debe sincronizar skin personalizada en las alas 3D")
 
 	# 8. Estandarización Multi-Piloto en PlanarCombatRig (enable_3d_wings vía PilotRigProfile)
-	var std_profile: PilotRigProfile = load("res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres") as PilotRigProfile
+	var std_profile: PilotRigProfile = load("res://data/pilots/valentina_v2/valentina_v2_profile.tres") as PilotRigProfile
 	assert_true(std_profile != null and std_profile.wings_3d_config != null, "valentina_v2_profile.tres debe enlazar wings_3d_config")
 	assert_true(std_profile.prefer_3d_wings == true, "valentina_v2_profile.tres debe preferir alas 3D estandarizadas")
 
-	var std_rig: PlanarCombatRig = (load("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd") as Script).new() as PlanarCombatRig
+	var std_rig: PlanarCombatRig = (load("res://scenes/pilots/rig/planar_combat_rig.gd") as Script).new() as PlanarCombatRig
 	std_rig.pilot_profile = std_profile
 	std_rig.enable_3d_wings = true
 	add_child(std_rig)

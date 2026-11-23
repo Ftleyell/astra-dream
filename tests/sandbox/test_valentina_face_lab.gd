@@ -1,11 +1,11 @@
 extends BaseTestSuite
 
-const FaceConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_anim_config.gd")
+const FaceConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
 const FaceRigScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_rig.gd")
-const FaceAnimatorScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_animator.gd")
-const PlanarCombatRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const FaceAnimatorScript = preload("res://scenes/pilots/rig/valentina_face_animator.gd")
+const PlanarCombatRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const FaceLabScenePath: String = "res://sandbox/pilot_rig_lab/face_lab/valentina_face_lab.tscn"
-const FaceAnimTresPath: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_face_anim.tres"
+const FaceAnimTresPath: String = "res://data/pilots/valentina_v2/valentina_v2_face_anim.tres"
 
 
 func _ready() -> void:
@@ -68,7 +68,7 @@ func _test_face_rig_hierarchy_and_masks() -> void:
 			assert_true(np_uv.x > 0.1 and np_uv.x < 0.9 and np_uv.y > 0.3 and np_uv.y < 0.95, "Invalid neck_pivot_uv on %s" % hk)
 
 	# Standardized Deep Amethyst verification across base head textures & metadata (for both static & live rigs)
-	var heads_dir: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/heads"
+	var heads_dir: String = "res://assets/pilots/valentina_v2/planar/heads"
 	var eye_meta: Dictionary = rig.MeshBuilderScript.load_json_dict("%s/eye_live2d_meta.json" % heads_dir)
 	var std_heads: Array[String] = ["head_front", "head_front_r", "head_front_l", "head_side_r", "head_side"]
 	for hk: String in std_heads:

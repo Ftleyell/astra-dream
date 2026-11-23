@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PilotHairPreset" format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_hair_preset.gd" id="1_33i58"]
+
+[resource]
+script = ExtResource("1_33i58")
+id = "04_lucy_pink"
+label = "Color Pelo 4: Rosa Pastel Cyberpunk (Lucy)"
+override_color = true
+hair_color = Color(1, 0.48, 0.76, 1)
+hair_secondary_color = Color(0, 0.94, 1, 1)

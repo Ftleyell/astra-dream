@@ -28,3 +28,7 @@ passive_behavior_type = &"crescent_slash"
 scales_with_projectile_count = true
 active_scales_with_projectiles = false
 passive_scales_with_projectiles = true
+orbital_armor_color = Color(0.92, 0.86, 0.98, 1)
+orbital_chassis_color = Color(0.18, 0.09, 0.24, 1)
+orbital_crystal_color = Color(0.92, 0.18, 0.96, 1)
+orbital_mesh_id = &"rail_lance"

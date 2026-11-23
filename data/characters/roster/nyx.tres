@@ -15,6 +15,7 @@ starting_weapon = ExtResource("3_wpn")
 color = Color(0.9, 0.25, 1, 1)
 pts = PackedVector2Array(-35, -45, 0, -65, 35, -45, 25, 45, 0, 25, -25, 45)
 sort_order = 6
+is_playable_rework_ready = false
 stats_summary = "HP: 110 | Vel: 350 px/s | Daño: 48 (Melee) | Crítico: 15% | Cortes: Escala con Proyectiles"
 max_health = 110.0
 health_regen = 0.6

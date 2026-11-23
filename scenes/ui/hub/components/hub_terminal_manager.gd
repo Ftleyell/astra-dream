@@ -116,6 +116,8 @@ func setup_gacha_terminal() -> void:
 		gacha_modal.name = "GachaModal"
 		hub_ui.add_child(gacha_modal)
 		gacha_modal.modal_closed.connect(_on_gacha_modal_closed)
+		if gacha_modal.has_signal("skin_equipped"):
+			gacha_modal.skin_equipped.connect(_on_gacha_skin_equipped)
 
 func update_mission_terminal_label() -> void:
 	if not mission_interactable or not mission_interactable.label_3d:
@@ -208,6 +210,17 @@ func _on_gacha_interacted(_interactable: HubInteractable3D, _player: Node3D) -> 
 func _on_gacha_modal_closed() -> void:
 	if hub and hub.has_method("_on_modal_closed"):
 		hub.call("_on_modal_closed")
+
+
+func _on_gacha_skin_equipped(_slot_key: String, _skin_id: String) -> void:
+	if not is_instance_valid(hub):
+		return
+	var pc: Variant = hub.get("player_controller")
+	if pc != null and is_instance_valid(pc) and pc.has_method("refresh_equipped_skin"):
+		pc.call("refresh_equipped_skin")
+	var sc: Variant = hub.get("showcase_controller")
+	if sc != null and is_instance_valid(sc) and sc.has_method("refresh_pedestal_skins"):
+		sc.call("refresh_pedestal_skins", hub.get("PILOT_ROSTER"))
 
 func process_terminal_holos(delta: float, idle_time: float) -> void:
 	if mission_holo_core and is_instance_valid(mission_holo_core):

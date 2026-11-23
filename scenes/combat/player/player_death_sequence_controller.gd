@@ -39,6 +39,8 @@ func trigger_death_sequence(player: CharacterBody2D) -> void:
 	var lcb := player.get_node_or_null("LaserChargeBar")
 	if lcb:
 		lcb.hide()
+	if player.has_method("has_rig_v2") and player.has_rig_v2():
+		player.get_rig_v2_controller().on_player_died()
 
 	# Desactivar colisiones
 	var col := player.get_node_or_null("CollisionShape2D") as CollisionShape2D

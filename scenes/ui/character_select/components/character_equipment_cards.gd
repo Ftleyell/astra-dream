@@ -8,16 +8,22 @@ extends RefCounted
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 const NavigatorDataScript = preload("res://data/navigators/navigator_data.gd")
+const ShaderSkinLivePreviewScript = preload("res://scenes/ui/cosmetics/components/shader_skin_live_preview.gd")
 
 var ship_card: PanelContainer = null
 var ship_icon: TextureRect = null
+var ship_title: Label = null
 var ship_name: Label = null
 var ship_button: Button = null
 
 var weapon_card: PanelContainer = null
 var weapon_icon: TextureRect = null
+var weapon_title: Label = null
 var weapon_name: Label = null
 var weapon_button: Button = null
+
+var wings_live_preview: ShaderSkinLivePreview = null
+var weapon_live_preview: ShaderSkinLivePreview = null
 
 var pet_card: PanelContainer = null
 var pet_icon: TextureRect = null
@@ -40,6 +46,8 @@ func setup_from_root(
 	p_on_nav_pressed: Callable
 ) -> void:
 	var base_path: String = "MarginContainer/RootVBox/MainWorkspace/LeftCommandPanel/TabContentPanel/TabMargin/TwoColumnWorkspace/LoadoutView/"
+	ship_title = root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipLabelVBox/ShipTitle") as Label
+	weapon_title = root.get_node_or_null(base_path + "ChassisWeaponRow/WeaponCard/WeaponMargin/WeaponBox/WeaponLabelVBox/WeaponTitle") as Label
 	setup_ship_and_weapon(
 		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard") as PanelContainer,
 		root.get_node_or_null(base_path + "ChassisWeaponRow/ShipCard/ShipMargin/ShipBox/ShipIcon") as TextureRect,
@@ -223,9 +231,99 @@ func setup_card_hover_feedback(btn: Button, card: PanelContainer, glow_color: Co
 	btn.focus_exited.connect(on_unhighlight)
 
 
+func _ensure_card_preview(icon_host: TextureRect, existing: ShaderSkinLivePreview, node_name: String) -> ShaderSkinLivePreview:
+	if existing != null and is_instance_valid(existing):
+		return existing
+	if icon_host == null:
+		return null
+	var preview: ShaderSkinLivePreview = ShaderSkinLivePreviewScript.new() as ShaderSkinLivePreview
+	preview.name = node_name
+	preview.custom_minimum_size = Vector2(160, 160)
+	preview.size = Vector2(160, 160)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	icon_host.add_child(preview)
+	return preview
+
+
+func _resolve_skin_badge_suffix(skin_id: String) -> String:
+	if skin_id.is_empty() or skin_id == CosmeticsManager.FOLLOW_PILOT_SKIN_ID:
+		return "Seguir Piloto"
+	if skin_id == "base" or skin_id == "default":
+		return "Base"
+	var info: Dictionary = CosmeticsManager.get_skin(skin_id)
+	var s_name: String = str(info.get("skin_name", ""))
+	return s_name if not s_name.is_empty() else skin_id
+
+
 func update_equipment(data: CharacterData, char_id: StringName) -> void:
 	if not data:
 		return
+
+	if data.has_shader_skins():
+		var catalog: PilotShaderSkinCatalog = data.shader_skin_catalog
+		var prof: PilotRigProfile = data.pilot_rig_profile
+		if prof == null and ResourceLoader.exists("res://data/pilots/valentina_v2/valentina_v2_profile.tres"):
+			prof = ResourceLoader.load("res://data/pilots/valentina_v2/valentina_v2_profile.tres") as PilotRigProfile
+
+		if ship_title:
+			ship_title.text = catalog.wings_slot_title
+		if weapon_title:
+			weapon_title.text = catalog.weapon_slot_title
+
+		var wings_skin_id: String = CosmeticsManager.resolve_equipped_skin_id("wings", char_id)
+		var wings_preset: PilotSkinPreset = CosmeticsManager.resolve_pilot_skin_preset(char_id, "wings")
+		var wings_stars: int = CosmeticsManager.resolve_equipped_skin_stars("wings", char_id)
+		if ship_icon:
+			wings_live_preview = _ensure_card_preview(ship_icon, wings_live_preview, "WingsCardLivePreview")
+			if wings_live_preview != null:
+				wings_live_preview.configure("wings", prof, Vector2i(160, 160))
+				wings_live_preview.apply_skin_preset(wings_preset, wings_stars, false)
+				wings_live_preview.visible = true
+				wings_live_preview.set_preview_paused(false)
+				var w_vp: SubViewport = wings_live_preview.get_preview_viewport()
+				ship_icon.texture = w_vp.get_texture() if w_vp != null else null
+			if not wings_skin_id.is_empty() and wings_skin_id != "base" and wings_skin_id != CosmeticsManager.FOLLOW_PILOT_SKIN_ID:
+				CosmeticsManager.apply_skin_to_canvas_item(ship_icon, wings_skin_id, wings_stars, false)
+			else:
+				ship_icon.material = null
+		if ship_name:
+			ship_name.text = "%s · %s" % [catalog.wings_slot_display_name, _resolve_skin_badge_suffix(wings_skin_id)]
+
+		var weapon_skin_id: String = CosmeticsManager.resolve_equipped_skin_id("weapon", char_id)
+		var weapon_preset: PilotSkinPreset = CosmeticsManager.resolve_pilot_skin_preset(char_id, "weapon")
+		var weapon_stars: int = CosmeticsManager.resolve_equipped_skin_stars("weapon", char_id)
+		if weapon_icon:
+			weapon_live_preview = _ensure_card_preview(weapon_icon, weapon_live_preview, "WeaponCardLivePreview")
+			if weapon_live_preview != null:
+				weapon_live_preview.configure("weapon", prof, Vector2i(160, 160))
+				weapon_live_preview.apply_skin_preset(weapon_preset, weapon_stars, false)
+				weapon_live_preview.visible = true
+				weapon_live_preview.set_preview_paused(false)
+				var g_vp: SubViewport = weapon_live_preview.get_preview_viewport()
+				weapon_icon.texture = g_vp.get_texture() if g_vp != null else null
+			if not weapon_skin_id.is_empty() and weapon_skin_id != "base" and weapon_skin_id != CosmeticsManager.FOLLOW_PILOT_SKIN_ID:
+				CosmeticsManager.apply_skin_to_canvas_item(weapon_icon, weapon_skin_id, weapon_stars, false)
+			else:
+				weapon_icon.material = null
+		if weapon_name:
+			var base_w_name: String = data.starting_weapon.weapon_name if (data.starting_weapon != null and not data.starting_weapon.weapon_name.is_empty()) else catalog.weapon_slot_display_name
+			weapon_name.text = "%s · %s" % [base_w_name, _resolve_skin_badge_suffix(weapon_skin_id)]
+
+		refresh_pet_display(char_id)
+		refresh_navigator_display(char_id)
+		return
+
+	if ship_title:
+		ship_title.text = "NAVE"
+	if weapon_title:
+		weapon_title.text = "ARMA INICIAL"
+	if wings_live_preview != null and is_instance_valid(wings_live_preview):
+		wings_live_preview.set_preview_paused(true)
+		wings_live_preview.visible = false
+	if weapon_live_preview != null and is_instance_valid(weapon_live_preview):
+		weapon_live_preview.set_preview_paused(true)
+		weapon_live_preview.visible = false
 
 	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
 

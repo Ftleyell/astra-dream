@@ -210,16 +210,18 @@ func update_character_abilities(data: CharacterData) -> void:
 		passive_block_icon.texture = data.get_passive_texture()
 
 
-func update_terminal_lock_state(is_unlocked: bool) -> void:
-	if not is_unlocked:
+func update_terminal_lock_state(can_deploy: bool, is_rework_ready: bool = true) -> void:
+	if not can_deploy:
 		if orbital_terminal:
+			orbital_terminal.disabled = true
 			orbital_terminal.focus_mode = Control.FOCUS_NONE
-			orbital_terminal.active_telemetry_text = "/// PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN DE FLOTA /// PROTOCOLO RESTRINGIDO /// "
+			orbital_terminal.active_telemetry_text = "/// PILOTO EN REWORK // ACCESO RESTRINGIDO /// " if not is_rework_ready else "/// PILOTO BLOQUEADA // REQUIERE AUTORIZACIÓN DE FLOTA /// PROTOCOLO RESTRINGIDO /// "
 			orbital_terminal._update_telemetry_metrics()
 		if loadout_button:
 			loadout_button.disabled = true
 	else:
 		if orbital_terminal:
+			orbital_terminal.disabled = false
 			orbital_terminal.focus_mode = Control.FOCUS_ALL
 			orbital_terminal.active_telemetry_text = OrbitalIgnitionTerminal.BASE_TELEMETRY
 			orbital_terminal._update_telemetry_metrics()
@@ -239,6 +241,9 @@ func update_dock_highlights(
 		var is_current: bool = (cid == current_char_id)
 		var c_data: CharacterData = roster_dict.get(cid, null)
 		var c_unlocked: bool = SaveManager.is_character_unlocked(cid)
+		var c_ready: bool = c_data.is_playable_rework_ready if c_data else false
+		var c_active: bool = c_unlocked and c_ready
+		btn.modulate = Color.WHITE if c_ready else Color(0.48, 0.50, 0.56, 0.78)
 		var sb: StyleBox = btn.get_theme_stylebox("normal")
 		if sb is StyleBoxFlat:
 			var dup: StyleBoxFlat = sb.duplicate() as StyleBoxFlat
@@ -246,18 +251,18 @@ func update_dock_highlights(
 			dup.border_width_top = 2
 			dup.border_width_right = 2
 			dup.border_width_bottom = 2
-			if is_current:
+			if is_current and c_ready:
 				dup.border_color = c_data.color if c_data else Color(0, 1, 0.85, 1)
 				dup.bg_color = Color(0.04, 0.08, 0.12, 0.96)
 				dup.shadow_color = (c_data.color * Color(1, 1, 1, 0.4)) if c_data else Color(0, 0.8, 1, 0.3)
 				dup.shadow_size = 6
 			else:
-				dup.border_color = (c_data.color * Color(1, 1, 1, 0.4) if c_unlocked else Color(0.2, 0.25, 0.3, 0.5)) if c_data else Color(0.2, 0.4, 0.6, 0.5)
+				dup.border_color = (c_data.color * Color(1, 1, 1, 0.4) if c_active else Color(0.32, 0.35, 0.42, 0.65)) if c_data else Color(0.2, 0.4, 0.6, 0.5)
 				dup.bg_color = Color(0.025, 0.04, 0.07, 0.92)
 				dup.shadow_size = 0
 			btn.add_theme_stylebox_override("normal", dup)
 			var hover_dup: StyleBoxFlat = dup.duplicate() as StyleBoxFlat
-			if not is_current and c_data:
+			if not is_current and c_data and c_ready:
 				hover_dup.border_color = c_data.color * Color(1, 1, 1, 0.85)
 				hover_dup.bg_color = Color(0.035, 0.065, 0.1, 0.95)
 			btn.add_theme_stylebox_override("hover", hover_dup)

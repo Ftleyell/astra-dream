@@ -28,3 +28,7 @@ passive_behavior_type = &"shockwave"
 scales_with_projectile_count = false
 active_scales_with_projectiles = false
 passive_scales_with_projectiles = false
+orbital_armor_color = Color(0.8, 0.76, 0.86, 1)
+orbital_chassis_color = Color(0.1, 0.06, 0.16, 1)
+orbital_crystal_color = Color(0.78, 0.12, 0.68, 1)
+orbital_mesh_id = &"rail_lance"

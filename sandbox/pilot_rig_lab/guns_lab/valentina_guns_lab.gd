@@ -3,16 +3,16 @@ extends Node2D
 ## Prueba un anillo orbital 3D inclinado alrededor de Valentina v2 con Z-sorting real,
 ## perspectiva trapezoidal, escorzo, extrusión 2.5D, recoil y 1..4 slots simultáneos.
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
-const RingCtrlScript = preload("res://sandbox/pilot_rig_lab/guns_lab/orbital_weapon_ring_controller.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_orbital_weapon_config.gd")
+const RingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
-const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
-const RING_TEXTURE_PATH: String = "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_mecha_ring_packed.png"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
+const STYLES_DIR: String = "res://data/pilots/styles"
+const RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
 
 const WEAPON_CATALOG: Array[Dictionary] = [
 	{
@@ -21,10 +21,10 @@ const WEAPON_CATALOG: Array[Dictionary] = [
 	},
 	{
 		"label": "Valentina v2 — Rail-Lance 2.5D (Multi-Mapa)",
-		"path": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance.png",
-		"id_mask": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_id_mask.png",
-		"ilm_mask": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_ilm_mask.png",
-		"ink_sdf": "res://sandbox/pilot_rig_lab/combat_assets/valentina_v2_planar/weapons/valentina_rail_lance_ink_sdf.png",
+		"path": "res://assets/pilots/valentina_v2/planar/weapons/valentina_rail_lance.png",
+		"id_mask": "res://assets/pilots/valentina_v2/planar/weapons/valentina_rail_lance_id_mask.png",
+		"ilm_mask": "res://assets/pilots/valentina_v2/planar/weapons/valentina_rail_lance_ilm_mask.png",
+		"ink_sdf": "res://assets/pilots/valentina_v2/planar/weapons/valentina_rail_lance_ink_sdf.png",
 	},
 	{"label": "Legacy — Valentina Railgun (HD)", "path": "res://assets/characters/weapons/weapon_valentina_hd.png"},
 	{"label": "Echo — Rifle (HD)", "path": "res://assets/characters/weapons/weapon_echo_hd.png"},

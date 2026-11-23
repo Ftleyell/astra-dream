@@ -230,17 +230,22 @@ func test_hub_gacha_modal_and_pulls() -> void:
 	test_assert(gacha_modal._active_tab == 1, "Debe estar en la pestaña de Armario")
 	test_assert(gacha_modal._hide_locked_check != null, "El CheckBox _hide_locked_check debe existir")
 
-	# Desbloquear una skin de prueba
-	var test_ship_skin := "ship_nova_gotica"
+	# Desbloquear una skin de prueba elegible (Valentina — Alas por Shader)
+	var test_ship_skin := "wings_valentina_blood_eclipse"
 	SaveManager.unlock_or_upgrade_skin(test_ship_skin)
-	SaveManager.equip_skin("ship:nova", test_ship_skin)
-	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_ship_skin, "Debe estar equipada la skin de prueba")
+	SaveManager.equip_skin("wings:valentina", test_ship_skin)
+	test_assert(SaveManager.get_equipped_skin("wings:valentina") == test_ship_skin, "Debe estar equipada la skin de prueba")
 
-	# Con toggle inactivo: muestra todas las skins (186)
+	# Con toggle inactivo: muestra únicamente skins elegibles (Valentina + Pets + Navegantes)
 	gacha_modal._hide_locked = false
 	gacha_modal._filter_wardrobe("all")
+	var all_skins_dict: Dictionary = CosmeticsManager.get_all_skins()
+	var expected_eligible: int = 0
+	for sid_chk: String in all_skins_dict.keys():
+		if CosmeticsManager.is_skin_eligible_for_gacha(all_skins_dict[sid_chk]):
+			expected_eligible += 1
 	var count_all: int = gacha_modal._wardrobe_grid.get_child_count()
-	test_assert(count_all >= 180, "Con toggle desactivado deben mostrarse todas las skins en la colección (actual: %d)" % count_all)
+	test_assert(count_all == expected_eligible and count_all > 0, "Armario debe mostrar exactamente las skins elegibles (%d/%d)" % [count_all, expected_eligible])
 
 	# Con toggle activo: solo muestra desbloqueadas
 	gacha_modal._hide_locked = true
@@ -250,8 +255,8 @@ func test_hub_gacha_modal_and_pulls() -> void:
 	test_assert(count_unlocked >= 1, "Al menos la skin desbloqueada debe ser visible")
 
 	# Probar desequipar
-	SaveManager.unequip_skin("ship:nova")
-	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "La skin de ship:nova debe haberse desequipado correctamente")
+	SaveManager.unequip_skin("wings:valentina")
+	test_assert(SaveManager.get_equipped_skin("wings:valentina").is_empty(), "La skin de wings:valentina debe haberse desequipado correctamente")
 
 	gacha_modal.queue_free()
 	await get_tree().process_frame
@@ -302,8 +307,8 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	test_assert(charsel.cosmetic_carousel_modal.is_open == true, "CosmeticCarouselModal debe abrirse al presionar ShipButton")
 	test_assert(charsel.cosmetic_carousel_modal.visible == true, "CosmeticCarouselModal debe estar visible")
 
-	# Equipar una skin de prueba desde el modal unificado
-	var test_skin_id := "ship_nova_crimson_void"
+	# Equipar una skin de prueba desde el modal unificado (Valentina — Alas por Shader)
+	var test_skin_id := "wings_valentina_crimson_nebula"
 	SaveManager.unlock_or_upgrade_skin(test_skin_id)
 	SaveManager.unlock_or_upgrade_skin(test_skin_id) # 2 estrellas (Glow)
 	charsel.cosmetic_carousel_modal.select_skin_by_id_for_test(test_skin_id)
@@ -311,15 +316,15 @@ func test_character_select_skin_buttons_and_modal() -> void:
 	charsel.cosmetic_carousel_modal.equip_current_for_test()
 	await get_tree().process_frame
 
-	test_assert(SaveManager.get_equipped_skin("ship:nova") == test_skin_id, "SaveManager debe registrar la skin equipada para ship:nova")
-	charsel._select_character(&"nova")
+	test_assert(SaveManager.get_equipped_skin("ship:valentina") == test_skin_id, "SaveManager debe registrar la skin equipada para ship:valentina")
+	charsel._select_character(&"valentina")
 	test_assert(charsel.ship_icon.material is ShaderMaterial, "ship_icon debe tener el shader aplicado para la skin 2★")
 
 	# Probar equipar por defecto (desequipar)
 	charsel.cosmetic_carousel_modal.unequip_to_default_for_test()
 	await get_tree().process_frame
-	test_assert(SaveManager.get_equipped_skin("ship:nova").is_empty(), "SaveManager no debe tener skin equipada tras unequip_to_default")
-	charsel._select_character(&"nova")
+	test_assert(SaveManager.get_equipped_skin("ship:valentina").is_empty(), "SaveManager no debe tener skin equipada tras unequip_to_default")
+	charsel._select_character(&"valentina")
 	test_assert(charsel.ship_icon.material == null, "ship_icon debe volver a material nulo tras desequipar")
 
 	# Probar carrusel de skins de piloto

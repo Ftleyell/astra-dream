@@ -240,34 +240,87 @@ func trigger_instant_salvo() -> void:
 	for inst: WeaponInstanceData in equipped_weapons:
 		_dispatch_weapon_active_fire(inst, aim_dir, false, 0.0)
 
+func get_primary_aim_world_pos() -> Vector2:
+	var mouse_world: Vector2 = get_global_mouse_position()
+	if equipped_weapons.is_empty():
+		if targeting.is_manual_aim or Input.is_action_pressed("fire_active"):
+			return mouse_world
+		if is_instance_valid(targeting.current_locked_target):
+			return targeting.current_locked_target.global_position
+		return mouse_world
+	return get_slot_aim_world_pos(0)
+
+
+func get_slot_aim_world_pos(slot_idx: int) -> Vector2:
+	var inst: WeaponInstanceData = equipped_weapons[slot_idx] if (slot_idx >= 0 and slot_idx < equipped_weapons.size()) else null
+	return targeting.get_slot_aim_world_pos(
+		slot_idx,
+		inst,
+		global_position,
+		get_global_mouse_position(),
+		player,
+		Input.is_action_pressed("fire_active"),
+		get_tree()
+	)
+
+
 func _dispatch_weapon_active_fire(inst: WeaponInstanceData, aim_dir: Vector2, is_focused: bool, charge_ratio: float) -> void:
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
+	var slot_idx: int = equipped_weapons.find(inst)
+	var spawn_origin: Vector2 = global_position
+	var eff_aim_dir: Vector2 = aim_dir
+	var mouse_world: Vector2 = get_global_mouse_position()
+	var use_v2: bool = player != null and player.has_method("has_rig_v2") and player.has_rig_v2()
+	if use_v2 and slot_idx >= 0:
+		spawn_origin = player.get_weapon_muzzle_world_pos(slot_idx)
+		var min_reaim: float = player.get_muzzle_reaim_min_dist() if player.has_method("get_muzzle_reaim_min_dist") else 48.0
+		if mouse_world.distance_to(spawn_origin) >= min_reaim:
+			eff_aim_dir = (mouse_world - spawn_origin).normalized()
 	projectile_factory.dispatch_active_fire(
 		inst,
-		aim_dir,
+		eff_aim_dir,
 		is_focused,
 		charge_ratio,
 		max_charge_time,
 		player,
-		global_position,
-		get_global_mouse_position(),
+		spawn_origin,
+		mouse_world,
 		spawn_parent
 	)
+	if use_v2 and slot_idx >= 0 and player.has_method("notify_weapon_fired"):
+		player.notify_weapon_fired(slot_idx, eff_aim_dir, true)
 
 func _dispatch_weapon_passive_fire(inst: WeaponInstanceData) -> void:
 	var spawn_parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
-	var p_aim_info: Dictionary = targeting.get_passive_aim_info(global_position, get_global_mouse_position(), player, rotation, get_tree())
+	var slot_idx: int = equipped_weapons.find(inst)
+	var spawn_origin: Vector2 = global_position
+	var mouse_world: Vector2 = get_global_mouse_position()
+	var use_v2: bool = player != null and player.has_method("has_rig_v2") and player.has_rig_v2()
+	if use_v2 and slot_idx >= 0 and inst != null and inst.weapon_data != null and inst.weapon_data.passive_behavior_type != &"shockwave":
+		spawn_origin = player.get_weapon_muzzle_world_pos(slot_idx)
+	var p_aim_info: Dictionary = targeting.get_passive_aim_info_for_slot(
+		slot_idx,
+		inst,
+		spawn_origin,
+		mouse_world,
+		player,
+		rotation,
+		get_tree()
+	)
 	projectile_factory.dispatch_passive_fire(
 		inst,
 		p_aim_info,
 		targeting.is_manual_aim,
-		get_global_mouse_position(),
+		mouse_world,
 		get_autoaim_range(),
 		player,
-		global_position,
+		spawn_origin,
 		self,
 		spawn_parent
 	)
+	if use_v2 and slot_idx >= 0 and player.has_method("notify_weapon_fired"):
+		var fire_dir: Vector2 = p_aim_info.get("direction", Vector2.RIGHT) as Vector2
+		player.notify_weapon_fired(slot_idx, fire_dir, false)
 
 func _exit_tree() -> void:
 	targeting.clear_stutter_field()

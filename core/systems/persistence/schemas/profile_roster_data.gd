@@ -3,6 +3,9 @@ extends RefCounted
 
 ## Schema DTO tipado para pilotos, acompañantes, cosméticos y equipamiento del perfil.
 
+const CharacterDataScript = preload("res://data/characters/character_data.gd")
+const CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
+
 const DEFAULT_ITEMS: Array[StringName] = [
 	&"botas", &"espada", &"escudo", &"corazon", &"manzana",
 	&"iman", &"gafas", &"lupa", &"guante", &"trebol", &"carcaj",
@@ -45,7 +48,7 @@ var unlocked_items: Array[StringName] = []
 var unlocked_characters: Array[StringName] = []
 var character_banlists: Dictionary = {}
 var character_skills: Dictionary = {}
-var selected_character: StringName = &"nova"
+var selected_character: StringName = &"valentina"
 var selected_pet: StringName = &"mochi"
 var unlocked_pets: Array[StringName] = []
 var selected_navigator: StringName = &"lyra"
@@ -66,7 +69,7 @@ static func create_default() -> RefCounted:
 		&"valentina": [&"manzana"] as Array[StringName]
 	}
 	roster.character_skills = {}
-	roster.selected_character = &"nova"
+	roster.selected_character = &"valentina"
 	roster.selected_pet = &"mochi"
 	roster.unlocked_pets = DEFAULT_PETS.duplicate()
 	roster.selected_navigator = &"lyra"
@@ -82,21 +85,24 @@ static func create_default() -> RefCounted:
 func _generate_default_loadouts() -> Dictionary:
 	var loadouts: Dictionary = {}
 	for c_name in ROSTER_PILOTS:
+		var has_shader: bool = CosmeticsManagerScript.has_shader_skin_catalog(c_name)
+		var default_sub_slot: String = CosmeticsManagerScript.FOLLOW_PILOT_SKIN_ID if has_shader else "base"
 		loadouts[String(c_name)] = {
 			"selected_pet": &"mochi",
 			"selected_navigator": &"lyra",
 			"equipped_pet_skin": "",
 			"equipped_navigator_skin": "",
-			"equipped_ship_skin": "base",
-			"equipped_weapon_skin": "base",
+			"equipped_wings_skin": default_sub_slot,
+			"equipped_ship_skin": default_sub_slot,
+			"equipped_weapon_skin": default_sub_slot,
 			"equipped_pilot_skin": "base"
 		}
 	return loadouts
 
 func populate_from_dict(raw: Dictionary) -> void:
-	selected_character = StringName(str(raw.get("selected_character", "nova")))
-	if selected_character == &"":
-		selected_character = &"nova"
+	selected_character = StringName(str(raw.get("selected_character", "valentina")))
+	if selected_character == &"" or not CharacterDataScript.is_character_playable_rework_ready(selected_character):
+		selected_character = CharacterDataScript.get_default_playable_character_id()
 
 	selected_pet = StringName(str(raw.get("selected_pet", "mochi")))
 	if selected_pet == &"":
@@ -121,6 +127,8 @@ func populate_from_dict(raw: Dictionary) -> void:
 			unlocked_characters.append(StringName(str(ch)))
 	else:
 		unlocked_characters = DEFAULT_CHARACTERS.duplicate()
+	if not unlocked_characters.has(&"valentina"):
+		unlocked_characters.append(&"valentina")
 
 	# Unlocked pets
 	unlocked_pets = []
@@ -172,9 +180,27 @@ func populate_from_dict(raw: Dictionary) -> void:
 					arr.append(StringName(str(n)))
 			character_skills[StringName(str(cid))] = arr
 
-	# Skins
+	# Skins + migración no destructiva de skins PNG legacy hacia sistema por shader
 	unlocked_skins = raw.get("unlocked_skins", {}).duplicate() if raw.get("unlocked_skins") is Dictionary else {}
 	equipped_skins = raw.get("equipped_skins", {}).duplicate() if raw.get("equipped_skins") is Dictionary else {}
+	for sk_key_v: Variant in equipped_skins.keys():
+		var sk_key: String = str(sk_key_v)
+		var sk_val: String = str(equipped_skins[sk_key_v])
+		if CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(sk_val):
+			if sk_key.begins_with("wings:") or sk_key.begins_with("ship:") or sk_key.begins_with("weapon:"):
+				equipped_skins[sk_key_v] = CosmeticsManagerScript.FOLLOW_PILOT_SKIN_ID
+			else:
+				equipped_skins[sk_key_v] = "base"
+	for c_name in ROSTER_PILOTS:
+		if not CosmeticsManagerScript.has_shader_skin_catalog(c_name):
+			continue
+		var c_tid: String = String(c_name).to_lower()
+		var w_key: String = "wings:" + c_tid
+		var s_key: String = "ship:" + c_tid
+		if equipped_skins.has(s_key) and not equipped_skins.has(w_key):
+			equipped_skins[w_key] = equipped_skins[s_key]
+		elif equipped_skins.has(w_key) and not equipped_skins.has(s_key):
+			equipped_skins[s_key] = equipped_skins[w_key]
 
 	# Active tomes & weapons
 	character_active_tomes = raw.get("character_active_tomes", {}).duplicate() if raw.get("character_active_tomes") is Dictionary else {}
@@ -185,6 +211,8 @@ func populate_from_dict(raw: Dictionary) -> void:
 	var clean_loadouts: Dictionary = {}
 	for c_name in ROSTER_PILOTS:
 		var c_str := String(c_name)
+		var has_shader: bool = CosmeticsManagerScript.has_shader_skin_catalog(c_name)
+		var default_sub_slot: String = CosmeticsManagerScript.FOLLOW_PILOT_SKIN_ID if has_shader else "base"
 		var c_loadout: Dictionary = raw_loadouts.get(c_str, {}).duplicate() if raw_loadouts.has(c_str) else {}
 		if not c_loadout.has("selected_pet") or str(c_loadout["selected_pet"]).is_empty():
 			c_loadout["selected_pet"] = &"mochi"
@@ -194,12 +222,28 @@ func populate_from_dict(raw: Dictionary) -> void:
 			c_loadout["equipped_pet_skin"] = ""
 		if not c_loadout.has("equipped_navigator_skin"):
 			c_loadout["equipped_navigator_skin"] = ""
-		if not c_loadout.has("equipped_ship_skin") or str(c_loadout["equipped_ship_skin"]).is_empty():
-			c_loadout["equipped_ship_skin"] = "base"
-		if not c_loadout.has("equipped_weapon_skin") or str(c_loadout["equipped_weapon_skin"]).is_empty():
-			c_loadout["equipped_weapon_skin"] = "base"
-		if not c_loadout.has("equipped_pilot_skin") or str(c_loadout["equipped_pilot_skin"]).is_empty():
-			c_loadout["equipped_pilot_skin"] = "base"
+
+		var cur_wings: String = str(c_loadout.get("equipped_wings_skin", c_loadout.get("equipped_ship_skin", "")))
+		if cur_wings.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(cur_wings):
+			cur_wings = default_sub_slot
+		c_loadout["equipped_wings_skin"] = cur_wings
+		c_loadout["equipped_ship_skin"] = cur_wings
+		if c_loadout.has("ship_skin"):
+			c_loadout["ship_skin"] = cur_wings
+
+		var cur_wpn: String = str(c_loadout.get("equipped_weapon_skin", ""))
+		if cur_wpn.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(cur_wpn):
+			cur_wpn = default_sub_slot
+		c_loadout["equipped_weapon_skin"] = cur_wpn
+		if c_loadout.has("weapon_skin"):
+			c_loadout["weapon_skin"] = cur_wpn
+
+		var cur_pilot: String = str(c_loadout.get("equipped_pilot_skin", ""))
+		if cur_pilot.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(cur_pilot):
+			cur_pilot = "base"
+		c_loadout["equipped_pilot_skin"] = cur_pilot
+		if c_loadout.has("pilot_skin"):
+			c_loadout["pilot_skin"] = cur_pilot
 		clean_loadouts[c_str] = c_loadout
 	character_loadouts = clean_loadouts
 

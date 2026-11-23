@@ -165,7 +165,7 @@ func _ready() -> void:
 	assert(sanitized.get("biomass") == 1250, "Biomasa legacy debe mantenerse en 1250")
 	assert(sanitized.get("antimatter") == 45, "Antimateria legacy debe mantenerse en 45")
 	assert(is_equal_approx(float(sanitized.get("game_speed")), 1.5), "Velocidad de juego legacy debe mantenerse en 1.5")
-	assert(sanitized.get("selected_character") == &"echo", "Personaje seleccionado debe ser &echo")
+	assert(sanitized.get("selected_character") == &"valentina", "Personaje seleccionado no listo tras rework debe migrar a &valentina")
 	
 	# Verificar inyección segura de defaults para campos inexistentes en V1
 	assert(sanitized.has("gacha_pity"), "Debe inyectar gacha_pity en saves legacy")
@@ -185,7 +185,7 @@ func _ready() -> void:
 	}
 	var repaired: Dictionary = ProfileStorage.clean_and_validate_data(corrupt_payload)
 	assert(is_equal_approx(float(repaired.get("game_speed")), 1.0), "Velocidad corrupta <= 0 debe resetearse a 1.0")
-	assert(repaired.get("selected_character") == &"nova", "selected_character vacio debe resetearse a &nova")
+	assert(repaired.get("selected_character") == &"valentina", "selected_character vacio debe resetearse a &valentina")
 	assert(repaired.get("selected_pet") == &"mochi", "selected_pet vacio debe resetearse a &mochi")
 	assert(repaired.get("selected_navigator") == &"lyra", "selected_navigator vacio debe resetearse a &lyra")
 	print("  ✓ Retrocompatibilidad V1->V2, sanitización robusta y DTOs modulares verificados exitosamente")

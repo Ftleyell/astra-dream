@@ -13,7 +13,7 @@
 &"portraits": {
 	"Normal": {
 		"export_overrides": {
-			"image": "\"res://assets/portraits/portrait_valentina.png\""
+			"image": "\"res://assets/pilots/valentina_v2/banner/valentina_v2_icon_1x1.png\""
 		},
 		"mirror": false,
 		"offset": Vector2(0, 0),
@@ -22,9 +22,9 @@
 	},
 	"Flipped": {
 		"export_overrides": {
-			"image": "\"res://assets/portraits/portrait_valentina_flipped.png\""
+			"image": "\"res://assets/pilots/valentina_v2/banner/valentina_v2_icon_1x1.png\""
 		},
-		"mirror": false,
+		"mirror": true,
 		"offset": Vector2(0, 0),
 		"scale": 1.0,
 		"scene": ""

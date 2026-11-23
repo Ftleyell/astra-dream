@@ -238,7 +238,7 @@ var current_game_speed: float:
 		if speed_selector:
 			speed_selector.current_game_speed = val
 
-var current_character_id: StringName = &"nova"
+var current_character_id: StringName = &"valentina"
 var roster_dict: Dictionary[StringName, CharacterData] = {}
 var roster_ordered: Array[CharacterData] = []
 var _dock_card_buttons: Dictionary[StringName, Button] = {}
@@ -266,7 +266,9 @@ func _ready() -> void:
 
 	_populate_roster()
 	var saved_char: StringName = SaveManager.get_selected_character()
-	_select_character(saved_char if not saved_char.is_empty() and roster_dict.has(saved_char) else &"nova")
+	if saved_char.is_empty() or not roster_dict.has(saved_char) or not (roster_dict[saved_char] as CharacterData).is_playable_rework_ready:
+		saved_char = CharacterData.get_default_playable_character_id()
+	_select_character(saved_char)
 
 	_update_ability_tags()
 	_refresh_telemetry_ui()
@@ -305,6 +307,7 @@ func _setup_signals() -> void:
 	UIFocusHelper.apply_cyber_focus(back_button)
 	back_button.pressed.connect(_on_back_pressed)
 	if orbital_terminal:
+		orbital_terminal.pressed.connect(_on_orbital_terminal_pressed)
 		orbital_terminal.ignition_committed.connect(_on_launch_committed)
 	if pilot_skin_btn:
 		UIFocusHelper.apply_cyber_focus(pilot_skin_btn)
@@ -337,6 +340,7 @@ func _input(event: InputEvent) -> void:
 		if _has_any_modal_open(): return
 		if orbital_terminal and orbital_terminal.is_visible_in_tree() and not orbital_terminal.disabled:
 			get_viewport().set_input_as_handled()
+			_on_orbital_terminal_pressed()
 			if orbital_terminal.has_method("_on_pressed"): orbital_terminal._on_pressed()
 			else: _on_launch_committed()
 
@@ -367,21 +371,23 @@ func _populate_roster() -> void:
 
 func _select_character(char_id: StringName) -> void:
 	current_character_id = char_id
-	SaveManager.set_selected_character(char_id)
 	var data: CharacterData = roster_dict.get(char_id, null)
 	if not data:
 		roster_dict = CharacterData.load_roster()
 		data = roster_dict.get(char_id, null)
 	if not data: return
+	if data.is_playable_rework_ready:
+		SaveManager.set_selected_character(char_id)
 
 	skin_coordinator.apply_heroine_loadout(char_id)
 	var is_unlocked: bool = SaveManager.is_character_unlocked(char_id)
+	var can_deploy: bool = is_unlocked and data.is_playable_rework_ready
 
 	if display_manager:
 		display_manager.update_character_identity(data)
 		display_manager.update_character_abilities(data)
 		display_manager.update_dock_highlights(char_id, _dock_card_buttons, roster_dict)
-		display_manager.update_terminal_lock_state(is_unlocked)
+		display_manager.update_terminal_lock_state(can_deploy, data.is_playable_rework_ready)
 		display_manager.refresh_telemetry_ui()
 		display_manager.refresh_talents_summary(char_id)
 		display_manager.update_ability_tags()
@@ -425,6 +431,7 @@ func _exit_to_hub() -> void:
 
 
 func _on_back_pressed() -> void: _exit_to_hub()
+func _on_orbital_terminal_pressed() -> void: if pilot_showcase: pilot_showcase.trigger_deploy_lock_in()
 func _on_launch_committed() -> void: if launch_controller: launch_controller.commit_launch(current_character_id, get_tree())
 func _update_ability_tags() -> void: if display_manager: display_manager.update_ability_tags()
 func _refresh_telemetry_ui() -> void: if display_manager: display_manager.refresh_telemetry_ui()

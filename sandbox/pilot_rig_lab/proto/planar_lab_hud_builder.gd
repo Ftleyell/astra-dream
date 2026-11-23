@@ -6,7 +6,7 @@ extends RefCounted
 ## - 3. Dirección 8-Dir & Transición (modos 4..6, slow-mo, órbita auto)
 ## - 4. Inspección & Escena (Rayos-X, zoom, fondo, dron orbitando)
 
-const PILOTS_ROOT_DIR: String = "res://sandbox/pilot_rig_lab/pilots"
+const PILOTS_ROOT_DIR: String = "res://data/pilots"
 
 
 static func scan_pilot_profiles() -> Array[PilotRigProfile]:

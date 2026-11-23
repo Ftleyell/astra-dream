@@ -3,15 +3,15 @@ extends Node2D
 ## Escena completamente aislada para iterar sobre shaders, iluminación 2.5D y presets .tres
 ## comparando lado a lado contra el baseline limpio calibrado.
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
-const ViewRouterScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_view_router.gd")
-const MeshBuilderScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_mesh_builder.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
+const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
+const MeshBuilderScript = preload("res://scenes/pilots/rig/planar_rig_mesh_builder.gd")
 const CalibStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
 const HudScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const STYLES_DIR: String = "res://data/pilots/styles"
 const SSAA_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/shader_lab/ssaa_downsample.gdshader"
 const MAX_WORLD_VP_DIM: float = 4096.0
 const ALL_VIEWS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]
@@ -222,8 +222,8 @@ func _load_profile_and_assets() -> void:
 	_reload_styles_from_disk()
 
 	for v_key: String in ALL_VIEWS:
-		_zone_masks["%s_r" % v_key] = _load_png_tex("res://sandbox/pilot_rig_lab/proto/leg_r_%s_persp_mask.png" % v_key)
-		_zone_masks["%s_l" % v_key] = _load_png_tex("res://sandbox/pilot_rig_lab/proto/leg_l_%s_persp_mask.png" % v_key)
+		_zone_masks["%s_r" % v_key] = _load_png_tex("res://assets/pilots/shared/persp_masks/leg_r_%s_persp_mask.png" % v_key)
+		_zone_masks["%s_l" % v_key] = _load_png_tex("res://assets/pilots/shared/persp_masks/leg_l_%s_persp_mask.png" % v_key)
 		var meta_path: String = "%s/%s/parts_5/parts_5_meta.json" % [MeshBuilderScript.ASSETS_ROOT, v_key]
 		var meta_d: Dictionary = MeshBuilderScript.load_json_dict(meta_path)
 		_hip_shadows[v_key] = CalibStoreScript.parse_hip_cast_shadow_from_meta(meta_d, v_key)

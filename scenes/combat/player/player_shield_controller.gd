@@ -30,6 +30,8 @@ func take_damage(
 	# Capa de Escudo Gravitacional de Caelia
 	if player.has_meta("caelia_shield_hook"):
 		player.remove_meta("caelia_shield_hook")
+		if player.has_method("has_rig_v2") and player.has_rig_v2():
+			player.get_rig_v2_controller().on_shield_absorbed()
 		var tw := player.create_tween()
 		if tw:
 			tw.tween_property(player, "modulate", Color(1.0, 0.8, 0.2, 1.0), 0.1)
@@ -42,6 +44,8 @@ func take_damage(
 	# Capa de Escudo Inversor de Fase
 	if player.has_meta("phase_inverter_shield"):
 		player.remove_meta("phase_inverter_shield")
+		if player.has_method("has_rig_v2") and player.has_rig_v2():
+			player.get_rig_v2_controller().on_shield_absorbed()
 		var tw := player.create_tween()
 		if tw:
 			tw.tween_property(player, "modulate", Color(0.3, 1.5, 2.0, 1.0), 0.1)
@@ -86,6 +90,9 @@ func take_damage(
 	if player.has_meta(&"osp_active_frame"):
 		player.current_health = maxf(1.0, player.current_health)
 		return
+
+	if player.has_method("has_rig_v2") and player.has_rig_v2():
+		player.get_rig_v2_controller().on_damage_taken(Vector2.ZERO, false)
 
 	if player.current_health <= 0.0 and not player.is_dead:
 		if inventory and inventory.has_method("get_item_count") and inventory.get_item_count(&"stellar_scrap") > 0 and not player.has_meta("stellar_scrap_used") and player.run_credits >= 100:

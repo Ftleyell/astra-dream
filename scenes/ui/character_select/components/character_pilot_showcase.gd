@@ -7,8 +7,10 @@ extends RefCounted
 ## las animaciones tweens de hover/clic y la aplicación de skins cosméticas.
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const LiveBannerViewportScript = preload("res://scenes/ui/character_select/components/character_live_banner_viewport.gd")
 
 var fullbody_texture: TextureRect = null
+var live_banner_viewport: CharacterLiveBannerViewport = null
 var backlight_glow: TextureRect = null
 var pilot_button: Button = null
 var on_pilot_pressed_callback: Callable = Callable()
@@ -41,6 +43,13 @@ func setup(
 		fullbody_texture.mouse_filter = Control.MOUSE_FILTER_PASS
 		if not fullbody_texture.resized.is_connected(_on_fullbody_resized):
 			fullbody_texture.resized.connect(_on_fullbody_resized)
+		var showcase_parent: Node = fullbody_texture.get_parent()
+		if showcase_parent != null and live_banner_viewport == null:
+			live_banner_viewport = LiveBannerViewportScript.new() as CharacterLiveBannerViewport
+			live_banner_viewport.name = "CharacterLiveBannerViewport"
+			live_banner_viewport.visible = false
+			showcase_parent.add_child(live_banner_viewport)
+			showcase_parent.move_child(live_banner_viewport, fullbody_texture.get_index() + 1)
 
 	if pilot_button:
 		pilot_button.focus_mode = Control.FOCUS_NONE
@@ -78,6 +87,18 @@ func _setup_pilot_backlight() -> void:
 
 
 func on_mouse_entered() -> void:
+	var has_live: bool = live_banner_viewport != null and live_banner_viewport.visible
+	if has_live:
+		live_banner_viewport.trigger_hover_impulse(0.65)
+		if backlight_glow and backlight_glow.is_inside_tree():
+			if _pilot_hover_tween and _pilot_hover_tween.is_valid():
+				_pilot_hover_tween.kill()
+			_pilot_hover_tween = backlight_glow.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.85, 0.22)
+		var audio_live := live_banner_viewport.get_node_or_null("/root/AudioManager")
+		if audio_live and audio_live.has_method("play_sfx"):
+			audio_live.play_sfx(&"ui_hover", 0.0, 1.15)
+		return
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
 	_on_fullbody_resized()
@@ -94,6 +115,14 @@ func on_mouse_entered() -> void:
 
 
 func on_mouse_exited() -> void:
+	var has_live: bool = live_banner_viewport != null and live_banner_viewport.visible
+	if has_live:
+		if backlight_glow and backlight_glow.is_inside_tree():
+			if _pilot_hover_tween and _pilot_hover_tween.is_valid():
+				_pilot_hover_tween.kill()
+			_pilot_hover_tween = backlight_glow.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", 0.0, 0.22)
+		return
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
 	if _pilot_hover_tween and _pilot_hover_tween.is_valid():
@@ -105,6 +134,15 @@ func on_mouse_exited() -> void:
 
 
 func on_button_pressed() -> void:
+	var has_live: bool = live_banner_viewport != null and live_banner_viewport.visible
+	if has_live:
+		var audio_live := live_banner_viewport.get_node_or_null("/root/AudioManager")
+		if audio_live and audio_live.has_method("play_sfx"):
+			audio_live.play_sfx(&"ui_click", 0.0, 1.1)
+		live_banner_viewport.trigger_hover_impulse(1.0)
+		if on_pilot_pressed_callback.is_valid():
+			on_pilot_pressed_callback.call()
+		return
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
 	var audio_mgr := fullbody_texture.get_node_or_null("/root/AudioManager")
@@ -118,6 +156,11 @@ func on_button_pressed() -> void:
 
 	if on_pilot_pressed_callback.is_valid():
 		on_pilot_pressed_callback.call()
+
+
+func trigger_deploy_lock_in() -> void:
+	if live_banner_viewport != null and live_banner_viewport.visible:
+		live_banner_viewport.trigger_select_sequence()
 
 
 func cleanup() -> void:
@@ -146,6 +189,34 @@ func start_idle_breathing() -> void:
 func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked: bool) -> void:
 	if not data:
 		return
+
+	var is_active_pilot: bool = is_unlocked and data.is_playable_rework_ready
+	if data.live_banner_config != null and live_banner_viewport != null:
+		if _breathe_tween and _breathe_tween.is_valid():
+			_breathe_tween.kill()
+		live_banner_viewport.load_banner(data.live_banner_config, data.pilot_rig_profile)
+		var pilot_preset: PilotSkinPreset = CosmeticsManager.resolve_pilot_skin_preset(char_id, "pilot")
+		var pilot_stars: int = CosmeticsManager.resolve_equipped_skin_stars("pilot", char_id)
+		live_banner_viewport.apply_skin_preset(pilot_preset, pilot_stars)
+		var wings_skin_id: String = CosmeticsManager.resolve_equipped_skin_id("wings", char_id)
+		var wings_override: PilotSkinPreset = null
+		var wings_stars: int = pilot_stars
+		if not wings_skin_id.is_empty() and wings_skin_id != CosmeticsManager.FOLLOW_PILOT_SKIN_ID:
+			wings_override = CosmeticsManager.resolve_pilot_skin_preset(char_id, "wings")
+			wings_stars = CosmeticsManager.resolve_equipped_skin_stars("wings", char_id)
+		live_banner_viewport.apply_wings_skin_preset(wings_override, wings_stars)
+		live_banner_viewport.reset_select_sequence()
+		live_banner_viewport.visible = true
+		live_banner_viewport.modulate = Color.WHITE if is_active_pilot else Color(0.35, 0.38, 0.45, 0.8)
+		if fullbody_texture:
+			fullbody_texture.visible = false
+		if backlight_glow:
+			var live_glow_col: Color = pilot_preset.accent_color if (pilot_preset != null and not pilot_preset.is_base_skin) else (data.color if data else Color(0.2, 0.9, 1.0))
+			backlight_glow.modulate = Color(live_glow_col.r, live_glow_col.g, live_glow_col.b, backlight_glow.modulate.a)
+		return
+
+	if live_banner_viewport != null:
+		live_banner_viewport.visible = false
 
 	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)
 	var pilot_skin_id: String = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "base")))
@@ -181,7 +252,7 @@ func update_pilot_display(data: CharacterData, char_id: StringName, is_unlocked:
 
 		fullbody_texture.flip_h = false
 		fullbody_texture.visible = (fullbody_texture.texture != null)
-		fullbody_texture.modulate = Color.WHITE if is_unlocked else Color(0.2, 0.2, 0.3, 0.85)
+		fullbody_texture.modulate = Color.WHITE if is_active_pilot else Color(0.2, 0.2, 0.3, 0.85)
 
 	if backlight_glow:
 		var glow_col: Color = data.color if data else Color(0.2, 0.9, 1.0)

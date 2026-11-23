@@ -2,8 +2,8 @@ extends BaseTestSuite
 ## Suite de verificación para el laboratorio aislado de Live Banner 2.5D (ValentinaBannerLab).
 
 const BANNER_LAB_SCENE_PATH: String = "res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab.tscn"
-const BannerCtrlScript = preload("res://sandbox/pilot_rig_lab/banner_lab/pilot_live_banner_controller.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_live_banner_config.gd")
+const BannerCtrlScript = preload("res://scenes/pilots/banner/pilot_live_banner_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_live_banner_config.gd")
 
 
 func _ready() -> void:

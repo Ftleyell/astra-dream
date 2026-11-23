@@ -2,9 +2,9 @@ extends BaseTestSuite
 ## Suite de verificación para el laboratorio aislado de Armamento Orbital 2.5D (ValentinaGunsLab).
 
 const GUNS_LAB_SCENE_PATH: String = "res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab.tscn"
-const RingCtrlScript = preload("res://sandbox/pilot_rig_lab/guns_lab/orbital_weapon_ring_controller.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_orbital_weapon_config.gd")
-const SkinPresetScript = preload("res://sandbox/pilot_rig_lab/data/pilot_skin_preset.gd")
+const RingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
+const SkinPresetScript = preload("res://data/pilots/schemas/pilot_skin_preset.gd")
 
 
 func _ready() -> void:

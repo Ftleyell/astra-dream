@@ -50,6 +50,68 @@ func get_passive_aim_info(origin: Vector2, mouse_pos: Vector2, player: Player, r
 	last_known_target_dir = info.get("last_known_dir", last_known_target_dir)
 	return info
 
+
+func get_passive_aim_info_for_slot(
+	slot_idx: int,
+	inst: WeaponInstanceData,
+	origin: Vector2,
+	mouse_pos: Vector2,
+	player: Player,
+	rotation: float,
+	tree: SceneTree
+) -> Dictionary:
+	if is_manual_aim or inst == null or inst.weapon_data == null:
+		return get_passive_aim_info(origin, mouse_pos, player, rotation, tree)
+	var wdata: WeaponData = inst.weapon_data
+	var search_rad: float = maxf(get_autoaim_range(player), wdata.passive_search_radius)
+	var target: Node2D = WeaponAutoAimCoordinator.select_passive_target_for_slot(
+		slot_idx,
+		wdata.passive_target_mode,
+		origin,
+		search_rad,
+		current_locked_target,
+		tree
+	)
+	if is_instance_valid(target):
+		var dir: Vector2 = (target.global_position - origin).normalized()
+		if dir.length_squared() < 0.001:
+			dir = Vector2.UP
+		last_known_target_dir = dir
+		return {"direction": dir, "target": target, "last_known_dir": dir}
+	return get_passive_aim_info(origin, mouse_pos, player, rotation, tree)
+
+
+func get_slot_aim_world_pos(
+	slot_idx: int,
+	inst: WeaponInstanceData,
+	origin: Vector2,
+	mouse_pos: Vector2,
+	player: Player,
+	is_fire_pressed: bool,
+	tree: SceneTree
+) -> Vector2:
+	if is_manual_aim or is_fire_pressed:
+		return mouse_pos
+	if slot_idx <= 0:
+		if is_instance_valid(current_locked_target):
+			return current_locked_target.global_position
+		return mouse_pos
+	if inst != null and inst.weapon_data != null:
+		var search_rad: float = maxf(get_autoaim_range(player), inst.weapon_data.passive_search_radius)
+		var slot_target: Node2D = WeaponAutoAimCoordinator.select_passive_target_for_slot(
+			slot_idx,
+			inst.weapon_data.passive_target_mode,
+			origin,
+			search_rad,
+			current_locked_target,
+			tree
+		)
+		if is_instance_valid(slot_target):
+			return slot_target.global_position
+	if is_instance_valid(current_locked_target):
+		return current_locked_target.global_position
+	return mouse_pos
+
 func calculate_aim_angle(origin: Vector2, mouse_pos: Vector2, player: Player, rotation: float, is_fire_pressed: bool, tree: SceneTree) -> float:
 	var p_aim_info := get_passive_aim_info(origin, mouse_pos, player, rotation, tree)
 	return WeaponAutoAimCoordinator.calculate_aim_angle(

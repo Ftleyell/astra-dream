@@ -8,15 +8,15 @@ extends Node2D
 ##   - Ratón (en modo manual): apuntar cabeza independientemente del vuelo
 ##   - Rueda: zoom | Shift: turbo | Espacio: dash | Click / J: retroceso | K: impacto | B: air-brake
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
-const MeshBuilderScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_mesh_builder.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
+const MeshBuilderScript = preload("res://scenes/pilots/rig/planar_rig_mesh_builder.gd")
 const CalibStoreScript = preload("res://sandbox/pilot_rig_lab/calibrator/rig_calibration_store.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
 const HudBuilder = preload("res://sandbox/pilot_rig_lab/proto/planar_lab_hud_builder.gd")
 const LabStarScript = preload("res://sandbox/pilot_rig_lab/proto/planar_lab_star.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const STYLES_DIR: String = "res://data/pilots/styles"
 const SSAA_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/shader_lab/ssaa_downsample.gdshader"
 const ALL_VIEWS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]
 const MAX_WORLD_VP_DIM: float = 4096.0

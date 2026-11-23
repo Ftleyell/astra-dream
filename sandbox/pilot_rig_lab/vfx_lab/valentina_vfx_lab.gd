@@ -3,18 +3,18 @@ extends Node2D
 ## Permite probar Propulsión Base vs Ráfaga Prolongada, calibrar el .tres en vivo
 ## y verificar legibilidad frente a balas danmaku simuladas.
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
-const TrailCtrlScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/sandevistan_trail_controller.gd")
-const BasePropCtrlScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_base_propulsion_controller.gd")
-const BasePropConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_base_propulsion_config.gd")
+const TrailCtrlScript = preload("res://scenes/pilots/vfx/sandevistan_trail_controller.gd")
+const BasePropCtrlScript = preload("res://scenes/pilots/vfx/valentina_base_propulsion_controller.gd")
+const BasePropConfigScript = preload("res://data/pilots/schemas/pilot_base_propulsion_config.gd")
 const VFXLabHUDScript = preload("res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const VFX_CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres"
-const BASE_PROPULSION_CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_base_propulsion.tres"
-const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
-const ABERRATION_SHADER_PATH: String = "res://sandbox/pilot_rig_lab/vfx_lab/sandevistan_edge_aberration.gdshader"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const VFX_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres"
+const BASE_PROPULSION_CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_propulsion.tres"
+const STYLES_DIR: String = "res://data/pilots/styles"
+const ABERRATION_SHADER_PATH: String = "res://scenes/pilots/shaders/sandevistan_edge_aberration.gdshader"
 
 const MANUAL_MAX_SPEED_PX: float = 340.0
 const MANUAL_ACCEL: float = 1650.0

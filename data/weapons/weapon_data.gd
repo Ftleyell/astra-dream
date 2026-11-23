@@ -80,3 +80,9 @@ var name: String:
 @export var scales_with_projectile_count: bool = true
 @export var active_scales_with_projectiles: bool = true
 @export var passive_scales_with_projectiles: bool = true
+
+@export_group("Orbital 3D Visuals")
+@export var orbital_armor_color: Color = Color(0.88, 0.92, 0.97, 1.0)
+@export var orbital_chassis_color: Color = Color(0.12, 0.16, 0.25, 1.0)
+@export var orbital_crystal_color: Color = Color(0.92, 0.14, 0.32, 1.0)
+@export var orbital_mesh_id: StringName = &"rail_lance"

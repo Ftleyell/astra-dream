@@ -11,8 +11,13 @@ extends Resource
 @export var pts: PackedVector2Array = PackedVector2Array()
 @export var sort_order: int = 0
 @export var stats_summary: String = ""
+@export var is_playable_rework_ready: bool = false
 
 @export_group("Visuals")
+@export var avatar_icon: Texture2D
+@export var pilot_rig_profile: PilotRigProfile
+@export var live_banner_config: PilotLiveBannerConfig
+@export var shader_skin_catalog: PilotShaderSkinCatalog = null
 @export var ship_sprite: Texture2D
 @export var ship_mask: Texture2D
 @export var hair_direction: Vector2 = Vector2(1.0, 0.0)
@@ -81,6 +86,9 @@ var portrait_texture: Texture2D:
 func get_theme_color() -> Color:
 	return color
 
+func has_shader_skins() -> bool:
+	return shader_skin_catalog != null
+
 func get_silhouette_points() -> PackedVector2Array:
 	return pts
 
@@ -103,6 +111,8 @@ func get_portrait_texture(flipped: bool = false) -> Texture2D:
 	return null
 
 func get_avatar_texture() -> Texture2D:
+	if avatar_icon:
+		return avatar_icon
 	var path := "res://assets/portraits/avatars/avatar_%s.png" % str(character_id).to_lower()
 	if ResourceLoader.exists(path):
 		return load(path) as Texture2D
@@ -290,6 +300,25 @@ func get_kit_dossier() -> Dictionary:
 func get_pilot_kit() -> Dictionary:
 	return get_kit_dossier()
 
+static var _rework_ready_cache: Dictionary[StringName, bool] = {}
+
+static func is_character_playable_rework_ready(char_id: StringName) -> bool:
+	if _rework_ready_cache.is_empty():
+		var roster: Dictionary[StringName, CharacterData] = load_roster()
+		for cid: StringName in roster.keys():
+			var cd: CharacterData = roster[cid]
+			if cd != null:
+				_rework_ready_cache[cid] = cd.is_playable_rework_ready
+	return bool(_rework_ready_cache.get(char_id, false))
+
+static func get_default_playable_character_id() -> StringName:
+	if is_character_playable_rework_ready(&"valentina"):
+		return &"valentina"
+	for cd: CharacterData in load_roster_ordered():
+		if cd != null and cd.is_playable_rework_ready:
+			return cd.character_id
+	return &"valentina"
+
 # Static roster loaders
 static func load_roster() -> Dictionary[StringName, CharacterData]:
 	var roster: Dictionary[StringName, CharacterData] = {}
@@ -324,6 +353,7 @@ static func load_roster() -> Dictionary[StringName, CharacterData]:
 	for cid: StringName in roster.keys():
 		var cd: CharacterData = roster[cid]
 		if cd:
+			_rework_ready_cache[cid] = cd.is_playable_rework_ready
 			if not cd.ship_mask:
 				cd.ship_mask = cd.get_ship_mask()
 			match cid:

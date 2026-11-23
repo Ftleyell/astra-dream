@@ -14,7 +14,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | Dominio | Archivo Principal / Orquestador | Componentes Clave |
 |---|---|---|
 | **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `run_state_serializer.gd` |
-| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd` |
+| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `player_rig_v2_controller.gd` |
 | **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
 | **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
@@ -26,18 +26,19 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas, Banlist |
 | **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
 | **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
-| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
-| **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_select_tab_controller.gd`, `arsenal_banlist_modal.gd` |
-| **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd` |
-| **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd` |
-| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | `planar_combat_rig.gd`, `planar_rig_animation_runtime.gd`, `planar_rig_face_controller.gd`, `pilot_rig_stylizer.gdshader`, `docs/VALENTINA_V2_RIG_REFERENCE.md`, `docs/VALENTINA_V2_FACE_RIG_REFERENCE.md` |
+| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_rig_avatar_3d.gd`, `hub_diorama_config.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
+| **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_live_banner_viewport.gd`, `character_pilot_showcase.gd`, `hero_picker_modal.gd`, `arsenal_banlist_modal.gd` |
+| **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd`, `gacha_reveal_theater.gd`, `gacha_wardrobe_controller.gd` |
+| **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd`, `shader_skin_live_preview.gd`, `shader_skin_swatch.gd` |
+| **Pilotos & Rig Valentina v2 (Prod.)** | `scenes/pilots/rig/planar_combat_rig.gd` | `scenes/pilots/{rig,shaders,vfx,weapons,banner}/`, `data/pilots/`, `assets/pilots/` (*Single Source of Truth*) |
+| **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | Labs interactivos (`proto/`, `face_lab/`, `vfx_lab/`, `guns_lab/`, `3d_lab/`, `banner_lab/`) consumiendo producción; docs `VALENTINA_V2_*.md` |
 | **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
 ---
 
 ## 🌌 Cosmos Engine en Producción (Entorno Espacial de MainGame)
-- **Estado:** **v3.2c Completo (Fase 1 Cerrada — Listo para Fase 2 Promoción Valentina v2)** bajo [`scenes/combat/environment/cosmos/`](scenes/combat/environment/cosmos/). Enlazado en `MainGame` vía [`SpaceEnvironmentHost`](scenes/combat/environment/space_environment_host.gd) y [`CosmosCombatEnvironment`](scenes/combat/environment/cosmos_combat_environment.gd). Incluye:
+- **Estado:** **v3.2c Completo (Fase 3 Rework Hub 3D Cerrada — Listo para Fase 4 Skins por Shader)** bajo [`scenes/combat/environment/cosmos/`](scenes/combat/environment/cosmos/). Enlazado en `MainGame` vía [`SpaceEnvironmentHost`](scenes/combat/environment/space_environment_host.gd) y [`CosmosCombatEnvironment`](scenes/combat/environment/cosmos_combat_environment.gd). Incluye:
   - Órbitas 3D orgánicas keplerianas, rotación planetaria multi-mapa + anillos estilizados, cometas tangentes a `-vel.normalized()` y guías `[O]`/`[G]` (`CosmosOrbitGuidesOverlay2D`).
   - 7 arquetipos estelares (`black_hole` con lente gravitacional y `emerald_nova`), 4 sectores no estelares (~35% de parcelas: `Rogue World`, `Derelict Armada`, `Warp Relay`, `Ion Nursery`), corredores interestelares (`hyperspace`, `bow-shocks`, meteoros, ríos laminares de asteroides) y landmarks lejanos en perspectiva 3D detrás de `DustMidSprite` (`z_index = -25`).
   - Puente analítico zero-alloc [`CosmicLightingSampler`](scenes/combat/environment/cosmos/core/cosmic_lighting_sampler.gd) (`sample_lighting_at(...)` desde `CosmosHostController`) calibrado en `sandbox/pilot_rig_lab/cosmos_lighting_lab/valentina_cosmos_lab.tscn`.
@@ -54,11 +55,12 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 
 ---
 
-## 🎭 PilotRigLab / Valentina v2 (I+D en Sandbox)
-- **Estado:** Rig exclusivo de **Valentina v2 (8-Dir Nativo)** bajo [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/) con enrutado 8-dir (`±65°`), transiciones snappy (Modos 4/5/6 + whip cervical), pipeline de animación data-driven (Pose Base Zero-G, Idle multicapa, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle sutil), **Rig Facial Vivo & Cabello 3-Zonas** (`face_lab/` + `planar_rig_face_controller.gd`, paleta ocular *Amatista Profundo*), **Alas Psíquicas & Propulsión Base Multi-Piloto** (`enable_base_propulsion_wings` opt-in en `PlanarCombatRig`, `PilotBasePropulsionConfig`, capa HDR externa + 12 cintas + polvo estelar) y tinta interna **Ink SDF 2×** (`00_original`, `01_valentina_definitive`, `02_valentina_razor_sharp`). Los controladores legacy (`planar_rig_animator.gd`, `perspective_controller.gd`, `secondary_physics.gd`) permanecen purgados en rest pose.
+## 🎭 Valentina v2 (Producción *Single Source of Truth* & Labs en Sandbox)
+- **Estado:** Runtime, shaders, `.tres` y assets compilados de **Valentina v2 (8-Dir Nativo)** promovidos a producción como *Single Source of Truth* bajo [`scenes/pilots/`](scenes/pilots/), [`data/pilots/`](data/pilots/) y [`assets/pilots/`](assets/pilots/), mientras [`sandbox/pilot_rig_lab/`](sandbox/pilot_rig_lab/) conserva los laboratorios interactivos consumiendo producción (`tools/`, `source_refs/` y `backups/` aislados). Incluye enrutado 8-dir (`±65°`), transiciones snappy (Modos 4/5/6 + whip cervical), pipeline de animación data-driven (Pose Base Zero-G, Idle multicapa, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle sutil), **Rig Facial Vivo & Cabello 3-Zonas** (`planar_rig_face_controller.gd`, paleta ocular *Amatista Profundo*), **Alas Psíquicas & Propulsión Base Multi-Piloto** (`enable_base_propulsion_wings` / `enable_3d_wings`), tinta **Ink SDF 2×**, **Live Banner 2.5D** en `CharacterSelectUI`/`HeroPickerModal` y bloqueo de roster con `is_playable_rework_ready` (solo `valentina` activa).
+  - **Live Banner 2.5D (Fase 2), Hub 3D 2.5D Diorama (`HubRigAvatar3D`, Fase 3), Sistema de Skins 100% por Shaders (Fase 4) y Combate In-Game (`PlayerRigV2Controller` + Anillo Orbital 1–4 Slots, Fase 5):** cerrados y verificados en producción (`pilot`/`wings`/`weapon`, `"follow_pilot"`, Twin-Stick 360°, `CosmicLightingSampler`, Sobre-Enfoque completo y compatibilidad legacy intacta); consultar [`docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md).
 - **⚡ CERO TOKENS PERDIDOS / ANTI-CICLOS DE RELECTURA:**
-  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md) (estado del milestone y próximos pasos), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md) (rig de cuerpo y animaciones), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md) (rig facial vivo y ojos Live2D), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) (alas multi-piloto), [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](docs/VALENTINA_PROPULSION_VFX_SPEC.md) (VFX Power-Up Sandevistan), [`docs/VALENTINA_ORBITAL_WEAPON_SPEC.md`](docs/VALENTINA_ORBITAL_WEAPON_SPEC.md) (Anillo Orbital 2.5D & Armamento 3D Cel-Shaded / Multi-Mapa), [`docs/VALENTINA_3D_LAB_SPEC.md`](docs/VALENTINA_3D_LAB_SPEC.md) (3D Lab & Alas 3D Cel-Shaded estandarizadas en `PlanarCombatRig`), [`docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md`](docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md) (guía maestra multi-piloto para crear nuevas alas 3D) y [`docs/VALENTINA_LIVE_BANNER_SPEC.md`](docs/VALENTINA_LIVE_BANNER_SPEC.md) (Live Banner 2.5D / Banner Lab).
-  - Para ajustar escalas, poses, animaciones, rostro, skins, pelo o estilos, editar **directamente** los `.tres` en `sandbox/pilot_rig_lab/pilots/valentina_v2/` y `sandbox/pilot_rig_lab/data/`.
+  - Leer **siempre** [`.agents/rules/pilot_rig_lab.md`](.agents/rules/pilot_rig_lab.md) (tabla contractual *"Qué cambiar → Archivo exacto"*), [`docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](docs/VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) (Fases 1–5 completadas), [`docs/VALENTINA_V2_MILESTONE_STATUS.md`](docs/VALENTINA_V2_MILESTONE_STATUS.md), [`docs/VALENTINA_V2_RIG_REFERENCE.md`](docs/VALENTINA_V2_RIG_REFERENCE.md), [`docs/VALENTINA_V2_FACE_RIG_REFERENCE.md`](docs/VALENTINA_V2_FACE_RIG_REFERENCE.md), [`docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](docs/VALENTINA_BASE_PROPULSION_WINGS_SPEC.md), [`docs/VALENTINA_PROPULSION_VFX_SPEC.md`](docs/VALENTINA_PROPULSION_VFX_SPEC.md), [`docs/VALENTINA_ORBITAL_WEAPON_SPEC.md`](docs/VALENTINA_ORBITAL_WEAPON_SPEC.md), [`docs/VALENTINA_3D_LAB_SPEC.md`](docs/VALENTINA_3D_LAB_SPEC.md), [`docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md`](docs/VALENTINA_3D_WINGS_CREATION_GUIDE.md) y [`docs/VALENTINA_LIVE_BANNER_SPEC.md`](docs/VALENTINA_LIVE_BANNER_SPEC.md).
+  - Para ajustar escalas, poses, animaciones, rostro, skins, pelo o estilos, editar **directamente** los `.tres` en `data/pilots/valentina_v2/`, `data/pilots/hair/`, `data/pilots/styles/`.
   - **Prohibido** hacer listados recursivos o búsquedas en `sandbox/pilot_rig_lab/tools/.venv/`, `source_refs/`, `combat_assets/`, `backups/` o `tools/models/`.
 
 ---
@@ -116,6 +118,10 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Guns Lab / Anillo Orbital 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_guns_lab"` |
 | **3D Lab / Alas 3D Cel-Shaded (Estándar)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"` |
 | **Banner Lab / Live Splash 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"` |
+| **Roster Lockout & Live Banner (Fase 2)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"` |
+| **Hub 3D 2.5D Diorama & Rig (Fase 3)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"` |
+| **Skins 100% por Shaders (Fase 4)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"` |
+| **Combate In-Game Valentina v2 (Fase 5)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 
 ---

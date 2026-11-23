@@ -3,12 +3,12 @@ extends Node2D
 ## Calibra en tiempo real respiración, jiggle en hover, cabello Zero-G, parpadeo,
 ## parallax 2.5D por profundidad, rim-light y recolor de skins desde .tres.
 
-const BannerCtrlScript = preload("res://sandbox/pilot_rig_lab/banner_lab/pilot_live_banner_controller.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_live_banner_config.gd")
+const BannerCtrlScript = preload("res://scenes/pilots/banner/pilot_live_banner_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_live_banner_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_live_banner.tres"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_live_banner.tres"
 
 var _profile: PilotRigProfile = null
 var _config: ConfigScript = null

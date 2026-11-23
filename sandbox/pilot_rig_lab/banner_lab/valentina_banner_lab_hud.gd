@@ -2,7 +2,7 @@ class_name ValentinaBannerLabHUD
 extends RefCounted
 ## Constructor de HUD interactivo para ValentinaBannerLab (Live Splash Art 2.5D).
 
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_live_banner_config.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_live_banner_config.gd")
 const PANEL_WIDTH: float = 330.0
 
 

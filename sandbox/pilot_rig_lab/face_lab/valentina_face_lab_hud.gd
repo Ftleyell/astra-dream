@@ -3,7 +3,7 @@ extends RefCounted
 ## HUD lateral en 4 pestañas ([1. Ojos/Expr], [2. 2.5D/Cuello], [3. Pelo/HUD], [4. Vista/Debug])
 ## para el laboratorio independiente del rig facial de Valentina v2.
 
-const FaceConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_anim_config.gd")
+const FaceConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
 
 const SLIDERS_TAB_1: Array[Dictionary] = [
 	{"key": "eye_look_max_px", "label": "Rango Mirada Iris (px)", "min": 0.0, "max": 4.2, "step": 0.05},

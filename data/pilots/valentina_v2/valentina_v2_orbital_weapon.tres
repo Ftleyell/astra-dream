@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PilotOrbitalWeaponConfig" format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_orbital_weapon_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+ring_center_offset = Vector2(0, 59)
+ring_thickness_px = 2.0
+ring_secondary_scale = 0.86
+ring_color_primary = Color(0.84, 0.9, 0.98, 0.85)
+ring_color_accent = Color(0.95, 0.18, 0.36, 0.96)
+ring_back_alpha_mult = 0.38
+ring_front_alpha_mult = 0.96
+extrude_depth_px = 5.0
+depth_back_dim = 0.14
+rim_strength = 0.98
+orbit_speed_rad = 1.3

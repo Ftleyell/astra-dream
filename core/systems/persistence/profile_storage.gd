@@ -13,6 +13,7 @@ const SCHEMA_VERSION: int = 2
 const ProfileRosterDataScript = preload("res://core/systems/persistence/schemas/profile_roster_data.gd")
 const ProfileEconomyDataScript = preload("res://core/systems/persistence/schemas/profile_economy_data.gd")
 const ProfileSettingsDataScript = preload("res://core/systems/persistence/schemas/profile_settings_data.gd")
+const CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
 
 const TomeCatalogScript = preload("res://data/tomes/tome_catalog.gd")
 const WeaponCatalogScript = preload("res://data/weapons/weapon_catalog.gd")
@@ -318,6 +319,9 @@ static func get_character_loadout(char_id: StringName) -> Dictionary:
 		loadout = (loadouts[cid_str] as Dictionary).duplicate()
 		has_saved_loadout = true
 
+	var has_shader: bool = CosmeticsManagerScript.has_shader_skin_catalog(char_id)
+	var default_sub_slot: String = CosmeticsManagerScript.FOLLOW_PILOT_SKIN_ID if has_shader else "base"
+
 	var needs_save: bool = false
 	if not loadout.has("selected_pet") or str(loadout["selected_pet"]).is_empty():
 		loadout["selected_pet"] = &"mochi"
@@ -331,13 +335,22 @@ static func get_character_loadout(char_id: StringName) -> Dictionary:
 	if not loadout.has("equipped_navigator_skin"):
 		loadout["equipped_navigator_skin"] = ""
 		needs_save = true
-	if not loadout.has("equipped_ship_skin") or str(loadout["equipped_ship_skin"]).is_empty():
-		loadout["equipped_ship_skin"] = "base"
+	var wings_val: String = str(loadout.get("equipped_wings_skin", loadout.get("equipped_ship_skin", "")))
+	if wings_val.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(wings_val):
+		wings_val = default_sub_slot
 		needs_save = true
-	if not loadout.has("equipped_weapon_skin") or str(loadout["equipped_weapon_skin"]).is_empty():
-		loadout["equipped_weapon_skin"] = "base"
+	if str(loadout.get("equipped_ship_skin", "")) != wings_val:
+		loadout["equipped_ship_skin"] = wings_val
 		needs_save = true
-	if not loadout.has("equipped_pilot_skin") or str(loadout["equipped_pilot_skin"]).is_empty():
+	if str(loadout.get("equipped_wings_skin", "")) != wings_val:
+		loadout["equipped_wings_skin"] = wings_val
+		needs_save = true
+	var wpn_val: String = str(loadout.get("equipped_weapon_skin", ""))
+	if wpn_val.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(wpn_val):
+		loadout["equipped_weapon_skin"] = default_sub_slot
+		needs_save = true
+	var pilot_val: String = str(loadout.get("equipped_pilot_skin", ""))
+	if pilot_val.is_empty() or CosmeticsManagerScript.is_obsolete_shader_pilot_skin_id(pilot_val):
 		loadout["equipped_pilot_skin"] = "base"
 		needs_save = true
 

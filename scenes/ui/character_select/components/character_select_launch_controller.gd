@@ -4,7 +4,7 @@ extends RefCounted
 ## Controlador desacoplado para el ciclo de lanzamiento y retorno al Hub en CharacterSelect.
 
 func commit_launch(char_id: StringName, tree: SceneTree) -> void:
-	if not SaveManager.is_character_unlocked(char_id):
+	if not SaveManager.is_character_unlocked(char_id) or not CharacterData.is_character_playable_rework_ready(char_id):
 		return
 
 	SaveManager.set_selected_character(char_id)

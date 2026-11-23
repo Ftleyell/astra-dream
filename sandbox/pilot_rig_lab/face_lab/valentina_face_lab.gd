@@ -2,14 +2,14 @@ extends Node2D
 ## Escena independiente de laboratorio para probar, calibrar y auditar las animaciones
 ## faciales, cervicales, parallax 2.5D Live2D, cabello en 3 zonas y monóculo de Valentina v2.
 
-const FaceConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_face_anim_config.gd")
+const FaceConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
 const FaceRigScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_rig.gd")
-const FaceAnimatorScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_animator.gd")
+const FaceAnimatorScript = preload("res://scenes/pilots/rig/valentina_face_animator.gd")
 const FaceHudScript = preload("res://sandbox/pilot_rig_lab/face_lab/valentina_face_lab_hud.gd")
-const ViewRouterScript = preload("res://sandbox/pilot_rig_lab/proto/planar_rig_view_router.gd")
+const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const FACE_ANIM_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_face_anim.tres"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const FACE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_face_anim.tres"
 
 const HERO_POS := Vector2(160.0, 20.0)
 const HERO_SCALE: float = 4.0

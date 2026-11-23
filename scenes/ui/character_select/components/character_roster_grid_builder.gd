@@ -24,6 +24,8 @@ static func populate_roster(
 	for char_data: CharacterData in roster_ordered:
 		var cid: StringName = char_data.character_id
 		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
+		var is_rework_ready: bool = char_data.is_playable_rework_ready
+		var is_active_pilot: bool = is_unlocked and is_rework_ready
 
 		var card_btn := Button.new()
 		card_btn.name = "PilotCard_%s" % cid
@@ -36,7 +38,7 @@ static func populate_roster(
 		card_style.border_width_top = 2
 		card_style.border_width_right = 2
 		card_style.border_width_bottom = 2
-		card_style.border_color = char_data.color if is_unlocked else Color(0.3, 0.35, 0.4, 0.5)
+		card_style.border_color = char_data.color if is_active_pilot else Color(0.32, 0.35, 0.42, 0.65)
 		card_style.set_corner_radius_all(6)
 		card_style.content_margin_left = 4
 		card_style.content_margin_top = 4
@@ -51,9 +53,33 @@ static func populate_roster(
 		card_btn.expand_icon = true
 		card_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		card_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		card_btn.tooltip_text = char_data.display_name.to_upper()
+		card_btn.tooltip_text = char_data.display_name.to_upper() if is_rework_ready else ("%s — EN REWORK" % char_data.display_name.to_upper())
 		card_btn.text = ""
 		card_btn.pivot_offset = Vector2(38, 38)
+		card_btn.modulate = Color.WHITE if is_rework_ready else Color(0.48, 0.50, 0.56, 0.78)
+
+		if not is_rework_ready:
+			var badge := Label.new()
+			badge.name = "ReworkBadge"
+			badge.text = "EN REWORK"
+			badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			badge.anchor_left = 0.0
+			badge.anchor_top = 1.0
+			badge.anchor_right = 1.0
+			badge.anchor_bottom = 1.0
+			badge.offset_top = -17.0
+			badge.offset_bottom = -2.0
+			badge.offset_left = 2.0
+			badge.offset_right = -2.0
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.add_theme_font_size_override("font_size", 9)
+			badge.add_theme_color_override("font_color", Color(0.95, 0.78, 0.35, 1.0))
+			var badge_bg := StyleBoxFlat.new()
+			badge_bg.bg_color = Color(0.05, 0.06, 0.10, 0.88)
+			badge_bg.set_corner_radius_all(3)
+			badge.add_theme_stylebox_override("normal", badge_bg)
+			card_btn.add_child(badge)
 
 		if on_character_selected.is_valid():
 			card_btn.pressed.connect(func() -> void:

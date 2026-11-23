@@ -109,12 +109,21 @@ func _ready() -> void:
 	_setup_hub_pets()
 
 	var saved_cid: StringName = SaveManager.get_selected_character()
-	var init_idx: int = 0
-	for i in range(PILOT_ROSTER.size()):
-		if PILOT_ROSTER[i]["id"] == saved_cid and SaveManager.is_character_unlocked(saved_cid):
+	if not CharacterData.is_character_playable_rework_ready(saved_cid):
+		saved_cid = CharacterData.get_default_playable_character_id()
+	var init_idx: int = -1
+	for i: int in range(PILOT_ROSTER.size()):
+		var cid_i: StringName = PILOT_ROSTER[i]["id"]
+		if cid_i == saved_cid and SaveManager.is_character_unlocked(cid_i) and CharacterData.is_character_playable_rework_ready(cid_i):
 			init_idx = i
 			break
-	_select_pilot(init_idx, false)
+	if init_idx == -1:
+		for i: int in range(PILOT_ROSTER.size()):
+			if CharacterData.is_character_playable_rework_ready(PILOT_ROSTER[i]["id"]):
+				init_idx = i
+				break
+	if init_idx != -1:
+		_select_pilot(init_idx, false)
 
 	_setup_navigation()
 	_setup_skill_tree_integration()
@@ -213,6 +222,8 @@ func _on_modal_closed() -> void:
 		trophy_manager.refresh_trophy_visuals()
 	_setup_hub_pets()
 	if showcase_controller: showcase_controller.refresh_pedestal_skins(PILOT_ROSTER)
+	if player_controller and player_controller.has_method("refresh_equipped_skin"):
+		player_controller.refresh_equipped_skin()
 
 
 func _is_modal_active() -> bool:
@@ -223,6 +234,7 @@ func _is_modal_active() -> bool:
 
 
 func _on_interactable_triggered(inter: HubInteractable3D, _body: Node3D) -> void:
+	if not CharacterData.is_character_playable_rework_ready(inter.target_character_id): return
 	if not SaveManager.is_character_unlocked(inter.target_character_id): return
 	for i in range(PILOT_ROSTER.size()):
 		if PILOT_ROSTER[i]["id"] == inter.target_character_id:
@@ -272,7 +284,10 @@ func _on_skill_tree_closed() -> void:
 
 
 func _select_pilot(index: int, animate_card: bool = true) -> void:
-	if index < 0 or index >= PILOT_ROSTER.size() or not SaveManager.is_character_unlocked(PILOT_ROSTER[index]["id"]): return
+	if index < 0 or index >= PILOT_ROSTER.size(): return
+	var target_cid: StringName = PILOT_ROSTER[index]["id"]
+	if not CharacterData.is_character_playable_rework_ready(target_cid): return
+	if not SaveManager.is_character_unlocked(target_cid): return
 	current_pilot_index = index
 	var data: Dictionary = PILOT_ROSTER[index]
 	SaveManager.set_selected_character(data["id"])

@@ -16,6 +16,7 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const BLUR_SHADER := preload("res://shaders/screen_blur.gdshader")
 const SILHOUETTE_SHADER := preload("res://shaders/silhouette_black_vfx.gdshader")
 const HOLOGRAM_SHADER := preload("res://shaders/pilot_showcase_hologram.gdshader")
+const ShaderSkinLivePreviewScript = preload("res://scenes/ui/cosmetics/components/shader_skin_live_preview.gd")
 
 # Nodos UI
 @onready var dim_overlay: ColorRect = $DimOverlay
@@ -74,6 +75,7 @@ var _max_unlocked_stars: int = 1
 var _last_valid_equipped_skin: String = "base"
 var _active_tween: Tween = null
 var _silhouette_material: ShaderMaterial = null
+var _live_preview: ShaderSkinLivePreview = null
 
 
 func _ready() -> void:
@@ -107,31 +109,50 @@ func _ready() -> void:
 		bottom_card.pressed.connect(func() -> void: _cycle_stars(1))
 
 
+func ensure_live_preview() -> ShaderSkinLivePreview:
+	if _live_preview == null and artwork_viewport != null:
+		_live_preview = ShaderSkinLivePreviewScript.new() as ShaderSkinLivePreview
+		_live_preview.name = "ShaderSkinLivePreview"
+		_live_preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_live_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_live_preview.visible = false
+		artwork_viewport.add_child(_live_preview)
+		if silhouette_overlay != null:
+			artwork_viewport.move_child(_live_preview, silhouette_overlay.get_index())
+	return _live_preview
+
+
+func get_live_preview() -> ShaderSkinLivePreview:
+	return _live_preview
+
+
 func open_modal(p_category: String, p_target_id: StringName, p_char_data: CharacterData) -> void:
-	current_category = p_category
 	current_target_id = p_target_id
 	character_data_ref = p_char_data
+	current_category = CosmeticsManager.normalize_category_for_target(p_category, p_target_id)
 	is_open = true
 	show()
 
 	_setup_frame_dimensions()
 	_load_available_skins()
 
-	var loadout: Dictionary = SaveManager.get_character_loadout(current_target_id)
 	var equipped: String = ""
-	match current_category:
-		"pilot":
-			equipped = str(loadout.get("pilot_skin", ""))
-		"ship":
-			equipped = str(loadout.get("ship_skin", ""))
-		"weapon":
-			equipped = str(loadout.get("weapon_skin", ""))
-
-	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
-	if equipped.is_empty():
-		equipped = SaveManager.get_equipped_skin(slot_key)
-	if equipped.is_empty():
-		equipped = "base"
+	if character_data_ref != null and character_data_ref.has_shader_skins():
+		equipped = CosmeticsManager.resolve_equipped_skin_id(current_category, current_target_id)
+	else:
+		var loadout: Dictionary = SaveManager.get_character_loadout(current_target_id)
+		match current_category:
+			"pilot":
+				equipped = str(loadout.get("equipped_pilot_skin", loadout.get("pilot_skin", "")))
+			"ship", "wings":
+				equipped = str(loadout.get("equipped_wings_skin", loadout.get("equipped_ship_skin", loadout.get("ship_skin", ""))))
+			"weapon":
+				equipped = str(loadout.get("equipped_weapon_skin", loadout.get("weapon_skin", "")))
+		var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
+		if equipped.is_empty():
+			equipped = SaveManager.get_equipped_skin(slot_key)
+		if equipped.is_empty():
+			equipped = "base"
 	_last_valid_equipped_skin = equipped
 
 	# Encontrar índice de la skin actualmente equipada
@@ -157,6 +178,9 @@ func close_modal() -> void:
 	if not is_open:
 		return
 	is_open = false
+	if _live_preview != null:
+		_live_preview.set_preview_paused(true)
+		_live_preview.visible = false
 	hide()
 	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
 	var final_equipped: String = SaveManager.get_equipped_skin(slot_key)
@@ -264,7 +288,7 @@ func _auto_equip_if_unlocked() -> void:
 	var slot_key: String = "%s:%s" % [current_category, String(current_target_id).to_lower()]
 	if is_unl and _star_level <= unl_stars:
 		SaveManager.equip_skin(slot_key, sid)
-		if not cur.get("is_base", false):
+		if not cur.get("is_base", false) and not cur.get("is_follow_pilot", false):
 			SaveManager.set_skin_stars(sid, _star_level)
 		_last_valid_equipped_skin = sid
 
@@ -273,9 +297,10 @@ func _auto_equip_if_unlocked() -> void:
 			"pilot":
 				loadout["pilot_skin"] = sid
 				loadout["equipped_pilot_skin"] = sid
-			"ship":
+			"ship", "wings":
 				loadout["ship_skin"] = sid
 				loadout["equipped_ship_skin"] = sid
+				loadout["equipped_wings_skin"] = sid
 			"weapon":
 				loadout["weapon_skin"] = sid
 				loadout["equipped_weapon_skin"] = sid
@@ -347,6 +372,11 @@ func select_skin_by_id_for_test(skin_id: String) -> bool:
 		if _available_skins[i].get("id", "") == skin_id:
 			_skin_index = i
 			var cur: Dictionary = _available_skins[i]
+			if not cur.get("is_base", false) and not cur.get("is_follow_pilot", false):
+				var is_unl: bool = SaveManager.is_skin_unlocked(skin_id)
+				cur["is_unlocked"] = is_unl
+				cur["unlocked_stars"] = SaveManager.get_skin_stars(skin_id) if is_unl else 0
+				cur["stars"] = clampi(int(cur["unlocked_stars"]), 1, 3)
 			_max_unlocked_stars = cur.get("unlocked_stars", 1)
 			_star_level = clampi(cur.get("stars", 1), 1, 3)
 			_refresh_display()
@@ -360,7 +390,10 @@ func unequip_to_default_for_test() -> void:
 	var loadout: Dictionary = SaveManager.get_character_loadout(current_target_id)
 	match current_category:
 		"pilot": loadout["pilot_skin"] = ""; loadout["equipped_pilot_skin"] = ""
-		"ship": loadout["ship_skin"] = ""; loadout["equipped_ship_skin"] = ""
+		"ship", "wings":
+			loadout["ship_skin"] = ""
+			loadout["equipped_ship_skin"] = ""
+			loadout["equipped_wings_skin"] = ""
 		"weapon": loadout["weapon_skin"] = ""; loadout["equipped_weapon_skin"] = ""
 	SaveManager.set_character_loadout(current_target_id, loadout)
 	_last_valid_equipped_skin = ""

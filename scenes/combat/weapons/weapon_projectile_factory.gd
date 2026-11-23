@@ -92,7 +92,8 @@ func dispatch_active_fire(
 	ctx.weapon_level = inst.level
 
 	if wdata.base_cooldown > 1.1:
-		check_and_trigger_point_blank_pulse(origin, base_dmg, player, spawn_parent)
+		var pulse_origin: Vector2 = player.global_position if is_instance_valid(player) else origin
+		check_and_trigger_point_blank_pulse(pulse_origin, base_dmg, player, spawn_parent)
 
 	var count := wdata.active_burst_count
 	if wdata.scales_with_projectile_count and wdata.active_scales_with_projectiles and player and "stats" in player:

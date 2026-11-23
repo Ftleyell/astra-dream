@@ -4,6 +4,8 @@ extends Node
 ## Controlador de pedestales 3D, VFX de selección, sprites billboarding y personalización de skins para los pilotos del Hangar.
 
 const PedestalVisualPresenterClass = preload("res://scenes/ui/hub/components/pedestal_visual_presenter.gd")
+const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
+const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
 
 var hub: Node3D = null
 var current_pilot_index: int = 0
@@ -16,7 +18,7 @@ func setup(p_hub: Node3D) -> void:
 	hub = p_hub
 
 func build_pilot_pedestals_and_vfx(roster: Array[Dictionary]) -> void:
-	pilot_vfx_data = PedestalVisualPresenterClass.build_pedestals(hub, roster)
+	pilot_vfx_data = PedestalVisualPresenterClass.build_pedestals(hub, roster, DEFAULT_DIORAMA_CONFIG)
 
 func collect_and_verify_sprites(roster: Array[Dictionary]) -> void:
 	if not is_instance_valid(hub):
@@ -28,9 +30,12 @@ func collect_and_verify_sprites(roster: Array[Dictionary]) -> void:
 		roster_group.name = "RosterCutouts"
 		hub.add_child(roster_group)
 
+	var char_roster_res: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
+
 	for i in range(roster.size()):
 		var char_data: Dictionary = roster[i]
-		var char_id: String = String(char_data["id"])
+		var char_id_sn: StringName = char_data["id"]
+		var char_id: String = String(char_id_sn)
 		var sprite_name := "Cutout_" + char_id.capitalize()
 		var sprite: Sprite3D = roster_group.get_node_or_null(sprite_name)
 		if not sprite:
@@ -48,30 +53,35 @@ func collect_and_verify_sprites(roster: Array[Dictionary]) -> void:
 		sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 		sprite.position = char_data["pedestal_pos"]
 
-		var is_right_side: bool = char_data["pedestal_pos"].x > 0.0
-		var fullbody_tex := ("res://assets/characters/fullbody/fullbody_%s_flipped.png" % char_id) if is_right_side else ("res://assets/characters/fullbody/fullbody_%s.png" % char_id)
-		if ResourceLoader.exists(fullbody_tex):
-			sprite.texture = load(fullbody_tex)
-			sprite.pixel_size = 0.0013
-			sprite.offset = Vector2(0, 800)
-		else:
-			var portrait_tex := "res://assets/portraits/portrait_%s.png" % char_id
-			if ResourceLoader.exists(portrait_tex):
-				sprite.texture = load(portrait_tex)
-				sprite.pixel_size = 0.005
-				sprite.offset = Vector2(0, 256)
+		var cd_res: CharacterData = char_roster_res.get(char_id_sn, null)
+		var is_rework_ready: bool = CharacterData.is_character_playable_rework_ready(char_id_sn)
+		var is_v2_live_pilot: bool = cd_res != null and cd_res.pilot_rig_profile != null
+		var is_unlocked := SaveManager.is_character_unlocked(char_id_sn)
+		var show_cutout: bool = is_unlocked and is_rework_ready and not is_v2_live_pilot
 
-		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
-		sprite.visible = is_unlocked
-		if is_unlocked:
+		if show_cutout:
+			var is_right_side: bool = char_data["pedestal_pos"].x > 0.0
+			var fullbody_tex := ("res://assets/characters/fullbody/fullbody_%s_flipped.png" % char_id) if is_right_side else ("res://assets/characters/fullbody/fullbody_%s.png" % char_id)
+			if ResourceLoader.exists(fullbody_tex):
+				sprite.texture = load(fullbody_tex)
+				sprite.pixel_size = 0.0013
+				sprite.offset = Vector2(0, 800)
+			else:
+				var portrait_tex := "res://assets/portraits/portrait_%s.png" % char_id
+				if ResourceLoader.exists(portrait_tex):
+					sprite.texture = load(portrait_tex)
+					sprite.pixel_size = 0.005
+					sprite.offset = Vector2(0, 256)
 			PedestalVisualPresenterClass.apply_skin_to_sprite(sprite, char_id, is_right_side)
+
+		sprite.visible = show_cutout
 
 		var platform_ped: Node3D = hub.get_node_or_null("PilotPedestals/Pedestal_" + char_id.capitalize())
 		if platform_ped:
-			platform_ped.visible = is_unlocked
+			platform_ped.visible = true
 		var old_ped: Node3D = hub.get_node_or_null("Pedestals/Pedestal_" + char_id.capitalize())
 		if old_ped:
-			old_ped.visible = is_unlocked
+			old_ped.visible = true
 
 		sprite_nodes.append(sprite)
 
@@ -87,7 +97,7 @@ func setup_interactables(roster: Array[Dictionary], callback: Callable) -> void:
 	for i in range(roster.size()):
 		var char_data: Dictionary = roster[i]
 		var cid: StringName = char_data["id"]
-		var is_unlocked := SaveManager.is_character_unlocked(cid)
+		var is_active_ready: bool = SaveManager.is_character_unlocked(cid) and CharacterData.is_character_playable_rework_ready(cid)
 		var interact_name := "Interactable_" + String(cid).capitalize()
 		var inter: Area3D = roster_group.get_node_or_null(interact_name)
 		if not inter:
@@ -99,9 +109,9 @@ func setup_interactables(roster: Array[Dictionary], callback: Callable) -> void:
 			inter.position = char_data["pedestal_pos"]
 			roster_group.add_child(inter)
 
-		inter.visible = is_unlocked
-		inter.monitoring = is_unlocked
-		inter.monitorable = is_unlocked
+		inter.visible = is_active_ready
+		inter.monitoring = is_active_ready
+		inter.monitorable = is_active_ready
 
 		if inter is HubInteractable3D:
 			interactable_nodes.append(inter as HubInteractable3D)
@@ -116,6 +126,8 @@ func update_interactable_prompts(roster: Array[Dictionary], active_index: int) -
 		if not is_instance_valid(inter) or not is_instance_valid(inter.label_3d):
 			continue
 		var char_data: Dictionary = roster[i]
+		if not CharacterData.is_character_playable_rework_ready(char_data["id"]):
+			continue
 		var cname: String = String(char_data["name"]).capitalize()
 		if i == current_pilot_index:
 			inter.label_3d.text = "[E] Árbol de Habilidades: %s [ACTIVA]" % cname
@@ -125,15 +137,20 @@ func update_interactable_prompts(roster: Array[Dictionary], active_index: int) -
 			inter.label_3d.modulate = Color(0.85, 0.88, 0.95, 0.9)
 
 func refresh_pedestal_skins(roster: Array[Dictionary]) -> void:
+	var char_roster_res: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
 	for i in range(min(roster.size(), sprite_nodes.size())):
 		var char_data: Dictionary = roster[i]
-		var cid: String = String(char_data["id"])
+		var cid_sn: StringName = char_data["id"]
+		var cid: String = String(cid_sn)
 		var sprite := sprite_nodes[i]
 		if not is_instance_valid(sprite):
 			continue
-		var is_unlocked := SaveManager.is_character_unlocked(char_data["id"])
-		sprite.visible = is_unlocked
-		if not is_unlocked:
+		var cd_res: CharacterData = char_roster_res.get(cid_sn, null)
+		var is_rework_ready: bool = CharacterData.is_character_playable_rework_ready(cid_sn)
+		var is_v2_live_pilot: bool = cd_res != null and cd_res.pilot_rig_profile != null
+		var show_cutout: bool = SaveManager.is_character_unlocked(cid_sn) and is_rework_ready and not is_v2_live_pilot
+		sprite.visible = show_cutout
+		if not show_cutout:
 			continue
 		var is_right_side: bool = char_data.get("pedestal_pos", Vector3.ZERO).x > 0.0
 		PedestalVisualPresenterClass.apply_skin_to_sprite(sprite, cid, is_right_side)
@@ -142,9 +159,20 @@ func select_pilot_visuals(index: int, roster: Array[Dictionary]) -> void:
 	current_pilot_index = index
 	clean_tweens()
 
+	var char_roster_res: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
 	for i in range(sprite_nodes.size()):
 		var sp := sprite_nodes[i]
 		if not is_instance_valid(sp):
+			continue
+		if i < roster.size():
+			var cid_sn: StringName = roster[i]["id"]
+			var cd_res: CharacterData = char_roster_res.get(cid_sn, null)
+			var is_ready: bool = CharacterData.is_character_playable_rework_ready(cid_sn)
+			var is_v2_live: bool = cd_res != null and cd_res.pilot_rig_profile != null
+			if not is_ready or is_v2_live:
+				sp.visible = false
+				continue
+		if not sp.visible:
 			continue
 		var tw := hub.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_pilot_tweens.append(tw)
@@ -163,6 +191,25 @@ func select_pilot_visuals(index: int, roster: Array[Dictionary]) -> void:
 		var rot_ring: MeshInstance3D = vfx.get("rotator_ring")
 		var light: OmniLight3D = vfx.get("omni_light")
 		var badge: Label3D = vfx.get("floating_badge")
+		var is_rework_ready: bool = bool(vfx.get("is_rework_ready", false))
+
+		if not is_rework_ready:
+			if beam and is_instance_valid(beam):
+				beam.visible = false
+			if light and is_instance_valid(light):
+				light.visible = false
+				light.light_energy = 0.0
+			if rot_ring and is_instance_valid(rot_ring):
+				rot_ring.visible = false
+			if rim_mat:
+				rim_mat.albedo_color = DEFAULT_DIORAMA_CONFIG.rework_rim_color
+				rim_mat.emission = DEFAULT_DIORAMA_CONFIG.rework_rim_color
+				rim_mat.emission_energy_multiplier = DEFAULT_DIORAMA_CONFIG.rework_rim_emission
+			if badge and is_instance_valid(badge):
+				badge.visible = true
+				badge.position.y = DEFAULT_DIORAMA_CONFIG.rework_badge_y
+				badge.modulate = DEFAULT_DIORAMA_CONFIG.rework_badge_color
+			continue
 
 		if i == index:
 			if beam and is_instance_valid(beam):
@@ -221,6 +268,8 @@ func select_pilot_visuals(index: int, roster: Array[Dictionary]) -> void:
 func process_vfx(delta: float, idle_time: float) -> void:
 	if current_pilot_index >= 0 and current_pilot_index < pilot_vfx_data.size():
 		var active_vfx: Dictionary = pilot_vfx_data[current_pilot_index]
+		if not bool(active_vfx.get("is_rework_ready", false)):
+			return
 		var rot_ring: MeshInstance3D = active_vfx.get("rotator_ring")
 		if rot_ring and is_instance_valid(rot_ring) and rot_ring.visible:
 			rot_ring.rotation.y += delta * 2.2
@@ -246,7 +295,10 @@ func build_pilot_selector_buttons(container: HBoxContainer, roster: Array[Dictio
 		child.queue_free()
 	for i in range(roster.size()):
 		var data: Dictionary = roster[i]
-		if not SaveManager.is_character_unlocked(data["id"]):
+		var cid: StringName = data["id"]
+		var is_rework_ready: bool = CharacterData.is_character_playable_rework_ready(cid)
+		var is_unlocked: bool = SaveManager.is_character_unlocked(cid)
+		if is_rework_ready and not is_unlocked:
 			continue
 		var btn := Button.new()
 		btn.text = String(data["name"]).substr(0, 3).to_upper()
@@ -258,13 +310,18 @@ func build_pilot_selector_buttons(container: HBoxContainer, roster: Array[Dictio
 		sb.border_width_top = 1
 		sb.border_width_right = 1
 		sb.border_width_bottom = 1
-		sb.border_color = Color(data["color"])
+		sb.border_color = Color(data["color"]) if is_rework_ready else DEFAULT_DIORAMA_CONFIG.rework_rim_color
 		sb.set_corner_radius_all(0)
 		btn.add_theme_stylebox_override("normal", sb)
-		btn.pressed.connect(func():
-			select_callback.call(i, true)
-			if card:
-				card.visible = true
-		)
+		if not is_rework_ready:
+			btn.disabled = true
+			btn.tooltip_text = "%s — EN REWORK" % String(data["name"])
+			btn.modulate = Color(0.65, 0.65, 0.72, 0.6)
+		else:
+			btn.pressed.connect(func():
+				select_callback.call(i, true)
+				if card:
+					card.visible = true
+			)
 		container.add_child(btn)
 

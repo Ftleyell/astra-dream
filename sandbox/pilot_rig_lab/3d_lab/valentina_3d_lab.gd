@@ -4,15 +4,15 @@ extends Node2D
 ## procedural ArrayMesh + doble normal + SubViewport HDR del Rail-Lance 3D,
 ## con 6 animaciones 3D, Z-sorting real atrás/delante del rig 2D y comparativa A/B con 2D.
 
-const PlanarRigScript = preload("res://sandbox/pilot_rig_lab/proto/planar_combat_rig.gd")
+const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const BackdropScript = preload("res://sandbox/pilot_rig_lab/shader_lab/shader_lab_backdrop.gd")
-const WingsCtrlScript = preload("res://sandbox/pilot_rig_lab/3d_lab/astral_wings_3d_controller.gd")
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_wings_3d_config.gd")
+const WingsCtrlScript = preload("res://scenes/pilots/vfx/astral_wings_3d_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_wings_3d_config.gd")
 const HUDScript = preload("res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab_hud.gd")
 
-const PROFILE_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_profile.tres"
-const CONFIG_PATH: String = "res://sandbox/pilot_rig_lab/pilots/valentina_v2/valentina_v2_wings_3d.tres"
-const STYLES_DIR: String = "res://sandbox/pilot_rig_lab/data/styles"
+const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profile.tres"
+const CONFIG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_wings_3d.tres"
+const STYLES_DIR: String = "res://data/pilots/styles"
 
 const VIEW_YAW_DEG: Dictionary = {
 	"s": 0.0,

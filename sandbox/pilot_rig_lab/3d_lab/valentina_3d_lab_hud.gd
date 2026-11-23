@@ -4,8 +4,8 @@ extends RefCounted
 ## Expone los 6 modos de animación 3D, turntable 360°, comparativa A/B con alas 2D,
 ## sincronización de las 10 skins, calibración en vivo y guardado directo en .tres.
 
-const ConfigScript = preload("res://sandbox/pilot_rig_lab/data/pilot_wings_3d_config.gd")
-const WingsCtrlScript = preload("res://sandbox/pilot_rig_lab/3d_lab/astral_wings_3d_controller.gd")
+const ConfigScript = preload("res://data/pilots/schemas/pilot_wings_3d_config.gd")
+const WingsCtrlScript = preload("res://scenes/pilots/vfx/astral_wings_3d_controller.gd")
 
 const PANEL_WIDTH: float = 340.0
 const VIEW_KEYS: Array[String] = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]

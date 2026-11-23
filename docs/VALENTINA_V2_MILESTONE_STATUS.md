@@ -1,8 +1,8 @@
 # Valentina v2 — Estado de Milestone y Hoja de Ruta (`PilotRigLab`)
 
-> **Propósito:** Índice ejecutivo liviano del milestone alcanzado en **Valentina v2 (8-Dir Nativo)** bajo `sandbox/pilot_rig_lab/`.
-> Permite retomar el desarrollo en sesiones futuras con cero exploración ciega y saber qué está cerrado, qué labs/tests existen y cuáles son los siguientes pasos hacia producción.
-> **Plan Maestro de Integración (Fase 1 Completada — Próximo: Fase 2 Promoción a Producción):** [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md)
+> **Propósito:** Índice ejecutivo liviano del milestone alcanzado en **Valentina v2 (8-Dir Nativo)** en producción (`scenes/pilots/`, `data/pilots/`, `assets/pilots/`) y laboratorios de calibración en `sandbox/pilot_rig_lab/`.
+> Permite retomar el desarrollo en sesiones futuras con cero exploración ciega y saber qué está cerrado, qué labs/tests existen y cuáles son los siguientes pasos hacia Hub 3D y Combate.
+> **Plan Maestro de Integración (Fase 4 Completada — Próximo: Fase 5 Combate):** [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md)
 > **Reglas de edición y tabla contractual:** [`.agents/rules/pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md)
 
 ---
@@ -11,16 +11,18 @@
 
 | Área | Estado | Artefactos Clave | Especificación Técnica |
 |---|---|---|---|
-| **Rig 8-Dir Nativo + Mallas + 18 Huesos** | **Cerrado** | `planar_combat_rig.gd`, `planar_rig_mesh_builder.gd`, `planar_rig_view_router.gd` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
-| **Máscaras HQ + Ink SDF 2× (65 mapas)** | **Cerrado** | `combat_assets/valentina_v2_planar/**`, `tools/ink_hq_pipeline.py` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
-| **Shaders Cel 2.5D + 3 Estilos + 10 Skins + 10 Pelos** | **Cerrado** | `pilot_rig_stylizer.gdshader`, `pilot_rig_pass2.gdshader`, `data/styles/*.tres` (`00_original`, `01_valentina_definitive`, `02_valentina_razor_sharp`) | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
-| **Animación Data-Driven (6 sistemas `.tres`)** | **Cerrado** | Pose Base Zero-G, Idle 3-Capas, Locomoción/Freno, Kiting 360° Hover-Slide, Giros Snappy 2.5D + Whip Cervical, Jiggle Busto/Glúteos | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
-| **Rig Facial Vivo + Cabello 3-Zonas + Ojos Amatista** | **Cerrado** | `planar_rig_face_controller.gd`, `face_lab/`, `valentina_v2_face_anim.tres`, `rig_face_live.gdshaderinc` | [`VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md) |
-| **Alas Psíquicas & Propulsión Base Multi-Piloto** | **Cerrado** | `valentina_base_propulsion_controller.gd`, `wing_red_glow.gdshader`, `valentina_v2_base_propulsion.tres`, `tools/build_valentina_v2_wings.py` | [`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) |
-| **VFX Power-Up Sandevistan (Estela Ping-Pong)** | **Cerrado (I+D)** | `vfx_lab/sandevistan_trail_controller.gd`, `sandevistan_*.gdshader`, `valentina_v2_propulsion_vfx.tres` | [`VALENTINA_PROPULSION_VFX_SPEC.md`](VALENTINA_PROPULSION_VFX_SPEC.md) |
-| **Anillo Orbital 2.5D & Guns Lab (Base Armas)** | **Base Activa (I+D)** | `guns_lab/valentina_guns_lab.tscn`, `orbital_weapon_ring_controller.gd`, `orbital_weapon_25d.gdshader`, `valentina_v2_orbital_weapon.tres` | [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md) |
-| **3D Lab & Alas 3D Cel-Shaded (*Astral Seraph*)** | **Cerrado (Estándar)** | `3d_lab/valentina_3d_lab.tscn`, `astral_wings_3d_{mesh_builder,controller}.gd`, `astral_wing_{toon_3d,outline_3d,post_2d}.gdshader`, `valentina_v2_wings_3d.tres` | [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md) · [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) |
-| **Live Banner 2.5D & Banner Lab (Splash Select)** | **Base Activa (I+D)** | `banner_lab/valentina_banner_lab.tscn`, `pilot_live_banner_controller.gd`, `pilot_live_banner.gdshader`, `tools/build_valentina_live_banner.py`, `valentina_v2_live_banner.tres` | [`VALENTINA_LIVE_BANNER_SPEC.md`](VALENTINA_LIVE_BANNER_SPEC.md) |
+| **Rig 8-Dir Nativo + Mallas + 18 Huesos** | **Cerrado (Prod.)** | `scenes/pilots/rig/planar_combat_rig.gd`, `planar_rig_mesh_builder.gd`, `planar_rig_view_router.gd` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
+| **Máscaras HQ + Ink SDF 2× (65 mapas)** | **Cerrado (Prod.)** | `assets/pilots/valentina_v2/planar/**`, `sandbox/pilot_rig_lab/tools/ink_hq_pipeline.py` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
+| **Shaders Cel 2.5D + 3 Estilos + 10 Skins + 10 Pelos** | **Cerrado (Prod.)** | `scenes/pilots/shaders/pilot_rig_{stylizer,pass2}.gdshader`, `data/pilots/styles/*.tres`, `data/pilots/valentina_v2/skins/*.tres` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
+| **Animación Data-Driven (6 sistemas `.tres`)** | **Cerrado (Prod.)** | `data/pilots/valentina_v2/valentina_v2_*.tres` (Pose Base, Idle, Locomoción/Freno, Kiting 360°, Giros 2.5D, Jiggle) | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
+| **Rig Facial Vivo + Cabello 3-Zonas + Ojos Amatista** | **Cerrado (Prod.)** | `scenes/pilots/rig/planar_rig_face_controller.gd`, `data/pilots/valentina_v2/valentina_v2_face_anim.tres`, `rig_face_live.gdshaderinc` | [`VALENTINA_V2_FACE_RIG_REFERENCE.md`](VALENTINA_V2_FACE_RIG_REFERENCE.md) |
+| **Alas Psíquicas & Propulsión Base Multi-Piloto** | **Cerrado (Prod.)** | `scenes/pilots/vfx/valentina_base_propulsion_controller.gd`, `wing_red_glow.gdshader`, `data/pilots/valentina_v2/valentina_v2_base_propulsion.tres` | [`VALENTINA_BASE_PROPULSION_WINGS_SPEC.md`](VALENTINA_BASE_PROPULSION_WINGS_SPEC.md) |
+| **VFX Power-Up Sandevistan (Estela Ping-Pong)** | **Cerrado (Prod. listo)** | `scenes/pilots/vfx/sandevistan_trail_controller.gd`, `scenes/pilots/shaders/sandevistan_*.gdshader`, `data/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres` | [`VALENTINA_PROPULSION_VFX_SPEC.md`](VALENTINA_PROPULSION_VFX_SPEC.md) |
+| **Anillo Orbital 2.5D & Guns Lab (Base Armas)** | **Base Activa (Prod. lista)** | `scenes/pilots/weapons/orbital_weapon_{ring_controller,3d_renderer}.gd`, `scenes/pilots/shaders/orbital_weapon_25d.gdshader`, `data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres` | [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md) |
+| **3D Lab & Alas 3D Cel-Shaded (*Astral Seraph*)** | **Cerrado (Estándar Prod.)** | `scenes/pilots/vfx/astral_wings_3d_{mesh_builder,controller}.gd`, `scenes/pilots/shaders/astral_wing_*.gdshader`, `data/pilots/valentina_v2/valentina_v2_wings_3d.tres` | [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md) · [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) |
+| **Live Banner 2.5D + Icono 512×512 + Lockout Roster** | **Cerrado en Select (Fase 2)** | `scenes/pilots/banner/pilot_live_banner_controller.gd`, `character_live_banner_viewport.gd`, `data/pilots/valentina_v2/valentina_v2_live_banner.tres`, `assets/pilots/valentina_v2/banner/` | [`VALENTINA_LIVE_BANNER_SPEC.md`](VALENTINA_LIVE_BANNER_SPEC.md) |
+| **Hub 3D 2.5D Diorama + `HubRigAvatar3D`** | **Cerrado en Hub (Fase 3)** | `scenes/ui/hub/components/hub_rig_avatar_3d.gd`, `scenes/ui/hub/resources/hub_diorama_config.gd`, `data/hub/default_hub_diorama_config.tres`, `scenes/ui/hub/hub_world.tscn` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
+| **Skins 100% por Shaders (`pilot` / `wings` / `weapon`)** | **Cerrado en UI, Hub y Gacha (Fase 4)** | `data/pilots/schemas/{shader_skin_entry,pilot_shader_skin_catalog}.gd`, `data/pilots/valentina_v2/valentina_v2_skin_catalog.tres`, `scenes/ui/cosmetics/components/{shader_skin_live_preview,shader_skin_swatch}.gd`, `core/systems/cosmetics_manager.gd` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
 
 ---
@@ -46,6 +48,9 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_vf
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_guns_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "cosmic_lighting_sampler"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "kepler_3d_orbits"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "living_universe_sectors"
@@ -60,11 +65,11 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "interstellar
 1. **Etapa 4 — Maniobras de Impulso (`DASH_BOOST`, `AIR_BRAKE` explosivo, `LAUNCH`):** overlays aditivos temporizados con curva *anticipation-overshoot*, refuerzo 2.5D (`torso_trap`), compresión distal y disparo de whiplash/afterimage.
 2. **Etapa 5 — Reacción de Combate (`ATTACK_RECOIL`, `HIT_REACT`):** micro-retroceso direccional hacia `aim_dir` / `-hit_dir` acoplado a `trigger_impact_frame()`, `hit_flash` y micro-gestos faciales (`planar_rig_face_controller.gd`).
 
-### Fase B — Promoción Controlada de Sandbox a Producción (`scenes/combat/player/`)
-> **Regla vigente:** `sandbox/pilot_rig_lab/` sigue estrictamente aislado hasta ejecutar esta promoción.
+### Fase B — Promoción Controlada a Producción (Plan Maestro Fases 2–5)
+> **Regla vigente:** *Single Source of Truth* ya promovida en `scenes/pilots/`, `data/pilots/` y `assets/pilots/` (Fase 2 cerrada con Live Banner y Lockout en `CharacterSelectUI`; Hub 3D, Skins Shader y Player In-Game pendientes en Fases 3–5).
 
-Checklist previo a enlazar el rig en `scenes/combat/player/`:
-- [ ] **Empaquetado de producción:** definir ubicación destino (p. ej. `scenes/combat/player/rig/` + `resources/pilots/valentina_v2/`) copiando únicamente runtime + assets compilados (nunca `source_refs/`, `tools/.venv/`, ni `backups/`).
+Checklist de integración en producción:
+- [x] **Empaquetado de producción (*Single Source of Truth*):** movido runtime + shaders + `.tres` + assets compilados a `scenes/pilots/`, `data/pilots/` y `assets/pilots/` (manteniendo `source_refs/`, `tools/.venv/`, y `backups/` en sandbox).
 - [ ] **Adaptador de señales con `Player`:** conectar `PlayerLocomotionController` (velocidad, dash, backpedal), `WeaponController` (`aim_dir`, `fire_recoil`) y `PlayerDamageProcessor` (`hit_flash`, `impact_frame`, expresión facial) sin convertir `player.gd` en God-Object.
 - [ ] **Presupuesto de rendimiento en combate:** validar 60+ FPS con `BulletServer` activo, `CanvasGroup` (`UnifiedCharacterGroup`), `SettingsManager.space_background_quality` y opciones de calidad/LOD de VFX.
 - [ ] **Integración de Power-Up Sandevistan:** activar `SandevistanTrailController` únicamente bajo estado de habilidad/power-up (respetando cero coste cuando está inactivo).

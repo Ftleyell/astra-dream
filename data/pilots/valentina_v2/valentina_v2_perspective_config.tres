@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="RigPerspectiveConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/pilots/rig/rig_perspective_config.gd" id="1_persp"]
+
+[resource]
+script = ExtResource("1_persp")
+cam_tan_alpha = 0.1315
+jacobian_floor = 0.22
+k_conicity = 0.16
+k_volume = 0.14
+head_scale_ratio = 0.0
+max_pitch_rad = 1.309
+tick_distal_amps = PackedFloat32Array(0)
+tick_torso_trapezoids = PackedFloat32Array(0)
+tick_head_scale_offsets = PackedFloat32Array(0)
+tick_coil_phi_offset_rad = 0.0
+depth_near_tint = Color(1.08, 1.06, 1.02, 1)
+depth_far_tint = Color(0.76, 0.8, 0.92, 1)
+rim_occlusion_color = Color(0.35, 0.75, 1, 1)
+n_knee_external_rot_rad = 0.0
+n_rim_z_threshold = 0.35
+ew_front_depth_weight = 0.65
+ew_back_depth_weight = -0.75
+pauldron_trapezoid_span_px = 0.0
+whip_pre_yaw_twist = 0.0
+whip_swap_yaw_twist = 0.0
+whip_settle_yaw_twist = 0.0
+whip_pre_rim_sweep = 0.0
+whip_swap_rim_sweep = 0.0
+whip_settle_rim_sweep = 0.0
+whip_lead_arm_phi = 0.0
+whip_pauldron_shift_px = 0.0
+whip_head_settle_bounce = 1.0
+whip_swap_t_end = 0.72
+state_profiles = {}
