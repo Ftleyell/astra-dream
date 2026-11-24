@@ -1,0 +1,67 @@
+{
+  "pilot_id": "valentina_v2",
+  "canvas": [
+    1920,
+    1080
+  ],
+  "crop_x": [
+    152,
+    872
+  ],
+  "slot_size": [
+    620,
+    882
+  ],
+  "slot_xs": [
+    10,
+    650,
+    1290
+  ],
+  "slot_y0": 99,
+  "triptychs": [
+    {
+      "index": 1,
+      "input_file": "triptych_01.png",
+      "output_file": "triptych_01_motion_mask.png",
+      "slots": [
+        {
+          "slot": 0,
+          "emotion": "neutral",
+          "extract": true
+        },
+        {
+          "slot": 1,
+          "emotion": "thinking",
+          "extract": true
+        },
+        {
+          "slot": 2,
+          "emotion": "warm",
+          "extract": true
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "input_file": "triptych_02.png",
+      "output_file": "triptych_02_motion_mask.png",
+      "slots": [
+        {
+          "slot": 0,
+          "emotion": "focused",
+          "extract": true
+        },
+        {
+          "slot": 1,
+          "emotion": "neutral",
+          "extract": false
+        },
+        {
+          "slot": 2,
+          "emotion": "warm",
+          "extract": false
+        }
+      ]
+    }
+  ]
+}

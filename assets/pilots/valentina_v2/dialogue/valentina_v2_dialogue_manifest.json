@@ -1,0 +1,90 @@
+{
+  "schema_version": 2,
+  "pilot_id": "valentina_v2",
+  "generated_at_utc": "2026-11-24T05:41:54.131556+00:00",
+  "canvas_size": 1024,
+  "emotions": [
+    "neutral",
+    "thinking",
+    "warm",
+    "focused"
+  ],
+  "entries": [
+    {
+      "emotion": "neutral",
+      "albedo": "valentina_v2_dialogue_neutral.png",
+      "normal_map": "valentina_v2_dialogue_neutral_normal.png",
+      "depth_map": "valentina_v2_dialogue_neutral_depth.png",
+      "id_mask": "valentina_v2_dialogue_neutral_id_mask.png",
+      "ilm_map": "valentina_v2_dialogue_neutral_ilm_map.png",
+      "motion_mask": "valentina_v2_dialogue_neutral_motion_mask.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bbox": [
+        203,
+        56,
+        618,
+        968
+      ]
+    },
+    {
+      "emotion": "thinking",
+      "albedo": "valentina_v2_dialogue_thinking.png",
+      "normal_map": "valentina_v2_dialogue_thinking_normal.png",
+      "depth_map": "valentina_v2_dialogue_thinking_depth.png",
+      "id_mask": "valentina_v2_dialogue_thinking_id_mask.png",
+      "ilm_map": "valentina_v2_dialogue_thinking_ilm_map.png",
+      "motion_mask": "valentina_v2_dialogue_thinking_motion_mask.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bbox": [
+        259,
+        56,
+        505,
+        968
+      ]
+    },
+    {
+      "emotion": "warm",
+      "albedo": "valentina_v2_dialogue_warm.png",
+      "normal_map": "valentina_v2_dialogue_warm_normal.png",
+      "depth_map": "valentina_v2_dialogue_warm_depth.png",
+      "id_mask": "valentina_v2_dialogue_warm_id_mask.png",
+      "ilm_map": "valentina_v2_dialogue_warm_ilm_map.png",
+      "motion_mask": "valentina_v2_dialogue_warm_motion_mask.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bbox": [
+        181,
+        56,
+        661,
+        968
+      ]
+    },
+    {
+      "emotion": "focused",
+      "albedo": "valentina_v2_dialogue_focused.png",
+      "normal_map": "valentina_v2_dialogue_focused_normal.png",
+      "depth_map": "valentina_v2_dialogue_focused_depth.png",
+      "id_mask": "valentina_v2_dialogue_focused_id_mask.png",
+      "ilm_map": "valentina_v2_dialogue_focused_ilm_map.png",
+      "motion_mask": "valentina_v2_dialogue_focused_motion_mask.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bbox": [
+        176,
+        56,
+        672,
+        968
+      ]
+    }
+  ]
+}

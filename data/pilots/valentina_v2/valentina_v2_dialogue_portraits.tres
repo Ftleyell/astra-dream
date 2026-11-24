@@ -1,0 +1,126 @@
+[gd_resource type="Resource" script_class="PilotDialoguePortraitConfig" format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_dialogue_portrait_config.gd" id="1_cfg"]
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_dialogue_portrait_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Entry_neutral"]
+script = ExtResource("2_entry")
+display_label = "Neutral (Briefing)"
+texture_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral.png"
+normal_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral_normal.png"
+depth_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral_depth.png"
+id_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral_id_mask.png"
+ilm_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral_ilm_map.png"
+motion_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_neutral_motion_mask.png"
+rim_light_color = Color(0.58, 0.74, 1, 1)
+rim_light_strength = 0.54
+rim_light_angle_deg = -40.0
+cel_strength = 0.44
+ilm_ao_strength = 0.56
+breath_amp_px = 1.6
+breath_speed = 1.1
+sway_deg = 0.0
+hair_sway_amp_px = 1.5
+eye_shimmer_strength = 0.3
+
+[sub_resource type="Resource" id="Entry_thinking"]
+script = ExtResource("2_entry")
+emotion_id = &"thinking"
+display_label = "Thinking (Análisis)"
+texture_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking.png"
+normal_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking_normal.png"
+depth_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking_depth.png"
+id_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking_id_mask.png"
+ilm_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking_ilm_map.png"
+motion_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_thinking_motion_mask.png"
+rim_light_color = Color(0.42, 0.86, 1, 1)
+rim_light_strength = 0.62
+rim_light_angle_deg = -46.0
+cel_shadow_tint = Color(0.13, 0.16, 0.36, 1)
+specular_strength = 0.76
+breath_amp_px = 1.5
+breath_speed = 1.05
+sway_deg = 0.0
+hair_sway_amp_px = 1.4
+eye_shimmer_strength = 0.38
+entry_motion = 1
+
+[sub_resource type="Resource" id="Entry_warm"]
+script = ExtResource("2_entry")
+emotion_id = &"warm"
+display_label = "Warm (Victoria / Hangar)"
+texture_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm.png"
+normal_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm_normal.png"
+depth_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm_depth.png"
+id_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm_id_mask.png"
+ilm_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm_ilm_map.png"
+motion_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_warm_motion_mask.png"
+rim_light_color = Color(1, 0.76, 0.52, 1)
+rim_light_angle_deg = -30.0
+cel_strength = 0.38
+cel_shadow_tint = Color(0.24, 0.16, 0.32, 1)
+specular_strength = 0.65
+ilm_ao_strength = 0.52
+face_shadow_protect = 0.94
+breath_amp_px = 1.8
+breath_speed = 1.08
+sway_deg = 0.0
+hair_sway_amp_px = 1.6
+eye_shimmer_strength = 0.36
+
+[sub_resource type="Resource" id="Entry_focused"]
+script = ExtResource("2_entry")
+emotion_id = &"focused"
+display_label = "Focused (Lock-On)"
+pose_group = "pose_b_combat"
+texture_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused.png"
+normal_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_normal.png"
+depth_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_depth.png"
+id_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_id_mask.png"
+ilm_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_ilm_map.png"
+motion_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_motion_mask.png"
+rim_light_color = Color(0.72, 0.42, 1, 1)
+rim_light_strength = 0.7
+rim_light_angle_deg = -42.0
+cel_strength = 0.5
+cel_shadow_tint = Color(0.14, 0.12, 0.34, 1)
+specular_strength = 0.84
+ilm_ao_strength = 0.62
+breath_amp_px = 1.6
+breath_speed = 1.15
+sway_deg = 0.0
+hair_sway_amp_px = 1.5
+eye_shimmer_strength = 0.62
+entry_motion = 2
+
+[sub_resource type="Resource" id="Entry_alert"]
+script = ExtResource("2_entry")
+emotion_id = &"alert"
+display_label = "Alert (Shader Alarma)"
+pose_group = "pose_b_alert_shader"
+texture_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused.png"
+normal_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_normal.png"
+depth_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_depth.png"
+id_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_id_mask.png"
+ilm_map_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_ilm_map.png"
+motion_mask_path = "res://assets/pilots/valentina_v2/dialogue/valentina_v2_dialogue_focused_motion_mask.png"
+rim_light_color = Color(1, 0.2, 0.28, 1)
+rim_light_strength = 0.88
+rim_light_angle_deg = -18.0
+cel_strength = 0.56
+cel_shadow_tint = Color(0.26, 0.08, 0.18, 1)
+specular_strength = 0.9
+ilm_ao_strength = 0.66
+face_shadow_protect = 0.9
+breath_amp_px = 2.0
+breath_speed = 1.25
+sway_deg = 0.0
+hair_sway_amp_px = 1.8
+eye_shimmer_strength = 0.78
+entry_motion = 3
+scale_bias = 1.02
+
+[resource]
+script = ExtResource("1_cfg")
+base_display_height_px = 1080.0
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_neutral"), SubResource("Entry_thinking"), SubResource("Entry_warm"), SubResource("Entry_focused"), SubResource("Entry_alert")])

@@ -10,6 +10,7 @@ extends CanvasLayer
 var _fade_tween: Tween = null
 var _hud_layer: CanvasLayer = null
 var _active_pet_node: Node = null
+var _living_bridge: LivingBridgeScript = null
 var _is_dialogue_active: bool = false
 var _pet_wiggle_active: bool = false
 var _wiggle_time: float = 0.0
@@ -19,6 +20,7 @@ var hold_dimmer: bool = false:
 		if not hold_dimmer and not _is_dialogue_active:
 			fade_out(0.2)
 
+const LivingBridgeScript = preload("res://scenes/pilots/dialogue/dialogic_living_portrait_bridge.gd")
 const SHOWCASE_SHADER := preload("res://shaders/pilot_showcase_hologram.gdshader")
 
 const PET_IDS: Array[String] = ["mochi", "kuro", "luna", "pip", "cosmo"]
@@ -64,12 +66,21 @@ func _ready() -> void:
 	layer = 15 # Situado entre el HUD (5) y Dialogic (20)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	_living_bridge = LivingBridgeScript.new()
+	_living_bridge.name = "DialogicLivingPortraitBridge"
+	_living_bridge.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_living_bridge)
+
 	if backdrop_rect:
 		backdrop_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		backdrop_rect.modulate.a = 0.0
 		backdrop_rect.visible = false
 
 	_connect_dialogic_signals()
+
+
+func get_living_portrait_bridge() -> LivingBridgeScript:
+	return _living_bridge
 
 func _process(delta: float) -> void:
 	if _pet_wiggle_active and is_instance_valid(_active_pet_node):
@@ -100,8 +111,11 @@ func _connect_dialogic_signals() -> void:
 
 	if dialogic.has_method("get_subsystem"):
 		var text_subsystem: Variant = dialogic.call("get_subsystem", "Text")
-		if text_subsystem and text_subsystem.has_signal("speaker_updated"):
-			text_subsystem.speaker_updated.connect(_on_speaker_updated)
+		if text_subsystem:
+			if text_subsystem.has_signal("speaker_updated"):
+				text_subsystem.speaker_updated.connect(_on_speaker_updated)
+			if text_subsystem.has_signal("text_finished"):
+				text_subsystem.text_finished.connect(_on_text_finished)
 
 		var portraits_sub: Variant = dialogic.call("get_subsystem", "Portraits")
 		if portraits_sub:
@@ -110,9 +124,17 @@ func _connect_dialogic_signals() -> void:
 			if portraits_sub.has_signal("character_portrait_changed"):
 				portraits_sub.character_portrait_changed.connect(_on_character_portrait_event)
 
-func _on_character_portrait_event(_info: Dictionary) -> void:
+func _on_character_portrait_event(info: Dictionary) -> void:
+	if _living_bridge != null:
+		_living_bridge.on_portrait_event(info)
 	if _is_dialogue_active:
 		call_deferred("_refresh_portraits_visual_polish")
+
+
+func _on_text_finished(_info: Variant = null) -> void:
+	if _living_bridge != null:
+		_living_bridge.notify_text_finished()
+	_stop_pet_wiggle()
 
 func set_hud_reference(hud_node: CanvasLayer) -> void:
 	_hud_layer = hud_node
@@ -207,7 +229,9 @@ func _on_speaker_updated(character: Variant) -> void:
 		return
 
 	var active_speaker_id: String = ""
-	if character and character.has_method("get_identifier"):
+	if character is String or character is StringName:
+		active_speaker_id = String(character).to_lower()
+	elif character and character.has_method("get_identifier"):
 		active_speaker_id = String(character.get_identifier()).to_lower()
 	elif character and "display_name" in character:
 		active_speaker_id = String(character.display_name).to_lower()
@@ -232,7 +256,18 @@ func _on_speaker_updated(character: Variant) -> void:
 			continue
 
 		var c_id: String = String(char_key).to_lower()
-		var is_current_speaker: bool = (c_id == active_speaker_id) or (active_speaker_id.is_empty() and false)
+		var is_current_speaker: bool = (c_id == active_speaker_id)
+		var is_living_pilot: bool = _living_bridge != null and _living_bridge.has_living_portrait(c_id)
+
+		if is_living_pilot:
+			if "scale" in node:
+				node.set("scale", Vector2.ONE)
+			if "modulate" in node:
+				node.set("modulate", Color.WHITE)
+			if "z_index" in node:
+				node.z_index = 10 if is_current_speaker else 0
+			_living_bridge.sync_character_portrait(c_id, node, _find_portrait_sprite(node), is_current_speaker, true)
+			continue
 
 		var t := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		if is_current_speaker:
@@ -357,6 +392,8 @@ func _apply_pilot_visual_polish(char_id: String, character_node: Node, is_curren
 			curr_mat.set_shader_parameter("bottom_fade_start", fade_start)
 
 func _fade_out_all_glows() -> void:
+	if _living_bridge != null:
+		_living_bridge.fade_out_all()
 	var dialogic: Node = get_node_or_null("/root/Dialogic")
 	if not dialogic or not dialogic.has_method("get_subsystem"):
 		return

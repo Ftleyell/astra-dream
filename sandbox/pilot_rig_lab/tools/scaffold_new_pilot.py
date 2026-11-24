@@ -29,6 +29,7 @@ ASSET_SUBDIRS: tuple[str, ...] = (
     "planar/w/parts_5",
     "planar/sw/parts_5",
     "banner",
+    "dialogue",
 )
 
 

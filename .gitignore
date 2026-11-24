@@ -77,4 +77,6 @@ __pycache__/
 *.pyc
 .venv/
 sandbox/pilot_rig_lab/tools/models/
+sandbox/pilot_rig_lab/source_refs/*/02_upscayl_4x/
+sandbox/pilot_rig_lab/source_refs/*/03_gpu_audit/
 

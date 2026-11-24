@@ -38,6 +38,7 @@
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_base_propulsion.tres" id="36_baseprop"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_wings_3d.tres" id="37_wings3d"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_combat_rig.tres" id="38_combatrig"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_dialogue_portraits.tres" id="39_dlgport"]
 
 [resource]
 script = ExtResource("13_74smy")
@@ -62,6 +63,7 @@ wings_assets_subdir = "wings"
 wings_3d_config = ExtResource("37_wings3d")
 prefer_3d_wings = true
 combat_rig_config = ExtResource("38_combatrig")
+dialogue_portraits_config = ExtResource("39_dlgport")
 skins = Array[ExtResource("14_a07hi")]([ExtResource("15_56wdj"), ExtResource("16_6uaex"), ExtResource("17_lktno"), ExtResource("18_ip2dl"), ExtResource("19_ah4bm"), ExtResource("20_3otyc"), ExtResource("21_2cpcy"), ExtResource("22_o0lbb"), ExtResource("23_7ogi5"), ExtResource("24_srq3m")])
 hair_presets = Array[ExtResource("2_hljdw")]([ExtResource("3_5me0u"), ExtResource("4_45qvs"), ExtResource("5_1h62b"), ExtResource("6_5h0su"), ExtResource("7_egvmk"), ExtResource("8_re0g3"), ExtResource("9_pq6ot"), ExtResource("10_ln3m5"), ExtResource("11_yc4ts"), ExtResource("12_ibjwl")])
 style_profiles = Array[ExtResource("25_gc80d")]([ExtResource("26_oj5dp"), ExtResource("27_valdef"), ExtResource("28_valsharp")])

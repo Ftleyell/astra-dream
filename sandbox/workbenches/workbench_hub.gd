@@ -20,6 +20,7 @@ const PILOT_RIG_LAB_SCENES: Dictionary = {
 	"guns_lab": "res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab.tscn",
 	"3d_lab": "res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab.tscn",
 	"banner_lab": "res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab.tscn",
+	"dialogue_lab": "res://sandbox/pilot_rig_lab/dialogue_lab/pilot_dialogue_lab.tscn",
 	"cosmos_lab": "res://sandbox/pilot_rig_lab/cosmos_lighting_lab/valentina_cosmos_lab.tscn",
 	"calibrator": "res://sandbox/pilot_rig_lab/calibrator/rig_calibrator.tscn",
 }
@@ -33,6 +34,7 @@ const PILOT_LAB_SPECS: Array[Dictionary] = [
 	{"key": "guns_lab", "title": "Guns Lab", "desc": "Anillo orbital 2.5D & Rail-Lance"},
 	{"key": "3d_lab", "title": "3D Wings Lab", "desc": "Alas Astral Seraph 3D cel-shaded"},
 	{"key": "banner_lab", "title": "Banner Lab 2.5D", "desc": "Live Splash Art + Lock-In"},
+	{"key": "dialogue_lab", "title": "Dialogue Lab 2.5D", "desc": "Close-ups vivos, poses & teatro"},
 	{"key": "cosmos_lab", "title": "Cosmos Lighting", "desc": "Sol, bioma y eclipses sobre rig"},
 	{"key": "calibrator", "title": "Rig Calibrator", "desc": "Anclas, huesos, Z-order & simetría"},
 ]

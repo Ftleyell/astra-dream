@@ -26,6 +26,7 @@ extends Resource
 @export var wings_3d_config: Resource = null
 @export var prefer_3d_wings: bool = true
 @export var combat_rig_config: Resource = null
+@export var dialogue_portraits_config: Resource = null
 
 @export_group("Presets Asociados")
 @export var skins: Array[PilotSkinPreset] = []

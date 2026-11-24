@@ -6,6 +6,12 @@ extends RefCounted
 
 const CharacterDataScript = preload("res://data/characters/character_data.gd")
 
+static func _pilot_join_tag(pid: String, emotion: String, fallback_tag: String) -> String:
+	if pid.strip_edges().to_lower() == "valentina":
+		return " (" + emotion + ")"
+	return fallback_tag
+
+
 static func get_rival_dialogue(rival_pid: StringName, player_pid: StringName) -> Dictionary:
 	var r_line: String = "¡Piloto en mi vector! Detecto armas cargadas. Si no buscas pelea, apaga los motores y déjame pasar."
 	var p_line: String = "Te recibo fuerte y claro. No busco un conflicto innecesario, pero me defenderé si atacas."
@@ -130,8 +136,10 @@ static func trigger_rival_face_to_face_dialogue(director: Node, rival: Node2D) -
 	var p_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
 	var lines: Dictionary = get_rival_dialogue(r_pid, p_pid)
 
-	var text: String = "join " + String(r_pid) + " right\n"
-	text += "join " + String(p_pid) + " (Flipped) left\n"
+	var r_tag: String = _pilot_join_tag(String(r_pid), "Focused", "")
+	var p_tag: String = _pilot_join_tag(String(p_pid), "Focused", " (Flipped)")
+	var text: String = "join " + String(r_pid) + r_tag + " right\n"
+	text += "join " + String(p_pid) + p_tag + " left\n"
 	text += String(r_pid) + ": " + lines["rival_line"] + "\n"
 	text += String(p_pid) + ": " + lines["player_line"] + "\n"
 	text += String(r_pid) + ": " + lines["rival_closing"] + "\n"
@@ -384,11 +392,13 @@ static func trigger_post_boss_victory_dialogue(director: Node, route: String, vi
 		var spared: Array = main_game.get("rivals_spared") if main_game else []
 		for pid in spared:
 			var line: String = victory_fleet_lines.get(pid, "¡Misión cumplida! El orden cósmico ha sido restaurado.")
-			text += "join " + String(pid) + " (Flipped) right\n"
+			var v_tag: String = _pilot_join_tag(String(pid), "Warm", " (Flipped)")
+			text += "join " + String(pid) + v_tag + " right\n"
 			text += String(pid) + ": " + line + "\n"
 			text += "leave " + String(pid) + "\n"
 
-		text += "join " + String(p_pid) + " left\n"
+		var vp_tag: String = _pilot_join_tag(String(p_pid), "Warm", "")
+		text += "join " + String(p_pid) + vp_tag + " left\n"
 		text += String(p_pid) + ": ¡Gracias a todas por creer en este camino! Unidas demostramos que la galaxia puede salvarse sin exterminio.\n"
 		text += "leave " + String(p_pid) + "\n"
 
@@ -419,7 +429,8 @@ static func trigger_post_boss_victory_dialogue(director: Node, route: String, vi
 		text += pet_id + ": Las lecturas del sector vuelven a niveles seguros. Hemos sobrevivido al coloso.\n"
 		text += "leave " + pet_id + "\n"
 
-		text += "join " + String(p_pid) + " left\n"
+		var np_tag: String = _pilot_join_tag(String(p_pid), "Warm", "")
+		text += "join " + String(p_pid) + np_tag + " left\n"
 		text += String(p_pid) + ": Fue una travesía brutal... Tomamos decisiones difíciles en cada sector, pero estamos con vida.\n"
 		text += "leave " + String(p_pid) + "\n"
 
