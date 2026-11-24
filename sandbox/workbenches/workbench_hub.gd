@@ -10,6 +10,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"dialogue": "res://sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn",
 	"char_select": "res://sandbox/workbenches/character_select_workbench/character_select_workbench.tscn",
 	"hub_art_lab": "res://sandbox/hub_art_lab/hub_art_lab.tscn",
+	"gacha_3d_lab": "res://sandbox/hub_art_lab/gacha_3d_lab.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -76,6 +77,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(0.95, 0.25, 0.48, 1.0),
 		"desc": "Vertical Slice del Hub 3D: piso/muros Ink SDF 2x, props ArcSys procedurales, Cápsula Central y Ventanal Cosmos vivo.",
 	},
+	{
+		"key": "gacha_3d_lab",
+		"shortcut": "[6]",
+		"title": "Gacha 3D Lab (Invocador Giroscópico)",
+		"accent": Color(1.0, 0.24, 0.72, 1.0),
+		"desc": "Invocador Gacha 3D de 3 anillos + núcleo divisible, coreografía de 5 fases, Fake-Out y equipar en vivo sobre Valentina.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -106,6 +114,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("char_select")
 		KEY_5:
 			launch_workbench("hub_art_lab")
+		KEY_6:
+			launch_workbench("gacha_3d_lab")
 
 
 func launch_workbench(key: String) -> void:
@@ -166,7 +176,7 @@ func _build_ui() -> void:
 	title_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..5] o elegí un entorno."
+	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..6] o elegí un entorno."
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95, 0.9))
 	title_vbox.add_child(subtitle)
