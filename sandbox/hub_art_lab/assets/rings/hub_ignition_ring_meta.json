@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "hub_ignition_ring",
+  "source": "sandbox\\hub_art_lab\\source_refs\\hub_ignition_ring_master.jpg",
+  "size_px": [
+    1024,
+    1024
+  ],
+  "outer_uv_radius": 0.445,
+  "split_uv_radius": 0.287,
+  "main_rail_uv_radius": 0.3827
+}

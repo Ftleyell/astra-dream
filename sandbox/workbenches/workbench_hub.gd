@@ -9,6 +9,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"hud": "res://sandbox/workbenches/hud_workbench/hud_workbench.tscn",
 	"dialogue": "res://sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn",
 	"char_select": "res://sandbox/workbenches/character_select_workbench/character_select_workbench.tscn",
+	"hub_art_lab": "res://sandbox/hub_art_lab/hub_art_lab.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -68,6 +69,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(1.0, 0.82, 0.30, 1.0),
 		"desc": "Itera CharacterSelectUI, HeroPickerModal y skins shader sin modificar tu perfil real (respaldo automático).",
 	},
+	{
+		"key": "hub_art_lab",
+		"shortcut": "[5]",
+		"title": "Hub Art Lab 3D (Estación Astral v2)",
+		"accent": Color(0.95, 0.25, 0.48, 1.0),
+		"desc": "Vertical Slice del Hub 3D: piso/muros Ink SDF 2x, props ArcSys procedurales, Cápsula Central y Ventanal Cosmos vivo.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -96,6 +104,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("dialogue")
 		KEY_4:
 			launch_workbench("char_select")
+		KEY_5:
+			launch_workbench("hub_art_lab")
 
 
 func launch_workbench(key: String) -> void:
@@ -156,7 +166,7 @@ func _build_ui() -> void:
 	title_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..4] o elegí un entorno."
+	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..5] o elegí un entorno."
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95, 0.9))
 	title_vbox.add_child(subtitle)
@@ -189,7 +199,7 @@ func _build_ui() -> void:
 	pilot_box.add_child(_pilot_opt)
 
 	var grid := GridContainer.new()
-	grid.columns = 2
+	grid.columns = 3 if CARD_SPECS.size() > 4 else 2
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 16)

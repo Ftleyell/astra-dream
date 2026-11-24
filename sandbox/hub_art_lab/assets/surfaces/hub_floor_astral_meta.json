@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "name": "hub_floor_astral",
+  "mode": "tile",
+  "source": "sandbox\\hub_art_lab\\source_refs\\hub_floor_astral_master.jpg",
+  "native_size": [
+    1024,
+    1024
+  ],
+  "sdf_size": [
+    2048,
+    2048
+  ],
+  "sdf_range_px": 8.0,
+  "seamless_wrap": true,
+  "sha256_albedo": "4784391db6fcbb5c"
+}

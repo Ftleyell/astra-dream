@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bt03ksr55gwsn"]
 
-[ext_resource type="Script" path="res://sandbox/workbenches/workbench_hub.gd" id="1_wb_hub"]
+[ext_resource type="Script" uid="uid://2er1ao2g2jvu" path="res://sandbox/workbenches/workbench_hub.gd" id="1_wb_hub"]
 
-[node name="WorkbenchHub" type="Control"]
+[node name="WorkbenchHub" type="Control" unique_id=1702859529]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
