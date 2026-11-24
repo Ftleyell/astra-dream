@@ -40,6 +40,7 @@
 | [`ART_DIRECTION_AND_PIPELINE.md`](ART_DIRECTION_AND_PIPELINE.md) | Dirección artística global y estándares visuales del proyecto. |
 | [`art/`](art/) | Guías de pipeline IA (`character_25d_generation_guide.md`, `character_style_pipeline_bible.md`, `Estilización 2.5D en Godot 4.md`, `art_pipeline_standards.md`, etc.). |
 | [`game_design/balance_and_mechanics.md`](game_design/balance_and_mechanics.md) | Balance de combate, economía y progresión. |
+| [`game_design/hp_rework_3_layer_hybrid_proposal.md`](game_design/hp_rework_3_layer_hybrid_proposal.md) | Propuesta teórica de rework futuro de HP (Híbrido 3 Capas: Casco + Escudo Reactivo + Barrera 1-Hit). |
 | [`dev/testing_and_workflow.md`](dev/testing_and_workflow.md) | Flujo de tests headless y herramientas de verificación. |
 | [`tools/README.md`](../tools/README.md) | Índice de scripts de `tools/` (arnés de tests, launcher, procesadores activos y `legacy_art_experiments/`). |
 | [`sandbox/pilot_rig_lab/tools/README.md`](../sandbox/pilot_rig_lab/tools/README.md) | Entornos Python, `requirements.txt`, compiladores v2 (`assets/pilots/`) y `legacy_v1/`. |
