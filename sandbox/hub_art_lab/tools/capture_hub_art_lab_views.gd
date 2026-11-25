@@ -7,7 +7,6 @@ extends Node
 const LabScene: PackedScene = preload("res://sandbox/hub_art_lab/hub_art_lab.tscn")
 const LabScript = preload("res://sandbox/hub_art_lab/hub_art_lab.gd")
 const CameraRigScript = preload("res://sandbox/hub_art_lab/components/hub_lab_camera_rig.gd")
-const StationNodeScript = preload("res://sandbox/hub_art_lab/components/hub_lab_station_node.gd")
 
 var _out_dir: String = ""
 var _lab: LabScript = null
@@ -55,64 +54,99 @@ func _capture_file(filename: String) -> void:
 
 
 func _capture_sequence() -> void:
-	# 1. FREE_ROAM limpio (HUD oculto)
-	if _lab.hud != null:
-		_lab.hud.visible = false
+	_lab.apply_progression_preset(&"all_online")
+
+	# 1. FREE_ROAM puente principal (iluminación nueva, normal maps, cero stumps, oeste limpio)
 	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	await _wait_frames(4)
-	await _capture_file("01_free_roam_clean.png")
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	await _wait_frames(8)
+	await _capture_file("01_free_roam_bridge.png")
 
-	# 2. FREE_ROAM con HUD de calibración visible
-	if _lab.hud != null:
-		_lab.hud.visible = true
-	await _wait_frames(3)
-	await _capture_file("02_free_roam_hud.png")
-
-	# 3. Foco en Cápsula Central (auto-alineación frontal 's' + zoom suave)
-	if _lab.hud != null:
-		_lab.hud.visible = false
-	_lab.trigger_capsule_focus()
+	# 2. Cápsula Central Hero + HUD oculto al abrir panel
+	_lab.trigger_capsule_focus(true)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	await _wait_frames(6)
-	await _capture_file("03_capsule_focus.png")
-
-	# 4. Antesala: Consolas (Izq ONLINE vs Der CALIBRATING) + Anillo Norte + Ventanal Cosmos
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	await _wait_frames(8)
+	await _capture_file("02_capsule_hero.png")
 	_lab.exit_capsule_focus()
-	_lab.player.global_position = Vector3(0.0, 0.05, -2.5)
-	_lab.player.face_front_idle(true)
-	if _lab.left_station != null:
-		_lab.left_station.set_station_state(StationNodeScript.StationState.ONLINE)
-	if _lab.right_station != null:
-		_lab.right_station.set_station_state(StationNodeScript.StationState.CALIBRATING)
+
+	# 3. Espejo de Skins temático (piloto en suelo frente al arco vestidor)
+	_lab.open_station_by_id(&"skins_mirror")
+	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	await _wait_frames(10)
+	await _capture_file("03_skins_mirror.png")
+	_lab.modal_coordinator.close_active_modal()
+
+	# 4. Nexo de Talentos (piloto encuadrada limpia + HUD estación oculto)
+	_lab.open_station_by_id(&"talents_nexus")
+	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	await _wait_frames(10)
+	await _capture_file("09_talents_modal_framed.png")
+	_lab.modal_coordinator.close_active_modal()
+
+	# 5. Bahía de Ignición Norte rediseñada (abierta al piso) + despegue dinámico Fase B/C
+	_lab.player.global_position = _lab.config.ignition_ring_pos + Vector3(0.0, 0.0, 2.5)
+	_lab.player.face_north_idle(true)
 	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
 	await _wait_frames(6)
-	await _capture_file("04_antesala_stations.png")
+	await _capture_file("04a_ignition_pad_idle.png")
 
-	# 5. Ignición Norte (SERAPH_BLOOM 3D wings + Anillo Norte cargado + Ventanal Cosmos)
 	_lab.trigger_ignition_preview()
+	for _f: int in range(44):
+		await get_tree().process_frame
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	await _wait_frames(24)
-	await _capture_file("05_ignition_launch.png")
-
-	# 6. Vista panorámica arquitectónica de la cubierta en "U"
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	await _wait_frames(4)
+	await _capture_file("04b_ignition_takeoff.png")
 	_lab._finish_ignition_preview()
-	_lab.exit_capsule_focus()
+
+	# 6. Zoom scroll hasta Primera Persona mirando el Ventanal Cosmos
+	_lab.player.global_position = Vector3(0.0, 0.05, -2.5)
+	_lab.player.face_north_idle(true)
+	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
+	_lab.camera_rig.set_scroll_zoom_immediate(1.0)
+	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
+	_lab.player.set_visibility_fade(0.0)
+	await _wait_frames(6)
+	await _capture_file("05_first_person_cosmos.png")
+	_lab.camera_rig.reset_scroll_zoom()
+	_lab.player.set_visibility_fade(1.0)
+
+	# 7. Superestructura Sur y cielo espacial 3D (cero vacío negro)
+	_lab.set_process(false)
+	if _lab.hud != null:
+		_lab.hud.set_clean_hud_visible(false)
+	_lab.camera.global_position = Vector3(0.0, 4.8, 4.5)
+	_lab.camera.look_at(Vector3(0.0, -1.6, 17.5), Vector3.UP)
+	_lab.camera.fov = 50.0
+	await _wait_frames(6)
+	await _capture_file("06_south_superstructure.png")
+
+	# 8. Las 4 consolas temáticas de la Antesala
 	_lab.player.global_position = _lab.config.player_spawn_pos
 	_lab.player.face_front_idle(true)
-	_lab.set_process(false)
-	_lab.camera.global_position = Vector3(0.0, 15.5, 19.5)
-	_lab.camera.rotation_degrees = Vector3(-37.0, 0.0, 0.0)
-	_lab.camera.fov = 46.0
-	await _wait_frames(4)
-	await _capture_file("06_overview_u_deck.png")
+	_lab.camera.global_position = Vector3(0.0, 9.2, 6.2)
+	_lab.camera.look_at(Vector3(0.0, 1.0, -4.4), Vector3.UP)
+	_lab.camera.fov = 52.0
+	_lab.player.rig_avatar.set_camera_pitch_alignment(-34.0, true)
+	await _wait_frames(6)
+	await _capture_file("07_antesala_4_consoles.png")
 
-	# 7. Toma media-baja angulada mostrando ambos muros laterales, costillas, bahías y 4 consolas
-	_lab.camera.global_position = Vector3(0.0, 4.4, 10.6)
-	_lab.camera.look_at(Vector3(0.0, 1.75, -3.5), Vector3.UP)
-	_lab.camera.fov = 56.0
-	await _wait_frames(4)
-	await _capture_file("07_walls_and_wings.png")
+	# 9. Galería Oeste Adyacente siguiendo en FREE_ROAM real (cámara debe mostrar las 5 reliquias)
+	_lab.set_west_mastery_override(3)
+	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
+	_lab.player.global_position = Vector3(-13.8, 0.05, 0.8)
+	_lab.player.face_front_idle(true)
+	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
+	_lab.player.rig_avatar.rotation_degrees.y = _lab.camera.rotation_degrees.y
+	await _wait_frames(6)
+	await _capture_file("08_west_trophy_chamber.png")
+	_lab.player.rig_avatar.rotation_degrees.y = 0.0
 
 	get_tree().quit(0)

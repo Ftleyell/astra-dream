@@ -6,6 +6,7 @@ extends "res://scenes/combat/systems/combat_subsystem.gd"
 
 const CombatRadioFeedControllerScript = preload("res://scenes/combat/directors/combat_radio_feed_controller.gd")
 const BossCinematicPresenterScript = preload("res://scenes/combat/bosses/boss_cinematic_presenter.gd")
+const DialogicMumbleBridgeScript = preload("res://core/audio/dialogic_mumble_bridge.gd")
 
 signal briefing_completed(bonus_awarded: bool)
 signal dialogue_started()
@@ -19,6 +20,7 @@ var hud: Node = null
 var skip_badge_layer: CanvasLayer = null
 var active_navigator_controller: Node = null
 var audio_duck_manager: Node = null
+var mumble_bridge: DialogicMumbleBridgeScript = null
 
 var is_briefing_active: bool = false:
 	set(val):
@@ -139,22 +141,28 @@ leave --All--
 		is_briefing_active = false
 		PauseArbitrator.release_pause(&"briefing")
 
+func _ready() -> void:
+	_ensure_mumble_bridge()
+
+
+func _ensure_mumble_bridge() -> DialogicMumbleBridgeScript:
+	if not is_instance_valid(mumble_bridge):
+		mumble_bridge = DialogicMumbleBridgeScript.new()
+		mumble_bridge.name = "DialogicMumbleBridge"
+		add_child(mumble_bridge)
+	return mumble_bridge
+
+
 func _setup_dialogic_audio(layout: Node) -> void:
-	if not layout:
-		return
-	var type_sound := layout.find_child("DialogicNode_TypeSounds", true, false) as DialogicNode_TypeSounds
-	if type_sound:
-		type_sound.sounds = [
-			preload("res://addons/dialogic/Example Assets/sound-effects/typing1.wav"),
-			preload("res://addons/dialogic/Example Assets/sound-effects/typing4.wav")
-		]
-		type_sound.play_every_character = 1
-		type_sound.pitch_variance = 0.2
-		type_sound.volume_variance = 0.5
+	var bridge: DialogicMumbleBridgeScript = _ensure_mumble_bridge()
+	var radio_mode: bool = is_boss_transmission_active or is_cockpit_active
+	bridge.attach_to_layout(layout, get_dialogic(), radio_mode)
 
 func skip_dialogue() -> void:
 	if CinematicDeathSequence.is_sequence_active:
 		return
+	if is_instance_valid(mumble_bridge):
+		mumble_bridge.stop()
 
 	var is_in_rival_spawn: bool = is_rival_cinematic_active or (main_game != null and main_game.get("is_rival_cinematic_active") == true)
 	var is_in_boss_spawn: bool = is_boss_transmission_active or (main_game != null and (main_game.get("is_boss_transmission_active") == true or (main_game.get("current_boss") != null and main_game.get("current_boss").get_meta("_is_emerging", false))))
@@ -261,6 +269,8 @@ func on_timeline_started() -> void:
 	dialogue_started.emit()
 
 func on_timeline_ended() -> void:
+	if is_instance_valid(mumble_bridge):
+		mumble_bridge.stop()
 	if skip_badge_layer:
 		skip_badge_layer.hide()
 	if audio_duck_manager and audio_duck_manager.has_method("duck_music"):
@@ -460,4 +470,3 @@ func on_dialogic_signal(arg: Variant) -> void:
 				player.stats.add_modifier(&"max_health", CharacterStats.StatModifier.new(&"briefing_hull", 25.0, false, main_game))
 				player.current_health = player.stats.get_stat(&"max_health")
 				player.health_changed.emit(player.current_health, player.stats.get_stat(&"max_health"))
-

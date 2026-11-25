@@ -1,0 +1,76 @@
+[gd_resource type="Resource" script_class="HubProgressionConfig" format=3 uid="uid://bax2p4rsau5h5"]
+
+[ext_resource type="Script" uid="uid://dy7v7pyiu28yj" path="res://scenes/ui/hub/resources/hub_progression_config.gd" id="1_cfg"]
+[ext_resource type="Script" uid="uid://dc5y7slllof3i" path="res://scenes/ui/hub/resources/hub_module_unlock_rule.gd" id="2_rule"]
+
+[sub_resource type="Resource" id="rule_ignition_ring"]
+script = ExtResource("2_rule")
+module_id = &"ignition_ring"
+display_name = "Anillo de Ignición Norte"
+locked_hint_text = ""
+
+[sub_resource type="Resource" id="rule_pilot_capsule"]
+script = ExtResource("2_rule")
+module_id = &"pilot_capsule"
+display_name = "Cápsula Central de Piloto"
+locked_hint_text = "Nuevas pilotos en sincronización"
+accent_override = Color(0.95, 0.16, 0.34, 1)
+
+[sub_resource type="Resource" id="rule_skins_mirror"]
+script = ExtResource("2_rule")
+module_id = &"skins_mirror"
+display_name = "Espejo de Skins"
+unlock_metric = 2
+locked_hint_text = "Consigue tu primera skin en el Invocador Gacha"
+accent_override = Color(1, 0.16, 0.62, 1)
+
+[sub_resource type="Resource" id="rule_talents_nexus"]
+script = ExtResource("2_rule")
+module_id = &"talents_nexus"
+display_name = "Nexo de Talentos"
+unlock_metric = 3
+locked_hint_text = "Recolecta Biomasa o completa tu 1.ª incursión"
+accent_override = Color(0.24, 0.95, 0.68, 1)
+
+[sub_resource type="Resource" id="rule_companions_projector"]
+script = ExtResource("2_rule")
+module_id = &"companions_projector"
+display_name = "Proyector de Compañía"
+unlock_metric = 4
+locked_hint_text = "Desbloquea una Mascota o Navegante"
+accent_override = Color(0.05, 0.9, 1, 1)
+
+[sub_resource type="Resource" id="rule_tactical_banlist"]
+script = ExtResource("2_rule")
+module_id = &"tactical_banlist"
+display_name = "Banlist Táctica"
+unlock_metric = 5
+locked_hint_text = "Completa 1 incursión para calibrar Banlist"
+accent_override = Color(0.95, 0.78, 0.32, 1)
+
+[sub_resource type="Resource" id="rule_tactical_tomes"]
+script = ExtResource("2_rule")
+module_id = &"tactical_tomes"
+display_name = "Pool de Tomos"
+unlock_metric = 6
+locked_hint_text = "Derrota 1 Jefe para calibrar Tomos"
+accent_override = Color(0.75, 0.38, 1, 1)
+
+[sub_resource type="Resource" id="rule_tactical_speed"]
+script = ExtResource("2_rule")
+module_id = &"tactical_speed"
+display_name = "Overclock de Velocidad"
+unlock_metric = 7
+locked_hint_text = "Supera un sector completo para desbloquear Overclock"
+accent_override = Color(1, 0.5, 0.12, 1)
+
+[sub_resource type="Resource" id="rule_tactical_seed"]
+script = ExtResource("2_rule")
+module_id = &"tactical_seed"
+display_name = "Coordenadas / Seed"
+unlock_metric = 5
+locked_hint_text = "Completa 1 incursión para calibrar Coordenadas de Salto"
+
+[resource]
+script = ExtResource("1_cfg")
+module_rules = Array[ExtResource("2_rule")]([SubResource("rule_ignition_ring"), SubResource("rule_pilot_capsule"), SubResource("rule_skins_mirror"), SubResource("rule_talents_nexus"), SubResource("rule_companions_projector"), SubResource("rule_tactical_banlist"), SubResource("rule_tactical_tomes"), SubResource("rule_tactical_speed"), SubResource("rule_tactical_seed")])

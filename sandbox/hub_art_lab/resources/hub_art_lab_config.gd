@@ -13,15 +13,27 @@ extends Resource
 @export var camera_transition_smooth: float = 6.5
 
 @export_group("Camera — Focus Presets")
-@export var capsule_focus_offset: Vector3 = Vector3(0.75, 2.05, 5.35)
-@export var capsule_focus_pitch_deg: float = -6.5
-@export var capsule_focus_fov: float = 32.0
-@export var station_focus_offset: Vector3 = Vector3(0.0, 2.45, 4.4)
-@export var station_focus_pitch_deg: float = -15.0
+@export var capsule_focus_offset: Vector3 = Vector3(1.05, 1.46, 5.15)
+@export var capsule_focus_pitch_deg: float = -5.5
+@export var capsule_focus_fov: float = 34.0
+@export var skins_mirror_focus_offset: Vector3 = Vector3(0.88, 1.48, 4.55)
+@export var skins_mirror_focus_pitch_deg: float = -6.0
+@export var skins_mirror_focus_fov: float = 34.0
+@export var station_focus_offset: Vector3 = Vector3(1.15, 2.25, 4.45)
+@export var station_focus_pitch_deg: float = -14.0
 @export var station_focus_fov: float = 33.0
-@export var ignition_launch_offset: Vector3 = Vector3(0.0, 2.45, 6.4)
-@export var ignition_launch_pitch_deg: float = -7.0
-@export var ignition_launch_fov: float = 34.0
+@export var gacha_cinematic_offset: Vector3 = Vector3(-0.65, 2.35, 6.25)
+@export var gacha_cinematic_pitch_deg: float = -8.5
+@export var gacha_cinematic_fov: float = 34.0
+@export var trophy_focus_offset: Vector3 = Vector3(1.15, 2.10, 4.20)
+@export var trophy_focus_pitch_deg: float = -13.0
+@export var trophy_focus_fov: float = 32.0
+@export var ignition_launch_offset: Vector3 = Vector3(0.0, 2.05, 5.4)
+@export var ignition_launch_pitch_deg: float = -6.0
+@export var ignition_launch_fov: float = 35.0
+@export var ignition_push_in_offset: Vector3 = Vector3(0.0, 2.85, 2.10)
+@export var ignition_push_in_pitch_deg: float = 4.0
+@export var ignition_push_in_fov: float = 46.0
 
 @export_group("Shaders & Visual Calibration")
 @export var pilot_accent_color: Color = Color(0.95, 0.16, 0.34, 1.0)
@@ -55,10 +67,24 @@ extends Resource
 @export var console_right_pos: Vector3 = Vector3(4.2, 0.0, -2.6)
 @export var console_left_far_pos: Vector3 = Vector3(-6.2, 0.0, -5.8)
 @export var console_right_far_pos: Vector3 = Vector3(6.2, 0.0, -5.8)
-@export var ignition_ring_pos: Vector3 = Vector3(0.0, 0.065, -8.2)
+@export var ignition_ring_pos: Vector3 = Vector3(0.0, 0.065, -7.35)
 @export var ignition_ring_size: Vector2 = Vector2(4.2, 4.2)
 @export var north_window_pos: Vector3 = Vector3(0.0, 3.9, -10.55)
 @export var north_window_size: Vector2 = Vector2(19.2, 7.4)
+@export var gacha_summoner_pos: Vector3 = Vector3(8.4, 0.0, 0.8)
+@export var telemetry_totem_pos: Vector3 = Vector3(9.4, 0.0, -3.6)
+@export var pet_lounge_positions: Array[Vector3] = [
+	Vector3(9.8, 0.0, 3.6),
+	Vector3(10.2, 0.0, 5.2),
+	Vector3(9.8, 0.0, 6.8),
+]
+@export var west_relic_positions: Array[Vector3] = [
+	Vector3(-17.4, 0.0, -2.4),
+	Vector3(-16.5, 0.0, -0.8),
+	Vector3(-16.2, 0.0, 0.8),
+	Vector3(-16.5, 0.0, 2.4),
+	Vector3(-17.4, 0.0, 4.0),
+]
 @export var player_spawn_pos: Vector3 = Vector3(0.0, 0.05, 4.35)
 @export var player_move_speed: float = 7.2
-@export var ignition_preview_duration: float = 1.15
+@export var ignition_preview_duration: float = 1.85

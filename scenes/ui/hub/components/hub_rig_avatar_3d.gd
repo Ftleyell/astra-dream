@@ -7,22 +7,45 @@ extends Node3D
 const PlanarCombatRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
 const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
+const OrbitalRingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
+const OrbitalConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
+const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
+const Pilot3DIntegrateShader = preload("res://scenes/ui/hub/shaders/hub_pilot_3d_integrate.gdshader")
+const DEFAULT_ORBITAL_CFG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
+const DEFAULT_RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
 
 @export var diorama_config: HubDioramaConfigScript = DEFAULT_DIORAMA_CONFIG
+@export var enable_3d_scene_lighting: bool = false
 
 var _subviewport: SubViewport = null
 var _camera_2d: Camera2D = null
 var _rig: PlanarCombatRig = null
+var _orbital_ring: OrbitalRingCtrlScript = null
 var _avatar_sprite: Sprite3D = null
+var _integrate_3d_mat: ShaderMaterial = null
 
 var _loaded_profile: PilotRigProfile = null
 var _current_style: RigStyleProfile = null
 var _current_skin: PilotSkinPreset = null
+var _current_wings_skin: PilotSkinPreset = null
+var _current_weapon_skin: PilotSkinPreset = null
 var _current_star_level: int = 1
+var _current_wings_star_level: int = 1
+var _current_weapon_star_level: int = 1
+var _orbital_weapon_enabled: bool = false
+var _wings_3d_showcase_enabled: bool = false
 var _light_dir_2d: Vector2 = Vector2(0.45, -0.89).normalized()
 
 var _hover_time: float = 0.0
 var _hover_factor: float = 0.5
+var _showcase_lift_y: float = 0.0
+var _target_tilt_deg: float = -22.0
+var _launch_scale_mult: float = 1.0
+var _sprite_opacity: float = 1.0
+var _preview_anim_kind: StringName = &""
+var _preview_anim_timer: float = 0.0
+var _preview_anim_duration: float = 0.0
+var _preview_weapon_fired: bool = false
 var _last_move_dir: Vector2 = Vector2.DOWN
 var _last_aim_dir: Vector2 = Vector2.DOWN
 var _last_speed_norm: float = 0.0
@@ -47,11 +70,18 @@ func _process(delta: float) -> void:
 
 	var cfg: HubDioramaConfigScript = _resolve_config()
 	_hover_time += delta
+	_step_preview_micro_animation(delta)
 	var wave: float = 0.5 + 0.5 * sin(_hover_time * TAU * cfg.avatar_idle_bob_hz)
 	var amp_mult: float = lerpf(1.0, 0.45, clampf(_last_speed_norm, 0.0, 1.0))
 	var bob_y: float = (wave - 0.5) * 2.0 * cfg.avatar_idle_bob_amp * amp_mult
-	_avatar_sprite.position.y = cfg.avatar_hover_height + bob_y
+	var preview_lift: float = _compute_preview_lift()
+	_avatar_sprite.position.y = cfg.avatar_hover_height + bob_y + _showcase_lift_y + preview_lift
+	_avatar_sprite.scale = Vector3(_launch_scale_mult, cfg.avatar_aspect_y_comp * _launch_scale_mult, 1.0)
 	_hover_factor = clampf(0.25 + wave * 0.45, 0.0, 1.0)
+	if absf(_avatar_sprite.rotation_degrees.x - _target_tilt_deg) > 0.05:
+		_avatar_sprite.rotation_degrees.x = lerpf(_avatar_sprite.rotation_degrees.x, _target_tilt_deg, clampf(10.0 * delta, 0.0, 1.0))
+	if _orbital_weapon_enabled and _orbital_ring != null and is_instance_valid(_orbital_ring):
+		_orbital_ring.step(delta)
 
 
 func _resolve_config() -> HubDioramaConfigScript:
@@ -123,6 +153,7 @@ func _ensure_nodes_ready() -> void:
 		_rig.enable_procedural_wings = false
 		_rig.enable_boot_thrusters = false
 		_rig.enable_afterimage = false
+		_rig.z_index = 5
 		_rig.position = Vector2.ZERO
 		_subviewport.add_child(_rig)
 
@@ -135,17 +166,20 @@ func _ensure_nodes_ready() -> void:
 		add_child(_avatar_sprite)
 	_avatar_sprite.texture = _subviewport.get_texture()
 	_avatar_sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	_target_tilt_deg = cfg.avatar_tilt_deg
 	_avatar_sprite.rotation_degrees = Vector3(cfg.avatar_tilt_deg, 0.0, 0.0)
 	_avatar_sprite.scale = Vector3(1.0, cfg.avatar_aspect_y_comp, 1.0)
 	_avatar_sprite.shaded = false
 	_avatar_sprite.double_sided = true
 	_avatar_sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
-	_avatar_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_avatar_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	_avatar_sprite.pixel_size = cfg.avatar_pixel_size
 	_avatar_sprite.offset = Vector2(0.0, cfg.avatar_feet_offset_px)
 	_avatar_sprite.position = Vector3(0.0, cfg.avatar_hover_height, 0.0)
 	_avatar_sprite.render_priority = 2
 	_avatar_sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if enable_3d_scene_lighting:
+		set_3d_scene_lighting_enabled(true)
 
 	_is_initialized = true
 
@@ -224,6 +258,224 @@ func apply_skin_preset(preset: PilotSkinPreset, star_level: int = 1) -> void:
 	_current_star_level = clampi(star_level, 1, 3)
 	if _rig != null:
 		_rig.apply_skin_preset(preset, _current_star_level)
+
+
+func apply_wings_skin_preset(preset: PilotSkinPreset, star_level: int = 1) -> void:
+	_ensure_nodes_ready()
+	if preset == null:
+		return
+	_current_wings_skin = preset
+	_current_wings_star_level = clampi(star_level, 1, 3)
+	if _rig != null:
+		_rig.apply_wings_skin_preset(preset, _current_wings_star_level)
+
+
+func apply_weapon_skin_preset(preset: PilotSkinPreset, star_level: int = 1) -> void:
+	_ensure_nodes_ready()
+	if preset == null:
+		return
+	_current_weapon_skin = preset
+	_current_weapon_star_level = clampi(star_level, 1, 3)
+	if _orbital_ring != null and is_instance_valid(_orbital_ring):
+		_orbital_ring.apply_skin_preset(preset, _current_weapon_star_level)
+
+
+func set_loadout_showcase_enabled(wings_enabled: bool, orbital_weapon_enabled: bool, wings_anim_state: int = -1) -> void:
+	_ensure_nodes_ready()
+	_wings_3d_showcase_enabled = wings_enabled
+	if _rig != null:
+		_rig.set_3d_wings_enabled(wings_enabled)
+		if wings_enabled:
+			if wings_anim_state >= 0:
+				_rig.set_3d_wings_anim_state(wings_anim_state, false)
+			_rig.trigger_3d_wings_pulse()
+			if _current_wings_skin != null:
+				_rig.apply_wings_skin_preset(_current_wings_skin, _current_wings_star_level)
+		else:
+			_rig.clear_3d_wings_manual_override()
+
+	_orbital_weapon_enabled = orbital_weapon_enabled
+	if orbital_weapon_enabled:
+		_ensure_orbital_ring_ready()
+		if _orbital_ring != null:
+			_orbital_ring.visible = true
+			_orbital_ring.process_mode = Node.PROCESS_MODE_INHERIT
+			if _current_weapon_skin != null:
+				_orbital_ring.apply_skin_preset(_current_weapon_skin, _current_weapon_star_level)
+			_orbital_ring.step(0.0)
+	elif _orbital_ring != null and is_instance_valid(_orbital_ring):
+		_orbital_ring.visible = false
+		_orbital_ring.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+func set_camera_pitch_alignment(cam_pitch_deg: float, snap: bool = false) -> void:
+	_ensure_nodes_ready()
+	var cfg: HubDioramaConfigScript = _resolve_config()
+	var t_closeup: float = clampf((-cam_pitch_deg - 6.0) / 36.0, 0.0, 1.0)
+	_target_tilt_deg = lerpf(-3.5, cfg.avatar_tilt_deg, t_closeup)
+	if snap and _avatar_sprite != null:
+		_avatar_sprite.rotation_degrees.x = _target_tilt_deg
+
+
+func set_showcase_lift_offset(extra_y: float) -> void:
+	_showcase_lift_y = maxf(0.0, extra_y)
+	if _avatar_sprite != null:
+		var cfg: HubDioramaConfigScript = _resolve_config()
+		_avatar_sprite.position.y = cfg.avatar_hover_height + _showcase_lift_y + _compute_preview_lift()
+
+
+func set_launch_scale_multiplier(mult: float) -> void:
+	_launch_scale_mult = clampf(mult, 0.35, 1.5)
+	if _avatar_sprite != null:
+		var cfg: HubDioramaConfigScript = _resolve_config()
+		_avatar_sprite.scale = Vector3(_launch_scale_mult, cfg.avatar_aspect_y_comp * _launch_scale_mult, 1.0)
+
+
+func set_sprite_opacity(alpha: float) -> void:
+	_sprite_opacity = clampf(alpha, 0.0, 1.0)
+	if _avatar_sprite != null:
+		_avatar_sprite.modulate.a = _sprite_opacity
+	if _integrate_3d_mat != null:
+		_integrate_3d_mat.set_shader_parameter("opacity", _sprite_opacity)
+
+
+func set_3d_scene_lighting_enabled(enabled: bool) -> void:
+	enable_3d_scene_lighting = enabled
+	if _avatar_sprite == null:
+		return
+	if enabled:
+		if _integrate_3d_mat == null:
+			_integrate_3d_mat = ShaderMaterial.new()
+			_integrate_3d_mat.shader = Pilot3DIntegrateShader
+		if _subviewport != null:
+			_integrate_3d_mat.set_shader_parameter("avatar_tex", _subviewport.get_texture())
+		_integrate_3d_mat.set_shader_parameter("opacity", _sprite_opacity)
+		_avatar_sprite.material_override = _integrate_3d_mat
+	else:
+		_avatar_sprite.material_override = null
+
+
+func apply_station_lighting(sample: CosmicLightingSampleScript, delta: float) -> void:
+	if sample == null or _rig == null:
+		return
+	_rig.apply_cosmic_lighting(sample, delta)
+	if _integrate_3d_mat != null:
+		_integrate_3d_mat.set_shader_parameter("rim_tint", sample.rim_key_color)
+		_integrate_3d_mat.set_shader_parameter("shadow_tint", sample.shadow_tint.lerp(sample.key_light_tint, 0.35))
+		_integrate_3d_mat.set_shader_parameter("rim_strength", clampf(0.32 + sample.rim_tint_weight * 0.26, 0.25, 0.72))
+	if _orbital_ring != null and is_instance_valid(_orbital_ring):
+		var eff_sample: CosmicLightingSampleScript = _rig.get_last_cosmic_lighting()
+		_orbital_ring.apply_cosmic_lighting(eff_sample if eff_sample != null else sample)
+
+
+func play_pilot_skin_turnaround() -> void:
+	_preview_anim_kind = &"pilot_turnaround"
+	_preview_anim_timer = 0.0
+	_preview_anim_duration = 1.45
+	_preview_weapon_fired = false
+
+
+func play_wings_skin_flourish() -> void:
+	_preview_anim_kind = &"wings_flourish"
+	_preview_anim_timer = 0.0
+	_preview_anim_duration = 1.10
+	_preview_weapon_fired = false
+	if _rig != null:
+		_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_BLOOM, false)
+		_rig.trigger_3d_wings_pulse()
+
+
+func play_weapon_skin_inspect() -> void:
+	_preview_anim_kind = &"weapon_inspect"
+	_preview_anim_timer = 0.0
+	_preview_anim_duration = 1.15
+	_preview_weapon_fired = false
+	if _orbital_ring != null and is_instance_valid(_orbital_ring):
+		_orbital_ring.set_orbit_angle_manual(PI * 0.25)
+		_orbital_ring.trigger_fire(0, true)
+
+
+func _compute_preview_lift() -> float:
+	if _preview_anim_kind == &"wings_flourish" and _preview_anim_duration > 0.01:
+		var t: float = clampf(_preview_anim_timer / _preview_anim_duration, 0.0, 1.0)
+		return sin(t * PI) * 0.16
+	return 0.0
+
+
+func _step_preview_micro_animation(delta: float) -> void:
+	if _preview_anim_kind.is_empty():
+		return
+	_preview_anim_timer += delta
+	var t: float = clampf(_preview_anim_timer / maxf(_preview_anim_duration, 0.01), 0.0, 1.0)
+	match _preview_anim_kind:
+		&"pilot_turnaround":
+			if _rig != null:
+				if t < 0.28:
+					_rig.set_locomotion_state(Vector2(0.7, 0.7).normalized(), 0.25, Vector2(0.7, 0.7).normalized(), false)
+				elif t < 0.56:
+					_rig.set_locomotion_state(Vector2(-0.7, 0.7).normalized(), 0.25, Vector2(-0.7, 0.7).normalized(), false)
+				else:
+					_rig.set_locomotion_state(Vector2.DOWN, 0.0, Vector2.DOWN, false)
+		&"wings_flourish":
+			if t >= 0.78 and _rig != null:
+				_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.IDLE_ZERO_G, false)
+		&"weapon_inspect":
+			if _orbital_ring != null and is_instance_valid(_orbital_ring):
+				var sweep_ang: float = PI * 0.5 + sin(t * TAU) * 1.15
+				_orbital_ring.set_orbit_angle_manual(sweep_ang)
+				if t >= 0.45 and not _preview_weapon_fired:
+					_preview_weapon_fired = true
+					_orbital_ring.trigger_fire(0, true)
+
+	if t >= 1.0:
+		_preview_anim_kind = &""
+		_preview_anim_timer = 0.0
+		if _rig != null and _wings_3d_showcase_enabled:
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.IDLE_ZERO_G, false)
+			_rig.set_locomotion_state(_last_move_dir, _last_speed_norm, _last_aim_dir, false)
+
+
+func is_3d_wings_showcase_enabled() -> bool:
+	return _wings_3d_showcase_enabled
+
+
+func is_orbital_weapon_showcase_enabled() -> bool:
+	return _orbital_weapon_enabled
+
+
+func _ensure_orbital_ring_ready() -> void:
+	if _orbital_ring != null and is_instance_valid(_orbital_ring):
+		return
+	if _subviewport == null:
+		return
+
+	_orbital_ring = OrbitalRingCtrlScript.new() as OrbitalRingCtrlScript
+	_orbital_ring.name = "HubShowcaseOrbitalRing"
+	_orbital_ring.z_index = 0
+	_orbital_ring.scale = Vector2(0.72, 0.72)
+
+	var orb_cfg: OrbitalConfigScript = null
+	if ResourceLoader.exists(DEFAULT_ORBITAL_CFG_PATH):
+		var loaded_res: Resource = ResourceLoader.load(DEFAULT_ORBITAL_CFG_PATH)
+		if loaded_res is OrbitalConfigScript:
+			orb_cfg = loaded_res.duplicate(true) as OrbitalConfigScript
+	if orb_cfg == null:
+		orb_cfg = OrbitalConfigScript.new()
+	orb_cfg.ensure_defaults()
+	orb_cfg.weapon_count = 1
+	orb_cfg.ring_center_offset = Vector2(0.0, -10.0)
+	orb_cfg.ring_radius_x = 110.0
+	orb_cfg.ring_radius_y = 54.0
+	orb_cfg.weapon_base_scale = 0.105
+	_orbital_ring.set_config(orb_cfg)
+	_orbital_ring.set_weapon_3d_enabled(true)
+	_orbital_ring.set_orbit_mode(OrbitalRingCtrlScript.OrbitMode.AUTO_RADIAL)
+	if ResourceLoader.exists(DEFAULT_RING_TEXTURE_PATH):
+		var ring_tex: Texture2D = ResourceLoader.load(DEFAULT_RING_TEXTURE_PATH) as Texture2D
+		if ring_tex != null:
+			_orbital_ring.set_ring_texture(ring_tex)
+	_subviewport.add_child(_orbital_ring)
+	_orbital_ring.step(0.0)
 
 
 func get_active_skin_id() -> String:

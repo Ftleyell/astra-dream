@@ -3,9 +3,14 @@ extends RefCounted
 
 ## Controlador desacoplado para el ciclo de lanzamiento y retorno al Hub en CharacterSelect.
 
-func commit_launch(char_id: StringName, tree: SceneTree) -> void:
+const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
+
+func commit_launch(char_id: StringName, tree: SceneTree, launch_request: RunLaunchRequestScript = null) -> void:
 	if not SaveManager.is_character_unlocked(char_id) or not CharacterData.is_character_playable_rework_ready(char_id):
 		return
+
+	if launch_request != null:
+		RunLaunchRequestScript.set_pending(launch_request)
 
 	SaveManager.set_selected_character(char_id)
 	var loadout: Dictionary = SaveManager.get_character_loadout(char_id)

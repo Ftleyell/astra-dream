@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="VoiceProfileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/voices/voice_profile_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+profile_id = &"echo"
+display_name = "Echo"
+base_pitch = 1.04
+pitch_variance = 0.06
+formant_hz = 435.0
+syllable_duration_sec = 0.075
+volume_db = -4.5
+volume_jitter_db = 0.8
+chars_per_blip = 2
+min_interval_ms = 52
+question_pitch_boost = 0.16
+exclamation_vol_db = 1.75
+radio_filter_enabled = false

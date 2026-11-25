@@ -89,7 +89,22 @@ static func build(parent: Node, wb: Node) -> Dictionary:
 		{"text": "Radio Navegante", "cb": func() -> void: wb.trigger_scenario("navigator_radio")},
 	])
 
+	UIKitScript.add_section(vbox, "Mumble Speech (Voces .tres)")
+	var mumble_info: Label = UIKitScript.add_readout(vbox, "Voz: -")
+	var mumble_row: Array = UIKitScript.add_button_row(vbox, [
+		{"text": "Mumble: ON", "cb": Callable(wb, "toggle_mumble_speech")},
+		{"text": "Recargar .tres", "cb": Callable(wb, "reload_voice_profiles")},
+	])
+	UIKitScript.add_button_row(vbox, [
+		{"text": "Voz Piloto", "cb": func() -> void: wb.test_active_speaker_voice("pilot")},
+		{"text": "Voz Pet", "cb": func() -> void: wb.test_active_speaker_voice("pet")},
+		{"text": "Voz Nav", "cb": func() -> void: wb.test_active_speaker_voice("navigator")},
+	])
+
 	ui["pilot_option"] = pilot_opt
 	ui["portrait_option"] = portrait_opt
 	ui["portrait_info"] = portrait_info
+	ui["mumble_info"] = mumble_info
+	if not mumble_row.is_empty():
+		ui["mumble_toggle_btn"] = mumble_row[0]
 	return ui

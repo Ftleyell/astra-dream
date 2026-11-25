@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="VoiceProfileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/voices/voice_profile_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+profile_id = &"cosmo"
+display_name = "Cosmo (Mascota)"
+base_pitch = 1.3
+pitch_variance = 0.11
+formant_hz = 620.0
+syllable_duration_sec = 0.058
+volume_db = -5.0
+volume_jitter_db = 1.1
+chars_per_blip = 2
+min_interval_ms = 45
+question_pitch_boost = 0.2
+exclamation_vol_db = 2.0
+radio_filter_enabled = false

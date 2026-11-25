@@ -4,6 +4,10 @@ extends RefCounted
 ## Grabador desacoplado de telemetría, recopilación de armamento y cálculo de
 ## puntuación final/carrera para las pantallas de Victoria y Game Over.
 
+const HubProgressionConfigScript = preload("res://scenes/ui/hub/resources/hub_progression_config.gd")
+const DEFAULT_HUB_PROGRESSION_CONFIG: HubProgressionConfigScript = preload("res://data/hub/default_hub_progression_config.tres")
+const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
+
 static func collect_weapons_summary(player: Node2D) -> Array:
 	var weapons_summary: Array = []
 	if not is_instance_valid(player):
@@ -59,17 +63,20 @@ static func build_end_of_run_data(main_game: Node2D, is_victory: bool, route: St
 	else:
 		final_score = int((enemies_killed_count * 50) + (current_wave * 1000) + (bosses_defeated_count * 5000) + (player_credits * 10) + int(run_time_elapsed * 20))
 
-	var rank: int = SaveManager.record_run_score({
-		"pilot_id": pilot_id,
-		"pilot_name": pilot_name,
-		"wave_reached": current_wave,
-		"time_survived_seconds": run_time_elapsed,
-		"time_survived_formatted": time_str,
-		"enemies_killed": enemies_killed_count,
-		"credits_earned": player_credits,
-		"victory": is_victory,
-		"score": final_score
-	})
+	var launch_req: RunLaunchRequestScript = main_game.get("active_launch_request") as RunLaunchRequestScript
+	var rank: int = -1
+	if RunLaunchRequestScript.can_record_highscores(launch_req, DEFAULT_HUB_PROGRESSION_CONFIG):
+		rank = SaveManager.record_run_score({
+			"pilot_id": pilot_id,
+			"pilot_name": pilot_name,
+			"wave_reached": current_wave,
+			"time_survived_seconds": run_time_elapsed,
+			"time_survived_formatted": time_str,
+			"enemies_killed": enemies_killed_count,
+			"credits_earned": player_credits,
+			"victory": is_victory,
+			"score": final_score
+		})
 
 	SaveManager.record_career_run_end({
 		"time_survived": run_time_elapsed,
@@ -117,7 +124,9 @@ static func build_end_of_run_data(main_game: Node2D, is_victory: bool, route: St
 		"arcanas": player.get("active_arcanas").duplicate() if (is_instance_valid(player) and "active_arcanas" in player) else [],
 		"items": player.inventory.get_all_items() if (is_instance_valid(player) and "inventory" in player and player.inventory) else [],
 		"weapons": weapons_summary,
-		"victory": is_victory
+		"victory": is_victory,
+		"seed_code": launch_req.coordinate_code if launch_req != null else "",
+		"is_seeded_run": launch_req.is_custom_seeded() if launch_req != null else false
 	}
 
 	if is_victory:

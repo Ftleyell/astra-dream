@@ -49,13 +49,6 @@ void eval_slot_influence(
 	over_w = max(over_w, ang_hug * lower_w);
 }
 
-vec4 sample_clamped(sampler2D tex, vec2 uv) {
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-		return vec4(0.0);
-	}
-	return texture(tex, uv);
-}
-
 void fragment() {
 	if (is_front_half && UV.y < 0.5) {
 		discard;
@@ -68,8 +61,14 @@ void fragment() {
 	vec2 uv_out = vec2(0.5) + rotate_uv(p, outer_rot_rad);
 	vec2 uv_in = vec2(0.5) + rotate_uv(p, inner_rot_rad);
 
-	vec4 s_out = sample_clamped(TEXTURE, uv_out);
-	vec4 s_in = sample_clamped(TEXTURE, uv_in);
+	vec4 s_out = vec4(0.0);
+	if (uv_out.x >= 0.0 && uv_out.x <= 1.0 && uv_out.y >= 0.0 && uv_out.y <= 1.0) {
+		s_out = texture(TEXTURE, uv_out);
+	}
+	vec4 s_in = vec4(0.0);
+	if (uv_in.x >= 0.0 && uv_in.x <= 1.0 && uv_in.y >= 0.0 && uv_in.y <= 1.0) {
+		s_in = texture(TEXTURE, uv_in);
+	}
 
 	float out_zone = smoothstep(0.42, 0.58, s_out.b);
 	float in_zone = 1.0 - smoothstep(0.42, 0.58, s_in.b);

@@ -18,15 +18,18 @@ var _anchor_2d: Node2D = null
 var _cosmos_root: CosmosRootNode = null
 
 var _preview_seed: int = 428175
+var _seed_applied: bool = false
 var _quality_tier: int = 2
 var _time_acc: float = 0.0
 var _flash_timer: float = 0.0
 
 
-func setup(p_config: ConfigScript, p_window_mesh: MeshInstance3D) -> void:
+func setup(p_config: ConfigScript, p_window_mesh: MeshInstance3D, p_initial_seed: int = -1) -> void:
 	_config = p_config
 	_window_mesh = p_window_mesh
-	if _config != null:
+	if p_initial_seed > 0:
+		_preview_seed = maxi(1, p_initial_seed & 0x7FFFFFFF)
+	elif _config != null:
 		_preview_seed = _config.default_preview_seed
 
 	_quality_tier = _read_settings_quality()
@@ -123,7 +126,10 @@ func get_quality_tier() -> int:
 
 func set_preview_seed(p_seed: int, trigger_flash: bool = true) -> void:
 	var normalized: int = maxi(1, p_seed & 0x7FFFFFFF)
+	if _seed_applied and _preview_seed == normalized and not trigger_flash:
+		return
 	_preview_seed = normalized
+	_seed_applied = true
 	if _cosmos_root != null and is_instance_valid(_cosmos_root):
 		_cosmos_root.set_run_seed(_preview_seed)
 		_cosmos_root.bind_camera_to_streamers()

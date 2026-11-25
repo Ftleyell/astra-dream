@@ -150,6 +150,13 @@ func _mount_narrative_stack() -> void:
 	narrative_director.setup(self, _mock_player, null, skip_badge_layer, null)
 	narrative_director.active_navigator_controller = navigator_controller
 	narrative_director.victory_screen_requested.connect(_on_victory_screen_requested)
+	if narrative_director.has_method("_ensure_mumble_bridge"):
+		var bridge: Node = narrative_director.call("_ensure_mumble_bridge") as Node
+		if is_instance_valid(bridge):
+			if bridge.has_signal("speaker_voice_changed"):
+				bridge.connect("speaker_voice_changed", _on_mumble_speaker_changed)
+			if bridge.has_signal("blip_played"):
+				bridge.connect("blip_played", _on_mumble_blip_played)
 
 	if skip_badge_layer.has_signal("skip_requested"):
 		skip_badge_layer.skip_requested.connect(stop_active_dialogue)
@@ -345,6 +352,8 @@ func preview_portrait(portrait_name: String, side: String = "left") -> void:
 			(layout as CanvasLayer).layer = 50
 		if "canvas_layer" in layout:
 			layout.canvas_layer = 50
+		if is_instance_valid(narrative_director) and narrative_director.has_method("_setup_dialogic_audio"):
+			narrative_director.call("_setup_dialogic_audio", layout)
 	_set_status("Preview retrato %s (%s)" % [pname, side])
 
 
@@ -426,3 +435,65 @@ func _set_status(msg: String) -> void:
 	var lbl: Label = _panel_refs.get("status_label") as Label
 	if is_instance_valid(lbl):
 		lbl.text = msg
+
+
+func _get_mumble_bridge() -> Node:
+	if not is_instance_valid(narrative_director):
+		return null
+	if narrative_director.has_method("_ensure_mumble_bridge"):
+		return narrative_director.call("_ensure_mumble_bridge") as Node
+	return narrative_director.get("mumble_bridge") as Node
+
+
+func toggle_mumble_speech() -> void:
+	var bridge: Node = _get_mumble_bridge()
+	if not is_instance_valid(bridge):
+		return
+	var next_state: bool = not bool(bridge.call("is_enabled"))
+	bridge.call("set_enabled", next_state)
+	var btn: Button = _panel_refs.get("mumble_toggle_btn") as Button
+	if is_instance_valid(btn):
+		btn.text = "Mumble: ON" if next_state else "Mumble: OFF"
+	_set_status("Mumble Speech: %s" % ("ON" if next_state else "OFF"))
+
+
+func reload_voice_profiles() -> void:
+	var bridge: Node = _get_mumble_bridge()
+	if is_instance_valid(bridge) and bridge.has_method("reload_profiles"):
+		bridge.call("reload_profiles")
+	_set_status("Perfiles de voz (.tres) recargados")
+
+
+func test_active_speaker_voice(role: String) -> void:
+	var bridge: Node = _get_mumble_bridge()
+	if not is_instance_valid(bridge) or not bridge.has_method("preview_voice"):
+		return
+	var target_id: StringName = StringName(selected_pilot_id)
+	match role:
+		"pet":
+			target_id = StringName(selected_pet_id)
+		"navigator":
+			target_id = StringName(selected_navigator_id)
+		"rival":
+			target_id = StringName(selected_rival_id)
+	bridge.call("preview_voice", target_id, "Enlace táctico verificado.")
+	_set_status("Probando voz .tres: %s" % String(target_id))
+
+
+func _on_mumble_speaker_changed(speaker_id: StringName, voice_profile: Resource) -> void:
+	var lbl: Label = _panel_refs.get("mumble_info") as Label
+	if not is_instance_valid(lbl):
+		return
+	var pname: String = String(voice_profile.get("display_name")) if voice_profile != null else String(speaker_id)
+	var pitch_v: float = float(voice_profile.get("base_pitch")) if voice_profile != null else 1.0
+	lbl.text = "Voz: %s (%s) · pitch %.2f" % [pname, String(speaker_id), pitch_v]
+
+
+func _on_mumble_blip_played(pitch_scale: float, volume_db: float, is_radio: bool) -> void:
+	var lbl: Label = _panel_refs.get("mumble_info") as Label
+	if not is_instance_valid(lbl):
+		return
+	var bridge: Node = _get_mumble_bridge()
+	var sp: String = String(bridge.call("get_current_speaker_id")) if is_instance_valid(bridge) else "default"
+	var bus_tag: String = "Radio" if is_radio else "Clean"
+	lbl.text = "Voz: %s | %.2fx %.1fdB (%s)" % [sp, pitch_scale, volume_db, bus_tag]

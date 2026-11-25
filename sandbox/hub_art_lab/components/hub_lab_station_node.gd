@@ -27,6 +27,8 @@ var _accent_color: Color = Color(0.95, 0.16, 0.34, 1.0)
 var _calibrating_tint: Color = Color(0.32, 0.36, 0.48, 1.0)
 var _is_highlighted: bool = false
 var _prompt_suppressed: bool = false
+var _hide_default_prism: bool = false
+var _holo_base_y: float = 1.82
 var _time_acc: float = 0.0
 
 var _body_mesh: MeshInstance3D = null
@@ -64,7 +66,7 @@ func _process(delta: float) -> void:
 	_time_acc += delta
 	if _holo_mesh != null and _holo_mesh.visible:
 		_holo_mesh.rotation.y += delta * 1.35
-		_holo_mesh.position.y = 1.82 + sin(_time_acc * 2.4) * 0.07
+		_holo_mesh.position.y = _holo_base_y + sin(_time_acc * 2.4) * 0.07
 
 	if _state == StationState.NEWLY_UNLOCKED:
 		var pulse: float = 0.35 + 0.35 * sin(_time_acc * 4.4)
@@ -83,7 +85,7 @@ func _ensure_nodes() -> void:
 
 	_body_mesh = MeshInstance3D.new()
 	_body_mesh.name = "ConsoleBodyMesh"
-	_body_mesh.mesh = ConsoleMeshBuilder.build_console_body_mesh()
+	_body_mesh.mesh = ConsoleMeshBuilder.build_station_body_mesh(station_id)
 	_body_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	add_child(_body_mesh)
 
@@ -104,10 +106,37 @@ func _ensure_nodes() -> void:
 		_body_mesh.set_surface_override_material(surf_idx, mat)
 		_body_materials.append(mat)
 
+	var prism_y: float = 1.88
+	var screen_size := Vector2(0.86, 0.46)
+	var screen_pos := Vector3(0.0, 1.56, 0.02)
+	var screen_rot := Vector3(-14.0, 0.0, 0.0)
+	var col_size := Vector3(1.25, 1.4, 0.85)
+	var label_y: float = 2.35
+	match station_id:
+		&"skins_mirror":
+			prism_y = 2.66
+			screen_size = Vector2(0.88, 1.46)
+			screen_pos = Vector3(0.0, 1.30, 0.02)
+			screen_rot = Vector3(-4.0, 0.0, 0.0)
+			col_size = Vector3(1.42, 2.35, 0.82)
+			label_y = 2.98
+		&"talents_nexus":
+			prism_y = 1.98
+			screen_size = Vector2(0.76, 0.56)
+			screen_pos = Vector3(0.0, 1.64, 0.06)
+			screen_rot = Vector3(-12.0, 0.0, 0.0)
+		&"tactical_console":
+			prism_y = 1.78
+			screen_size = Vector2(1.16, 0.48)
+			screen_pos = Vector3(0.0, 1.44, 0.04)
+			screen_rot = Vector3(-38.0, 0.0, 0.0)
+			col_size = Vector3(1.75, 1.35, 1.05)
+
+	_holo_base_y = prism_y
 	_holo_mesh = MeshInstance3D.new()
 	_holo_mesh.name = "HoloPrismMesh"
-	_holo_mesh.mesh = ConsoleMeshBuilder.build_console_holo_prism_mesh()
-	_holo_mesh.position = Vector3(0.0, 1.88, -0.02)
+	_holo_mesh.mesh = ConsoleMeshBuilder.build_station_holo_mesh(station_id)
+	_holo_mesh.position = Vector3(0.0, prism_y, -0.02)
 	_holo_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for surf_idx: int in range(3):
 		_holo_mesh.set_surface_override_material(surf_idx, _body_materials[surf_idx])
@@ -120,12 +149,12 @@ func _ensure_nodes() -> void:
 	_holo_screen_mat.set_shader_parameter("pulse_boost", 0.0)
 
 	var screen_quad := QuadMesh.new()
-	screen_quad.size = Vector2(0.86, 0.46)
+	screen_quad.size = screen_size
 	_holo_screen_mesh = MeshInstance3D.new()
 	_holo_screen_mesh.name = "HoloScreenMesh"
 	_holo_screen_mesh.mesh = screen_quad
-	_holo_screen_mesh.position = Vector3(0.0, 1.56, 0.02)
-	_holo_screen_mesh.rotation_degrees = Vector3(-14.0, 0.0, 0.0)
+	_holo_screen_mesh.position = screen_pos
+	_holo_screen_mesh.rotation_degrees = screen_rot
 	_holo_screen_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_holo_screen_mesh.material_override = _holo_screen_mat
 	add_child(_holo_screen_mesh)
@@ -136,7 +165,7 @@ func _ensure_nodes() -> void:
 	col_body.collision_mask = 0
 	var col_shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(1.25, 1.4, 0.85)
+	box.size = col_size
 	col_shape.shape = box
 	col_shape.position = Vector3(0.0, 0.7, 0.0)
 	col_body.add_child(col_shape)
@@ -157,7 +186,7 @@ func _ensure_nodes() -> void:
 
 	_label_3d = Label3D.new()
 	_label_3d.name = "PromptLabel3D"
-	_label_3d.position = Vector3(0.0, 2.35, 0.0)
+	_label_3d.position = Vector3(0.0, label_y, 0.0)
 	_label_3d.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label_3d.font_size = 30
 	_label_3d.outline_size = 12
@@ -178,10 +207,16 @@ func set_station_state(new_state: StationState) -> void:
 		_outline_mat.set_shader_parameter("calibration_factor", _calibration_factor)
 
 	if _holo_mesh != null:
-		_holo_mesh.visible = (new_state != StationState.CALIBRATING)
+		_holo_mesh.visible = (new_state != StationState.CALIBRATING and not _hide_default_prism)
 	_refresh_holo_screen()
 
 	_refresh_prompt_label()
+
+
+func set_hide_default_prism(hide_prism: bool) -> void:
+	_hide_default_prism = hide_prism
+	if _holo_mesh != null:
+		_holo_mesh.visible = (_state != StationState.CALIBRATING and not _hide_default_prism)
 
 
 func get_station_state() -> StationState:

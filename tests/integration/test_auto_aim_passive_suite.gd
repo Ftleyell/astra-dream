@@ -90,7 +90,7 @@ func _ready() -> void:
 	add_child(enemy_b)
 
 	wc.is_manual_aim = false
-	wc._update_locked_target()
+	wc.targeting.update_locked_target(wc.global_position, player, get_tree())
 	assert(wc.current_locked_target == enemy_a, "current_locked_target debe ser el enemigo A (400px < 850px)")
 
 	# Ahora aumentamos el pickup en +40px con un modificador (simulando carta Imán)
@@ -103,7 +103,7 @@ func _ready() -> void:
 	enemy_a.queue_free()
 	await get_tree().process_frame
 
-	wc._update_locked_target()
+	wc.targeting.update_locked_target(wc.global_position, player, get_tree())
 	assert(wc.current_locked_target == enemy_b, "Con el bono de 40px (rango 910px), el enemigo B (880px) ahora es fijado")
 
 	enemy_b.queue_free()
@@ -117,16 +117,22 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	print("\n[4/5] Testing blind-fire fallback (ship movement direction)...")
 	wc.is_manual_aim = false
-	wc._update_locked_target()
+	wc.targeting.update_locked_target(wc.global_position, player, get_tree())
 	assert(wc.current_locked_target == null, "Sin enemigos, no debe haber objetivo fijado")
 
 	# Nave desplazándose hacia abajo
 	player.velocity = Vector2(0, 300)
 	player.last_facing_direction = Vector2.DOWN
-	wc.last_known_target_dir = Vector2.ZERO
-	var fallback_info := wc._get_passive_aim_info()
-	assert(fallback_info.target == null, "No debe haber target en fallback")
-	assert(fallback_info.direction.is_equal_approx(Vector2.DOWN), "La dirección debe ser la del movimiento de la nave (Vector2.DOWN)")
+	wc.targeting.last_known_target_dir = Vector2.ZERO
+	var fallback_info: Dictionary = wc.targeting.get_passive_aim_info(
+		wc.global_position,
+		wc.get_global_mouse_position(),
+		player,
+		wc.rotation,
+		get_tree()
+	)
+	assert(fallback_info["target"] == null, "No debe haber target en fallback")
+	assert((fallback_info["direction"] as Vector2).is_equal_approx(Vector2.DOWN), "La dirección debe ser la del movimiento de la nave (Vector2.DOWN)")
 	print("  ✓ Fallback: disparo en dirección del movimiento de la nave verificado")
 
 	# ----------------------------------------------------

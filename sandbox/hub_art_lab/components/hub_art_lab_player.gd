@@ -9,22 +9,27 @@ const HubRigAvatar3DScript = preload("res://scenes/ui/hub/components/hub_rig_ava
 const DioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
 const DEFAULT_DIORAMA_CONFIG: DioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
 const SILHOUETTE_SHADOW_SHADER: Shader = preload("res://shaders/character_silhouette_shadow.gdshader")
+const CONTACT_SHADOW_SHADER: Shader = preload("res://sandbox/hub_art_lab/shaders/hub_contact_shadow_3d.gdshader")
 
 const ACCEL: float = 24.0
 const FRICTION: float = 18.0
 const GRAVITY: float = 20.0
 const MAX_STEP_HEIGHT: float = 0.28
-const SHADOW_ALPHA: float = 0.48
+const SHADOW_ALPHA: float = 0.38
 const DEFAULT_LIGHT_DIR := Vector3(-0.353553, -0.707107, -0.612372)
 
 @export var move_speed: float = 7.2
 @export var is_movement_locked: bool = false
+var is_pose_override_active: bool = false
 
 var rig_avatar: HubRigAvatar3DScript = null
 var shadow_sprite: Sprite3D = null
 var _shadow_mat: ShaderMaterial = null
+var _contact_shadow_mesh: MeshInstance3D = null
+var _contact_shadow_mat: ShaderMaterial = null
 var _facing_dir_2d: Vector2 = Vector2.DOWN
 var _directional_light: DirectionalLight3D = null
+var _visibility_alpha: float = 1.0
 
 
 func setup(p_move_speed: float, p_light: DirectionalLight3D = null) -> void:
@@ -60,11 +65,23 @@ func _ensure_setup() -> void:
 	if rig_avatar == null:
 		rig_avatar = HubRigAvatar3DScript.new() as HubRigAvatar3DScript
 		rig_avatar.name = "HubRigAvatar3D"
-		rig_avatar.diorama_config = DEFAULT_DIORAMA_CONFIG
+		var hd_cfg: DioramaConfigScript = DEFAULT_DIORAMA_CONFIG.duplicate(true) as DioramaConfigScript
+		hd_cfg.viewport_size = 1024
+		hd_cfg.rig_camera_zoom = 4.6
+		var zoom_ratio: float = hd_cfg.rig_camera_zoom / maxf(DEFAULT_DIORAMA_CONFIG.rig_camera_zoom, 0.1)
+		hd_cfg.avatar_pixel_size = DEFAULT_DIORAMA_CONFIG.avatar_pixel_size / zoom_ratio
+		hd_cfg.avatar_feet_offset_px = DEFAULT_DIORAMA_CONFIG.avatar_feet_offset_px * zoom_ratio
+		hd_cfg.avatar_hover_height = 0.025
+		hd_cfg.avatar_idle_bob_amp = 0.006
+		hd_cfg.avatar_idle_bob_hz = 0.42
+		hd_cfg.avatar_tilt_deg = -31.0
+		rig_avatar.diorama_config = hd_cfg
 		add_child(rig_avatar)
 		var profile: PilotRigProfile = ResourceLoader.load(DEFAULT_DIORAMA_CONFIG.default_profile_path) as PilotRigProfile
 		if profile != null:
 			rig_avatar.load_pilot_profile(profile)
+	if rig_avatar != null:
+		rig_avatar.set_3d_scene_lighting_enabled(true)
 
 	if shadow_sprite == null:
 		_setup_shadow()
@@ -101,6 +118,19 @@ func _setup_shadow() -> void:
 	shadow_sprite.texture = rig_avatar.get_viewport_texture()
 	shadow_sprite.material_override = _shadow_mat
 	add_child(shadow_sprite)
+
+	_contact_shadow_mat = ShaderMaterial.new()
+	_contact_shadow_mat.shader = CONTACT_SHADOW_SHADER
+	_contact_shadow_mat.render_priority = 2
+	var cs_plane := PlaneMesh.new()
+	cs_plane.size = Vector2(1.18, 0.86)
+	_contact_shadow_mesh = MeshInstance3D.new()
+	_contact_shadow_mesh.name = "PlayerContactShadow"
+	_contact_shadow_mesh.mesh = cs_plane
+	_contact_shadow_mesh.position = Vector3(0.0, 0.024, 0.04)
+	_contact_shadow_mesh.material_override = _contact_shadow_mat
+	_contact_shadow_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_contact_shadow_mesh)
 	_update_shadow_projection()
 
 
@@ -130,6 +160,33 @@ func face_front_idle(snap_instant: bool = true) -> void:
 		rig_avatar.set_motion_state(Vector2.DOWN, 0.0, Vector2.DOWN, snap_instant)
 
 
+func face_north_idle(snap_instant: bool = true) -> void:
+	_facing_dir_2d = Vector2.UP
+	velocity.x = 0.0
+	velocity.z = 0.0
+	if rig_avatar != null:
+		rig_avatar.set_motion_state(Vector2.UP, 0.0, Vector2.UP, snap_instant)
+
+
+func set_pose_override(move_dir: Vector2, speed_norm: float, aim_dir: Vector2, snap_instant: bool = false) -> void:
+	if aim_dir.length_squared() > 0.002:
+		_facing_dir_2d = aim_dir.normalized()
+	if rig_avatar != null:
+		rig_avatar.set_motion_state(move_dir, speed_norm, aim_dir, snap_instant)
+
+
+func set_visibility_fade(alpha: float) -> void:
+	_visibility_alpha = clampf(alpha, 0.0, 1.0)
+	if rig_avatar != null:
+		rig_avatar.set_sprite_opacity(_visibility_alpha)
+	if shadow_sprite != null:
+		shadow_sprite.modulate.a = _visibility_alpha
+	if _shadow_mat != null:
+		_shadow_mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, SHADOW_ALPHA * _visibility_alpha))
+	if _contact_shadow_mat != null:
+		_contact_shadow_mat.set_shader_parameter("opacity", _visibility_alpha)
+
+
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
@@ -139,7 +196,7 @@ func _physics_process(delta: float) -> void:
 	if is_movement_locked:
 		velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
 		velocity.z = move_toward(velocity.z, 0.0, FRICTION * delta)
-		if rig_avatar != null:
+		if rig_avatar != null and not is_pose_override_active:
 			rig_avatar.set_motion_state(_facing_dir_2d, 0.0, _facing_dir_2d, false)
 		move_and_slide()
 		return

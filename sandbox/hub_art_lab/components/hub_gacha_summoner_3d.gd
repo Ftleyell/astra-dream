@@ -239,8 +239,8 @@ func _ensure_nodes() -> void:
 	_core_light.name = "CoreOmniLight"
 	_core_light.position = Vector3(0.0, cfg.gyro_center_y, 0.45)
 	_core_light.light_color = _banner_color
-	_core_light.light_energy = 1.15
-	_core_light.omni_range = 7.5
+	_core_light.light_energy = 0.62
+	_core_light.omni_range = 6.0
 	add_child(_core_light)
 
 	_is_built = true

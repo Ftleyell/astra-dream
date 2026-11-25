@@ -14,7 +14,7 @@ uniform vec4 rim_color : source_color = vec4(0.62, 0.88, 1.0, 1.0);
 uniform bool use_pilot_accent = true;
 
 uniform float crease_ink_strength : hint_range(0.0, 1.0) = 0.58;
-uniform float crease_ink_threshold : hint_range(0.10, 0.90) = 0.28;
+uniform float crease_ink_threshold : hint_range(0.10, 0.90) = 0.44;
 uniform vec4 crease_ink_color : source_color = vec4(0.040, 0.036, 0.088, 1.0);
 
 uniform float emissive_boost : hint_range(0.0, 4.0) = 1.65;
@@ -34,10 +34,12 @@ uniform float newly_unlocked_pulse : hint_range(0.0, 1.5) = 0.0;
 varying float v_prop_u;
 varying vec3 v_local_n;
 varying float v_view_dist;
+varying vec3 v_world_pos;
 
 void vertex() {
 	v_prop_u = UV2.y;
 	v_local_n = NORMAL;
+	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	v_view_dist = length((MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz);
 }
 
@@ -72,9 +74,9 @@ void fragment() {
 		// Tinta interna en aristas duras entre facetas atenuada suavemente con distancia
 		if (crease_ink_strength > 0.001) {
 			float n_grad = length(fwidth(v_local_n));
-			float crease = smoothstep(crease_ink_threshold, crease_ink_threshold + 0.26, n_grad);
-			float dist_atten = 1.0 / (1.0 + v_view_dist * 0.045);
-			prop_albedo = mix(prop_albedo, crease_ink_color.rgb, crease * crease_ink_strength * 0.85 * dist_atten);
+			float crease = smoothstep(crease_ink_threshold, crease_ink_threshold + 0.30, n_grad);
+			float dist_atten = 1.0 / (1.0 + v_view_dist * 0.055);
+			prop_albedo = mix(prop_albedo, crease_ink_color.rgb, crease * crease_ink_strength * 0.72 * dist_atten);
 		}
 
 		// Rebote cromático + rim-light estilo razor sharp estrictamente acotados <= 0.22 (cero bloom en armadura)
@@ -83,28 +85,38 @@ void fragment() {
 		prop_emissive += min(raw_emit, vec3(0.22));
 	}
 
+	// Grounding AO sutil cerca del suelo (ancla props al deck sin oscurecer piezas aéreas)
+	float floor_ao = mix(0.76, 1.0, smoothstep(0.0, 0.55, max(v_world_pos.y, 0.0)));
+	if (material_kind != 2) {
+		prop_albedo *= floor_ao;
+	}
+
 	ALBEDO = prop_albedo;
 	EMISSION = prop_albedo * shadow_tint.rgb * ambient_fill + prop_emissive;
-	METALLIC = 0.0;
-	ROUGHNESS = (material_kind == 1) ? 0.85 : 0.30;
-	SPECULAR = 0.0;
+	METALLIC = (material_kind == 0) ? 0.12 : 0.0;
+	ROUGHNESS = (material_kind == 1) ? 0.82 : 0.26;
+	SPECULAR = (material_kind == 0) ? 0.24 : 0.0;
 }
 
 void light() {
 	float lit = max(dot(NORMAL, LIGHT), 0.0) * ATTENUATION;
-	float band_mid = smoothstep(0.04, 0.15, lit);
-	float band_hi = smoothstep(0.58, 0.70, lit);
+	float band_mid = smoothstep(0.02, 0.28, lit);
+	float band_hi = smoothstep(0.52, 0.76, lit);
 
-	float penumbra = band_mid * (1.0 - band_mid) * 4.0;
+	float penumbra = band_mid * (1.0 - band_mid) * 3.2;
 	float ht = 0.5 + 0.5 * (sin(FRAGCOORD.x * 0.9) * sin(FRAGCOORD.y * 0.9));
-	float cel_intensity = band_mid * 0.64 + band_hi * 0.22;
-	cel_intensity *= (1.0 - penumbra * halftone_strength * ht);
-	DIFFUSE_LIGHT += cel_intensity * LIGHT_COLOR;
+	float cel_intensity = 0.08 + band_mid * 0.62 + band_hi * 0.24;
+	cel_intensity *= (1.0 - penumbra * halftone_strength * 0.65 * ht);
+	if (material_kind != 2) {
+		DIFFUSE_LIGHT = min(DIFFUSE_LIGHT + cel_intensity * LIGHT_COLOR, vec3(0.96));
+	} else {
+		DIFFUSE_LIGHT += cel_intensity * LIGHT_COLOR;
+	}
 
-	if (material_kind != 1) {
+	if (material_kind == 0) {
 		vec3 h = normalize(LIGHT + VIEW);
 		float ndh = max(dot(NORMAL, h), 0.0);
-		float spec = smoothstep(0.86, 0.93, ndh) * band_mid * (1.0 - calibration_factor * 0.65);
-		SPECULAR_LIGHT += spec * LIGHT_COLOR * 0.28;
+		float spec = smoothstep(0.78, 0.91, ndh) * band_mid * (1.0 - calibration_factor * 0.60);
+		SPECULAR_LIGHT = min(SPECULAR_LIGHT + spec * LIGHT_COLOR * 0.42, vec3(0.48));
 	}
 }

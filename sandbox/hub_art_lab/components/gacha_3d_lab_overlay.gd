@@ -32,6 +32,8 @@ const COLOR_CYAN_POP: Color = Color(0.08, 0.92, 1.0, 1.0)
 var _config: ConfigScript = null
 var _ui_built: bool = false
 var _sandbox_panel_visible: bool = true
+var _station_clean_mode: bool = false
+var _station_exit_btn: Button = null
 
 # Capas principales
 var _standby_root: Control = null
@@ -309,6 +311,20 @@ func _build_standby_ui() -> void:
 		p_btn.pressed.connect(func() -> void: pull_requested.emit(cnt))
 		pull_row.add_child(p_btn)
 		_pull_buttons[cnt] = p_btn
+
+	_station_exit_btn = Button.new()
+	_station_exit_btn.name = "StationExitGachaButton"
+	_station_exit_btn.text = "Volver a la Estación [ESC]"
+	_station_exit_btn.anchor_left = 1.0
+	_station_exit_btn.anchor_right = 1.0
+	_station_exit_btn.offset_left = -240.0
+	_station_exit_btn.offset_top = 18.0
+	_station_exit_btn.offset_right = -18.0
+	_station_exit_btn.offset_bottom = 54.0
+	_station_exit_btn.focus_mode = Control.FOCUS_NONE
+	_station_exit_btn.visible = false
+	_station_exit_btn.pressed.connect(func() -> void: open_hub_art_lab_requested.emit())
+	_standby_root.add_child(_station_exit_btn)
 
 
 func _build_cinematic_ui() -> void:
@@ -799,9 +815,23 @@ func sync_session_status(
 		_telemetry_label.text = telemetry_text
 
 
+func set_station_clean_mode(clean: bool) -> void:
+	_station_clean_mode = clean
+	_ensure_ui()
+	if _sandbox_panel != null:
+		_sandbox_panel.visible = (not clean) and _sandbox_panel_visible
+	if _station_exit_btn != null:
+		_station_exit_btn.visible = clean
+
+
+func is_station_clean_mode() -> bool:
+	return _station_clean_mode
+
+
 func toggle_sandbox_panel() -> void:
 	_sandbox_panel_visible = not _sandbox_panel_visible
 	if _sandbox_panel != null and _standby_root != null and _standby_root.visible:
+		_sandbox_panel.visible = _sandbox_panel_visible and not _station_clean_mode
 		_sandbox_panel.visible = _sandbox_panel_visible
 
 

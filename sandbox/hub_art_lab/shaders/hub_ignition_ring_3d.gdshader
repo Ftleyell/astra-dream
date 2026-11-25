@@ -20,21 +20,20 @@ vec2 rotate_uv(vec2 p, float angle) {
 	return vec2(p.x * c - p.y * s, p.x * s + p.y * c);
 }
 
-vec4 sample_clamped(sampler2D tex, vec2 uv) {
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-		return vec4(0.0);
-	}
-	return texture(tex, uv);
-}
-
 void fragment() {
 	vec2 p = UV - vec2(0.5);
 	float speed_mult = 1.0 + ignition_charge * 5.5;
 	vec2 uv_out = vec2(0.5) + rotate_uv(p, TIME * outer_rot_speed * speed_mult);
 	vec2 uv_in = vec2(0.5) + rotate_uv(p, TIME * inner_rot_speed * speed_mult);
 
-	vec4 s_out = sample_clamped(ring_packed_tex, uv_out);
-	vec4 s_in = sample_clamped(ring_packed_tex, uv_in);
+	vec4 s_out = vec4(0.0);
+	if (uv_out.x >= 0.0 && uv_out.x <= 1.0 && uv_out.y >= 0.0 && uv_out.y <= 1.0) {
+		s_out = texture(ring_packed_tex, uv_out);
+	}
+	vec4 s_in = vec4(0.0);
+	if (uv_in.x >= 0.0 && uv_in.x <= 1.0 && uv_in.y >= 0.0 && uv_in.y <= 1.0) {
+		s_in = texture(ring_packed_tex, uv_in);
+	}
 
 	float out_zone = smoothstep(0.42, 0.58, s_out.b);
 	float in_zone = 1.0 - smoothstep(0.42, 0.58, s_in.b);

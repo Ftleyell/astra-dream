@@ -130,6 +130,7 @@ func _test_hub_art_lab_scene_interactions() -> void:
 	assert_true(lab.camera_rig.get_mode() == CameraRigScript.Mode.FREE_ROAM, "exit_capsule_focus debe restaurar FREE_ROAM")
 
 	# Test 4: Estados de progresión en Consola de Antesala
+	lab.apply_progression_preset(&"run1")
 	var st_r: StationNodeScript = lab.right_station
 	assert_true(st_r != null, "Debe existir RightTacticalConsole")
 	assert_true(st_r.get_station_state() == StationNodeScript.StationState.CALIBRATING, "Consola Derecha debe iniciar en CALIBRATING")

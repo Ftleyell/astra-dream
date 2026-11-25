@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/pilot_rig_lab/tools/capture_pilot_ingame_ref.gd" id="1_cap"]
+
+[node name="CapturePilotIngameRef" type="Node2D"]
+script = ExtResource("1_cap")

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="VoiceProfileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/voices/voice_profile_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+profile_id = &"selene"
+display_name = "Selene"
+base_pitch = 0.94
+pitch_variance = 0.05
+formant_hz = 365.0
+syllable_duration_sec = 0.068
+volume_db = -4.0
+volume_jitter_db = 0.7
+chars_per_blip = 2
+min_interval_ms = 55
+question_pitch_boost = 0.14
+exclamation_vol_db = 1.75
+radio_filter_enabled = false

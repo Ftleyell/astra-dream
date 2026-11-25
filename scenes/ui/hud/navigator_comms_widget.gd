@@ -2,6 +2,8 @@ class_name NavigatorCommsWidget
 extends CanvasLayer
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
+const MumbleSpeechControllerScript = preload("res://core/audio/mumble_speech_controller.gd")
+const VoiceProfileRegistryScript = preload("res://data/voices/voice_profile_registry.gd")
 
 ## Widget lateral de comunicaciones de Navegantes.
 ## Muestra el retrato, diálogo y objetivo detectado en el lateral izquierdo
@@ -21,10 +23,17 @@ var _is_showing: bool = false
 var _waiting_for_input: bool = false
 var _on_prologue_continue: Callable = Callable()
 
+var _mumble_controller: MumbleSpeechControllerScript = null
+var _typing_text: String = ""
+var _typing_revealed: int = 0
+var _typing_accum: float = 0.0
+var _is_typing: bool = false
+
 const SLIDE_DURATION: float = 0.35
 const VISIBLE_DURATION: float = 5.8
 const HIDDEN_OFFSET_X: float = -460.0
 const SHOWN_OFFSET_X: float = 24.0
+const TYPEWRITER_CHARS_PER_SEC: float = 48.0
 
 func _ready() -> void:
 	layer = 55 # Por encima del dimmer (15) y Dialogic (50)
@@ -34,6 +43,10 @@ func _ready() -> void:
 		anim_container.modulate.a = 0.0
 	if portrait_rect:
 		portrait_rect.pivot_offset = Vector2(40.0, 40.0)
+	_mumble_controller = MumbleSpeechControllerScript.new()
+	_mumble_controller.name = "NavigatorMumbleSpeech"
+	_mumble_controller.force_radio = true
+	add_child(_mumble_controller)
 	visible = true
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -51,6 +64,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if is_trigger:
 		_waiting_for_input = false
+		_stop_voice_typewriter(true)
 		if get_viewport():
 			get_viewport().set_input_as_handled()
 		slide_out()
@@ -58,6 +72,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_prologue_continue.call()
 
 func _process(delta: float) -> void:
+	if _is_typing:
+		_process_voice_typewriter(delta)
 	if _is_showing and not _waiting_for_input:
 		_hide_timer -= delta
 		if _hide_timer <= 0.0:
@@ -80,6 +96,7 @@ func show_prologue_transmission(nav_data: Resource, message_text: String, on_con
 	if message_label:
 		message_label.text = message_text
 		message_label.modulate = Color(0.9, 0.95, 1.0)
+	_start_voice_typewriter(nav_data, message_text)
 	if buff_hint_label:
 		buff_hint_label.text = "✦ Pulsa [ESPACIO] o [CLICK] para despegar"
 		buff_hint_label.modulate = Color(1.0, 0.88, 0.2)
@@ -114,6 +131,7 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 	if message_label:
 		message_label.text = message_text
 		message_label.modulate = Color(0.9, 0.95, 1.0)
+	_start_voice_typewriter(nav_data, message_text)
 	if buff_hint_label:
 		if target_hint.is_empty():
 			buff_hint_label.text = "✦ Sincroniza el punto: %s" % nav_data.buff_name
@@ -142,6 +160,7 @@ func show_buff_activated(nav_data: Resource) -> void:
 	if message_label:
 		message_label.text = "¡Objetivo alcanzado! Buff de navegación activado: %s." % nav_data.buff_name
 		message_label.modulate = Color(0.9, 0.95, 1.0)
+		_start_voice_typewriter(nav_data, message_label.text)
 	if buff_hint_label:
 		buff_hint_label.text = "⚡ %s" % nav_data.buff_desc
 		buff_hint_label.modulate = Color(0.2, 1.0, 0.6)
@@ -194,12 +213,75 @@ func slide_in(display_time: float = VISIBLE_DURATION) -> void:
 		_current_tween.tween_property(portrait_rect, "scale", Vector2.ONE, SLIDE_DURATION)
 
 func slide_out() -> void:
+	_stop_voice_typewriter(true)
 	if _current_tween and _current_tween.is_valid():
 		_current_tween.kill()
 
 	_current_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_current_tween.tween_property(anim_container, "position:x", HIDDEN_OFFSET_X, 0.3)
 	_current_tween.tween_property(anim_container, "modulate:a", 0.0, 0.25)
+
+
+func _resolve_navigator_id(nav_data: Resource) -> StringName:
+	if nav_data == null:
+		return &"lyra"
+	if "navigator_id" in nav_data:
+		var nid: String = String(nav_data.get("navigator_id")).strip_edges().to_lower()
+		if not nid.is_empty():
+			return StringName(nid)
+	if "nav_id" in nav_data:
+		var nid2: String = String(nav_data.get("nav_id")).strip_edges().to_lower()
+		if not nid2.is_empty():
+			return StringName(nid2)
+	return &"lyra"
+
+
+func _start_voice_typewriter(nav_data: Resource, text_content: String) -> void:
+	if not is_instance_valid(_mumble_controller):
+		return
+	var nav_id: StringName = _resolve_navigator_id(nav_data)
+	_mumble_controller.set_profile(VoiceProfileRegistryScript.get_profile(nav_id))
+	_mumble_controller.force_radio = true
+	_mumble_controller.begin_utterance(text_content)
+
+	_typing_text = text_content
+	_typing_revealed = 0
+	_typing_accum = 0.0
+	_is_typing = not text_content.is_empty()
+	if message_label != null and "visible_characters" in message_label:
+		message_label.visible_characters = 0 if _is_typing else -1
+
+
+func _process_voice_typewriter(delta: float) -> void:
+	if not _is_typing:
+		return
+	var total_len: int = _typing_text.length()
+	if _typing_revealed >= total_len:
+		_is_typing = false
+		return
+
+	_typing_accum += delta * TYPEWRITER_CHARS_PER_SEC
+	while _typing_accum >= 1.0 and _typing_revealed < total_len:
+		_typing_accum -= 1.0
+		var ch: String = _typing_text.substr(_typing_revealed, 1)
+		if is_instance_valid(_mumble_controller):
+			_mumble_controller.on_character_revealed(ch, _typing_revealed)
+		_typing_revealed += 1
+		if message_label != null and "visible_characters" in message_label:
+			message_label.visible_characters = _typing_revealed
+
+	if _typing_revealed >= total_len:
+		_is_typing = false
+		if message_label != null and "visible_characters" in message_label:
+			message_label.visible_characters = -1
+
+
+func _stop_voice_typewriter(reveal_full: bool = true) -> void:
+	_is_typing = false
+	if is_instance_valid(_mumble_controller):
+		_mumble_controller.stop()
+	if reveal_full and message_label != null and "visible_characters" in message_label:
+		message_label.visible_characters = -1
 
 func _apply_cyber_style(glow_color: Color) -> void:
 	if not border_panel:

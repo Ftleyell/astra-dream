@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="VoiceProfileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/voices/voice_profile_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+profile_id = &"mochi"
+display_name = "Mochi (Mascota)"
+base_pitch = 1.48
+pitch_variance = 0.14
+formant_hz = 740.0
+syllable_duration_sec = 0.055
+volume_db = -5.0
+volume_jitter_db = 1.2
+chars_per_blip = 2
+min_interval_ms = 42
+question_pitch_boost = 0.24
+exclamation_vol_db = 2.5
+radio_filter_enabled = false

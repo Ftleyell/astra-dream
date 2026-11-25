@@ -23,6 +23,7 @@ const CombatExpBatchOptimizerScript = preload("res://scenes/combat/systems/comba
 const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_satellite_coordinator.gd")
 const CombatLootCoordinator = preload("res://scenes/combat/systems/combat_loot_coordinator.gd")
 const SpaceEnvironmentHostScript = preload("res://scenes/combat/environment/space_environment_host.gd")
+const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -36,6 +37,9 @@ var feedback_coordinator: RefCounted = CombatPlayerFeedbackCoordinatorScript.new
 var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
 var environment_host: SpaceEnvironmentHost = SpaceEnvironmentHostScript.new()
+var active_launch_request: RunLaunchRequestScript = null
+var run_director_seed: int = 0
+var run_loot_seed: int = 0
 var run_seed: int = 0:
 	set(val):
 		run_seed = val
@@ -196,8 +200,18 @@ func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
 func _ready() -> void:
-	if run_seed == 0:
-		run_seed = int(randi()) & 0x7FFFFFFF
+	var pending_req: RunLaunchRequestScript = RunLaunchRequestScript.consume_pending()
+	if pending_req != null:
+		active_launch_request = pending_req
+		run_seed = pending_req.cosmos_seed
+		run_director_seed = pending_req.run_director_seed
+		run_loot_seed = pending_req.run_loot_seed
+	else:
+		if run_seed == 0:
+			run_seed = maxi(1, int(randi()) & 0x7FFFFFFF)
+		active_launch_request = RunLaunchRequestScript.create(run_seed, RunLaunchRequestScript.SeedMode.AUTO)
+		run_director_seed = active_launch_request.run_director_seed
+		run_loot_seed = active_launch_request.run_loot_seed
 	Engine.time_scale = SaveManager.get_game_speed()
 	add_to_group("main_game")
 

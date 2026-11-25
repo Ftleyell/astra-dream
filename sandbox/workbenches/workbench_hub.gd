@@ -75,7 +75,7 @@ const CARD_SPECS: Array[Dictionary] = [
 		"shortcut": "[5]",
 		"title": "Hub Art Lab 3D (Estación Astral v2)",
 		"accent": Color(0.95, 0.25, 0.48, 1.0),
-		"desc": "Vertical Slice del Hub 3D: piso/muros Ink SDF 2x, props ArcSys procedurales, Cápsula Central y Ventanal Cosmos vivo.",
+		"desc": "Fase 3 Estación Astral Completa: 5 Zonas, Progresión Data-Driven, Ala Este (Gacha 3D, Telemetría, Pets), Ala Oeste (5 Reliquias) y RunLaunchRequest.",
 	},
 	{
 		"key": "gacha_3d_lab",
