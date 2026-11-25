@@ -23,8 +23,8 @@ void fragment() {
 		discard;
 	}
 
-	// Rim light de silueta 2.5D desde vecindad alpha del SubViewport (inline para Godot 4.7.2)
-	vec2 ts = vec2(2.2 / 1024.0);
+	// Rim light de silueta 2.5D desde vecindad alpha del SubViewport (dinámico para cualquier viewport_size)
+	vec2 ts = vec2(2.2) / max(vec2(textureSize(avatar_tex, 0)), vec2(256.0));
 	float a_l = texture(avatar_tex, clamp(UV + vec2(-ts.x, 0.0), vec2(0.0), vec2(1.0))).a;
 	float a_r = texture(avatar_tex, clamp(UV + vec2(ts.x, 0.0), vec2(0.0), vec2(1.0))).a;
 	float a_u = texture(avatar_tex, clamp(UV + vec2(0.0, -ts.y), vec2(0.0), vec2(1.0))).a;

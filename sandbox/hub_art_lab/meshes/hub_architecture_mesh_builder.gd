@@ -5,7 +5,7 @@ extends RefCounted
 ## - Superficies planas (piso, muros laterales) con UV métrico uniforme para hub_arcsys_surface_3d.gdshader.
 ## - Marcos, costillas estructurales y barandal Sur en contrato ArcSys de 3 superficies.
 
-const Primitives = preload("res://sandbox/hub_art_lab/meshes/hub_arcsys_mesh_primitives.gd")
+const Primitives = preload("res://scenes/ui/hub/astral_station/meshes/hub_arcsys_mesh_primitives.gd")
 
 static var _cached_floor: ArrayMesh = null
 static var _cached_wall: ArrayMesh = null

@@ -7,20 +7,28 @@ extends RefCounted
 const BasePoseConfigScript = preload("res://data/pilots/schemas/pilot_base_pose_config.gd")
 const IdleAnimConfigScript = preload("res://data/pilots/schemas/pilot_idle_anim_config.gd")
 const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_locomotion_anim_config.gd")
+const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
 const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
 const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
 const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
 const FaceAnimConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
 const BasePoseEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_base_pose_evaluator.gd")
+const GroundedEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_grounded_evaluator.gd")
 const KitingEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_kiting_evaluator.gd")
 
 const DEFAULT_BASE_POSE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_pose.tres"
 const DEFAULT_IDLE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_idle_anim.tres"
 const DEFAULT_LOCO_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
+const DEFAULT_GROUNDED_LOCO_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres"
 const DEFAULT_KITING_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
 const DEFAULT_TURN_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_turn_anim.tres"
 const DEFAULT_JIGGLE_PHYSICS_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
 const DEFAULT_FACE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_face_anim.tres"
+
+enum LocomotionMode {
+	ZERO_G_FLIGHT = 0,
+	GROUNDED_HUB = 1,
+}
 
 const DASH_DURATION_SEC: float = 0.24
 const RECOIL_DURATION_SEC: float = 0.16
@@ -28,15 +36,19 @@ const HIT_DURATION_SEC: float = 0.22
 const AIR_BRAKE_DURATION_SEC: float = 0.28
 
 var evaluator: BasePoseEvaluatorScript = null
+var grounded_evaluator: GroundedEvaluatorScript = null
 var kiting_evaluator: KitingEvaluatorScript = null
 var base_pose_cfg: BasePoseConfigScript = null
 var idle_anim_cfg: IdleAnimConfigScript = null
 var loco_anim_cfg: LocomotionAnimConfigScript = null
+var grounded_loco_cfg: GroundedConfigScript = null
 var kiting_anim_cfg: KitingAnimConfigScript = null
 var turn_anim_cfg: TurnAnimConfigScript = null
 var jiggle_anim_cfg: JigglePhysicsConfigScript = null
 var face_anim_cfg: FaceAnimConfigScript = null
 
+var locomotion_mode: int = LocomotionMode.ZERO_G_FLIGHT
+var pending_world_displacement_m: float = -1.0
 var pose_layer_mode: int = BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D
 var idle_enabled: bool = true
 var loco_enabled: bool = true
@@ -63,12 +75,15 @@ var _air_brake_strength: float = 0.0
 
 func _init() -> void:
 	evaluator = BasePoseEvaluatorScript.new()
+	grounded_evaluator = GroundedEvaluatorScript.new()
 	kiting_evaluator = KitingEvaluatorScript.new()
 
 
 func setup(profile: PilotRigProfile, rig: Node2D, apply_all_views: bool = true) -> void:
 	if evaluator == null:
 		evaluator = BasePoseEvaluatorScript.new()
+	if grounded_evaluator == null:
+		grounded_evaluator = GroundedEvaluatorScript.new()
 	if kiting_evaluator == null:
 		kiting_evaluator = KitingEvaluatorScript.new()
 	evaluator.ensure_assets_loaded()
@@ -83,6 +98,8 @@ func setup(profile: PilotRigProfile, rig: Node2D, apply_all_views: bool = true) 
 func reload_from_disk(profile: PilotRigProfile, rig: Node2D) -> void:
 	if evaluator == null:
 		evaluator = BasePoseEvaluatorScript.new()
+	if grounded_evaluator == null:
+		grounded_evaluator = GroundedEvaluatorScript.new()
 	if kiting_evaluator == null:
 		kiting_evaluator = KitingEvaluatorScript.new()
 	evaluator.ensure_assets_loaded()
@@ -108,6 +125,11 @@ func _load_configs(profile: PilotRigProfile, ignore_cache: bool) -> void:
 	if loco_anim_cfg == null:
 		loco_anim_cfg = LocomotionAnimConfigScript.new()
 	loco_anim_cfg.ensure_initialized()
+
+	grounded_loco_cfg = _resolve_cfg(profile.grounded_locomotion_config if profile != null else null, DEFAULT_GROUNDED_LOCO_PATH, GroundedConfigScript, ignore_cache) as GroundedConfigScript
+	if grounded_loco_cfg == null:
+		grounded_loco_cfg = GroundedConfigScript.new()
+	grounded_loco_cfg.ensure_initialized()
 
 	kiting_anim_cfg = _resolve_cfg(profile.kiting_anim_config if profile != null else null, DEFAULT_KITING_ANIM_PATH, KitingAnimConfigScript, ignore_cache) as KitingAnimConfigScript
 	if kiting_anim_cfg == null:
@@ -228,12 +250,15 @@ func reset_combat_impulses() -> void:
 
 func reset_to_rest(rig: Node2D) -> void:
 	idle_time = 0.0
+	pending_world_displacement_m = -1.0
 	live_loco_weights.clear()
 	live_kiting_weights.clear()
 	reset_combat_impulses()
 	if evaluator != null:
 		evaluator.reset_live_locomotion_state()
 		evaluator.reset_jiggle_physics_state()
+	if grounded_evaluator != null:
+		grounded_evaluator.reset_state()
 	if kiting_evaluator != null:
 		kiting_evaluator.reset_state()
 	if rig != null:
@@ -241,6 +266,47 @@ func reset_to_rest(rig: Node2D) -> void:
 		rig.call("set_face_live_enabled", false, null)
 		if evaluator != null:
 			evaluator.apply_pose_to_rig_all_views(rig, base_pose_cfg, BasePoseEvaluatorScript.PoseLayerMode.DEFAULT_RIG_REST, 1.0, false, 0.0, null, null, {}, null, {}, null)
+
+
+func set_locomotion_mode(mode: int, rig: Node2D = null) -> void:
+	var target: int = LocomotionMode.GROUNDED_HUB if mode == LocomotionMode.GROUNDED_HUB else LocomotionMode.ZERO_G_FLIGHT
+	if locomotion_mode == target:
+		return
+	locomotion_mode = target
+	pending_world_displacement_m = -1.0
+	if grounded_evaluator != null:
+		grounded_evaluator.reset_state()
+	if rig != null:
+		apply_to_rig(rig, true)
+
+
+func get_locomotion_mode() -> int:
+	return locomotion_mode
+
+
+func feed_world_displacement(dist_m: float) -> void:
+	if dist_m >= 0.0:
+		if pending_world_displacement_m < 0.0:
+			pending_world_displacement_m = dist_m
+		else:
+			pending_world_displacement_m += dist_m
+
+
+func trigger_grounded_pivot(turn_sign: float = 1.0) -> void:
+	if grounded_evaluator != null:
+		grounded_evaluator.trigger_pivot(turn_sign)
+
+
+func consume_grounded_step_event() -> Dictionary:
+	return grounded_evaluator.consume_step_event() if grounded_evaluator != null else {}
+
+
+func get_grounded_pelvis_lift_norm() -> float:
+	return grounded_evaluator.pelvis_lift_norm if grounded_evaluator != null else 0.0
+
+
+func get_grounded_gait_phase() -> float:
+	return grounded_evaluator.gait_phase if grounded_evaluator != null else 0.0
 
 
 func trigger_dash_burst(dir: Vector2) -> void:
@@ -304,6 +370,10 @@ func step(
 	if _dash_timer > 0.0:
 		eff_speed = maxf(eff_speed, 1.35)
 
+	if locomotion_mode == LocomotionMode.GROUNDED_HUB:
+		_step_grounded_hub(dt, rig, eff_speed, move_dir, aim_dir, is_backpedaling, is_turbo)
+		return
+
 	if loco_enabled:
 		live_loco_weights = evaluator.step_live_locomotion_weights(dt, eff_speed, is_backpedaling, loco_anim_cfg)
 		if _dash_timer > 0.0:
@@ -348,16 +418,72 @@ func step(
 		})
 
 
+func _step_grounded_hub(
+	dt: float,
+	rig: Node2D,
+	eff_speed: float,
+	move_dir: Vector2,
+	aim_dir: Vector2,
+	is_backpedaling: bool,
+	is_turbo: bool
+) -> void:
+	if grounded_evaluator == null:
+		grounded_evaluator = GroundedEvaluatorScript.new()
+	if grounded_loco_cfg == null:
+		grounded_loco_cfg = GroundedConfigScript.new()
+		grounded_loco_cfg.ensure_initialized()
+
+	var disp_m: float = pending_world_displacement_m
+	pending_world_displacement_m = -1.0
+	var step_info: Dictionary = grounded_evaluator.step_gait(dt, eff_speed, disp_m, grounded_loco_cfg)
+
+	var step_foot: StringName = step_info.get("step_foot", &"") as StringName
+	if jiggle_enabled and not step_foot.is_empty():
+		var foot_sign: float = 1.0 if step_foot == &"left" else -1.0
+		var s_str: float = float(step_info.get("step_strength", 0.7))
+		evaluator.trigger_jiggle_impulse(
+			Vector2(foot_sign * 6.0, grounded_loco_cfg.step_jiggle_bust_impulse * s_str),
+			Vector2(foot_sign * 4.5, -grounded_loco_cfg.step_jiggle_glute_impulse * s_str),
+			foot_sign
+		)
+
+	if jiggle_enabled:
+		var j_turn: Dictionary = rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {}
+		evaluator.step_live_jiggle_physics(dt, {}, j_turn, jiggle_anim_cfg, {})
+
+	apply_to_rig(rig, false)
+	_apply_combat_additive_to_pivot(rig)
+
+	if face_enabled:
+		var vel_norm: Vector2 = move_dir.normalized() * eff_speed if move_dir.length_squared() > 0.001 else Vector2.ZERO
+		rig.call("step_face_live", dt, {
+			"head_key": rig.call("get_active_head_key"),
+			"aim_dir": aim_dir,
+			"vel_norm": vel_norm,
+			"speed_norm": eff_speed,
+			"is_turbo": is_turbo or (_dash_timer > 0.0),
+			"is_backpedaling": is_backpedaling,
+			"loco_weights": {"fwd": grounded_evaluator.walk_blend, "brk": grounded_evaluator.stop_weight},
+			"turn_state": rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {},
+			"head_rot_rad": float(rig.call("get_manual_head_rot")),
+			"head_offset_du": rig.call("get_manual_head_offset") as Vector2,
+			"sync_q_time": false,
+		})
+
+
 func apply_to_rig(rig: Node2D, all_views: bool) -> void:
 	if rig == null or evaluator == null:
+		return
+	var turn_cfg_eff: TurnAnimConfigScript = turn_anim_cfg if turn_enabled else null
+	var turn_st_eff: Dictionary = rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {}
+	var jiggle_cfg_eff: JigglePhysicsConfigScript = jiggle_anim_cfg if jiggle_enabled else null
+	if locomotion_mode == LocomotionMode.GROUNDED_HUB and grounded_evaluator != null:
+		grounded_evaluator.apply_to_rig(rig, evaluator, grounded_loco_cfg, pose_layer_mode, 1.0, all_views, turn_cfg_eff, turn_st_eff, jiggle_cfg_eff)
 		return
 	var loco_cfg_eff: LocomotionAnimConfigScript = loco_anim_cfg if loco_enabled else null
 	var loco_w_eff: Dictionary = live_loco_weights if loco_enabled else {}
 	var kiting_cfg_eff: KitingAnimConfigScript = kiting_anim_cfg if kiting_enabled else null
 	var kiting_w_eff: Dictionary = live_kiting_weights if kiting_enabled else {}
-	var turn_cfg_eff: TurnAnimConfigScript = turn_anim_cfg if turn_enabled else null
-	var turn_st_eff: Dictionary = rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {}
-	var jiggle_cfg_eff: JigglePhysicsConfigScript = jiggle_anim_cfg if jiggle_enabled else null
 	if all_views:
 		evaluator.apply_pose_to_rig_all_views(rig, base_pose_cfg, pose_layer_mode, 1.0, idle_enabled, idle_time, idle_anim_cfg, loco_cfg_eff, loco_w_eff, turn_cfg_eff, turn_st_eff, jiggle_cfg_eff, kiting_cfg_eff, kiting_w_eff)
 	else:

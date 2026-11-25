@@ -39,6 +39,7 @@
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_wings_3d.tres" id="37_wings3d"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_combat_rig.tres" id="38_combatrig"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_dialogue_portraits.tres" id="39_dlgport"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres" id="40_gndloco"]
 
 [resource]
 script = ExtResource("13_74smy")
@@ -54,6 +55,7 @@ stepped_fps = 15.0
 base_pose_config = ExtResource("29_basepose")
 idle_anim_config = ExtResource("30_idleanim")
 locomotion_anim_config = ExtResource("31_locoanim")
+grounded_locomotion_config = ExtResource("40_gndloco")
 kiting_anim_config = ExtResource("35_kitanim")
 turn_anim_config = ExtResource("32_turnanim")
 jiggle_physics_config = ExtResource("33_jiggle")

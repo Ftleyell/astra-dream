@@ -7,6 +7,7 @@ extends CharacterBody3D
 ## cámara fija 2.5D Diorama y detección de interacción con [E].
 
 const HubRigAvatar3DScript = preload("res://scenes/ui/hub/components/hub_rig_avatar_3d.gd")
+const HubGroundedMotor3DScript = preload("res://scenes/ui/hub/components/hub_grounded_motor_3d.gd")
 const HubCameraController3DScript = preload("res://scenes/ui/hub/components/hub_camera_controller_3d.gd")
 const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_diorama_config.gd")
 const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
@@ -30,6 +31,7 @@ var active_interactable: Area3D = null
 var nearby_interactables: Array[Area3D] = []
 
 var rig_avatar: HubRigAvatar3DScript = null
+var _grounded_motor: HubGroundedMotor3DScript = null
 var visual_sprite: Sprite3D = null
 @onready var camera: Camera3D = get_node_or_null("Camera3D") as Camera3D
 @onready var collision_shape: CollisionShape3D = get_node_or_null("CollisionShape3D") as CollisionShape3D
@@ -101,6 +103,11 @@ func _setup_avatar() -> void:
 	var light_2d: Vector2 = light_2d_raw.normalized() if light_2d_raw.length_squared() > 0.0001 else cfg.hub_light_dir_2d
 	rig_avatar.set_light_dir_2d(light_2d)
 	rig_avatar.set_motion_state(_facing_dir_2d, 0.0, _facing_dir_2d, true)
+
+	if _grounded_motor == null:
+		_grounded_motor = HubGroundedMotor3DScript.new()
+	if not rig_avatar.footstep_triggered.is_connected(_on_footstep_triggered):
+		rig_avatar.footstep_triggered.connect(_on_footstep_triggered)
 
 	_setup_shadow()
 
@@ -206,18 +213,38 @@ func _sync_shadow_texture() -> void:
 
 
 func _update_shadow_hop(hop_factor: float, delta: float) -> void:
+	if _grounded_motor != null:
+		var scale_amp: float = 0.08
+		if rig_avatar != null and rig_avatar.get_grounded_config() != null:
+			scale_amp = rig_avatar.get_grounded_config().hub_shadow_contact_scale_amp
+		_grounded_motor.update_shadows(
+			shadow_sprite,
+			_shadow_mat,
+			_shadow_proj_scale,
+			null,
+			null,
+			hop_factor,
+			delta,
+			SHADOW_BASE_ALPHA,
+			SHADOW_HOP_ALPHA,
+			1.0,
+			scale_amp
+		)
+		return
 	if not shadow_sprite:
 		return
-	# Contracción dinámica: al subir la piloto en levitación, la sombra se contrae ~12%
 	var scale_mult: float = 1.0 - (hop_factor * 0.12)
 	var target_scale := Vector3(_shadow_proj_scale.x * scale_mult, 1.0, _shadow_proj_scale.z * scale_mult)
 	shadow_sprite.scale = shadow_sprite.scale.lerp(target_scale, clampf(14.0 * delta, 0.0, 1.0))
-
-	# Atenuación dinámica: al subir, la sombra se hace sutilmente más tenue
 	var target_alpha: float = lerpf(SHADOW_BASE_ALPHA, SHADOW_HOP_ALPHA, hop_factor)
 	_current_shadow_alpha = lerpf(_current_shadow_alpha, target_alpha, clampf(14.0 * delta, 0.0, 1.0))
 	if _shadow_mat:
 		_shadow_mat.set_shader_parameter("shadow_color", Color(0.0, 0.0, 0.0, _current_shadow_alpha))
+
+
+func _on_footstep_triggered(foot: StringName, strength: float) -> void:
+	if _grounded_motor != null:
+		_grounded_motor.on_footstep(self, foot, strength, rig_avatar)
 
 
 func _setup_camera() -> void:
@@ -268,13 +295,17 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = -0.1
 
+	if _grounded_motor == null:
+		_grounded_motor = HubGroundedMotor3DScript.new()
+
 	if is_movement_locked:
-		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
-		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
+		_grounded_motor.step_velocity(self, Vector3.ZERO, delta, rig_avatar)
 		if rig_avatar != null:
 			rig_avatar.set_motion_state(_facing_dir_2d, 0.0, _facing_dir_2d, false)
 			_update_shadow_hop(rig_avatar.get_hover_factor(), delta)
+		var prev_locked_pos: Vector3 = global_position
 		move_and_slide()
+		_grounded_motor.commit_stride_displacement(prev_locked_pos, global_position, rig_avatar)
 		_update_camera(delta)
 		return
 
@@ -284,16 +315,10 @@ func _physics_process(delta: float) -> void:
 	var raw_vec := Vector3(raw_x, 0.0, raw_z)
 	var input_dir: Vector3 = raw_vec.normalized() if raw_vec.length_squared() > 0.01 else Vector3.ZERO
 
+	var motion_res: Dictionary = _grounded_motor.step_velocity(self, input_dir, delta, rig_avatar)
 	if input_dir.length_squared() > 0.01:
-		var target_vel: Vector3 = input_dir * move_speed
-		velocity.x = move_toward(velocity.x, target_vel.x, acceleration * delta)
-		velocity.z = move_toward(velocity.z, target_vel.z, acceleration * delta)
-		_facing_dir_2d = Vector2(input_dir.x, input_dir.z).normalized()
-	else:
-		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
-		velocity.z = move_toward(velocity.z, 0.0, friction * delta)
-
-	var speed_norm: float = clampf(Vector2(velocity.x, velocity.z).length() / maxf(move_speed, 0.01), 0.0, 1.0)
+		_facing_dir_2d = motion_res["facing_dir_2d"] as Vector2
+	var speed_norm: float = float(motion_res["speed_norm"])
 	if rig_avatar != null:
 		rig_avatar.set_motion_state(_facing_dir_2d, speed_norm, _facing_dir_2d, false)
 		_update_shadow_hop(rig_avatar.get_hover_factor(), delta)
@@ -302,7 +327,9 @@ func _physics_process(delta: float) -> void:
 	if auto_step_climb and is_on_floor() and not is_movement_locked:
 		_handle_step_climb(delta)
 
+	var prev_pos: Vector3 = global_position
 	move_and_slide()
+	_grounded_motor.commit_stride_displacement(prev_pos, global_position, rig_avatar)
 	_update_camera(delta)
 	_check_interactables()
 

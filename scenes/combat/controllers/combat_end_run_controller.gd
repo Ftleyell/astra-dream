@@ -136,6 +136,6 @@ func handle_game_over_hub() -> void:
 	
 	var st: Node = main_game.get_node_or_null("/root/SceneTransition")
 	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+		st.change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 	else:
-		main_game.get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+		main_game.get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")

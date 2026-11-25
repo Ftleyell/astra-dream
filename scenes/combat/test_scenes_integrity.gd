@@ -13,6 +13,7 @@ func _run() -> void:
 	var scenes := [
 		"res://scenes/ui/main_menu/main_menu.tscn",
 		"res://scenes/ui/character_select/character_select.tscn",
+		"res://scenes/ui/hub/astral_station/astral_station_hub.tscn",
 		"res://scenes/ui/hub/hub_world.tscn",
 		"res://scenes/combat/main_game.tscn"
 	]

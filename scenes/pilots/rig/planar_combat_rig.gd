@@ -25,6 +25,7 @@ const PerspectiveCtrlScript = preload("res://scenes/pilots/rig/planar_rig_perspe
 const ImpactCtrlScript = preload("res://scenes/pilots/rig/planar_rig_impact_controller.gd")
 const FaceCtrlScript = preload("res://scenes/pilots/rig/planar_rig_face_controller.gd")
 const FaceConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
+const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
 const AnimRuntimeScript = preload("res://scenes/pilots/rig/planar_rig_animation_runtime.gd")
 const BasePropCtrlScript = preload("res://scenes/pilots/vfx/valentina_base_propulsion_controller.gd")
 const BasePropConfigScript = preload("res://data/pilots/schemas/pilot_base_propulsion_config.gd")
@@ -37,6 +38,11 @@ enum TransitionStyle {
 	WHIP_SNAP_AFTERIMAGE = 4,
 	MICRO_FLASH_SNAP = 5,
 	HOLO_SNAP_FAST = 6,
+}
+
+enum LocomotionMode {
+	ZERO_G_FLIGHT = 0,
+	GROUNDED_HUB = 1,
 }
 
 @export var pilot_profile: Resource = null
@@ -55,6 +61,7 @@ enum TransitionStyle {
 var _animator: RigAnimator = null
 var _anim_runtime: AnimRuntimeScript = null
 var _anim_runtime_initialized: bool = false
+var _locomotion_mode: int = LocomotionMode.ZERO_G_FLIGHT
 var _is_turbo: bool = false
 var _q_time: float = 0.0
 var _router: PlanarRigViewRouter = null
@@ -873,7 +880,48 @@ func ensure_live_animations_ready() -> void:
 	if _anim_runtime == null:
 		_anim_runtime = AnimRuntimeScript.new()
 	_anim_runtime_initialized = true
+	_anim_runtime.set_locomotion_mode(_locomotion_mode, null)
 	_anim_runtime.setup(pilot_profile as PilotRigProfile, self, true)
+
+
+func set_locomotion_mode(mode: int) -> void:
+	_locomotion_mode = LocomotionMode.GROUNDED_HUB if mode == LocomotionMode.GROUNDED_HUB else LocomotionMode.ZERO_G_FLIGHT
+	if _anim_runtime != null:
+		_anim_runtime.set_locomotion_mode(_locomotion_mode, self)
+
+
+func get_locomotion_mode() -> int:
+	return _locomotion_mode
+
+
+func feed_world_displacement(dist_m: float) -> void:
+	if _anim_runtime != null:
+		_anim_runtime.feed_world_displacement(dist_m)
+
+
+func trigger_grounded_pivot(turn_sign: float = 1.0) -> void:
+	if _anim_runtime != null:
+		_anim_runtime.trigger_grounded_pivot(turn_sign)
+
+
+func consume_grounded_step_event() -> Dictionary:
+	return _anim_runtime.consume_grounded_step_event() if _anim_runtime != null else {}
+
+
+func get_grounded_pelvis_lift_norm() -> float:
+	return _anim_runtime.get_grounded_pelvis_lift_norm() if _anim_runtime != null else 0.0
+
+
+func get_grounded_gait_phase() -> float:
+	return _anim_runtime.get_grounded_gait_phase() if _anim_runtime != null else 0.0
+
+
+func get_grounded_locomotion_config() -> GroundedConfigScript:
+	if _anim_runtime != null and _anim_runtime.grounded_loco_cfg != null:
+		return _anim_runtime.grounded_loco_cfg
+	if pilot_profile is PilotRigProfile and (pilot_profile as PilotRigProfile).grounded_locomotion_config is GroundedConfigScript:
+		return (pilot_profile as PilotRigProfile).grounded_locomotion_config as GroundedConfigScript
+	return null
 
 
 func set_live_animations_enabled(enabled: bool) -> void:

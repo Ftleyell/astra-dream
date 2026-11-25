@@ -469,6 +469,68 @@ func apply_pose_to_rig_view(
 			jiggle_cfg
 		)
 
+	_apply_resolved_motion_to_view(rig, view_key, vd, fam_dict, motion, use_bones, use_25d, pose_scale, mirror_sign, lead_sfx, trail_sfx)
+
+
+func apply_composed_pose_to_view(
+	rig: PlanarCombatRig,
+	view_key: String,
+	fam_dict: Dictionary,
+	motion: Dictionary,
+	layer_mode: int,
+	pose_scale: float = 1.0,
+	turn_cfg: TurnAnimConfigScript = null,
+	turn_state: Dictionary = {},
+	jiggle_cfg: JigglePhysicsConfigScript = null,
+	idle_active: bool = false,
+	anim_time: float = 0.0,
+	idle_cfg: IdleAnimConfigScript = null
+) -> void:
+	if rig == null:
+		return
+	var views: Dictionary = rig.get_views()
+	if not views.has(view_key):
+		return
+	ensure_assets_loaded()
+
+	var vd: Dictionary = views[view_key] as Dictionary
+	var use_bones: bool = layer_mode == PoseLayerMode.COMBINED_BONES_AND_25D or layer_mode == PoseLayerMode.BONES_ONLY
+	var use_25d: bool = layer_mode == PoseLayerMode.COMBINED_BONES_AND_25D or layer_mode == PoseLayerMode.SHADER_25D_ONLY
+	var not_rest: bool = layer_mode != PoseLayerMode.DEFAULT_RIG_REST
+
+	var fam: String = BasePoseConfigScript.canonical_family_for_view(view_key)
+	var is_mirrored_left: bool = view_key in ["sw", "w", "nw"]
+	var mirror_sign: float = -1.0 if is_mirrored_left else 1.0
+	var sides: Dictionary = _resolve_lead_trail_sides(view_key)
+	var lead_sfx: String = str(sides["lead"])
+	var trail_sfx: String = str(sides["trail"])
+
+	if not_rest and turn_cfg != null and (bool(turn_state.get("body_active", false)) or bool(turn_state.get("head_active", false))):
+		_merge_turn_into_motion(motion, fam, pose_scale, idle_cfg, turn_cfg, turn_state)
+	if not_rest and jiggle_cfg != null:
+		_merge_jiggle_physics_into_motion(motion, view_key, fam, mirror_sign, pose_scale, idle_active, anim_time, idle_cfg, jiggle_cfg)
+
+	_apply_resolved_motion_to_view(rig, view_key, vd, fam_dict, motion, use_bones, use_25d, pose_scale, mirror_sign, lead_sfx, trail_sfx)
+
+
+func _apply_resolved_motion_to_view(
+	rig: PlanarCombatRig,
+	view_key: String,
+	vd: Dictionary,
+	fam_dict: Dictionary,
+	motion: Dictionary,
+	use_bones: bool,
+	use_25d: bool,
+	pose_scale: float,
+	mirror_sign: float,
+	lead_sfx: String,
+	trail_sfx: String
+) -> void:
+	var bones: Dictionary = vd.get("bones", {}) as Dictionary
+	var rest_rots: Dictionary = vd.get("rest_rots", {}) as Dictionary
+	var rest_pos: Dictionary = vd.get("rest_pos", {}) as Dictionary
+	var polys: Dictionary = vd.get("polys", {}) as Dictionary
+
 	_apply_bones_layer(
 		bones,
 		rest_rots,

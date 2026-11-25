@@ -1,12 +1,10 @@
 extends Node
 
-## Herramienta de captura en ventana GPU real (Vulkan / Mobile + AgX + Bloom) para auditar Hub Art Lab 3D.
-## Uso:
-##   Godot --path . --windowed --resolution 1280x720 res://sandbox/hub_art_lab/tools/capture_hub_art_lab_views.tscn [-- --out=<abs_dir>]
+## Herramienta de captura en ventana GPU real (Vulkan Forward+ + AgX + Bloom) para auditar la Mandala Octagonal de 9 Islas.
 
 const LabScene: PackedScene = preload("res://sandbox/hub_art_lab/hub_art_lab.tscn")
 const LabScript = preload("res://sandbox/hub_art_lab/hub_art_lab.gd")
-const CameraRigScript = preload("res://sandbox/hub_art_lab/components/hub_lab_camera_rig.gd")
+const CameraRigScript = preload("res://scenes/ui/hub/astral_station/components/hub_lab_camera_rig.gd")
 
 var _out_dir: String = ""
 var _lab: LabScript = null
@@ -20,7 +18,7 @@ func _ready() -> void:
 	_lab.name = "HubArtLab"
 	add_child(_lab)
 
-	await _wait_frames(14)
+	await _wait_frames(12)
 	await _capture_sequence()
 
 
@@ -56,97 +54,82 @@ func _capture_file(filename: String) -> void:
 func _capture_sequence() -> void:
 	_lab.apply_progression_preset(&"all_online")
 
-	# 1. FREE_ROAM puente principal (iluminación nueva, normal maps, cero stumps, oeste limpio)
+	# 1. Octágono Central + 4 aberturas reales caladas al Cosmos + 8 puentes rectos
 	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
 	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(8)
-	await _capture_file("01_free_roam_bridge.png")
+	await _wait_frames(6)
+	await _capture_file("01_free_roam_octagon_center.png")
 
-	# 2. Cápsula Central Hero + HUD oculto al abrir panel
+	# 2. Cápsula Hero (shader propio astrolabio + arcos limpios)
 	_lab.trigger_capsule_focus(true)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
 	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(8)
+	await _wait_frames(6)
 	await _capture_file("02_capsule_hero.png")
 	_lab.exit_capsule_focus()
 
-	# 3. Espejo de Skins temático (piloto en suelo frente al arco vestidor)
+	# 3. Ala Norte — Pasarela-Observatorio Abierta (Spotlight Skins sobre Cosmos puro)
 	_lab.open_station_by_id(&"skins_mirror")
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
 	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(10)
-	await _capture_file("03_skins_mirror.png")
+	await _wait_frames(8)
+	await _capture_file("03_north_skins_spotlight.png")
 	_lab.modal_coordinator.close_active_modal()
 
-	# 4. Nexo de Talentos (piloto encuadrada limpia + HUD estación oculto)
-	_lab.open_station_by_id(&"talents_nexus")
-	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(10)
-	await _capture_file("09_talents_modal_framed.png")
-	_lab.modal_coordinator.close_active_modal()
-
-	# 5. Bahía de Ignición Norte rediseñada (abierta al piso) + despegue dinámico Fase B/C
-	_lab.player.global_position = _lab.config.ignition_ring_pos + Vector3(0.0, 0.0, 2.5)
-	_lab.player.face_north_idle(true)
-	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
-	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(6)
-	await _capture_file("04a_ignition_pad_idle.png")
-
-	_lab.trigger_ignition_preview()
-	for _f: int in range(44):
-		await get_tree().process_frame
-	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	await _wait_frames(4)
-	await _capture_file("04b_ignition_takeoff.png")
-	_lab._finish_ignition_preview()
-
-	# 6. Zoom scroll hasta Primera Persona mirando el Ventanal Cosmos
-	_lab.player.global_position = Vector3(0.0, 0.05, -2.5)
-	_lab.player.face_north_idle(true)
-	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
-	_lab.camera_rig.set_scroll_zoom_immediate(1.0)
-	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
-	_lab.player.set_visibility_fade(0.0)
-	await _wait_frames(6)
-	await _capture_file("05_first_person_cosmos.png")
-	_lab.camera_rig.reset_scroll_zoom()
-	_lab.player.set_visibility_fade(1.0)
-
-	# 7. Superestructura Sur y cielo espacial 3D (cero vacío negro)
-	_lab.set_process(false)
-	if _lab.hud != null:
-		_lab.hud.set_clean_hud_visible(false)
-	_lab.camera.global_position = Vector3(0.0, 4.8, 4.5)
-	_lab.camera.look_at(Vector3(0.0, -1.6, 17.5), Vector3.UP)
-	_lab.camera.fov = 50.0
-	await _wait_frames(6)
-	await _capture_file("06_south_superstructure.png")
-
-	# 8. Las 4 consolas temáticas de la Antesala
-	_lab.player.global_position = _lab.config.player_spawn_pos
+	# 4. Ala Sur — Gran Octágono Ceremonial de Talentos (abertura central calada + 3 anillos constelación)
+	_lab.player.global_position = Vector3(0.0, 0.02, 13.45)
+	_lab.player.evaluate_platform_traversal(0.0, true)
 	_lab.player.face_front_idle(true)
-	_lab.camera.global_position = Vector3(0.0, 9.2, 6.2)
-	_lab.camera.look_at(Vector3(0.0, 1.0, -4.4), Vector3.UP)
-	_lab.camera.fov = 52.0
-	_lab.player.rig_avatar.set_camera_pitch_alignment(-34.0, true)
+	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
+	_lab.camera_rig.update(_lab.camera, Vector3(0.0, 0.0, 15.82), 0.0, _lab.config, true)
+	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
 	await _wait_frames(6)
-	await _capture_file("07_antesala_4_consoles.png")
+	await _capture_file("04_south_talents_altar.png")
 
-	# 9. Galería Oeste Adyacente siguiendo en FREE_ROAM real (cámara debe mostrar las 5 reliquias)
+	# 5. Bastión Este (Gacha 3D + 5 Balizas Prismáticas en brazos cantiléver)
+	_lab.player.global_position = Vector3(13.2, 0.02, 0.0)
+	_lab.player.evaluate_platform_traversal(0.0, true)
+	_lab.player.face_front_idle(true)
+	_lab.camera_rig.update(_lab.camera, Vector3(16.0, 0.0, 0.0), 0.0, _lab.config, true)
+	await _wait_frames(6)
+	await _capture_file("05_east_mirrored_gacha.png")
+
+	# 6. Bastión Oeste Espejado (5 Reliquias en brazos cantiléver + Yaw 0 fijo)
 	_lab.set_west_mastery_override(3)
-	_lab.camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
-	_lab.player.global_position = Vector3(-13.8, 0.05, 0.8)
+	_lab.player.global_position = Vector3(-13.2, 0.02, 0.0)
+	_lab.player.evaluate_platform_traversal(0.0, true)
 	_lab.player.face_front_idle(true)
+	_lab.camera_rig.update(_lab.camera, Vector3(-16.0, 0.0, 0.0), 0.0, _lab.config, true)
+	await _wait_frames(6)
+	await _capture_file("06_west_mirrored_relics.png")
+
+	# 7. Isla SW Compañeros (Proyector + Órbita Viva al Vacío de Mascotas)
+	_lab.player.global_position = Vector3(-10.2, 0.02, 11.4)
+	_lab.player.evaluate_platform_traversal(0.0, true)
+	_lab.player.face_front_idle(true)
+	_lab.camera_rig.update(_lab.camera, Vector3(-10.2, 0.0, 10.2), 0.0, _lab.config, true)
+	await _wait_frames(6)
+	await _capture_file("07_sw_companions_pet_orbit.png")
+
+	# 8. Vuelo espacial entre islas (Alas 3D + Anillo Orbital sin ningún recorte cuadrado)
+	_lab.player.global_position = Vector3(9.5, 0.44, 3.8)
+	_lab.player.evaluate_platform_traversal(0.0, true)
+	_lab.player.rig_avatar.set_orbital_weapon_deployed(true)
 	_lab.camera_rig.update(_lab.camera, _lab.player.global_position, 0.0, _lab.config, true)
 	_lab.player.rig_avatar.set_camera_pitch_alignment(_lab.camera.rotation_degrees.x, true)
-	_lab.player.rig_avatar.rotation_degrees.y = _lab.camera.rotation_degrees.y
-	await _wait_frames(6)
-	await _capture_file("08_west_trophy_chamber.png")
-	_lab.player.rig_avatar.rotation_degrees.y = 0.0
+	await _wait_frames(8)
+	await _capture_file("08_space_flight_wings.png")
+	_lab.player.rig_avatar.set_orbital_weapon_deployed(false)
+
+	# 9. Onda media de Desmaterialización Tecnológica sobre la Mandala
+	_lab.player.global_position = Vector3(5.6, 0.44, -2.0)
+	_lab.player.evaluate_platform_traversal(0.0, true)
+	_lab.departure_controller.launch_real_combat = false
+	_lab.departure_controller.trigger_radial_departure(Vector2(0.7, -0.7).normalized())
+	_lab.departure_controller._step_departure(0.30)
+	_lab.camera_rig.update(_lab.camera, Vector3(3.0, 0.4, -0.8), 0.0, _lab.config, true)
+	await _wait_frames(1)
+	await _capture_file("09_radial_demat_midwave.png")
 
 	get_tree().quit(0)

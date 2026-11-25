@@ -29,6 +29,11 @@ var coordinate_code: String = ""
 var cosmos_seed: int = 1
 var run_director_seed: int = 1
 var run_loot_seed: int = 1
+var departure_sector: StringName = &"N"
+var departure_direction: Vector2 = Vector2.UP
+var seamless_entry: bool = false
+var cosmos_sync_time: float = 0.0
+var cosmos_sync_pos: Vector2 = Vector2.ZERO
 
 static var _pending_request: RunLaunchRequest = null
 static var _last_launched_request: RunLaunchRequest = null
@@ -114,7 +119,13 @@ static func create_from_code(raw_text: String, p_mode: SeedMode = SeedMode.CUSTO
 
 
 func duplicate_request() -> RunLaunchRequest:
-	return RunLaunchRequest.create(master_seed, seed_mode)
+	var copy: RunLaunchRequest = RunLaunchRequest.create(master_seed, seed_mode)
+	copy.departure_sector = departure_sector
+	copy.departure_direction = departure_direction
+	copy.seamless_entry = seamless_entry
+	copy.cosmos_sync_time = cosmos_sync_time
+	copy.cosmos_sync_pos = cosmos_sync_pos
+	return copy
 
 
 func is_custom_seeded() -> bool:

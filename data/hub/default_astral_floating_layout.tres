@@ -1,0 +1,73 @@
+[gd_resource type="Resource" script_class="HubFloatingLayoutConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/hub/astral_station/resources/hub_floating_layout_config.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+central_island_pos = Vector2(0, 0)
+central_island_radius = 7.6
+north_island_pos = Vector2(0, -15.42)
+north_island_radius = 4.113
+south_island_pos = Vector2(0, 15.82)
+south_island_radius = 4.546
+west_island_pos = Vector2(-15.42, 0)
+east_island_pos = Vector2(15.42, 0)
+bastion_dock_x = 3.8
+bastion_arc_radius = 5.35
+loadout_pod_positions = Array[Vector2]([Vector2(-10.2, -10.2), Vector2(10.2, -10.2), Vector2(-10.2, 10.2), Vector2(10.2, 10.2)])
+loadout_pod_radius = 3.15
+north_prow_pos = Vector2(0, -15.42)
+north_prow_radius = 4.113
+bridges = Array[Dictionary]([{
+"from": Vector2(0, -7.02),
+"half_width": 1.05,
+"name": "Bridge_North",
+"to": Vector2(0, -11.62)
+}, {
+"from": Vector2(0, 7.02),
+"half_width": 1.05,
+"name": "Bridge_South",
+"to": Vector2(0, 11.62)
+}, {
+"from": Vector2(-7.02, 0),
+"half_width": 1.05,
+"name": "Bridge_West",
+"to": Vector2(-11.62, 0)
+}, {
+"from": Vector2(7.02, 0),
+"half_width": 1.05,
+"name": "Bridge_East",
+"to": Vector2(11.62, 0)
+}, {
+"from": Vector2(-4.965, -4.965),
+"half_width": 0.9,
+"name": "Bridge_NW",
+"to": Vector2(-8.145, -8.145)
+}, {
+"from": Vector2(4.965, -4.965),
+"half_width": 0.9,
+"name": "Bridge_NE",
+"to": Vector2(8.145, -8.145)
+}, {
+"from": Vector2(-4.965, 4.965),
+"half_width": 0.9,
+"name": "Bridge_SW",
+"to": Vector2(-8.145, 8.145)
+}, {
+"from": Vector2(4.965, 4.965),
+"half_width": 0.9,
+"name": "Bridge_SE",
+"to": Vector2(8.145, 8.145)
+}])
+platform_walk_speed = 6.2
+space_flight_speed = 11.5
+departure_boost_speed = 18.5
+platform_hover_y = 0.02
+capsule_pad_xz = Vector2(0, 0)
+capsule_pad_radius = 2.05
+capsule_pad_hover_y = 0.112
+flight_hover_y = 0.44
+traversal_hysteresis_sec = 0.1
+warning_radius = 24.5
+launch_radius = 30.0
+demat_duration_sec = 1.35

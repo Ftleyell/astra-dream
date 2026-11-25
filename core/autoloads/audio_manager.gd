@@ -108,6 +108,14 @@ const SFX_PROFILES: Dictionary = {
 		"pitch_max": 1.07,
 		"vol_jitter_db": 0.8,
 		"use_combo": false
+	},
+	"hub_footstep": {
+		"min_interval_ms": 140,
+		"max_polyphony": 3,
+		"pitch_min": 0.90,
+		"pitch_max": 1.12,
+		"vol_jitter_db": 1.6,
+		"use_combo": false
 	}
 }
 
@@ -147,6 +155,36 @@ func _preload_sfx() -> void:
 		var path: String = sfx_files[key]
 		if ResourceLoader.exists(path):
 			sfx_streams[key] = load(path)
+	if ResourceLoader.exists("res://assets/audio/sfx/hub_footstep.wav"):
+		sfx_streams["hub_footstep"] = load("res://assets/audio/sfx/hub_footstep.wav")
+	else:
+		sfx_streams["hub_footstep"] = _build_synthetic_footstep_wav()
+
+
+func _build_synthetic_footstep_wav() -> AudioStreamWAV:
+	var sample_rate: int = 22050
+	var dur_sec: float = 0.068
+	var sample_count: int = int(roundf(float(sample_rate) * dur_sec))
+	var pcm := PackedByteArray()
+	pcm.resize(sample_count * 2)
+	var phase: float = 0.0
+	for i: int in range(sample_count):
+		var t: float = float(i) / float(sample_rate)
+		var env_low: float = exp(-t * 58.0)
+		var env_click: float = exp(-t * 145.0)
+		var freq: float = lerpf(155.0, 72.0, clampf(t / 0.04, 0.0, 1.0))
+		phase += TAU * freq / float(sample_rate)
+		var thud: float = sin(phase) * 0.42 * env_low
+		var metal: float = sin(TAU * 620.0 * t) * 0.14 * env_click + sin(TAU * 1180.0 * t) * 0.08 * env_click
+		var sample_f: float = clampf(thud + metal, -0.95, 0.95)
+		var s16: int = int(roundf(sample_f * 32767.0))
+		pcm.encode_s16(i * 2, s16)
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = sample_rate
+	wav.stereo = false
+	wav.data = pcm
+	return wav
 
 func play_sfx(sfx_name: String, pitch_scale: float = 1.0, volume_db: float = 0.0) -> AudioStreamPlayer:
 	if not sfx_streams.has(sfx_name):

@@ -1,6 +1,7 @@
-# Blueprint Maestro — Rework Total del Hub 3D (*Estación Astral v2 — Opción A Híbrida ArcSys*)
+# Blueprint Maestro — Rework Total del Hub 3D (*Estación Astral v4 — Opción A Híbrida ArcSys*)
 
-> **Estado:** **Fase 3 Completada (Estación Astral Completa + Alas Temáticas) — Listo para Fase 4 (Promoción a Producción & Limpieza)**
+> **Estado:** **Promovido a Producción ✅ (`scenes/ui/hub/astral_station/astral_station_hub.tscn`, Mandala Octagonal de 9 Islas sobre Cosmos Engine vivo, Despegue Radial 8-Dir Seamless y Santuario Valkiria Astral)**
+> **Ubicación Canónica:** Runtime y shaders en `scenes/ui/hub/astral_station/`, configuraciones `.tres` en `data/hub/default_astral_*.tres`, trim-sheets en `assets/environments/astral_station/`, y lab dev `[H]` heredado en `sandbox/hub_art_lab/hub_art_lab.tscn`.
 > **Enfoque Técnico:** **Opción A — Diorama 2.5D Híbrido *ArcSys*** (arquitectura 3D limpia vestida con mapas IA `Ink SDF 2×` + *Hero Props* 3D procedurales/GLB de 3 superficies con cel-shading y contorno caligráfico *inverted-hull*).
 > **Documentos Relacionados:** [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) · [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md) · [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) · [`DOMAIN_MAP.md`](DOMAIN_MAP.md) · [`ART_DIRECTION_AND_PIPELINE.md`](ART_DIRECTION_AND_PIPELINE.md)
 

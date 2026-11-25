@@ -30,6 +30,7 @@ enum AnimState {
 	AEGIS_GUARD = 3,
 	FULL_BURST = 4,
 	VORTEX_SPIN = 5,
+	SERAPH_FOLD = 6,
 }
 
 const ANIM_LABELS: Array[String] = [
@@ -39,6 +40,7 @@ const ANIM_LABELS: Array[String] = [
 	"4 · Escudo Aegis 3D",
 	"5 · Salva Full Burst (Apunta Mouse)",
 	"6 · Vórtice 360° (Giroscopio)",
+	"7 · Repliegue Serafín",
 ]
 
 const BLADES_PER_WING: int = 6
@@ -190,7 +192,7 @@ func get_config() -> ConfigScript:
 
 
 func set_anim_state(state: int, snap_now: bool = false) -> void:
-	var clamped: int = clampi(state, AnimState.IDLE_ZERO_G, AnimState.VORTEX_SPIN)
+	var clamped: int = clampi(state, AnimState.IDLE_ZERO_G, AnimState.SERAPH_FOLD)
 	_anim_state = clamped as AnimState
 	_anim_state_time = 0.0
 	_manual_anim_override = (
@@ -201,6 +203,10 @@ func set_anim_state(state: int, snap_now: bool = false) -> void:
 		_global_pulse = 1.15
 	if snap_now and is_inside_tree():
 		step(0.0, true)
+
+
+func is_fold_complete() -> bool:
+	return _anim_state == AnimState.SERAPH_FOLD and _anim_state_time >= 0.40
 
 
 func clear_manual_anim_override() -> void:
@@ -692,6 +698,8 @@ func _evaluate_blade_target(b: _BladeSlot) -> Dictionary:
 			return _eval_full_burst(b, u, sf, yaw_basis, base_scale_vec)
 		AnimState.VORTEX_SPIN:
 			return _eval_vortex_spin(b, u, sf, base_scale_vec)
+		AnimState.SERAPH_FOLD:
+			return _eval_seraph_fold(b, u, sf, yaw_basis, base_scale_vec)
 		_:
 			return _eval_idle_or_boost(b, u, sf, yaw_basis, base_scale_vec, vel_norm, vel_speed, false)
 
@@ -784,6 +792,37 @@ func _eval_seraph_bloom(
 		"pos": yaw_basis * Vector3(sf * spread_x, root_y, root_z),
 		"basis": blade_basis,
 		"scale": scale_vec * Vector3(s_bloom, s_bloom, 1.0),
+	}
+
+
+func _eval_seraph_fold(
+	b: _BladeSlot,
+	u: float,
+	sf: float,
+	yaw_basis: Basis,
+	scale_vec: Vector3
+) -> Dictionary:
+	# Repliegue escalonado de puntas inferiores (s5) hacia el brazo maestro (s0) en ~0.38 s
+	var stagger: float = (1.0 - u) * 0.10
+	var local_t: float = clampf((_anim_state_time - stagger) / 0.28, 0.0, 1.0)
+	var ease_in: float = local_t * local_t * (3.0 - 2.0 * local_t)
+
+	var rest_off: Vector2 = SLOT_REST_OFFSETS[b.slot]
+	var spread_x: float = lerpf(_config.root_spread_x + rest_off.x, 0.04, ease_in)
+	var root_y: float = lerpf(_config.root_height_y + rest_off.y, 0.0, ease_in)
+	var root_z: float = lerpf(_config.root_depth_back_z, -0.35, ease_in)
+
+	var rest_ang: float = SLOT_REST_ANGLES_DEG[b.slot]
+	var fan_deg: float = lerpf(rest_ang, -78.0, ease_in)
+	var sweep_deg: float = lerpf(_config.blade_sweep_back_deg, 74.0, ease_in)
+	var twist_deg: float = lerpf(8.0, 42.0, ease_in)
+
+	var blade_basis: Basis = _build_wing_blade_basis(sf, yaw_basis, fan_deg, sweep_deg, twist_deg)
+	var s_fold: float = maxf(0.001, 1.0 - ease_in)
+	return {
+		"pos": yaw_basis * Vector3(sf * spread_x, root_y, root_z),
+		"basis": blade_basis,
+		"scale": scale_vec * Vector3(s_fold, s_fold, s_fold),
 	}
 
 

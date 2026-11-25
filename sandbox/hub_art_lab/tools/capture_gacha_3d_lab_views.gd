@@ -6,7 +6,7 @@ extends Node
 
 const LabScene: PackedScene = preload("res://sandbox/hub_art_lab/gacha_3d_lab.tscn")
 const LabScript = preload("res://sandbox/hub_art_lab/gacha_3d_lab.gd")
-const SessionScript = preload("res://sandbox/hub_art_lab/components/gacha_3d_session_controller.gd")
+const SessionScript = preload("res://scenes/ui/hub/astral_station/components/gacha_3d_session_controller.gd")
 
 var _out_dir: String = ""
 var _lab: LabScript = null

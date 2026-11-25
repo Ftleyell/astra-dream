@@ -71,6 +71,6 @@ func exit_to_hub(tree: SceneTree, speed_selector: CharacterSpeedSelector = null)
 		if root and root.has_node("SceneTransition"):
 			var st: Node = root.get_node("SceneTransition")
 			if st.has_method("change_scene_to_file"):
-				st.call("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+				st.call("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 				return
-		tree.call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+		tree.call_deferred("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")

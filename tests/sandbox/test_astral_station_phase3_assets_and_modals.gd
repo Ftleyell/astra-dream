@@ -7,9 +7,9 @@ extends BaseTestSuite
 const ProgressionConfigScript = preload("res://scenes/ui/hub/resources/hub_progression_config.gd")
 const DEFAULT_PROGRESSION_CONFIG: ProgressionConfigScript = preload("res://data/hub/default_hub_progression_config.tres")
 const ProgressionEvaluatorScript = preload("res://scenes/ui/hub/components/hub_progression_evaluator.gd")
-const ModalCoordScript = preload("res://sandbox/hub_art_lab/components/hub_antesala_modal_coordinator.gd")
-const EastMeshBuilder = preload("res://sandbox/hub_art_lab/meshes/hub_east_wing_mesh_builder.gd")
-const WestMeshBuilder = preload("res://sandbox/hub_art_lab/meshes/hub_west_sanctuary_mesh_builder.gd")
+const ModalCoordScript = preload("res://scenes/ui/hub/astral_station/components/hub_antesala_modal_coordinator.gd")
+const EastMeshBuilder = preload("res://scenes/ui/hub/astral_station/meshes/hub_east_wing_mesh_builder.gd")
+const WestMeshBuilder = preload("res://scenes/ui/hub/astral_station/meshes/hub_west_sanctuary_mesh_builder.gd")
 const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 
 

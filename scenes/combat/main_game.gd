@@ -226,6 +226,31 @@ func _ready() -> void:
 
 	CombatBootstrapperScript.launch_session(self, player, hud)
 
+	if active_launch_request != null and active_launch_request.seamless_entry:
+		_apply_seamless_hub_entry()
+
+
+func _apply_seamless_hub_entry() -> void:
+	if active_launch_request == null:
+		return
+	var dir_2d: Vector2 = active_launch_request.departure_direction
+	if dir_2d.length_squared() < 0.001:
+		dir_2d = Vector2.UP
+	dir_2d = dir_2d.normalized()
+	if is_instance_valid(player):
+		player.velocity = dir_2d * 340.0
+	if is_instance_valid(hud):
+		hud.offset = Vector2(0.0, -24.0)
+		var tw := create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(hud, "offset", Vector2.ZERO, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		for child: Node in hud.get_children():
+			if child is CanvasItem:
+				var ci := child as CanvasItem
+				var orig_a: float = ci.modulate.a
+				ci.modulate.a = 0.0
+				tw.tween_property(ci, "modulate:a", orig_a, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 func _setup_rival_queue() -> void:
 	var player_pid: StringName = player.character_data.character_id if (player and player.character_data) else &"nova"
 	if encounter_controller:

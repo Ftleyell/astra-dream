@@ -5,9 +5,9 @@ extends Node3D
 ## Adapta automáticamente la resolución del SubViewport según SettingsManager.space_background_quality
 ## y sincroniza en caliente la semilla del sector inicial (next_run_seed) con pulso visual retune_flash.
 
-const ConfigScript = preload("res://sandbox/hub_art_lab/resources/hub_art_lab_config.gd")
+const ConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_art_lab_config.gd")
 const CosmosRootScene: PackedScene = preload("res://scenes/combat/environment/cosmos/scenes/cosmos_root.tscn")
-const CosmosWindowShader = preload("res://sandbox/hub_art_lab/shaders/hub_cosmos_window_3d.gdshader")
+const CosmosWindowShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_cosmos_window_3d.gdshader")
 
 var _config: ConfigScript = null
 var _window_mesh: MeshInstance3D = null

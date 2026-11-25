@@ -99,7 +99,7 @@ func _trigger_continue() -> void:
 
 	var st = get_node_or_null("/root/SceneTransition")
 	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+		st.change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 	elif fade_rect:
 		fade_rect.visible = true
 		fade_rect.modulate.a = 0.0
@@ -111,4 +111,4 @@ func _trigger_continue() -> void:
 
 
 func _go_to_hub() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")

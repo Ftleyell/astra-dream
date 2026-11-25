@@ -236,19 +236,21 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 ---
 
-## 12. Dominio Fuera de Combate: Hub 3D, Roster y Gacha
+## 12. Dominio Fuera de Combate: Hub 3D (*Estación Astral v4*), Roster y Gacha
 
-- **Hub Principal (Hangar 3D):** `scenes/ui/hub/hub_world.gd` y `scenes/ui/hub/hub_world.tscn`
+- **Hub Principal de Producción (Estación Astral v4):** [`scenes/ui/hub/astral_station/astral_station_hub.gd`](../scenes/ui/hub/astral_station/astral_station_hub.gd) y `astral_station_hub.tscn` (Mandala Octagonal de 9 Islas sobre `CosmosRootNode` vivo, cámara fija Telefoto 1:1 `FOV 26° / Pitch -46°`, Portal Santuario Valkiria Astral, travesía híbrida `DECK·WALK ↔ SPACE·FLIGHT` y despegue radial 8-Dir con disolución hexagonal directo a `MainGame`).
+- **Configuración Data-Driven & Assets de Producción:** [`data/hub/default_astral_station_config.tres`](../data/hub/default_astral_station_config.tres), [`data/hub/default_astral_floating_layout.tres`](../data/hub/default_astral_floating_layout.tres), [`data/hub/default_hub_gacha_3d_config.tres`](../data/hub/default_hub_gacha_3d_config.tres), [`assets/environments/astral_station/`](../assets/environments/astral_station/). *(Wrapper dev `[H]` en `sandbox/hub_art_lab/hub_art_lab.gd`; escena legacy `scenes/ui/hub/hub_world.tscn` conservada para compatibilidad de suites antiguas).*
 
 | Subsistema | Archivo Fuente | Rol |
 |---|---|---|
-| Cámara 3D del Hub | `scenes/ui/hub/components/hub_camera_controller_3d.gd` | Órbitas y transiciones cinematográficas entre pedestales y pantallas. |
-| Pedestales Visuales | `scenes/ui/hub/components/pedestal_visual_presenter.gd` | Renderizado 3D de naves, trajes de piloto y efectos holográficos. |
-| Selección de Piloto | `scenes/ui/character_select/character_select.gd` | Roster de personajes, stats de heroínas y selección de skins. |
-| Motor de Gacha | `scenes/ui/gacha/gacha_modal.gd` | Banners de reclutamiento, pity counters y animación de invocación (`gacha_banner_engine.gd`). |
-| Carrusel de Skins | `core/systems/cosmetics_manager.gd` | Gestión de cosméticos desbloqueados y trajes equipados. |
+| Orquestador Estación Astral | `scenes/ui/hub/astral_station/astral_station_hub.gd` | Ensamblado 3D+Cosmos, iluminación en vivo, `SettingsModal`, enrutado de modos de cámara e interacción. |
+| Controlador Híbrido Piloto | `scenes/ui/hub/astral_station/components/hub_art_lab_player.gd` | Caminata `GROUNDED_HUB` (`SERAPH_FOLD`) ↔ Vuelo Zero-G (`SERAPH_BLOOM` + alas 3D), pisada calibrada y sombra proyectada. |
+| Despegue Radial 8-Dir | `scenes/ui/hub/astral_station/components/hub_radial_departure_controller.gd` | Cuantización 8 sectores cardinales, arco diegético, onda de desmaterialización hexagonal y salto seamless a `MainGame`. |
+| Alas Este / Oeste & Gacha 3D | `scenes/ui/hub/astral_station/components/hub_{east_wing,west_sanctuary,gacha_summoner_3d}.gd` | Invocador Giroscópico Gacha 3D + 5 Balizas prismáticas (Este), 5 Reliquias cristalinas en brazos cantiléver (Oeste), órbita de mascotas (SW). |
+| Constructores Mallas & Shaders | `scenes/ui/hub/astral_station/{meshes,shaders}/` | Mallas *ArcSys* 3 superficies a inglete (`armor`/`chassis`/`crystal`), cubierta 8-fold radial, puente Hardlight y cristal astral. |
+| Selección de Piloto / Gacha / Skins | `scenes/ui/character_select/character_select.gd`, `scenes/ui/gacha/gacha_modal.gd`, `core/systems/cosmetics_manager.gd` | Modales integrados consumidos desde `hub_antesala_modal_coordinator.gd`. |
 
-- **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine_and_gacha"` y `test_title_and_hub_navigation`
+- **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production"`, `test_hub_art_lab`, `test_hub_grounded_walk`, `slot_machine_and_gacha` y `test_title_and_hub_navigation`.
 
 ---
 
@@ -337,7 +339,10 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 
-# Integración Valentina v2 (Producción) & Estudio de Pilotos / Workbenches (Sandbox)
+# Hub 3D Estación Astral v4 (Producción) & Integración Valentina v2
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production" -TimeoutSeconds 30
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_art_lab" -TimeoutSeconds 30
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_grounded_walk"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"

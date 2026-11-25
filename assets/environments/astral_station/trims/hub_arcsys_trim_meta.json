@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "prefix": "hub_arcsys_trim",
+  "base_size": 1024,
+  "ink_sdf_size": 2048,
+  "sdf_range_texels": 8.0,
+  "bands_v": {
+    "armor_plates": [
+      0.0,
+      0.4
+    ],
+    "keel_ribs_and_vents": [
+      0.4,
+      0.7
+    ],
+    "astral_gold_trim": [
+      0.7,
+      0.85
+    ],
+    "energy_conduits": [
+      0.85,
+      1.0
+    ]
+  }
+}

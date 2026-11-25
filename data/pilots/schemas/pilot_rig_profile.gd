@@ -17,6 +17,7 @@ extends Resource
 @export var base_pose_config: Resource = null
 @export var idle_anim_config: Resource = null
 @export var locomotion_anim_config: Resource = null
+@export var grounded_locomotion_config: Resource = null
 @export var kiting_anim_config: Resource = null
 @export var turn_anim_config: Resource = null
 @export var jiggle_physics_config: Resource = null

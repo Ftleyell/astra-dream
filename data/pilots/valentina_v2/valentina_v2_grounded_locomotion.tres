@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="PilotGroundedLocomotionConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_grounded_locomotion_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+anim_id = "hub_grounded_walk_aaa"
+display_name = "Hub 3D Caminata / Trote Grounded AAA"
+master_intensity = 1.0
+stride_length_m = 4.6
+min_walk_speed_norm = 0.06
+walk_blend_in_rate = 7.0
+walk_blend_out_rate = 6.0
+start_lean_duration_sec = 0.34
+stop_plant_duration_sec = 0.36
+pivot_duration_sec = 0.3
+idle_breath_hz = 0.34
+idle_weight_shift_hz = 0.17
+auto_demo_cycle_sec = 5.2
+pelvis_bounce_down_px = 2.6
+pelvis_bounce_up_px = -2.0
+pelvis_sway_x_px = 1.4
+pelvis_roll_rad = 0.022
+waist_counter_rad = -0.018
+chest_counter_rad = -0.016
+forward_lean_waist_rad = 0.03
+forward_lean_chest_rad = 0.036
+neck_stabilize_ratio = 0.88
+head_bob_lag_px = 0.9
+head_counter_rot_rad = 0.01
+torso_yaw_stride = 0.028
+torso_trap_lean = -0.018
+thigh_swing_fwd_rad = 0.25
+thigh_swing_back_rad = 0.21
+knee_pass_bend_rad = 0.38
+knee_contact_bend_rad = 0.06
+knee_down_absorb_rad = 0.14
+ankle_strike_rad = -0.08
+ankle_push_rad = 0.14
+arm_shoulder_fwd_rad = 0.18
+arm_shoulder_back_rad = 0.15
+arm_elbow_base_rad = -0.2
+arm_elbow_swing_rad = 0.14
+arm_wrist_lag_rad = 0.08
+leg_25d_phi_thigh_amp = 0.2
+leg_25d_phi_shin_amp = 0.24
+leg_25d_distal_amp = 0.12
+leg_25d_depth_amp = 0.16
+arm_25d_phi1_amp = 0.14
+arm_25d_phi2_amp = 0.16
+step_jiggle_bust_impulse = 16.0
+step_jiggle_glute_impulse = 12.0
+step_hair_bounce_px = 1.4
+hub_avatar_floor_y = 0.008
+hub_step_lift_3d_m = 0.012
+hub_shadow_contact_scale_amp = 0.05
+hub_move_speed = 6.2
+hub_accel = 18.0
+hub_friction = 16.0
+hub_pivot_brake_mul = 2.35
+hub_pivot_angle_deg = 110.0
+footstep_sfx_volume_db = -14.0
+footstep_vfx_enabled = true

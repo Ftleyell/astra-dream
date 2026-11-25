@@ -7,11 +7,11 @@ extends BaseTestSuite
 
 const LAB_SCENE_PATH: String = "res://sandbox/hub_art_lab/gacha_3d_lab.tscn"
 const Gacha3DLabScript = preload("res://sandbox/hub_art_lab/gacha_3d_lab.gd")
-const MeshBuilder = preload("res://sandbox/hub_art_lab/meshes/hub_gacha_summoner_mesh_builder.gd")
-const SessionScript = preload("res://sandbox/hub_art_lab/components/gacha_3d_session_controller.gd")
-const SummonerScript = preload("res://sandbox/hub_art_lab/components/hub_gacha_summoner_3d.gd")
-const ConfigScript = preload("res://sandbox/hub_art_lab/resources/hub_gacha_3d_config.gd")
-const DEFAULT_CONFIG: ConfigScript = preload("res://sandbox/hub_art_lab/data/default_hub_gacha_3d_config.tres")
+const MeshBuilder = preload("res://scenes/ui/hub/astral_station/meshes/hub_gacha_summoner_mesh_builder.gd")
+const SessionScript = preload("res://scenes/ui/hub/astral_station/components/gacha_3d_session_controller.gd")
+const SummonerScript = preload("res://scenes/ui/hub/astral_station/components/hub_gacha_summoner_3d.gd")
+const ConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_gacha_3d_config.gd")
+const DEFAULT_CONFIG: ConfigScript = preload("res://data/hub/default_hub_gacha_3d_config.tres")
 const GachaBannerEngineScript = preload("res://scenes/ui/gacha/components/gacha_banner_engine.gd")
 const SaveManagerScript = preload("res://core/autoloads/save_manager.gd")
 

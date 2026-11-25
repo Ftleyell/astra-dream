@@ -27,7 +27,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas, Banlist |
 | **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
 | **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
-| **Hub 3D (Hangar)** | `scenes/ui/hub/hub_world.gd` | `hub_camera_controller_3d.gd`, `hub_rig_avatar_3d.gd`, `hub_diorama_config.gd`, `hub_input_dispatcher.gd`, `pedestal_visual_presenter.gd` |
+| **Hub 3D (Estación Astral v4)** | `scenes/ui/hub/astral_station/astral_station_hub.gd` / `.tscn` | Mandala 9 Islas sobre Cosmos vivo (`hub_cosmos_backdrop_controller.gd`), `hub_art_lab_player.gd` (Caminata ↔ Vuelo Zero-G), `hub_radial_departure_controller.gd` (8-Dir Seamless), `hub_antesala_modal_coordinator.gd`, `hub_east_wing_controller.gd`, `hub_west_sanctuary_controller.gd`, `astral_station_hud.gd` *(lab calibración: `sandbox/hub_art_lab/hub_art_lab.gd`; legacy: `hub_world.gd`)* |
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_live_banner_viewport.gd`, `character_pilot_showcase.gd`, `hero_picker_modal.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd`, `gacha_reveal_theater.gd`, `gacha_wardrobe_controller.gd` |
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd`, `shader_skin_live_preview.gd`, `shader_skin_swatch.gd` |
@@ -121,7 +121,9 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **3D Lab / Alas 3D Cel-Shaded (Estándar)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"` |
 | **Banner Lab / Live Splash 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"` |
 | **Roster Lockout & Live Banner (Fase 2)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"` |
-| **Hub 3D 2.5D Diorama & Rig (Fase 3)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"` |
+| **Hub 3D Estación Astral v4 (Prod.)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production"` |
+| **Hub Art Lab & Mallas (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_art_lab" -TimeoutSeconds 30` |
+| **Hub 3D 2.5D Diorama & Rig (Legacy/Fase 3)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"` |
 | **Skins 100% por Shaders (Fase 4)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"` |
 | **Combate In-Game Valentina v2 (Fase 5)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"` |
 | **Workbenches & Combat Gym (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"` |

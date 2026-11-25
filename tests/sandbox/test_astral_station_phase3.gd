@@ -12,8 +12,8 @@ extends BaseTestSuite
 
 const LAB_SCENE_PATH: String = "res://sandbox/hub_art_lab/hub_art_lab.tscn"
 const HubArtLabScript = preload("res://sandbox/hub_art_lab/hub_art_lab.gd")
-const CameraRigScript = preload("res://sandbox/hub_art_lab/components/hub_lab_camera_rig.gd")
-const StationNodeScript = preload("res://sandbox/hub_art_lab/components/hub_lab_station_node.gd")
+const CameraRigScript = preload("res://scenes/ui/hub/astral_station/components/hub_lab_camera_rig.gd")
+const StationNodeScript = preload("res://scenes/ui/hub/astral_station/components/hub_lab_station_node.gd")
 const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 const SaveManagerScript = preload("res://core/autoloads/save_manager.gd")
 

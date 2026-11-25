@@ -9,7 +9,11 @@ const HubDioramaConfigScript = preload("res://scenes/ui/hub/resources/hub_dioram
 const DEFAULT_DIORAMA_CONFIG: HubDioramaConfigScript = preload("res://data/hub/default_hub_diorama_config.tres")
 const OrbitalRingCtrlScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
 const OrbitalConfigScript = preload("res://data/pilots/schemas/pilot_orbital_weapon_config.gd")
+const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
+const DEFAULT_GROUNDED_CFG: GroundedConfigScript = preload("res://data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres")
 const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
+
+signal footstep_triggered(foot: StringName, strength: float)
 const Pilot3DIntegrateShader = preload("res://scenes/ui/hub/shaders/hub_pilot_3d_integrate.gdshader")
 const DEFAULT_ORBITAL_CFG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
 const DEFAULT_RING_TEXTURE_PATH: String = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
@@ -34,6 +38,9 @@ var _current_wings_star_level: int = 1
 var _current_weapon_star_level: int = 1
 var _orbital_weapon_enabled: bool = false
 var _wings_3d_showcase_enabled: bool = false
+var _is_flight_traversal: bool = false
+var _wing_bloom_settle_timer: float = 0.0
+var _wing_fold_pending: bool = false
 var _light_dir_2d: Vector2 = Vector2(0.45, -0.89).normalized()
 
 var _hover_time: float = 0.0
@@ -71,13 +78,26 @@ func _process(delta: float) -> void:
 	var cfg: HubDioramaConfigScript = _resolve_config()
 	_hover_time += delta
 	_step_preview_micro_animation(delta)
-	var wave: float = 0.5 + 0.5 * sin(_hover_time * TAU * cfg.avatar_idle_bob_hz)
-	var amp_mult: float = lerpf(1.0, 0.45, clampf(_last_speed_norm, 0.0, 1.0))
-	var bob_y: float = (wave - 0.5) * 2.0 * cfg.avatar_idle_bob_amp * amp_mult
+	_step_flight_wing_transitions(delta)
 	var preview_lift: float = _compute_preview_lift()
-	_avatar_sprite.position.y = cfg.avatar_hover_height + bob_y + _showcase_lift_y + preview_lift
+	if is_grounded_mode():
+		var g_cfg: GroundedConfigScript = get_grounded_config()
+		var lift_norm: float = _rig.get_grounded_pelvis_lift_norm() if _rig != null else 0.0
+		var floor_y: float = g_cfg.hub_avatar_floor_y if g_cfg != null else 0.008
+		var step_lift_m: float = g_cfg.hub_step_lift_3d_m if g_cfg != null else 0.028
+		_avatar_sprite.position.y = floor_y + lift_norm * step_lift_m + _showcase_lift_y + preview_lift
+		_hover_factor = clampf(lift_norm * 0.65, 0.0, 1.0)
+		if _rig != null:
+			var step_ev: Dictionary = _rig.consume_grounded_step_event()
+			if not step_ev.is_empty():
+				footstep_triggered.emit(step_ev.get("foot", &"left") as StringName, float(step_ev.get("strength", 0.7)))
+	else:
+		var wave: float = 0.5 + 0.5 * sin(_hover_time * TAU * cfg.avatar_idle_bob_hz)
+		var amp_mult: float = lerpf(1.0, 0.45, clampf(_last_speed_norm, 0.0, 1.0))
+		var bob_y: float = (wave - 0.5) * 2.0 * cfg.avatar_idle_bob_amp * amp_mult
+		_avatar_sprite.position.y = cfg.avatar_hover_height + bob_y + _showcase_lift_y + preview_lift
+		_hover_factor = clampf(0.25 + wave * 0.45, 0.0, 1.0)
 	_avatar_sprite.scale = Vector3(_launch_scale_mult, cfg.avatar_aspect_y_comp * _launch_scale_mult, 1.0)
-	_hover_factor = clampf(0.25 + wave * 0.45, 0.0, 1.0)
 	if absf(_avatar_sprite.rotation_degrees.x - _target_tilt_deg) > 0.05:
 		_avatar_sprite.rotation_degrees.x = lerpf(_avatar_sprite.rotation_degrees.x, _target_tilt_deg, clampf(10.0 * delta, 0.0, 1.0))
 	if _orbital_weapon_enabled and _orbital_ring != null and is_instance_valid(_orbital_ring):
@@ -175,7 +195,9 @@ func _ensure_nodes_ready() -> void:
 	_avatar_sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	_avatar_sprite.pixel_size = cfg.avatar_pixel_size
 	_avatar_sprite.offset = Vector2(0.0, cfg.avatar_feet_offset_px)
-	_avatar_sprite.position = Vector3(0.0, cfg.avatar_hover_height, 0.0)
+	var init_y: float = get_grounded_config().hub_avatar_floor_y if is_grounded_mode() else cfg.avatar_hover_height
+	_avatar_sprite.position = Vector3(0.0, init_y, 0.0)
+	_hover_factor = 0.0 if is_grounded_mode() else 0.5
 	_avatar_sprite.render_priority = 2
 	_avatar_sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if enable_3d_scene_lighting:
@@ -213,7 +235,18 @@ func _apply_hub_rig_visuals(profile: PilotRigProfile, cfg: HubDioramaConfigScrip
 	_rig.set_zoom_scale(cfg.rig_camera_zoom)
 	_rig.set_live_animations_enabled(true)
 	_rig.set_face_live_enabled(true)
+	_sync_rig_locomotion_mode(profile)
 	_rig.set_locomotion_state(_last_move_dir, _last_speed_norm, _last_aim_dir, true)
+
+
+func _sync_rig_locomotion_mode(profile: PilotRigProfile = null) -> void:
+	if _rig == null:
+		return
+	var use_grounded: bool = is_grounded_mode()
+	_rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.GROUNDED_HUB if use_grounded else PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT)
+	var p_eff: PilotRigProfile = profile if profile != null else _loaded_profile
+	var zero_g_fps: float = p_eff.stepped_fps if p_eff != null else 15.0
+	_rig.set_stepped_fps(60.0 if use_grounded else zero_g_fps)
 
 
 func load_pilot_profile(profile: PilotRigProfile) -> void:
@@ -284,6 +317,7 @@ func set_loadout_showcase_enabled(wings_enabled: bool, orbital_weapon_enabled: b
 	_ensure_nodes_ready()
 	_wings_3d_showcase_enabled = wings_enabled
 	if _rig != null:
+		_sync_rig_locomotion_mode()
 		_rig.set_3d_wings_enabled(wings_enabled)
 		if wings_enabled:
 			if wings_anim_state >= 0:
@@ -321,7 +355,111 @@ func set_showcase_lift_offset(extra_y: float) -> void:
 	_showcase_lift_y = maxf(0.0, extra_y)
 	if _avatar_sprite != null:
 		var cfg: HubDioramaConfigScript = _resolve_config()
-		_avatar_sprite.position.y = cfg.avatar_hover_height + _showcase_lift_y + _compute_preview_lift()
+		var base_y: float = get_grounded_config().hub_avatar_floor_y if is_grounded_mode() else cfg.avatar_hover_height
+		_avatar_sprite.position.y = base_y + _showcase_lift_y + _compute_preview_lift()
+
+
+func feed_world_displacement(dist_m: float) -> void:
+	if _rig != null and is_grounded_mode():
+		_rig.feed_world_displacement(dist_m)
+
+
+func trigger_grounded_pivot(turn_sign: float = 1.0) -> void:
+	if _rig != null and is_grounded_mode():
+		_rig.trigger_grounded_pivot(turn_sign)
+
+
+func is_grounded_mode() -> bool:
+	return not _is_flight_traversal and not _wings_3d_showcase_enabled
+
+
+func is_flight_traversal_active() -> bool:
+	return _is_flight_traversal
+
+
+func set_flight_traversal_state(is_flying: bool, instant: bool = false) -> void:
+	_ensure_nodes_ready()
+	if _is_flight_traversal == is_flying and not instant:
+		return
+	_is_flight_traversal = is_flying
+	if _rig == null:
+		return
+
+	if is_flying:
+		_wing_fold_pending = false
+		_wings_3d_showcase_enabled = true
+		_sync_rig_locomotion_mode()
+		_rig.set_3d_wings_enabled(true)
+		if instant:
+			_wing_bloom_settle_timer = 0.0
+			_rig.clear_3d_wings_manual_override()
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.IDLE_ZERO_G, true)
+		else:
+			_wing_bloom_settle_timer = 0.58
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_BLOOM, false)
+			_rig.trigger_3d_wings_pulse()
+		if _current_wings_skin != null:
+			_rig.apply_wings_skin_preset(_current_wings_skin, _current_wings_star_level)
+	else:
+		_wing_bloom_settle_timer = 0.0
+		_sync_rig_locomotion_mode()
+		if instant or not _rig.enable_3d_wings:
+			_wing_fold_pending = false
+			_wings_3d_showcase_enabled = false
+			_rig.clear_3d_wings_manual_override()
+			_rig.set_3d_wings_enabled(false)
+		else:
+			_wing_fold_pending = true
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_FOLD, false)
+
+
+func set_orbital_weapon_deployed(deployed: bool) -> void:
+	_ensure_nodes_ready()
+	_orbital_weapon_enabled = deployed
+	if deployed:
+		_ensure_orbital_ring_ready()
+		if _orbital_ring != null:
+			_orbital_ring.visible = true
+			_orbital_ring.process_mode = Node.PROCESS_MODE_INHERIT
+			if _current_weapon_skin != null:
+				_orbital_ring.apply_skin_preset(_current_weapon_skin, _current_weapon_star_level)
+			_orbital_ring.step(0.0)
+	elif _orbital_ring != null and is_instance_valid(_orbital_ring):
+		_orbital_ring.visible = false
+		_orbital_ring.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+func apply_cosmic_lighting_sample(sample: CosmicLightingSampleScript, delta: float = 0.016) -> void:
+	apply_station_lighting(sample, delta)
+
+
+func _step_flight_wing_transitions(delta: float) -> void:
+	if _rig == null:
+		return
+	if _wing_bloom_settle_timer > 0.0:
+		_wing_bloom_settle_timer = maxf(0.0, _wing_bloom_settle_timer - delta)
+		if _wing_bloom_settle_timer <= 0.0 and _is_flight_traversal:
+			_rig.clear_3d_wings_manual_override()
+	if _wing_fold_pending:
+		var w_ctrl: AstralWings3DController = _rig.get_3d_wings_controller()
+		var done: bool = (w_ctrl == null) or w_ctrl.is_fold_complete()
+		if done:
+			_wing_fold_pending = false
+			if not _is_flight_traversal:
+				_wings_3d_showcase_enabled = false
+				_rig.clear_3d_wings_manual_override()
+				_rig.set_3d_wings_enabled(false)
+				_sync_rig_locomotion_mode()
+
+
+func get_grounded_config() -> GroundedConfigScript:
+	if _rig != null:
+		var rig_cfg: GroundedConfigScript = _rig.get_grounded_locomotion_config()
+		if rig_cfg != null:
+			return rig_cfg
+	if _loaded_profile != null and _loaded_profile.grounded_locomotion_config is GroundedConfigScript:
+		return _loaded_profile.grounded_locomotion_config as GroundedConfigScript
+	return DEFAULT_GROUNDED_CFG
 
 
 func set_launch_scale_multiplier(mult: float) -> void:

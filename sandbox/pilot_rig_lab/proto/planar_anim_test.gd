@@ -6,11 +6,13 @@ const ViewRouterScript = preload("res://scenes/pilots/rig/planar_rig_view_router
 const BasePoseConfigScript = preload("res://data/pilots/schemas/pilot_base_pose_config.gd")
 const IdleAnimConfigScript = preload("res://data/pilots/schemas/pilot_idle_anim_config.gd")
 const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_locomotion_anim_config.gd")
+const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
 const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
 const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
 const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
 const FaceAnimConfigScript = preload("res://data/pilots/schemas/pilot_face_anim_config.gd")
 const BasePoseEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_base_pose_evaluator.gd")
+const GroundedEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_grounded_evaluator.gd")
 const KitingEvaluatorScript = preload("res://scenes/pilots/rig/planar_rig_kiting_evaluator.gd")
 const PoseLabHudScript = preload("res://sandbox/pilot_rig_lab/proto/planar_pose_lab_hud.gd")
 const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
@@ -19,6 +21,7 @@ const PROFILE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_profil
 const BASE_POSE_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_base_pose.tres"
 const IDLE_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_idle_anim.tres"
 const LOCO_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_locomotion_anim.tres"
+const GROUNDED_LOCO_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres"
 const KITING_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_kiting_anim.tres"
 const TURN_ANIM_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_turn_anim.tres"
 const JIGGLE_PHYSICS_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_jiggle_physics.tres"
@@ -38,6 +41,7 @@ var _active_profile_path: String = PROFILE_PATH
 var _active_base_pose_path: String = BASE_POSE_PATH
 var _active_idle_anim_path: String = IDLE_ANIM_PATH
 var _active_loco_anim_path: String = LOCO_ANIM_PATH
+var _active_grounded_loco_path: String = GROUNDED_LOCO_PATH
 var _active_kiting_anim_path: String = KITING_ANIM_PATH
 var _active_turn_anim_path: String = TURN_ANIM_PATH
 var _active_jiggle_physics_path: String = JIGGLE_PHYSICS_PATH
@@ -48,11 +52,13 @@ var _style_profile: RigStyleProfile = null
 var _pose_cfg: BasePoseConfigScript = null
 var _idle_cfg: IdleAnimConfigScript = null
 var _loco_cfg: LocomotionAnimConfigScript = null
+var _grounded_cfg: GroundedConfigScript = null
 var _kiting_cfg: KitingAnimConfigScript = null
 var _turn_cfg: TurnAnimConfigScript = null
 var _jiggle_cfg: JigglePhysicsConfigScript = null
 var _face_cfg: FaceAnimConfigScript = null
 var _evaluator: BasePoseEvaluatorScript = null
+var _grounded_eval: GroundedEvaluatorScript = null
 var _hud: PoseLabHudScript = null
 var _face_live_enabled: bool = true
 
@@ -70,6 +76,9 @@ var _loco_preview_mode: int = LocomotionAnimConfigScript.PreviewMode.AUTO_CYCLE
 var _kiting_preview_enabled: bool = true
 var _kiting_preview_mode: int = KitingAnimConfigScript.PreviewMode.AUTO_KITING_360
 var _kiting_edit_phase: String = "rev_"
+var _grounded_preview_enabled: bool = false
+var _grounded_preview_mode: int = GroundedConfigScript.PreviewMode.AUTO_DEMO_CYCLE
+var _grounded_demo_timer: float = 0.0
 var _turn_preview_enabled: bool = false
 var _turn_preview_mode: int = TurnAnimConfigScript.PreviewMode.AUTO_BODY_AND_HEAD_CYCLE
 var _turn_step_timer: float = 0.0
@@ -98,6 +107,7 @@ func _ready() -> void:
 
 	_evaluator = BasePoseEvaluatorScript.new()
 	_evaluator.ensure_assets_loaded()
+	_grounded_eval = GroundedEvaluatorScript.new()
 
 	for v_key: String in ALL_VIEWS:
 		var dir_vec: Vector2 = ViewRouterScript.get_body_dir_vector(v_key)
@@ -186,7 +196,15 @@ func _ready() -> void:
 		"on_save_kiting_tres": Callable(self, "_save_kiting_tres"),
 		"on_reload_kiting_tres": Callable(self, "_reload_kiting_tres"),
 		"on_reset_kiting_family": Callable(self, "_reset_kiting_family"),
-	}, _kiting_cfg)
+		"on_grounded_preview_toggled": Callable(self, "_on_grounded_preview_toggled"),
+		"on_grounded_mode_changed": Callable(self, "_on_grounded_mode_changed"),
+		"on_trigger_grounded_pivot": Callable(self, "_on_trigger_grounded_pivot"),
+		"on_grounded_param_changed": Callable(self, "_on_grounded_param_changed"),
+		"on_grounded_family_mul_changed": Callable(self, "_on_grounded_family_mul_changed"),
+		"on_save_grounded_tres": Callable(self, "_save_grounded_tres"),
+		"on_reload_grounded_tres": Callable(self, "_reload_grounded_tres"),
+		"on_reset_grounded_defaults": Callable(self, "_reset_grounded_defaults"),
+	}, _kiting_cfg, _grounded_cfg)
 
 	_refresh_compass_highlights()
 	_turn_step_timer = 0.72
@@ -200,6 +218,7 @@ func _load_resources() -> void:
 		"base_pose": BASE_POSE_PATH,
 		"idle_anim": IDLE_ANIM_PATH,
 		"locomotion_anim": LOCO_ANIM_PATH,
+		"grounded_locomotion": GROUNDED_LOCO_PATH,
 		"kiting_anim": KITING_ANIM_PATH,
 		"turn_anim": TURN_ANIM_PATH,
 		"jiggle_physics": JIGGLE_PHYSICS_PATH,
@@ -210,6 +229,7 @@ func _load_resources() -> void:
 	_active_base_pose_path = str(cfgs.get("base_pose", BASE_POSE_PATH))
 	_active_idle_anim_path = str(cfgs.get("idle_anim", IDLE_ANIM_PATH))
 	_active_loco_anim_path = str(cfgs.get("locomotion_anim", LOCO_ANIM_PATH))
+	_active_grounded_loco_path = str(cfgs.get("grounded_locomotion", GROUNDED_LOCO_PATH))
 	_active_kiting_anim_path = str(cfgs.get("kiting_anim", KITING_ANIM_PATH))
 	_active_turn_anim_path = str(cfgs.get("turn_anim", TURN_ANIM_PATH))
 	_active_jiggle_physics_path = str(cfgs.get("jiggle_physics", JIGGLE_PHYSICS_PATH))
@@ -225,6 +245,7 @@ func _load_resources() -> void:
 	_pose_cfg = _load_pose_cfg_from_disk()
 	_idle_cfg = _load_idle_cfg_from_disk()
 	_loco_cfg = _load_loco_cfg_from_disk()
+	_grounded_cfg = _load_grounded_cfg_from_disk()
 	_kiting_cfg = _load_kiting_cfg_from_disk()
 	_turn_cfg = _load_turn_cfg_from_disk()
 	_jiggle_cfg = _load_jiggle_cfg_from_disk()
@@ -274,6 +295,18 @@ func _load_loco_cfg_from_disk() -> LocomotionAnimConfigScript:
 			cfg = (loaded as LocomotionAnimConfigScript).duplicate(true) as LocomotionAnimConfigScript
 	if cfg == null:
 		cfg = LocomotionAnimConfigScript.new()
+	cfg.ensure_initialized()
+	return cfg
+
+
+func _load_grounded_cfg_from_disk() -> GroundedConfigScript:
+	var cfg: GroundedConfigScript = null
+	if ResourceLoader.exists(_active_grounded_loco_path):
+		var loaded: Resource = ResourceLoader.load(_active_grounded_loco_path, "", ResourceLoader.CACHE_MODE_IGNORE)
+		if loaded is GroundedConfigScript:
+			cfg = (loaded as GroundedConfigScript).duplicate(true) as GroundedConfigScript
+	if cfg == null:
+		cfg = GroundedConfigScript.new()
 	cfg.ensure_initialized()
 	return cfg
 
@@ -400,16 +433,18 @@ func _process(delta: float) -> void:
 			rig.set_q_time(_q_time)
 
 	var turns_live: bool = _turn_preview_enabled or _is_jiggle_turn_choreo_active()
-	var cycle_playing: bool = _micro_hover_enabled or (_loco_preview_enabled and _loco_preview_mode == LocomotionAnimConfigScript.PreviewMode.AUTO_CYCLE) or (_kiting_preview_enabled and _kiting_preview_mode == KitingAnimConfigScript.PreviewMode.AUTO_KITING_360)
+	var cycle_playing: bool = _micro_hover_enabled or (_loco_preview_enabled and _loco_preview_mode == LocomotionAnimConfigScript.PreviewMode.AUTO_CYCLE) or (_kiting_preview_enabled and _kiting_preview_mode == KitingAnimConfigScript.PreviewMode.AUTO_KITING_360) or _grounded_preview_enabled
 	if cycle_playing or _head_cycle_enabled or turns_live or _jiggle_preview_enabled:
 		_anim_time += eff_delta
+	if _grounded_preview_enabled:
+		_step_grounded_preview(eff_delta)
 	if turns_live:
 		_step_turn_previews(eff_delta)
 	if _jiggle_preview_enabled:
 		_step_jiggle_preview(eff_delta)
 	if _head_cycle_enabled and not turns_live:
 		_update_head_cycles()
-	if _micro_hover_enabled or turns_live or _jiggle_preview_enabled or _kiting_preview_enabled:
+	if _micro_hover_enabled or turns_live or _jiggle_preview_enabled or _kiting_preview_enabled or _grounded_preview_enabled:
 		_apply_all_poses()
 	if _face_live_enabled:
 		_step_compass_faces(eff_delta)
@@ -451,15 +486,67 @@ func _get_active_kiting_weights() -> Dictionary:
 	return KitingEvaluatorScript.compute_preview_weights(_kiting_preview_mode, _anim_time, _kiting_cfg.auto_cycle_duration_sec)
 
 
+func _get_grounded_preview_speed_norm() -> float:
+	if not _grounded_preview_enabled or _grounded_cfg == null:
+		return 0.0
+	match _grounded_preview_mode:
+		GroundedConfigScript.PreviewMode.GROUNDED_IDLE:
+			return 0.0
+		GroundedConfigScript.PreviewMode.WALK_STEADY:
+			return 1.0
+		GroundedConfigScript.PreviewMode.START_STOP_CYCLE:
+			var cyc: float = fposmod(_grounded_demo_timer, 3.0)
+			return 1.0 if cyc < 1.8 else 0.0
+		GroundedConfigScript.PreviewMode.PIVOT_TURN:
+			return 0.85
+		_:
+			var dur: float = maxf(_grounded_cfg.auto_demo_cycle_sec, 2.5)
+			var u: float = fposmod(_grounded_demo_timer, dur) / dur
+			if u < 0.22:
+				return 0.0
+			if u < 0.80:
+				return 1.0
+			return 0.0
+
+
+func _step_grounded_preview(delta: float) -> void:
+	if _grounded_eval == null or _grounded_cfg == null:
+		return
+	var prev_t: float = _grounded_demo_timer
+	_grounded_demo_timer += delta
+	var dur: float = maxf(_grounded_cfg.auto_demo_cycle_sec, 2.5)
+	if _grounded_preview_mode == GroundedConfigScript.PreviewMode.AUTO_DEMO_CYCLE:
+		var u_prev: float = fposmod(prev_t, dur) / dur
+		var u_now: float = fposmod(_grounded_demo_timer, dur) / dur
+		if u_prev < 0.52 and u_now >= 0.52:
+			_grounded_eval.trigger_pivot(1.0)
+	elif _grounded_preview_mode == GroundedConfigScript.PreviewMode.PIVOT_TURN:
+		if int(floor(prev_t / 1.15)) != int(floor(_grounded_demo_timer / 1.15)):
+			_grounded_eval.trigger_pivot(1.0 if (int(floor(_grounded_demo_timer / 1.15)) % 2 == 0) else -1.0)
+	var sim_spd: float = _get_grounded_preview_speed_norm()
+	_grounded_eval.step_gait(delta, sim_spd, -1.0, _grounded_cfg)
+	_grounded_eval.consume_step_event()
+
+
 func _apply_all_poses() -> void:
 	if _evaluator == null:
+		return
+	var turns_live: bool = _turn_preview_enabled or _is_jiggle_turn_choreo_active()
+	var turn_cfg_eff: TurnAnimConfigScript = _turn_cfg if turns_live else null
+	var jiggle_cfg_eff: JigglePhysicsConfigScript = _jiggle_cfg if _jiggle_preview_enabled else null
+	if _grounded_preview_enabled and _grounded_eval != null and _grounded_cfg != null:
+		for entry: Dictionary in _rig_entries:
+			var v_key_g: String = str(entry.get("cur_view", entry["view"]))
+			var rig_g: PlanarCombatRig = entry["rig"] as PlanarCombatRig
+			var turn_st_g: Dictionary = (entry.get("turn_state", {}) as Dictionary) if turns_live else {}
+			var fam_g: String = BasePoseConfigScript.canonical_family_for_view(v_key_g)
+			var fam_dict_g: Dictionary = _grounded_cfg.get_standing_family(fam_g)
+			var motion_g: Dictionary = _grounded_eval.evaluate_motion_for_view(v_key_g, _grounded_cfg, _pose_scale)
+			_evaluator.apply_composed_pose_to_view(rig_g, v_key_g, fam_dict_g, motion_g, _layer_mode, _pose_scale, turn_cfg_eff, turn_st_g, jiggle_cfg_eff, false, _anim_time, null)
 		return
 	var loco_weights: Dictionary = _get_active_loco_weights()
 	var kiting_weights: Dictionary = _get_active_kiting_weights()
 	var kiting_cfg_eff: KitingAnimConfigScript = _kiting_cfg if _kiting_preview_enabled else null
-	var turns_live: bool = _turn_preview_enabled or _is_jiggle_turn_choreo_active()
-	var turn_cfg_eff: TurnAnimConfigScript = _turn_cfg if turns_live else null
-	var jiggle_cfg_eff: JigglePhysicsConfigScript = _jiggle_cfg if _jiggle_preview_enabled else null
 	for entry: Dictionary in _rig_entries:
 		var v_key: String = str(entry.get("cur_view", entry["view"]))
 		var rig: PlanarCombatRig = entry["rig"] as PlanarCombatRig
@@ -472,6 +559,10 @@ func _on_tab_changed(tab_idx: int) -> void:
 	_turn_preview_enabled = (tab_idx == 3)
 	_jiggle_preview_enabled = (tab_idx == 4)
 	_kiting_preview_enabled = (tab_idx == 5)
+	_grounded_preview_enabled = (tab_idx == 6)
+	if _grounded_preview_enabled and _grounded_eval != null:
+		_grounded_eval.reset_state()
+		_grounded_demo_timer = 0.0
 	if not (_turn_preview_enabled or _is_jiggle_turn_choreo_active()):
 		_reset_all_rigs_to_home_views()
 	elif _is_jiggle_turn_choreo_active():
@@ -483,6 +574,7 @@ func _on_tab_changed(tab_idx: int) -> void:
 		_hud.sync_turn_preview_checkbox(_turn_preview_enabled)
 		_hud.sync_jiggle_preview_checkbox(_jiggle_preview_enabled)
 		_hud.sync_kiting_preview_checkbox(_kiting_preview_enabled)
+		_hud.sync_grounded_preview_checkbox(_grounded_preview_enabled)
 	_apply_all_poses()
 
 
@@ -558,7 +650,11 @@ func _step_compass_faces(delta: float) -> void:
 	var lat_signed: float = float(kite_w.get("lat_signed", 0.0))
 	var kite_tot: float = float(kite_w.get("kiting_total", 0.0))
 	var eff_loco: Dictionary = loco_w.duplicate()
-	if not kite_w.is_empty():
+	if _grounded_preview_enabled and _grounded_eval != null:
+		eff_loco = {"fwd": _grounded_eval.walk_blend, "brk": _grounded_eval.stop_weight}
+		w_fwd = _grounded_eval.walk_blend
+		w_brk = _grounded_eval.stop_weight
+	elif not kite_w.is_empty():
 		eff_loco["brk"] = maxf(w_brk, w_rbrk)
 	var turns_live: bool = _turn_preview_enabled or _is_jiggle_turn_choreo_active()
 	var mouse_world: Vector2 = get_global_mouse_position() if (is_inside_tree() and get_viewport() != null) else Vector2.ZERO
@@ -997,8 +1093,75 @@ func _on_jiggle_family_mul_changed(mul_key: String, val: float) -> void:
 
 func _sync_hud_all() -> void:
 	if _hud != null:
-		_hud.sync_from_config(_pose_cfg, _selected_family, _layer_mode, _micro_hover_enabled, _idle_cfg, _loco_cfg, _loco_preview_enabled, _loco_preview_mode, _turn_cfg, _turn_preview_enabled, _turn_preview_mode, _jiggle_cfg, _jiggle_preview_enabled, _jiggle_preview_mode, _kiting_cfg, _kiting_preview_enabled, _kiting_preview_mode, _kiting_edit_phase)
+		_hud.sync_from_config(_pose_cfg, _selected_family, _layer_mode, _micro_hover_enabled, _idle_cfg, _loco_cfg, _loco_preview_enabled, _loco_preview_mode, _turn_cfg, _turn_preview_enabled, _turn_preview_mode, _jiggle_cfg, _jiggle_preview_enabled, _jiggle_preview_mode, _kiting_cfg, _kiting_preview_enabled, _kiting_preview_mode, _kiting_edit_phase, _grounded_cfg, _grounded_preview_enabled, _grounded_preview_mode)
 		_hud.sync_face_live_checkbox(_face_live_enabled)
+
+
+func _on_grounded_preview_toggled(enabled: bool) -> void:
+	_grounded_preview_enabled = enabled
+	if enabled and _grounded_eval != null:
+		_grounded_eval.reset_state()
+		_grounded_demo_timer = 0.0
+	_apply_all_poses()
+
+
+func _on_grounded_mode_changed(idx: int) -> void:
+	_grounded_preview_mode = clampi(idx, 0, 4)
+	_grounded_demo_timer = 0.0
+	if _grounded_eval != null:
+		_grounded_eval.reset_state()
+	_apply_all_poses()
+
+
+func _on_trigger_grounded_pivot() -> void:
+	if _grounded_eval != null:
+		_grounded_eval.trigger_pivot(1.0)
+	_apply_all_poses()
+
+
+func _on_grounded_param_changed(param_key: String, val: float) -> void:
+	if _grounded_cfg == null or not (param_key in _grounded_cfg):
+		return
+	_grounded_cfg.set(param_key, val)
+	_apply_all_poses()
+
+
+func _on_grounded_family_mul_changed(mul_key: String, val: float) -> void:
+	if _grounded_cfg == null:
+		return
+	_grounded_cfg.ensure_initialized()
+	if _grounded_cfg.family_multipliers.has(_selected_family):
+		var fm: Dictionary = _grounded_cfg.family_multipliers[_selected_family] as Dictionary
+		fm[mul_key] = val
+	_apply_all_poses()
+
+
+func _save_grounded_tres() -> void:
+	_save_resource_tres(_grounded_cfg, _active_grounded_loco_path, _active_grounded_loco_path.get_file())
+
+
+func _reload_grounded_tres() -> void:
+	if not ResourceLoader.exists(_active_grounded_loco_path):
+		if _hud != null:
+			_hud.set_feedback("No existe %s" % _active_grounded_loco_path.get_file(), false)
+		return
+	_grounded_cfg = _load_grounded_cfg_from_disk()
+	_sync_hud_all()
+	if _hud != null:
+		_hud.set_feedback("Recargado desde %s" % _active_grounded_loco_path.get_file(), true)
+	_apply_all_poses()
+
+
+func _reset_grounded_defaults() -> void:
+	if _grounded_cfg == null:
+		return
+	_grounded_cfg.reset_defaults()
+	if _grounded_eval != null:
+		_grounded_eval.reset_state()
+	_sync_hud_all()
+	if _hud != null:
+		_hud.set_feedback("Hub Walk Grounded restaurado a defaults AAA.", true)
+	_apply_all_poses()
 
 
 func _save_resource_tres(res: Resource, path: String, label: String) -> void:

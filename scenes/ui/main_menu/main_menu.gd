@@ -20,7 +20,7 @@ func _ready() -> void:
 
 	# Redirigir automáticamente al nuevo Menú Principal HUD 3D si se carga como escena actual
 	if get_tree().current_scene == self or get_parent() == get_tree().root:
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/hub_world.tscn")
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 		return
 	if continue_button:
 		if SaveManager.has_active_run():
@@ -81,19 +81,19 @@ func _on_continue_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 
 func _on_play_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 
 func _on_hub_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/hub_world.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
 
 func _on_highscores_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

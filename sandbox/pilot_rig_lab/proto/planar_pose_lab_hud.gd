@@ -8,6 +8,7 @@ const LocomotionAnimConfigScript = preload("res://data/pilots/schemas/pilot_loco
 const TurnAnimConfigScript = preload("res://data/pilots/schemas/pilot_turn_anim_config.gd")
 const JigglePhysicsConfigScript = preload("res://data/pilots/schemas/pilot_jiggle_physics_config.gd")
 const KitingAnimConfigScript = preload("res://data/pilots/schemas/pilot_kiting_anim_config.gd")
+const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
 
 const SLIDER_SPECS: Array[Dictionary] = [
 	{"sec": "torso", "key": "pelvis_rot", "label": "Pelvis Inclinación", "min": -0.18, "max": 0.18, "step": 0.002, "rad": true},
@@ -239,6 +240,35 @@ const KITING_PHASE_SPECS: Array[Dictionary] = [
 	{"sec": "kiting_phase", "key": "torso_sec_drag_y_px", "label": "Inercia Busto Y (px)", "min": -2.5, "max": 2.5, "step": 0.05, "rad": false},
 ]
 
+const GROUNDED_GLOBAL_SPECS: Array[Dictionary] = [
+	{"sec": "grounded_global", "key": "master_intensity", "label": "Intensidad Maestra", "min": 0.0, "max": 2.0, "step": 0.05, "rad": false},
+	{"sec": "grounded_global", "key": "stride_length_m", "label": "Longitud Zancada (m)", "min": 1.0, "max": 7.0, "step": 0.05, "rad": false},
+	{"sec": "grounded_global", "key": "pelvis_bounce_down_px", "label": "Rebote Down Y (px)", "min": 0.0, "max": 10.0, "step": 0.2, "rad": false},
+	{"sec": "grounded_global", "key": "pelvis_bounce_up_px", "label": "Rebote Up Y (px)", "min": -8.0, "max": 0.0, "step": 0.2, "rad": false},
+	{"sec": "grounded_global", "key": "pelvis_sway_x_px", "label": "Balanceo Cadera X (px)", "min": 0.0, "max": 6.0, "step": 0.1, "rad": false},
+	{"sec": "grounded_global", "key": "pelvis_roll_rad", "label": "Inclinación Pelvis", "min": 0.0, "max": 0.12, "step": 0.002, "rad": true},
+	{"sec": "grounded_global", "key": "forward_lean_chest_rad", "label": "Inclinación Torso", "min": 0.0, "max": 0.16, "step": 0.002, "rad": true},
+	{"sec": "grounded_global", "key": "thigh_swing_fwd_rad", "label": "Muslo Adelante", "min": 0.05, "max": 0.65, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "thigh_swing_back_rad", "label": "Muslo Atrás", "min": 0.05, "max": 0.55, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "knee_pass_bend_rad", "label": "Rodilla Levante (Passing)", "min": 0.10, "max": 0.90, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "arm_shoulder_fwd_rad", "label": "Brazo Balanceo", "min": 0.05, "max": 0.55, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "arm_elbow_base_rad", "label": "Flexión Base Codo", "min": -0.70, "max": 0.0, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "leg_25d_phi_thigh_amp", "label": "2.5D Muslo (Phi1)", "min": 0.0, "max": 0.50, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "leg_25d_phi_shin_amp", "label": "2.5D Rodilla (Phi2)", "min": 0.0, "max": 0.55, "step": 0.01, "rad": true},
+	{"sec": "grounded_global", "key": "leg_25d_distal_amp", "label": "2.5D Bota (Distal)", "min": 0.0, "max": 0.35, "step": 0.01, "rad": false},
+	{"sec": "grounded_global", "key": "torso_yaw_stride", "label": "2.5D Torsión Yaw", "min": 0.0, "max": 0.12, "step": 0.002, "rad": false},
+	{"sec": "grounded_global", "key": "step_jiggle_bust_impulse", "label": "Impulso Jiggle Pisada", "min": 0.0, "max": 70.0, "step": 1.0, "rad": false},
+	{"sec": "grounded_global", "key": "step_hair_bounce_px", "label": "Rebote Cabello (px)", "min": 0.0, "max": 6.0, "step": 0.1, "rad": false},
+]
+
+const GROUNDED_FAM_SPECS: Array[Dictionary] = [
+	{"sec": "grounded_fam", "key": "bone_stride_scale", "label": "Mult. Familia: Zancada Huesos", "min": 0.0, "max": 1.8, "step": 0.02, "rad": false, "fam_mul": true},
+	{"sec": "grounded_fam", "key": "persp_25d_scale", "label": "Mult. Familia: Escorzo 2.5D", "min": 0.0, "max": 1.8, "step": 0.05, "rad": false, "fam_mul": true},
+	{"sec": "grounded_fam", "key": "arm_swing_scale", "label": "Mult. Familia: Brazos", "min": 0.0, "max": 1.8, "step": 0.05, "rad": false, "fam_mul": true},
+	{"sec": "grounded_fam", "key": "pelvis_bounce_scale", "label": "Mult. Familia: Rebote Pelvis", "min": 0.0, "max": 1.8, "step": 0.05, "rad": false, "fam_mul": true},
+	{"sec": "grounded_fam", "key": "torso_twist_scale", "label": "Mult. Familia: Torsión Torso", "min": 0.0, "max": 1.8, "step": 0.05, "rad": false, "fam_mul": true},
+]
+
 const SECTION_TITLES: Dictionary = {
 	"torso": "1. TORSO Y CUELLO",
 	"arms": "2. GUARDIA DE BRAZOS",
@@ -263,6 +293,8 @@ const SECTION_TITLES: Dictionary = {
 	"jiggle_fam": "D. MULTIPLICADORES DE FAMILIA ACTIVA",
 	"kiting_global": "A. DINÁMICA DE KITING 360° & HOVER-SLIDE",
 	"kiting_phase": "B. POSTURA DE FASE ACTIVA (FAMILIA)",
+	"grounded_global": "A. CICLO GROUNDED 4-FASES & STRIDE-LOCK",
+	"grounded_fam": "B. MULTIPLICADORES DE FAMILIA (HUB WALK)",
 }
 
 var _tab_buttons: Array[Button] = []
@@ -273,6 +305,7 @@ var _loco_tab_box: VBoxContainer = null
 var _turn_tab_box: VBoxContainer = null
 var _jiggle_tab_box: VBoxContainer = null
 var _kiting_tab_box: VBoxContainer = null
+var _grounded_tab_box: VBoxContainer = null
 var _on_tab_changed_cb: Callable = Callable()
 
 var _ab_btn: Button = null
@@ -292,6 +325,7 @@ var _loco_slider_rows: Dictionary = {}
 var _turn_slider_rows: Dictionary = {}
 var _jiggle_slider_rows: Dictionary = {}
 var _kiting_slider_rows: Dictionary = {}
+var _grounded_slider_rows: Dictionary = {}
 var _idle_skel_chk: CheckBox = null
 var _idle_25d_chk: CheckBox = null
 var _idle_sec_chk: CheckBox = null
@@ -307,6 +341,8 @@ var _jiggle_glute_chk: CheckBox = null
 var _kiting_preview_chk: CheckBox = null
 var _kiting_mode_opt: OptionButton = null
 var _kiting_phase_opt: OptionButton = null
+var _grounded_preview_chk: CheckBox = null
+var _grounded_mode_opt: OptionButton = null
 var _feedback_lbl: Label = null
 
 
@@ -320,7 +356,8 @@ func build(
 	initial_family: String,
 	initial_hover_on: bool,
 	callbacks: Dictionary,
-	kiting_cfg: KitingAnimConfigScript = null
+	kiting_cfg: KitingAnimConfigScript = null,
+	grounded_cfg: GroundedConfigScript = null
 ) -> CanvasLayer:
 	_on_tab_changed_cb = callbacks.get("on_tab_changed", Callable()) as Callable
 	var layer := CanvasLayer.new()
@@ -364,12 +401,12 @@ func build(
 	vbox.add_child(title)
 
 	var tab_row := GridContainer.new()
-	tab_row.columns = 3
+	tab_row.columns = 4
 	tab_row.add_theme_constant_override("h_separation", 4)
 	tab_row.add_theme_constant_override("v_separation", 4)
 	vbox.add_child(tab_row)
 	_tab_buttons.clear()
-	var tab_labels: Array[String] = ["1. Pose", "2. Idle", "3. Vuelo", "4. Giros", "5. Jiggle", "6. Kiting"]
+	var tab_labels: Array[String] = ["1. Pose", "2. Idle", "3. Vuelo", "4. Giros", "5. Jiggle", "6. Kiting", "7. Hub Walk"]
 	for t_idx: int in range(tab_labels.size()):
 		var tb := Button.new()
 		tb.text = tab_labels[t_idx]
@@ -521,6 +558,7 @@ func build(
 	_turn_tab_box = _build_turn_tab(vbox, callbacks)
 	_jiggle_tab_box = _build_jiggle_tab(vbox, callbacks)
 	_kiting_tab_box = _build_kiting_tab(vbox, callbacks)
+	_grounded_tab_box = _build_grounded_tab(vbox, callbacks)
 
 	_feedback_lbl = Label.new()
 	_feedback_lbl.text = ""
@@ -536,7 +574,7 @@ func build(
 	vbox.add_child(readout_lbl)
 
 	set_active_tab(5)
-	sync_from_config(pose_cfg, initial_family, 0, initial_hover_on, idle_cfg, loco_cfg, false, 0, turn_cfg, false, 0, jiggle_cfg, false, 0, kiting_cfg, true, 0, "rev_")
+	sync_from_config(pose_cfg, initial_family, 0, initial_hover_on, idle_cfg, loco_cfg, false, 0, turn_cfg, false, 0, jiggle_cfg, false, 0, kiting_cfg, true, 0, "rev_", grounded_cfg, false, 0)
 	return layer
 
 
@@ -911,6 +949,67 @@ func _build_kiting_tab(parent: VBoxContainer, callbacks: Dictionary) -> VBoxCont
 	return box
 
 
+func _build_grounded_tab(parent: VBoxContainer, callbacks: Dictionary) -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 5)
+	parent.add_child(box)
+
+	_add_section_header(box, "PREVIEW HUB WALK GROUNDED (8-DIR)")
+	_grounded_preview_chk = CheckBox.new()
+	_grounded_preview_chk.text = "Simulación Hub Walk Activa"
+	_grounded_preview_chk.toggled.connect(func(v: bool) -> void:
+		var cb: Callable = callbacks.get("on_grounded_preview_toggled", Callable())
+		if cb.is_valid():
+			cb.call(v)
+	)
+	box.add_child(_grounded_preview_chk)
+
+	_grounded_mode_opt = OptionButton.new()
+	_grounded_mode_opt.add_item("0: Ciclo Demo (Idle → Walk → Pivot → Stop)", 0)
+	_grounded_mode_opt.add_item("1: Grounded Idle (Botas en Suelo)", 1)
+	_grounded_mode_opt.add_item("2: Caminata / Trote Continuo", 2)
+	_grounded_mode_opt.add_item("3: Arranque y Frenado (Start/Stop)", 3)
+	_grounded_mode_opt.add_item("4: Pivote Brusco", 4)
+	_grounded_mode_opt.item_selected.connect(func(idx: int) -> void:
+		var cb: Callable = callbacks.get("on_grounded_mode_changed", Callable())
+		if cb.is_valid():
+			cb.call(idx)
+	)
+	box.add_child(_grounded_mode_opt)
+
+	var pivot_btn := Button.new()
+	pivot_btn.text = "⚡ Trigger Pivot Now"
+	pivot_btn.pressed.connect(func() -> void:
+		var cb: Callable = callbacks.get("on_trigger_grounded_pivot", Callable())
+		if cb.is_valid():
+			cb.call()
+	)
+	box.add_child(pivot_btn)
+
+	var on_g_param: Callable = callbacks.get("on_grounded_param_changed", Callable()) as Callable
+	var on_g_fam: Callable = callbacks.get("on_grounded_family_mul_changed", Callable()) as Callable
+	_add_section_header(box, str(SECTION_TITLES.get("grounded_global", "A. CICLO GROUNDED")))
+	for spec: Dictionary in GROUNDED_GLOBAL_SPECS:
+		_build_param_row(box, spec, _grounded_slider_rows, on_g_param)
+
+	_add_section_header(box, str(SECTION_TITLES.get("grounded_fam", "B. MULTIPLICADORES")))
+	for spec: Dictionary in GROUNDED_FAM_SPECS:
+		_build_param_row(box, spec, _grounded_slider_rows, on_g_fam)
+
+	_add_section_header(box, "PERSISTENCIA HUB WALK (.TRES)")
+	_add_io_buttons(
+		box,
+		"💾 Guardar Hub Walk .tres",
+		"↺ Recargar Hub Walk .tres",
+		"⚡ Reset Hub Walk Defaults",
+		callbacks.get("on_save_grounded_tres", Callable()) as Callable,
+		callbacks.get("on_reload_grounded_tres", Callable()) as Callable,
+		callbacks.get("on_reset_grounded_defaults", Callable()) as Callable
+	)
+	return box
+
+
 func _add_io_buttons(
 	box: VBoxContainer,
 	save_txt: String,
@@ -952,7 +1051,7 @@ func _add_io_buttons(
 
 
 func set_active_tab(tab_idx: int) -> void:
-	_active_tab = clampi(tab_idx, 0, 5)
+	_active_tab = clampi(tab_idx, 0, 6)
 	for i: int in range(_tab_buttons.size()):
 		_tab_buttons[i].set_pressed_no_signal(i == _active_tab)
 	if _pose_tab_box != null:
@@ -967,6 +1066,8 @@ func set_active_tab(tab_idx: int) -> void:
 		_jiggle_tab_box.visible = (_active_tab == 4)
 	if _kiting_tab_box != null:
 		_kiting_tab_box.visible = (_active_tab == 5)
+	if _grounded_tab_box != null:
+		_grounded_tab_box.visible = (_active_tab == 6)
 	if _on_tab_changed_cb.is_valid():
 		_on_tab_changed_cb.call(_active_tab)
 
@@ -993,7 +1094,10 @@ func sync_from_config(
 	kiting_cfg: KitingAnimConfigScript = null,
 	kiting_preview_on: bool = true,
 	kiting_preview_mode: int = 0,
-	kiting_edit_phase: String = "rev_"
+	kiting_edit_phase: String = "rev_",
+	grounded_cfg: GroundedConfigScript = null,
+	grounded_preview_on: bool = false,
+	grounded_preview_mode: int = 0
 ) -> void:
 	var fam: String = BasePoseConfigScript.canonical_family_for_view(active_family)
 	for fk: Variant in _fam_buttons.keys():
@@ -1076,6 +1180,19 @@ func sync_from_config(
 			var p_key: String = str(spec["key"])
 			_sync_slider_row(_kiting_slider_rows, p_key, kiting_cfg.get_family_param(fam, kiting_edit_phase + p_key), spec)
 
+	if _grounded_preview_chk != null:
+		_grounded_preview_chk.set_pressed_no_signal(grounded_preview_on)
+	if _grounded_mode_opt != null:
+		_grounded_mode_opt.select(clampi(grounded_preview_mode, 0, _grounded_mode_opt.item_count - 1))
+	if grounded_cfg != null:
+		for spec: Dictionary in GROUNDED_GLOBAL_SPECS:
+			var gnd_k: String = str(spec["key"])
+			var gnd_v: float = float(grounded_cfg.get(gnd_k)) if (gnd_k in grounded_cfg) else 0.0
+			_sync_slider_row(_grounded_slider_rows, gnd_k, gnd_v, spec)
+		for spec: Dictionary in GROUNDED_FAM_SPECS:
+			var fm_k: String = str(spec["key"])
+			_sync_slider_row(_grounded_slider_rows, fm_k, grounded_cfg.get_family_mul(fam, fm_k), spec)
+
 
 func _sync_slider_row(rows_dict: Dictionary, key: String, val: float, spec: Dictionary) -> void:
 	var row_info: Dictionary = rows_dict.get(key, {}) as Dictionary
@@ -1109,6 +1226,11 @@ func sync_jiggle_preview_checkbox(enabled: bool) -> void:
 func sync_kiting_preview_checkbox(enabled: bool) -> void:
 	if _kiting_preview_chk != null:
 		_kiting_preview_chk.set_pressed_no_signal(enabled)
+
+
+func sync_grounded_preview_checkbox(enabled: bool) -> void:
+	if _grounded_preview_chk != null:
+		_grounded_preview_chk.set_pressed_no_signal(enabled)
 
 
 func sync_face_live_checkbox(enabled: bool) -> void:

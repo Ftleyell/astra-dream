@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/hub/astral_station/astral_station_hub.gd" id="1_hub"]
+[ext_resource type="Resource" path="res://data/hub/default_astral_station_config.tres" id="2_cfg"]
+
+[node name="AstralStationHub" type="Node3D"]
+script = ExtResource("1_hub")
+config = ExtResource("2_cfg")
+is_dev_lab_mode = false
