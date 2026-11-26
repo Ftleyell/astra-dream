@@ -21,10 +21,10 @@
 | **Anillo Orbital 2.5D & Guns Lab (1–4 Slots)** | **Cerrado (Prod.)** | `scenes/pilots/weapons/orbital_weapon_{ring_controller,3d_renderer}.gd`, `scenes/pilots/shaders/orbital_weapon_25d.gdshader`, `data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres` | [`VALENTINA_ORBITAL_WEAPON_SPEC.md`](VALENTINA_ORBITAL_WEAPON_SPEC.md) |
 | **3D Lab & Alas 3D Cel-Shaded (*Astral Seraph*)** | **Cerrado (Prod.)** | `scenes/pilots/vfx/astral_wings_3d_{mesh_builder,controller}.gd`, `scenes/pilots/shaders/astral_wing_*.gdshader`, `data/pilots/valentina_v2/valentina_v2_wings_3d.tres` | [`VALENTINA_3D_LAB_SPEC.md`](VALENTINA_3D_LAB_SPEC.md) · [`VALENTINA_3D_WINGS_CREATION_GUIDE.md`](VALENTINA_3D_WINGS_CREATION_GUIDE.md) |
 | **Live Banner 2.5D + Icono 512×512 + Lockout Roster** | **Cerrado (Fase 2)** | `scenes/pilots/banner/pilot_live_banner_controller.gd`, `character_live_banner_viewport.gd`, `data/pilots/valentina_v2/valentina_v2_live_banner.tres`, `assets/pilots/valentina_v2/banner/` | [`VALENTINA_LIVE_BANNER_SPEC.md`](VALENTINA_LIVE_BANNER_SPEC.md) |
-| **Hub 3D 2.5D Diorama + `HubRigAvatar3D`** | **Cerrado (Fase 3)** | `scenes/ui/hub/components/hub_rig_avatar_3d.gd`, `scenes/ui/hub/resources/hub_diorama_config.gd`, `data/hub/default_hub_diorama_config.tres`, `scenes/ui/hub/hub_world.tscn` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
+| **Hub 3D Embebido en `MainGame` + Astral Glide-Hop (`GaitStyle.ASTRAL_GLIDE_HOP`)** | **Cerrado (Prod.)** | `scenes/combat/controllers/combat_hub_session_controller.gd`, `scenes/ui/hub/astral_station/astral_station_hub.gd`, `scenes/combat/player/{player_rig_v2_controller,hub_landing_ripple_vfx}.gd`, `scenes/pilots/rig/planar_rig_grounded_evaluator.gd`, `data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres` *(legacy: `hub_rig_avatar_3d.gd`, `hub_world.tscn`)* | [`HUB_3D_REWORK_BLUEPRINT.md`](HUB_3D_REWORK_BLUEPRINT.md) · [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Skins 100% por Shaders (`pilot` / `wings` / `weapon`)** | **Cerrado (Fase 4)** | `data/pilots/schemas/{shader_skin_entry,pilot_shader_skin_catalog}.gd`, `data/pilots/valentina_v2/valentina_v2_skin_catalog.tres`, `core/systems/cosmetics_manager.gd` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Combate In-Game (`PlayerRigV2Controller`)** | **Cerrado (Fase 5)** | `scenes/combat/player/player_rig_v2_controller.gd`, `data/pilots/valentina_v2/valentina_v2_combat_rig.tres`, Twin-Stick 360°, `CosmicLightingSampler`, Sobre-Enfoque y 1–4 Armas | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
-| **Workbenches & Combat Gym (`F6`)** | **Cerrado (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn`, `hud_workbench/`, `dialogue_workbench/`, `character_select_workbench/`, `skill_ult_workbench/`, `sandbox/combat_gym/combat_gym.tscn` | [`DOMAIN_MAP.md`](DOMAIN_MAP.md) |
+| **Workbenches & Combat Gym (`F6`)** | **Cerrado (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn`, `hud_workbench/`, `dialogue_workbench/`, `character_select_workbench/`, `skill_ult_workbench/`, `sandbox/hub_art_lab/hub_locomotion_lab/`, `sandbox/combat_gym/combat_gym.tscn` | [`DOMAIN_MAP.md`](DOMAIN_MAP.md) |
 | **Fábrica Multi-Piloto v2** | **Listo (Cast v2)** | `sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py`, `sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd`, Playbook v2 | [`PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md) |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
 
@@ -33,7 +33,7 @@
 ## 2. Mapa de Labs, Workbenches y Suites de Prueba
 
 ### Lanzador Unificado (`F6` en Godot)
-- **`sandbox/workbenches/workbench_hub.tscn`**: Centraliza los **Workbenches sobre producción** (`Combat Gym`, `HUD Workbench`, `Dialogue Workbench`, `Character Select Workbench`, `Hub Art Lab`, `Gacha 3D Lab`, **`Skill & Ult Workbench`**), el selector global de **Piloto Activo** (`PilotLabSelector`) y el lanzamiento directo de los **Pilot Rig Labs** de `sandbox/pilot_rig_lab/`.
+- **`sandbox/workbenches/workbench_hub.tscn`**: Centraliza los **Workbenches sobre producción** (`Combat Gym`, `HUD Workbench`, `Dialogue Workbench`, `Character Select Workbench`, `Hub Art Lab`, `Gacha 3D Lab`, **`Skill & Ult Workbench`**, **`Hub Locomotion Lab 3D`**), el selector global de **Piloto Activo** (`PilotLabSelector`) y el lanzamiento directo de los **Pilot Rig Labs** de `sandbox/pilot_rig_lab/`.
 
 ### Escenas de Laboratorio (`sandbox/pilot_rig_lab/` — Parametrizadas por Piloto)
 1. **Arena Principal del Rig:** `proto/planar_combat_rig_proto.tscn`
@@ -52,6 +52,9 @@
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_grounded_walk"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_locomotion_lab" -TimeoutSeconds 25
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "pilot_rig_lab"

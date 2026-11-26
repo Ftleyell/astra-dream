@@ -14,6 +14,7 @@ La escena de combate principal (`scenes/combat/main_game.gd`) opera como un orqu
 - **`CombatModalCoordinator`**: Cola FIFO de modales in-game (Level Up, Tienda Satelital, Selección de Arcanas, Banlist) que arbitra pausas seguras.
 - **`CombatSatelliteCoordinator`**: Gestión de trayectorias, distancias y aparición de estaciones orbitales interactuables.
 - **`SpaceEnvironmentHost`**: Anfitrión desacoplado de fondo cósmico (`scenes/combat/environment/space_environment_host.gd`). Conecta e intercambia plug & play el entorno visual, instanciando por defecto [`CosmosCombatEnvironment`](../scenes/combat/environment/cosmos_combat_environment.gd), gobernando transiciones de bioma e inyectando de forma determinista la semilla `run_seed`.
+- **`CombatHubSessionController` + `HubEmbeddedViewportBridge`**: Orquestan el Hub 3D embebido directamente sobre el `CosmosCombatEnvironment` vivo de `MainGame` (`RunLaunchRequest.EntryMode.HUB` → semilla `AUTO` fresca → `HUB_ACTIVE` con paridad ortográfica 2D↔3D entre el único `Player` real en `z_index = 5` y `AstralStationHub` en `z_index = 3`, **Astral Glide-Hop** ↔ Vuelo Zero-G, Dash pacífico, supresión de spawners y zooms exclusivos de showcase → despegue zero-rail `DEPARTING_DISSOLVE` → `COMBAT_LIVE` con exclusión radial `29.5 m` y sesgo frontal `65°` durante `6.0 s`).
 - **`RunStateSerializer`**: Serializa y restaura `run_seed`, inventario, armas y estado de partida activa.
 
 ---

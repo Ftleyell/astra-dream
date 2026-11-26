@@ -1,63 +1,242 @@
-[gd_resource type="Resource" script_class="PilotGroundedLocomotionConfig" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="PilotGroundedLocomotionConfig" format=3]
 
 [ext_resource type="Script" path="res://data/pilots/schemas/pilot_grounded_locomotion_config.gd" id="1_cfg"]
 
 [resource]
 script = ExtResource("1_cfg")
-anim_id = "hub_grounded_walk_aaa"
-display_name = "Hub 3D Caminata / Trote Grounded AAA"
-master_intensity = 0.82
-stride_length_m = 3.6
-min_walk_speed_norm = 0.06
+master_intensity = 0.9
 walk_blend_in_rate = 14.0
-walk_blend_out_rate = 14.0
+walk_blend_out_rate = 12.0
 start_lean_duration_sec = 0.18
-stop_plant_duration_sec = 0.20
+stop_plant_duration_sec = 0.2
 pivot_duration_sec = 0.18
-idle_breath_hz = 0.34
-idle_weight_shift_hz = 0.17
-auto_demo_cycle_sec = 5.2
 pelvis_bounce_down_px = 1.8
 pelvis_bounce_up_px = -1.4
 pelvis_sway_x_px = 0.95
-pelvis_roll_rad = 0.022
-waist_counter_rad = -0.018
-chest_counter_rad = -0.016
-forward_lean_waist_rad = 0.03
-forward_lean_chest_rad = 0.036
-neck_stabilize_ratio = 0.88
-head_bob_lag_px = 0.9
-head_counter_rot_rad = 0.01
-torso_yaw_stride = 0.028
-torso_trap_lean = -0.018
-thigh_swing_fwd_rad = 0.20
+thigh_swing_fwd_rad = 0.2
 thigh_swing_back_rad = 0.17
 knee_pass_bend_rad = 0.28
-knee_contact_bend_rad = 0.06
-knee_down_absorb_rad = 0.14
-ankle_strike_rad = -0.08
-ankle_push_rad = 0.14
 arm_shoulder_fwd_rad = 0.14
 arm_shoulder_back_rad = 0.12
-arm_elbow_base_rad = -0.2
-arm_elbow_swing_rad = 0.14
-arm_wrist_lag_rad = 0.08
-leg_25d_phi_thigh_amp = 0.2
-leg_25d_phi_shin_amp = 0.24
-leg_25d_distal_amp = 0.12
-leg_25d_depth_amp = 0.16
-arm_25d_phi1_amp = 0.14
-arm_25d_phi2_amp = 0.16
-step_jiggle_bust_impulse = 16.0
-step_jiggle_glute_impulse = 12.0
-step_hair_bounce_px = 1.4
-hub_avatar_floor_y = 0.008
-hub_step_lift_3d_m = 0.012
-hub_shadow_contact_scale_amp = 0.05
-hub_move_speed = 6.2
-hub_accel = 18.0
-hub_friction = 16.0
-hub_pivot_brake_mul = 2.35
-hub_pivot_angle_deg = 110.0
-footstep_sfx_volume_db = -14.0
-footstep_vfx_enabled = true
+glide_stride_length_m = 12.0
+glide_contact_duty = 0.09
+glide_arc_height_rig_px = 90.0
+glide_stretch_amount = 0.046
+glide_3d_lift_m = 0.6
+glide_trail_knee_sweep_rad = 0.25
+glide_arm_grace_rad = 0.2
+ripple_inner_radius_m = 0.41000000000000003
+standing_families = {
+"e": {
+"ankle_lead_rot": 0.0,
+"ankle_trail_rot": 0.0,
+"arm_lead_phi1": 0.02,
+"arm_lead_phi2": -0.035,
+"arm_trail_phi1": -0.015,
+"arm_trail_phi2": -0.03,
+"chest_rot": 0.022,
+"elbow_lead_rot": -0.12,
+"elbow_trail_rot": -0.14,
+"knee_lead_rot": 0.055,
+"knee_trail_rot": 0.03,
+"leg_lead_depth_phase": -0.68,
+"leg_lead_distal_amp": -0.01,
+"leg_lead_phi_shin": -0.025,
+"leg_lead_phi_thigh": 0.018,
+"leg_lead_pivot_v": 0.44,
+"leg_trail_depth_phase": 0.65,
+"leg_trail_distal_amp": -0.008,
+"leg_trail_phi_shin": -0.02,
+"leg_trail_phi_thigh": 0.012,
+"leg_trail_pivot_v": 0.44,
+"neck_rot": -0.035,
+"pauldron_follow_ratio": 0.46,
+"pelvis_rot": 0.01,
+"shoulder_lead_rot": -0.06,
+"shoulder_trail_rot": 0.05,
+"thigh_lead_rot": -0.045,
+"thigh_trail_rot": 0.035,
+"torso_trap": -0.01,
+"torso_yaw": 0.01,
+"waist_rot": 0.018,
+"wrist_lead_rot": -0.02,
+"wrist_trail_rot": -0.02
+},
+"n": {
+"ankle_lead_rot": -0.07,
+"ankle_trail_rot": 0.07,
+"arm_lead_phi1": -0.025,
+"arm_lead_phi2": 0.045,
+"arm_trail_phi1": -0.02,
+"arm_trail_phi2": 0.035,
+"chest_rot": -0.01,
+"elbow_lead_rot": -0.055,
+"elbow_trail_rot": 0.045,
+"knee_lead_rot": 0.094,
+"knee_trail_rot": -0.094,
+"leg_lead_depth_phase": -0.035,
+"leg_lead_distal_amp": 0.012,
+"leg_lead_phi_shin": 0.035,
+"leg_lead_phi_thigh": -0.02,
+"leg_lead_pivot_v": 0.445,
+"leg_trail_depth_phase": 0.03,
+"leg_trail_distal_amp": 0.01,
+"leg_trail_phi_shin": 0.025,
+"leg_trail_phi_thigh": -0.012,
+"leg_trail_pivot_v": 0.445,
+"neck_rot": 0.014,
+"pauldron_follow_ratio": 0.48,
+"pelvis_rot": 0.01,
+"shoulder_lead_rot": -0.045,
+"shoulder_trail_rot": 0.045,
+"thigh_lead_rot": 0.104,
+"thigh_trail_rot": -0.104,
+"torso_trap": 0.016,
+"torso_yaw": -0.01,
+"waist_rot": -0.012,
+"wrist_lead_rot": -0.025,
+"wrist_trail_rot": 0.02
+},
+"ne": {
+"ankle_lead_rot": 0.075,
+"ankle_trail_rot": -0.06,
+"arm_lead_phi1": -0.025,
+"arm_lead_phi2": 0.04,
+"arm_trail_phi1": 0.02,
+"arm_trail_phi2": 0.035,
+"chest_rot": 0.018,
+"elbow_lead_rot": 0.065,
+"elbow_trail_rot": -0.095,
+"knee_lead_rot": -0.088,
+"knee_trail_rot": 0.07,
+"leg_lead_depth_phase": -0.035,
+"leg_lead_distal_amp": 0.012,
+"leg_lead_phi_shin": 0.035,
+"leg_lead_phi_thigh": -0.02,
+"leg_lead_pivot_v": 0.46,
+"leg_trail_depth_phase": 0.035,
+"leg_trail_distal_amp": 0.01,
+"leg_trail_phi_shin": 0.025,
+"leg_trail_phi_thigh": -0.012,
+"leg_trail_pivot_v": 0.433,
+"neck_rot": -0.03,
+"pauldron_follow_ratio": 0.48,
+"pelvis_rot": 0.008,
+"shoulder_lead_rot": 0.055,
+"shoulder_trail_rot": -0.065,
+"thigh_lead_rot": -0.122,
+"thigh_trail_rot": 0.094,
+"torso_trap": 0.014,
+"torso_yaw": -0.012,
+"waist_rot": 0.014,
+"wrist_lead_rot": 0.025,
+"wrist_trail_rot": -0.025
+},
+"s": {
+"ankle_lead_rot": 0.085,
+"ankle_trail_rot": -0.085,
+"arm_lead_phi1": 0.025,
+"arm_lead_phi2": -0.045,
+"arm_trail_phi1": 0.02,
+"arm_trail_phi2": -0.04,
+"chest_rot": 0.012,
+"elbow_lead_rot": -0.065,
+"elbow_trail_rot": 0.06,
+"knee_lead_rot": -0.058,
+"knee_trail_rot": 0.058,
+"leg_lead_depth_phase": 0.03,
+"leg_lead_distal_amp": -0.01,
+"leg_lead_phi_shin": -0.03,
+"leg_lead_phi_thigh": 0.02,
+"leg_lead_pivot_v": 0.445,
+"leg_trail_depth_phase": -0.025,
+"leg_trail_distal_amp": -0.008,
+"leg_trail_phi_shin": -0.02,
+"leg_trail_phi_thigh": 0.01,
+"leg_trail_pivot_v": 0.445,
+"neck_rot": -0.016,
+"pauldron_follow_ratio": 0.48,
+"pelvis_rot": -0.014,
+"shoulder_lead_rot": 0.045,
+"shoulder_trail_rot": -0.055,
+"thigh_lead_rot": -0.146,
+"thigh_trail_rot": 0.146,
+"torso_trap": -0.016,
+"torso_yaw": 0.01,
+"waist_rot": 0.018,
+"wrist_lead_rot": -0.03,
+"wrist_trail_rot": 0.025
+},
+"se": {
+"ankle_lead_rot": -0.065,
+"ankle_trail_rot": 0.075,
+"arm_lead_phi1": 0.025,
+"arm_lead_phi2": -0.05,
+"arm_trail_phi1": -0.02,
+"arm_trail_phi2": -0.04,
+"chest_rot": 0.02,
+"elbow_lead_rot": -0.085,
+"elbow_trail_rot": -0.075,
+"knee_lead_rot": 0.058,
+"knee_trail_rot": -0.082,
+"leg_lead_depth_phase": 0.035,
+"leg_lead_distal_amp": -0.012,
+"leg_lead_phi_shin": -0.035,
+"leg_lead_phi_thigh": 0.022,
+"leg_lead_pivot_v": 0.46,
+"leg_trail_depth_phase": -0.035,
+"leg_trail_distal_amp": -0.01,
+"leg_trail_phi_shin": -0.025,
+"leg_trail_phi_thigh": 0.012,
+"leg_trail_pivot_v": 0.433,
+"neck_rot": -0.036,
+"pauldron_follow_ratio": 0.48,
+"pelvis_rot": 0.01,
+"shoulder_lead_rot": -0.045,
+"shoulder_trail_rot": 0.045,
+"thigh_lead_rot": 0.108,
+"thigh_trail_rot": -0.12,
+"torso_trap": -0.014,
+"torso_yaw": 0.014,
+"waist_rot": 0.016,
+"wrist_lead_rot": -0.025,
+"wrist_trail_rot": -0.025
+}
+}
+family_multipliers = {
+"e": {
+"arm_swing_scale": 0.95,
+"bone_stride_scale": 0.95,
+"pelvis_bounce_scale": 1.05,
+"persp_25d_scale": 0.22,
+"torso_twist_scale": 0.55
+},
+"n": {
+"arm_swing_scale": 0.25,
+"bone_stride_scale": 0.0,
+"pelvis_bounce_scale": 1.0,
+"persp_25d_scale": 1.25,
+"torso_twist_scale": 1.15
+},
+"ne": {
+"arm_swing_scale": 0.65,
+"bone_stride_scale": 0.3,
+"pelvis_bounce_scale": 1.0,
+"persp_25d_scale": 1.0,
+"torso_twist_scale": 0.95
+},
+"s": {
+"arm_swing_scale": 0.25,
+"bone_stride_scale": 0.0,
+"pelvis_bounce_scale": 1.0,
+"persp_25d_scale": 1.25,
+"torso_twist_scale": 1.15
+},
+"se": {
+"arm_swing_scale": 0.65,
+"bone_stride_scale": 0.3,
+"pelvis_bounce_scale": 1.0,
+"persp_25d_scale": 1.0,
+"torso_twist_scale": 0.95
+}
+}

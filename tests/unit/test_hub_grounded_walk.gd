@@ -27,10 +27,11 @@ func _ready() -> void:
 func _run_tests() -> void:
 	_test_grounded_config_and_profile()
 	_test_stride_lock_and_footsteps()
+	await _test_moon_hop_canvas_and_stride_lock_60plus()
 	_test_8dir_anatomical_rig_application()
 	await _test_hub_avatar_grounded_and_showcase_switch()
 	_test_motor_pivot_and_audio_sfx()
-	pass_suite("Locomoción Grounded AAA Hub 3D verificada: Stride-Lock, 8-dir anatómico, cero flotación y pivote.")
+	pass_suite("Locomoción Grounded AAA Hub 3D verificada: Astral Glide-Hop, Stride-Lock, 8-dir anatómico, cero flotación y pivote.")
 
 
 func _test_grounded_config_and_profile() -> void:
@@ -42,6 +43,7 @@ func _test_grounded_config_and_profile() -> void:
 	for fam: String in GroundedConfigScript.FAMILY_ORDER:
 		assert_true(cfg.standing_families.has(fam), "standing_families debe incluir familia '%s'" % fam)
 		assert_true(cfg.family_multipliers.has(fam), "family_multipliers debe incluir familia '%s'" % fam)
+	assert_true(cfg.gait_style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP, "valentina_v2_grounded_locomotion.tres debe usar GaitStyle.ASTRAL_GLIDE_HOP")
 
 
 func _test_stride_lock_and_footsteps() -> void:
@@ -56,17 +58,81 @@ func _test_stride_lock_and_footsteps() -> void:
 	assert_true(is_equal_approx(eval.gait_phase, phase_before), "Con world_displacement_m = 0.0 la fase no debe avanzar (Stride-Lock)")
 	assert_true(eval.consume_step_event().is_empty(), "No deben emitirse pisadas sin desplazamiento real")
 
-	# Al recorrer exactamente stride_length_m, debe completar 1 ciclo (2 pisadas: 1 left, 1 right)
+	# Al recorrer exactamente el ciclo activo, debe completar 1 ciclo (2 rebotes: 1 left, 1 right)
 	var steps_seen: Array[StringName] = []
 	var chunks: int = 20
-	var chunk_dist: float = cfg.stride_length_m / float(chunks)
+	var active_stride: float = GroundedEvaluatorScript.get_active_stride_length_m(cfg)
+	var chunk_dist: float = active_stride / float(chunks)
 	for _j: int in range(chunks):
 		eval.step_gait(0.016, 1.0, chunk_dist, cfg)
 		var ev: Dictionary = eval.consume_step_event()
 		if not ev.is_empty():
 			steps_seen.append(ev.get("foot", &"") as StringName)
-	assert_true(steps_seen.size() == 2, "Un ciclo stride_length_m debe emitir exactamente 2 eventos de pisada (got %d)" % steps_seen.size())
-	assert_true(steps_seen.has(&"left") and steps_seen.has(&"right"), "Las pisadas deben alternar entre 'left' y 'right'")
+	assert_true(steps_seen.size() == 2, "Un ciclo glide_stride_length_m debe emitir exactamente 2 eventos de rebote (got %d)" % steps_seen.size())
+	assert_true(steps_seen.has(&"left") and steps_seen.has(&"right"), "Los rebotes deben alternar entre 'left' y 'right'")
+
+	# Verificar curva Astral Glide-Hop: contacto/squash en piso y arco suave en ápice
+	eval = GroundedEvaluatorScript.new()
+	var step_touch: Dictionary = eval.step_gait(0.016, 1.0, 0.0, cfg)
+	assert_true(float(step_touch.get("pelvis_lift_norm", 1.0)) <= 0.02, "En phase=0 touchdown pelvis_lift_norm debe ser ~0")
+	var contact_ph: float = (cfg.glide_contact_duty * 0.5) * PI
+	var contact_curves: Dictionary = GroundedEvaluatorScript.sample_astral_glide_curves(contact_ph, cfg.glide_contact_duty, cfg.glide_arc_hang_power, cfg.glide_arc_peak_shift)
+	assert_true(is_equal_approx(float(contact_curves["air_wave"]), 0.0), "Durante el rebote grounded (hop_u < glide_contact_duty) air_wave debe ser 0.0")
+	assert_true(eval.get_hop_canvas_offset_y(cfg, 1.0, contact_ph, 1.0) >= 0.0, "Durante el rebote grounded el offset Y del CanvasGroup debe quedar >= 0 (pegado al piso)")
+	assert_true(eval.get_hop_canvas_scale(cfg, 1.0, contact_ph, 1.0).y < 0.99, "Durante el rebote grounded debe aplicar squash vertical de amortiguación")
+
+	var apex_u: float = cfg.glide_contact_duty + (1.0 - cfg.glide_contact_duty) * cfg.glide_arc_peak_shift
+	var apex_target_m: float = active_stride * (apex_u * 0.5)
+	var half_steps: int = 12
+	for _k: int in range(half_steps):
+		eval.step_gait(0.016, 1.0, apex_target_m / float(half_steps), cfg)
+	assert_true(eval.pelvis_lift_norm > 0.90, "En el ápice del Astral Glide-Hop pelvis_lift_norm debe superar 0.90 (got %.2f)" % eval.pelvis_lift_norm)
+	assert_true(eval.get_hop_canvas_offset_y(cfg, 1.0, apex_u * PI, 1.0) < -30.0, "En el ápice del Astral Glide-Hop el CanvasGroup debe elevarse < -30 rig px (got %.2f)" % eval.get_hop_canvas_offset_y(cfg, 1.0, apex_u * PI, 1.0))
+
+	# Verificar continuidad en el cruce de pierna líder L <-> R (phase=0 vs phase=TAU) y simetría opuesta en ápices (0.55*PI vs 1.55*PI)
+	var m_p1: Dictionary = eval.evaluate_motion_for_view("e", cfg, 1.0, 0.55 * PI, 1.0)
+	var m_p2: Dictionary = eval.evaluate_motion_for_view("e", cfg, 1.0, 1.55 * PI, 1.0)
+	assert_true(float((m_p1["leg_lead"] as Dictionary)["th"]) < 0.0 and float((m_p2["leg_lead"] as Dictionary)["th"]) > 0.0, "Las piernas líder/trasera deben alternarse entre el salto 1 y el salto 2")
+
+	# Verificar compatibilidad legacy Moon Hop
+	var moon_curves: Dictionary = GroundedEvaluatorScript.sample_moon_hop_curves(0.14 * PI, cfg.hop_contact_duty)
+	assert_true(is_equal_approx(float(moon_curves["air_wave"]), 0.0), "Moon Hop legacy debe mantener air_wave=0 en contacto")
+
+
+func _test_moon_hop_canvas_and_stride_lock_60plus() -> void:
+	var profile: PilotRigProfile = ResourceLoader.load(PROFILE_PATH) as PilotRigProfile
+	var cfg: GroundedConfigScript = profile.grounded_locomotion_config as GroundedConfigScript
+	var active_stride: float = GroundedEvaluatorScript.get_active_stride_length_m(cfg)
+	var rig: PlanarCombatRig = PlanarRigScript.new()
+	rig.pilot_profile = profile
+	add_child(rig)
+	rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.GROUNDED_HUB)
+	rig.set_locomotion_state(Vector2.RIGHT, 1.0, Vector2.RIGHT, true)
+
+	# Guardia >60Hz: al alimentar desplazamiento una vez, frames subsecuentes sin feed no deben usar fallback_spd_m * dt
+	rig.feed_world_displacement(0.15)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var phase_after_feed: float = rig.get_grounded_gait_phase()
+	assert_true(phase_after_feed > 0.05, "El desplazamiento alimentado debe avanzar gait_phase tras procesarse el frame (got %.4f)" % phase_after_feed)
+	for _idle_render: int in range(3):
+		await get_tree().process_frame
+	assert_true(is_equal_approx(rig.get_grounded_gait_phase(), phase_after_feed), "Sin nuevo desplazamiento externo, gait_phase no debe avanzar en frames de render intermedios (>60Hz) (before=%.4f, after=%.4f)" % [phase_after_feed, rig.get_grounded_gait_phase()])
+
+	# Avanzar hasta el ápice del Astral Glide-Hop y validar elevación real de UnifiedCharacterGroup
+	var apex_u: float = cfg.glide_contact_duty + (1.0 - cfg.glide_contact_duty) * cfg.glide_arc_peak_shift
+	var apex_rem_m: float = maxf(active_stride * (apex_u * 0.5) - 0.15, 0.20)
+	for _f: int in range(12):
+		rig.feed_world_displacement(apex_rem_m / 12.0)
+		await get_tree().process_frame
+	var cg: CanvasGroup = rig.get_unified_canvas_group()
+	assert_true(rig.get_grounded_pelvis_lift_norm() > 0.85, "El rig en escena debe alcanzar el ápice Astral Glide-Hop (>0.85, got %.2f)" % rig.get_grounded_pelvis_lift_norm())
+	assert_true(cg != null and cg.position.y < -30.0, "UnifiedCharacterGroup.position.y debe elevarse visiblemente < -30 rig px en el ápice (got %.2f)" % (cg.position.y if cg != null else 0.0))
+
+	# Volver a ZERO_G_FLIGHT debe limpiar posición y escala de UnifiedCharacterGroup
+	rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT)
+	assert_true(cg.position.is_equal_approx(Vector2.ZERO) and cg.scale.is_equal_approx(Vector2.ONE), "Al volver a ZERO_G_FLIGHT UnifiedCharacterGroup debe restaurar position=0 y scale=1")
+	rig.queue_free()
 
 
 func _test_8dir_anatomical_rig_application() -> void:

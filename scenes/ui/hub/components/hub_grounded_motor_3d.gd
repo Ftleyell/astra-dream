@@ -9,12 +9,15 @@ extends RefCounted
 
 const HubRigAvatar3DScript = preload("res://scenes/ui/hub/components/hub_rig_avatar_3d.gd")
 const GroundedConfigScript = preload("res://data/pilots/schemas/pilot_grounded_locomotion_config.gd")
+const ASTRAL_RIPPLE_SHADER: Shader = preload("res://scenes/ui/hub/shaders/hub_astral_ripple_3d.gdshader")
 
 signal pivot_triggered(turn_sign: float)
 
 var _prev_input_dir_2d: Vector2 = Vector2.DOWN
 var _pivot_cooldown: float = 0.0
 var _step_fx_ring_mesh: TorusMesh = null
+var _ripple_plane_mesh: PlaneMesh = null
+var _spark_quad_mesh: QuadMesh = null
 
 
 func step_velocity(
@@ -128,7 +131,111 @@ func on_footstep(
 
 	var vfx_on: bool = cfg.footstep_vfx_enabled if cfg != null else true
 	if vfx_on and body != null and body.is_inside_tree() and body.get_parent() != null:
-		_spawn_footstep_ring(body, foot, s)
+		if cfg != null and cfg.gait_style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP:
+			if cfg.ripple_enabled:
+				spawn_astral_ripple(body, s, avatar, cfg)
+		else:
+			_spawn_footstep_ring(body, foot, s)
+
+
+func spawn_astral_ripple(
+	body: CharacterBody3D,
+	strength: float,
+	avatar: HubRigAvatar3DScript,
+	cfg: GroundedConfigScript = null
+) -> void:
+	if body == null or not body.is_inside_tree():
+		return
+	var parent_3d: Node = body.get_parent()
+	if parent_3d == null:
+		return
+
+	var eff_cfg: GroundedConfigScript = cfg if cfg != null else (avatar.get_grounded_config() if avatar != null else null)
+	var outer_r: float = eff_cfg.ripple_outer_radius_m if eff_cfg != null else 0.78
+	var inner_r: float = eff_cfg.ripple_inner_radius_m if eff_cfg != null else 0.42
+	var dur: float = maxf(eff_cfg.ripple_duration_sec if eff_cfg != null else 0.48, 0.12)
+	var inten: float = (eff_cfg.ripple_intensity if eff_cfg != null else 1.15) * clampf(strength, 0.5, 1.25)
+	var use_accent: bool = eff_cfg.ripple_use_skin_accent if eff_cfg != null else true
+	var fallback_col: Color = eff_cfg.ripple_fallback_color if eff_cfg != null else Color(0.55, 0.88, 1.0, 1.0)
+	var base_col: Color = fallback_col
+	if use_accent and avatar != null:
+		base_col = avatar.get_active_accent_color().lerp(Color(0.62, 0.90, 1.0, 1.0), 0.35)
+	base_col.a = clampf(0.85 * clampf(strength, 0.45, 1.15), 0.25, 1.0)
+
+	if _ripple_plane_mesh == null:
+		_ripple_plane_mesh = PlaneMesh.new()
+		_ripple_plane_mesh.size = Vector2(2.0, 2.0)
+
+	var ripple_mesh := MeshInstance3D.new()
+	ripple_mesh.name = "AstralBounceRipple"
+	ripple_mesh.mesh = _ripple_plane_mesh
+	ripple_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ripple_mesh.position = body.global_position + Vector3(0.0, 0.036, 0.02)
+	ripple_mesh.scale = Vector3(outer_r, 1.0, outer_r)
+
+	var mat := ShaderMaterial.new()
+	mat.shader = ASTRAL_RIPPLE_SHADER
+	mat.render_priority = 3
+	mat.set_shader_parameter("progress", 0.0)
+	mat.set_shader_parameter("ripple_color", base_col)
+	mat.set_shader_parameter("core_color", Color(0.96, 0.98, 1.0, 1.0))
+	mat.set_shader_parameter("intensity", inten)
+	mat.set_shader_parameter("inner_ratio", clampf(inner_r / maxf(outer_r, 0.05), 0.25, 0.85))
+	ripple_mesh.material_override = mat
+	parent_3d.add_child(ripple_mesh)
+
+	var tw: Tween = ripple_mesh.create_tween()
+	tw.tween_method(func(v: float) -> void:
+		if is_instance_valid(mat):
+			mat.set_shader_parameter("progress", v)
+	, 0.0, 1.0, dur).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(ripple_mesh.queue_free)
+
+	var spark_count: int = clampi(eff_cfg.ripple_spark_count if eff_cfg != null else 5, 0, 8)
+	if spark_count > 0:
+		_spawn_bounce_sparks(parent_3d, body.global_position + Vector3(0.0, 0.05, 0.02), base_col, spark_count, outer_r * 0.48, dur * 0.72)
+
+
+func _spawn_bounce_sparks(
+	parent_3d: Node,
+	origin: Vector3,
+	base_col: Color,
+	count: int,
+	ring_r: float,
+	dur: float
+) -> void:
+	if _spark_quad_mesh == null:
+		_spark_quad_mesh = QuadMesh.new()
+		_spark_quad_mesh.size = Vector2(0.085, 0.085)
+
+	for i: int in range(count):
+		var ang: float = (float(i) / float(count)) * TAU + randf_range(-0.22, 0.22)
+		var start_pos: Vector3 = origin + Vector3(cos(ang) * 0.14, 0.01, sin(ang) * 0.14)
+		var end_pos: Vector3 = origin + Vector3(cos(ang) * ring_r, randf_range(0.18, 0.34), sin(ang) * ring_r)
+
+		var spark := MeshInstance3D.new()
+		spark.name = "AstralBounceSpark"
+		spark.mesh = _spark_quad_mesh
+		spark.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		spark.position = start_pos
+		spark.scale = Vector3.ONE * randf_range(0.75, 1.15)
+
+		var s_mat := StandardMaterial3D.new()
+		s_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		s_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		s_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		s_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		s_mat.no_depth_test = false
+		s_mat.albedo_color = Color(base_col.r, base_col.g, base_col.b, 0.85).lerp(Color.WHITE, 0.45)
+		spark.material_override = s_mat
+		parent_3d.add_child(spark)
+
+		var tw_s: Tween = spark.create_tween()
+		tw_s.set_parallel(true)
+		tw_s.tween_property(spark, "position", end_pos, dur).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw_s.tween_property(spark, "scale", Vector3(0.15, 0.15, 0.15), dur).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw_s.tween_property(s_mat, "albedo_color:a", 0.0, dur).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw_s.chain().tween_callback(spark.queue_free)
 
 
 func _spawn_footstep_ring(body: CharacterBody3D, foot: StringName, strength: float) -> void:

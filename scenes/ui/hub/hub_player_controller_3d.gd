@@ -215,8 +215,14 @@ func _sync_shadow_texture() -> void:
 func _update_shadow_hop(hop_factor: float, delta: float) -> void:
 	if _grounded_motor != null:
 		var scale_amp: float = 0.08
-		if rig_avatar != null and rig_avatar.get_grounded_config() != null:
-			scale_amp = rig_avatar.get_grounded_config().hub_shadow_contact_scale_amp
+		var hop_alpha: float = SHADOW_HOP_ALPHA
+		var g_cfg: PilotGroundedLocomotionConfig = rig_avatar.get_grounded_config() if rig_avatar != null else null
+		if g_cfg != null:
+			if PlanarRigGroundedEvaluator.is_hop_gait(g_cfg):
+				scale_amp = g_cfg.hop_shadow_shrink_ratio
+				hop_alpha = SHADOW_BASE_ALPHA * (1.0 - clampf(g_cfg.hop_shadow_alpha_fade, 0.0, 0.85))
+			else:
+				scale_amp = g_cfg.hub_shadow_contact_scale_amp
 		_grounded_motor.update_shadows(
 			shadow_sprite,
 			_shadow_mat,
@@ -226,7 +232,7 @@ func _update_shadow_hop(hop_factor: float, delta: float) -> void:
 			hop_factor,
 			delta,
 			SHADOW_BASE_ALPHA,
-			SHADOW_HOP_ALPHA,
+			hop_alpha,
 			1.0,
 			scale_amp
 		)

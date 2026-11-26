@@ -35,6 +35,10 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "<subcadena>"
 | **Cofres y Economía** | `"chest_economy"` | `tests/integration/test_chest_economy_runner.tscn` |
 | **Tragamonedas y Gacha** | `"slot_machine_and_gacha"` | `tests/integration/test_slot_machine_and_gacha_runner.tscn` |
 | **Pausa y Tokens** | `"pause_arbitrator"` | `tests/integration/test_pause_arbitrator_runner.tscn` |
+| **Hub 3D Embebido en MainGame** | `"test_main_game_embedded_hub" -TimeoutSeconds 30` | `tests/integration/test_main_game_embedded_hub.tscn` |
+| **Locomoción Grounded / Astral Glide-Hop Hub** | `"test_hub_grounded_walk"` | `tests/unit/test_hub_grounded_walk.tscn` |
+| **Hub Locomotion Lab 3D (Sandbox)** | `"test_hub_locomotion_lab" -TimeoutSeconds 25` | `tests/sandbox/test_hub_locomotion_lab.tscn` |
+| **Hub 3D Estación Astral v4 (Standalone)** | `"test_astral_station_hub_production" -TimeoutSeconds 30` | `tests/unit/test_astral_station_hub_production.tscn` |
 
 ### Verificación Integral (Pre-Commit / Fin de Tarea)
 Para verificar la suite completa antes de integrar cambios:

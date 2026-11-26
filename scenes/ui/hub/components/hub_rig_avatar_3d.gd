@@ -84,9 +84,15 @@ func _process(delta: float) -> void:
 		var g_cfg: GroundedConfigScript = get_grounded_config()
 		var lift_norm: float = _rig.get_grounded_pelvis_lift_norm() if _rig != null else 0.0
 		var floor_y: float = g_cfg.hub_avatar_floor_y if g_cfg != null else 0.008
-		var step_lift_m: float = g_cfg.hub_step_lift_3d_m if g_cfg != null else 0.028
+		var is_glide: bool = g_cfg != null and g_cfg.gait_style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP
+		var is_moon: bool = g_cfg != null and g_cfg.gait_style == GroundedConfigScript.GaitStyle.MOON_HOP
+		var step_lift_m: float = 0.028
+		if is_glide:
+			step_lift_m = g_cfg.glide_3d_lift_m
+		elif g_cfg != null:
+			step_lift_m = g_cfg.hub_step_lift_3d_m
 		_avatar_sprite.position.y = floor_y + lift_norm * step_lift_m + _showcase_lift_y + preview_lift
-		_hover_factor = clampf(lift_norm * 0.65, 0.0, 1.0)
+		_hover_factor = clampf(lift_norm if (is_glide or is_moon) else (lift_norm * 0.65), 0.0, 1.0)
 		if _rig != null:
 			var step_ev: Dictionary = _rig.consume_grounded_step_event()
 			if not step_ev.is_empty():
@@ -462,6 +468,24 @@ func get_grounded_config() -> GroundedConfigScript:
 	if _loaded_profile != null and _loaded_profile.grounded_locomotion_config is GroundedConfigScript:
 		return _loaded_profile.grounded_locomotion_config as GroundedConfigScript
 	return DEFAULT_GROUNDED_CFG
+
+
+func set_grounded_config_override(cfg: GroundedConfigScript) -> void:
+	_ensure_nodes_ready()
+	if _rig != null and cfg != null:
+		_rig.set_grounded_locomotion_config(cfg)
+
+
+func set_grounded_manual_scrub(enabled: bool, phase_rad: float, walk_blend_val: float = 1.0) -> void:
+	_ensure_nodes_ready()
+	if _rig != null:
+		_rig.set_grounded_manual_scrub(enabled, phase_rad, walk_blend_val)
+
+
+func get_active_accent_color() -> Color:
+	if _current_skin != null:
+		return _current_skin.accent_color
+	return Color(0.55, 0.88, 1.0, 1.0)
 
 
 func set_launch_scale_multiplier(mult: float) -> void:

@@ -40,7 +40,7 @@
 | [`ART_DIRECTION_AND_PIPELINE.md`](ART_DIRECTION_AND_PIPELINE.md) | Dirección artística global y estándares visuales del proyecto. |
 | [`MUMBLE_SPEECH_SYSTEM.md`](MUMBLE_SPEECH_SYSTEM.md) | Sistema híbrido de **Mumble Speech** data-driven (`VoiceProfileData` `.tres`), integración Dialogic/HUD y guía de fine-tuning. |
 | [`UI_REWORK_ART_DIRECTION.md`](UI_REWORK_ART_DIRECTION.md) | **Dirección aprobada para futuro Rework de UI (*Astral Pop-Ink* — Fusión B+D):** referencia visual, pilares técnicos y plan de profundización. |
-| [`HUB_3D_REWORK_BLUEPRINT.md`](HUB_3D_REWORK_BLUEPRINT.md) | **Hub 3D Estación Astral v4 (Promovido a Producción ✅):** mandala de 9 islas sobre Cosmos vivo, Santuario Valkiria, Gacha 3D, shaders *ArcSys* y despegue radial 8-Dir. |
+| [`HUB_3D_REWORK_BLUEPRINT.md`](HUB_3D_REWORK_BLUEPRINT.md) | **Hub 3D Estación Astral v4 (Embebido Seamless en `MainGame` ✅):** mandala de 9 islas sobre Cosmos vivo, integración con `Player` 2D real (`CombatHubSessionController`), Astral Glide-Hop + doble ripple, Dash pacífico, aislamiento de spawners, Gacha 3D, shaders *ArcSys* y despegue 8-Dir zero-rail. |
 | [`art/`](art/) | Guías de pipeline IA (`character_25d_generation_guide.md`, `character_style_pipeline_bible.md`, `Estilización 2.5D en Godot 4.md`, `art_pipeline_standards.md`, etc.). |
 | [`game_design/balance_and_mechanics.md`](game_design/balance_and_mechanics.md) | Balance de combate, economía y progresión. |
 | [`game_design/hp_rework_3_layer_hybrid_proposal.md`](game_design/hp_rework_3_layer_hybrid_proposal.md) | Propuesta teórica de rework futuro de HP (Híbrido 3 Capas: Casco + Escudo Reactivo + Barrera 1-Hit). |

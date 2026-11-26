@@ -274,6 +274,9 @@ func set_static_inspection(enabled: bool, body_key: String = "s", head_key: Stri
 		_body_pivot.rotation = 0.0
 		_body_pivot.position = Vector2.ZERO
 		_body_pivot.scale = Vector2.ONE
+	if _unified_canvas_group != null:
+		_unified_canvas_group.position = Vector2.ZERO
+		_unified_canvas_group.scale = Vector2.ONE
 	if _animator != null:
 		_animator.reset()
 	_commit_instant_transitions()
@@ -895,6 +898,8 @@ func get_locomotion_mode() -> int:
 
 
 func feed_world_displacement(dist_m: float) -> void:
+	if _anim_runtime == null and enable_live_animations and not calibration_manual_pose:
+		ensure_live_animations_ready()
 	if _anim_runtime != null:
 		_anim_runtime.feed_world_displacement(dist_m)
 
@@ -924,6 +929,24 @@ func get_grounded_locomotion_config() -> GroundedConfigScript:
 	return null
 
 
+func set_grounded_locomotion_config(cfg: GroundedConfigScript) -> void:
+	if _anim_runtime == null and enable_live_animations and not calibration_manual_pose:
+		ensure_live_animations_ready()
+	if _anim_runtime != null:
+		_anim_runtime.set_grounded_locomotion_config(cfg, self)
+
+
+func set_grounded_manual_scrub(enabled: bool, phase_rad: float, walk_blend_val: float = 1.0) -> void:
+	if _anim_runtime == null and enable_live_animations and not calibration_manual_pose:
+		ensure_live_animations_ready()
+	if _anim_runtime != null:
+		_anim_runtime.set_grounded_manual_scrub(enabled, phase_rad, walk_blend_val, self)
+
+
+func get_grounded_telemetry() -> Dictionary:
+	return _anim_runtime.get_grounded_telemetry() if _anim_runtime != null else {}
+
+
 func set_live_animations_enabled(enabled: bool) -> void:
 	enable_live_animations = enabled
 	if enabled:
@@ -939,6 +962,9 @@ func set_live_animations_enabled(enabled: bool) -> void:
 			_body_pivot.position = Vector2.ZERO
 			_body_pivot.rotation = 0.0
 			_body_pivot.scale = Vector2.ONE
+		if _unified_canvas_group != null:
+			_unified_canvas_group.position = Vector2.ZERO
+			_unified_canvas_group.scale = Vector2.ONE
 		_reset_active_bones_to_rest()
 		_sync_head_transform(0.0, true)
 

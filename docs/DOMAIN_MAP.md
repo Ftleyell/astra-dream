@@ -78,9 +78,10 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | Contexto de Combate | `scenes/combat/combat_context.gd` | Contenedor de estado compartido (jugador, cámara, puntuación, tiempo de oleada). |
 | Pipeline de Oleadas | `scenes/combat/combat_wave_pipeline.gd` | Control del avance temporal de oleadas y eventos programados. |
 | Spawner de Enemigos | `scenes/combat/spawners/enemy_spawner.gd` | Spawns procedurales según pesos y composición de `EncounterTimelineConfig`. |
+| Sesión Hub 3D Embebido | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE` dentro de `MainGame`, exclusión de spawners y paridad 2D↔3D. |
 | Serializador de Estado | `scenes/combat/systems/run_state_serializer.gd` | Serializa y restaura `run_seed`, inventario, armas y estado de partida activa. |
 
-- **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"`
+- **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"` y `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30`
 
 ---
 
@@ -91,11 +92,12 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Componente | Archivo Fuente | Responsabilidad |
 |---|---|---|
-| Locomoción | `scenes/combat/player/components/player_locomotion_controller.gd` | Inercia, aceleración, fricción y dash direccional. |
-| Procesador de Daño | `scenes/combat/player/components/player_damage_processor.gd` | Escudo, vida, inmunidad post-impacto y One-Shot Protection (OSP). |
-| Economía del Jugador | `scenes/combat/player/components/player_economy_component.gd` | Oro en partida, polvo estelar y conteo de llaves cuánticas. |
-| Secuencia de Muerte | `scenes/combat/player/components/player_death_sequence_controller.gd` | Hitstop, explosión visual, congelamiento de entrada y transición a Game Over. |
-| Inventario de Partida | `scenes/combat/player/components/player_inventory_component.gd` | Stacks de ítems pasivos adquiridos y cómputo de stats derivados. |
+| Locomoción | `scenes/combat/player/player_locomotion_controller.gd` | Inercia, aceleración, fricción, dash direccional; en Hub: velocidades `440/760 px/s`, freno en pivote y Dash pacífico sin slow-mo. |
+| Procesador de Daño | `scenes/combat/player/player_damage_processor.gd` | Escudo, vida, inmunidad post-impacto y One-Shot Protection (OSP). |
+| Economía del Jugador | `scenes/combat/player/player_economy_component.gd` | Oro en partida, polvo estelar y conteo de llaves cuánticas. |
+| Secuencia de Muerte | `scenes/combat/player/player_death_sequence_controller.gd` | Hitstop, explosión visual, congelamiento de entrada y transición a Game Over. |
+| Inventario de Partida | `scenes/combat/player/player_inventory_component.gd` | Stacks de ítems pasivos adquiridos y cómputo de stats derivados. |
+| Controlador Rig v2 & Hub Mode | `scenes/combat/player/player_rig_v2_controller.gd` + `hub_landing_ripple_vfx.gd` | Twin-Stick 360° + Anillo Orbital en combate; **Astral Glide-Hop** ↔ Vuelo Zero-G, sombra reactiva y pool zero-alloc de doble ripple + chispas al rebotar en Hub. |
 
 - **Runner de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "proc_coefficients_and_osp"`
 
@@ -236,21 +238,27 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 ---
 
-## 12. Dominio Fuera de Combate: Hub 3D (*Estación Astral v4*), Roster y Gacha
+## 12. Dominio Fuera de Combate: Hub 3D (*Estación Astral v4* Embebido en `MainGame`), Roster y Gacha
 
-- **Hub Principal de Producción (Estación Astral v4):** [`scenes/ui/hub/astral_station/astral_station_hub.gd`](../scenes/ui/hub/astral_station/astral_station_hub.gd) y `astral_station_hub.tscn` (Mandala Octagonal de 9 Islas sobre `CosmosRootNode` vivo, cámara fija Telefoto 1:1 `FOV 26° / Pitch -46°`, Portal Santuario Valkiria Astral, travesía híbrida `DECK·WALK ↔ SPACE·FLIGHT` y despegue radial 8-Dir con disolución hexagonal directo a `MainGame`).
-- **Configuración Data-Driven & Assets de Producción:** [`data/hub/default_astral_station_config.tres`](../data/hub/default_astral_station_config.tres), [`data/hub/default_astral_floating_layout.tres`](../data/hub/default_astral_floating_layout.tres), [`data/hub/default_hub_gacha_3d_config.tres`](../data/hub/default_hub_gacha_3d_config.tres), [`assets/environments/astral_station/`](../assets/environments/astral_station/). *(Wrapper dev `[H]` en `sandbox/hub_art_lab/hub_art_lab.gd`; escena legacy `scenes/ui/hub/hub_world.tscn` conservada para compatibilidad de suites antiguas).*
+- **Arquitectura Embebida Seamless en Producción:** Al iniciar una incursión (`RunLaunchRequest.EntryMode.HUB`), `MainGame` arranca directamente en **`HUB_ACTIVE`** rolando una semilla `AUTO` fresca por visita sobre el `CosmosCombatEnvironment` vivo. El jugador controla al único `Player` 2D real (`z_index = 5`, `PlayerRigV2Controller`), mientras `AstralStationHub` corre en `embedded_mode = true` proyectando su `SubViewport` 3D ortográfico transparente en `Hub3DDisplaySprite` (`z_index = 3`) mediante `HubEmbeddedViewportBridge`.
+- **Travesía, Sombras, Aislamiento y Despegue Zero-Rail:**
+  - **Locomoción Hub:** Sobre las 9 islas y 8 puentes (`440 px/s`), la piloto usa **Astral Glide-Hop** (`GaitStyle.ASTRAL_GLIDE_HOP` en `valentina_v2_grounded_locomotion.tres`) con sombra reactiva y doble ripple astral luminoso al rebotar (`HubLandingRippleVFX` en `+76 px` / `hub_astral_ripple_3d.gdshader` en Hub 3D); al salir al perímetro espacial (`760 px/s`), despliega Alas 3D y entra en Vuelo Zero-G; soporta Dash pacífico (`1120 px/s`, Sandevistan sin slow-mo ni peligros).
+  - **Iluminación y Zooms Exclusivos:** `DirectionalLight3D` fija en `(-48°, -28°, 0°)` con `SHADOW_ORTHOGONAL` (`pancake_size = 0.0`) y `ndotl`/`ATTENUATION` desacoplados en shaders *ArcSys*; zooms cercanos exclusivos en Cápsula de Piloto (`2.60×`) y Espejo de Skins (`2.50×`) vía `GameCamera2D.zoom_override` compensados al tercio izquierdo.
+  - **Aislamiento de Spawners y Salida:** Durante `HUB_ACTIVE`, los spawners de combate permanecen suprimidos; al cruzar `launch_radius` (`30.0 m`), `DEPARTING_DISSOLVE` desmaterializa el Hub sin recarga de escena ni Dialogic manteniendo exclusión radial de `29.5 m` y sesgo en cono frontal (`65°`, `min_dot = 0.15`) durante `6.0 s` (`EnemySpawner`, `CombatSatelliteCoordinator`, `PlanetSpawner`, `ChestDirector`, `SpaceObjectSpawner`, `AsteroidSpawner`, `CombatLootCoordinator`, `CrisisEventManager`).
+- **Configuración Data-Driven & Assets de Producción:** [`data/hub/default_astral_station_config.tres`](../data/hub/default_astral_station_config.tres), [`data/hub/default_astral_floating_layout.tres`](../data/hub/default_astral_floating_layout.tres), [`data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres`](../data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres), [`data/hub/default_hub_gacha_3d_config.tres`](../data/hub/default_hub_gacha_3d_config.tres), [`assets/environments/astral_station/`](../assets/environments/astral_station/). *(Modo standalone disponible en `astral_station_hub.tscn`; labs en `sandbox/hub_art_lab/{hub_art_lab.gd,hub_locomotion_lab/}`; escena legacy `scenes/ui/hub/hub_world.tscn` conservada para compatibilidad de suites antiguas).*
 
 | Subsistema | Archivo Fuente | Rol |
 |---|---|---|
-| Orquestador Estación Astral | `scenes/ui/hub/astral_station/astral_station_hub.gd` | Ensamblado 3D+Cosmos, iluminación en vivo, `SettingsModal`, enrutado de modos de cámara e interacción. |
-| Controlador Híbrido Piloto | `scenes/ui/hub/astral_station/components/hub_art_lab_player.gd` | Caminata `GROUNDED_HUB` (`SERAPH_FOLD`) ↔ Vuelo Zero-G (`SERAPH_BLOOM` + alas 3D), pisada calibrada y sombra proyectada. |
-| Despegue Radial 8-Dir | `scenes/ui/hub/astral_station/components/hub_radial_departure_controller.gd` | Cuantización 8 sectores cardinales, arco diegético, onda de desmaterialización hexagonal y salto seamless a `MainGame`. |
-| Alas Este / Oeste & Gacha 3D | `scenes/ui/hub/astral_station/components/hub_{east_wing,west_sanctuary,gacha_summoner_3d}.gd` | Invocador Giroscópico Gacha 3D + 5 Balizas prismáticas (Este), 5 Reliquias cristalinas en brazos cantiléver (Oeste), órbita de mascotas (SW). |
-| Constructores Mallas & Shaders | `scenes/ui/hub/astral_station/{meshes,shaders}/` | Mallas *ArcSys* 3 superficies a inglete (`armor`/`chassis`/`crystal`), cubierta 8-fold radial, puente Hardlight y cristal astral. |
+| Orquestador Sesión Embebida | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE`, exclusión `29.5 m` / cono `65°`, supresión de spawners, foco/zoom y colisiones de cubierta. |
+| Puente Ortográfico 2D↔3D | `scenes/ui/hub/astral_station/components/hub_embedded_viewport_bridge.gd` | Paridad 1:1 `Camera3D` ortogonal (`near=2.0`, `far=72.0`) ↔ `GameCamera2D` y `Hub3DDisplaySprite` (`z_index=3`). |
+| Orquestador Estación Astral | `scenes/ui/hub/astral_station/astral_station_hub.gd` | Ensamblado 3D (`embedded_mode` y standalone), luz `SHADOW_ORTHOGONAL`, `SettingsModal`, modos de foco e interacción. |
+| Locomoción & Ondas del Player | `scenes/combat/player/{player_rig_v2_controller,hub_landing_ripple_vfx}.gd` + `scenes/ui/hub/shaders/hub_astral_ripple_3d.gdshader` | **Astral Glide-Hop** ↔ Vuelo Zero-G, Dash pacífico en Hub, sombra de contacto reactiva y doble ripple astral al rebotar (`z_index=4` / 3D). |
+| Despegue Radial & Controlador 3D | `scenes/ui/hub/astral_station/components/hub_{radial_departure_controller,art_lab_player}.gd` | Cuantización 8 sectores cardinales, desmaterialización hexagonal y modo standalone heredado. |
+| Alas Este / Oeste & Gacha 3D | `scenes/ui/hub/astral_station/components/hub_{east_wing,west_sanctuary,gacha_summoner_3d}.gd` | Invocador Giroscópico Gacha 3D + 5 Balizas prismáticas (Este), 5 Reliquias cristalinas (Oeste) y órbita de mascotas (SW). |
+| Constructores Mallas & Shaders | `scenes/ui/hub/astral_station/{meshes,shaders}/` | Mallas *ArcSys* 3 superficies, cubierta 8-fold, puente Hardlight y sombras cel ortogonales sin halftone móvil. |
 | Selección de Piloto / Gacha / Skins | `scenes/ui/character_select/character_select.gd`, `scenes/ui/gacha/gacha_modal.gd`, `core/systems/cosmetics_manager.gd` | Modales integrados consumidos desde `hub_antesala_modal_coordinator.gd`. |
 
-- **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production"`, `test_hub_art_lab`, `test_hub_grounded_walk`, `slot_machine_and_gacha` y `test_title_and_hub_navigation`.
+- **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30`, `test_hub_grounded_walk`, `test_hub_locomotion_lab -TimeoutSeconds 25`, `test_astral_station_hub_production`, `test_hub_art_lab -TimeoutSeconds 30`, `slot_machine_and_gacha` y `test_title_and_hub_navigation`.
 
 ---
 
@@ -339,10 +347,12 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "slot_machine
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 
-# Hub 3D Estación Astral v4 (Producción) & Integración Valentina v2
+# Hub 3D Estación Astral v4 (Embebido en MainGame + Astral Glide-Hop) & Integración Valentina v2
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production" -TimeoutSeconds 30
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_art_lab" -TimeoutSeconds 30
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_grounded_walk"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_locomotion_lab" -TimeoutSeconds 25
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"
@@ -389,7 +399,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 | `scenes/pilots/weapons/orbital_weapon_{ring_controller,3d_renderer}.gd` | Anillo Orbital 2.5D (1–4 slots) con Z-sorting, Rail-Lance 3D Cel-Shaded, paletas por `WeaponData` y bocas `3D -> 2D`. |
 | `scenes/pilots/banner/pilot_live_banner_controller.gd` | Live Banner 2.5D para `CharacterSelectUI` y `HeroPickerModal` con parallax, respiración, jiggle y Lock-In. |
 | `scenes/pilots/rig/planar_rig_material_controller.gd` | Aplica `RigStyleProfile`, `PilotSkinPreset`, `PilotHairPreset`, Pasada 2, Ink SDF 2×, `CosmicLightingSampler` y `hit_flash`. |
-| `scenes/pilots/rig/planar_rig_{base_pose,kiting}_evaluator.gd` | Evaluadores data-driven de Pose Base Zero-G, Idle 3-capas, Locomoción/Freno, Kiting 360°, Giros Snappy y Jiggle. |
+| `scenes/pilots/rig/planar_rig_{base_pose,grounded,kiting}_evaluator.gd` | Evaluadores data-driven de Pose Base Zero-G, Idle 3-capas, Locomoción/Freno, **Astral Glide-Hop** (`GaitStyle.ASTRAL_GLIDE_HOP` / `MOON_HOP` / `WALK_STRIDE` en Hub), Kiting 360°, Giros Snappy y Jiggle. |
 | `data/pilots/schemas/*.gd` + `data/pilots/<pilot_id>/` | Esquemas y bundles `.tres` por piloto (`PilotRigProfile`, 6 configs de animación, `face_anim`, `base_propulsion`, `wings_3d`, `propulsion_vfx`, `orbital_weapon`, `live_banner`, `combat_rig`, `skin_catalog`, `skins/*.tres`). |
 | `sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd` | Selector compartido multi-piloto que parametriza los 10 labs para cualquier `<pilot_id>_profile.tres`. |
 
@@ -411,7 +421,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 ---
 
 ## 18. Workbenches sobre Producción & Combat Gym (`sandbox/workbenches/`, `sandbox/combat_gym/`)
-- **Lanzador Unificado (`F6`):** `sandbox/workbenches/workbench_hub.tscn` (`[1..4]`).
+- **Lanzador Unificado (`F6`):** `sandbox/workbenches/workbench_hub.tscn` (`[1..7]`, incl. `[7] Hub Locomotion Lab 3D` en `sandbox/hub_art_lab/hub_locomotion_lab/hub_locomotion_lab.tscn`).
 - **Workbenches sobre escenas reales:**
   - `sandbox/workbenches/hud_workbench/hud_workbench.tscn` (`GameHUD` real + guías de equidistancia, presets de resolución, 0–4 armas simuladas).
   - `sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn` (`CombatNarrativeDirector` + `DialogueBackdropLayer` + inspector `.dch`).

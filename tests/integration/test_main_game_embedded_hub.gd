@@ -62,6 +62,41 @@ func _test_embedded_hub_fresh_seed_and_parity() -> void:
 	var hub_ctrl: CombatHubSessionControllerScript = game1.hub_session_controller
 	assert_true(hub_ctrl != null and hub_ctrl.display_sprite != null and hub_ctrl.display_sprite.z_index == 3, "Hub3DDisplaySprite debe renderizar en z_index = 3 detrás del Player (z=5)")
 	assert_true(is_equal_approx(p.locomotion_controller.hub_speed_override_px, hub_ctrl._layout.embedded_walk_speed_px), "Sobre plataformas la velocidad del Hub debe usar embedded_walk_speed_px (440 px/s)")
+	var ripples_vfx: Node2D = rig_v2.get("_hub_landing_ripples") as Node2D
+	assert_true(ripples_vfx != null and ripples_vfx.visible, "HubLandingRippleVFX debe estar activo en Hub Mode")
+	var hop_rig: PlanarCombatRig = rig_v2.get("_rig") as PlanarCombatRig
+	var contact_sh: Sprite2D = rig_v2.get("_hub_contact_shadow") as Sprite2D
+	var cg: CanvasGroup = hop_rig.get_unified_canvas_group() if hop_rig != null else null
+	assert_true(hop_rig != null and contact_sh != null and cg != null, "Rig, CanvasGroup y sombra de contacto deben existir en Hub Mode")
+	var g_cfg: PilotGroundedLocomotionConfig = hop_rig.get_grounded_locomotion_config()
+	var active_stride: float = PlanarRigGroundedEvaluator.get_active_stride_length_m(g_cfg)
+	var contact_duty_u: float = g_cfg.glide_contact_duty if (g_cfg != null and g_cfg.gait_style == PilotGroundedLocomotionConfig.GaitStyle.ASTRAL_GLIDE_HOP) else (g_cfg.hop_contact_duty if g_cfg != null else 0.28)
+	var contact_step_m: float = (minf(0.045, contact_duty_u * 0.30) * active_stride) / 3.0
+	for _hop_contact: int in range(3):
+		p.velocity = Vector2(hub_ctrl._layout.embedded_walk_speed_px, 0.0)
+		rig_v2.feed_hub_walk_displacement(contact_step_m)
+		await get_tree().process_frame
+	assert_true(hop_rig.get_grounded_pelvis_lift_norm() <= 0.02, "Durante la fase de contacto/push-off debe mantenerse apoyada en el piso (got %.2f)" % hop_rig.get_grounded_pelvis_lift_norm())
+	assert_true(cg.position.y >= -1.0, "Durante la fase de contacto el CanvasGroup no debe flotar (y=%.2f)" % cg.position.y)
+
+	var apex_u: float = 0.64
+	if g_cfg != null and g_cfg.gait_style == PilotGroundedLocomotionConfig.GaitStyle.ASTRAL_GLIDE_HOP:
+		apex_u = g_cfg.glide_contact_duty + (1.0 - g_cfg.glide_contact_duty) * g_cfg.glide_arc_peak_shift
+	var apex_rem_m: float = maxf(active_stride * (apex_u * 0.5) - contact_step_m * 3.0, 0.25)
+	for _hop_up: int in range(10):
+		p.velocity = Vector2(hub_ctrl._layout.embedded_walk_speed_px, 0.0)
+		rig_v2.feed_hub_walk_displacement(apex_rem_m / 10.0)
+		await get_tree().process_frame
+	assert_true(hop_rig.get_grounded_pelvis_lift_norm() > 0.70, "Al avanzar al ápice del arco debe elevarse (got %.2f)" % hop_rig.get_grounded_pelvis_lift_norm())
+	assert_true(cg.position.y < -30.0, "En el ápice del Astral Glide-Hop UnifiedCharacterGroup debe elevarse < -30 rig px (got %.2f)" % cg.position.y)
+	assert_true(contact_sh.modulate.a < 0.90 and contact_sh.scale.x < 1.30, "La sombra de contacto debe achicarse y suavizarse en el ápice del arco")
+	var land_rem_m: float = maxf(active_stride * 0.54 - active_stride * (apex_u * 0.5), 0.30)
+	for _hop_land: int in range(14):
+		p.velocity = Vector2(hub_ctrl._layout.embedded_walk_speed_px, 0.0)
+		rig_v2.feed_hub_walk_displacement(land_rem_m / 14.0)
+		await get_tree().process_frame
+	assert_true(int(ripples_vfx.call("get_active_ripple_count")) >= 1, "Al aterrizar y rebotar debe emitirse onda luminosa en el piso")
+	p.velocity = Vector2.ZERO
 
 	var bridge: HubEmbeddedViewportBridgeScript = hub_ctrl.get_viewport_bridge()
 	assert_true(bridge != null, "Debe existir HubEmbeddedViewportBridge")
@@ -84,6 +119,7 @@ func _test_embedded_hub_fresh_seed_and_parity() -> void:
 	for _i: int in range(10):
 		await get_tree().physics_frame
 	assert_true(rig_v2.is_hub_flying(), "Al salir de las islas hacia el vacío debe activar vuelo Zero-G con alas 3D")
+	assert_true(cg.position.is_equal_approx(Vector2.ZERO) and cg.scale.is_equal_approx(Vector2.ONE), "En vuelo Zero-G UnifiedCharacterGroup debe restaurar position=0 y scale=1")
 	assert_true(is_equal_approx(p.locomotion_controller.hub_speed_override_px, hub_ctrl._layout.embedded_flight_speed_px), "En el perímetro abierto debe aplicar embedded_flight_speed_px (760 px/s)")
 	assert_true(dir_light.rotation_degrees.is_equal_approx(initial_light_rot), "La luz direccional no debe rotar al moverse por el Hub")
 
@@ -152,9 +188,11 @@ func _test_embedded_hub_fresh_seed_and_parity() -> void:
 
 	assert_true(not game1.is_hub_mode_active(), "Tras despegar is_hub_mode_active() debe ser false inmediatamente")
 	assert_true(not p.is_hub_mode, "Player debe salir del modo Hub inmediatamente al despegar")
+	assert_true(cg.position.is_equal_approx(Vector2.ZERO) and cg.scale.is_equal_approx(Vector2.ONE), "Al despegar a combate UnifiedCharacterGroup debe restaurar position=0 y scale=1")
 	assert_true(not p.is_movement_suppressed, "Despegue zero-rail nunca debe bloquear movimiento del jugador")
 	assert_true(not game1.is_briefing_active and not get_tree().paused, "Despegue fluido no debe pausar ni lanzar Dialogic")
 	assert_true(not p.weapon_controller.is_hub_suppressed, "WeaponController debe reactivarse al despegar")
+	assert_true(not ripples_vfx.visible and int(ripples_vfx.call("get_active_ripple_count")) == 0, "HubLandingRippleVFX debe limpiarse y ocultarse al despegar")
 	assert_true(ring_ctrl.visible, "Anillo orbital debe desplegarse al despegar")
 	assert_true(game1.hud.visible, "HUD de combate debe mostrarse al despegar")
 	assert_true(is_instance_valid(game1.active_pet), "CompanionPet debe spawnear al despegar")

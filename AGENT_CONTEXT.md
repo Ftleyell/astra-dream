@@ -13,8 +13,8 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 
 | Dominio | Archivo Principal / Orquestador | Componentes Clave |
 |---|---|---|
-| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `run_state_serializer.gd` |
-| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `player_rig_v2_controller.gd` |
+| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `controllers/combat_hub_session_controller.gd`, `run_state_serializer.gd` |
+| **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `player_rig_v2_controller.gd`, `hub_landing_ripple_vfx.gd` |
 | **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
 | **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
@@ -27,7 +27,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas, Banlist |
 | **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
 | **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
-| **Hub 3D (Estación Astral v4)** | `scenes/ui/hub/astral_station/astral_station_hub.gd` / `.tscn` | Mandala 9 Islas sobre Cosmos vivo (`hub_cosmos_backdrop_controller.gd`), `hub_art_lab_player.gd` (Caminata ↔ Vuelo Zero-G), `hub_radial_departure_controller.gd` (8-Dir Seamless), `hub_antesala_modal_coordinator.gd`, `hub_east_wing_controller.gd`, `hub_west_sanctuary_controller.gd`, `astral_station_hud.gd` *(lab calibración: `sandbox/hub_art_lab/hub_art_lab.gd`; legacy: `hub_world.gd`)* |
+| **Hub 3D (Estación Astral v4 embebido en `MainGame`)** | `scenes/combat/controllers/combat_hub_session_controller.gd` + `scenes/ui/hub/astral_station/astral_station_hub.gd` | `hub_embedded_viewport_bridge.gd` (paridad ortográfica 2D↔3D sobre `CosmosCombatEnvironment`), `Player` 2D único (`PlayerRigV2Controller` con **Astral Glide-Hop** `GaitStyle.ASTRAL_GLIDE_HOP` ↔ Vuelo Zero-G + Dash pacífico), seed `AUTO` fresca por visita, exclusión/supresión de spawners (`29.5 m` / `6.0 s` cono frontal), sombras `SHADOW_ORTHOGONAL`, zoom cercano `2.60×`/`2.50×`, modales/alas `hub_*` y despegue zero-rail *(standalone: `astral_station_hub.tscn`; labs: `sandbox/hub_art_lab/{hub_art_lab.gd,hub_locomotion_lab/}`; legacy: `hub_world.gd`)* |
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_live_banner_viewport.gd`, `character_pilot_showcase.gd`, `hero_picker_modal.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd`, `gacha_reveal_theater.gd`, `gacha_wardrobe_controller.gd` |
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd`, `shader_skin_live_preview.gd`, `shader_skin_swatch.gd` |
@@ -122,8 +122,11 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **3D Lab / Alas 3D Cel-Shaded (Estándar)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"` |
 | **Banner Lab / Live Splash 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"` |
 | **Roster Lockout & Live Banner (Fase 2)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"` |
+| **Hub 3D Embebido en MainGame (Integración)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30` |
+| **Locomoción Grounded / Astral Glide-Hop Hub** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_grounded_walk"` |
 | **Hub 3D Estación Astral v4 (Prod.)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production"` |
 | **Hub Art Lab & Mallas (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_art_lab" -TimeoutSeconds 30` |
+| **Hub Locomotion Lab 3D (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_locomotion_lab" -TimeoutSeconds 25` |
 | **Hub 3D 2.5D Diorama & Rig (Legacy/Fase 3)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_25d_valentina_rig"` |
 | **Skins 100% por Shaders (Fase 4)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"` |
 | **Combate In-Game Valentina v2 (Fase 5)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"` |

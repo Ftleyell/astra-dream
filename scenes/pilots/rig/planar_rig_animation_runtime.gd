@@ -49,6 +49,7 @@ var face_anim_cfg: FaceAnimConfigScript = null
 
 var locomotion_mode: int = LocomotionMode.ZERO_G_FLIGHT
 var pending_world_displacement_m: float = -1.0
+var _external_displacement_driven: bool = false
 var pose_layer_mode: int = BasePoseEvaluatorScript.PoseLayerMode.COMBINED_BONES_AND_25D
 var idle_enabled: bool = true
 var loco_enabled: bool = true
@@ -71,6 +72,9 @@ var _hit_strength: float = 0.0
 var _hit_dir: Vector2 = Vector2.LEFT
 var _air_brake_timer: float = 0.0
 var _air_brake_strength: float = 0.0
+var _grounded_scrub_enabled: bool = false
+var _grounded_scrub_phase: float = 0.0
+var _grounded_scrub_walk_blend: float = 1.0
 
 
 func _init() -> void:
@@ -251,6 +255,7 @@ func reset_combat_impulses() -> void:
 func reset_to_rest(rig: Node2D) -> void:
 	idle_time = 0.0
 	pending_world_displacement_m = -1.0
+	_external_displacement_driven = false
 	live_loco_weights.clear()
 	live_kiting_weights.clear()
 	reset_combat_impulses()
@@ -262,6 +267,10 @@ func reset_to_rest(rig: Node2D) -> void:
 	if kiting_evaluator != null:
 		kiting_evaluator.reset_state()
 	if rig != null:
+		var cg: CanvasGroup = rig.call("get_unified_canvas_group") as CanvasGroup
+		if cg != null:
+			cg.position = Vector2.ZERO
+			cg.scale = Vector2.ONE
 		rig.call("configure_turn_timings", 0.0, 0.0, 0.0)
 		rig.call("set_face_live_enabled", false, null)
 		if evaluator != null:
@@ -274,9 +283,14 @@ func set_locomotion_mode(mode: int, rig: Node2D = null) -> void:
 		return
 	locomotion_mode = target
 	pending_world_displacement_m = -1.0
+	_external_displacement_driven = false
 	if grounded_evaluator != null:
 		grounded_evaluator.reset_state()
 	if rig != null:
+		var cg: CanvasGroup = rig.call("get_unified_canvas_group") as CanvasGroup
+		if cg != null:
+			cg.position = Vector2.ZERO
+			cg.scale = Vector2.ONE
 		apply_to_rig(rig, true)
 
 
@@ -286,6 +300,7 @@ func get_locomotion_mode() -> int:
 
 func feed_world_displacement(dist_m: float) -> void:
 	if dist_m >= 0.0:
+		_external_displacement_driven = true
 		if pending_world_displacement_m < 0.0:
 			pending_world_displacement_m = dist_m
 		else:
@@ -306,7 +321,70 @@ func get_grounded_pelvis_lift_norm() -> float:
 
 
 func get_grounded_gait_phase() -> float:
+	if _grounded_scrub_enabled:
+		return _grounded_scrub_phase
 	return grounded_evaluator.gait_phase if grounded_evaluator != null else 0.0
+
+
+func set_grounded_locomotion_config(cfg: GroundedConfigScript, rig: Node2D = null) -> void:
+	if cfg == null:
+		return
+	grounded_loco_cfg = cfg
+	grounded_loco_cfg.ensure_initialized()
+	if rig != null and locomotion_mode == LocomotionMode.GROUNDED_HUB:
+		apply_to_rig(rig, false)
+		_apply_combat_additive_to_pivot(rig)
+
+
+func set_grounded_manual_scrub(enabled: bool, phase_rad: float, walk_blend_val: float = 1.0, rig: Node2D = null) -> void:
+	_grounded_scrub_enabled = enabled
+	_grounded_scrub_phase = fposmod(phase_rad, TAU)
+	_grounded_scrub_walk_blend = clampf(walk_blend_val, 0.0, 1.25)
+	if grounded_evaluator != null and enabled and grounded_loco_cfg != null:
+		var lift_w: float = 0.0
+		if grounded_loco_cfg.gait_style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP:
+			var g_c: Dictionary = GroundedEvaluatorScript.sample_astral_glide_curves(_grounded_scrub_phase, grounded_loco_cfg.glide_contact_duty, grounded_loco_cfg.glide_arc_hang_power, grounded_loco_cfg.glide_arc_peak_shift)
+			lift_w = float(g_c["air_wave"])
+		elif grounded_loco_cfg.gait_style == GroundedConfigScript.GaitStyle.MOON_HOP:
+			var m_c: Dictionary = GroundedEvaluatorScript.sample_moon_hop_curves(_grounded_scrub_phase, grounded_loco_cfg.hop_contact_duty)
+			lift_w = float(m_c["air_wave"])
+		else:
+			lift_w = 0.5 - 0.5 * cos(_grounded_scrub_phase * 2.0 - 0.45)
+		grounded_evaluator.pelvis_lift_norm = clampf(lift_w * _grounded_scrub_walk_blend, 0.0, 1.0)
+	if rig != null and locomotion_mode == LocomotionMode.GROUNDED_HUB:
+		apply_to_rig(rig, false)
+		_apply_combat_additive_to_pivot(rig)
+
+
+func get_grounded_telemetry() -> Dictionary:
+	var cfg: GroundedConfigScript = grounded_loco_cfg
+	var ph: float = get_grounded_gait_phase()
+	var wb: float = _grounded_scrub_walk_blend if _grounded_scrub_enabled else (grounded_evaluator.walk_blend if grounded_evaluator != null else 0.0)
+	var lift: float = grounded_evaluator.pelvis_lift_norm if grounded_evaluator != null else 0.0
+	var style: int = cfg.gait_style if cfg != null else GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP
+	var subphase: StringName = &"IDLE"
+	var lead_side: float = 1.0
+	if wb > 0.04 and cfg != null:
+		if style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP:
+			var c: Dictionary = GroundedEvaluatorScript.sample_astral_glide_curves(ph, cfg.glide_contact_duty, cfg.glide_arc_hang_power, cfg.glide_arc_peak_shift)
+			subphase = c.get("subphase", &"GLIDE") as StringName
+			lead_side = float(c.get("lead_side", 1.0))
+		elif style == GroundedConfigScript.GaitStyle.MOON_HOP:
+			var mc: Dictionary = GroundedEvaluatorScript.sample_moon_hop_curves(ph, cfg.hop_contact_duty)
+			subphase = &"CROUCH" if float(mc.get("air_wave", 0.0)) <= 0.001 else &"HOP"
+			lead_side = 1.0 if fposmod(ph, TAU) < PI else -1.0
+		else:
+			subphase = &"STRIDE"
+			lead_side = 1.0 if fposmod(ph, TAU) < PI else -1.0
+	return {
+		"phase": ph,
+		"walk_blend": wb,
+		"pelvis_lift_norm": lift,
+		"subphase": subphase,
+		"lead_side": lead_side,
+		"gait_style": style,
+		"scrub_enabled": _grounded_scrub_enabled,
+	}
 
 
 func trigger_dash_burst(dir: Vector2) -> void:
@@ -435,7 +513,22 @@ func _step_grounded_hub(
 
 	var disp_m: float = pending_world_displacement_m
 	pending_world_displacement_m = -1.0
-	var step_info: Dictionary = grounded_evaluator.step_gait(dt, eff_speed, disp_m, grounded_loco_cfg)
+	if disp_m < 0.0 and _external_displacement_driven:
+		disp_m = 0.0
+	var step_info: Dictionary = {}
+	if _grounded_scrub_enabled:
+		var lift_w: float = 0.0
+		if grounded_loco_cfg.gait_style == GroundedConfigScript.GaitStyle.ASTRAL_GLIDE_HOP:
+			var g_c: Dictionary = GroundedEvaluatorScript.sample_astral_glide_curves(_grounded_scrub_phase, grounded_loco_cfg.glide_contact_duty, grounded_loco_cfg.glide_arc_hang_power, grounded_loco_cfg.glide_arc_peak_shift)
+			lift_w = float(g_c["air_wave"])
+		elif grounded_loco_cfg.gait_style == GroundedConfigScript.GaitStyle.MOON_HOP:
+			var m_c: Dictionary = GroundedEvaluatorScript.sample_moon_hop_curves(_grounded_scrub_phase, grounded_loco_cfg.hop_contact_duty)
+			lift_w = float(m_c["air_wave"])
+		else:
+			lift_w = 0.5 - 0.5 * cos(_grounded_scrub_phase * 2.0 - 0.45)
+		grounded_evaluator.pelvis_lift_norm = clampf(lift_w * _grounded_scrub_walk_blend, 0.0, 1.0)
+	else:
+		step_info = grounded_evaluator.step_gait(dt, eff_speed, disp_m, grounded_loco_cfg)
 
 	var step_foot: StringName = step_info.get("step_foot", &"") as StringName
 	if jiggle_enabled and not step_foot.is_empty():
@@ -454,6 +547,7 @@ func _step_grounded_hub(
 	apply_to_rig(rig, false)
 	_apply_combat_additive_to_pivot(rig)
 
+	var eff_wb_face: float = _grounded_scrub_walk_blend if _grounded_scrub_enabled else grounded_evaluator.walk_blend
 	if face_enabled:
 		var vel_norm: Vector2 = move_dir.normalized() * eff_speed if move_dir.length_squared() > 0.001 else Vector2.ZERO
 		rig.call("step_face_live", dt, {
@@ -463,7 +557,7 @@ func _step_grounded_hub(
 			"speed_norm": eff_speed,
 			"is_turbo": is_turbo or (_dash_timer > 0.0),
 			"is_backpedaling": is_backpedaling,
-			"loco_weights": {"fwd": grounded_evaluator.walk_blend, "brk": grounded_evaluator.stop_weight},
+			"loco_weights": {"fwd": eff_wb_face, "brk": grounded_evaluator.stop_weight},
 			"turn_state": rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {},
 			"head_rot_rad": float(rig.call("get_manual_head_rot")),
 			"head_offset_du": rig.call("get_manual_head_offset") as Vector2,
@@ -478,7 +572,9 @@ func apply_to_rig(rig: Node2D, all_views: bool) -> void:
 	var turn_st_eff: Dictionary = rig.call("get_turn_anim_state") as Dictionary if turn_enabled else {}
 	var jiggle_cfg_eff: JigglePhysicsConfigScript = jiggle_anim_cfg if jiggle_enabled else null
 	if locomotion_mode == LocomotionMode.GROUNDED_HUB and grounded_evaluator != null:
-		grounded_evaluator.apply_to_rig(rig, evaluator, grounded_loco_cfg, pose_layer_mode, 1.0, all_views, turn_cfg_eff, turn_st_eff, jiggle_cfg_eff)
+		var f_ph: float = _grounded_scrub_phase if _grounded_scrub_enabled else -1.0
+		var f_wb: float = _grounded_scrub_walk_blend if _grounded_scrub_enabled else -1.0
+		grounded_evaluator.apply_to_rig(rig, evaluator, grounded_loco_cfg, pose_layer_mode, 1.0, all_views, turn_cfg_eff, turn_st_eff, jiggle_cfg_eff, f_ph, f_wb)
 		return
 	var loco_cfg_eff: LocomotionAnimConfigScript = loco_anim_cfg if loco_enabled else null
 	var loco_w_eff: Dictionary = live_loco_weights if loco_enabled else {}
@@ -518,6 +614,17 @@ func _apply_combat_additive_to_pivot(rig: Node2D) -> void:
 
 	bp.position = add_pos
 	bp.rotation = add_rot
+
+	var cg: CanvasGroup = rig.call("get_unified_canvas_group") as CanvasGroup
+	if cg != null:
+		if locomotion_mode == LocomotionMode.GROUNDED_HUB and grounded_evaluator != null and GroundedEvaluatorScript.is_hop_gait(grounded_loco_cfg):
+			var f_ph: float = _grounded_scrub_phase if _grounded_scrub_enabled else -1.0
+			var f_wb: float = _grounded_scrub_walk_blend if _grounded_scrub_enabled else -1.0
+			cg.position = Vector2(0.0, grounded_evaluator.get_hop_canvas_offset_y(grounded_loco_cfg, 1.0, f_ph, f_wb))
+			cg.scale = grounded_evaluator.get_hop_canvas_scale(grounded_loco_cfg, 1.0, f_ph, f_wb)
+		else:
+			cg.position = Vector2.ZERO
+			cg.scale = Vector2.ONE
 
 
 func is_dash_burst_active() -> bool:

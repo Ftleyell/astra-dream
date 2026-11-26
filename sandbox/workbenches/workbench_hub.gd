@@ -12,6 +12,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"hub_art_lab": "res://sandbox/hub_art_lab/hub_art_lab.tscn",
 	"gacha_3d_lab": "res://sandbox/hub_art_lab/gacha_3d_lab.tscn",
 	"skill_ult": "res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.tscn",
+	"hub_locomotion_lab": "res://sandbox/hub_art_lab/hub_locomotion_lab/hub_locomotion_lab.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -94,6 +95,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(1.0, 0.26, 0.44, 1.0),
 		"desc": "Calibra Skill [R] Hold-to-Aim Sniper, Ultimate [Q] (Cut-In, Impact Frames Sakuga B/N + Fractura, 12 Alas ida/vuelta), PauseArbitrator, Cosmos y HUD.",
 	},
+	{
+		"key": "hub_locomotion_lab",
+		"shortcut": "[8]",
+		"title": "Hub Locomotion Lab 3D",
+		"accent": Color(0.45, 0.85, 1.0, 1.0),
+		"desc": "Pista 3D con cámaras Hub/Perfil/Close-Up, circuitos 8-dir, Scrub de fase, Astral Glide-Hop, Doble Ripple y guardado .tres.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -128,6 +136,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("gacha_3d_lab")
 		KEY_7:
 			launch_workbench("skill_ult")
+		KEY_8:
+			launch_workbench("hub_locomotion_lab")
 
 
 func launch_workbench(key: String) -> void:
@@ -188,7 +198,7 @@ func _build_ui() -> void:
 	title_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..7] o elegí un entorno."
+	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..8] o elegí un entorno."
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95, 0.9))
 	title_vbox.add_child(subtitle)
@@ -221,7 +231,7 @@ func _build_ui() -> void:
 	pilot_box.add_child(_pilot_opt)
 
 	var grid := GridContainer.new()
-	grid.columns = 3 if CARD_SPECS.size() > 4 else 2
+	grid.columns = 4 if CARD_SPECS.size() > 6 else (3 if CARD_SPECS.size() > 4 else 2)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 16)

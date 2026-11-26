@@ -25,10 +25,12 @@ const DEFAULT_LIGHT_DIR := Vector3(-0.353553, -0.707107, -0.612372)
 @export var move_speed: float = 6.2
 @export var is_movement_locked: bool = false
 @export var layout_config: LayoutConfigScript = DEFAULT_LAYOUT_CONFIG
+@export var external_input_override_enabled: bool = false
 
 var is_pose_override_active: bool = false
 var is_flying_in_space: bool = false
 var is_closeup_shadow_suppressed: bool = false
+var external_input_dir: Vector3 = Vector3.ZERO
 var rig_avatar: HubRigAvatar3DScript = null
 var shadow_sprite: Sprite3D = null
 
@@ -281,7 +283,10 @@ func _physics_process(delta: float) -> void:
 
 	_shadow_platform_blend = lerpf(_shadow_platform_blend, 0.0 if (is_flying_in_space or is_closeup_shadow_suppressed) else 1.0, clampf(10.0 * delta, 0.0, 1.0))
 	var eff_shadow_vis: float = 0.0 if is_closeup_shadow_suppressed else (_visibility_alpha * _shadow_platform_blend)
-	var scale_amp: float = rig_avatar.get_grounded_config().hub_shadow_contact_scale_amp if (rig_avatar != null and rig_avatar.get_grounded_config() != null) else 0.08
+	var g_cfg_sh: PilotGroundedLocomotionConfig = rig_avatar.get_grounded_config() if rig_avatar != null else null
+	var is_hop_sh: bool = PlanarRigGroundedEvaluator.is_hop_gait(g_cfg_sh)
+	var scale_amp: float = (g_cfg_sh.hop_shadow_shrink_ratio if is_hop_sh else g_cfg_sh.hub_shadow_contact_scale_amp) if g_cfg_sh != null else 0.08
+	var hop_alpha_sh: float = (SHADOW_ALPHA * (1.0 - clampf(g_cfg_sh.hop_shadow_alpha_fade, 0.0, 0.85))) if (is_hop_sh and g_cfg_sh != null) else (SHADOW_ALPHA * 0.72)
 
 	if is_movement_locked:
 		if not is_flying_in_space:
@@ -296,13 +301,18 @@ func _physics_process(delta: float) -> void:
 		if not is_flying_in_space:
 			_grounded_motor.commit_stride_displacement(prev_locked, global_position, rig_avatar)
 		if rig_avatar != null:
-			_grounded_motor.update_shadows(shadow_sprite, _shadow_mat, _shadow_proj_scale, _contact_shadow_mesh, _contact_shadow_mat, rig_avatar.get_hover_factor(), delta, SHADOW_ALPHA, SHADOW_ALPHA * 0.72, eff_shadow_vis, scale_amp)
+			_grounded_motor.update_shadows(shadow_sprite, _shadow_mat, _shadow_proj_scale, _contact_shadow_mesh, _contact_shadow_mat, rig_avatar.get_hover_factor(), delta, SHADOW_ALPHA, hop_alpha_sh, eff_shadow_vis, scale_amp)
 		return
 
-	var raw_x: float = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	var raw_z: float = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
-	var raw_vec := Vector3(raw_x, 0.0, raw_z)
-	var input_dir: Vector3 = raw_vec.normalized() if raw_vec.length_squared() > 0.01 else Vector3.ZERO
+	var input_dir: Vector3 = Vector3.ZERO
+	if external_input_override_enabled:
+		var ext_xz := Vector3(external_input_dir.x, 0.0, external_input_dir.z)
+		input_dir = ext_xz.normalized() if ext_xz.length_squared() > 0.002 else Vector3.ZERO
+	else:
+		var raw_x: float = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
+		var raw_z: float = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
+		var raw_vec := Vector3(raw_x, 0.0, raw_z)
+		input_dir = raw_vec.normalized() if raw_vec.length_squared() > 0.01 else Vector3.ZERO
 
 	var speed_norm: float = 0.0
 	if is_flying_in_space:
@@ -329,4 +339,4 @@ func _physics_process(delta: float) -> void:
 	if not is_flying_in_space:
 		_grounded_motor.commit_stride_displacement(prev_pos, global_position, rig_avatar)
 	if rig_avatar != null:
-		_grounded_motor.update_shadows(shadow_sprite, _shadow_mat, _shadow_proj_scale, _contact_shadow_mesh, _contact_shadow_mat, rig_avatar.get_hover_factor(), delta, SHADOW_ALPHA, SHADOW_ALPHA * 0.72, eff_shadow_vis, scale_amp)
+		_grounded_motor.update_shadows(shadow_sprite, _shadow_mat, _shadow_proj_scale, _contact_shadow_mesh, _contact_shadow_mat, rig_avatar.get_hover_factor(), delta, SHADOW_ALPHA, hop_alpha_sh, eff_shadow_vis, scale_amp)

@@ -12,6 +12,12 @@ enum PreviewMode {
 	PIVOT_TURN = 4,
 }
 
+enum GaitStyle {
+	WALK_STRIDE = 0,
+	MOON_HOP = 1,
+	ASTRAL_GLIDE_HOP = 2,
+}
+
 const FAMILY_ORDER: Array[String] = ["s", "se", "e", "ne", "n"]
 const MUL_KEYS: Array[String] = [
 	"bone_stride_scale",
@@ -90,6 +96,62 @@ const MUL_KEYS: Array[String] = [
 @export var hub_pivot_angle_deg: float = 110.0
 @export var footstep_sfx_volume_db: float = -14.0
 @export var footstep_vfx_enabled: bool = true
+
+@export_group("Moon Hop (Microgravedad Estilizada)")
+@export var gait_style: int = GaitStyle.ASTRAL_GLIDE_HOP
+@export var hop_arc_height_rig_px: float = 82.0
+@export var hop_crouch_dip_rig_px: float = 6.0
+@export var hop_contact_duty: float = 0.28
+@export var hop_squash_amount: float = 0.055
+@export var hop_stretch_amount: float = 0.032
+@export var hop_leg_tuck_thigh_rad: float = 0.24
+@export var hop_leg_tuck_knee_rad: float = 0.42
+@export var hop_leg_crouch_knee_rad: float = 0.26
+@export var hop_leg_asym_ratio: float = 0.32
+@export var hop_ankle_point_rad: float = 0.26
+@export var hop_arm_float_rad: float = 0.22
+@export var hop_forward_lean_rad: float = 0.065
+@export var hop_hair_float_px: float = 5.5
+@export var hop_shadow_shrink_ratio: float = 0.46
+@export var hop_shadow_alpha_fade: float = 0.52
+@export var hop_visual_sole_offset_y_px: float = 76.0
+@export var hop_landing_ripple_enabled: bool = true
+@export var hop_landing_ripple_radius_px: float = 26.0
+@export var hop_landing_ripple_duration_sec: float = 0.34
+
+@export_group("Astral Glide-Hop (Jeté Grácil)")
+@export var glide_stride_length_m: float = 12.0
+@export var glide_contact_duty: float = 0.09
+@export var glide_arc_height_rig_px: float = 90.0
+@export var glide_arc_hang_power: float = 0.72
+@export var glide_arc_peak_shift: float = 0.44
+@export var glide_crouch_dip_rig_px: float = 5.0
+@export var glide_squash_amount: float = 0.048
+@export var glide_stretch_amount: float = 0.046
+@export var glide_3d_lift_m: float = 0.60
+@export var glide_lead_thigh_fwd_rad: float = 0.30
+@export var glide_lead_knee_poise_rad: float = 0.34
+@export var glide_trail_thigh_back_rad: float = 0.34
+@export var glide_trail_knee_sweep_rad: float = 0.25
+@export var glide_ankle_point_rad: float = 0.30
+@export var glide_ankle_reach_rad: float = -0.10
+@export var glide_rebound_knee_rad: float = 0.28
+@export var glide_25d_leg_depth_amp: float = 0.28
+@export var glide_forward_lean_rad: float = 0.085
+@export var glide_torso_bank_rad: float = 0.032
+@export var glide_arm_grace_rad: float = 0.20
+@export var glide_arm_elbow_soft_rad: float = 0.22
+@export var glide_hair_trail_px: float = 6.2
+
+@export_group("Ripple Astral de Rebote")
+@export var ripple_enabled: bool = true
+@export var ripple_outer_radius_m: float = 0.78
+@export var ripple_inner_radius_m: float = 0.41
+@export var ripple_duration_sec: float = 0.48
+@export var ripple_intensity: float = 1.15
+@export var ripple_use_skin_accent: bool = true
+@export var ripple_fallback_color: Color = Color(0.55, 0.88, 1.0, 1.0)
+@export var ripple_spark_count: int = 5
 
 @export_group("Familias Direccionales (8-Dir)")
 @export var standing_families: Dictionary = {}
@@ -392,6 +454,59 @@ func reset_defaults() -> void:
 	hub_pivot_angle_deg = 110.0
 	footstep_sfx_volume_db = -14.0
 	footstep_vfx_enabled = true
+
+	gait_style = GaitStyle.ASTRAL_GLIDE_HOP
+	hop_arc_height_rig_px = 82.0
+	hop_crouch_dip_rig_px = 6.0
+	hop_contact_duty = 0.28
+	hop_squash_amount = 0.055
+	hop_stretch_amount = 0.032
+	hop_leg_tuck_thigh_rad = 0.24
+	hop_leg_tuck_knee_rad = 0.42
+	hop_leg_crouch_knee_rad = 0.26
+	hop_leg_asym_ratio = 0.32
+	hop_ankle_point_rad = 0.26
+	hop_arm_float_rad = 0.22
+	hop_forward_lean_rad = 0.065
+	hop_hair_float_px = 5.5
+	hop_shadow_shrink_ratio = 0.46
+	hop_shadow_alpha_fade = 0.52
+	hop_visual_sole_offset_y_px = 76.0
+	hop_landing_ripple_enabled = true
+	hop_landing_ripple_radius_px = 26.0
+	hop_landing_ripple_duration_sec = 0.34
+
+	glide_stride_length_m = 12.0
+	glide_contact_duty = 0.09
+	glide_arc_height_rig_px = 90.0
+	glide_arc_hang_power = 0.72
+	glide_arc_peak_shift = 0.44
+	glide_crouch_dip_rig_px = 5.0
+	glide_squash_amount = 0.048
+	glide_stretch_amount = 0.046
+	glide_3d_lift_m = 0.60
+	glide_lead_thigh_fwd_rad = 0.30
+	glide_lead_knee_poise_rad = 0.34
+	glide_trail_thigh_back_rad = 0.34
+	glide_trail_knee_sweep_rad = 0.25
+	glide_ankle_point_rad = 0.30
+	glide_ankle_reach_rad = -0.10
+	glide_rebound_knee_rad = 0.28
+	glide_25d_leg_depth_amp = 0.28
+	glide_forward_lean_rad = 0.085
+	glide_torso_bank_rad = 0.032
+	glide_arm_grace_rad = 0.20
+	glide_arm_elbow_soft_rad = 0.22
+	glide_hair_trail_px = 6.2
+
+	ripple_enabled = true
+	ripple_outer_radius_m = 0.78
+	ripple_inner_radius_m = 0.41
+	ripple_duration_sec = 0.48
+	ripple_intensity = 1.15
+	ripple_use_skin_accent = true
+	ripple_fallback_color = Color(0.55, 0.88, 1.0, 1.0)
+	ripple_spark_count = 5
 
 	standing_families = build_default_standing_families()
 	family_multipliers = build_default_family_multipliers()

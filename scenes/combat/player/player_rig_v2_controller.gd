@@ -15,6 +15,7 @@ const OrbitalConfigScript = preload("res://data/pilots/schemas/pilot_orbital_wea
 const PropulsionVFXConfigScript = preload("res://data/pilots/schemas/pilot_propulsion_vfx_config.gd")
 const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
 const EdgeAberrationShader = preload("res://scenes/pilots/shaders/sandevistan_edge_aberration.gdshader")
+const HubLandingRippleVFXScript = preload("res://scenes/combat/player/hub_landing_ripple_vfx.gd")
 
 const DEFAULT_COMBAT_CFG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_combat_rig.tres"
 const DEFAULT_ORBITAL_CFG_PATH: String = "res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres"
@@ -68,6 +69,7 @@ var _hub_wing_bloom_timer: float = 0.0
 var _hub_walk_speed_px: float = 440.0
 var _hub_flight_speed_px: float = 760.0
 var _hub_contact_shadow: Sprite2D = null
+var _hub_landing_ripples: Node2D = null
 var _hub_facing_dir: Vector2 = Vector2.DOWN
 
 
@@ -651,6 +653,7 @@ func set_hub_mode(enabled: bool, feet_offset_y_px: float = 54.0) -> void:
 			_ring_ctrl.visible = false
 			_ring_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
 		_ensure_hub_contact_shadow()
+		_ensure_hub_landing_ripples()
 		set_hub_traversal_state(false, true)
 	else:
 		_is_hub_loadout_showcase = false
@@ -660,6 +663,10 @@ func set_hub_mode(enabled: bool, feet_offset_y_px: float = 54.0) -> void:
 		_hub_wing_bloom_timer = 0.0
 		if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
 			_hub_contact_shadow.visible = false
+		if _hub_landing_ripples != null and is_instance_valid(_hub_landing_ripples):
+			if _hub_landing_ripples.has_method("clear_ripples"):
+				_hub_landing_ripples.call("clear_ripples")
+			_hub_landing_ripples.visible = false
 		if _rig != null:
 			_rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT)
 			var zero_g_fps: float = _profile.stepped_fps if _profile != null else 15.0
@@ -802,8 +809,8 @@ func _ensure_hub_contact_shadow() -> void:
 	var grad := Gradient.new()
 	grad.offsets = PackedFloat32Array([0.0, 0.52, 1.0])
 	grad.colors = PackedColorArray([
-		Color(0.02, 0.02, 0.06, 0.44),
-		Color(0.02, 0.02, 0.06, 0.18),
+		Color(0.02, 0.02, 0.06, 0.56),
+		Color(0.02, 0.02, 0.06, 0.24),
 		Color(0.02, 0.02, 0.06, 0.0),
 	])
 	var tex := GradientTexture2D.new()
@@ -818,6 +825,15 @@ func _ensure_hub_contact_shadow() -> void:
 	_hub_contact_shadow.texture = tex
 	_hub_contact_shadow.z_index = -1
 	add_child(_hub_contact_shadow)
+
+
+func _ensure_hub_landing_ripples() -> void:
+	if _hub_landing_ripples != null and is_instance_valid(_hub_landing_ripples):
+		_hub_landing_ripples.visible = true
+		return
+	_hub_landing_ripples = HubLandingRippleVFXScript.new() as Node2D
+	_hub_landing_ripples.name = "HubLandingRippleVFX"
+	add_child(_hub_landing_ripples)
 
 
 func _process_hub_mode(unscaled_delta: float) -> void:
@@ -857,15 +873,49 @@ func _process_hub_mode(unscaled_delta: float) -> void:
 	if _sandevistan_ctrl != null and (is_hub_dash_now or _sandevistan_ctrl.get_active_ghost_count() > 0 or _sandevistan_ctrl.get_sequence_progress() > 0.001):
 		_sandevistan_ctrl.step(unscaled_delta, _rig, _player.velocity if is_hub_dash_now else Vector2.ZERO, is_hub_dash_now)
 
+	var g_cfg: Resource = _rig.get_grounded_locomotion_config()
+	var lift_norm: float = _rig.get_grounded_pelvis_lift_norm()
+	var sole_off_y: float = float(g_cfg.get("hop_visual_sole_offset_y_px")) if (g_cfg != null and g_cfg.get("hop_visual_sole_offset_y_px") != null) else _hub_feet_offset_y_px
+
 	if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
 		var show_sh: bool = not _is_hub_flying and not _hub_shadow_suppressed and not _is_hub_loadout_showcase
 		_hub_contact_shadow.visible = show_sh
 		if show_sh:
 			var p_scale_y: float = maxf(absf(_player.scale.y) * absf(scale.y), 0.1)
-			var lift_norm: float = _rig.get_grounded_pelvis_lift_norm()
-			_hub_contact_shadow.position = Vector2(0.0, _hub_feet_offset_y_px / p_scale_y)
-			var sh_scale: float = 1.0 - lift_norm * 0.12
-			_hub_contact_shadow.scale = Vector2(1.42 * sh_scale, 0.50 * sh_scale)
+			var shrink_r: float = float(g_cfg.get("hop_shadow_shrink_ratio")) if g_cfg != null else 0.46
+			var alpha_fade: float = float(g_cfg.get("hop_shadow_alpha_fade")) if g_cfg != null else 0.52
+			_hub_contact_shadow.position = Vector2(0.0, sole_off_y / p_scale_y)
+			var sh_scale: float = 1.0 - lift_norm * shrink_r
+			_hub_contact_shadow.scale = Vector2(1.48 * sh_scale, 0.52 * sh_scale)
+			_hub_contact_shadow.modulate.a = clampf(1.0 - lift_norm * alpha_fade, 0.20, 1.0)
+
+	if not _is_hub_flying and not _is_hub_loadout_showcase and not _hub_pose_override_active and not is_hub_dash_now:
+		var step_ev: Dictionary = _rig.consume_grounded_step_event()
+		if not step_ev.is_empty():
+			var is_glide_style: bool = g_cfg != null and int(g_cfg.get("gait_style")) == 2
+			var ripple_on: bool = true
+			if g_cfg != null:
+				ripple_on = bool(g_cfg.get("ripple_enabled")) if is_glide_style else bool(g_cfg.get("hop_landing_ripple_enabled"))
+			if _hub_landing_ripples != null and is_instance_valid(_hub_landing_ripples) and ripple_on:
+				var feet_world: Vector2 = _player.global_position + Vector2(0.0, sole_off_y)
+				if is_glide_style and g_cfg != null:
+					var r_m: float = float(g_cfg.get("ripple_outer_radius_m"))
+					var ripple_r: float = maxf(float(g_cfg.get("hop_landing_ripple_radius_px")), r_m * 46.0)
+					var ripple_dur: float = float(g_cfg.get("ripple_duration_sec"))
+					var ripple_int: float = float(g_cfg.get("ripple_intensity"))
+					var spark_cnt: int = int(g_cfg.get("ripple_spark_count"))
+					var use_accent: bool = bool(g_cfg.get("ripple_use_skin_accent"))
+					var fallback_col: Color = g_cfg.get("ripple_fallback_color") as Color
+					var ripple_col: Color = _active_aura_color if use_accent else fallback_col
+					_hub_landing_ripples.call("spawn_ripple", feet_world, ripple_col, ripple_r, ripple_dur, ripple_int, spark_cnt)
+				else:
+					var ripple_r: float = float(g_cfg.get("hop_landing_ripple_radius_px")) if g_cfg != null else 26.0
+					var ripple_dur: float = float(g_cfg.get("hop_landing_ripple_duration_sec")) if g_cfg != null else 0.34
+					_hub_landing_ripples.call("spawn_ripple", feet_world, _active_aura_color, ripple_r, ripple_dur)
+			var audio_mgr: Node = get_node_or_null("/root/AudioManager")
+			if audio_mgr != null and audio_mgr.has_method("play_sfx"):
+				var vol_db: float = float(g_cfg.get("footstep_sfx_volume_db")) if g_cfg != null else -14.0
+				audio_mgr.play_sfx("hub_footstep", randf_range(1.12, 1.24), vol_db)
 
 	if _is_hub_loadout_showcase and _ring_ctrl != null and _ring_ctrl.visible:
 		_ring_ctrl.set_mouse_target_local(Vector2(0.0, 200.0))
