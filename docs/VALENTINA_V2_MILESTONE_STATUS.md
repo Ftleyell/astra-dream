@@ -24,7 +24,7 @@
 | **Hub 3D 2.5D Diorama + `HubRigAvatar3D`** | **Cerrado (Fase 3)** | `scenes/ui/hub/components/hub_rig_avatar_3d.gd`, `scenes/ui/hub/resources/hub_diorama_config.gd`, `data/hub/default_hub_diorama_config.tres`, `scenes/ui/hub/hub_world.tscn` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Skins 100% por Shaders (`pilot` / `wings` / `weapon`)** | **Cerrado (Fase 4)** | `data/pilots/schemas/{shader_skin_entry,pilot_shader_skin_catalog}.gd`, `data/pilots/valentina_v2/valentina_v2_skin_catalog.tres`, `core/systems/cosmetics_manager.gd` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Combate In-Game (`PlayerRigV2Controller`)** | **Cerrado (Fase 5)** | `scenes/combat/player/player_rig_v2_controller.gd`, `data/pilots/valentina_v2/valentina_v2_combat_rig.tres`, Twin-Stick 360°, `CosmicLightingSampler`, Sobre-Enfoque y 1–4 Armas | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
-| **Workbenches & Combat Gym (`F6`)** | **Cerrado (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn`, `hud_workbench/`, `dialogue_workbench/`, `character_select_workbench/`, `sandbox/combat_gym/combat_gym.tscn` | [`DOMAIN_MAP.md`](DOMAIN_MAP.md) |
+| **Workbenches & Combat Gym (`F6`)** | **Cerrado (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn`, `hud_workbench/`, `dialogue_workbench/`, `character_select_workbench/`, `skill_ult_workbench/`, `sandbox/combat_gym/combat_gym.tscn` | [`DOMAIN_MAP.md`](DOMAIN_MAP.md) |
 | **Fábrica Multi-Piloto v2** | **Listo (Cast v2)** | `sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py`, `sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd`, Playbook v2 | [`PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md) |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
 
@@ -33,7 +33,7 @@
 ## 2. Mapa de Labs, Workbenches y Suites de Prueba
 
 ### Lanzador Unificado (`F6` en Godot)
-- **`sandbox/workbenches/workbench_hub.tscn`**: Centraliza los **4 Workbenches sobre producción** (`Combat Gym`, `HUD Workbench`, `Dialogue Workbench`, `Character Select Workbench`), el selector global de **Piloto Activo** (`PilotLabSelector`) y el lanzamiento directo de los **10 Pilot Rig Labs** de `sandbox/pilot_rig_lab/`.
+- **`sandbox/workbenches/workbench_hub.tscn`**: Centraliza los **Workbenches sobre producción** (`Combat Gym`, `HUD Workbench`, `Dialogue Workbench`, `Character Select Workbench`, `Hub Art Lab`, `Gacha 3D Lab`, **`Skill & Ult Workbench`**), el selector global de **Piloto Activo** (`PilotLabSelector`) y el lanzamiento directo de los **Pilot Rig Labs** de `sandbox/pilot_rig_lab/`.
 
 ### Escenas de Laboratorio (`sandbox/pilot_rig_lab/` — Parametrizadas por Piloto)
 1. **Arena Principal del Rig:** `proto/planar_combat_rig_proto.tscn`

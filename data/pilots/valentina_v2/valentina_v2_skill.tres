@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="PilotSkillConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_skill_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+cooldown_sec = 8.0
+search_radius_px = 1100.0
+cursor_snap_radius_px = 240.0
+prioritize_boss_and_elite = true
+cutin_art_path = "res://assets/pilots/valentina_v2/abilities/valentina_v2_skill_cutin.jpg"
+use_custom_cutin_art = true
+cutin_style = 0
+time_stop_sec = 0.78
+impact_frame_sec = 0.14
+hold_aim_time_scale = 0.22
+strip_angle_deg = -16.0
+strip_height_ratio = 0.3
+strip_y_ratio = 0.44
+eye_zoom_scale = 1.18
+eye_uv_offset = Vector2(0, 0)
+callout_text = "OPTIC MATRIX // WEAK POINT"
+camera_zoom_punch = 0.1
+camera_shake_px = 7.5
+accent_hdr_boost = 1.75
+bw_luma_threshold = 0.28
+damage_multiplier = 4.8
+guaranteed_crit = true
+bonus_crit_damage = 0.65
+proc_coefficient = 1.0
+beam_width_px = 44.0
+beam_max_length_px = 2200.0
+beam_duration_sec = 0.3
+reticle_lead_sec = 0.14
+pierce_all_in_line = false
+clear_corridor_bullets = true
+bullet_clear_half_width_px = 72.0
+apply_vulnerability = true
+vulnerability_duration_sec = 5.0
+vulnerability_crit_taken_mult = 1.25

@@ -11,6 +11,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"char_select": "res://sandbox/workbenches/character_select_workbench/character_select_workbench.tscn",
 	"hub_art_lab": "res://sandbox/hub_art_lab/hub_art_lab.tscn",
 	"gacha_3d_lab": "res://sandbox/hub_art_lab/gacha_3d_lab.tscn",
+	"skill_ult": "res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -19,6 +20,7 @@ const PILOT_RIG_LAB_SCENES: Dictionary = {
 	"face_lab": "res://sandbox/pilot_rig_lab/face_lab/valentina_face_lab.tscn",
 	"shader_lab": "res://sandbox/pilot_rig_lab/shader_lab/planar_shader_lab.tscn",
 	"vfx_lab": "res://sandbox/pilot_rig_lab/vfx_lab/valentina_vfx_lab.tscn",
+	"skill_ult_lab": "res://sandbox/pilot_rig_lab/vfx_lab/valentina_skill_ult_studio.tscn",
 	"guns_lab": "res://sandbox/pilot_rig_lab/guns_lab/valentina_guns_lab.tscn",
 	"3d_lab": "res://sandbox/pilot_rig_lab/3d_lab/valentina_3d_lab.tscn",
 	"banner_lab": "res://sandbox/pilot_rig_lab/banner_lab/valentina_banner_lab.tscn",
@@ -33,6 +35,7 @@ const PILOT_LAB_SPECS: Array[Dictionary] = [
 	{"key": "face_lab", "title": "Face Lab", "desc": "Ojos Live2D, cabello & expresiones"},
 	{"key": "shader_lab", "title": "Shader Lab A/B", "desc": "Cel 2.5D, skins, estilos & normal"},
 	{"key": "vfx_lab", "title": "VFX Lab", "desc": "Alas 2D base + estela Sandevistan"},
+	{"key": "skill_ult_lab", "title": "Skill & Ult Studio", "desc": "Cut-In, Impact Frames, Sniper [R] & 12 Alas [Q]"},
 	{"key": "guns_lab", "title": "Guns Lab", "desc": "Anillo orbital 2.5D & Rail-Lance"},
 	{"key": "3d_lab", "title": "3D Wings Lab", "desc": "Alas Astral Seraph 3D cel-shaded"},
 	{"key": "banner_lab", "title": "Banner Lab 2.5D", "desc": "Live Splash Art + Lock-In"},
@@ -84,6 +87,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(1.0, 0.24, 0.72, 1.0),
 		"desc": "Invocador Gacha 3D de 3 anillos + núcleo divisible, coreografía de 5 fases, Fake-Out y equipar en vivo sobre Valentina.",
 	},
+	{
+		"key": "skill_ult",
+		"shortcut": "[7]",
+		"title": "Skill & Ult Workbench",
+		"accent": Color(1.0, 0.26, 0.44, 1.0),
+		"desc": "Calibra Skill [R] Hold-to-Aim Sniper, Ultimate [Q] (Cut-In, Impact Frames Sakuga B/N + Fractura, 12 Alas ida/vuelta), PauseArbitrator, Cosmos y HUD.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -116,6 +126,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("hub_art_lab")
 		KEY_6:
 			launch_workbench("gacha_3d_lab")
+		KEY_7:
+			launch_workbench("skill_ult")
 
 
 func launch_workbench(key: String) -> void:
@@ -176,7 +188,7 @@ func _build_ui() -> void:
 	title_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..6] o elegí un entorno."
+	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..7] o elegí un entorno."
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95, 0.9))
 	title_vbox.add_child(subtitle)

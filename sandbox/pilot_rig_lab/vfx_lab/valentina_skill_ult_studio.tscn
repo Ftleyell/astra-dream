@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://744xvvjdlf63"]
+
+[ext_resource type="Script" uid="uid://bdde5ow70ib7g" path="res://sandbox/pilot_rig_lab/vfx_lab/valentina_skill_ult_studio.gd" id="1_studio"]
+
+[node name="ValentinaSkillUltStudio" type="Node2D" unique_id=773159288]
+script = ExtResource("1_studio")

@@ -15,9 +15,9 @@ func acquire_enemy(scene: PackedScene, pos: Vector2, parent: Node) -> Node2D:
 	var enemy: Node2D = null
 
 	while not free_list.is_empty():
-		var candidate: Node2D = free_list.pop_back() as Node2D
-		if is_instance_valid(candidate):
-			enemy = candidate
+		var candidate: Variant = free_list.pop_back()
+		if is_instance_valid(candidate) and candidate is Node2D:
+			enemy = candidate as Node2D
 			break
 
 	if enemy:

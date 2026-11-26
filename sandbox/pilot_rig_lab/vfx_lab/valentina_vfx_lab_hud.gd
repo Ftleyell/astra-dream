@@ -67,6 +67,14 @@ static func build_hud(
 
 	vbox.add_child(HSeparator.new())
 
+	var btn_skill_studio := Button.new()
+	btn_skill_studio.text = "Abrir Skill & Ultimate Studio ([R]/[Q])"
+	btn_skill_studio.pressed.connect(func() -> void:
+		if parent_node != null and parent_node.is_inside_tree():
+			parent_node.get_tree().change_scene_to_file("res://sandbox/pilot_rig_lab/vfx_lab/valentina_skill_ult_studio.tscn")
+	)
+	vbox.add_child(btn_skill_studio)
+
 	# Selector de modo de vuelo
 	var mode_row := HBoxContainer.new()
 	var mode_lbl := Label.new()

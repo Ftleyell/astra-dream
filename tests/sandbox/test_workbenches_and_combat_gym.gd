@@ -7,6 +7,7 @@ const WorkbenchHubScript = preload("res://sandbox/workbenches/workbench_hub.gd")
 const HUDWorkbenchScript = preload("res://sandbox/workbenches/hud_workbench/hud_workbench.gd")
 const DialogueWorkbenchScript = preload("res://sandbox/workbenches/dialogue_workbench/dialogue_workbench.gd")
 const CharSelectWorkbenchScript = preload("res://sandbox/workbenches/character_select_workbench/character_select_workbench.gd")
+const SkillUltWorkbenchScript = preload("res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.gd")
 const CombatGymScript = preload("res://sandbox/combat_gym/combat_gym.gd")
 const CombatGymDummyScript = preload("res://sandbox/combat_gym/combat_gym_dummy.gd")
 const PilotLabSelectorScript = preload("res://sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd")
@@ -14,6 +15,7 @@ const WorkbenchHubScene: PackedScene = preload("res://sandbox/workbenches/workbe
 const HUDWorkbenchScene: PackedScene = preload("res://sandbox/workbenches/hud_workbench/hud_workbench.tscn")
 const DialogueWorkbenchScene: PackedScene = preload("res://sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn")
 const CharSelectWorkbenchScene: PackedScene = preload("res://sandbox/workbenches/character_select_workbench/character_select_workbench.tscn")
+const SkillUltWorkbenchScene: PackedScene = preload("res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.tscn")
 const CombatGymScene: PackedScene = preload("res://sandbox/combat_gym/combat_gym.tscn")
 
 var _had_save_backup: bool = false
@@ -21,7 +23,7 @@ var _save_backup_text: String = ""
 
 
 func _ready() -> void:
-	timeout_seconds = 18.0
+	timeout_seconds = 24.0
 	super._ready()
 	_backup_profile_file()
 	await _run_tests()
@@ -60,6 +62,7 @@ func _run_tests() -> void:
 	await _test_hud_workbench()
 	await _test_dialogue_workbench()
 	await _test_character_select_workbench()
+	await _test_skill_ult_workbench()
 	await _test_combat_gym()
 	pass_suite("Workbenches y Combat Gym verificados sobre producción sin mutar SaveManager ni producción")
 
@@ -180,6 +183,44 @@ func _test_character_select_workbench() -> void:
 
 	var after_raw: String = FileAccess.get_file_as_string(SaveManager.SAVE_PATH) if FileAccess.file_exists(SaveManager.SAVE_PATH) else ""
 	assert_true(before_raw == after_raw, "Al salir de CharacterSelectWorkbench, el save original debe quedar intacto")
+
+
+func _test_skill_ult_workbench() -> void:
+	var before_raw: String = FileAccess.get_file_as_string(SaveManager.SAVE_PATH) if FileAccess.file_exists(SaveManager.SAVE_PATH) else ""
+
+	var wb: SkillUltWorkbenchScript = SkillUltWorkbenchScene.instantiate() as SkillUltWorkbenchScript
+	assert_true(wb != null, "SkillUltWorkbench debe instanciar")
+	add_child(wb)
+	await _await_frames(2)
+
+	assert_true(is_instance_valid(wb.theater), "SkillUltWorkbench debe montar PilotCutInTheater")
+	assert_true(is_instance_valid(wb.sniper_vfx), "SkillUltWorkbench debe montar SniperWeakpointRailVFX")
+	assert_true(is_instance_valid(wb.wing_barrage), "SkillUltWorkbench debe montar UltimateWingBarrageController")
+	assert_true(is_instance_valid(wb.hud_cluster), "SkillUltWorkbench debe montar HUDAbilityClusterPreview")
+	assert_true(is_instance_valid(wb.alignment_overlay), "SkillUltWorkbench debe montar WorkbenchAlignmentOverlay")
+
+	wb.toggle_guides()
+	assert_true(wb.alignment_overlay.show_guides, "Guías de alineación deben activarse en SkillUltWorkbench")
+
+	wb.begin_skill_hold_aim()
+	assert_true(wb.sniper_vfx.is_holding_aim(), "Hold-to-Aim debe activarse en SkillUltWorkbench")
+	wb.release_skill_hold_aim()
+	assert_true(PauseArbitrator.is_reason_active(&"workbench_skill_cutin"), "Skill [R] debe adquirir token de pausa en PauseArbitrator")
+
+	wb.trigger_ultimate_demo()
+	assert_true(PauseArbitrator.is_reason_active(&"workbench_ultimate_cutin"), "Ultimate [Q] debe adquirir token de pausa en PauseArbitrator")
+	wb.stop_active_cutin()
+	assert_true(not PauseArbitrator.is_reason_active(&"workbench_ultimate_cutin"), "stop_active_cutin() debe liberar token de Ultimate")
+	assert_true(not PauseArbitrator.is_reason_active(&"workbench_skill_cutin"), "stop_active_cutin() debe liberar token de Skill")
+
+	for style_i: int in range(3):
+		wb.set_hud_preview_style(style_i)
+
+	wb.queue_free()
+	await _await_frames(2)
+
+	var after_raw: String = FileAccess.get_file_as_string(SaveManager.SAVE_PATH) if FileAccess.file_exists(SaveManager.SAVE_PATH) else ""
+	assert_true(before_raw == after_raw, "Al salir de SkillUltWorkbench, el save original debe quedar intacto")
 
 
 func _test_combat_gym() -> void:

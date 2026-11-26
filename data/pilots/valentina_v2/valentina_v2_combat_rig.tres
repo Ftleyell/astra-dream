@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="PilotCombatRigConfig" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="PilotCombatRigConfig" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://data/pilots/schemas/pilot_combat_rig_config.gd" id="1_cfg"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_orbital_weapon.tres" id="2_orb"]
 [ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_propulsion_vfx.tres" id="3_vfx"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_skill.tres" id="4_skl"]
+[ext_resource type="Resource" path="res://data/pilots/valentina_v2/valentina_v2_ultimate.tres" id="5_ult"]
 
 [resource]
 script = ExtResource("1_cfg")
@@ -10,6 +12,8 @@ combat_rig_scale = 0.9
 default_style_path = "res://data/pilots/styles/02_valentina_razor_sharp.tres"
 orbital_weapon_config = ExtResource("2_orb")
 propulsion_vfx_config = ExtResource("3_vfx")
+skill_config = ExtResource("4_skl")
+ultimate_config = ExtResource("5_ult")
 ring_texture_path = "res://assets/pilots/valentina_v2/planar/weapons/valentina_mecha_ring_packed.png"
 rig_z_offset = 5
 sandevistan_abs_z_index = 2

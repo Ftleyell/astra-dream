@@ -441,4 +441,3 @@ func _unhandled_input(event: InputEvent) -> void:
 func set_stats_dock_requested(requester_id: StringName, requested: bool) -> void:
 	if _stats_dock_ctrl:
 		_stats_dock_ctrl.set_stats_dock_requested(self, player, requester_id, requested)
-

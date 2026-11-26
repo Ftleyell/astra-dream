@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="PilotUltimateConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/pilots/schemas/pilot_ultimate_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+max_energy = 100.0
+min_cooldown_sec = 10.0
+energy_per_hit = 1.2
+energy_crit_bonus = 2.2
+energy_per_kill = 4.5
+energy_on_skill_cast = 14.0
+energy_per_graze = 1.8
+passive_regen_per_sec = 0.5
+cutin_art_path = "res://assets/pilots/valentina_v2/abilities/valentina_v2_ultimate_cutin.jpg"
+render_mode = 0
+frame_composition = 2
+total_timestop_sec = 1.55
+cutin_phase_sec = 1.05
+impact_bw_phase_sec = 0.24
+impact_shatter_phase_sec = 0.18
+release_flash_sec = 0.08
+face_closeup_zoom = 1.12
+face_focus_offset_px = Vector2(0, 0)
+dutch_tilt_deg = -5.0
+camera_drift_px = Vector2(26, -12)
+hair_wind_boost = 2.2
+breath_speed_mult = 1.75
+eye_flare_boost = 1.45
+iris_contract_scale = 0.82
+callout_title = "ZERO HORIZON // EXECUTE"
+rig_view_direction = Vector2(0.7, 0.7)
+rig_torso_lean_deg = -7.5
+rig_head_tilt_deg = 5.5
+rig_lead_arm_rot_deg = -38.0
+rig_trail_arm_rot_deg = 24.0
+rig_closeup_zoom = 2.55
+rig_wings_bloom = true
+bw_luma_threshold = 0.28
+accent_hdr_boost = 1.9
+secondary_crack_color = Color(0.545, 0.361, 0.965, 1)
+shatter_cell_density = 16.0
+shatter_crack_width_px = 2.6
+shatter_refraction_px = 14.0
+radial_speedlines_strength = 0.62
+chromatic_aberration_px = 9.5
+blade_count = 12
+blade_launch_stagger_sec = 0.02
+blade_flight_sec = 0.24
+blade_apex_hold_sec = 0.12
+blade_return_sec = 0.28
+blade_arc_curvature_px = 130.0
+blade_scale = 0.46
+slash_trail_linger_sec = 0.4
+blade_damage_mult = 1.85
+shatter_finisher_mult = 3.2
+guaranteed_crit = true
+proc_coefficient_per_blade = 0.25
+purge_all_bullets = true
+overdrive_duration_sec = 4.0
+overdrive_attack_speed_bonus = 0.3

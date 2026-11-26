@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.gd" id="1_wb"]
+
+[node name="SkillUltWorkbench" type="Node2D"]
+script = ExtResource("1_wb")
