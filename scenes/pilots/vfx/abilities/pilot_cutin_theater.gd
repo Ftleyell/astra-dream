@@ -11,8 +11,11 @@ signal cutin_finished(mode_name: StringName)
 
 const ImpactShatterShader = preload("res://scenes/pilots/shaders/fullscreen_impact_shatter.gdshader")
 const CutInMaskShader = preload("res://scenes/pilots/shaders/cutin_window_mask.gdshader")
+const CutInSkinCompositeShader = preload("res://scenes/pilots/shaders/cutin_skin_composite.gdshader")
 const LiveBannerCtrlScript = preload("res://scenes/pilots/banner/pilot_live_banner_controller.gd")
 const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
+const Stage3DScript = preload("res://scenes/pilots/vfx/abilities/ultimate_3d_stage_rig.gd")
+const PaletteResolverScript = preload("res://scenes/pilots/vfx/abilities/pilot_skin_palette_resolver.gd")
 const SkillConfigScript = preload("res://data/pilots/schemas/pilot_skill_config.gd")
 const UltimateConfigScript = preload("res://data/pilots/schemas/pilot_ultimate_config.gd")
 
@@ -37,7 +40,10 @@ var _last_impact_phase: int = -1
 var _skill_cfg: PilotSkillConfig = null
 var _ult_cfg: PilotUltimateConfig = null
 var _accent_color: Color = Color(0.98, 0.14, 0.34, 1.0)
+var _contrast_color: Color = Color(0.08, 0.96, 0.88, 1.0)
+var _stage_bg_color: Color = Color(0.03, 0.02, 0.06, 1.0)
 var _secondary_color: Color = Color(0.545, 0.361, 0.965, 1.0)
+var _palette: Dictionary = {}
 var _impact_center_uv: Vector2 = Vector2(0.5, 0.5)
 
 var _pilot_skin: PilotSkinPreset = null
@@ -47,9 +53,13 @@ var _wings_stars: int = 1
 
 var _dim_rect: ColorRect = null
 var _dim_mat: ShaderMaterial = null
+var _stage_3d: Ultimate3DStageRig = null
+var _stage_3d_bg_display: TextureRect = null
+var _stage_3d_fg_display: TextureRect = null
 var _cutin_viewport: SubViewport = null
 var _cutin_camera: Camera2D = null
 var _custom_art_sprite: Sprite2D = null
+var _custom_art_mat: ShaderMaterial = null
 var _custom_art_cache: Dictionary = {}
 var _banner_ctrl: PilotLiveBannerController = null
 var _rig_ctrl: PlanarCombatRig = null
@@ -80,7 +90,22 @@ func _build_nodes() -> void:
 	_dim_rect.material = _dim_mat
 	add_child(_dim_rect)
 
-	# 2. SubViewport HDR dedicado para renderizar el Cut-In (LiveBanner 2.5D o CombatRig Pose)
+	# 1b. Escenario 3D Cel-Shaded HDR (Acto 2 fondo / Acto 3 púas y 28 esquirlas 3D)
+	_stage_3d = Stage3DScript.new()
+	_stage_3d.name = "Ultimate3DStageRig"
+	add_child(_stage_3d)
+
+	_stage_3d_bg_display = TextureRect.new()
+	_stage_3d_bg_display.name = "Stage3DBgDisplay"
+	_stage_3d_bg_display.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_stage_3d_bg_display.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_stage_3d_bg_display.stretch_mode = TextureRect.STRETCH_SCALE
+	_stage_3d_bg_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage_3d_bg_display.texture = _stage_3d.get_texture()
+	_stage_3d_bg_display.visible = false
+	add_child(_stage_3d_bg_display)
+
+	# 2. SubViewport HDR dedicado para renderizar el Cut-In (Arte Dedicado, LiveBanner 2.5D o CombatRig Pose)
 	_cutin_viewport = SubViewport.new()
 	_cutin_viewport.name = "CutInHDRViewport"
 	_cutin_viewport.size = VIEWPORT_RES
@@ -98,6 +123,9 @@ func _build_nodes() -> void:
 	_custom_art_sprite = Sprite2D.new()
 	_custom_art_sprite.name = "CustomCutInArtSprite"
 	_custom_art_sprite.visible = false
+	_custom_art_mat = ShaderMaterial.new()
+	_custom_art_mat.shader = CutInSkinCompositeShader
+	_custom_art_sprite.material = _custom_art_mat
 	_cutin_viewport.add_child(_custom_art_sprite)
 
 	# 3. Display con máscara geométrica (Diagonal / Visor HSR / HUD WuWa / Slash ZZZ)
@@ -147,6 +175,20 @@ func _build_nodes() -> void:
 	_impact_overlay_rect.material = _impact_overlay_mat
 	add_child(_impact_overlay_rect)
 
+	# 6. Capa frontal 3D para Acto 3 (24 púas radiales Sakuga 3D y 28 esquirlas obsidiana 3D)
+	_stage_3d_fg_display = TextureRect.new()
+	_stage_3d_fg_display.name = "Stage3DFgDisplay"
+	_stage_3d_fg_display.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_stage_3d_fg_display.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_stage_3d_fg_display.stretch_mode = TextureRect.STRETCH_SCALE
+	_stage_3d_fg_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage_3d_fg_display.texture = _stage_3d.get_texture()
+	_stage_3d_fg_display.visible = false
+	add_child(_stage_3d_fg_display)
+
+	_palette = PaletteResolverScript.resolve(null)
+	set_palette(_palette)
+
 
 func _ensure_banner_actor() -> void:
 	if _banner_ctrl != null and is_instance_valid(_banner_ctrl):
@@ -182,12 +224,45 @@ func set_skin_presets(pilot_skin: PilotSkinPreset, pilot_stars: int = 1, wings_s
 	_wings_skin = wings_skin
 	_wings_stars = clampi(wings_stars, 1, 3)
 
-	var eff_accent_skin: PilotSkinPreset = _wings_skin if _wings_skin != null else _pilot_skin
-	if eff_accent_skin != null and not eff_accent_skin.is_base_skin:
-		_accent_color = eff_accent_skin.accent_color
-	else:
-		_accent_color = Color(0.98, 0.14, 0.34, 1.0)
+	var eff_skin: PilotSkinPreset = _wings_skin if _wings_skin != null else _pilot_skin
+	var resolved: Dictionary = PaletteResolverScript.resolve(eff_skin)
+	var suit_dark: Color = eff_skin.suit_dark_color if (eff_skin != null and not eff_skin.is_base_skin) else Color(0.06, 0.04, 0.11, 1.0)
+	set_palette(resolved, suit_dark)
 	_apply_skins_to_actors()
+
+
+func set_palette(palette: Dictionary, suit_dark: Color = Color(0.06, 0.04, 0.11, 1.0)) -> void:
+	_palette = palette
+	if palette.has("accent"):
+		_accent_color = palette["accent"] as Color
+	if palette.has("contrast_crosshair"):
+		_contrast_color = palette["contrast_crosshair"] as Color
+	if palette.has("stage_bg"):
+		_stage_bg_color = palette["stage_bg"] as Color
+	if _stage_3d != null:
+		_stage_3d.apply_palette(palette, suit_dark)
+	_sync_custom_art_shader(false)
+
+
+func get_stage_3d() -> Ultimate3DStageRig:
+	return _stage_3d
+
+
+func _sync_custom_art_shader(is_ultimate_3d: bool) -> void:
+	if _custom_art_mat == null:
+		return
+	var is_base: float = 1.0 if (_pilot_skin == null or _pilot_skin.is_base_skin) else 0.0
+	_custom_art_mat.set_shader_parameter("skin_accent_color", _accent_color)
+	_custom_art_mat.set_shader_parameter("contrast_crosshair_color", _contrast_color)
+	_custom_art_mat.set_shader_parameter("is_base_skin", is_base)
+	if is_ultimate_3d and _ult_cfg != null:
+		_custom_art_mat.set_shader_parameter("bg_key_threshold", _ult_cfg.art_bg_key_threshold)
+		_custom_art_mat.set_shader_parameter("recolor_strength", _ult_cfg.art_recolor_strength)
+		_custom_art_mat.set_shader_parameter("enable_bg_key", 1.0 if _ult_cfg.enable_3d_stage else 0.0)
+	else:
+		_custom_art_mat.set_shader_parameter("bg_key_threshold", 0.16)
+		_custom_art_mat.set_shader_parameter("recolor_strength", 0.85)
+		_custom_art_mat.set_shader_parameter("enable_bg_key", 0.0)
 
 
 func _apply_skins_to_actors() -> void:
@@ -226,14 +301,17 @@ func get_current_phase_name() -> String:
 		return "SKILL_CUTIN" if _elapsed < cutin_end else "SKILL_IMPACT_FRAME"
 	if _mode == ActiveMode.ULTIMATE and _ult_cfg != null:
 		var t1: float = _ult_cfg.cutin_phase_sec
+		var t_beat1_end: float = t1 + _ult_cfg.impact_bw_phase_sec * 0.52
 		var t2: float = t1 + _ult_cfg.impact_bw_phase_sec
 		var t3: float = t2 + _ult_cfg.impact_shatter_phase_sec
 		if _elapsed < t1:
-			return "ULT_WALLPAPER_CUTIN"
+			return "ULT_3D_STAGE_CUTIN" if _ult_cfg.enable_3d_stage else "ULT_WALLPAPER_CUTIN"
+		elif _elapsed < t_beat1_end:
+			return "ULT_IMPACT_BEAT1_BW"
 		elif _elapsed < t2:
-			return "ULT_IMPACT_BW_HDR"
+			return "ULT_IMPACT_BEAT2_CONTRAST"
 		elif _elapsed < t3:
-			return "ULT_SHATTER_OBSIDIAN"
+			return "ULT_IMPACT_BEAT3_SHATTER_3D"
 		return "ULT_RELEASE_FLASH"
 	return "IDLE"
 
@@ -313,7 +391,10 @@ func play_ultimate_cutin(cfg: PilotUltimateConfig, center_uv: Vector2 = Vector2(
 	_release_emitted = false
 	_last_impact_phase = -1
 
+	if _stage_3d != null:
+		_stage_3d.configure_from_ult(_ult_cfg)
 	_sync_ultimate_actor_mode()
+	_sync_custom_art_shader(true)
 	_cutin_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	_callout_label.text = _ult_cfg.callout_title
 	_evaluate_current_frame(0.0)
@@ -388,6 +469,12 @@ func stop_and_hide() -> void:
 func _hide_all() -> void:
 	if _dim_rect != null:
 		_dim_rect.visible = false
+	if _stage_3d_bg_display != null:
+		_stage_3d_bg_display.visible = false
+	if _stage_3d_fg_display != null:
+		_stage_3d_fg_display.visible = false
+	if _stage_3d != null:
+		_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.HIDDEN, 0.0, 0.0)
 	if _cutin_display != null:
 		_cutin_display.visible = false
 	if _callout_container != null:
@@ -438,12 +525,23 @@ func _eval_skill_frame(_step_dt: float) -> void:
 		_cutin_camera.zoom = Vector2(z, z)
 	_cutin_camera.rotation_degrees = cfg.strip_angle_deg * 0.18
 
+	# En Skill [R] ocultar el escenario 3D y mantener shader del arte sin recorte de fondo
+	if _stage_3d_bg_display != null:
+		_stage_3d_bg_display.visible = false
+	if _stage_3d_fg_display != null:
+		_stage_3d_fg_display.visible = false
+	if _stage_3d != null:
+		_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.HIDDEN, 0.0, 0.0)
+	_sync_custom_art_shader(false)
+
 	# Dimming detrás de la franja
 	_dim_rect.visible = true
 	_dim_mat.set_shader_parameter("effect_phase", 0)
 	_dim_mat.set_shader_parameter("effect_intensity", 0.72)
 	_dim_mat.set_shader_parameter("center_uv", _impact_center_uv)
 	_dim_mat.set_shader_parameter("accent_color", _accent_color)
+	_dim_mat.set_shader_parameter("contrast_color", _contrast_color)
+	_dim_mat.set_shader_parameter("stage_bg_color", _stage_bg_color)
 	_dim_mat.set_shader_parameter("radial_speedlines_strength", 0.55)
 	_dim_mat.set_shader_parameter("time_sec", _elapsed)
 
@@ -524,8 +622,14 @@ func _eval_ultimate_frame(_step_dt: float) -> void:
 	_dim_mat.set_shader_parameter("effect_intensity", 0.85)
 	_dim_mat.set_shader_parameter("center_uv", _impact_center_uv)
 	_dim_mat.set_shader_parameter("accent_color", _accent_color)
+	_dim_mat.set_shader_parameter("contrast_color", _contrast_color)
+	_dim_mat.set_shader_parameter("stage_bg_color", _stage_bg_color)
 	_dim_mat.set_shader_parameter("radial_speedlines_strength", cfg.radial_speedlines_strength)
 	_dim_mat.set_shader_parameter("time_sec", _elapsed)
+
+	_sync_custom_art_shader(true)
+	if _stage_3d != null:
+		_stage_3d.configure_from_ult(cfg)
 
 	_cutin_display.visible = show_cutin
 	_cutin_mask_mat.set_shader_parameter("mask_mode", mask_idx)
@@ -535,26 +639,69 @@ func _eval_ultimate_frame(_step_dt: float) -> void:
 
 	_layout_callout(0.76, 0.62, _elapsed < t2)
 
-	# Impact Frames Full-Screen (Fase 1 B/N HDR → Fase 2 Fractura Cristal Obsidiana → Fase 3 Release Flash)
+	# Acto 2 (Escenario 3D detrás) & Acto 3 (3 Beats: B/N + Púas 3D -> Negativo Contrastante -> 28 Esquirlas 3D)
+	var t_beat1_end: float = t1 + cfg.impact_bw_phase_sec * 0.52
 	if _elapsed < t1:
 		_impact_overlay_rect.visible = false
-	elif _elapsed < t2:
+		if _stage_3d_fg_display != null:
+			_stage_3d_fg_display.visible = false
+		if _stage_3d != null and _stage_3d_bg_display != null:
+			_stage_3d_bg_display.visible = cfg.enable_3d_stage
+			if cfg.enable_3d_stage:
+				_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.ACT2_CUTIN_STAGE, cutin_norm, _elapsed)
+			else:
+				_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.HIDDEN, 0.0, _elapsed)
+	elif _elapsed < t_beat1_end:
+		# Beat 1: B/N Binario + Sobel + 24 Púas Radiales 3D
 		if _last_impact_phase != 1:
 			_last_impact_phase = 1
 			cutin_impact_frame_entered.emit(1)
-		var bw_t: float = clampf((_elapsed - t1) / maxf(cfg.impact_bw_phase_sec, 0.001), 0.0, 1.0)
-		var strobe_val: float = 0.0 if (bw_t < 0.34 or bw_t >= 0.72) else 1.0
-		_impact_overlay_mat.set_shader_parameter("bw_invert_strobe", strobe_val)
+		var b1_t: float = clampf((_elapsed - t1) / maxf(t_beat1_end - t1, 0.001), 0.0, 1.0)
+		_impact_overlay_mat.set_shader_parameter("bw_invert_strobe", 0.0)
 		_push_impact_overlay(1, 1.0, cfg)
-	elif _elapsed < t3:
+		if _stage_3d_bg_display != null:
+			_stage_3d_bg_display.visible = false
+		if _stage_3d != null and _stage_3d_fg_display != null:
+			_stage_3d_fg_display.visible = cfg.enable_3d_stage
+			if cfg.enable_3d_stage:
+				_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.ACT3_BEAT1_SPIKES, b1_t, _elapsed)
+	elif _elapsed < t2:
+		# Beat 2: Negativo invertido + corte quirúrgico en contrast_crosshair + Púas 3D contrastantes
 		if _last_impact_phase != 2:
 			_last_impact_phase = 2
 			cutin_impact_frame_entered.emit(2)
+		var b2_t: float = clampf((_elapsed - t_beat1_end) / maxf(t2 - t_beat1_end, 0.001), 0.0, 1.0)
+		_impact_overlay_mat.set_shader_parameter("bw_invert_strobe", 1.0)
+		_push_impact_overlay(1, 1.0, cfg)
+		if _stage_3d_bg_display != null:
+			_stage_3d_bg_display.visible = false
+		if _stage_3d != null and _stage_3d_fg_display != null:
+			_stage_3d_fg_display.visible = cfg.enable_3d_stage
+			if cfg.enable_3d_stage:
+				_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.ACT3_BEAT2_CONTRAST, b2_t, _elapsed)
+	elif _elapsed < t3:
+		# Beat 3: Fractura Voronoi Obsidiana + 28 Esquirlas 3D explotando hacia la cámara
+		if _last_impact_phase != 3:
+			_last_impact_phase = 3
+			cutin_impact_frame_entered.emit(3)
+		var b3_t: float = clampf((_elapsed - t2) / maxf(cfg.impact_shatter_phase_sec, 0.001), 0.0, 1.0)
 		_push_impact_overlay(2, 0.98, cfg)
+		if _stage_3d_bg_display != null:
+			_stage_3d_bg_display.visible = false
+		if _stage_3d != null and _stage_3d_fg_display != null:
+			_stage_3d_fg_display.visible = cfg.enable_3d_stage
+			if cfg.enable_3d_stage:
+				_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.ACT3_BEAT3_SHATTER, b3_t, _elapsed)
 	else:
 		if not _release_emitted:
 			_release_emitted = true
 			cutin_release_reached.emit(&"ultimate")
+		if _stage_3d_bg_display != null:
+			_stage_3d_bg_display.visible = false
+		if _stage_3d_fg_display != null:
+			_stage_3d_fg_display.visible = false
+		if _stage_3d != null:
+			_stage_3d.set_stage_state(Ultimate3DStageRig.StageMode.HIDDEN, 0.0, _elapsed)
 		var rel_t: float = 1.0 - clampf((_elapsed - t3) / maxf(cfg.release_flash_sec, 0.001), 0.0, 1.0)
 		_push_impact_overlay(3, rel_t, cfg)
 
@@ -565,7 +712,9 @@ func _push_impact_overlay(phase: int, intensity: float, cfg: PilotUltimateConfig
 	_impact_overlay_mat.set_shader_parameter("effect_intensity", intensity)
 	_impact_overlay_mat.set_shader_parameter("center_uv", _impact_center_uv)
 	_impact_overlay_mat.set_shader_parameter("accent_color", _accent_color)
+	_impact_overlay_mat.set_shader_parameter("contrast_color", _contrast_color)
 	_impact_overlay_mat.set_shader_parameter("secondary_color", _secondary_color)
+	_impact_overlay_mat.set_shader_parameter("stage_bg_color", _stage_bg_color)
 	_impact_overlay_mat.set_shader_parameter("bw_luma_threshold", cfg.bw_luma_threshold)
 	_impact_overlay_mat.set_shader_parameter("accent_hdr_boost", cfg.accent_hdr_boost)
 	_impact_overlay_mat.set_shader_parameter("shatter_cell_density", cfg.shatter_cell_density)

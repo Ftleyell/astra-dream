@@ -14,7 +14,9 @@ uniform float effect_intensity : hint_range(0.0, 1.0) = 0.0;
 uniform float bw_invert_strobe : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 center_uv = vec2(0.5, 0.5);
 uniform vec4 accent_color : source_color = vec4(0.98, 0.14, 0.34, 1.0);
+uniform vec4 contrast_color : source_color = vec4(0.08, 0.96, 0.88, 1.0);
 uniform vec4 secondary_color : source_color = vec4(0.545, 0.361, 0.965, 1.0);
+uniform vec4 stage_bg_color : source_color = vec4(0.02, 0.015, 0.045, 1.0);
 uniform float bw_luma_threshold : hint_range(0.05, 0.85) = 0.28;
 uniform float accent_hdr_boost : hint_range(0.5, 3.5) = 1.90;
 uniform float shatter_cell_density : hint_range(4.0, 40.0) = 16.0;
@@ -122,36 +124,41 @@ void fragment() {
 		vec3 out_rgb = src;
 
 		if (effect_phase == 0) {
-			// Fase 0: Dimming dramático + viñeta + líneas de velocidad
+			// Fase 0: Dimming dramático + viñeta tintada por skin + líneas de velocidad
 			vec2 d = (SCREEN_UV - center_uv) * aspect;
 			float vig = smoothstep(0.20, 1.15, length(d));
 			float lines = compute_soft_speedlines(SCREEN_UV, center_uv, time_sec) * radial_speedlines_strength;
-			out_rgb = mix(src * 0.52, vec3(0.02, 0.015, 0.045), vig * 0.68);
+			out_rgb = mix(src * 0.52, stage_bg_color.rgb, vig * 0.72);
 			out_rgb += accent_color.rgb * lines * 0.55;
 		} else if (effect_phase == 1) {
-			// Fase 1: SAKUGA IMPACT FRAME — Blanco y Negro Binario ULTRA-FILOSO (cero grises lavados)
+			// Fase 1: SAKUGA IMPACT FRAME — Blanco y Negro Binario ULTRA-FILOSO (Beat 1 B/N + Beat 2 Negativo Contrastante)
 			float luma = luma_of(src);
 			float edge = sobel_edge(SCREEN_UV, px * 1.65);
 			float ink_contour = step(0.18, edge);
 			float spikes = compute_sakuga_spikes(SCREEN_UV, center_uv, time_sec) * step(0.15, radial_speedlines_strength);
+			float is_beat2 = step(0.5, bw_invert_strobe);
 
 			// Binarización dura sin smoothstep suave
 			float bw_raw = step(bw_luma_threshold, luma);
-			// Strobe 0 = Fondo negro tinta + siluetas/rayos blancos cegadores; Strobe 1 = Fondo blanco puro + siluetas/rayos tinta negra
-			float bw = mix(bw_raw, 1.0 - bw_raw, step(0.5, bw_invert_strobe));
-			// Los contornos Sobel y los rayos Sakuga invierten el píxel para crear trazos manga brutales
+			// Beat 1 (strobe 0): Negro tinta + siluetas/rayos blancos cegadores; Beat 2 (strobe 1): Negativo invertido + corte en contrast_color
+			float bw = mix(bw_raw, 1.0 - bw_raw, is_beat2);
 			bw = mix(bw, 1.0 - bw, max(ink_contour * 0.95, spikes * 0.85));
 
 			vec3 pitch_black = vec3(0.0, 0.0, 0.0);
 			vec3 blinding_white = vec3(1.85, 1.85, 1.92);
 			vec3 sakuga_bw = mix(pitch_black, blinding_white, step(0.5, bw));
 
-			// Solo un corte quirúrgico del color acento en bordes de máxima saturación
 			float chroma = max(src.r, max(src.g, src.b)) - min(src.r, min(src.g, src.b));
-			float slash_accent = step(0.48, chroma) * ink_contour;
-			out_rgb = mix(sakuga_bw, accent_color.rgb * accent_hdr_boost * 1.25, slash_accent);
+			float slash_edge = step(0.42, chroma) * ink_contour;
+
+			// En Beat 2, añadir un tajo diagonal quirúrgico cruzando center_uv en el color contrastante de la skin
+			vec2 rel = (SCREEN_UV - center_uv) * aspect;
+			float diag_dist = abs(rel.x * 0.44 + rel.y * 0.90);
+			float diag_slash = (1.0 - step(0.022, diag_dist)) * is_beat2;
+			vec3 slash_col = mix(accent_color.rgb, contrast_color.rgb, is_beat2) * accent_hdr_boost * 1.35;
+			out_rgb = mix(sakuga_bw, slash_col, clamp(max(slash_edge, diag_slash), 0.0, 1.0));
 		} else if (effect_phase == 2) {
-			// Fase 2: Fractura de Cristal Obsidiana (Voronoi GPU + Facetas B/N Filosas + Grietas Carmesí/Amatista HDR)
+			// Fase 2 (Beat 3): Fractura de Cristal Obsidiana (Voronoi GPU + Facetas B/N Filosas + Grietas Skin/Contrast HDR)
 			vec4 vor = voronoi_shatter(SCREEN_UV - center_uv + vec2(0.5), aspect, shatter_cell_density);
 			float edge_d = vor.x;
 			float cell_h = vor.y;
@@ -162,16 +169,17 @@ void fragment() {
 			float luma = luma_of(shard_col);
 			float sharp_bw = step(bw_luma_threshold, luma);
 
-			// Alternar facetas obsidiana pura y facetas blancas filosas con borde de tinta
-			vec3 obsidian = vec3(0.005, 0.004, 0.012);
+			// Alternar facetas obsidiana alineadas con stage_bg_color y facetas blancas filosas
+			vec3 obsidian = stage_bg_color.rgb * 0.35 + vec3(0.004, 0.003, 0.010);
 			vec3 shard_lit = mix(vec3(1.70, 1.68, 1.78), accent_color.rgb * 1.55, step(0.72, cell_h));
 			vec3 shard_base = mix(obsidian, shard_lit, (1.0 - sharp_bw) * step(0.45, cell_h) + sharp_bw * 0.85);
 
-			// Grietas incandescentes ultra-filosas
+			// Grietas incandescentes ultra-filosas (accent + contrast_color/secondary)
 			float crack_w = shatter_crack_width_px * px.y * shatter_cell_density;
 			float crack_core = 1.0 - step(crack_w * 0.75, edge_d);
 			float crack_halo = (1.0 - smoothstep(crack_w * 0.75, crack_w * 2.8, edge_d)) * 0.65;
-			vec3 crack_tint = mix(accent_color.rgb, secondary_color.rgb, step(0.52, cell_h));
+			vec3 crack_alt = mix(secondary_color.rgb, contrast_color.rgb, 0.65);
+			vec3 crack_tint = mix(accent_color.rgb, crack_alt, step(0.52, cell_h));
 			vec3 crack_hdr = mix(crack_tint * accent_hdr_boost, vec3(2.0, 1.95, 2.05), crack_core * 0.70);
 
 			out_rgb = shard_base + crack_tint * crack_halo * accent_hdr_boost + crack_hdr * crack_core;

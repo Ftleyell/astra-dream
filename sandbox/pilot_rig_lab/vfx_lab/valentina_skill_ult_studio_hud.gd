@@ -177,7 +177,32 @@ static func build_hud(
 		_call_if_valid(on_changed)
 	)
 
-	# --- TAB 2: [Q] POSE WALLPAPER ENGINE ---
+	# --- TAB 2: [Q] POSE WALLPAPER ENGINE & ESCENARIO 3D ---
+	_add_check(tab_pose, "Escenario 3D Cel-Shaded ON/OFF", ult_cfg.enable_3d_stage, func(b: bool) -> void:
+		ult_cfg.enable_3d_stage = b
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_pose, "Vuelta Sandevistan (s)", 0.12, 1.20, 0.02, ult_cfg.sandevistan_sweep_sec, func(v: float) -> void:
+		ult_cfg.sandevistan_sweep_sec = v
+		ult_cfg.ensure_defaults()
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_pose, "Radio Órbita (px)", 60.0, 420.0, 5.0, ult_cfg.sandevistan_orbit_radius_px, func(v: float) -> void:
+		ult_cfg.sandevistan_orbit_radius_px = v
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_pose, "FOV Punch 3D (°)", 36.0, 96.0, 1.0, ult_cfg.stage_3d_fov_peak, func(v: float) -> void:
+		ult_cfg.stage_3d_fov_peak = v
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_pose, "Fusión Fondo Arte", 0.04, 0.45, 0.01, ult_cfg.art_bg_key_threshold, func(v: float) -> void:
+		ult_cfg.art_bg_key_threshold = v
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_pose, "Recolor Skin Arte", 0.0, 1.0, 0.02, ult_cfg.art_recolor_strength, func(v: float) -> void:
+		ult_cfg.art_recolor_strength = v
+		_call_if_valid(on_changed)
+	)
 	_add_enum_row(tab_pose, "Motor Cut-In [Q]", ["ARTE NUEVO (Wallpaper)", "LIVE_BANNER_25D (HD)", "RIG_BATTLE_POSE (18h)"], int(ult_cfg.render_mode), func(idx: int) -> void:
 		ult_cfg.render_mode = idx as PilotUltimateConfig.CutInRenderMode
 		_call_if_valid(on_changed)
@@ -291,6 +316,14 @@ static func build_hud(
 	)
 	_add_slider(tab_wings, "Persistencia Cortes", 0.12, 1.00, 0.02, ult_cfg.slash_trail_linger_sec, func(v: float) -> void:
 		ult_cfg.slash_trail_linger_sec = v
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_wings, "Peso Jefe Single-Target", 0.25, 1.00, 0.05, ult_cfg.single_target_boss_weight, func(v: float) -> void:
+		ult_cfg.single_target_boss_weight = v
+		_call_if_valid(on_changed)
+	)
+	_add_slider(tab_wings, "Bonus Consecutivo (+%/hit)", 0.0, 0.60, 0.02, ult_cfg.single_target_consecutive_bonus, func(v: float) -> void:
+		ult_cfg.single_target_consecutive_bonus = v
 		_call_if_valid(on_changed)
 	)
 	_add_check(tab_wings, "Purgar Orbes Danmaku", ult_cfg.purge_all_bullets, func(b: bool) -> void:

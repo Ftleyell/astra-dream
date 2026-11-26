@@ -194,6 +194,8 @@ func _test_skill_ult_workbench() -> void:
 	await _await_frames(2)
 
 	assert_true(is_instance_valid(wb.theater), "SkillUltWorkbench debe montar PilotCutInTheater")
+	assert_true(is_instance_valid(wb.sandevistan_radar), "SkillUltWorkbench debe montar UltimateSandevistanRadarController")
+	assert_true(is_instance_valid(wb.theater.get_stage_3d()), "SkillUltWorkbench debe montar Ultimate3DStageRig dentro del teatro")
 	assert_true(is_instance_valid(wb.sniper_vfx), "SkillUltWorkbench debe montar SniperWeakpointRailVFX")
 	assert_true(is_instance_valid(wb.wing_barrage), "SkillUltWorkbench debe montar UltimateWingBarrageController")
 	assert_true(is_instance_valid(wb.hud_cluster), "SkillUltWorkbench debe montar HUDAbilityClusterPreview")
@@ -202,14 +204,22 @@ func _test_skill_ult_workbench() -> void:
 	wb.toggle_guides()
 	assert_true(wb.alignment_overlay.show_guides, "Guías de alineación deben activarse en SkillUltWorkbench")
 
+	wb.apply_skin_by_index(1)
+	var pal: Dictionary = wb.get_active_palette()
+	assert_true(pal.has("accent") and pal.has("contrast_crosshair"), "SkillUltWorkbench debe resolver paleta contrastante por skin")
+	assert_true((pal["accent"] as Color) != (pal["contrast_crosshair"] as Color), "contrast_crosshair debe diferir de accent en SkillUltWorkbench")
+
 	wb.begin_skill_hold_aim()
 	assert_true(wb.sniper_vfx.is_holding_aim(), "Hold-to-Aim debe activarse en SkillUltWorkbench")
 	wb.release_skill_hold_aim()
 	assert_true(PauseArbitrator.is_reason_active(&"workbench_skill_cutin"), "Skill [R] debe adquirir token de pausa en PauseArbitrator")
 
+	var rig_pos_before: Vector2 = wb.get_rig().global_position
 	wb.trigger_ultimate_demo()
 	assert_true(PauseArbitrator.is_reason_active(&"workbench_ultimate_cutin"), "Ultimate [Q] debe adquirir token de pausa en PauseArbitrator")
+	assert_true(wb.sandevistan_radar.is_sweeping(), "Ultimate [Q] debe iniciar Acto 1 (Sandevistan + Radar Ocular)")
 	wb.stop_active_cutin()
+	assert_true(wb.get_rig().global_position.distance_to(rig_pos_before) < 0.01, "stop_active_cutin() debe restaurar rig.global_position tras Acto 1")
 	assert_true(not PauseArbitrator.is_reason_active(&"workbench_ultimate_cutin"), "stop_active_cutin() debe liberar token de Ultimate")
 	assert_true(not PauseArbitrator.is_reason_active(&"workbench_skill_cutin"), "stop_active_cutin() debe liberar token de Skill")
 

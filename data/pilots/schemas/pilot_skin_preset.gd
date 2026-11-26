@@ -9,3 +9,5 @@ extends Resource
 @export var panel_color: Color = Color(0.36, 0.38, 0.44, 1.0)
 @export var suit_dark_color: Color = Color(0.16, 0.15, 0.20, 1.0)
 @export var hair_color: Color = Color(0.86, 0.88, 0.94, 1.0)
+@export var crosshair_override_color: Color = Color(0.0, 0.0, 0.0, 0.0)
+@export var ult_bg_override_color: Color = Color(0.0, 0.0, 0.0, 0.0)

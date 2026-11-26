@@ -9,7 +9,7 @@ extends Node2D
 ##   3. RETURN_RECALL: Regresan volando en abanico hacia Valentina (cortando en retorno)
 ##      y se re-acoplan en su espalda con pulso SERAPH_BLOOM.
 
-signal blade_impacted(target: Node2D, world_pos: Vector2, blade_idx: int)
+signal blade_impacted(target: Node2D, world_pos: Vector2, blade_idx: int, effective_damage_mult: float)
 signal blades_returning()
 signal finisher_detonated(targets: Array[Node2D])
 signal barrage_finished()
@@ -97,6 +97,8 @@ func _build_blade_pool() -> void:
 			"fan_offset": Vector2.ZERO,
 			"hit_pos": Vector2.ZERO,
 			"target": null,
+			"consecutive_idx": 0,
+			"effective_damage_mult": 1.85,
 			"impacted": false,
 			"last_pos": Vector2.ZERO,
 			"trail": trail_arr,
@@ -152,6 +154,57 @@ func get_pool_size() -> int:
 	return _blade_nodes.size()
 
 
+func _pick_priority_target(targets: Array[Node2D]) -> Node2D:
+	var best: Node2D = null
+	var best_score: float = -1.0
+	for t_node: Node2D in targets:
+		if not is_instance_valid(t_node):
+			continue
+		var score: float = 1.0
+		var v_boss: Variant = t_node.get("is_boss")
+		if v_boss is bool and bool(v_boss):
+			score += 100000.0
+		var v_sel: Variant = t_node.get("is_selected")
+		if v_sel is bool and bool(v_sel):
+			score += 25000.0
+		var v_max_hp: Variant = t_node.get("max_hp")
+		if v_max_hp is float or v_max_hp is int:
+			score += float(v_max_hp)
+		if score > best_score:
+			best_score = score
+			best = t_node
+	return best
+
+
+func _assign_targets_smart_single_target(targets: Array[Node2D], count: int, boss_weight: float) -> Array[Node2D]:
+	var plan: Array[Node2D] = []
+	plan.resize(count)
+	if targets.is_empty():
+		return plan
+	if targets.size() == 1:
+		for i: int in range(count):
+			plan[i] = targets[0]
+		return plan
+
+	var primary: Node2D = _pick_priority_target(targets)
+	var others: Array[Node2D] = []
+	for t_node: Node2D in targets:
+		if t_node != primary and is_instance_valid(t_node):
+			others.append(t_node)
+
+	var clamped_w: float = clampf(boss_weight, 0.25, 1.0)
+	var primary_slots: int = clampi(int(round(float(count) * clamped_w)), 1, count)
+	if others.is_empty():
+		primary_slots = count
+
+	for i: int in range(count):
+		if i < primary_slots:
+			plan[i] = primary
+		else:
+			plan[i] = others[(i - primary_slots) % others.size()]
+	return plan
+
+
 func launch_barrage(origin_pos: Vector2, targets: Array[Node2D], cfg: PilotUltimateConfig, anchor_node: Node2D = null) -> void:
 	_cfg = cfg if cfg != null else PilotUltimateConfig.new()
 	_cfg.ensure_defaults()
@@ -170,6 +223,9 @@ func launch_barrage(origin_pos: Vector2, targets: Array[Node2D], cfg: PilotUltim
 
 	var count: int = clampi(_cfg.blade_count, 2, MAX_BLADES)
 	var half: int = maxi(1, count / 2)
+	var target_plan: Array[Node2D] = _assign_targets_smart_single_target(_assigned_targets, count, _cfg.single_target_boss_weight)
+	var hit_counter_by_id: Dictionary = {}
+	var is_pure_single_target: bool = (_assigned_targets.size() == 1)
 
 	for i: int in range(MAX_BLADES):
 		var st: Dictionary = _blade_states[i]
@@ -185,11 +241,14 @@ func launch_barrage(origin_pos: Vector2, targets: Array[Node2D], cfg: PilotUltim
 		var fan_offset: Vector2 = Vector2(side_sign * (38.0 + float(fan_idx) * 14.0), -26.0 + float(fan_idx) * 12.0)
 		var start_p: Vector2 = origin_pos + fan_offset
 
-		var tgt_node: Node2D = null
+		var tgt_node: Node2D = target_plan[i] if i < target_plan.size() else null
 		var tgt_pos: Vector2 = Vector2.ZERO
-		if not _assigned_targets.is_empty():
-			tgt_node = _assigned_targets[i % _assigned_targets.size()]
+		var consecutive_idx: int = 0
+		if is_instance_valid(tgt_node):
 			tgt_pos = tgt_node.global_position
+			var tid: int = tgt_node.get_instance_id()
+			consecutive_idx = int(hit_counter_by_id.get(tid, 0))
+			hit_counter_by_id[tid] = consecutive_idx + 1
 		else:
 			var radial_ang: float = (float(i) / float(count)) * TAU
 			tgt_pos = origin_pos + Vector2(cos(radial_ang), sin(radial_ang)) * 520.0
@@ -199,9 +258,20 @@ func launch_barrage(origin_pos: Vector2, targets: Array[Node2D], cfg: PilotUltim
 		var dir_n: Vector2 = to_tgt / dist
 		var perp: Vector2 = Vector2(-dir_n.y, dir_n.x)
 
+		# En convergencia 100% single-target, abrir 12 arcos radiales distintos para rodear al jefe
+		var mid_p: Vector2 = Vector2.ZERO
+		var apex_p: Vector2 = Vector2.ZERO
 		var curve_sign: float = 1.0 if (i % 2 == 0) else -1.0
-		var mid_p: Vector2 = (start_p + tgt_pos) * 0.5 + perp * (_cfg.blade_arc_curvature_px * curve_sign)
-		var apex_p: Vector2 = tgt_pos + dir_n * 210.0
+		if is_pure_single_target:
+			var converge_ang: float = (float(i) / float(count)) * TAU
+			var ring_dir := Vector2(cos(converge_ang), sin(converge_ang))
+			mid_p = tgt_pos + ring_dir * maxf(_cfg.blade_arc_curvature_px * 1.45, 165.0)
+			apex_p = tgt_pos - ring_dir * 225.0
+		else:
+			mid_p = (start_p + tgt_pos) * 0.5 + perp * (_cfg.blade_arc_curvature_px * curve_sign)
+			apex_p = tgt_pos + dir_n * 210.0
+
+		var eff_mult: float = _cfg.blade_damage_mult * (1.0 + float(consecutive_idx) * _cfg.single_target_consecutive_bonus)
 
 		st["stage"] = BladeStage.OUTBOUND
 		st["delay"] = float(i) * _cfg.blade_launch_stagger_sec
@@ -216,6 +286,8 @@ func launch_barrage(origin_pos: Vector2, targets: Array[Node2D], cfg: PilotUltim
 		st["fan_offset"] = fan_offset
 		st["hit_pos"] = tgt_pos
 		st["target"] = tgt_node
+		st["consecutive_idx"] = consecutive_idx
+		st["effective_damage_mult"] = eff_mult
 		st["impacted"] = false
 		st["last_pos"] = start_p
 		st["trail_len"] = 0
@@ -310,7 +382,8 @@ func _process(delta: float) -> void:
 					"max_age": _cfg.slash_trail_linger_sec if _cfg != null else 0.40,
 				})
 				_bursts.append({"pos": hit_p, "age": 0.0, "max_age": 0.28, "is_finisher": false})
-				blade_impacted.emit(tgt_node, hit_p, i)
+				var eff_mult: float = float(st.get("effective_damage_mult", _cfg.blade_damage_mult if _cfg != null else 1.85))
+				blade_impacted.emit(tgt_node, hit_p, i, eff_mult)
 
 			if t >= 1.0:
 				st["stage"] = BladeStage.APEX_TURN

@@ -27,6 +27,22 @@ enum FrameComposition {
 @export var energy_per_graze: float = 1.8
 @export var passive_regen_per_sec: float = 0.5
 
+@export_group("Acto 1: Vuelta Sandevistan y Radar Ocular")
+@export var sandevistan_sweep_sec: float = 0.46
+@export var sandevistan_orbit_radius_px: float = 195.0
+@export var sandevistan_turns: float = 1.0
+@export var radar_ring_max_radius_px: float = 920.0
+@export var crosshair_scale: float = 1.0
+
+@export_group("Acto 2: Escenario 3D Cel-Shaded y Fusión Arte")
+@export var enable_3d_stage: bool = true
+@export var stage_3d_fov_start: float = 42.0
+@export var stage_3d_fov_peak: float = 68.0
+@export var stage_3d_fov_snap: float = 26.0
+@export var stage_3d_gyro_speed: float = 3.2
+@export var art_bg_key_threshold: float = 0.16
+@export var art_recolor_strength: float = 0.88
+
 @export_group("Marco Animado Wallpaper Engine (Cut-In)")
 @export var cutin_art_path: String = "res://assets/pilots/valentina_v2/abilities/valentina_v2_ultimate_cutin.jpg"
 @export var render_mode: CutInRenderMode = CutInRenderMode.CUSTOM_CUTIN_ART
@@ -64,6 +80,8 @@ enum FrameComposition {
 @export var shatter_refraction_px: float = 14.0
 @export var radial_speedlines_strength: float = 0.62
 @export var chromatic_aberration_px: float = 9.5
+@export var shatter_3d_shard_count: int = 28
+@export var sakuga_3d_spike_count: int = 24
 
 @export_group("Descarga de las 12 Alas y Sobrecarga Serafín")
 @export var blade_count: int = 12
@@ -81,6 +99,8 @@ enum FrameComposition {
 @export var purge_all_bullets: bool = true
 @export var overdrive_duration_sec: float = 4.0
 @export var overdrive_attack_speed_bonus: float = 0.30
+@export var single_target_boss_weight: float = 0.67
+@export var single_target_consecutive_bonus: float = 0.15
 
 
 func ensure_defaults() -> void:
@@ -116,3 +136,22 @@ func ensure_defaults() -> void:
 	proc_coefficient_per_blade = clampf(proc_coefficient_per_blade, 0.0, 2.0)
 	overdrive_duration_sec = clampf(overdrive_duration_sec, 0.0, 15.0)
 	overdrive_attack_speed_bonus = clampf(overdrive_attack_speed_bonus, 0.0, 1.5)
+	sandevistan_sweep_sec = clampf(sandevistan_sweep_sec, 0.12, 1.50)
+	sandevistan_orbit_radius_px = clampf(sandevistan_orbit_radius_px, 40.0, 600.0)
+	sandevistan_turns = clampf(sandevistan_turns, 0.25, 3.0)
+	radar_ring_max_radius_px = clampf(radar_ring_max_radius_px, 240.0, 2400.0)
+	crosshair_scale = clampf(crosshair_scale, 0.4, 2.5)
+	stage_3d_fov_start = clampf(stage_3d_fov_start, 18.0, 90.0)
+	stage_3d_fov_peak = clampf(stage_3d_fov_peak, 24.0, 115.0)
+	stage_3d_fov_snap = clampf(stage_3d_fov_snap, 14.0, 75.0)
+	stage_3d_gyro_speed = clampf(stage_3d_gyro_speed, 0.2, 12.0)
+	art_bg_key_threshold = clampf(art_bg_key_threshold, 0.02, 0.55)
+	art_recolor_strength = clampf(art_recolor_strength, 0.0, 1.0)
+	shatter_3d_shard_count = clampi(shatter_3d_shard_count, 4, 48)
+	sakuga_3d_spike_count = clampi(sakuga_3d_spike_count, 4, 48)
+	single_target_boss_weight = clampf(single_target_boss_weight, 0.25, 1.0)
+	single_target_consecutive_bonus = clampf(single_target_consecutive_bonus, 0.0, 1.0)
+
+
+func get_full_timestop_sec() -> float:
+	return sandevistan_sweep_sec + total_timestop_sec

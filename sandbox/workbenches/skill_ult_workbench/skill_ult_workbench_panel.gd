@@ -87,7 +87,36 @@ static func build(parent: Node, wb: Node) -> Dictionary:
 		wb.notify_config_changed()
 	)
 
-	UIKitScript.add_section(vbox, "Ultimate [Q] — Pose & Impact Frames")
+	UIKitScript.add_section(vbox, "Ultimate [Q] — 4 Actos (3D + Sandevistan)")
+	UIKitScript.add_slider(vbox, "Vuelta Sandevistan (s)", 0.12, 1.20, 0.02, ult_cfg.sandevistan_sweep_sec, func(v: float) -> void:
+		ult_cfg.sandevistan_sweep_sec = v
+		ult_cfg.ensure_defaults()
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_slider(vbox, "Radio Órbita (px)", 60.0, 420.0, 5.0, ult_cfg.sandevistan_orbit_radius_px, func(v: float) -> void:
+		ult_cfg.sandevistan_orbit_radius_px = v
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_check(vbox, "Escenario 3D Cel-Shaded ON/OFF", ult_cfg.enable_3d_stage, func(b: bool) -> void:
+		ult_cfg.enable_3d_stage = b
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_slider(vbox, "FOV Punch 3D (°)", 36.0, 96.0, 1.0, ult_cfg.stage_3d_fov_peak, func(v: float) -> void:
+		ult_cfg.stage_3d_fov_peak = v
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_slider(vbox, "Fusión Fondo Arte", 0.04, 0.45, 0.01, ult_cfg.art_bg_key_threshold, func(v: float) -> void:
+		ult_cfg.art_bg_key_threshold = v
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_slider(vbox, "Recolor Skin Arte", 0.0, 1.0, 0.02, ult_cfg.art_recolor_strength, func(v: float) -> void:
+		ult_cfg.art_recolor_strength = v
+		wb.notify_config_changed()
+	)
+	UIKitScript.add_slider(vbox, "Bonus Single-Target", 0.0, 0.60, 0.02, ult_cfg.single_target_consecutive_bonus, func(v: float) -> void:
+		ult_cfg.single_target_consecutive_bonus = v
+		wb.notify_config_changed()
+	)
 	var opt_ult_mode: OptionButton = UIKitScript.add_option(
 		vbox,
 		"Motor [Q]",

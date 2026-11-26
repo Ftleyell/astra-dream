@@ -24,6 +24,7 @@
 | **Hub 3D Embebido en `MainGame` + Astral Glide-Hop (`GaitStyle.ASTRAL_GLIDE_HOP`)** | **Cerrado (Prod.)** | `scenes/combat/controllers/combat_hub_session_controller.gd`, `scenes/ui/hub/astral_station/astral_station_hub.gd`, `scenes/combat/player/{player_rig_v2_controller,hub_landing_ripple_vfx}.gd`, `scenes/pilots/rig/planar_rig_grounded_evaluator.gd`, `data/pilots/valentina_v2/valentina_v2_grounded_locomotion.tres` *(legacy: `hub_rig_avatar_3d.gd`, `hub_world.tscn`)* | [`HUB_3D_REWORK_BLUEPRINT.md`](HUB_3D_REWORK_BLUEPRINT.md) · [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Skins 100% por Shaders (`pilot` / `wings` / `weapon`)** | **Cerrado (Fase 4)** | `data/pilots/schemas/{shader_skin_entry,pilot_shader_skin_catalog}.gd`, `data/pilots/valentina_v2/valentina_v2_skin_catalog.tres`, `core/systems/cosmetics_manager.gd` | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
 | **Combate In-Game (`PlayerRigV2Controller`)** | **Cerrado (Fase 5)** | `scenes/combat/player/player_rig_v2_controller.gd`, `data/pilots/valentina_v2/valentina_v2_combat_rig.tres`, Twin-Stick 360°, `CosmicLightingSampler`, Sobre-Enfoque y 1–4 Armas | [`VALENTINA_V2_INTEGRATION_MASTER_PLAN.md`](VALENTINA_V2_INTEGRATION_MASTER_PLAN.md) |
+| **Skill [R] & Ultimate [Q] en 4 Actos (3D + Sandevistan + Skin-Contrast)** | **Cerrado (Fase 1 Prod. + Lab)** | `scenes/pilots/vfx/abilities/{pilot_skin_palette_resolver,ultimate_sandevistan_radar_controller,ultimate_3d_stage_rig,pilot_cutin_theater,sniper_weakpoint_rail_vfx,ultimate_wing_barrage_controller}.gd`, `scenes/pilots/shaders/{cutin_skin_composite,fullscreen_impact_shatter,cutin_window_mask}.gdshader`, `data/pilots/valentina_v2/valentina_v2_{skill,ultimate}.tres`, `sandbox/workbenches/skill_ult_workbench/`, `vfx_lab/valentina_skill_ult_studio.tscn` | [`pilot_rig_lab.md`](../.agents/rules/pilot_rig_lab.md) |
 | **Workbenches & Combat Gym (`F6`)** | **Cerrado (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn`, `hud_workbench/`, `dialogue_workbench/`, `character_select_workbench/`, `skill_ult_workbench/`, `sandbox/hub_art_lab/hub_locomotion_lab/`, `sandbox/combat_gym/combat_gym.tscn` | [`DOMAIN_MAP.md`](DOMAIN_MAP.md) |
 | **Fábrica Multi-Piloto v2** | **Listo (Cast v2)** | `sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py`, `sandbox/pilot_rig_lab/shared/pilot_lab_selector.gd`, Playbook v2 | [`PILOT_CREATION_PIPELINE.md`](PILOT_CREATION_PIPELINE.md) |
 | **Backup Inmutable de Baseline** | **Cerrado** | `sandbox/pilot_rig_lab/backups/valentina_v2_clean_baseline/` + tag Git `valentina-v2-clean-baseline` | [`VALENTINA_V2_RIG_REFERENCE.md`](VALENTINA_V2_RIG_REFERENCE.md) |
@@ -46,10 +47,12 @@
 8. **Laboratorio 3D Cel-Shaded / Alas 3D (3D Lab):** `3d_lab/valentina_3d_lab.tscn`
 9. **Laboratorio de Iluminación Cósmica:** `cosmos_lighting_lab/valentina_cosmos_lab.tscn`
 10. **Calibrador de Anclas y Huesos:** `calibrator/rig_calibrator.tscn`
+11. **Laboratorio Skill [R] & Ultimate [Q] (4 Actos 3D + Sandevistan):** `vfx_lab/valentina_skill_ult_studio.tscn`
 
 ### Comandos Rápidos de Verificación (`tests/sandbox/` & `tests/unit/`)
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_skill_ult_studio"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym" -TimeoutSeconds 35
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30

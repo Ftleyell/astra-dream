@@ -9,6 +9,8 @@ const HUDScene: PackedScene = preload("res://scenes/ui/hud/hud.tscn")
 const PlanarRigScript = preload("res://scenes/pilots/rig/planar_combat_rig.gd")
 const OrbitalRingScript = preload("res://scenes/pilots/weapons/orbital_weapon_ring_controller.gd")
 const CutInTheaterScript = preload("res://scenes/pilots/vfx/abilities/pilot_cutin_theater.gd")
+const SandevistanRadarScript = preload("res://scenes/pilots/vfx/abilities/ultimate_sandevistan_radar_controller.gd")
+const PaletteResolverScript = preload("res://scenes/pilots/vfx/abilities/pilot_skin_palette_resolver.gd")
 const SniperVFXScript = preload("res://scenes/pilots/vfx/abilities/sniper_weakpoint_rail_vfx.gd")
 const WingBarrageScript = preload("res://scenes/pilots/vfx/abilities/ultimate_wing_barrage_controller.gd")
 const HUDClusterScript = preload("res://scenes/ui/hud/components/hud_ability_cluster_preview.gd")
@@ -73,6 +75,7 @@ class _WorkbenchDummy extends Node2D:
 
 
 var theater: PilotCutInTheater = null
+var sandevistan_radar: UltimateSandevistanRadarController = null
 var sniper_vfx: SniperWeakpointRailVFX = null
 var wing_barrage: UltimateWingBarrageController = null
 var hud_cluster: HUDAbilityClusterPreview = null
@@ -98,7 +101,10 @@ var _profile: PilotRigProfile = null
 var _skill_cfg: PilotSkillConfig = null
 var _ult_cfg: PilotUltimateConfig = null
 var _skins: Array[PilotSkinPreset] = []
+var _active_palette: Dictionary = {}
 var _active_accent: Color = Color(0.98, 0.14, 0.34, 1.0)
+var _active_contrast: Color = Color(0.08, 0.96, 0.88, 1.0)
+var _marked_ult_targets: Array[Node2D] = []
 
 var _dummies: Array[_WorkbenchDummy] = []
 var _selected_dummy: _WorkbenchDummy = null
@@ -238,10 +244,16 @@ func _build_stage() -> void:
 	sniper_vfx.shot_impacted.connect(_on_sniper_impacted)
 	add_child(sniper_vfx)
 
+	sandevistan_radar = SandevistanRadarScript.new()
+	sandevistan_radar.name = "UltimateSandevistanRadarController"
+	sandevistan_radar.radar_sweep_completed.connect(_on_radar_sweep_completed)
+	add_child(sandevistan_radar)
+
 	wing_barrage = WingBarrageScript.new()
 	wing_barrage.name = "UltimateWingBarrageController"
 	wing_barrage.blade_impacted.connect(_on_blade_impacted)
 	wing_barrage.finisher_detonated.connect(_on_finisher_detonated)
+	wing_barrage.barrage_finished.connect(_on_barrage_finished)
 	add_child(wing_barrage)
 
 	theater = CutInTheaterScript.new()
@@ -259,6 +271,8 @@ func _build_stage() -> void:
 	hud_cluster = HUDClusterScript.new()
 	hud_cluster.name = "HUDAbilityClusterPreview"
 	_hud_preview_layer.add_child(hud_cluster)
+
+	_apply_resolved_palette(null)
 
 
 func _register_alignment_targets() -> void:
@@ -437,14 +451,38 @@ func trigger_ultimate_demo() -> void:
 		return
 	_holding_skill_aim = false
 	_release_all_cutin_pauses()
+	if theater.is_playing():
+		theater.stop_and_hide()
+	if sandevistan_radar != null:
+		sandevistan_radar.clear_marks_and_stop(true)
+	_marked_ult_targets.clear()
 	_sim_ult_energy = 0.0
 	if _use_pause_arbitrator:
 		PauseArbitrator.acquire(PAUSE_TOKEN_ULT)
-	theater.play_ultimate_cutin(_ult_cfg, _world_to_screen_uv(_rig.global_position))
-	_set_status("Ultimate [Q] disparada (Time-Stop %.2fs)" % _ult_cfg.total_timestop_sec)
+
+	var targets: Array[Node2D] = []
+	for d: _WorkbenchDummy in _dummies:
+		if is_instance_valid(d):
+			targets.append(d)
+
+	if sandevistan_radar != null:
+		sandevistan_radar.start_sweep(_rig, _rig.global_position, targets, _ult_cfg, _active_palette)
+		_set_status("Ultimate [Q] Acto 1: Sandevistan + Radar (%.2fs + %.2fs)" % [_ult_cfg.sandevistan_sweep_sec, _ult_cfg.total_timestop_sec])
+	else:
+		theater.play_ultimate_cutin(_ult_cfg, _world_to_screen_uv(_rig.global_position))
+		_set_status("Ultimate [Q] disparada (Time-Stop %.2fs)" % _ult_cfg.total_timestop_sec)
+
+
+func _on_radar_sweep_completed(marked_targets: Array[Node2D]) -> void:
+	_marked_ult_targets = marked_targets
+	if theater != null and _rig != null:
+		theater.play_ultimate_cutin(_ult_cfg, _world_to_screen_uv(_rig.global_position))
+		_set_status("Ultimate [Q] Actos 2-3: Escenario 3D + 3 Beats (%d marcados)" % _marked_ult_targets.size())
 
 
 func stop_active_cutin() -> void:
+	if sandevistan_radar != null:
+		sandevistan_radar.clear_marks_and_stop(true)
 	if theater != null:
 		theater.stop_and_hide()
 	_release_all_cutin_pauses()
@@ -463,9 +501,14 @@ func _on_cutin_release(mode_name: StringName) -> void:
 			_clear_orbs_along_corridor(_rig.global_position, _pending_skill_pos, _skill_cfg.bullet_clear_half_width_px)
 	elif mode_name == &"ultimate":
 		var targets: Array[Node2D] = []
-		for d: _WorkbenchDummy in _dummies:
-			if is_instance_valid(d):
-				targets.append(d)
+		if not _marked_ult_targets.is_empty():
+			for mt: Node2D in _marked_ult_targets:
+				if is_instance_valid(mt):
+					targets.append(mt)
+		if targets.is_empty():
+			for d: _WorkbenchDummy in _dummies:
+				if is_instance_valid(d):
+					targets.append(d)
 		if _ult_cfg.purge_all_bullets:
 			for orb: Dictionary in _danmaku_orbs:
 				orb["alive"] = false
@@ -482,15 +525,22 @@ func _on_sniper_impacted(target: Node2D, _hit_pos: Vector2, _beam_end: Vector2) 
 		(target as _WorkbenchDummy).apply_hit(180.0 * _skill_cfg.damage_multiplier * 0.25)
 
 
-func _on_blade_impacted(target: Node2D, _world_pos: Vector2, _blade_idx: int) -> void:
+func _on_blade_impacted(target: Node2D, _world_pos: Vector2, _blade_idx: int, effective_damage_mult: float = 1.85) -> void:
+	if sandevistan_radar != null:
+		sandevistan_radar.clear_crosshair_for_target(target)
 	if target is _WorkbenchDummy:
-		(target as _WorkbenchDummy).apply_hit(65.0 * _ult_cfg.blade_damage_mult * 0.35)
+		(target as _WorkbenchDummy).apply_hit(65.0 * effective_damage_mult * 0.35)
 
 
 func _on_finisher_detonated(targets: Array[Node2D]) -> void:
 	for t: Node2D in targets:
 		if t is _WorkbenchDummy:
 			(t as _WorkbenchDummy).apply_hit(120.0 * _ult_cfg.shatter_finisher_mult * 0.35)
+
+
+func _on_barrage_finished() -> void:
+	if sandevistan_radar != null:
+		sandevistan_radar.clear_all_marks()
 
 
 func _clear_orbs_along_corridor(a: Vector2, b: Vector2, half_w: float) -> void:
@@ -550,6 +600,8 @@ func toggle_freeze() -> void:
 	_is_frozen = not _is_frozen
 	if theater != null:
 		theater.set_frozen(_is_frozen)
+	if sandevistan_radar != null:
+		sandevistan_radar.set_frozen(_is_frozen)
 	_set_status("Congelado: %s" % ("ON" if _is_frozen else "OFF"))
 
 
@@ -557,6 +609,8 @@ func set_playback_speed(spd: float) -> void:
 	_playback_speed = clampf(spd, 0.05, 2.0)
 	if theater != null:
 		theater.set_time_scale(_playback_speed)
+	if sandevistan_radar != null:
+		sandevistan_radar.set_time_scale(_playback_speed)
 	if sniper_vfx != null:
 		sniper_vfx.set_time_scale(_playback_speed)
 	if wing_barrage != null:
@@ -573,11 +627,29 @@ func set_use_pause_arbitrator(enabled: bool) -> void:
 func scrub_timeline(val: float) -> void:
 	if _ignore_scrubber_cb or theater == null:
 		return
+	var full_sec: float = _ult_cfg.get_full_timestop_sec() if _ult_cfg != null else 2.01
+	var act1_ratio: float = clampf((_ult_cfg.sandevistan_sweep_sec if _ult_cfg != null else 0.46) / maxf(full_sec, 0.01), 0.05, 0.50)
+	if val < act1_ratio and sandevistan_radar != null:
+		_is_frozen = true
+		sandevistan_radar.set_frozen(true)
+		if theater.is_playing():
+			theater.stop_and_hide()
+		if not sandevistan_radar.is_sweeping():
+			var targets: Array[Node2D] = []
+			for d: _WorkbenchDummy in _dummies:
+				if is_instance_valid(d):
+					targets.append(d)
+			sandevistan_radar.start_sweep(_rig, _rig.global_position, targets, _ult_cfg, _active_palette)
+		sandevistan_radar.scrub_sweep(val / maxf(act1_ratio, 0.001))
+		return
+	if sandevistan_radar != null and sandevistan_radar.is_sweeping():
+		sandevistan_radar.scrub_sweep(1.0)
+	var act23_t: float = clampf((val - act1_ratio) / maxf(1.0 - act1_ratio, 0.001), 0.0, 1.0)
 	if not theater.is_playing():
 		_is_frozen = true
 		theater.set_frozen(true)
 		theater.play_ultimate_cutin(_ult_cfg, _world_to_screen_uv(_rig.global_position))
-	theater.scrub_to_normalized(val)
+	theater.scrub_to_normalized(act23_t)
 
 
 func refill_energy() -> void:
@@ -592,31 +664,53 @@ func set_hud_preview_style(style_idx: int) -> void:
 	_set_status("HUD Preview: Estilo #%d" % (style_idx + 1))
 
 
+func _apply_resolved_palette(sk: PilotSkinPreset) -> void:
+	_active_palette = PaletteResolverScript.resolve(sk)
+	_active_accent = _active_palette["accent"] as Color
+	_active_contrast = _active_palette["contrast_crosshair"] as Color
+	var suit_dark: Color = sk.suit_dark_color if (sk != null and not sk.is_base_skin) else Color(0.06, 0.04, 0.11, 1.0)
+	if theater != null:
+		theater.set_skin_presets(sk, 3, sk, 3)
+		theater.set_palette(_active_palette, suit_dark)
+	if sandevistan_radar != null:
+		sandevistan_radar.set_palette(_active_palette)
+	if sniper_vfx != null:
+		sniper_vfx.set_palette(_active_accent, _active_contrast)
+	if wing_barrage != null:
+		wing_barrage.set_palette(_active_accent, _active_contrast)
+	if hud_cluster != null:
+		hud_cluster.set_palette(_active_accent, _active_contrast)
+
+
 func apply_skin_by_index(idx: int) -> void:
 	if _skins.is_empty():
 		return
 	var sk: PilotSkinPreset = _skins[clampi(idx, 0, _skins.size() - 1)]
-	_active_accent = Color(0.98, 0.14, 0.34, 1.0) if (sk == null or sk.is_base_skin) else sk.accent_color
 	if _rig != null and sk != null:
 		_rig.apply_skin_preset(sk, 3)
-	if theater != null:
-		theater.set_skin_presets(sk, 3, sk, 3)
-	if sniper_vfx != null:
-		sniper_vfx.set_palette(_active_accent, _ult_cfg.secondary_crack_color)
-	if wing_barrage != null:
-		wing_barrage.set_palette(_active_accent, _ult_cfg.secondary_crack_color)
-	if hud_cluster != null:
-		hud_cluster.set_palette(_active_accent, _ult_cfg.secondary_crack_color)
-	_set_status("Skin aplicada: %s" % (sk.label if sk != null else "Base"))
+	_apply_resolved_palette(sk)
+	_set_status("Skin: %s | Accent #%s / Contrast #%s" % [
+		sk.label if sk != null else "Base",
+		_active_accent.to_html(false),
+		_active_contrast.to_html(false),
+	])
 
 
 func notify_config_changed() -> void:
 	if theater != null:
 		theater.refresh_live_config()
 	if sniper_vfx != null:
-		sniper_vfx.set_palette(_active_accent, _ult_cfg.secondary_crack_color)
+		sniper_vfx.set_palette(_active_accent, _active_contrast)
 	if wing_barrage != null:
-		wing_barrage.set_palette(_active_accent, _ult_cfg.secondary_crack_color)
+		wing_barrage.set_palette(_active_accent, _active_contrast)
+
+
+func get_rig() -> PlanarCombatRig:
+	return _rig
+
+
+func get_active_palette() -> Dictionary:
+	return _active_palette
 
 
 func save_configs_to_disk() -> void:
@@ -686,7 +780,8 @@ func _world_to_screen_uv(world_pos: Vector2) -> Vector2:
 
 
 func _process(delta: float) -> void:
-	var world_paused: bool = _is_frozen or PauseArbitrator.is_system_paused() or (theater != null and theater.is_playing())
+	var radar_busy: bool = sandevistan_radar != null and sandevistan_radar.is_sweeping()
+	var world_paused: bool = _is_frozen or PauseArbitrator.is_system_paused() or radar_busy or (theater != null and theater.is_playing())
 	var hold_mult: float = (_skill_cfg.hold_aim_time_scale if (_holding_skill_aim and _skill_cfg != null) else 1.0)
 	var dt: float = 0.0 if world_paused else (clampf(delta, 0.0, 0.05) * _playback_speed * hold_mult)
 	_sim_time += dt
@@ -744,10 +839,19 @@ func _refresh_metrics_label() -> void:
 	var lbl: Label = _panel_refs.get("metrics_label") as Label
 	if not is_instance_valid(lbl):
 		return
-	var phase_s: String = theater.get_current_phase_name() if theater != null else "IDLE"
+	var phase_s: String = "ACT1_SANDEVISTAN_RADAR" if (sandevistan_radar != null and sandevistan_radar.is_sweeping()) else (theater.get_current_phase_name() if theater != null else "IDLE")
 	var pa_s: String = "PAUSED" if PauseArbitrator.is_system_paused() else "FREE"
 	var tgt_s: String = _selected_dummy.dummy_name if is_instance_valid(_selected_dummy) else "Cursor"
-	lbl.text = "Fase: %s | Pause: %s\nBlanco: %s | Ult: %d%%" % [phase_s, pa_s, tgt_s, int(roundf(_sim_ult_energy))]
+	var locks: int = sandevistan_radar.get_marked_count() if sandevistan_radar != null else 0
+	lbl.text = "Fase: %s | Pause: %s\nBlanco: %s | Locks: %d | Ult: %d%%\nAccent #%s / Contrast #%s" % [
+		phase_s,
+		pa_s,
+		tgt_s,
+		locks,
+		int(roundf(_sim_ult_energy)),
+		_active_accent.to_html(false),
+		_active_contrast.to_html(false),
+	]
 
 
 func _draw() -> void:
