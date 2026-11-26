@@ -182,6 +182,27 @@ func _apply_title_or_hub_suppression(p_main_game: MainGame, p_initial_request: R
 	return true
 
 
+func reapply_title_suppression() -> void:
+	if main_game == null:
+		return
+	if main_game.enemy_spawner != null:
+		main_game.enemy_spawner.set_spawning_paused(true)
+	if main_game.space_debris_manager != null and main_game.space_debris_manager.space_object_spawner != null:
+		main_game.space_debris_manager.space_object_spawner.set_hub_suppressed(true)
+	if main_game.active_navigator_controller != null and main_game.active_navigator_controller.has_method("set_hub_suppressed"):
+		main_game.active_navigator_controller.set_hub_suppressed(true)
+	if main_game.satellite_coordinator != null and main_game.satellite_coordinator.has_method("set_hub_suppressed"):
+		main_game.satellite_coordinator.set_hub_suppressed(true)
+	if main_game.crisis_manager != null and main_game.crisis_manager.has_method("set_hub_suppressed"):
+		main_game.crisis_manager.set_hub_suppressed(true)
+	if main_game.chest_director != null and main_game.chest_director.has_method("set_hub_suppressed"):
+		main_game.chest_director.set_hub_suppressed(true)
+	if main_game.loot_coordinator != null and main_game.loot_coordinator.has_method("set_hub_suppressed"):
+		main_game.loot_coordinator.set_hub_suppressed(true)
+	if is_instance_valid(main_game.hud):
+		main_game.hud.visible = false
+
+
 func _build_embedded_hub_nodes() -> bool:
 	if main_game == null:
 		return false

@@ -10,10 +10,10 @@ La pantalla de título, la materialización de la Estación Astral y el combate 
 
 ```text
 project.godot (main_scene)
-  └─> title_screen.tscn (Boot Preloader silencioso sin Singularidad, threaded load)
-        └─> MainGame (EntryMode.TITLE · fade-in continuo desde vacío cósmico)
+  └─> title_screen.tscn (Estrella Semilla serena GENESIS_IDLE phase=3 + threaded load)
+        └─> MainGame (EntryMode.TITLE · Barrera 2 frames <50ms → Big Bang 60 FPS → Logo)
               ├─ TITLE_ACTIVE ──(JUGAR / Enter)──> HUB_MATERIALIZING ──> HUB_ACTIVE
-              │      ▲   └─(Pre-calentado diferido Hub 3D tras reveal)       │
+              │      ▲   └─(Pre-calentado 3 pasos: Assembler → Bootstrapper → Hub 3D)
               │      └────────────────(Botón "Título" / Seamless)───────────┤
               │                                                               ▼
               └─(REANUDAR INCURSIÓN)──> SceneTransition [Singularidad] ─> COMBAT_LIVE
@@ -22,8 +22,8 @@ project.godot (main_scene)
 
 | Estado / Modo | Responsable | Qué hace |
 |---|---|---|
-| **Boot Preloader** | [`title_screen.gd`](../scenes/ui/title_screen/title_screen.gd) | Carga `MainGame (EntryMode.TITLE)` en segundo plano con `ResourceLoader.load_threaded_request` **sin Singularidad**, evitando resets falsos ni cuelgues al abrir el juego. |
-| **`TITLE_ACTIVE`** | [`combat_title_session_controller.gd`](../scenes/combat/controllers/combat_title_session_controller.gd) | Fade-in continuo sobre el Cosmos vivo, ilumina el logo con `CosmicLightingSampler`, pre-calienta de forma diferida el Hub 3D al finalizar el reveal del logo y muestra `TitleMenuOverlay` (`JUGAR` siempre primero y con foco inicial para `[Enter]`, `REANUDAR INCURSIÓN` debajo si hay partida guardada, `AJUSTES`, `Notas del Parche`, `SALIR`). |
+| **Boot Preloader** | [`title_screen.gd`](../scenes/ui/title_screen/title_screen.gd) | Pinta estrella semilla serena (`GENESIS_IDLE`, `phase = 3`) y carga `MainGame` en segundo plano con `ResourceLoader.load_threaded_request` **sin Big Crunch**. |
+| **`TITLE_ACTIVE`** | [`combat_title_session_controller.gd`](../scenes/combat/controllers/combat_title_session_controller.gd) | Espera la **Barrera de Estabilización** (mínimo 4 frames + 2 consecutivos `< 50 ms`) mientras compila shaders en GPU detrás de `GENESIS_IDLE`, dispara el **Big Bang de nacimiento** y revela el logo en 4 capas + `TitleMenuOverlay` (`JUGAR` arriba con foco de `[Enter]`, `REANUDAR INCURSIÓN` debajo si hay partida guardada). Luego ejecuta en 3 pasos diferidos `CombatSceneAssembler → CombatBootstrapper → Hub 3D`. |
 | **`HUB_MATERIALIZING`** | `CombatTitleSessionController` + `AstralStationHub` | Disuelve el logo, desliza la cámara, materializa el Hub 3D del centro hacia afuera (`demat_invert = true`) y hace aterrizar a Valentina con Alas 3D y `HubLandingRippleVFX`. |
 | **`HUB_ACTIVE`** | [`combat_hub_session_controller.gd`](../scenes/combat/controllers/combat_hub_session_controller.gd) | Libre recorrido sobre el Hub 3D, estaciones/modales y `HubTutorialDirector` (primera visita o `? Guía` / `[F1]`). |
 | **`DEPARTING_DISSOLVE` → `COMBAT_LIVE`** | `CombatHubSessionController` | Despegue radial 8-dir sin pausa ni diálogo de prólogo; `CombatBootstrapper` otorga `+50` créditos iniciales de forma silenciosa en entradas directas. |
@@ -46,11 +46,12 @@ project.godot (main_scene)
 ## 3. Transición Singularidad (`SceneTransition`)
 
 - **Autoload:** [`core/autoloads/scene_transition.gd`](../core/autoloads/scene_transition.gd) delega en [`SingularityTransitionPresenter`](../core/systems/singularity_transition_presenter.gd) y [`singularity_transition.gdshader`](../shaders/ui/singularity_transition.gdshader).
-- **3 Fases sin texto ni barras:**
-  1. `Big Crunch`: contracción gravitacional del snapshot de pantalla hacia un punto blanco incandescente.
-  2. `Singularity Hold`: punto vivo absorbiendo partículas radiales mientras corre `ResourceLoader.load_threaded_request()`.
-  3. `Big Bang`: onda expansiva refractiva que revela la escena destino.
-- **Cuándo se usa:** únicamente al cambiar/recargar escena por reset real de universo (retorno al Hub o Título desde Combate/Pausa/Game Over y botón `REANUDAR INCURSIÓN`). El arranque frío desde `title_screen.tscn` y el paso `Título ↔ Hub ↔ Combate` ocurren de forma continua sin Singularidad ni pantalla de carga.
+- **4 Fases en [`singularity_transition.gdshader`](../shaders/ui/singularity_transition.gdshader):**
+  1. `Big Crunch` (`phase = 0`): contracción gravitacional del snapshot de pantalla hacia un punto blanco incandescente.
+  2. `Singularity Hold` (`phase = 1`): punto vivo absorbiendo partículas radiales mientras corre `ResourceLoader.load_threaded_request()`.
+  3. `Big Bang` (`phase = 2`): onda expansiva refractiva que revela el Cosmos / escena destino desde el centro.
+  4. `Genesis Idle` (`phase = 3`): estrella semilla serena en vacío negro sin partículas veloces usada exclusivamente en el Boot Preloader (`title_screen.gd`) y la Barrera de Estabilización antes de abrir el juego con `Big Bang`.
+- **Cuándo se usa el colapso completo:** únicamente al cambiar/recargar escena por reset real de universo (retorno al Hub o Título desde Combate/Pausa/Game Over y botón `REANUDAR INCURSIÓN`). El paso `Título ↔ Hub ↔ Combate` corre fluido sobre el mismo Cosmos Engine.
 - **Balance Data-Driven:** [`default_singularity_transition_config.tres`](../data/ui/default_singularity_transition_config.tres) y [`default_title_to_hub_sequence_config.tres`](../data/ui/default_title_to_hub_sequence_config.tres).
 
 ---

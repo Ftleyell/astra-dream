@@ -222,6 +222,7 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 	assert_true(mg.title_session_controller != null and mg.title_session_controller.is_title_active(), "Debe estar en TITLE_ACTIVE")
 	assert_true(not SceneTransition.is_transitioning, "El arranque a Title Screen no debe disparar SceneTransition/Singularidad")
 	assert_true(mg.hub_session_controller != null and (mg.hub_session_controller.display_sprite == null or not mg.hub_session_controller.display_sprite.visible), "Hub 3D debe diferirse/ocultarse en TITLE_ACTIVE inicial")
+	assert_true(int(mg.get("_deferred_title_assembly_stage")) == 0, "En EntryMode.TITLE el ensamblado de combate debe quedar diferido inicialmente")
 
 	# Acelerar secuencia Title -> Hub para verificación rápida en test
 	var fast_seq := mg.title_session_controller.sequence_config.duplicate(true) as TitleToHubSeqScript
@@ -233,6 +234,8 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 
 	SaveManager.set_hub_tutorial_completed(false)
 	mg.title_session_controller.play_title_to_hub_sequence()
+	assert_true(int(mg.get("_deferred_title_assembly_stage")) == 3, "play_title_to_hub_sequence debe completar todo el ensamblado diferido al entrar al Hub")
+	assert_true(mg.chest_director != null and mg.wave_pipeline != null, "ChestDirector y CombatWavePipeline deben quedar montados tras completar ensamblado diferido")
 	assert_true(mg.title_session_controller.is_materializing_hub(), "play_title_to_hub_sequence debe entrar a HUB_MATERIALIZING")
 
 	var start_wait: int = Time.get_ticks_msec()

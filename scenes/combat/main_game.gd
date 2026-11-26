@@ -99,6 +99,7 @@ var _auto_save_timer: float = 0.0
 var is_exiting_run: bool = false
 var is_wave_11_cleared: bool = false
 var is_endless_mode: bool = false
+var _deferred_title_assembly_stage: int = 0
 var _on_dialogue_finished_callback: Callable = Callable()
 
 # --- PROXIES COMPACTOS DE SUBSISTEMAS ---
@@ -214,23 +215,41 @@ func _ready() -> void:
 		add_to_group("main_game")
 		if enemy_spawner != null:
 			enemy_spawner.set_spawning_paused(true)
-		CombatBootstrapperScript.sync_character_loadout()
-		_setup_rival_queue()
-		CombatSceneAssemblerScript.assemble(self, player, hud, false)
-		CombatBootstrapperScript.launch_session(self, player, hud, true)
-		hub_session_controller = CombatHubSessionControllerScript.new() as CombatHubSessionControllerScript
-		hub_session_controller.name = "CombatHubSessionController"
-		add_child(hub_session_controller)
+		if is_instance_valid(hud):
+			hud.visible = false
+
 		if entry_mode == RunLaunchRequestScript.EntryMode.TITLE:
+			_deferred_title_assembly_stage = 0
+			if is_instance_valid(player):
+				player.visible = false
+				player.is_movement_suppressed = true
+				player.velocity = Vector2.ZERO
+			var bg_env: BaseSpaceEnvironment = get_node_or_null("SpaceBackground") as BaseSpaceEnvironment
+			if bg_env != null:
+				bg_env.set_camera_reference(camera)
+				bg_env.set_player_reference(player)
+				bg_env.set_environment_seed(run_seed)
+			hub_session_controller = CombatHubSessionControllerScript.new() as CombatHubSessionControllerScript
+			hub_session_controller.name = "CombatHubSessionController"
+			add_child(hub_session_controller)
 			hub_session_controller.prepare_hidden_for_title(self, active_launch_request)
 			title_session_controller = CombatTitleSessionControllerScript.new() as CombatTitleSessionControllerScript
 			title_session_controller.name = "CombatTitleSessionController"
 			add_child(title_session_controller)
 			title_session_controller.setup(self, hub_session_controller)
-			title_session_controller.enter_title_mode(true)
+			title_session_controller.enter_title_mode(true, true)
 		else:
+			_deferred_title_assembly_stage = 3
+			CombatBootstrapperScript.sync_character_loadout()
+			_setup_rival_queue()
+			CombatSceneAssemblerScript.assemble(self, player, hud, false)
+			CombatBootstrapperScript.launch_session(self, player, hud, true)
+			hub_session_controller = CombatHubSessionControllerScript.new() as CombatHubSessionControllerScript
+			hub_session_controller.name = "CombatHubSessionController"
+			add_child(hub_session_controller)
 			hub_session_controller.enter_hub_mode(self, active_launch_request)
 		return
+
 
 	var pending_req: RunLaunchRequestScript = RunLaunchRequestScript.consume_pending()
 	if pending_req != null:
@@ -260,6 +279,38 @@ func _ready() -> void:
 
 	if active_launch_request != null and active_launch_request.seamless_entry:
 		_apply_seamless_hub_entry()
+
+
+func run_next_deferred_title_assembly_step() -> bool:
+	if _deferred_title_assembly_stage >= 3:
+		return false
+	match _deferred_title_assembly_stage:
+		0:
+			CombatBootstrapperScript.sync_character_loadout()
+			_setup_rival_queue()
+			CombatSceneAssemblerScript.assemble(self, player, hud, false)
+			if hub_session_controller != null:
+				hub_session_controller.reapply_title_suppression()
+			_deferred_title_assembly_stage = 1
+			return true
+		1:
+			CombatBootstrapperScript.launch_session(self, player, hud, true)
+			if hub_session_controller != null:
+				hub_session_controller.reapply_title_suppression()
+			_deferred_title_assembly_stage = 2
+			return true
+		2:
+			if hub_session_controller != null:
+				hub_session_controller.ensure_embedded_hub_built_hidden()
+			_deferred_title_assembly_stage = 3
+			return false
+	_deferred_title_assembly_stage = 3
+	return false
+
+
+func ensure_deferred_title_assembly_complete() -> void:
+	while run_next_deferred_title_assembly_step():
+		pass
 
 
 func _apply_seamless_hub_entry() -> void:

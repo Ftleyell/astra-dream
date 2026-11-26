@@ -4,6 +4,7 @@ shader_type canvas_item;
 // phase = 0: BIG CRUNCH (colapso gravitacional de snapshot_tex a un punto blanco)
 // phase = 1: SINGULARITY_HOLD (vacío negro + punto blanco vivo + partículas radiales sin texto)
 // phase = 2: BIG_BANG (onda expansiva refractiva que revela la nueva escena desde el centro)
+// phase = 3: GENESIS_IDLE (estrella semilla serena en vacío negro, sin partículas rápidas, ideal para transición silenciosa al Big Bang)
 
 uniform sampler2D snapshot_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform bool has_snapshot = false;
@@ -120,7 +121,7 @@ void fragment() {
 		vec3 sing_col = _render_singularity_core(p_aspect, pulse, flare_pulse);
 		vec3 motes = _render_infall_particles(p_aspect, particle_density);
 		COLOR = vec4(sing_col + motes, 1.0);
-	} else {
+	} else if (phase == 2) {
 		// BIG BANG: onda expansiva luminosa que abre el vacío negro revelando el nuevo Cosmos
 		float t = clamp(progress, 0.0, 1.0);
 		float ease = 1.0 - pow(1.0 - t, 2.35);
@@ -146,5 +147,11 @@ void fragment() {
 		vec3 final_col = init_core + wave_col;
 		float out_a = clamp(max(outside_black * (1.0 - smoothstep(0.86, 1.0, t)), clamp(length(final_col) * 0.85, 0.0, 1.0)), 0.0, 1.0);
 		COLOR = vec4(final_col, out_a);
+	} else {
+		// GENESIS_IDLE: estrella semilla serena y casi quieta sobre vacío negro puro (0 partículas veloces)
+		float gentle_pulse = 0.86 + 0.06 * sin(TIME * 1.35);
+		float gentle_flare = 0.72 + 0.08 * sin(TIME * 1.05);
+		vec3 seed_col = _render_singularity_core(p_aspect, gentle_pulse, gentle_flare);
+		COLOR = vec4(seed_col, 1.0);
 	}
 }

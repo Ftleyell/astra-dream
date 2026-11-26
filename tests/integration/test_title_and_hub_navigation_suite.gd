@@ -29,7 +29,10 @@ func _ready() -> void:
 	assert(title_scene != null, "title_screen.tscn debe cargarse")
 	var title_preloader: Control = title_scene.instantiate() as Control
 	add_child(title_preloader)
-	assert(title_preloader.get_node_or_null("VoidBackdrop") != null, "Boot Preloader debe tener VoidBackdrop")
+	var backdrop: ColorRect = title_preloader.get_node_or_null("VoidBackdrop") as ColorRect
+	assert(backdrop != null, "Boot Preloader debe tener VoidBackdrop")
+	var seed_mat: ShaderMaterial = backdrop.material as ShaderMaterial
+	assert(seed_mat != null and int(seed_mat.get_shader_parameter("phase")) == 3, "Boot Preloader debe mostrar GENESIS_IDLE (phase=3) sin Big Crunch")
 	assert(bool(title_preloader.call("is_boot_triggered")) == false, "Como hijo de test no debe disparar auto-boot")
 	title_preloader.queue_free()
 

@@ -27,6 +27,9 @@ const LayoutConfigScript = preload("res://scenes/ui/hub/astral_station/resources
 
 const SettingsModalScene: PackedScene = preload("res://scenes/ui/settings_modal/settings_modal.tscn")
 const PatchNotesScene: PackedScene = preload("res://scenes/ui/title_screen/patch_notes_panel.tscn")
+const SHADER_SINGULARITY: Shader = preload("res://shaders/ui/singularity_transition.gdshader")
+const SingularityConfigScript = preload("res://data/ui/singularity_transition_config.gd")
+const DEFAULT_SING_CFG: SingularityConfigScript = preload("res://data/ui/default_singularity_transition_config.tres")
 
 var state: TitleState = TitleState.INACTIVE
 var main_game: MainGame = null
@@ -40,8 +43,16 @@ var title_menu: TitleMenuOverlayScript = null
 var _settings_layer: CanvasLayer = null
 var _settings_modal: SettingsModal = null
 var _patch_notes_layer: CanvasLayer = null
-var _entry_fade_rect: ColorRect = null
-var _entry_fade_tween: Tween = null
+var _genesis_layer: CanvasLayer = null
+var _genesis_rect: ColorRect = null
+var _genesis_mat: ShaderMaterial = null
+var _genesis_tween: Tween = null
+var _genesis_waiting_settle: bool = false
+var _genesis_frame_count: int = 0
+var _genesis_stable_frames: int = 0
+var _genesis_wait_elapsed: float = 0.0
+var _deferred_warmup_active: bool = false
+var _deferred_warmup_frame_skip: int = 0
 var _lighting_sample: CosmicLightingSampleScript = CosmicLightingSampleScript.new()
 var _title_cam_anchor: Vector2 = Vector2(960.0, 540.0)
 var _time_acc: float = 0.0
@@ -100,13 +111,34 @@ func _ensure_title_ui() -> void:
 	title_menu.set_continue_available(SaveManagerScript.has_active_run())
 	title_layer.add_child(title_menu)
 
-	_entry_fade_rect = ColorRect.new()
-	_entry_fade_rect.name = "EntryFadeBackdrop"
-	_entry_fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_entry_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_entry_fade_rect.color = Color(0.015, 0.018, 0.045, 1.0)
-	_entry_fade_rect.visible = false
-	title_layer.add_child(_entry_fade_rect)
+	_genesis_layer = CanvasLayer.new()
+	_genesis_layer.name = "GenesisBirthLayer"
+	_genesis_layer.layer = 140
+	_genesis_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	_genesis_layer.visible = false
+	add_child(_genesis_layer)
+
+	_genesis_mat = ShaderMaterial.new()
+	_genesis_mat.shader = SHADER_SINGULARITY
+	_genesis_mat.set_shader_parameter("has_snapshot", false)
+	_genesis_mat.set_shader_parameter("phase", 3)
+	_genesis_mat.set_shader_parameter("progress", 0.0)
+	if DEFAULT_SING_CFG != null:
+		_genesis_mat.set_shader_parameter("swirl_strength", DEFAULT_SING_CFG.swirl_strength)
+		_genesis_mat.set_shader_parameter("chromatic_aberration", DEFAULT_SING_CFG.chromatic_aberration)
+		_genesis_mat.set_shader_parameter("singularity_core_radius", DEFAULT_SING_CFG.singularity_core_radius)
+		_genesis_mat.set_shader_parameter("anamorphic_flare_intensity", DEFAULT_SING_CFG.anamorphic_flare_intensity)
+		_genesis_mat.set_shader_parameter("shockwave_refraction", DEFAULT_SING_CFG.shockwave_refraction)
+		_genesis_mat.set_shader_parameter("particle_density", DEFAULT_SING_CFG.particle_density)
+		_genesis_mat.set_shader_parameter("core_tint", DEFAULT_SING_CFG.core_tint)
+		_genesis_mat.set_shader_parameter("shockwave_tint", DEFAULT_SING_CFG.shockwave_tint)
+
+	_genesis_rect = ColorRect.new()
+	_genesis_rect.name = "GenesisBirthRect"
+	_genesis_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_genesis_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_genesis_rect.material = _genesis_mat
+	_genesis_layer.add_child(_genesis_rect)
 
 	title_menu.continue_requested.connect(_on_continue_requested)
 	title_menu.play_requested.connect(play_title_to_hub_sequence)
@@ -115,15 +147,26 @@ func _ensure_title_ui() -> void:
 	title_menu.quit_requested.connect(_on_quit_requested)
 
 
-func enter_title_mode(play_reveal: bool = true) -> void:
+func _sync_genesis_aspect_ratio() -> void:
+	if _genesis_mat == null:
+		return
+	var vp: Viewport = get_viewport()
+	var sz: Vector2 = vp.get_visible_rect().size if vp != null else Vector2(1920.0, 1080.0)
+	_genesis_mat.set_shader_parameter("aspect_ratio", sz.x / maxf(sz.y, 1.0))
+
+
+func enter_title_mode(play_reveal: bool = true, play_genesis_birth: bool = false) -> void:
 	if main_game == null or hub_ctrl == null:
 		return
 	_ensure_title_ui()
 	_kill_active_tween()
+	_kill_genesis_tween()
 	_close_title_modals()
 
 	state = TitleState.TITLE_ACTIVE
 	_time_acc = 0.0
+	_deferred_warmup_active = false
+	_deferred_warmup_frame_skip = 0
 	title_menu.set_continue_available(SaveManagerScript.has_active_run())
 
 	var off_px: Vector2 = sequence_config.title_camera_offset_px if sequence_config != null else Vector2(-520.0, -280.0)
@@ -136,49 +179,91 @@ func enter_title_mode(play_reveal: bool = true) -> void:
 		main_game.camera.zoom = Vector2(zoom_v, zoom_v)
 
 	title_layer.visible = true
-	if _entry_fade_tween != null and _entry_fade_tween.is_valid():
-		_entry_fade_tween.kill()
-		_entry_fade_tween = null
-	if play_reveal:
-		if _entry_fade_rect != null:
-			_entry_fade_rect.visible = true
-			_entry_fade_rect.modulate.a = 1.0
-			_entry_fade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-			_entry_fade_tween.tween_property(_entry_fade_rect, "modulate:a", 0.0, 0.50).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-			_entry_fade_tween.tween_callback(func() -> void:
-				if _entry_fade_rect != null:
-					_entry_fade_rect.visible = false
-			)
-		if logo_stage != null and not logo_stage.entrance_completed.is_connected(_prewarm_hub_if_in_title):
-			logo_stage.entrance_completed.connect(_prewarm_hub_if_in_title, CONNECT_ONE_SHOT)
-		logo_stage.play_entrance()
-		title_menu.show_menu(true)
-	else:
-		if _entry_fade_rect != null:
-			_entry_fade_rect.visible = false
+	if play_reveal and play_genesis_birth and DisplayServer.get_name() != "headless":
+		_sync_genesis_aspect_ratio()
+		_genesis_mat.set_shader_parameter("phase", 3)
+		_genesis_mat.set_shader_parameter("progress", 0.0)
+		_genesis_layer.visible = true
+		# Mantener el logo visible detrás de la cortina opaca para pre-compilar sus 4 shaders durante la barrera
 		logo_stage.reset_visible()
-		title_menu.show_menu(false)
+		title_menu.hide_menu(false)
+		_genesis_waiting_settle = true
+		_genesis_frame_count = 0
+		_genesis_stable_frames = 0
+		_genesis_wait_elapsed = 0.0
+	else:
+		_genesis_waiting_settle = false
+		if _genesis_layer != null:
+			_genesis_layer.visible = false
+		if play_reveal:
+			if logo_stage != null and not logo_stage.entrance_completed.is_connected(_start_deferred_warmup):
+				logo_stage.entrance_completed.connect(_start_deferred_warmup, CONNECT_ONE_SHOT)
+			logo_stage.play_entrance()
+			title_menu.show_menu(true)
+		else:
+			logo_stage.reset_visible()
+			title_menu.show_menu(false)
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr != null and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("menu")
 
 
-func _prewarm_hub_if_in_title() -> void:
-	if state == TitleState.TITLE_ACTIVE and hub_ctrl != null:
-		hub_ctrl.ensure_embedded_hub_built_hidden()
+func _fire_genesis_big_bang_and_title_reveal() -> void:
+	if state != TitleState.TITLE_ACTIVE:
+		return
+	_kill_genesis_tween()
+	_sync_genesis_aspect_ratio()
+	_genesis_mat.set_shader_parameter("phase", 2)
+	_genesis_mat.set_shader_parameter("progress", 0.0)
+	_genesis_layer.visible = true
+
+	var bang_dur: float = maxf(DEFAULT_SING_CFG.big_bang_duration_sec if DEFAULT_SING_CFG != null else 0.65, 0.58)
+	_genesis_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_genesis_tween.set_parallel(true)
+	_genesis_tween.tween_method(
+		func(v: float) -> void:
+			if _genesis_mat != null:
+				_genesis_mat.set_shader_parameter("progress", v),
+		0.0, 1.0, bang_dur
+	)
+	_genesis_tween.tween_callback(func() -> void:
+		if state != TitleState.TITLE_ACTIVE or logo_stage == null or title_menu == null:
+			return
+		if not logo_stage.entrance_completed.is_connected(_start_deferred_warmup):
+			logo_stage.entrance_completed.connect(_start_deferred_warmup, CONNECT_ONE_SHOT)
+		logo_stage.play_entrance()
+		title_menu.show_menu(true)
+	).set_delay(0.10)
+	_genesis_tween.chain().tween_callback(func() -> void:
+		if _genesis_layer != null:
+			_genesis_layer.visible = false
+	)
+
+
+func _start_deferred_warmup() -> void:
+	if state == TitleState.TITLE_ACTIVE and main_game != null:
+		_deferred_warmup_active = true
+		_deferred_warmup_frame_skip = 0
 
 
 func enter_title_mode_from_hub() -> void:
 	if hub_ctrl == null:
 		return
 	hub_ctrl.suspend_hub_for_title()
-	enter_title_mode(true)
+	enter_title_mode(true, false)
 
 
 func play_title_to_hub_sequence() -> void:
 	if state != TitleState.TITLE_ACTIVE or main_game == null or hub_ctrl == null:
 		return
+	_genesis_waiting_settle = false
+	_deferred_warmup_active = false
+	_kill_genesis_tween()
+	if _genesis_layer != null:
+		_genesis_layer.visible = false
+	if main_game.has_method("ensure_deferred_title_assembly_complete"):
+		main_game.ensure_deferred_title_assembly_complete()
 	if not hub_ctrl.ensure_embedded_hub_built_hidden():
 		return
 	var bridge: ViewportBridgeScript = hub_ctrl.get_viewport_bridge()
@@ -273,6 +358,28 @@ func _process(delta: float) -> void:
 		return
 	_time_acc += delta
 
+	if _genesis_waiting_settle:
+		_genesis_frame_count += 1
+		_genesis_wait_elapsed += delta
+		if _genesis_frame_count >= 4:
+			if delta < 0.05:
+				_genesis_stable_frames += 1
+			else:
+				_genesis_stable_frames = 0
+		if _genesis_stable_frames >= 2 or _genesis_wait_elapsed >= 0.75:
+			_genesis_waiting_settle = false
+			_fire_genesis_big_bang_and_title_reveal()
+
+	if _deferred_warmup_active and not _genesis_waiting_settle:
+		_deferred_warmup_frame_skip += 1
+		if _deferred_warmup_frame_skip >= 2:
+			_deferred_warmup_frame_skip = 0
+			if main_game.has_method("run_next_deferred_title_assembly_step"):
+				if not bool(main_game.run_next_deferred_title_assembly_step()):
+					_deferred_warmup_active = false
+			else:
+				_deferred_warmup_active = false
+
 	if is_instance_valid(main_game.camera) and sequence_config != null:
 		_title_cam_anchor += sequence_config.title_cosmos_drift_speed * delta
 		main_game.camera.set_cinematic_focus(_title_cam_anchor, sequence_config.title_camera_zoom)
@@ -319,6 +426,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_continue_requested() -> void:
 	if state != TitleState.TITLE_ACTIVE or not SaveManagerScript.has_active_run():
 		return
+	if main_game != null and main_game.has_method("ensure_deferred_title_assembly_complete"):
+		main_game.ensure_deferred_title_assembly_complete()
 	state = TitleState.INACTIVE
 	SaveManagerScript.is_resuming_run = true
 	RunLaunchRequestScript.request_direct_combat_entry()
@@ -433,12 +542,22 @@ func _kill_active_tween() -> void:
 	_active_transition_tween = null
 
 
+func _kill_genesis_tween() -> void:
+	if _genesis_tween != null and _genesis_tween.is_valid():
+		_genesis_tween.kill()
+	_genesis_tween = null
+
+
 func cleanup_for_combat() -> void:
 	_kill_active_tween()
-	if _entry_fade_tween != null and _entry_fade_tween.is_valid():
-		_entry_fade_tween.kill()
-	_entry_fade_tween = null
-	_entry_fade_rect = null
+	_kill_genesis_tween()
+	_genesis_waiting_settle = false
+	_deferred_warmup_active = false
+	if _genesis_layer != null and is_instance_valid(_genesis_layer):
+		_genesis_layer.queue_free()
+	_genesis_layer = null
+	_genesis_rect = null
+	_genesis_mat = null
 	state = TitleState.INACTIVE
 	if title_layer != null and is_instance_valid(title_layer):
 		title_layer.queue_free()
