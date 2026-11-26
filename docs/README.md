@@ -1,4 +1,4 @@
-# Índice Maestro de Documentación — Astra Dream
+# Índice Maestro de Documentación — Stela Galactica (`astra_dream`)
 
 > Punto de entrada único para ubicar especificaciones vivas sin explorar directorios a ciegas.
 
@@ -40,6 +40,7 @@
 | [`ART_DIRECTION_AND_PIPELINE.md`](ART_DIRECTION_AND_PIPELINE.md) | Dirección artística global y estándares visuales del proyecto. |
 | [`MUMBLE_SPEECH_SYSTEM.md`](MUMBLE_SPEECH_SYSTEM.md) | Sistema híbrido de **Mumble Speech** data-driven (`VoiceProfileData` `.tres`), integración Dialogic/HUD y guía de fine-tuning. |
 | [`UI_REWORK_ART_DIRECTION.md`](UI_REWORK_ART_DIRECTION.md) | **Dirección aprobada para futuro Rework de UI (*Astral Pop-Ink* — Fusión B+D):** referencia visual, pilares técnicos y plan de profundización. |
+| [`STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md`](STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md) | **Identidad *Stela Galactica*, Singularidad y Onboarding ✅:** logo en 4 capas, Transición Singularidad threaded, flujo `TITLE_ACTIVE → HUB_MATERIALIZING → HUB_ACTIVE` sobre Cosmos único y `HubTutorialDirector` con Mochi. |
 | [`HUB_3D_REWORK_BLUEPRINT.md`](HUB_3D_REWORK_BLUEPRINT.md) | **Hub 3D Estación Astral v4 (Embebido Seamless en `MainGame` ✅):** mandala de 9 islas sobre Cosmos vivo, integración con `Player` 2D real (`CombatHubSessionController`), Astral Glide-Hop + doble ripple, Dash pacífico, aislamiento de spawners, Gacha 3D, shaders *ArcSys* y despegue 8-Dir zero-rail. |
 | [`art/`](art/) | Guías de pipeline IA (`character_25d_generation_guide.md`, `character_style_pipeline_bible.md`, `Estilización 2.5D en Godot 4.md`, `art_pipeline_standards.md`, etc.). |
 | [`game_design/balance_and_mechanics.md`](game_design/balance_and_mechanics.md) | Balance de combate, economía y progresión. |

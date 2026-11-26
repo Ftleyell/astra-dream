@@ -10,6 +10,7 @@ extends Control
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const ShaderSkinLivePreviewScript = preload("res://scenes/ui/cosmetics/components/shader_skin_live_preview.gd")
 const ShaderSkinSwatchScript = preload("res://scenes/ui/cosmetics/components/shader_skin_swatch.gd")
+const PetBubbleUIPreviewScript = preload("res://scenes/pets/ui/pet_bubble_ui_preview.gd")
 
 signal sequence_finished()
 
@@ -358,6 +359,14 @@ func _create_reward_card(skin: Dictionary, upg: Dictionary, use_live_preview: bo
 			swatch.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			swatch.configure_swatch(preset, cat, stars, false, false)
 			vbox.add_child(swatch)
+	elif str(skin.get("category", "")) == "pet" and use_live_preview:
+		var pet_preview: PetBubbleUIPreview = PetBubbleUIPreviewScript.new() as PetBubbleUIPreview
+		pet_preview.custom_minimum_size = Vector2(124, 124)
+		pet_preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		vbox.add_child(pet_preview)
+		var pet_tid: StringName = StringName(str(skin.get("target_id", "mochi")).to_lower())
+		pet_preview.configure(pet_tid, str(skin.get("id", "")), stars, false, 0.88)
+		pet_preview.trigger_emote(&"roll_360")
 	else:
 		var icon := TextureRect.new()
 		icon.custom_minimum_size = Vector2(84, 84)

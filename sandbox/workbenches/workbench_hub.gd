@@ -13,6 +13,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"gacha_3d_lab": "res://sandbox/hub_art_lab/gacha_3d_lab.tscn",
 	"skill_ult": "res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.tscn",
 	"hub_locomotion_lab": "res://sandbox/hub_art_lab/hub_locomotion_lab/hub_locomotion_lab.tscn",
+	"stela_intro_lab": "res://sandbox/workbenches/stela_intro_lab/stela_intro_lab.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -102,6 +103,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(0.45, 0.85, 1.0, 1.0),
 		"desc": "Pista 3D con cámaras Hub/Perfil/Close-Up, circuitos 8-dir, Scrub de fase, Astral Glide-Hop, Doble Ripple y guardado .tres.",
 	},
+	{
+		"key": "stela_intro_lab",
+		"shortcut": "[9]",
+		"title": "Stela Intro & Identity Lab",
+		"accent": Color(0.95, 0.80, 0.34, 1.0),
+		"desc": "Logo cel 4 capas + Normal Map sobre Cosmos vivo, Transición Singularidad, Materialización Title→Hub y Tutorial Mochi 3D.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -138,6 +146,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("skill_ult")
 		KEY_8:
 			launch_workbench("hub_locomotion_lab")
+		KEY_9:
+			launch_workbench("stela_intro_lab")
 
 
 func launch_workbench(key: String) -> void:

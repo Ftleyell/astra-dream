@@ -284,6 +284,24 @@ func get_demat_materials() -> Array[ShaderMaterial]:
 	return out
 
 
+func get_tutorial_highlight_materials() -> Dictionary:
+	var p_mats: Array[ShaderMaterial] = []
+	for mat: ShaderMaterial in _body_materials:
+		if mat != null and not p_mats.has(mat):
+			p_mats.append(mat)
+	var o_mats: Array[ShaderMaterial] = []
+	if _outline_mat != null:
+		o_mats.append(_outline_mat)
+	var h_mats: Array[ShaderMaterial] = []
+	if _holo_screen_mat != null:
+		h_mats.append(_holo_screen_mat)
+	return {
+		"prop_mats": p_mats,
+		"outline_mats": o_mats,
+		"holo_mats": h_mats,
+	}
+
+
 func set_highlighted(active: bool) -> void:
 	_is_highlighted = active
 	_refresh_prompt_label()

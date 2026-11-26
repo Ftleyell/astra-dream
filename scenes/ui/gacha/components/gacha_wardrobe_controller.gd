@@ -11,6 +11,7 @@ const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const SaveManager = preload("res://core/autoloads/save_manager.gd")
 const ShaderSkinLivePreviewScript = preload("res://scenes/ui/cosmetics/components/shader_skin_live_preview.gd")
 const ShaderSkinSwatchScript = preload("res://scenes/ui/cosmetics/components/shader_skin_swatch.gd")
+const PetBubbleUIPreviewScript = preload("res://scenes/pets/ui/pet_bubble_ui_preview.gd")
 
 signal skin_equipped(slot_key: String, skin_id: String)
 
@@ -18,6 +19,7 @@ var _wardrobe_content: VBoxContainer
 var _hide_locked_check: CheckBox
 var _wardrobe_grid: GridContainer
 var _live_inspector_preview: ShaderSkinLivePreview = null
+var _live_pet_inspector: PetBubbleUIPreview = null
 var _live_inspector_tex: TextureRect = null
 var _live_inspector_title: Label = null
 var _live_inspector_sub: Label = null
@@ -131,6 +133,12 @@ func setup(parent_vbox: VBoxContainer) -> void:
 	_live_inspector_preview.visible = false
 	_live_inspector_preview.set_preview_paused(true)
 	insp_holder.add_child(_live_inspector_preview)
+
+	_live_pet_inspector = PetBubbleUIPreviewScript.new() as PetBubbleUIPreview
+	_live_pet_inspector.custom_minimum_size = Vector2(220, 220)
+	_live_pet_inspector.visible = false
+	_live_pet_inspector.set_preview_paused(true)
+	insp_holder.add_child(_live_pet_inspector)
 
 	_live_inspector_tex = TextureRect.new()
 	_live_inspector_tex.custom_minimum_size = Vector2(180, 180)
@@ -373,11 +381,28 @@ func _update_inspector_preview(skin: Dictionary, stars: int, is_unlocked: bool) 
 		var star_tag: String = ("%d★" % stars) if is_unlocked else "BLOQUEADA"
 		_live_inspector_sub.text = "%s · %s" % [t_name, star_tag]
 
+	var cat: String = str(skin.get("category", "pilot"))
+	if cat == "pet" and _live_pet_inspector != null:
+		if _live_inspector_preview != null:
+			_live_inspector_preview.set_preview_paused(true)
+			_live_inspector_preview.visible = false
+		if _live_inspector_tex != null:
+			_live_inspector_tex.visible = false
+		var pet_tid: StringName = StringName(str(skin.get("target_id", "mochi")).to_lower())
+		_live_pet_inspector.configure(pet_tid, sid, maxi(stars, 1), not is_unlocked, 0.88)
+		_live_pet_inspector.visible = true
+		_live_pet_inspector.set_preview_paused(false)
+		_live_pet_inspector.trigger_emote(&"hop")
+		return
+
+	if _live_pet_inspector != null:
+		_live_pet_inspector.set_preview_paused(true)
+		_live_pet_inspector.visible = false
+
 	if CosmeticsManager.is_shader_skin(skin):
 		if _live_inspector_tex != null:
 			_live_inspector_tex.visible = false
 		if _live_inspector_preview != null:
-			var cat: String = str(skin.get("category", "pilot"))
 			var tid: StringName = StringName(str(skin.get("target_id", "valentina")).to_lower())
 			var roster: Dictionary[StringName, CharacterData] = CharacterData.load_roster()
 			var cd: CharacterData = roster.get(tid, null)
@@ -406,6 +431,9 @@ func _clear_inspector_preview() -> void:
 	if _live_inspector_preview != null:
 		_live_inspector_preview.set_preview_paused(true)
 		_live_inspector_preview.visible = false
+	if _live_pet_inspector != null:
+		_live_pet_inspector.set_preview_paused(true)
+		_live_pet_inspector.visible = false
 	if _live_inspector_tex != null:
 		_live_inspector_tex.visible = false
 	if _live_inspector_title != null:
@@ -418,6 +446,12 @@ func get_live_inspector_preview() -> ShaderSkinLivePreview:
 	return _live_inspector_preview
 
 
+func get_live_pet_inspector() -> PetBubbleUIPreview:
+	return _live_pet_inspector
+
+
 func pause_inspector_preview() -> void:
 	if _live_inspector_preview != null:
 		_live_inspector_preview.set_preview_paused(true)
+	if _live_pet_inspector != null:
+		_live_pet_inspector.set_preview_paused(true)

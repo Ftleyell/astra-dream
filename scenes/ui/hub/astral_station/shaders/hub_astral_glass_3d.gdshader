@@ -11,6 +11,7 @@ uniform vec4 gold_frame_color : source_color = vec4(0.92, 0.77, 0.42, 1.0);
 uniform float base_alpha : hint_range(0.05, 0.7) = 0.22;
 uniform float hex_scale : hint_range(1.0, 12.0) = 4.2;
 
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 34.0;
@@ -35,7 +36,8 @@ void fragment() {
 		float d_origin = length(v_world_pos.xz - demat_origin.xz);
 		float hex_d = _hex_cell(v_world_pos.xz * 2.4);
 		float wave_r = mix(-2.5, demat_max_radius, demat_progress);
-		if ((d_origin + hex_d * 1.1) < wave_r) {
+		float signed_wave = (d_origin + hex_d * 1.1) - wave_r;
+		if ((!demat_invert && signed_wave < 0.0) || (demat_invert && signed_wave > 0.0)) {
 			discard;
 		}
 	}

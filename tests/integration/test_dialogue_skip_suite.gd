@@ -2,7 +2,7 @@ extends Node
 
 func _ready() -> void:
 	# Fallback timeout
-	get_tree().create_timer(10.0).timeout.connect(func():
+	get_tree().create_timer(14.0).timeout.connect(func():
 		print("[TEST WATCHDOG] Timeout reached in Dialogue Skip test.")
 		get_tree().quit(1)
 	)
@@ -17,7 +17,6 @@ func _ready() -> void:
 	var main_game: MainGame = main_game_scene.instantiate()
 	add_child(main_game)
 	await get_tree().process_frame
-	await get_tree().process_frame
 
 	# 2. Check DialogueSkipOverlay node presence
 	var skip_overlay = main_game.skip_badge_layer
@@ -26,10 +25,18 @@ func _ready() -> void:
 	assert(skip_overlay.HOLD_DURATION == 0.65, "HOLD_DURATION must be 0.65s")
 	print("  ✓ DialogueSkipOverlay verified (layer 110, duration 0.65s)")
 
-	# 3. Verify Prologue Briefing is active initially
-	assert(main_game.is_briefing_active == true, "Prologue briefing should be active initially")
+	# 3. Verify Prologue Briefing is disabled automatically (quiet +50 credits instead) and works when explicitly triggered
+	assert(main_game.is_briefing_active == false, "Prologue briefing must NOT start automatically on combat entry")
+	assert(Dialogic.current_timeline == null, "Dialogic timeline must be null when prologue auto-briefing is disabled")
+	assert(main_game.prologue_bonus_chosen == true, "Quiet +50 initial credits bonus must be marked chosen")
+	assert(main_game.player.run_credits >= 50, "Player must receive quiet +50 initial credits on combat entry")
+	main_game._start_prologue_briefing()
+	var t_prologue: int = Time.get_ticks_msec()
+	while Dialogic.current_timeline == null and (Time.get_ticks_msec() - t_prologue) < 600:
+		await get_tree().process_frame
+	assert(main_game.is_briefing_active == true, "Prologue briefing should be active when explicitly invoked")
 	assert(Dialogic.current_timeline != null, "Dialogic current_timeline must not be null during prologue")
-	print("  ✓ Prologue briefing active with timeline: %s" % Dialogic.current_timeline.resource_path)
+	print("  ✓ Auto-prologue disabled (+50 credits silent); explicit prologue active with timeline: %s" % Dialogic.current_timeline.resource_path)
 
 	# 4. Verify Player Bomb cannot be triggered during active dialogue
 	var prev_bombs := main_game.player.bomb_count
@@ -49,7 +56,6 @@ func _ready() -> void:
 	)
 	skip_overlay._execute_skip()
 	await get_tree().process_frame
-	await get_tree().process_frame
 
 	assert(skip_emitted[0] == true, "skip_requested signal must be emitted")
 	assert(main_game.is_briefing_active == false, "Briefing must be inactive after skipping")
@@ -61,7 +67,6 @@ func _ready() -> void:
 	print("\n[Testing Cockpit Interlude Pause & Skip]")
 	main_game._trigger_cockpit_interlude()
 	await get_tree().process_frame
-	await get_tree().process_frame
 	assert(Dialogic.current_timeline != null, "Cockpit timeline must be active")
 	assert(get_tree().paused == true, "Cockpit dialogue DEBE pausar el juego para proteger al jugador de disparos enemigos")
 	assert(main_game.is_cockpit_active == true, "is_cockpit_active debe ser true mientras la cabina esté en pantalla")
@@ -69,7 +74,6 @@ func _ready() -> void:
 
 	# Skip cockpit dialogue
 	skip_overlay._execute_skip()
-	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline == null, "Cockpit timeline must be ended after skip")
 	assert(not get_tree().paused, "Tras saltar la conversación de cabina, el juego DEBE despausarse")
@@ -91,14 +95,12 @@ func _ready() -> void:
 	print("\n[Testing Boss Titan Alert Pause & Skip]")
 	main_game.trigger_boss_transmission("CENTINELA TITÁN", "¡Alerta de distorsión!")
 	await get_tree().process_frame
-	await get_tree().process_frame
 	assert(Dialogic.current_timeline != null, "Boss alert timeline must be active")
 	assert(get_tree().paused == true, "Boss alert dialogue DEBE pausar el combate")
 	assert(main_game.is_boss_transmission_active == true, "is_boss_transmission_active debe ser true")
 	print("  ✓ Boss alert activo y combate congelado de forma segura")
 
 	skip_overlay._execute_skip()
-	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(Dialogic.current_timeline == null, "Boss alert timeline must be ended after skip")
 	assert(not get_tree().paused, "Tras saltar la alerta de jefe, el combate se reanuda")

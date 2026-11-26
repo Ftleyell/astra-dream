@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="PetBubbleVisualConfig" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/pets/resources/pet_bubble_visual_config.gd" id="1_cfg"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/cosmo/pet_cosmo_albedo.png" id="2_alb"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/cosmo/pet_cosmo_normal.png" id="3_nrm"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/cosmo/pet_cosmo_bubble_tex.png" id="4_bub"]
+
+[resource]
+script = ExtResource("1_cfg")
+pet_id = &"cosmo"
+display_name = "Cosmo"
+albedo_texture = ExtResource("2_alb")
+normal_texture = ExtResource("3_nrm")
+bubble_texture = ExtResource("4_bub")
+theme_color = Color(0.72, 0.36, 1, 1)
+rim_color = Color(0.92, 0.66, 1, 1)
+inner_glow_color = Color(0.45, 0.16, 0.86, 1)
+front_opacity = 0.36
+back_opacity = 0.34
+edge_texture_opacity = 0.8
+texture_strength = 0.96
+glass_refraction = 0.36
+bubble_bump_strength = 0.3
+caustic_strength = 1.0
+rim_bevel_darkness = 0.72
+fresnel_power = 2.4
+fresnel_strength = 1.15
+iridescence_strength = 0.38
+specular_strength = 1.2
+bubble_spin_speed = Vector3(-0.22, -0.68, 0.18)
+pet_scale = 0.8
+pet_normal_strength = 1.02
+pet_shadow_tint = Color(0.5, 0.44, 0.78, 1)
+pet_rim_strength = 0.62
+bob_amplitude = 5.0
+bob_speed = 3.0
+wobble_strength = 0.015
+lag_stiffness = 10.0
+max_lag_px = 11.0
+orbit_radius_x = 155.0
+orbit_radius_y = 56.0
+orbit_tilt_deg = 22.0
+orbit_speed = 1.4
+back_scale = 0.82
+front_scale = 1.12
+combat_diameter_px = 64.0
+hub_diameter_px = 54.0
+combat_orbit_radius_x = 102.0
+combat_orbit_radius_y = 42.0
+combat_follow_speed_threshold = 310.0
+combat_follow_offset_px = Vector2(-58, 28)
+combat_follow_stiffness = 9.5

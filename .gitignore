@@ -79,4 +79,5 @@ __pycache__/
 sandbox/pilot_rig_lab/tools/models/
 sandbox/pilot_rig_lab/source_refs/*/02_upscayl_4x/
 sandbox/pilot_rig_lab/source_refs/*/03_gpu_audit/
+sandbox/pet_bubble_lab/source_refs/upscaled_*.png
 

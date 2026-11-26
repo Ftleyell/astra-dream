@@ -12,6 +12,7 @@ const CharacterSelectScene = preload("res://scenes/ui/character_select/character
 
 
 func _ready() -> void:
+	timeout_seconds = 20.0
 	super._ready()
 	_run_all_tests()
 
@@ -19,7 +20,7 @@ func _ready() -> void:
 func _run_all_tests() -> void:
 	print("--- INICIANDO TEST SUITE: SCENE TRANSITION & TAPE MARQUEE BUTTON ---")
 	_test_tape_marquee_button_generation()
-	_test_scene_transition_autoload_and_luts()
+	_test_scene_transition_autoload_singularity()
 	await _test_character_select_tape_integration()
 
 	await get_tree().process_frame
@@ -59,20 +60,17 @@ func _test_tape_marquee_button_generation() -> void:
 	print("✓ Test 1: TapeMarqueeButton (texturas procedimentales, estados y disabled) verificado.")
 
 
-func _test_scene_transition_autoload_and_luts() -> void:
+func _test_scene_transition_autoload_singularity() -> void:
 	var st: Node = get_node_or_null("/root/SceneTransition")
 	assert_true(st != null, "Autoload SceneTransition debe estar registrado en el árbol.")
-
 	if st:
-		var lane_count: int = st.PILOT_CONFIG.size()
-		assert_true(lane_count == 7, "SceneTransition debe tener exactamente 7 configuraciones de pilotos definidas.")
-		assert_true(st._lut_cache.size() == 7, "Debe tener 7 LUTs 1D anatómicas generadas en caché.")
+		assert_true(st.has_method("change_scene_to_file"), "SceneTransition debe exponer change_scene_to_file()")
+		assert_true(st.has_method("play_wipe"), "SceneTransition debe exponer play_wipe()")
+		assert_true(st.has_method("get_presenter") and st.call("get_presenter") != null, "SceneTransition debe delegar en SingularityTransitionPresenter.")
+		assert_true(st.has_method("get_config") and st.call("get_config") != null, "SceneTransition debe cargar SingularityTransitionConfig.")
+		assert_true(bool(st.get("is_transitioning")) == false, "is_transitioning debe inicializar en false.")
 
-		for cfg in st.PILOT_CONFIG:
-			var pilot_name: String = cfg.name
-			assert_true(st._lut_cache.has(pilot_name), "Cada piloto debe contar con su textura LUT 1D generada en caché.")
-
-	print("✓ Test 2: SceneTransition (autoload y 7 LUTs anatómicas) verificado.")
+	print("✓ Test 2: SceneTransition (Singularidad + SingularityTransitionPresenter) verificado.")
 
 
 func _test_character_select_tape_integration() -> void:
@@ -81,8 +79,8 @@ func _test_character_select_tape_integration() -> void:
 
 	await get_tree().process_frame
 
-	var tape_btn: TapeMarqueeButton = char_select.tape_launch_btn
-	assert_true(tape_btn != null, "TapeLaunchButton debe existir y estar enlazado en CharacterSelect.")
+	var orbital_btn: Control = char_select.orbital_terminal
+	assert_true(orbital_btn != null, "OrbitalIgnitionTerminal debe existir y estar enlazado en CharacterSelect.")
 
 	char_select.queue_free()
 	print("✓ Test 3: Integración en CharacterSelect verificada.")

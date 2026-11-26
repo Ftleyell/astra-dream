@@ -1,0 +1,54 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://sandbox/pet_bubble_lab/pet_bubble_lab.gd" id="1_lab"]
+[ext_resource type="Shader" path="res://sandbox/pet_bubble_lab/shaders/lab_space_bg.gdshader" id="2_bgsh"]
+[ext_resource type="Script" path="res://sandbox/pet_bubble_lab/components/pet_orbit_3d_controller.gd" id="3_orb"]
+[ext_resource type="Script" path="res://sandbox/pet_bubble_lab/pet_bubble_lab_hud.gd" id="4_hud"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_space_bg"]
+shader = ExtResource("2_bgsh")
+shader_parameter/time_sec = 0.0
+shader_parameter/camera_offset = Vector2(0, 0)
+
+[node name="PetBubbleLab" type="Node2D"]
+script = ExtResource("1_lab")
+
+[node name="BgLayer" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="SpaceBg" type="ColorRect" parent="BgLayer"]
+material = SubResource("ShaderMaterial_space_bg")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WorldRoot" type="Node2D" parent="."]
+
+[node name="PilotAnchor" type="Node2D" parent="WorldRoot"]
+position = Vector2(460, 360)
+z_index = 10
+
+[node name="FetchGem" type="Node2D" parent="WorldRoot"]
+visible = false
+position = Vector2(670, 270)
+z_index = 9
+
+[node name="PetOrbit3DController" type="Node2D" parent="WorldRoot" node_paths=PackedStringArray("anchor_node", "fetch_target_node")]
+script = ExtResource("3_orb")
+anchor_node = NodePath("../PilotAnchor")
+fetch_target_node = NodePath("../FetchGem")
+
+[node name="HudLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="PetBubbleLabHUD" type="Control" parent="HudLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_hud")

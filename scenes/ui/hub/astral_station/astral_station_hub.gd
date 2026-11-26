@@ -48,9 +48,13 @@ signal embedded_launch_request_changed(request: RunLaunchRequestScript, trigger_
 signal embedded_movement_lock_changed(locked: bool)
 signal embedded_player_reposition_requested(world_3d: Vector3, face_dir: Vector2, suppress_shadow: bool)
 signal embedded_pilot_selected(char_id: StringName, accent_color: Color)
+signal embedded_companions_updated()
 signal embedded_gacha_skin_equipped(equip_res: Dictionary)
 signal embedded_settings_toggled(is_open: bool)
+signal embedded_tutorial_requested()
+signal embedded_return_to_title_requested()
 signal embedded_demat_finished()
+signal embedded_materialization_finished()
 
 const FLOOR_TEX_BASE: String = "res://assets/environments/astral_station/surfaces/hub_floor_astral"
 const TRIM_TEX_BASE: String = "res://assets/environments/astral_station/trims/hub_arcsys_trim"
@@ -125,6 +129,11 @@ var _embedded_cosmos_sample_pos_2d: Vector2 = Vector2.ZERO
 var _embedded_cosmos_anchor_2d: Vector2 = Vector2.INF
 var _embedded_is_flying: bool = false
 var _embedded_is_dematerializing: bool = false
+var _embedded_input_suppressed: bool = false
+
+
+func set_embedded_input_suppressed(suppressed: bool) -> void:
+	_embedded_input_suppressed = suppressed
 
 
 func configure_embedded(
@@ -740,6 +749,11 @@ func _build_phase3_wings_and_controllers() -> void:
 			_embedded_is_dematerializing = false
 			embedded_demat_finished.emit()
 		)
+		departure_controller.embedded_materialization_completed.connect(func() -> void:
+			if hud != null:
+				hud.set_clean_hud_visible(true)
+			embedded_materialization_finished.emit()
+		)
 	else:
 		departure_controller.perimeter_warning_updated.connect(func(prog: float, sector: Dictionary) -> void:
 			_warn_progress_cached = prog
@@ -863,6 +877,7 @@ func _build_hud() -> void:
 	hud.save_config_requested.connect(_save_config_resource)
 	hud.back_to_workbench_requested.connect(_return_to_workbench)
 	hud.settings_requested.connect(open_settings_modal)
+	hud.tutorial_requested.connect(_on_hud_tutorial_requested)
 	hud.return_to_title_requested.connect(return_to_title_screen)
 	_refresh_hud_status()
 
@@ -919,14 +934,20 @@ func _on_settings_modal_closed() -> void:
 		embedded_settings_toggled.emit(false)
 
 
+func _on_hud_tutorial_requested() -> void:
+	if _is_departure_active() or is_any_hub_modal_or_panel_open():
+		return
+	if embedded_mode:
+		embedded_tutorial_requested.emit()
+
+
 func return_to_title_screen() -> void:
 	if _is_departure_active() or get_tree() == null:
 		return
-	var st: Node = get_node_or_null("/root/SceneTransition")
-	if st != null and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file(TITLE_SCREEN_PATH)
-	else:
-		get_tree().change_scene_to_file(TITLE_SCREEN_PATH)
+	if embedded_mode:
+		embedded_return_to_title_requested.emit()
+		return
+	RunLaunchRequestScript.transition_to_title(get_tree())
 
 
 func _process(delta: float) -> void:
@@ -1019,7 +1040,7 @@ func _sync_live_cosmic_lighting(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if embedded_mode and _embedded_is_dematerializing:
+	if embedded_mode and (_embedded_is_dematerializing or _embedded_input_suppressed):
 		return
 	var focus_owner: Control = get_viewport().gui_get_focus_owner() if get_viewport() != null else null
 	if focus_owner is LineEdit or focus_owner is TextEdit:
@@ -1051,6 +1072,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key_ev == null or not key_ev.pressed or key_ev.echo:
 		return
 	match key_ev.keycode:
+		KEY_F1:
+			if embedded_mode and not is_dev_lab_mode and is_free_roam:
+				get_viewport().set_input_as_handled()
+				embedded_tutorial_requested.emit()
 		KEY_H, KEY_F2:
 			if is_dev_lab_mode and hud != null:
 				hud.toggle_visible()
@@ -1289,6 +1314,8 @@ func _on_companions_updated() -> void:
 		east_wing.refresh_pets(_get_active_player_node())
 	if modal_coordinator != null and right_station != null:
 		modal_coordinator.refresh_navigator_hologram(right_station, right_station.get_station_state() != StationNodeScript.StationState.CALIBRATING)
+	if embedded_mode:
+		embedded_companions_updated.emit()
 
 
 func _on_gacha_focus_requested(focus_pos: Vector3) -> void:
@@ -1459,6 +1486,84 @@ func start_embedded_dematerialization(origin_3d: Vector3) -> void:
 		embedded_demat_finished.emit()
 
 
+func set_embedded_hidden_for_materialization() -> void:
+	_embedded_is_dematerializing = false
+	_is_capsule_focused = false
+	if hud != null:
+		hud.set_clean_hud_visible(false)
+	if departure_controller != null:
+		departure_controller.set_embedded_hidden_for_materialization()
+
+
+func play_embedded_materialization(duration_sec: float = 1.25) -> void:
+	_embedded_is_dematerializing = false
+	if hud != null:
+		hud.set_clean_hud_visible(false)
+	if departure_controller != null:
+		departure_controller.start_embedded_materialization(duration_sec)
+	else:
+		if hud != null:
+			hud.set_clean_hud_visible(true)
+		embedded_materialization_finished.emit()
+
+
+func set_all_stations_state_override(new_state: StationNodeScript.StationState) -> void:
+	for st: StationNodeScript in _all_stations():
+		st.set_station_state(new_state)
+	if modal_coordinator != null and right_station != null:
+		modal_coordinator.refresh_navigator_hologram(right_station, new_state != StationNodeScript.StationState.CALIBRATING)
+	_refresh_hud_status()
+
+
+func get_station_materials_for_tutorial(target_id: StringName) -> Dictionary:
+	match target_id:
+		&"overview":
+			return {"world_pos_3d": Vector3.ZERO}
+		&"pilot_capsule":
+			var p_mats: Array[ShaderMaterial] = []
+			for m: ShaderMaterial in _hero_prop_mats + _gold_trim_mats:
+				if m != null and not p_mats.has(m):
+					p_mats.append(m)
+			var o_mats: Array[ShaderMaterial] = []
+			if _prop_outline_mat != null:
+				o_mats.append(_prop_outline_mat)
+			var d_mats: Array[ShaderMaterial] = []
+			if _capsule_dais_mat != null:
+				d_mats.append(_capsule_dais_mat)
+			return {
+				"prop_mats": p_mats,
+				"outline_mats": o_mats,
+				"dais_mats": d_mats,
+				"world_pos_3d": config.capsule_pos if config != null else Vector3.ZERO,
+			}
+		&"skins_mirror", &"tactical_console", &"talents_nexus", &"companions_projector":
+			for st: StationNodeScript in _all_stations():
+				if st.station_id == target_id:
+					var bundle: Dictionary = st.get_tutorial_highlight_materials()
+					bundle["world_pos_3d"] = st.global_position if st.is_inside_tree() else st.position
+					return bundle
+			return {"world_pos_3d": Vector3.ZERO}
+		&"gacha_summoner":
+			if east_wing != null:
+				return east_wing.get_gacha_highlight_bundle()
+			return {"world_pos_3d": config.gacha_summoner_pos if config != null else Vector3(15.42, 0.0, 0.0)}
+		&"telemetry_totem":
+			if east_wing != null:
+				return east_wing.get_telemetry_highlight_bundle()
+			return {"world_pos_3d": config.telemetry_totem_pos if config != null else Vector3(10.2, 0.0, 10.2)}
+		&"west_sanctuary":
+			if west_sanctuary != null:
+				return west_sanctuary.get_sanctuary_highlight_bundle()
+			return {"world_pos_3d": Vector3(-20.4, 0.0, 0.0)}
+		&"perimeter_takeoff":
+			return {
+				"bridge_mats": _bridge_mats.duplicate(),
+				"world_pos_3d": Vector3.ZERO,
+			}
+		_:
+			return {"world_pos_3d": Vector3.ZERO}
+
+
 func is_any_hub_modal_or_panel_open() -> bool:
 	if _is_capsule_focused:
 		return true
@@ -1541,6 +1646,15 @@ func _on_dev_back_to_workbench() -> void:
 func _update_proximity_prompts() -> void:
 	var active_p: Node3D = _get_active_player_node()
 	if active_p == null:
+		return
+	if embedded_mode and _embedded_input_suppressed:
+		if _capsule_label != null:
+			_capsule_label.visible = false
+		for st: StationNodeScript in _all_stations():
+			st.set_highlighted(false)
+			st.set_prompt_suppressed(true)
+		if hud != null:
+			hud.set_interaction_prompt("", Color.WHITE, false)
 		return
 	var is_dissolved: bool = _embedded_is_dematerializing or (departure_controller != null and departure_controller.is_dissolved_preview())
 	var is_free_roam: bool = (

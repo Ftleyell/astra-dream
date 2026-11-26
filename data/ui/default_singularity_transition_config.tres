@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SingularityTransitionConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/ui/singularity_transition_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+crunch_duration_sec = 0.42
+min_singularity_hold_sec = 0.35
+big_bang_duration_sec = 0.62
+swirl_strength = 2.4
+chromatic_aberration = 0.036
+singularity_core_radius = 0.015
+anamorphic_flare_intensity = 1.35
+shockwave_refraction = 0.085
+particle_density = 1.0
+core_tint = Color(0.86, 0.95, 1, 1)
+shockwave_tint = Color(0.32, 0.88, 1, 1)

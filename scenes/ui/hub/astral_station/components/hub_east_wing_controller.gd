@@ -58,6 +58,8 @@ var _totem_screen_mat: ShaderMaterial = null
 
 var _outline_mat: ShaderMaterial = null
 var _prop_mats: Array[ShaderMaterial] = []
+var _totem_outline_mat: ShaderMaterial = null
+var _totem_prop_mats: Array[ShaderMaterial] = []
 var _lounge_pads: Array[MeshInstance3D] = []
 var _beacon_entries: Array[Dictionary] = []
 
@@ -272,12 +274,30 @@ func _build_telemetry_totem() -> void:
 	_totem_root.rotation = Vector3(0.0, deg_to_rad(-34.0), 0.0)
 	add_child(_totem_root)
 
+	_totem_outline_mat = ShaderMaterial.new()
+	_totem_outline_mat.shader = OutlineShader
+	_totem_outline_mat.set_shader_parameter("outline_width", _config.outline_width)
+	_totem_outline_mat.set_shader_parameter("reference_distance", _config.outline_ref_distance)
+
+	_totem_prop_mats.clear()
+	for s_idx: int in range(3):
+		var tm := ShaderMaterial.new()
+		tm.shader = PropShader
+		tm.next_pass = _totem_outline_mat
+		tm.set_shader_parameter("material_kind", s_idx)
+		tm.set_shader_parameter("base_color", [COLOR_PSYCHOPOP_ARMOR, COLOR_PSYCHOPOP_CHASSIS, COLOR_PSYCHOPOP_PINK][s_idx])
+		tm.set_shader_parameter("pilot_accent_color", COLOR_PSYCHOPOP_CYAN if s_idx == 2 else COLOR_PSYCHOPOP_PINK)
+		tm.set_shader_parameter("crease_ink_strength", _config.crease_ink_strength)
+		tm.set_shader_parameter("emissive_boost", _config.emissive_boost)
+		tm.set_shader_parameter("ambient_fill", 0.30)
+		_totem_prop_mats.append(tm)
+
 	var body_mi := MeshInstance3D.new()
 	body_mi.name = "TelemetryTotemMesh"
 	body_mi.mesh = EastMeshBuilder.build_telemetry_totem_mesh()
 	body_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	for s_idx: int in range(3):
-		body_mi.set_surface_override_material(s_idx, _prop_mats[s_idx])
+		body_mi.set_surface_override_material(s_idx, _totem_prop_mats[s_idx])
 	_totem_root.add_child(body_mi)
 
 	_totem_screen_mat = ShaderMaterial.new()
@@ -757,6 +777,45 @@ func get_telemetry_totem_node() -> Node3D:
 
 func get_followed_pet_id() -> StringName:
 	return _followed_pet_id
+
+
+func get_gacha_highlight_bundle() -> Dictionary:
+	var p_mats: Array[ShaderMaterial] = []
+	var o_mats: Array[ShaderMaterial] = []
+	if summoner != null:
+		var sb: Dictionary = summoner.get_tutorial_highlight_materials()
+		for m: ShaderMaterial in sb.get("prop_mats", []):
+			if m != null and not p_mats.has(m):
+				p_mats.append(m)
+		for om: ShaderMaterial in sb.get("outline_mats", []):
+			if om != null and not o_mats.has(om):
+				o_mats.append(om)
+	var pos_3d: Vector3 = _config.gacha_summoner_pos if _config != null else Vector3(15.42, 0.0, 0.0)
+	return {
+		"prop_mats": p_mats,
+		"outline_mats": o_mats,
+		"world_pos_3d": pos_3d,
+	}
+
+
+func get_telemetry_highlight_bundle() -> Dictionary:
+	var p_mats: Array[ShaderMaterial] = []
+	for m: ShaderMaterial in _totem_prop_mats:
+		if m != null and not p_mats.has(m):
+			p_mats.append(m)
+	var o_mats: Array[ShaderMaterial] = []
+	if _totem_outline_mat != null:
+		o_mats.append(_totem_outline_mat)
+	var h_mats: Array[ShaderMaterial] = []
+	if _totem_screen_mat != null:
+		h_mats.append(_totem_screen_mat)
+	var pos_3d: Vector3 = _config.telemetry_totem_pos if _config != null else Vector3(10.2, 0.0, 10.2)
+	return {
+		"prop_mats": p_mats,
+		"outline_mats": o_mats,
+		"holo_mats": h_mats,
+		"world_pos_3d": pos_3d,
+	}
 
 
 func _create_trigger_area(node_name: String, pos: Vector3, radius: float) -> Area3D:

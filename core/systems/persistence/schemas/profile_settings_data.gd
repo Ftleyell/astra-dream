@@ -12,6 +12,7 @@ const DEFAULT_TROPHIES: Dictionary = {
 }
 
 var game_speed: float = 1.0
+var hub_tutorial_completed: bool = false
 var trophies_unlocked: Dictionary = DEFAULT_TROPHIES.duplicate()
 var career_stats: Dictionary = get_default_career_stats()
 
@@ -30,6 +31,7 @@ static func get_default_career_stats() -> Dictionary:
 static func create_default() -> RefCounted:
 	var settings: RefCounted = (load("res://core/systems/persistence/schemas/profile_settings_data.gd") as GDScript).new()
 	settings.game_speed = 1.0
+	settings.hub_tutorial_completed = false
 	settings.trophies_unlocked = DEFAULT_TROPHIES.duplicate()
 	settings.career_stats = get_default_career_stats()
 	return settings
@@ -37,6 +39,7 @@ static func create_default() -> RefCounted:
 func populate_from_dict(raw: Dictionary) -> void:
 	var speed: float = float(raw.get("game_speed", 1.0))
 	game_speed = speed if speed > 0.0 else 1.0
+	hub_tutorial_completed = bool(raw.get("hub_tutorial_completed", false))
 
 	var trophies_clean: Dictionary = DEFAULT_TROPHIES.duplicate()
 	if raw.has("trophies_unlocked") and raw["trophies_unlocked"] is Dictionary:
@@ -65,6 +68,7 @@ func to_dict() -> Dictionary:
 
 	return {
 		"game_speed": game_speed,
+		"hub_tutorial_completed": hub_tutorial_completed,
 		"trophies_unlocked": trophies_serializable,
 		"career_stats": career_stats.duplicate()
 	}

@@ -1,4 +1,4 @@
-# Contexto del Agente — Astra Dream
+# Contexto del Agente — Stela Galactica (repo `astra_dream`)
 > **Leer este archivo SIEMPRE antes de explorar cualquier otro.**
 > Contiene la orientación fundamental para no realizar exploraciones ciegas ni consumir tokens innecesarios.
 > Para el mapa detallado de subsistemas, contratos y suites de prueba, consultar [`docs/DOMAIN_MAP.md`](docs/DOMAIN_MAP.md) y el índice maestro [`docs/README.md`](docs/README.md).
@@ -13,7 +13,8 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 
 | Dominio | Archivo Principal / Orquestador | Componentes Clave |
 |---|---|---|
-| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `controllers/combat_hub_session_controller.gd`, `run_state_serializer.gd` |
+| **Identidad, Título & Singularidad** | `scenes/combat/controllers/combat_title_session_controller.gd` + `core/systems/singularity_transition_presenter.gd` | `StelaLogoStage` (4 capas + `CosmicLightingSampler`), `TitleMenuOverlay`, `title_screen.gd` (Boot Preloader), shaders `stela_logo_*` / `singularity_transition`, `tools/process_stela_logo.py` *(doc: [`docs/STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md`](docs/STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md))* |
+| **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `controllers/{combat_title_session_controller,combat_hub_session_controller}.gd`, `run_state_serializer.gd` |
 | **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `player_rig_v2_controller.gd`, `hub_landing_ripple_vfx.gd` |
 | **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
@@ -27,13 +28,13 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Modales de Combate** | `scenes/combat/ui/combat_modal_coordinator.gd` | Subscripciones FIFO a LevelUp, Shop, Arcanas, Banlist |
 | **Game Over / Victoria** | `scenes/ui/game_over/game_over_modal.gd` | `game_over_layout_builder.gd`, `game_over_telemetry_formatter.gd` |
 | **Salón de la Fama / Records** | `scenes/ui/highscores/highscores_modal.gd` | `highscores_table_builder.gd`, `highscores_tab_controller.gd` |
-| **Hub 3D (Estación Astral v4 embebido en `MainGame`)** | `scenes/combat/controllers/combat_hub_session_controller.gd` + `scenes/ui/hub/astral_station/astral_station_hub.gd` | `hub_embedded_viewport_bridge.gd` (paridad ortográfica 2D↔3D sobre `CosmosCombatEnvironment`), `Player` 2D único (`PlayerRigV2Controller` con **Astral Glide-Hop** `GaitStyle.ASTRAL_GLIDE_HOP` ↔ Vuelo Zero-G + Dash pacífico), seed `AUTO` fresca por visita, exclusión/supresión de spawners (`29.5 m` / `6.0 s` cono frontal), sombras `SHADOW_ORTHOGONAL`, zoom cercano `2.60×`/`2.50×`, modales/alas `hub_*` y despegue zero-rail *(standalone: `astral_station_hub.tscn`; labs: `sandbox/hub_art_lab/{hub_art_lab.gd,hub_locomotion_lab/}`; legacy: `hub_world.gd`)* |
+| **Hub 3D (Estación Astral v4 embebido en `MainGame`)** | `scenes/combat/controllers/combat_hub_session_controller.gd` + `scenes/ui/hub/astral_station/astral_station_hub.gd` | `hub_embedded_viewport_bridge.gd` (paridad ortográfica 2D↔3D sobre `CosmosCombatEnvironment`), materialización hexagonal (`demat_invert`), `HubTutorialDirector` (Dialogic nativo Mochi + `tutorial_highlight_pulse` + `? Guía` / `[F1]`, `hub_tutorial_completed`), `Player` 2D único (`PlayerRigV2Controller` con **Astral Glide-Hop** `GaitStyle.ASTRAL_GLIDE_HOP` ↔ Vuelo Zero-G + Dash pacífico), seed `AUTO` fresca por visita, exclusión/supresión de spawners (`29.5 m` / `6.0 s` cono frontal), sombras `SHADOW_ORTHOGONAL`, zoom cercano `2.60×`/`2.50×`, modales/alas `hub_*` y despegue zero-rail *(standalone: `astral_station_hub.tscn`; labs: `sandbox/hub_art_lab/{hub_art_lab.gd,hub_locomotion_lab/}`; legacy: `hub_world.gd`)* |
 | **Selección de Personaje** | `scenes/ui/character_select/character_select.gd` | `character_roster_grid_builder.gd`, `character_live_banner_viewport.gd`, `character_pilot_showcase.gd`, `hero_picker_modal.gd`, `arsenal_banlist_modal.gd` |
 | **Gacha y Banners** | `scenes/ui/gacha/gacha_modal.gd` | `gacha_modal_layout_builder.gd`, `gacha_banner_engine.gd`, `gacha_reveal_theater.gd`, `gacha_wardrobe_controller.gd` |
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd`, `shader_skin_live_preview.gd`, `shader_skin_swatch.gd` |
 | **Pilotos & Rig Valentina v2 (Prod.)** | `scenes/pilots/rig/planar_combat_rig.gd` | `scenes/pilots/{rig,shaders,vfx,weapons,banner}/`, `data/pilots/`, `assets/pilots/` (*Single Source of Truth*) |
 | **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | Labs interactivos (`proto/`, `face_lab/`, `vfx_lab/` + `valentina_skill_ult_studio.tscn`, `guns_lab/`, `3d_lab/`, `banner_lab/`, `dialogue_lab/`) consumiendo producción; docs `VALENTINA_V2_*.md` |
-| **Workbenches & Combat Gym (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn` | `sandbox/workbenches/{hud_workbench,dialogue_workbench,character_select_workbench,skill_ult_workbench,shared}/`, `sandbox/hub_art_lab/` y `sandbox/combat_gym/combat_gym.tscn` consumiendo escenas reales de producción |
+| **Workbenches & Combat Gym (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn` | `sandbox/workbenches/{hud_workbench,dialogue_workbench,character_select_workbench,skill_ult_workbench,stela_intro_lab,shared}/`, `sandbox/hub_art_lab/` y `sandbox/combat_gym/combat_gym.tscn` consumiendo escenas reales de producción |
 | **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
@@ -91,7 +92,7 @@ sandbox/pilot_rig_lab/backups/         <- Snapshot inmutable de baseline calibra
 | `DebugManager` | Control de utilidades de depuración en runtime y builds. |
 | `EventBus` | Señales globales desacopladas entre dominios. |
 | `AudioManager` | BGM reactiva, SFX balísticos y buses de audio. |
-| `SceneTransition` | Fundidos y transiciones suaves de escena. |
+| `SceneTransition` | Transiciones cinemáticas **Singularidad** (3 fases + `load_threaded_request`) vía `SingularityTransitionPresenter`. |
 
 ---
 
@@ -122,6 +123,8 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **3D Lab / Alas 3D Cel-Shaded (Estándar)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_3d_lab"` |
 | **Banner Lab / Live Splash 2.5D (I+D)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "valentina_banner_lab"` |
 | **Roster Lockout & Live Banner (Fase 2)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_roster_rework_lockout"` |
+| **Identidad *Stela Galactica*, Singularidad & Tutorial Hub** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_stela_identity_and_tutorial" -TimeoutSeconds 35` |
+| **Title Screen & Navegación Hub** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_title_and_hub_navigation" -TimeoutSeconds 25` |
 | **Hub 3D Embebido en MainGame (Integración)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30` |
 | **Locomoción Grounded / Astral Glide-Hop Hub** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_grounded_walk"` |
 | **Hub 3D Estación Astral v4 (Prod.)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production"` |

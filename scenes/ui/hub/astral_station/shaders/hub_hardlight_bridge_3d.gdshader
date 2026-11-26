@@ -11,6 +11,10 @@ uniform float base_alpha : hint_range(0.05, 0.9) = 0.24;
 uniform float scroll_speed : hint_range(0.0, 4.0) = 1.05;
 uniform vec3 player_world_pos = vec3(0.0);
 
+uniform float tutorial_highlight_pulse : hint_range(0.0, 2.0) = 0.0;
+uniform vec4 tutorial_highlight_color : source_color = vec4(0.28, 0.94, 1.0, 1.0);
+
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 34.0;
@@ -35,7 +39,8 @@ void fragment() {
 		float d_origin = length(v_world_pos.xz - demat_origin.xz);
 		float hex_d = _hex_cell(v_world_pos.xz * 2.4);
 		float wave_r = mix(-2.5, demat_max_radius, demat_progress);
-		if ((d_origin + hex_d * 1.1) < wave_r) {
+		float signed_wave = (d_origin + hex_d * 1.1) - wave_r;
+		if ((!demat_invert && signed_wave < 0.0) || (demat_invert && signed_wave > 0.0)) {
 			discard;
 		}
 	}
@@ -56,8 +61,14 @@ void fragment() {
 
 	vec3 col = mix(bridge_color.rgb, trim_gold_color.rgb, clamp(outer_rail * 0.85 + inner_rail * 0.5 + prox * 0.20, 0.0, 1.0));
 	float alpha = clamp((base_alpha + chevron * 0.24 + hex_grid * 0.22 + outer_rail * 0.55 + inner_rail * 0.30 + prox * 0.22) * end_fade, 0.0, 0.88);
+	vec3 emit_col = col * (0.85 + outer_rail * 0.75 + chevron * 0.45 + prox * 0.55);
+	if (tutorial_highlight_pulse > 0.001) {
+		col = mix(col, tutorial_highlight_color.rgb, clamp(tutorial_highlight_pulse * 0.55, 0.0, 0.85));
+		emit_col += tutorial_highlight_color.rgb * tutorial_highlight_pulse * (0.85 + outer_rail * 0.75) * end_fade;
+		alpha = clamp(alpha + tutorial_highlight_pulse * 0.28 * end_fade, 0.0, 0.96);
+	}
 
 	ALBEDO = col;
-	EMISSION = col * (0.85 + outer_rail * 0.75 + chevron * 0.45 + prox * 0.55);
+	EMISSION = emit_col;
 	ALPHA = alpha;
 }

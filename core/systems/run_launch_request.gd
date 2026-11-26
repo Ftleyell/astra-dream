@@ -17,6 +17,7 @@ enum SeedMode {
 enum EntryMode {
 	DIRECT_COMBAT = 0,
 	HUB = 1,
+	TITLE = 2,
 }
 
 const MAIN_GAME_SCENE_PATH: String = "res://scenes/combat/main_game.tscn"
@@ -176,6 +177,11 @@ static func request_hub_entry() -> void:
 	_pending_request = null
 
 
+static func request_title_entry() -> void:
+	_pending_entry_mode = EntryMode.TITLE
+	_pending_request = null
+
+
 static func request_direct_combat_entry() -> void:
 	_pending_entry_mode = EntryMode.DIRECT_COMBAT
 
@@ -192,6 +198,17 @@ static func peek_entry_mode() -> EntryMode:
 
 static func transition_to_hub(tree: SceneTree) -> void:
 	request_hub_entry()
+	if tree == null:
+		return
+	var st: Node = tree.root.get_node_or_null("SceneTransition") if tree.root != null else null
+	if st != null and st.has_method("change_scene_to_file"):
+		st.call("change_scene_to_file", MAIN_GAME_SCENE_PATH)
+		return
+	tree.change_scene_to_file(MAIN_GAME_SCENE_PATH)
+
+
+static func transition_to_title(tree: SceneTree) -> void:
+	request_title_entry()
 	if tree == null:
 		return
 	var st: Node = tree.root.get_node_or_null("SceneTransition") if tree.root != null else null

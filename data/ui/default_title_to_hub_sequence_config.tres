@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TitleToHubSequenceConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/ui/title_to_hub_sequence_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+title_cosmos_drift_speed = Vector2(38, -14)
+title_camera_offset_px = Vector2(-520, -280)
+title_camera_zoom = 0.82
+camera_glide_duration_sec = 1.1
+station_materialize_delay_sec = 0.25
+station_materialize_duration_sec = 1.25
+pilot_flyin_delay_sec = 0.72
+pilot_flyin_duration_sec = 0.78
+pilot_flyin_start_offset_px = Vector2(0, -480)

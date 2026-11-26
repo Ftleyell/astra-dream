@@ -33,6 +33,8 @@ func handle_input(event: InputEvent) -> void:
 
 	if main_game.has_method("is_hub_mode_active") and main_game.is_hub_mode_active():
 		return
+	if main_game.has_method("is_title_or_materializing_active") and main_game.is_title_or_materializing_active():
+		return
 
 	# Durante secuencias cinemáticas o diálogos, consumir ESC para evitar desincronizar pausa
 	if main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():

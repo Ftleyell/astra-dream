@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="PetBubbleVisualConfig" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/pets/resources/pet_bubble_visual_config.gd" id="1_cfg"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/luna/pet_luna_albedo.png" id="2_alb"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/luna/pet_luna_normal.png" id="3_nrm"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/luna/pet_luna_bubble_tex.png" id="4_bub"]
+
+[resource]
+script = ExtResource("1_cfg")
+pet_id = &"luna"
+display_name = "Luna"
+albedo_texture = ExtResource("2_alb")
+normal_texture = ExtResource("3_nrm")
+bubble_texture = ExtResource("4_bub")
+theme_color = Color(0.32, 0.82, 1, 1)
+rim_color = Color(0.72, 0.96, 1, 1)
+inner_glow_color = Color(0.2, 0.58, 0.92, 1)
+front_opacity = 0.34
+back_opacity = 0.3
+edge_texture_opacity = 0.78
+texture_strength = 0.9
+glass_refraction = 0.36
+bubble_bump_strength = 0.28
+caustic_strength = 0.95
+rim_bevel_darkness = 0.72
+fresnel_power = 2.6
+fresnel_strength = 1.05
+iridescence_strength = 0.34
+specular_strength = 1.15
+bubble_spin_speed = Vector3(0.18, -0.58, 0.1)
+pet_scale = 0.8
+pet_normal_strength = 0.95
+pet_shadow_tint = Color(0.58, 0.68, 0.88, 1)
+pet_rim_strength = 0.58
+bob_amplitude = 5.2
+bob_speed = 2.8
+wobble_strength = 0.016
+lag_stiffness = 9.5
+max_lag_px = 11.0
+orbit_radius_x = 155.0
+orbit_radius_y = 56.0
+orbit_tilt_deg = 22.0
+orbit_speed = 1.4
+back_scale = 0.82
+front_scale = 1.12
+combat_diameter_px = 64.0
+hub_diameter_px = 54.0
+combat_orbit_radius_x = 102.0
+combat_orbit_radius_y = 42.0
+combat_follow_speed_threshold = 310.0
+combat_follow_offset_px = Vector2(-58, 28)
+combat_follow_stiffness = 9.5

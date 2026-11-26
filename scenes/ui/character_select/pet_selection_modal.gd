@@ -106,6 +106,8 @@ func _ready() -> void:
 	hide()
 
 	_init_components()
+	if cover_flow_renderer:
+		cover_flow_renderer.set_previews_paused(true)
 
 	if dim_overlay:
 		dim_overlay.gui_input.connect(_on_dim_overlay_gui_input)
@@ -168,6 +170,8 @@ func _init_components() -> void:
 
 func open_modal() -> void:
 	is_open = true
+	if cover_flow_renderer:
+		cover_flow_renderer.set_previews_paused(false)
 	show()
 	if carousel_panel:
 		carousel_panel.call_deferred("grab_focus")
@@ -178,6 +182,8 @@ func close_modal() -> void:
 	if not is_open:
 		return
 	is_open = false
+	if cover_flow_renderer:
+		cover_flow_renderer.set_previews_paused(true)
 	if get_viewport():
 		get_viewport().gui_release_focus()
 	hide()

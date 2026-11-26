@@ -367,3 +367,9 @@ static func get_unlocked_items() -> Array[StringName]:
 
 static func is_item_unlocked(item_id: StringName) -> bool:
 	return ProfileStorage.is_item_unlocked(item_id)
+
+static func is_hub_tutorial_completed() -> bool:
+	return ProfileStorage.is_hub_tutorial_completed()
+
+static func set_hub_tutorial_completed(completed: bool) -> void:
+	ProfileStorage.set_hub_tutorial_completed(completed)

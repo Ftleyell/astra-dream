@@ -25,6 +25,7 @@ const CombatLootCoordinator = preload("res://scenes/combat/systems/combat_loot_c
 const SpaceEnvironmentHostScript = preload("res://scenes/combat/environment/space_environment_host.gd")
 const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 const CombatHubSessionControllerScript = preload("res://scenes/combat/controllers/combat_hub_session_controller.gd")
+const CombatTitleSessionControllerScript = preload("res://scenes/combat/controllers/combat_title_session_controller.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -39,6 +40,7 @@ var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
 var environment_host: SpaceEnvironmentHost = SpaceEnvironmentHostScript.new()
 var hub_session_controller: CombatHubSessionControllerScript = null
+var title_session_controller: CombatTitleSessionControllerScript = null
 var active_launch_request: RunLaunchRequestScript = null
 var run_director_seed: int = 0
 var run_loot_seed: int = 0
@@ -203,7 +205,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	var entry_mode: int = RunLaunchRequestScript.consume_entry_mode()
-	if entry_mode == RunLaunchRequestScript.EntryMode.HUB and not SaveManager.is_resuming_run:
+	if (entry_mode == RunLaunchRequestScript.EntryMode.HUB or entry_mode == RunLaunchRequestScript.EntryMode.TITLE) and not SaveManager.is_resuming_run:
 		active_launch_request = RunLaunchRequestScript.create_random_auto()
 		run_seed = active_launch_request.cosmos_seed
 		run_director_seed = active_launch_request.run_director_seed
@@ -219,7 +221,15 @@ func _ready() -> void:
 		hub_session_controller = CombatHubSessionControllerScript.new() as CombatHubSessionControllerScript
 		hub_session_controller.name = "CombatHubSessionController"
 		add_child(hub_session_controller)
-		hub_session_controller.enter_hub_mode(self, active_launch_request)
+		if entry_mode == RunLaunchRequestScript.EntryMode.TITLE:
+			hub_session_controller.prepare_hidden_for_title(self, active_launch_request)
+			title_session_controller = CombatTitleSessionControllerScript.new() as CombatTitleSessionControllerScript
+			title_session_controller.name = "CombatTitleSessionController"
+			add_child(title_session_controller)
+			title_session_controller.setup(self, hub_session_controller)
+			title_session_controller.enter_title_mode(true)
+		else:
+			hub_session_controller.enter_hub_mode(self, active_launch_request)
 		return
 
 	var pending_req: RunLaunchRequestScript = RunLaunchRequestScript.consume_pending()
@@ -302,11 +312,23 @@ func _start_prologue_briefing() -> void:
 		is_briefing_active = false
 		PauseArbitrator.force_unpause_all()
 
-func _on_dialogic_signal(arg: Variant) -> void: if narrative_director: narrative_director.on_dialogic_signal(arg)
+func _on_dialogic_signal(arg: Variant) -> void:
+	if is_hub_mode_active() or is_title_or_materializing_active():
+		return
+	if narrative_director: narrative_director.on_dialogic_signal(arg)
 
-func _on_dialogic_timeline_started() -> void: if narrative_director: narrative_director.on_timeline_started()
-func _on_dialogue_skip_requested() -> void: if narrative_director: narrative_director.skip_dialogue()
-func _on_dialogic_timeline_ended() -> void: if narrative_director: narrative_director.on_timeline_ended()
+func _on_dialogic_timeline_started() -> void:
+	if is_hub_mode_active() or is_title_or_materializing_active():
+		return
+	if narrative_director: narrative_director.on_timeline_started()
+func _on_dialogue_skip_requested() -> void:
+	if is_hub_mode_active() or is_title_or_materializing_active():
+		return
+	if narrative_director: narrative_director.skip_dialogue()
+func _on_dialogic_timeline_ended() -> void:
+	if is_hub_mode_active() or is_title_or_materializing_active():
+		return
+	if narrative_director: narrative_director.on_timeline_ended()
 func _finish_prologue_and_start_run() -> void:
 	if narrative_director: narrative_director._finish_prologue_and_start_run()
 	else:
@@ -317,7 +339,7 @@ func _trigger_cockpit_interlude() -> void: if narrative_director: narrative_dire
 
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_cinematic_or_death_active() or is_hub_mode_active(): return
+	if get_tree().paused or is_cinematic_or_death_active() or is_hub_mode_active() or is_title_or_materializing_active(): return
 	if telemetry_coordinator: telemetry_coordinator.tick(delta)
 	else: run_time_elapsed += delta
 	if encounter_controller: encounter_controller.process_tick(delta, is_pre_round, current_wave)
@@ -457,6 +479,25 @@ func has_pending_upgrades() -> bool: return modal_coordinator.has_pending_upgrad
 func is_hub_mode_active() -> bool:
 	return hub_session_controller != null and is_instance_valid(hub_session_controller) and hub_session_controller.is_hub_mode_active()
 
+func is_title_or_materializing_active() -> bool:
+	return title_session_controller != null and is_instance_valid(title_session_controller) and title_session_controller.is_active()
+
+func return_from_hub_to_title() -> void:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return
+	if title_session_controller == null or not is_instance_valid(title_session_controller):
+		title_session_controller = CombatTitleSessionControllerScript.new() as CombatTitleSessionControllerScript
+		title_session_controller.name = "CombatTitleSessionController"
+		add_child(title_session_controller)
+		title_session_controller.setup(self, hub_session_controller)
+	title_session_controller.enter_title_mode_from_hub()
+
+func cleanup_title_session_for_combat() -> void:
+	if title_session_controller != null and is_instance_valid(title_session_controller):
+		title_session_controller.cleanup_for_combat()
+		title_session_controller.queue_free()
+	title_session_controller = null
+
 func is_position_in_hub_exclusion_zone(world_pos: Vector2, extra_padding_px: float = 0.0) -> bool:
 	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
 		return false
@@ -483,10 +524,12 @@ func push_position_outside_hub_exclusion(world_pos: Vector2, fallback_dir: Vecto
 	return hub_session_controller.push_position_outside_hub_exclusion(world_pos, fallback_dir, extra_padding_px)
 
 func is_any_hub_modal_active() -> bool:
+	if is_title_or_materializing_active():
+		return true
 	return hub_session_controller != null and is_instance_valid(hub_session_controller) and hub_session_controller.is_any_hub_modal_active()
 
 func is_any_combat_modal_active() -> bool:
-	if is_hub_mode_active(): return false
+	if is_hub_mode_active() or is_title_or_materializing_active(): return false
 	if ingame_debug_modal and ingame_debug_modal.is_open: return true
 	return modal_coordinator.is_any_combat_modal_active() if modal_coordinator else false
 

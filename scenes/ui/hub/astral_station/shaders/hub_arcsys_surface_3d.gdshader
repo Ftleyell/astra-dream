@@ -47,7 +47,8 @@ uniform vec4 cosmic_shadow_tint : source_color = vec4(0.24, 0.28, 0.46, 1.0);
 uniform vec4 cosmic_rim_color : source_color = vec4(0.45, 0.85, 1.0, 1.0);
 uniform float cosmic_light_mix : hint_range(0.0, 1.0) = 0.50;
 
-// Desmaterialización Tecnológica
+// Desmaterialización / Materialización Tecnológica
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 30.0;
@@ -77,11 +78,19 @@ void fragment() {
 		float hex_d = _hex_cell(v_world_pos.xz * demat_hex_scale);
 		float wave_r = mix(-2.5, demat_max_radius, demat_progress);
 		float signed_wave = (d_origin + hex_d * 1.1) - wave_r;
-		if (signed_wave < 0.0) {
-			discard;
+		if (!demat_invert) {
+			if (signed_wave < 0.0) {
+				discard;
+			}
+			demat_edge = 1.0 - smoothstep(0.0, 2.2, signed_wave);
+			hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, signed_wave));
+		} else {
+			if (signed_wave > 0.0) {
+				discard;
+			}
+			demat_edge = 1.0 - smoothstep(0.0, 2.2, -signed_wave);
+			hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, -signed_wave));
 		}
-		demat_edge = 1.0 - smoothstep(0.0, 2.2, signed_wave);
-		hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, signed_wave));
 	}
 	vec2 uv_t = UV * uv_scale;
 

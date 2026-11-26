@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://companionpet001"]
+[gd_scene load_steps=4 format=3 uid="uid://companionpet001"]
 
 [ext_resource type="Script" path="res://scenes/combat/pets/companion_pet.gd" id="1_pet"]
+[ext_resource type="PackedScene" path="res://scenes/pets/rig/pet_bubble_rig_25d.tscn" id="2_rig"]
 
 [sub_resource type="Curve" id="Curve_laser_width"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.4), 0.0, 0.0, 0, 0]
@@ -11,7 +12,11 @@ process_mode = 1
 z_index = 25
 script = ExtResource("1_pet")
 
+[node name="PetBubbleRig25D" parent="." instance=ExtResource("2_rig")]
+base_diameter_px = 64.0
+
 [node name="AuraParticles" type="CPUParticles2D" parent="."]
+emitting = false
 amount = 14
 lifetime = 0.45
 emission_shape = 1
@@ -22,6 +27,7 @@ scale_amount_max = 3.5
 color = Color(1, 0.8, 0.3, 0.75)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 scale = Vector2(0.55, 0.55)
 
 [node name="LaserBeam" type="Line2D" parent="."]

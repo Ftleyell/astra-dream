@@ -53,7 +53,7 @@ func _load_local_notes() -> void:
 			return
 
 	if notes_text:
-		notes_text.text = "[b][color=#00f0ff]ASTRA DREAM // NOTAS DEL PARCHE[/color][/b]\nRegistro de versiones disponible en el repositorio de GitHub."
+		notes_text.text = "[b][color=#00f0ff]STELA GALACTICA // NOTAS DEL PARCHE[/color][/b]\nRegistro de versiones disponible en el repositorio de GitHub."
 
 
 func _fetch_remote_notes() -> void:
@@ -106,8 +106,8 @@ func _parse_changelog_to_bbcode(markdown: String) -> String:
 
 	for line in lines:
 		var trimmed := line.strip_edges()
-		if trimmed.begins_with("# Changelog") or trimmed.begins_with("# Astra Dream"):
-			output.append("[b][font_size=18][color=#00f0ff]ASTRA DREAM // REGISTRO DE ACTUALIZACIONES[/color][/font_size][/b]")
+		if trimmed.begins_with("# Changelog") or trimmed.begins_with("# Astra Dream") or trimmed.begins_with("# Stela Galactica"):
+			output.append("[b][font_size=18][color=#00f0ff]STELA GALACTICA // REGISTRO DE ACTUALIZACIONES[/color][/font_size][/b]")
 			output.append("[color=#70a1ff]Sincronizado en tiempo real desde GitHub origin/master[/color]\n")
 			continue
 

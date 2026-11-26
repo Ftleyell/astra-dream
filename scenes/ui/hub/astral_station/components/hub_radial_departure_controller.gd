@@ -11,6 +11,7 @@ signal departure_started(sector_info: Dictionary, direction_2d: Vector2)
 signal departure_completed(request: RunLaunchRequestScript, launched_combat: bool)
 signal hub_rematerialized()
 signal embedded_dissolve_completed()
+signal embedded_materialization_completed()
 
 const ConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_art_lab_config.gd")
 const LayoutConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_floating_layout_config.gd")
@@ -38,6 +39,9 @@ var _is_dissolved_preview: bool = false
 var _is_rematerializing: bool = false
 var _is_embedded_dissolving: bool = false
 var _embedded_dissolve_timer: float = 0.0
+var _is_embedded_materializing: bool = false
+var _embedded_materialize_timer: float = 0.0
+var _embedded_materialize_dur: float = 1.25
 var _departure_timer: float = 0.0
 var _demat_progress: float = 0.0
 var _departure_dir_2d: Vector2 = Vector2.UP
@@ -239,6 +243,9 @@ func _process(delta: float) -> void:
 	if _is_embedded_dissolving:
 		_step_embedded_dissolve(delta)
 		return
+	if _is_embedded_materializing:
+		_step_embedded_materialize(delta)
+		return
 
 	if _layout == null or _player == null:
 		return
@@ -396,15 +403,66 @@ func update_embedded_compass(world_3d: Vector3, dir_xz: Vector2, prog: float, se
 
 
 func start_embedded_dissolve_only(origin_3d: Vector3) -> void:
+	_is_embedded_materializing = false
 	_is_embedded_dissolving = true
 	_embedded_dissolve_timer = 0.0
 	_demat_progress = 0.0
 	_departure_origin = origin_3d
+	_set_demat_invert_on_materials(false)
 	if _compass_arc_mesh != null:
 		_compass_arc_mesh.visible = false
 	if _spark_root != null:
 		_spark_root.visible = true
 	_apply_demat_to_materials(0.0, _departure_origin)
+
+
+func set_embedded_hidden_for_materialization() -> void:
+	_is_embedded_dissolving = false
+	_is_embedded_materializing = false
+	_demat_progress = 0.002
+	_departure_origin = Vector3.ZERO
+	if _compass_arc_mesh != null:
+		_compass_arc_mesh.visible = false
+	if _spark_root != null:
+		_spark_root.visible = false
+	_set_demat_invert_on_materials(true)
+	_apply_demat_to_materials(_demat_progress, Vector3.ZERO)
+
+
+func start_embedded_materialization(duration_sec: float = 1.25) -> void:
+	_is_embedded_dissolving = false
+	_is_embedded_materializing = true
+	_embedded_materialize_timer = 0.0
+	_embedded_materialize_dur = maxf(duration_sec, 0.20)
+	_demat_progress = 0.002
+	_departure_origin = Vector3.ZERO
+	if _compass_arc_mesh != null:
+		_compass_arc_mesh.visible = false
+	if _spark_root != null:
+		_spark_root.visible = false
+	_set_demat_invert_on_materials(true)
+	_apply_demat_to_materials(_demat_progress, Vector3.ZERO)
+
+
+func _step_embedded_materialize(delta: float) -> void:
+	_embedded_materialize_timer += delta
+	var t: float = clampf(_embedded_materialize_timer / maxf(_embedded_materialize_dur, 0.20), 0.0, 1.0)
+	var ease_t: float = t * t * (3.0 - 2.0 * t)
+	_demat_progress = maxf(0.002, ease_t)
+	_apply_demat_to_materials(_demat_progress, Vector3.ZERO)
+	if t >= 1.0:
+		_is_embedded_materializing = false
+		_demat_progress = 0.0
+		_set_demat_invert_on_materials(false)
+		_apply_demat_to_materials(0.0, Vector3.ZERO)
+		embedded_materialization_completed.emit()
+
+
+func _set_demat_invert_on_materials(inverted: bool) -> void:
+	for mat: ShaderMaterial in _demat_materials:
+		if mat == null or not is_instance_valid(mat):
+			continue
+		mat.set_shader_parameter("demat_invert", inverted)
 
 
 func _step_embedded_dissolve(delta: float) -> void:

@@ -22,6 +22,7 @@ signal shader_params_changed()
 signal save_config_requested()
 signal back_to_workbench_requested()
 signal settings_requested()
+signal tutorial_requested()
 signal return_to_title_requested()
 
 const ConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_art_lab_config.gd")
@@ -289,7 +290,7 @@ func _build_ui() -> void:
 	_hint_lbl.text = (
 		"[WASD] Caminar/Volar al Espacio · [Rueda] Zoom · [E] Interactuar · [R] Rematerializar · [H] Dev"
 		if is_dev_lab_mode
-		else "[WASD] Caminar/Volar al Espacio · [Rueda] Zoom · [E] Interactuar · [ESC] Ajustes"
+		else "[WASD] Caminar/Volar al Espacio · [Rueda] Zoom · [E] Interactuar · [F1] Guía · [ESC] Ajustes"
 	)
 	_hint_lbl.add_theme_font_size_override("font_size", 11)
 	_hint_lbl.add_theme_color_override("font_color", Color(0.76, 0.82, 0.94, 0.78))
@@ -300,13 +301,21 @@ func _build_ui() -> void:
 		_top_right_bar.name = "TopRightActionBar"
 		_top_right_bar.anchor_left = 1.0
 		_top_right_bar.anchor_right = 1.0
-		_top_right_bar.offset_left = -216.0
+		_top_right_bar.offset_left = -316.0
 		_top_right_bar.offset_top = 14.0
 		_top_right_bar.offset_right = -18.0
 		_top_right_bar.offset_bottom = 48.0
 		_top_right_bar.add_theme_constant_override("separation", 8)
 		_top_right_bar.alignment = BoxContainer.ALIGNMENT_END
 		_clean_root.add_child(_top_right_bar)
+
+		var guide_btn := Button.new()
+		guide_btn.name = "GuideButton"
+		guide_btn.text = "? Guía"
+		guide_btn.focus_mode = Control.FOCUS_NONE
+		guide_btn.add_theme_font_size_override("font_size", 12)
+		guide_btn.pressed.connect(func() -> void: tutorial_requested.emit())
+		_top_right_bar.add_child(guide_btn)
 
 		var settings_btn := Button.new()
 		settings_btn.name = "SettingsButton"

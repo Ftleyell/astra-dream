@@ -15,7 +15,10 @@ uniform vec3 key_light_dir = vec3(-0.48, 0.68, 0.55);
 uniform vec4 outline_color : source_color = vec4(0.045, 0.040, 0.095, 1.0);
 uniform vec4 outline_lit_color : source_color = vec4(0.11, 0.035, 0.07, 1.0);
 uniform float calibration_factor : hint_range(0.0, 1.0) = 0.0;
+uniform float tutorial_highlight_pulse : hint_range(0.0, 2.0) = 0.0;
+uniform vec4 tutorial_highlight_color : source_color = vec4(0.28, 0.94, 1.0, 1.0);
 
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 30.0;
@@ -52,7 +55,7 @@ void vertex() {
 	float dist_scale = dist / max(reference_distance, 0.5);
 	float world_w = clamp(outline_width * dist_scale, min_world_width, max_world_width);
 
-	VERTEX += smooth_n * (world_w * callig_mul);
+	VERTEX += smooth_n * (world_w * callig_mul * (1.0 + tutorial_highlight_pulse * 0.45));
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
@@ -61,10 +64,14 @@ void fragment() {
 		float d_origin = length(v_world_pos.xz - demat_origin.xz);
 		float hex_jitter = _hex_cell(v_world_pos.xz * demat_hex_scale) * 2.2;
 		float wave_r = mix(-2.5, demat_max_radius, demat_progress);
-		if (d_origin + hex_jitter * 0.45 < wave_r) {
+		float edge_d = d_origin + hex_jitter * 0.45;
+		if ((!demat_invert && edge_d < wave_r) || (demat_invert && edge_d > wave_r)) {
 			discard;
 		}
 	}
 	vec3 ink = mix(outline_color.rgb, outline_lit_color.rgb, v_lit_weight * 0.72 * (1.0 - calibration_factor * 0.5));
+	if (tutorial_highlight_pulse > 0.001) {
+		ink = mix(ink, tutorial_highlight_color.rgb * (1.2 + tutorial_highlight_pulse * 0.65), clamp(tutorial_highlight_pulse * 0.85, 0.0, 1.0));
+	}
 	ALBEDO = ink;
 }

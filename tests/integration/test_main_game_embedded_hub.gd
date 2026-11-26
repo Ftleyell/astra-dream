@@ -22,8 +22,11 @@ func _ready() -> void:
 
 
 func _run_tests() -> void:
+	var prev_tut_done: bool = SaveManager.is_hub_tutorial_completed()
+	SaveManager.set_hub_tutorial_completed(true)
 	await _test_embedded_hub_fresh_seed_and_parity()
 	await _test_direct_combat_entry_skips_hub()
+	SaveManager.set_hub_tutorial_completed(prev_tut_done)
 	pass_suite("Hub 3D integrado en MainGame verificado: seed fresca, Player 2D único pacífico, paridad 2D↔3D, despegue zero-rail y cleanup.")
 
 
@@ -48,7 +51,7 @@ func _test_embedded_hub_fresh_seed_and_parity() -> void:
 	assert_true(p != null and p.is_hub_mode, "Player 2D debe estar en modo Hub")
 	assert_true(p.weapon_controller != null and p.weapon_controller.is_hub_suppressed, "WeaponController debe estar suprimido en el Hub")
 	assert_true(game1.hud != null and not game1.hud.visible, "HUD de combate debe estar oculto en el Hub")
-	assert_true(game1.active_pet == null, "CompanionPet no debe spawnear hasta despegar")
+	assert_true(is_instance_valid(game1.active_pet) and game1.active_pet.is_hub_mode, "CompanionPet debe acompañar en modo pacífico durante el Hub")
 	assert_true(game1.enemy_spawner != null and game1.enemy_spawner.is_spawning_paused, "EnemySpawner debe permanecer pausado en el Hub")
 	assert_true(get_tree().get_nodes_in_group(&"enemies").is_empty(), "No deben existir enemigos en el Hub")
 	assert_true(game1.camera != null and is_equal_approx(game1.camera.zoom.x, 1.0), "GameCamera2D debe iniciar con zoom 1.0 exacto en el Hub")
@@ -195,7 +198,7 @@ func _test_embedded_hub_fresh_seed_and_parity() -> void:
 	assert_true(not ripples_vfx.visible and int(ripples_vfx.call("get_active_ripple_count")) == 0, "HubLandingRippleVFX debe limpiarse y ocultarse al despegar")
 	assert_true(ring_ctrl.visible, "Anillo orbital debe desplegarse al despegar")
 	assert_true(game1.hud.visible, "HUD de combate debe mostrarse al despegar")
-	assert_true(is_instance_valid(game1.active_pet), "CompanionPet debe spawnear al despegar")
+	assert_true(is_instance_valid(game1.active_pet) and not game1.active_pet.is_hub_mode, "CompanionPet debe pasar a modo combate al despegar")
 	assert_true(p.run_credits >= pre_credits + 50, "Debe otorgar los +50 créditos iniciales al despegar")
 	assert_true(not game1.enemy_spawner.is_spawning_paused, "EnemySpawner debe reactivarse al despegar")
 	assert_true(not game1.satellite_coordinator.is_hub_suppressed, "CombatSatelliteCoordinator debe reactivarse al despegar")

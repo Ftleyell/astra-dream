@@ -47,6 +47,7 @@ static func assemble_profile_dict(
 		"character_skills": roster.character_skills,
 		"selected_character": roster.selected_character,
 		"game_speed": settings.game_speed,
+		"hub_tutorial_completed": settings.hub_tutorial_completed,
 		"career_stats": settings.career_stats,
 		"selected_pet": roster.selected_pet,
 		"unlocked_pets": roster.unlocked_pets,
@@ -368,4 +369,24 @@ static func set_character_loadout(char_id: StringName, loadout: Dictionary) -> v
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(prof, "\t"))
+		file.close()
+
+static func is_hub_tutorial_completed() -> bool:
+	var prof: Dictionary = load_profile()
+	return bool(prof.get("hub_tutorial_completed", false))
+
+static func set_hub_tutorial_completed(completed: bool) -> void:
+	var prof: Dictionary = load_profile()
+	var roster: RefCounted = ProfileRosterDataScript.new()
+	roster.populate_from_dict(prof)
+	var economy: RefCounted = ProfileEconomyDataScript.new()
+	economy.populate_from_dict(prof)
+	var settings: RefCounted = ProfileSettingsDataScript.new()
+	settings.populate_from_dict(prof)
+	settings.hub_tutorial_completed = completed
+
+	var payload: Dictionary = serialize_profile(roster, economy, settings)
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(payload, "\t"))
 		file.close()

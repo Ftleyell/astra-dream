@@ -9,6 +9,7 @@ uniform vec4 screen_color : source_color = vec4(0.95, 0.16, 0.34, 1.0);
 uniform vec4 gold_color : source_color = vec4(0.91, 0.78, 0.44, 1.0);
 uniform float calibration_factor : hint_range(0.0, 1.0) = 0.0;
 uniform float pulse_boost : hint_range(0.0, 2.0) = 0.0;
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 30.0;
@@ -23,7 +24,7 @@ void fragment() {
 	if (demat_progress > 0.001) {
 		float d_origin = length(v_world_pos.xz - demat_origin.xz);
 		float wave_r = mix(-2.0, demat_max_radius, demat_progress);
-		if (d_origin < wave_r) {
+		if ((!demat_invert && d_origin < wave_r) || (demat_invert && d_origin > wave_r)) {
 			discard;
 		}
 	}

@@ -213,6 +213,11 @@ static func launch_session(main_game: MainGame, player: Player, hud: GameHUD, de
 		var green_cards: int = player.inventory.get_item_count(&"credit_card_green") if (player and player.inventory) else 0
 		main_game.chest_director.on_new_wave(main_game.current_wave, green_cards)
 	main_game._spawn_wave_chests()
-	main_game._start_prologue_briefing()
+	if is_instance_valid(player):
+		player.run_credits += 50
+		if is_instance_valid(hud):
+			hud.update_credits(player.run_credits)
+	main_game.prologue_bonus_chosen = true
+	main_game.is_briefing_active = false
 
 

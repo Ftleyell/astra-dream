@@ -9,6 +9,7 @@ enum SessionState {
 	HUB_ACTIVE = 1,
 	DEPARTING_DISSOLVE = 2,
 	COMBAT_LIVE = 3,
+	TITLE_STANDBY = 4,
 }
 
 const AstralStationHubScript = preload("res://scenes/ui/hub/astral_station/astral_station_hub.gd")
@@ -19,6 +20,7 @@ const LayoutConfigScript = preload("res://scenes/ui/hub/astral_station/resources
 const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 const CombatBootstrapperScript = preload("res://scenes/combat/systems/combat_bootstrapper.gd")
 const CombatSceneAssemblerScript = preload("res://scenes/combat/systems/combat_scene_assembler.gd")
+const HubTutorialDirectorScript = preload("res://scenes/ui/hub/astral_station/components/hub_tutorial_director.gd")
 
 const HUB_DISPLAY_Z_INDEX: int = 3
 const DEFAULT_HUB_ORIGIN_2D := Vector2(960.0, 540.0)
@@ -28,6 +30,7 @@ var main_game: MainGame = null
 var hub_stage: AstralStationHub = null
 var bridge: ViewportBridgeScript = null
 var display_sprite: Sprite2D = null
+var tutorial_director: HubTutorialDirectorScript = null
 var active_launch_request: RunLaunchRequestScript = null
 var hub_origin_2d: Vector2 = DEFAULT_HUB_ORIGIN_2D
 
@@ -42,6 +45,7 @@ var _px_per_m_x: float = 84.0
 var _px_per_m_z: float = 60.424
 var _post_launch_exclusion_timer: float = 0.0
 var _departure_dir_2d: Vector2 = Vector2.ZERO
+var _auto_tutorial_token: int = 0
 
 
 func is_hub_mode_active() -> bool:
@@ -52,10 +56,18 @@ func is_departing_dissolve() -> bool:
 	return state == SessionState.DEPARTING_DISSOLVE
 
 
+func is_hub_tutorial_active() -> bool:
+	return tutorial_director != null and is_instance_valid(tutorial_director) and tutorial_director.is_active()
+
+
+func get_tutorial_director() -> HubTutorialDirectorScript:
+	return tutorial_director if is_instance_valid(tutorial_director) else null
+
+
 func is_any_hub_modal_active() -> bool:
 	if state != SessionState.HUB_ACTIVE or hub_stage == null or not is_instance_valid(hub_stage):
 		return false
-	return hub_stage.is_any_hub_modal_or_panel_open()
+	return hub_stage.is_any_hub_modal_or_panel_open() or is_hub_tutorial_active()
 
 
 func get_hub_stage() -> AstralStationHub:
@@ -132,12 +144,11 @@ func push_position_outside_hub_exclusion(world_pos: Vector2, fallback_dir: Vecto
 	return hub_origin_2d + Vector2(out_dir_m.x * target_r_m * _px_per_m_x, out_dir_m.y * target_r_m * _px_per_m_z)
 
 
-func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> void:
+func _setup_embedded_hub_stack(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> bool:
 	main_game = p_main_game
 	if main_game == null:
-		return
+		return false
 
-	state = SessionState.HUB_ACTIVE
 	hub_origin_2d = DEFAULT_HUB_ORIGIN_2D
 	active_launch_request = p_initial_request.duplicate_request() if p_initial_request != null else RunLaunchRequestScript.create_random_auto()
 	_is_flying = false
@@ -146,6 +157,7 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 	_has_prev_pos = false
 	_post_launch_exclusion_timer = 0.0
 	_departure_dir_2d = Vector2.ZERO
+	_auto_tutorial_token += 1
 
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
@@ -229,11 +241,10 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 		main_game.player.global_position = spawn_2d
 		_prev_player_pos_2d = spawn_2d
 		_has_prev_pos = true
-		if is_instance_valid(main_game.camera):
-			main_game.camera.clear_cinematic_focus()
-			main_game.camera.global_position = spawn_2d
-			main_game.camera.zoom = Vector2.ONE
-			main_game.camera.target_zoom = 1.0
+		CombatSceneAssemblerScript.spawn_companion_pet(main_game, main_game.player)
+		if is_instance_valid(main_game.active_pet):
+			main_game.active_pet.global_position = spawn_2d + Vector2(-46.0, -18.0)
+			main_game.active_pet.set_hub_mode(true)
 
 	bridge.sync_camera_and_sprite()
 	_connect_hub_signals()
@@ -241,9 +252,113 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 	if _config != null:
 		hub_stage.sync_embedded_player_3d(_config.player_spawn_pos, main_game.player.global_position if is_instance_valid(main_game.player) else hub_origin_2d, false)
 
+	tutorial_director = HubTutorialDirectorScript.new() as HubTutorialDirectorScript
+	tutorial_director.name = "HubTutorialDirector"
+	add_child(tutorial_director)
+	tutorial_director.setup(hub_stage, bridge, main_game.camera)
+	tutorial_director.tutorial_started.connect(func() -> void:
+		if hub_stage != null and is_instance_valid(hub_stage):
+			hub_stage.set_embedded_input_suppressed(true)
+	)
+	tutorial_director.tutorial_finished.connect(func(_skipped: bool) -> void:
+		if hub_stage != null and is_instance_valid(hub_stage) and state == SessionState.HUB_ACTIVE:
+			hub_stage.set_embedded_input_suppressed(false)
+		SaveManager.set_hub_tutorial_completed(true)
+	)
+	return true
+
+
+func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> void:
+	if not _setup_embedded_hub_stack(p_main_game, p_initial_request):
+		return
+	state = SessionState.HUB_ACTIVE
+	hub_stage.set_embedded_input_suppressed(false)
+	if is_instance_valid(main_game.camera) and is_instance_valid(main_game.player):
+		main_game.camera.clear_cinematic_focus()
+		main_game.camera.global_position = main_game.player.global_position
+		main_game.camera.zoom = Vector2.ONE
+		main_game.camera.target_zoom = 1.0
+
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr != null and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("menu")
+
+	schedule_first_time_tutorial_if_needed(0.55)
+
+
+func prepare_hidden_for_title(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> void:
+	if not _setup_embedded_hub_stack(p_main_game, p_initial_request):
+		return
+	state = SessionState.TITLE_STANDBY
+	if display_sprite != null:
+		display_sprite.visible = false
+	if hub_stage != null:
+		hub_stage.set_embedded_hidden_for_materialization()
+		hub_stage.set_embedded_input_suppressed(true)
+	if is_instance_valid(main_game.player):
+		main_game.player.visible = false
+		main_game.player.is_movement_suppressed = true
+		main_game.player.velocity = Vector2.ZERO
+
+
+func activate_hub_from_title(allow_auto_tutorial: bool = true) -> void:
+	if main_game == null or hub_stage == null:
+		return
+	state = SessionState.HUB_ACTIVE
+	_is_flying = false
+	_pending_fly_target = false
+	_hysteresis_timer = 0.0
+	if is_instance_valid(main_game.player):
+		_prev_player_pos_2d = main_game.player.global_position
+		_has_prev_pos = true
+	hub_stage.set_embedded_input_suppressed(false)
+	if hub_stage.hud != null:
+		hub_stage.hud.set_clean_hud_visible(true)
+	if allow_auto_tutorial:
+		schedule_first_time_tutorial_if_needed(0.45)
+
+
+func suspend_hub_for_title() -> void:
+	_auto_tutorial_token += 1
+	if is_hub_tutorial_active():
+		tutorial_director.finish_tutorial(true)
+	state = SessionState.TITLE_STANDBY
+	if display_sprite != null:
+		display_sprite.visible = false
+	if hub_stage != null:
+		hub_stage.set_embedded_hidden_for_materialization()
+		hub_stage.set_embedded_input_suppressed(true)
+	if main_game != null and is_instance_valid(main_game.player):
+		main_game.player.visible = false
+		main_game.player.is_movement_suppressed = true
+		main_game.player.velocity = Vector2.ZERO
+
+
+func start_hub_tutorial(pet_id_override: StringName = &"") -> void:
+	if state != SessionState.HUB_ACTIVE or tutorial_director == null or hub_stage == null:
+		return
+	if is_hub_tutorial_active() or hub_stage.is_any_hub_modal_or_panel_open():
+		return
+	tutorial_director.start_tutorial(pet_id_override)
+
+
+func schedule_first_time_tutorial_if_needed(delay_sec: float = 0.45) -> void:
+	if SaveManager.is_hub_tutorial_completed() or state != SessionState.HUB_ACTIVE:
+		return
+	_auto_tutorial_token += 1
+	var my_token: int = _auto_tutorial_token
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		return
+	tree.create_timer(maxf(delay_sec, 0.05), true, false, true).timeout.connect(func() -> void:
+		if not is_inside_tree() or my_token != _auto_tutorial_token:
+			return
+		if state != SessionState.HUB_ACTIVE or SaveManager.is_hub_tutorial_completed():
+			return
+		if is_any_hub_modal_active():
+			return
+		start_hub_tutorial()
+	)
 
 
 func _resolve_cosmos_root() -> CosmosRootNode:
@@ -267,8 +382,23 @@ func _connect_hub_signals() -> void:
 	hub_stage.embedded_movement_lock_changed.connect(_on_embedded_movement_lock_changed)
 	hub_stage.embedded_player_reposition_requested.connect(_on_embedded_player_reposition_requested)
 	hub_stage.embedded_pilot_selected.connect(_on_embedded_pilot_selected)
+	hub_stage.embedded_companions_updated.connect(_on_embedded_companions_updated)
 	hub_stage.embedded_gacha_skin_equipped.connect(_on_embedded_gacha_skin_equipped)
+	hub_stage.embedded_tutorial_requested.connect(_on_embedded_tutorial_requested)
+	hub_stage.embedded_return_to_title_requested.connect(_on_embedded_return_to_title_requested)
 	hub_stage.embedded_demat_finished.connect(_on_hub_demat_finished)
+
+
+func _on_embedded_tutorial_requested() -> void:
+	_auto_tutorial_token += 1
+	start_hub_tutorial()
+
+
+func _on_embedded_return_to_title_requested() -> void:
+	if state != SessionState.HUB_ACTIVE or is_any_hub_modal_active():
+		return
+	if main_game != null and main_game.has_method("return_from_hub_to_title"):
+		main_game.return_from_hub_to_title()
 
 
 func _on_embedded_launch_request_changed(req: RunLaunchRequestScript, trigger_flash: bool) -> void:
@@ -372,8 +502,18 @@ func _on_embedded_pilot_selected(char_id: StringName, _accent_color: Color) -> v
 		hub_stage.set_embedded_player_rig_v2(new_rig_v2)
 
 
+func _on_embedded_companions_updated() -> void:
+	if main_game != null and is_instance_valid(main_game.active_pet):
+		main_game.active_pet.refresh_from_save()
+
+
 func _on_embedded_gacha_skin_equipped(equip_res: Dictionary) -> void:
 	if main_game == null or not is_instance_valid(main_game.player):
+		return
+	var cat: String = str(equip_res.get("category", "pilot"))
+	if cat == "pet":
+		if is_instance_valid(main_game.active_pet):
+			main_game.active_pet.refresh_from_save()
 		return
 	var rig_v2: PlayerRigV2Controller = main_game.player.get_rig_v2_controller()
 	if rig_v2 == null:
@@ -381,7 +521,6 @@ func _on_embedded_gacha_skin_equipped(equip_res: Dictionary) -> void:
 	var preset: PilotSkinPreset = equip_res.get("preset", null) as PilotSkinPreset
 	if preset == null:
 		return
-	var cat: String = str(equip_res.get("category", "pilot"))
 	var stars: int = int(equip_res.get("star_level", 1))
 	rig_v2.apply_live_gacha_skin(cat, preset, stars)
 
@@ -439,7 +578,7 @@ func _physics_process(delta: float) -> void:
 	var hover_y: float = _layout.flight_hover_y if _is_flying else _layout.platform_hover_y
 	hub_stage.sync_embedded_player_3d(Vector3(hub_xz.x, hover_y, hub_xz.y), player_ref.global_position, _is_flying)
 
-	if hub_stage.is_any_hub_modal_or_panel_open():
+	if hub_stage.is_any_hub_modal_or_panel_open() or is_hub_tutorial_active():
 		hub_stage.update_embedded_perimeter_warning(Vector3(hub_xz.x, 0.08, hub_xz.y), Vector2.UP, 0.0, {})
 		return
 
@@ -499,6 +638,12 @@ func launch_combat_seamlessly(departure_hub_xz: Vector2 = Vector2(0.0, -30.5)) -
 	if state != SessionState.HUB_ACTIVE or main_game == null:
 		return
 
+	_auto_tutorial_token += 1
+	if is_hub_tutorial_active():
+		tutorial_director.finish_tutorial(true)
+	if main_game.has_method("cleanup_title_session_for_combat"):
+		main_game.cleanup_title_session_for_combat()
+
 	state = SessionState.DEPARTING_DISSOLVE
 
 	if is_instance_valid(main_game.camera):
@@ -538,9 +683,13 @@ func launch_combat_seamlessly(departure_hub_xz: Vector2 = Vector2(0.0, -30.5)) -
 			var unlocked_items: Array[StringName] = SaveManager.get_unlocked_items()
 			main_game.chest_director.item_pool_manager.rebuild_run_pool(player_ref.character_data, unlocked_items, banned_items)
 
-		CombatSceneAssemblerScript.spawn_companion_pet(main_game, player_ref)
 		if is_instance_valid(main_game.active_pet):
-			main_game.active_pet.global_position = player_ref.global_position + Vector2(-56.0, 36.0)
+			main_game.active_pet.set_hub_mode(false)
+			main_game.active_pet.refresh_from_save()
+		else:
+			CombatSceneAssemblerScript.spawn_companion_pet(main_game, player_ref)
+			if is_instance_valid(main_game.active_pet):
+				main_game.active_pet.global_position = player_ref.global_position + Vector2(-56.0, 36.0)
 
 		player_ref.run_credits += 50
 
@@ -610,6 +759,9 @@ func launch_combat_seamlessly(departure_hub_xz: Vector2 = Vector2(0.0, -30.5)) -
 
 func _on_hub_demat_finished() -> void:
 	state = SessionState.COMBAT_LIVE
+	if tutorial_director != null and is_instance_valid(tutorial_director):
+		tutorial_director.queue_free()
+	tutorial_director = null
 	if bridge != null and is_instance_valid(bridge):
 		bridge.queue_free()
 	bridge = null

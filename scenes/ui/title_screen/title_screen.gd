@@ -1,116 +1,32 @@
 class_name TitleScreen
 extends Control
 
-## TitleScreen.gd
-## Pantalla inicial de bienvenida del juego.
-## Muestra el logo 'ASTRA: DREAM', el prompt 'Toca cualquier tecla para continuar'
-## y el panel integrado de Notas del Parche permanentemente visible y abierto.
-## Al recibir cualquier input principal, transiciona cinematográficamente hacia el Hub 3D.
+## TitleScreen.gd — Boot Preloader de Stela Galactica.
+## Dispara la carga en segundo plano de MainGame (EntryMode.TITLE) envuelta en la
+## Transición Singularidad para entrar directamente al Cosmos Engine vivo sin congelamientos.
 
-const RunLaunchRequestScript := preload("res://core/systems/run_launch_request.gd")
+const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 
-@onready var logo_texture: TextureRect = $MainHBox/LeftVBox.find_child("LogoTexture", true, false) as TextureRect
-@onready var title_label: Label = $MainHBox/LeftVBox.get_node_or_null("TitleLabel") as Label
-@onready var subtitle_label: Label = $MainHBox/LeftVBox.get_node_or_null("SubtitleLabel") as Label
-@onready var prompt_label: Label = $MainHBox/LeftVBox/PromptLabel
-@onready var fade_rect: ColorRect = $FadeRect
-@onready var patch_notes_panel: Control = $MainHBox/PatchNotesPanel
-@onready var logo_impact_controller: LogoImpactController = get_node_or_null("LogoImpactController") as LogoImpactController
+@export var auto_boot_on_ready: bool = true
 
-var _is_transitioning: bool = false
-var _prompt_tween: Tween = null
+var _boot_triggered: bool = false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = false
+	PauseArbitrator.force_unpause_all()
+	Engine.time_scale = 1.0
 
-	if fade_rect:
-		fade_rect.modulate.a = 1.0
-		fade_rect.visible = true
-		var tw_in := create_tween()
-		tw_in.tween_property(fade_rect, "modulate:a", 0.0, 0.45)
-		tw_in.tween_callback(func(): fade_rect.visible = false)
-
-	if logo_impact_controller:
-		if prompt_label:
-			prompt_label.modulate.a = 0.0
-		logo_impact_controller.sequence_completed.connect(_on_logo_sequence_completed)
-		logo_impact_controller.play_sequence()
-	else:
-		_start_prompt_pulse()
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_music"):
-		audio_mgr.play_music("menu")
+	if auto_boot_on_ready and get_tree() != null and get_tree().current_scene == self:
+		call_deferred("trigger_boot_to_title")
 
 
-func _on_logo_sequence_completed() -> void:
-	if prompt_label:
-		var tw_p: Tween = create_tween()
-		tw_p.tween_property(prompt_label, "modulate:a", 1.0, 0.35)
-		tw_p.tween_callback(_start_prompt_pulse)
-	else:
-		_start_prompt_pulse()
-
-
-
-func _start_prompt_pulse() -> void:
-	if not prompt_label:
+func trigger_boot_to_title() -> void:
+	if _boot_triggered or get_tree() == null:
 		return
-	if _prompt_tween and _prompt_tween.is_valid():
-		_prompt_tween.kill()
-
-	_prompt_tween = create_tween().set_loops()
-	_prompt_tween.tween_property(prompt_label, "modulate:a", 0.25, 0.75).set_trans(Tween.TRANS_SINE)
-	_prompt_tween.tween_property(prompt_label, "modulate:a", 1.0, 0.75).set_trans(Tween.TRANS_SINE)
+	_boot_triggered = true
+	RunLaunchRequestScript.transition_to_title(get_tree())
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if _is_transitioning:
-		return
-
-	if event is InputEventKey and event.is_pressed() and not event.is_echo():
-		_trigger_continue()
-		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseButton and event.is_pressed():
-		# Si el clic fue dentro del panel de notas, dejar que el usuario interactúe sin transicionar
-		if patch_notes_panel and patch_notes_panel.get_global_rect().has_point(event.position):
-			return
-		_trigger_continue()
-		get_viewport().set_input_as_handled()
-	elif event is InputEventJoypadButton and event.is_pressed():
-		_trigger_continue()
-		get_viewport().set_input_as_handled()
-
-
-func _trigger_continue() -> void:
-	if _is_transitioning:
-		return
-	_is_transitioning = true
-
-	if _prompt_tween and _prompt_tween.is_valid():
-		_prompt_tween.kill()
-
-	if prompt_label:
-		prompt_label.modulate = Color(0.2, 1.0, 0.6, 1.0)
-
-	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click")
-
-	var st = get_node_or_null("/root/SceneTransition")
-	if st and st.has_method("change_scene_to_file"):
-		RunLaunchRequestScript.transition_to_hub(get_tree())
-	elif fade_rect:
-		fade_rect.visible = true
-		fade_rect.modulate.a = 0.0
-		var tw_out := create_tween()
-		tw_out.tween_property(fade_rect, "modulate:a", 1.0, 0.35)
-		tw_out.tween_callback(_go_to_hub)
-	else:
-		_go_to_hub()
-
-
-func _go_to_hub() -> void:
-	RunLaunchRequestScript.transition_to_hub(get_tree())
+func is_boot_triggered() -> bool:
+	return _boot_triggered

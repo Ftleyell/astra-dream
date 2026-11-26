@@ -707,3 +707,19 @@ func get_ring_nodes() -> Array[Node3D]:
 
 func was_fakeout_triggered() -> bool:
 	return _fakeout_broken
+
+
+func get_tutorial_highlight_materials() -> Dictionary:
+	var p_mats: Array[ShaderMaterial] = []
+	for mat: ShaderMaterial in _body_mats:
+		if mat != null and not p_mats.has(mat):
+			p_mats.append(mat)
+	if _core_crystal_mat != null and not p_mats.has(_core_crystal_mat):
+		p_mats.append(_core_crystal_mat)
+	var o_mats: Array[ShaderMaterial] = []
+	if _outline_mat != null:
+		o_mats.append(_outline_mat)
+	return {
+		"prop_mats": p_mats,
+		"outline_mats": o_mats,
+	}

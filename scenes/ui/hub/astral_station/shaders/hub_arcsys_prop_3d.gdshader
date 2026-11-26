@@ -47,7 +47,12 @@ uniform vec4 calibrating_tint : source_color = vec4(0.32, 0.36, 0.48, 1.0);
 uniform vec4 calibrating_amber : source_color = vec4(0.92, 0.62, 0.18, 1.0);
 uniform float newly_unlocked_pulse : hint_range(0.0, 1.5) = 0.0;
 
-// Desmaterialización Tecnológica
+// Resaltado tutorial minimalista (titileo Fresnel directo por shader)
+uniform float tutorial_highlight_pulse : hint_range(0.0, 2.0) = 0.0;
+uniform vec4 tutorial_highlight_color : source_color = vec4(0.28, 0.94, 1.0, 1.0);
+
+// Desmaterialización / Materialización Tecnológica
+uniform bool demat_invert = false;
 uniform float demat_progress : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 demat_origin = vec3(0.0);
 uniform float demat_max_radius = 30.0;
@@ -83,11 +88,19 @@ void fragment() {
 		float hex_d = _hex_cell(v_world_pos.xz * demat_hex_scale);
 		float wave_r = mix(-2.5, demat_max_radius, demat_progress);
 		float signed_wave = (d_origin + hex_d * 1.1) - wave_r;
-		if (signed_wave < 0.0) {
-			discard;
+		if (!demat_invert) {
+			if (signed_wave < 0.0) {
+				discard;
+			}
+			demat_edge = 1.0 - smoothstep(0.0, 2.2, signed_wave);
+			hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, signed_wave));
+		} else {
+			if (signed_wave > 0.0) {
+				discard;
+			}
+			demat_edge = 1.0 - smoothstep(0.0, 2.2, -signed_wave);
+			hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, -signed_wave));
 		}
-		demat_edge = 1.0 - smoothstep(0.0, 2.2, signed_wave);
-		hex_wire = smoothstep(0.38, 0.48, hex_d) * (1.0 - smoothstep(2.2, 4.8, signed_wave));
 	}
 
 	vec3 n = normalize(NORMAL);
@@ -147,6 +160,11 @@ void fragment() {
 		float bounce = crimson_bounce_strength * 0.18 * energy_pulse * (1.0 - calibration_factor);
 		vec3 raw_emit = accent * (bounce + newly_unlocked_pulse * 0.22) + eff_rim_col * (rim_w * 0.24 * (1.0 - calibration_factor * 0.55));
 		prop_emissive += min(raw_emit, vec3(0.28));
+	}
+
+	if (tutorial_highlight_pulse > 0.001) {
+		float tut_fresnel = pow(1.0 - ndv, 1.9);
+		prop_emissive += tutorial_highlight_color.rgb * tutorial_highlight_pulse * (0.28 + tut_fresnel * 1.15);
 	}
 
 	if (material_kind != 2) {

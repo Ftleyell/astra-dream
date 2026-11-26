@@ -63,7 +63,7 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | `DebugManager` | `core/autoloads/debug_manager.gd` | Herramientas de depuración, overlay de métricas y profiling en desarrollo. | No incluir lógica de gameplay ligada a debug flags. |
 | `EventBus` | `core/autoloads/event_bus.gd` | Bus de eventos desacoplado para señales transversales entre escenas y dominios. | Utilizar tipos y argumentos estrictos en cada señal emitida. |
 | `AudioManager` | `core/autoloads/audio_manager.gd` | BGM dinámica, crossfades, buses de mezcla y efectos de sonido balísticos. | Disparar mediante `play_sfx()`, `play_music()` con enum o claves tipadas. |
-| `SceneTransition` | `core/autoloads/scene_transition.gd` | Transiciones visuales con fundido entre Hangar 3D y Combate 2D. | Invocación asíncrona mediante `fade_to_scene()`. |
+| `SceneTransition` | `core/autoloads/scene_transition.gd` | Transiciones cinemáticas de Singularidad (3 fases + `load_threaded_request`) vía `SingularityTransitionPresenter`. | Invocación asíncrona mediante `change_scene_to_file()` o `play_wipe()`. |
 
 ---
 
@@ -78,7 +78,8 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | Contexto de Combate | `scenes/combat/combat_context.gd` | Contenedor de estado compartido (jugador, cámara, puntuación, tiempo de oleada). |
 | Pipeline de Oleadas | `scenes/combat/combat_wave_pipeline.gd` | Control del avance temporal de oleadas y eventos programados. |
 | Spawner de Enemigos | `scenes/combat/spawners/enemy_spawner.gd` | Spawns procedurales según pesos y composición de `EncounterTimelineConfig`. |
-| Sesión Hub 3D Embebido | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE` dentro de `MainGame`, exclusión de spawners y paridad 2D↔3D. |
+| Sesión Título Viva & Materialización | `scenes/combat/controllers/combat_title_session_controller.gd` | `TITLE_ACTIVE ↔ HUB_MATERIALIZING` (`StelaLogoStage`, `TitleMenuOverlay`, materialización del Hub 3D y fly-in de Valentina). |
+| Sesión Hub 3D Embebido | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `TITLE_STANDBY ↔ HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE` dentro de `MainGame`, `HubTutorialDirector`, exclusión de spawners y paridad 2D↔3D. |
 | Serializador de Estado | `scenes/combat/systems/run_state_serializer.gd` | Serializa y restaura `run_seed`, inventario, armas y estado de partida activa. |
 
 - **Runners de Prueba:** `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"` y `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30`
@@ -249,7 +250,8 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 
 | Subsistema | Archivo Fuente | Rol |
 |---|---|---|
-| Orquestador Sesión Embebida | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE`, exclusión `29.5 m` / cono `65°`, supresión de spawners, foco/zoom y colisiones de cubierta. |
+| Orquestador Sesión Embebida | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `TITLE_STANDBY ↔ HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE`, `HubTutorialDirector`, exclusión `29.5 m` / cono `65°`, supresión de spawners, foco/zoom y colisiones de cubierta. |
+| Título Vivo & Onboarding Hub | `scenes/ui/title_screen/components/{stela_logo_stage,title_menu_overlay}.gd` + `scenes/ui/hub/astral_station/components/hub_tutorial_{director,highlight_controller}.gd` | Logo *Stela Galactica* 4 capas, menú Astral Pop-Ink sobre Cosmos vivo, Boot Preloader `title_screen.gd`, y tutorial Dialogic nativo de Mochi (`? Guía` / `[F1]`). *(Doc: [`docs/STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md`](STELA_GALACTICA_IDENTITY_AND_ONBOARDING.md))* |
 | Puente Ortográfico 2D↔3D | `scenes/ui/hub/astral_station/components/hub_embedded_viewport_bridge.gd` | Paridad 1:1 `Camera3D` ortogonal (`near=2.0`, `far=72.0`) ↔ `GameCamera2D` y `Hub3DDisplaySprite` (`z_index=3`). |
 | Orquestador Estación Astral | `scenes/ui/hub/astral_station/astral_station_hub.gd` | Ensamblado 3D (`embedded_mode` y standalone), luz `SHADOW_ORTHOGONAL`, `SettingsModal`, modos de foco e interacción. |
 | Locomoción & Ondas del Player | `scenes/combat/player/{player_rig_v2_controller,hub_landing_ripple_vfx}.gd` + `scenes/ui/hub/shaders/hub_astral_ripple_3d.gdshader` | **Astral Glide-Hop** ↔ Vuelo Zero-G, Dash pacífico en Hub, sombra de contacto reactiva y doble ripple astral al rebotar (`z_index=4` / 3D). |
@@ -272,7 +274,7 @@ core/systems/persistence/
 ├── schemas/
 │   ├── meta_progression_schema.gd   <- Desbloqueos globales, talentos, roster y balance de cristales
 │   ├── active_run_schema.gd         <- Partida en curso (vida, armas, items, run_seed, piso/tiempo)
-│   └── settings_schema.gd           <- Preferencias de audio, gráficos y calidad de fondo
+│   └── profile_settings_data.gd     <- Velocidad, trofeos, career_stats y `hub_tutorial_completed`
 ├── meta_progression_state.gd        <- Estado en memoria de la metaprogresión
 └── active_run_storage.gd            <- Guardado y restauración atómica en user://
 ```
@@ -310,6 +312,7 @@ Todo balance numérico reside en estos directorios. **Prohibido hardcodear núme
 | Navegantes / Asistentes | `resources/navigators/` | `NavigatorData` |
 | Banners de Gacha | `resources/gacha/` | `GachaBannerData` |
 | Configuración de Cosmos | `scenes/combat/environment/cosmos/resources/data/` | `CosmosEnvironmentConfig`, `CelestialSystemConfig`, `CosmicBiomeData`, etc. |
+| Identidad, Singularidad & Tutorial Hub | `data/ui/` + `data/hub/` | `StelaLogoVFXConfig`, `SingularityTransitionConfig`, `TitleToHubSequenceConfig`, `HubTutorialSequenceConfig` (`HubTutorialStepData`). |
 
 ---
 
@@ -348,6 +351,9 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "persistence"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "run_fork"
 
 # Hub 3D Estación Astral v4 (Embebido en MainGame + Astral Glide-Hop) & Integración Valentina v2
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_stela_identity_and_tutorial" -TimeoutSeconds 35
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_title_and_hub_navigation" -TimeoutSeconds 25
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_scene_transition_and_tape_button" -TimeoutSeconds 25
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_main_game_embedded_hub" -TimeoutSeconds 30
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_astral_station_hub_production" -TimeoutSeconds 30
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_hub_art_lab" -TimeoutSeconds 30
@@ -421,7 +427,7 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly
 ---
 
 ## 18. Workbenches sobre Producción & Combat Gym (`sandbox/workbenches/`, `sandbox/combat_gym/`)
-- **Lanzador Unificado (`F6`):** `sandbox/workbenches/workbench_hub.tscn` (`[1..7]`, incl. `[7] Hub Locomotion Lab 3D` en `sandbox/hub_art_lab/hub_locomotion_lab/hub_locomotion_lab.tscn`).
+- **Lanzador Unificado (`F6`):** `sandbox/workbenches/workbench_hub.tscn` (`[1..9]`, incl. `[7] Hub Locomotion Lab 3D` y `[9] StelaIntroLab` en `sandbox/workbenches/stela_intro_lab/stela_intro_lab.tscn`).
 - **Workbenches sobre escenas reales:**
   - `sandbox/workbenches/hud_workbench/hud_workbench.tscn` (`GameHUD` real + guías de equidistancia, presets de resolución, 0–4 armas simuladas).
   - `sandbox/workbenches/dialogue_workbench/dialogue_workbench.tscn` (`CombatNarrativeDirector` + `DialogueBackdropLayer` + inspector `.dch`).

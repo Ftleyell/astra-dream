@@ -9,6 +9,7 @@ extends RefCounted
 
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
+const PetBubbleUIPreviewScript = preload("res://scenes/pets/ui/pet_bubble_ui_preview.gd")
 
 var prev_btn: Button = null
 var next_btn: Button = null
@@ -40,6 +41,10 @@ var circular_glow: TextureRect = null
 
 var on_cycle_callback: Callable = Callable()
 var on_cycle_v_callback: Callable = Callable()
+
+var _left_preview: PetBubbleUIPreview = null
+var _center_preview: PetBubbleUIPreview = null
+var _right_preview: PetBubbleUIPreview = null
 
 
 func setup(
@@ -101,6 +106,40 @@ func setup(
 			if on_cycle_callback.is_valid():
 				on_cycle_callback.call(1)
 		)
+
+	_ensure_live_previews()
+
+
+func _ensure_live_previews() -> void:
+	if left_card and _left_preview == null:
+		_left_preview = PetBubbleUIPreviewScript.new() as PetBubbleUIPreview
+		_left_preview.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_left_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		left_card.add_child(_left_preview)
+	if artwork_viewport and _center_preview == null:
+		_center_preview = PetBubbleUIPreviewScript.new() as PetBubbleUIPreview
+		_center_preview.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_center_preview.mouse_filter = Control.MOUSE_FILTER_PASS
+		artwork_viewport.add_child(_center_preview)
+	if right_card and _right_preview == null:
+		_right_preview = PetBubbleUIPreviewScript.new() as PetBubbleUIPreview
+		_right_preview.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_right_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		right_card.add_child(_right_preview)
+
+
+func get_live_previews() -> Array[PetBubbleUIPreview]:
+	var arr: Array[PetBubbleUIPreview] = []
+	for p: PetBubbleUIPreview in [_left_preview, _center_preview, _right_preview]:
+		if p != null and is_instance_valid(p):
+			arr.append(p)
+	return arr
+
+
+func set_previews_paused(paused: bool) -> void:
+	for p: PetBubbleUIPreview in [_left_preview, _center_preview, _right_preview]:
+		if p != null and is_instance_valid(p):
+			p.set_preview_paused(paused)
 
 
 func setup_vertical(
@@ -259,14 +298,22 @@ func render_2d_carousel(
 	if not pet_data:
 		return
 
-	# 1. Horizontales: Mascotas adyacentes
+	_ensure_live_previews()
+
+	# 1. Horizontales: Mascotas adyacentes (burbujas 3D vivas + compatibilidad texture)
 	if left_texture and left_data:
 		left_texture.texture = left_data.get_icon_texture()
+		left_texture.visible = (_left_preview == null)
+	if _left_preview and left_data:
+		_left_preview.configure(left_data.pet_id, "", 1, false, 0.84)
 	if left_label:
 		left_label.visible = false
 
 	if right_texture and right_data:
 		right_texture.texture = right_data.get_icon_texture()
+		right_texture.visible = (_right_preview == null)
+	if _right_preview and right_data:
+		_right_preview.configure(right_data.pet_id, "", 1, false, 0.84)
 	if right_label:
 		right_label.visible = false
 
@@ -285,21 +332,32 @@ func render_2d_carousel(
 			if bottom_texture:
 				bottom_texture.texture = available_skins[btm_idx].get("texture", null)
 
-	# 3. Centro: Aspecto activo
+	# 3. Centro: Aspecto activo en burbuja 3D viva (manteniendo fullbody_texture asignada para compatibilidad)
+	var center_sid: String = ""
+	var center_stars: int = 1
 	if fullbody_texture and not available_skins.is_empty() and skin_idx >= 0 and skin_idx < available_skins.size():
 		var cur_skin: Dictionary = available_skins[skin_idx]
 		fullbody_texture.texture = cur_skin.get("texture", pet_data.get_icon_texture())
+		fullbody_texture.visible = (_center_preview == null)
 		var sid: String = cur_skin.get("id", "")
 		var stars: int = cur_skin.get("stars", 0)
 		if cur_skin.get("is_base", false) or sid.is_empty():
 			fullbody_texture.material = null
 		elif cur_skin.get("is_unlocked", false):
 			CosmeticsManager.apply_skin_to_canvas_item(fullbody_texture, sid, stars, false)
+			center_sid = sid
+			center_stars = maxi(stars, 1)
 		else:
 			fullbody_texture.material = null
+			center_sid = sid
+			center_stars = 1
 	elif fullbody_texture:
 		fullbody_texture.texture = pet_data.get_icon_texture()
 		fullbody_texture.material = null
+		fullbody_texture.visible = (_center_preview == null)
+
+	if _center_preview:
+		_center_preview.configure(pet_data.pet_id, center_sid, center_stars, not is_unlocked, 0.88)
 
 	# 4. Estado de bloqueo
 	if locked_overlay:
@@ -379,3 +437,5 @@ func animate_center_card_2d(animate: bool, slide_h: int, slide_v: int, is_unlock
 		active_tween = artwork_frame.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		active_tween.tween_property(artwork_frame, "position", Vector2.ZERO, 0.24)
 		active_tween.tween_property(artwork_frame, "modulate", Color.WHITE, 0.24)
+	if animate and _center_preview != null:
+		_center_preview.trigger_emote(&"hop")

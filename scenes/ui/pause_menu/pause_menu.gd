@@ -109,6 +109,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if parent_game:
 				if parent_game.has_method("is_hub_mode_active") and parent_game.is_hub_mode_active():
 					return
+				if parent_game.has_method("is_title_or_materializing_active") and parent_game.is_title_or_materializing_active():
+					return
 				if parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active():
 					return
 				if "is_briefing_active" in parent_game and parent_game.is_briefing_active:
@@ -213,7 +215,7 @@ func _on_save_quit_pressed() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	_transition_to_hub()
+	RunLaunchRequestScript.transition_to_title(get_tree())
 
 func _on_restart_pressed() -> void:
 	var main_game: Node = get_parent()
@@ -254,7 +256,7 @@ func _on_menu_pressed() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	_transition_to_hub()
+	RunLaunchRequestScript.transition_to_title(get_tree())
 
 func _transition_to_hub() -> void:
 	RunLaunchRequestScript.transition_to_hub(get_tree())

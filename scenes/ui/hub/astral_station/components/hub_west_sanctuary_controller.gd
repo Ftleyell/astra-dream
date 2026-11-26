@@ -382,3 +382,22 @@ func get_demat_materials() -> Array[ShaderMaterial]:
 		if out_mat != null and not out.has(out_mat):
 			out.append(out_mat)
 	return out
+
+
+func get_sanctuary_highlight_bundle() -> Dictionary:
+	var p_mats: Array[ShaderMaterial] = []
+	var o_mats: Array[ShaderMaterial] = []
+	for entry: Dictionary in _relics:
+		var mats: Array = entry["materials"] as Array
+		for m_var: Variant in mats:
+			var mat: ShaderMaterial = m_var as ShaderMaterial
+			if mat != null and not p_mats.has(mat):
+				p_mats.append(mat)
+		var out_mat: ShaderMaterial = entry["outline_mat"] as ShaderMaterial
+		if out_mat != null and not o_mats.has(out_mat):
+			o_mats.append(out_mat)
+	return {
+		"prop_mats": p_mats,
+		"outline_mats": o_mats,
+		"world_pos_3d": Vector3(-20.4, 0.0, 0.0),
+	}

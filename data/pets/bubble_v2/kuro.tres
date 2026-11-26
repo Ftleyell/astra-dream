@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="PetBubbleVisualConfig" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/pets/resources/pet_bubble_visual_config.gd" id="1_cfg"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/kuro/pet_kuro_albedo.png" id="2_alb"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/kuro/pet_kuro_normal.png" id="3_nrm"]
+[ext_resource type="Texture2D" path="res://assets/pets/bubble_v2/kuro/pet_kuro_bubble_tex.png" id="4_bub"]
+
+[resource]
+script = ExtResource("1_cfg")
+pet_id = &"kuro"
+display_name = "Kuro"
+albedo_texture = ExtResource("2_alb")
+normal_texture = ExtResource("3_nrm")
+bubble_texture = ExtResource("4_bub")
+theme_color = Color(0.92, 0.18, 0.28, 1)
+rim_color = Color(1, 0.42, 0.48, 1)
+inner_glow_color = Color(0.72, 0.08, 0.18, 1)
+front_opacity = 0.36
+back_opacity = 0.32
+edge_texture_opacity = 0.8
+texture_strength = 0.96
+glass_refraction = 0.36
+bubble_bump_strength = 0.32
+caustic_strength = 0.95
+rim_bevel_darkness = 0.74
+fresnel_power = 2.5
+fresnel_strength = 1.12
+iridescence_strength = 0.2
+specular_strength = 1.2
+bubble_spin_speed = Vector3(-0.24, 0.78, 0.14)
+pet_scale = 0.78
+pet_normal_strength = 1.12
+pet_shadow_tint = Color(0.42, 0.38, 0.56, 1)
+pet_rim_strength = 0.65
+bob_amplitude = 4.2
+bob_speed = 3.5
+wobble_strength = 0.013
+lag_stiffness = 11.5
+max_lag_px = 10.0
+orbit_radius_x = 155.0
+orbit_radius_y = 56.0
+orbit_tilt_deg = 22.0
+orbit_speed = 1.55
+back_scale = 0.82
+front_scale = 1.12
+combat_diameter_px = 64.0
+hub_diameter_px = 54.0
+combat_orbit_radius_x = 102.0
+combat_orbit_radius_y = 42.0
+combat_follow_speed_threshold = 310.0
+combat_follow_offset_px = Vector2(-58, 28)
+combat_follow_stiffness = 9.5
