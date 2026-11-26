@@ -7,6 +7,7 @@ extends RefCounted
 
 const CombatTelemetryRecorderScript = preload("res://scenes/combat/systems/combat_telemetry_recorder.gd")
 const GameOverModalScene: PackedScene = preload("res://scenes/ui/game_over/game_over_modal.tscn")
+const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
 
 var main_game: Node2D = null
 var game_over_modal: GameOverModal = null
@@ -121,6 +122,7 @@ func handle_game_over_restart() -> void:
 	SaveManager.clear_active_run()
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
+	RunLaunchRequestScript.request_direct_combat_entry()
 	main_game.get_tree().reload_current_scene()
 
 
@@ -133,9 +135,4 @@ func handle_game_over_hub() -> void:
 	PauseArbitrator.force_unpause_all()
 	Engine.time_scale = 1.0
 	SaveManager.set_game_speed(1.0)
-	
-	var st: Node = main_game.get_node_or_null("/root/SceneTransition")
-	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
-	else:
-		main_game.get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(main_game.get_tree())

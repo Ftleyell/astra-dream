@@ -7,6 +7,7 @@ extends CanvasLayer
 
 const BuildInspectorScript := preload("res://scenes/ui/pause_menu/components/pause_build_inspector.gd")
 const HighscoresModalScript := preload("res://scenes/ui/highscores/highscores_modal.gd")
+const RunLaunchRequestScript := preload("res://core/systems/run_launch_request.gd")
 
 @export var player: Player
 
@@ -106,6 +107,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 			var parent_game = get_parent()
 			if parent_game:
+				if parent_game.has_method("is_hub_mode_active") and parent_game.is_hub_mode_active():
+					return
 				if parent_game.has_method("is_satellite_shop_active") and parent_game.is_satellite_shop_active():
 					return
 				if "is_briefing_active" in parent_game and parent_game.is_briefing_active:
@@ -222,6 +225,7 @@ func _on_restart_pressed() -> void:
 	hide()
 	_release_hud_dock()
 	PauseArbitrator.force_unpause_all()
+	RunLaunchRequestScript.request_direct_combat_entry()
 	get_tree().reload_current_scene()
 
 func _on_hub_pressed() -> void:
@@ -253,8 +257,4 @@ func _on_menu_pressed() -> void:
 	_transition_to_hub()
 
 func _transition_to_hub() -> void:
-	var st: SceneTransitionClass = get_node_or_null("/root/SceneTransition") as SceneTransitionClass
-	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
-	else:
-		get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(get_tree())

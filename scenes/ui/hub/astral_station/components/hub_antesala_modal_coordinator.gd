@@ -44,6 +44,7 @@ const COLOR_PINK := Color(1.0, 0.16, 0.62, 1.0)
 
 var _evaluator: EvaluatorScript = null
 var _avatar: HubRigAvatar3DScript = null
+var _player_rig_v2: Node = null
 var _active_request: RunLaunchRequestScript = null
 var _active_panel_key: StringName = &""
 var _active_submodal: Node = null
@@ -104,6 +105,10 @@ func set_avatar(p_avatar: HubRigAvatar3DScript) -> void:
 	_avatar = p_avatar
 
 
+func set_player_rig_v2(p_rig_ctrl: Node) -> void:
+	_player_rig_v2 = p_rig_ctrl
+
+
 func set_active_request(req: RunLaunchRequestScript) -> void:
 	if req != null:
 		_active_request = req.duplicate_request()
@@ -135,6 +140,8 @@ func close_active_modal() -> void:
 		_is_skins_showcase_active = false
 		if _avatar != null:
 			_avatar.set_loadout_showcase_enabled(false, false)
+		if _player_rig_v2 != null and is_instance_valid(_player_rig_v2) and _player_rig_v2.has_method("set_hub_loadout_showcase"):
+			_player_rig_v2.call("set_hub_loadout_showcase", false)
 		skins_showcase_toggled.emit(false)
 	modal_closed.emit()
 
@@ -155,6 +162,11 @@ func open_skins_mirror(focus_pos: Vector3) -> void:
 	if _avatar != null:
 		sync_avatar_cosmetics(_avatar, SaveManagerScript.get_selected_character())
 		_avatar.set_loadout_showcase_enabled(true, true, AstralWings3DScript.AnimState.IDLE_ZERO_G)
+	if _player_rig_v2 != null and is_instance_valid(_player_rig_v2):
+		if _player_rig_v2.has_method("refresh_equipped_skins"):
+			_player_rig_v2.call("refresh_equipped_skins")
+		if _player_rig_v2.has_method("set_hub_loadout_showcase"):
+			_player_rig_v2.call("set_hub_loadout_showcase", true)
 	skins_showcase_toggled.emit(true)
 	if _skins_panel != null:
 		_skins_panel.visible = true
@@ -642,11 +654,15 @@ func _ensure_cosmetic_modal() -> CosmeticCarouselModal:
 				if _avatar != null:
 					sync_avatar_cosmetics(_avatar, SaveManagerScript.get_selected_character())
 					_play_preview_for_category(slot_key)
+				if _player_rig_v2 != null and is_instance_valid(_player_rig_v2) and _player_rig_v2.has_method("refresh_equipped_skins"):
+					_player_rig_v2.call("refresh_equipped_skins")
 			)
 			_cosmetic_modal.skin_modal_closed.connect(func(_cat: String, _tid: StringName, _sid: String) -> void:
 				_active_submodal = null
 				if _avatar != null:
 					sync_avatar_cosmetics(_avatar, SaveManagerScript.get_selected_character())
+				if _player_rig_v2 != null and is_instance_valid(_player_rig_v2) and _player_rig_v2.has_method("refresh_equipped_skins"):
+					_player_rig_v2.call("refresh_equipped_skins")
 			)
 	return _cosmetic_modal
 

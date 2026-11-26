@@ -34,8 +34,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not mouse_event or not mouse_event.is_pressed():
 		return
 
-	# Si hay un modal de combate o diálogo activo, proteger la UI del scroll
+	# Si hay un modal de combate, Hub o diálogo activo, proteger la UI del scroll
 	var main_game := get_tree().current_scene
+	if main_game and main_game.has_method("is_any_hub_modal_active") and main_game.is_any_hub_modal_active():
+		return
 	if main_game and main_game.has_method("is_any_combat_modal_active") and main_game.is_any_combat_modal_active():
 		return
 

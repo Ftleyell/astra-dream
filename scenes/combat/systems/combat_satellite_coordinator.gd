@@ -24,6 +24,7 @@ var spawn_selector: RefCounted = null
 var current_satellite: Node2D = null
 var current_satellite_idx: int = 1
 var _pending_satellite_spawn: bool = false
+var is_hub_suppressed: bool = false
 var satellites_collected_total: int = 0:
 	set(val):
 		satellites_collected_total = val
@@ -65,6 +66,28 @@ var last_anchor_pos: Vector2:
 	set(val): last_player_pos = val
 
 var main_game: MainGame = null
+
+
+func _is_blocked_by_hub() -> bool:
+	if is_hub_suppressed:
+		return true
+	return main_game != null and is_instance_valid(main_game) and main_game.has_method("is_hub_mode_active") and main_game.is_hub_mode_active()
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if suppressed:
+		_pending_satellite_spawn = false
+		despawn_current_satellite()
+		if odometer != null:
+			odometer.reset_distance()
+
+
+func reset_for_hub_launch(launch_pos: Vector2) -> void:
+	_pending_satellite_spawn = false
+	if odometer != null:
+		odometer.reset_distance()
+		odometer.initialize_position(launch_pos)
 
 
 func _init() -> void:
@@ -116,6 +139,8 @@ func _connect_cosmos_streamer() -> void:
 
 
 func _on_solar_system_streamed(_system: Node, _cell: Vector2i, _star_slot: CosmosOrbitSlotScript, planet_slots: Array) -> void:
+	if _is_blocked_by_hub():
+		return
 	if not _pending_satellite_spawn and is_instance_valid(current_satellite):
 		return
 	var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
@@ -131,7 +156,7 @@ func on_wave_started(_wave_idx: int) -> void:
 
 
 func _process(_delta: float) -> void:
-	if not is_inside_tree() or get_tree().paused:
+	if not is_inside_tree() or get_tree().paused or _is_blocked_by_hub():
 		return
 	update_satellite_lifecycle()
 
@@ -178,6 +203,8 @@ func _is_player_interacting_with_satellite() -> bool:
 
 
 func update_satellite_lifecycle() -> void:
+	if _is_blocked_by_hub():
+		return
 	if not main_game or not is_instance_valid(main_game.player):
 		return
 
@@ -240,6 +267,9 @@ func _find_best_orbit_slot(player_pos: Vector2, is_transmutation: bool = false) 
 			if slot == null:
 				continue
 			var proj_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+			if main_game != null and main_game.has_method("is_position_allowed_for_combat_spawn"):
+				if not main_game.is_position_allowed_for_combat_spawn(proj_pos, player_pos, 220.0, true):
+					continue
 			var dist: float = player_pos.distance_to(proj_pos)
 			candidates.append({
 				"slot": slot,
@@ -267,7 +297,11 @@ func _find_best_orbit_slot(player_pos: Vector2, is_transmutation: bool = false) 
 	if main_game and is_instance_valid(main_game.player) and "velocity" in main_game.player:
 		player_vel = main_game.player.velocity
 
-	var player_dir: Vector2 = player_vel.normalized() if player_vel.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
+	var player_dir: Vector2 = Vector2.ZERO
+	if main_game != null and main_game.has_method("get_hub_launch_departure_direction"):
+		player_dir = main_game.get_hub_launch_departure_direction()
+	if player_dir.length_squared() < 0.001:
+		player_dir = player_vel.normalized() if player_vel.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
 	if player_dir.length_squared() < 0.001:
 		player_dir = Vector2.UP
 
@@ -282,6 +316,9 @@ func _find_best_orbit_slot(player_pos: Vector2, is_transmutation: bool = false) 
 		if slot == null:
 			continue
 		var proj_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+		if main_game != null and main_game.has_method("is_position_allowed_for_combat_spawn"):
+			if not main_game.is_position_allowed_for_combat_spawn(proj_pos, player_pos, 220.0, true):
+				continue
 		var dist: float = player_pos.distance_to(proj_pos)
 		if dist >= MIN_ORBIT_SPAWN_DIST and dist <= MAX_ORBIT_SPAWN_DIST:
 			candidates.append({
@@ -304,6 +341,8 @@ func _find_best_orbit_slot(player_pos: Vector2, is_transmutation: bool = false) 
 
 
 func _try_resolve_pending_satellite_spawn(player_pos: Vector2) -> void:
+	if _is_blocked_by_hub():
+		return
 	var is_transmutation: bool = spawn_selector.should_spawn_transmutation(satellites_collected_total)
 	var best: Dictionary = _find_best_orbit_slot(player_pos, is_transmutation)
 	if not best.is_empty():
@@ -312,6 +351,8 @@ func _try_resolve_pending_satellite_spawn(player_pos: Vector2) -> void:
 
 
 func _on_odometer_distance_updated(current_dist: float, req_dist: float) -> void:
+	if _is_blocked_by_hub():
+		return
 	if main_game and is_instance_valid(main_game.hud):
 		main_game.hud.update_satellite_travel_dist(current_dist, req_dist)
 
@@ -329,10 +370,14 @@ func despawn_current_satellite() -> void:
 
 
 func spawn_next_satellite_for_wave() -> void:
+	if _is_blocked_by_hub():
+		return
 	spawn_next_satellite_ahead()
 
 
 func spawn_next_satellite_ahead() -> void:
+	if _is_blocked_by_hub():
+		return
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
 	if not is_instance_valid(main_game.player) or not main_game.player.is_inside_tree() or main_game.player.is_queued_for_deletion():
@@ -354,14 +399,24 @@ func spawn_next_satellite_ahead() -> void:
 			return
 
 	# Fallback cuando no hay Cosmos Engine presente (tests aislados)
+	var fallback_vel: Vector2 = main_game.player.velocity
+	var launch_dir: Vector2 = Vector2.ZERO
+	if main_game.has_method("get_hub_launch_departure_direction"):
+		launch_dir = main_game.get_hub_launch_departure_direction()
+	if launch_dir.length_squared() > 0.001:
+		fallback_vel = launch_dir * 400.0
 	var spawn_pos: Vector2 = spawn_selector.calculate_spawn_position(
 		player_pos,
-		main_game.player.velocity
+		fallback_vel
 	)
+	if main_game.has_method("push_position_outside_hub_exclusion"):
+		spawn_pos = main_game.push_position_outside_hub_exclusion(spawn_pos, launch_dir, 220.0)
 	spawn_next_satellite(spawn_pos, null)
 
 
 func spawn_next_satellite(target_pos: Vector2, bound_slot: CosmosOrbitSlotScript = null) -> void:
+	if _is_blocked_by_hub():
+		return
 	if not main_game or main_game.is_exiting_run or not main_game.is_inside_tree() or main_game.is_queued_for_deletion():
 		return
 

@@ -141,7 +141,7 @@ static func initialize_session(main_game: Node2D, player: Player, hud: GameHUD) 
 		hud.update_exp(player.current_exp, player.exp_to_next, player.current_level)
 		hud.update_wave_status(main_game.get("current_wave"), main_game.get("wave_timer"), main_game.get("wave_satellites_spawned"), 1)
 
-static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) -> void:
+static func launch_session(main_game: MainGame, player: Player, hud: GameHUD, defer_combat_start: bool = false) -> void:
 	var ctx_script := load("res://scenes/combat/systems/combat_context.gd")
 	var pipeline_script := load("res://scenes/combat/directors/combat_wave_pipeline.gd")
 
@@ -197,6 +197,9 @@ static func launch_session(main_game: MainGame, player: Player, hud: GameHUD) ->
 	main_game.last_anchor_pos = player.global_position
 	main_game.process_mode = Node.PROCESS_MODE_ALWAYS
 	initialize_session(main_game, player, hud)
+
+	if defer_combat_start:
+		return
 
 	if main_game.space_debris_manager:
 		main_game.space_debris_manager.spawn_environment_actors(main_game)

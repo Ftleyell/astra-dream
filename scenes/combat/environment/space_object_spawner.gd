@@ -24,6 +24,62 @@ var player: CharacterBody2D = null
 var spawn_timer: float = 0.0
 var total_monoliths_spawned_in_run: int = 0
 var bonus_monolith_granted: bool = false
+var is_hub_suppressed: bool = false
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if not suppressed:
+		spawn_timer = initial_delay
+
+
+func _get_main_game() -> Node:
+	if not is_inside_tree():
+		return null
+	var p: Node = get_parent()
+	if p != null and p.has_method("is_hub_mode_active"):
+		return p
+	var tree: SceneTree = get_tree()
+	return tree.get_first_node_in_group("main_game") if tree != null else null
+
+
+func _is_blocked_by_hub() -> bool:
+	if is_hub_suppressed:
+		return true
+	var mg: Node = _get_main_game()
+	return mg != null and mg.has_method("is_hub_mode_active") and bool(mg.call("is_hub_mode_active"))
+
+
+func _pick_valid_spawn_position(center: Vector2) -> Vector2:
+	var mg: Node = _get_main_game()
+	var launch_dir: Vector2 = Vector2.ZERO
+	var cone_half: float = deg_to_rad(65.0)
+	if mg != null:
+		if mg.has_method("get_hub_launch_departure_direction"):
+			launch_dir = mg.call("get_hub_launch_departure_direction")
+		if mg.has_method("get_hub_launch_forward_cone_half_angle_rad"):
+			cone_half = float(mg.call("get_hub_launch_forward_cone_half_angle_rad"))
+
+	var has_vel: bool = is_instance_valid(player) and player.velocity.length_squared() > 100.0
+	var vel_angle: float = player.velocity.angle() if has_vel else 0.0
+	var has_filter: bool = mg != null and mg.has_method("is_position_allowed_for_combat_spawn")
+
+	for _attempt: int in range(16):
+		var base_angle: float = randf() * TAU
+		if launch_dir.length_squared() > 0.001:
+			base_angle = launch_dir.angle() + randf_range(-cone_half, cone_half)
+		elif has_vel and randf() < 0.65:
+			base_angle = vel_angle + randf_range(-PI * 0.4, PI * 0.4)
+		var dist: float = randf_range(spawn_distance_min, spawn_distance_max)
+		var cand: Vector2 = center + Vector2(cos(base_angle), sin(base_angle)) * dist
+		if not has_filter or bool(mg.call("is_position_allowed_for_combat_spawn", cand, center, 120.0, true)):
+			return cand
+
+	var fb_dir: Vector2 = launch_dir if launch_dir.length_squared() > 0.001 else (player.velocity.normalized() if has_vel else Vector2.UP)
+	var fb_pos: Vector2 = center + fb_dir.normalized() * spawn_distance_max
+	if mg != null and mg.has_method("push_position_outside_hub_exclusion"):
+		fb_pos = mg.call("push_position_outside_hub_exclusion", fb_pos, fb_dir, 120.0)
+	return fb_pos
 
 
 func _ready() -> void:
@@ -32,6 +88,8 @@ func _ready() -> void:
 
 
 func notify_wave_started(wave: int) -> void:
+	if _is_blocked_by_hub():
+		return
 	if MONOLITH_MILESTONE_WAVES.has(wave):
 		if total_monoliths_spawned_in_run < MAX_RUN_MONOLITHS and get_active_monolith_count() == 0:
 			force_spawn_monolith()
@@ -53,7 +111,7 @@ func get_active_monolith_count() -> int:
 
 
 func _process(delta: float) -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or _is_blocked_by_hub():
 		return
 
 	spawn_timer -= delta
@@ -63,7 +121,7 @@ func _process(delta: float) -> void:
 
 
 func force_spawn_monolith(bypass_cap: bool = false) -> DestructibleSpaceObject:
-	if not is_inside_tree():
+	if not is_inside_tree() or _is_blocked_by_hub():
 		return null
 
 	var tree := get_tree()
@@ -78,15 +136,7 @@ func force_spawn_monolith(bypass_cap: bool = false) -> DestructibleSpaceObject:
 
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
-
-	# Cálculo de posición periférica orientada según vector de avance del jugador
-	var base_angle := randf() * TAU
-	if is_instance_valid(player) and player.velocity.length_squared() > 100.0:
-		var heading := player.velocity.angle()
-		base_angle = heading + randf_range(-PI * 0.35, PI * 0.35)
-
-	var dist := randf_range(spawn_distance_min, spawn_distance_max)
-	var spawn_pos := center + Vector2(cos(base_angle), sin(base_angle)) * dist
+	var spawn_pos: Vector2 = _pick_valid_spawn_position(center)
 
 	var obj := monolith_scene.instantiate() as DestructibleSpaceObject
 	if not obj:
@@ -106,7 +156,7 @@ func force_spawn_monolith(bypass_cap: bool = false) -> DestructibleSpaceObject:
 
 
 func spawn_monolith_at(pos: Vector2) -> DestructibleSpaceObject:
-	if not is_inside_tree() or not monolith_scene:
+	if not is_inside_tree() or _is_blocked_by_hub() or not monolith_scene:
 		return null
 	var mono_obj := monolith_scene.instantiate() as DestructibleSpaceObject
 	if not mono_obj:
@@ -122,7 +172,7 @@ func spawn_monolith_at(pos: Vector2) -> DestructibleSpaceObject:
 
 
 func _try_spawn_macro_object() -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or _is_blocked_by_hub():
 		return
 
 	var tree := get_tree()
@@ -160,15 +210,7 @@ func _spawn_single_object(center: Vector2) -> void:
 	if not scene_to_spawn:
 		return
 
-	# Cálculo de posición periférica orientada según velocidad del jugador
-	var base_angle := randf() * TAU
-	if is_instance_valid(player) and player.velocity.length_squared() > 100.0:
-		var heading := player.velocity.angle()
-		if randf() < 0.65:
-			base_angle = heading + randf_range(-PI * 0.4, PI * 0.4)
-
-	var dist := randf_range(spawn_distance_min, spawn_distance_max)
-	var spawn_pos := center + Vector2(cos(base_angle), sin(base_angle)) * dist
+	var spawn_pos: Vector2 = _pick_valid_spawn_position(center)
 
 	var obj := scene_to_spawn.instantiate() as DestructibleSpaceObject
 	if not obj:

@@ -81,13 +81,36 @@ func _ready() -> void:
 	# Spawner inicial inmediato: escuadrón de prueba
 	call_deferred("_spawn_initial_batch")
 
+func _get_main_game() -> Node:
+	if not is_inside_tree():
+		return null
+	var p: Node = get_parent()
+	if p != null and p.has_method("is_hub_mode_active"):
+		return p
+	var tree: SceneTree = get_tree()
+	return tree.get_first_node_in_group("main_game") if tree != null else null
+
+
 func _spawn_initial_batch() -> void:
+	if is_spawning_paused:
+		return
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else global_position
+	var mg: Node = _get_main_game()
+	var launch_dir: Vector2 = mg.call("get_hub_launch_departure_direction") if (mg != null and mg.has_method("get_hub_launch_departure_direction")) else Vector2.ZERO
+	var cone_half: float = float(mg.call("get_hub_launch_forward_cone_half_angle_rad")) if (mg != null and mg.has_method("get_hub_launch_forward_cone_half_angle_rad")) else deg_to_rad(65.0)
 	for i in range(4):
-		var angle := (TAU / 4.0) * i
+		var angle: float = (TAU / 4.0) * i
+		if launch_dir.length_squared() > 0.001:
+			angle = launch_dir.angle() + lerpf(-cone_half, cone_half, float(i) / 3.0)
 		var pos := center + Vector2(cos(angle), sin(angle)) * 650.0
+		if mg != null and mg.has_method("push_position_outside_hub_exclusion"):
+			pos = mg.call("push_position_outside_hub_exclusion", pos, launch_dir, 60.0)
 		_spawn_enemy_at(drone_scene, pos)
+
+
+func trigger_initial_batch() -> void:
+	_spawn_initial_batch()
 
 func _process(delta: float) -> void:
 	if is_spawning_paused:
@@ -241,9 +264,16 @@ func _try_spawn_cluster() -> void:
 	var center := player.global_position if is_instance_valid(player) else global_position
 
 	# Intercepción geométrica: 50% probabilidad de cortar la ruta de escape según player.velocity
+	var mg: Node = _get_main_game()
+	var launch_dir: Vector2 = mg.call("get_hub_launch_departure_direction") if (mg != null and mg.has_method("get_hub_launch_departure_direction")) else Vector2.ZERO
+	var cone_half: float = float(mg.call("get_hub_launch_forward_cone_half_angle_rad")) if (mg != null and mg.has_method("get_hub_launch_forward_cone_half_angle_rad")) else deg_to_rad(65.0)
+
 	var base_angle := randf() * TAU
 	var is_intercepting := false
-	if is_instance_valid(player) and player.velocity.length_squared() > 100.0 and randf() < 0.50:
+	if launch_dir.length_squared() > 0.001:
+		is_intercepting = true
+		base_angle = launch_dir.angle() + randf_range(-cone_half, cone_half)
+	elif is_instance_valid(player) and player.velocity.length_squared() > 100.0 and randf() < 0.50:
 		is_intercepting = true
 		var player_heading := player.velocity.angle()
 		# 50% frontal directo, 50% pinza lateral a +/- 60 grados
@@ -259,6 +289,8 @@ func _try_spawn_cluster() -> void:
 		base_dist = clampf(base_dist * 0.88, 620.0, 850.0)
 
 	var cluster_origin := center + Vector2(cos(base_angle), sin(base_angle)) * base_dist
+	if mg != null and mg.has_method("push_position_outside_hub_exclusion"):
+		cluster_origin = mg.call("push_position_outside_hub_exclusion", cluster_origin, launch_dir, 60.0)
 
 	# Spawner de la manada con formación en abanico
 	for i in range(cluster_size):

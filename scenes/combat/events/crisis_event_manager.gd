@@ -36,9 +36,26 @@ var solar_canvas_layer: CanvasLayer = null
 
 # Temporizador para eventos automáticos
 var crisis_cooldown: float = 35.0
+var is_hub_suppressed: bool = false
 
 # Registro abierto de definiciones de crisis
 var _crisis_registry: Dictionary = {}
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if suppressed:
+		dismiss_for_boss_encounter()
+	crisis_cooldown = 35.0
+
+
+func _is_blocked_by_hub() -> bool:
+	if is_hub_suppressed:
+		return true
+	var parent_node: Node = get_parent()
+	if parent_node != null and parent_node.has_method("is_hub_mode_active") and bool(parent_node.call("is_hub_mode_active")):
+		return true
+	return false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -117,6 +134,8 @@ func _setup_solar_storm_overlay() -> void:
 	solar_canvas_layer.add_child(solar_overlay)
 
 func _process(delta: float) -> void:
+	if _is_blocked_by_hub():
+		return
 	# Supresión de crisis si hay jefe o rival activo o emergente
 	var main_game := get_parent()
 	var has_boss: bool = false
@@ -159,6 +178,8 @@ func _trigger_random_crisis() -> void:
 	trigger_crisis(choice)
 
 func trigger_crisis(crisis_id: String) -> void:
+	if _is_blocked_by_hub():
+		return
 	_acquire_references()
 	var def = _crisis_registry.get(crisis_id, null)
 	var title := "ANOMALÍA DETECTADA"

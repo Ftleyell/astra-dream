@@ -53,6 +53,7 @@ func _test_production_hub_instantiation_and_settings() -> void:
 
 func _test_zero_sandbox_refs_in_production() -> void:
 	var files: Array[String] = _collect_files_recursive("res://scenes/ui/hub/astral_station")
+	files.append("res://scenes/combat/controllers/combat_hub_session_controller.gd")
 	files.append("res://data/hub/default_astral_station_config.tres")
 	files.append("res://data/hub/default_astral_floating_layout.tres")
 	files.append("res://data/hub/default_hub_gacha_3d_config.tres")
@@ -74,7 +75,7 @@ func _test_production_entry_points() -> void:
 		"res://scenes/ui/character_select/components/character_select_launch_controller.gd",
 	]:
 		var txt: String = FileAccess.get_file_as_string(path)
-		assert_true(txt.contains(HUB_SCENE_PATH), "Entry point %s debe apuntar a astral_station_hub.tscn" % path)
+		assert_true(txt.contains("transition_to_hub"), "Entry point %s debe enrutar al Hub integrado vía RunLaunchRequest.transition_to_hub" % path)
 
 
 func _collect_files_recursive(dir_path: String) -> Array[String]:

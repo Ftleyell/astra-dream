@@ -16,6 +16,16 @@ func _ready() -> void:
 	progress_bar.value = 0.0
 
 func _process(delta: float) -> void:
+	var cur_scene: Node = get_tree().current_scene if get_tree() != null else null
+	if cur_scene != null and cur_scene.has_method("is_hub_mode_active") and cur_scene.is_hub_mode_active():
+		if visible:
+			current_hold = 0.0
+			hide()
+		return
+	var focus_owner: Control = get_viewport().gui_get_focus_owner() if get_viewport() != null else null
+	if focus_owner is LineEdit or focus_owner is TextEdit:
+		return
+
 	# Comprobar si se mantiene presionada la tecla R
 	if Input.is_key_pressed(KEY_R):
 		if not visible:

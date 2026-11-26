@@ -41,6 +41,16 @@ const OutlineShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_ar
 const HardlightBridgeShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_hardlight_bridge_3d.gdshader")
 const AstralGlassShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_astral_glass_3d.gdshader")
 const CosmicLightingSampleScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sample.gd")
+const CosmicLightingSamplerScript = preload("res://scenes/combat/environment/cosmos/core/cosmic_lighting_sampler.gd")
+
+signal embedded_camera_focus_changed(mode: int, focus_world_3d: Vector3)
+signal embedded_launch_request_changed(request: RunLaunchRequestScript, trigger_flash: bool)
+signal embedded_movement_lock_changed(locked: bool)
+signal embedded_player_reposition_requested(world_3d: Vector3, face_dir: Vector2, suppress_shadow: bool)
+signal embedded_pilot_selected(char_id: StringName, accent_color: Color)
+signal embedded_gacha_skin_equipped(equip_res: Dictionary)
+signal embedded_settings_toggled(is_open: bool)
+signal embedded_demat_finished()
 
 const FLOOR_TEX_BASE: String = "res://assets/environments/astral_station/surfaces/hub_floor_astral"
 const TRIM_TEX_BASE: String = "res://assets/environments/astral_station/trims/hub_arcsys_trim"
@@ -51,6 +61,7 @@ const TITLE_SCREEN_PATH: String = "res://scenes/ui/title_screen/title_screen.tsc
 @export var layout_config: LayoutConfigScript = DEFAULT_LAYOUT
 @export var progression_config: ProgressionConfigScript = DEFAULT_PROGRESSION_CONFIG
 @export var is_dev_lab_mode: bool = false
+@export var embedded_mode: bool = false
 
 var cosmos_backdrop: CosmosBackdropScript = null
 var hub_3d_layer: CanvasLayer = null
@@ -107,6 +118,53 @@ var _warn_progress_cached: float = 0.0
 var _warn_sector_cached: Dictionary = {}
 var _station_lighting_sample: CosmicLightingSampleScript = CosmicLightingSampleScript.new()
 
+var _embedded_player_proxy: Node3D = null
+var _embedded_player_rig_v2: Node = null
+var _embedded_cosmos_root: CosmosRootNode = null
+var _embedded_cosmos_sample_pos_2d: Vector2 = Vector2.ZERO
+var _embedded_cosmos_anchor_2d: Vector2 = Vector2.INF
+var _embedded_is_flying: bool = false
+var _embedded_is_dematerializing: bool = false
+
+
+func configure_embedded(
+	p_initial_request: RunLaunchRequestScript,
+	p_player_rig_v2: Node,
+	p_cosmos_root: CosmosRootNode
+) -> void:
+	embedded_mode = true
+	is_dev_lab_mode = false
+	if p_initial_request != null:
+		active_launch_request = p_initial_request.duplicate_request()
+	_embedded_player_rig_v2 = p_player_rig_v2
+	_embedded_cosmos_root = p_cosmos_root
+
+
+func set_embedded_cosmos_root(p_cosmos_root: CosmosRootNode) -> void:
+	_embedded_cosmos_root = p_cosmos_root
+
+
+func set_embedded_cosmos_anchor_2d(pos_2d: Vector2) -> void:
+	_embedded_cosmos_anchor_2d = pos_2d
+
+
+func set_embedded_player_rig_v2(p_player_rig_v2: Node) -> void:
+	_embedded_player_rig_v2 = p_player_rig_v2
+	if modal_coordinator != null:
+		modal_coordinator.set_player_rig_v2(p_player_rig_v2)
+
+
+func get_world_3d_viewport() -> SubViewport:
+	return hub_3d_viewport
+
+
+func get_camera_3d() -> Camera3D:
+	return camera
+
+
+func _get_active_player_node() -> Node3D:
+	return _embedded_player_proxy if embedded_mode else player
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -123,7 +181,11 @@ func _ready() -> void:
 		progression_config = DEFAULT_PROGRESSION_CONFIG
 
 	progression_evaluator.setup(progression_config)
-	active_launch_request = RunLaunchRequestScript.create(config.default_preview_seed, RunLaunchRequestScript.SeedMode.AUTO)
+	if active_launch_request == null:
+		if is_dev_lab_mode:
+			active_launch_request = RunLaunchRequestScript.create(config.default_preview_seed, RunLaunchRequestScript.SeedMode.AUTO)
+		else:
+			active_launch_request = RunLaunchRequestScript.create_random_auto()
 
 	_load_trim_sheet_textures()
 	_build_viewport_stack()
@@ -134,7 +196,7 @@ func _ready() -> void:
 	_build_player_and_camera()
 	_build_phase3_wings_and_controllers()
 	if departure_controller != null:
-		departure_controller.launch_real_combat = not is_dev_lab_mode
+		departure_controller.launch_real_combat = (not is_dev_lab_mode) and (not embedded_mode)
 	_build_hud()
 	if not is_dev_lab_mode:
 		_build_production_settings_modal()
@@ -144,9 +206,10 @@ func _ready() -> void:
 	apply_config_visuals()
 	apply_launch_request(active_launch_request, false)
 
-	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
-	if audio_mgr != null and audio_mgr.has_method("play_music"):
-		audio_mgr.play_music("menu")
+	if not embedded_mode:
+		var audio_mgr: Node = get_node_or_null("/root/AudioManager")
+		if audio_mgr != null and audio_mgr.has_method("play_music"):
+			audio_mgr.play_music("menu")
 
 
 func _load_trim_sheet_textures() -> void:
@@ -157,6 +220,22 @@ func _load_trim_sheet_textures() -> void:
 
 
 func _build_viewport_stack() -> void:
+	if embedded_mode:
+		hub_3d_viewport = SubViewport.new()
+		hub_3d_viewport.name = "Hub3DSubViewport"
+		hub_3d_viewport.own_world_3d = true
+		hub_3d_viewport.transparent_bg = true
+		hub_3d_viewport.handle_input_locally = false
+		hub_3d_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		if DisplayServer.get_name() != "headless":
+			hub_3d_viewport.msaa_3d = Viewport.MSAA_4X
+		add_child(hub_3d_viewport)
+
+		_world_3d_root = Node3D.new()
+		_world_3d_root.name = "HubFloatingWorld3D"
+		hub_3d_viewport.add_child(_world_3d_root)
+		return
+
 	cosmos_backdrop = CosmosBackdropScript.new() as CosmosBackdropScript
 	cosmos_backdrop.name = "CosmosBackdropLayer"
 	add_child(cosmos_backdrop)
@@ -217,11 +296,12 @@ func _build_environment() -> void:
 	_dir_light.light_color = Color(1.0, 0.97, 0.94, 1.0)
 	_dir_light.light_energy = 1.12
 	_dir_light.shadow_enabled = true
-	_dir_light.shadow_bias = 0.03
-	_dir_light.shadow_normal_bias = 1.10
-	_dir_light.shadow_blur = 1.65
-	_dir_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	_dir_light.directional_shadow_max_distance = 64.0
+	_dir_light.shadow_bias = 0.045
+	_dir_light.shadow_normal_bias = 1.45
+	_dir_light.shadow_blur = 2.0
+	_dir_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	_dir_light.directional_shadow_max_distance = 52.0
+	_dir_light.directional_shadow_pancake_size = 0.0
 	_world_3d_root.add_child(_dir_light)
 
 	var cap_spot := SpotLight3D.new()
@@ -584,6 +664,19 @@ func _build_player_and_camera() -> void:
 	camera.name = "Camera3D"
 	_world_3d_root.add_child(camera)
 
+	if embedded_mode:
+		_embedded_player_proxy = Node3D.new()
+		_embedded_player_proxy.name = "EmbeddedPlayerProxy3D"
+		_embedded_player_proxy.position = config.player_spawn_pos
+		_world_3d_root.add_child(_embedded_player_proxy)
+		camera.current = true
+		camera.top_level = true
+		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+		camera.keep_aspect = Camera3D.KEEP_HEIGHT
+		camera.rotation_degrees = Vector3(config.free_roam_pitch_deg, 0.0, 0.0)
+		camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
+		return
+
 	player = PlayerScript.new() as PlayerScript
 	player.name = "HubArtLabPlayer"
 	player.position = config.player_spawn_pos
@@ -601,10 +694,11 @@ func _build_player_and_camera() -> void:
 
 
 func _build_phase3_wings_and_controllers() -> void:
+	var active_p_node: Node3D = _get_active_player_node()
 	east_wing = EastWingScript.new() as EastWingScript
 	east_wing.name = "HubEastWingController"
 	_world_3d_root.add_child(east_wing)
-	east_wing.setup(config, player)
+	east_wing.setup(config, active_p_node, embedded_mode)
 	east_wing.gacha_focus_requested.connect(_on_gacha_focus_requested)
 	east_wing.gacha_focus_exited.connect(_on_gacha_focus_exited)
 	east_wing.telemetry_requested.connect(_on_telemetry_requested)
@@ -622,6 +716,8 @@ func _build_phase3_wings_and_controllers() -> void:
 	modal_coordinator.name = "HubAntesalaModalCoordinator"
 	add_child(modal_coordinator)
 	modal_coordinator.setup(progression_evaluator, player.rig_avatar if player != null else null, active_launch_request)
+	if _embedded_player_rig_v2 != null:
+		modal_coordinator.set_player_rig_v2(_embedded_player_rig_v2)
 	modal_coordinator.modal_opened.connect(_on_modal_opened)
 	modal_coordinator.modal_closed.connect(_on_modal_closed)
 	modal_coordinator.pilot_changed.connect(_on_pilot_changed)
@@ -639,32 +735,38 @@ func _build_phase3_wings_and_controllers() -> void:
 	add_child(departure_controller)
 	departure_controller.setup(config, layout_config, player, cosmos_backdrop, _world_3d_root)
 	departure_controller.set_pending_request(active_launch_request)
-	departure_controller.perimeter_warning_updated.connect(func(prog: float, sector: Dictionary) -> void:
-		_warn_progress_cached = prog
-		_warn_sector_cached = sector
-		if hud != null and player != null:
-			hud.update_traversal_telemetry(player.is_flying_in_space, prog, sector, departure_controller.is_dissolved_preview())
-	)
-	departure_controller.departure_started.connect(func(sector: Dictionary, _dir: Vector2) -> void:
-		_is_capsule_focused = false
-		_warn_sector_cached = sector
-		if hud != null:
-			hud.set_clean_hud_visible(false)
-		_set_camera_mode(CameraRigScript.Mode.SEAMLESS_DEPARTURE, player.global_position if player != null else Vector3.ZERO)
-	)
-	departure_controller.departure_completed.connect(func(_req: RunLaunchRequestScript, launched_combat: bool) -> void:
-		if not launched_combat:
+	if embedded_mode:
+		departure_controller.embedded_dissolve_completed.connect(func() -> void:
+			_embedded_is_dematerializing = false
+			embedded_demat_finished.emit()
+		)
+	else:
+		departure_controller.perimeter_warning_updated.connect(func(prog: float, sector: Dictionary) -> void:
+			_warn_progress_cached = prog
+			_warn_sector_cached = sector
+			if hud != null and player != null:
+				hud.update_traversal_telemetry(player.is_flying_in_space, prog, sector, departure_controller.is_dissolved_preview())
+		)
+		departure_controller.departure_started.connect(func(sector: Dictionary, _dir: Vector2) -> void:
+			_is_capsule_focused = false
+			_warn_sector_cached = sector
 			if hud != null:
-				hud.set_clean_hud_visible(true)
+				hud.set_clean_hud_visible(false)
+			_set_camera_mode(CameraRigScript.Mode.SEAMLESS_DEPARTURE, player.global_position if player != null else Vector3.ZERO)
+		)
+		departure_controller.departure_completed.connect(func(_req: RunLaunchRequestScript, launched_combat: bool) -> void:
+			if not launched_combat:
+				if hud != null:
+					hud.set_clean_hud_visible(true)
+				_set_camera_mode(CameraRigScript.Mode.FREE_ROAM)
+			_refresh_hud_status()
+		)
+		departure_controller.hub_rematerialized.connect(func() -> void:
+			_warn_progress_cached = 0.0
+			_warn_sector_cached = {}
 			_set_camera_mode(CameraRigScript.Mode.FREE_ROAM)
-		_refresh_hud_status()
-	)
-	departure_controller.hub_rematerialized.connect(func() -> void:
-		_warn_progress_cached = 0.0
-		_warn_sector_cached = {}
-		_set_camera_mode(CameraRigScript.Mode.FREE_ROAM)
-		_refresh_hud_status()
-	)
+			_refresh_hud_status()
+		)
 
 
 func _register_all_demat_and_trim_materials() -> void:
@@ -788,6 +890,9 @@ func open_settings_modal() -> void:
 		return
 	if player != null:
 		player.is_movement_locked = true
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(true)
+		embedded_settings_toggled.emit(true)
 	if settings_modal.has_method("open_settings"):
 		settings_modal.open_settings()
 	else:
@@ -805,8 +910,13 @@ func close_settings_modal() -> void:
 
 
 func _on_settings_modal_closed() -> void:
-	if player != null and not _is_capsule_focused and (modal_coordinator == null or not modal_coordinator.is_any_modal_open()):
+	var unlocked: bool = not _is_capsule_focused and (modal_coordinator == null or not modal_coordinator.is_any_modal_open())
+	if player != null and unlocked:
 		player.is_movement_locked = false
+	if embedded_mode:
+		if unlocked:
+			embedded_movement_lock_changed.emit(false)
+		embedded_settings_toggled.emit(false)
 
 
 func return_to_title_screen() -> void:
@@ -836,6 +946,15 @@ func _process(delta: float) -> void:
 	else:
 		camera_rig.set_shake_offset(Vector3.ZERO)
 
+	if embedded_mode:
+		if _embedded_player_proxy != null:
+			for bmat: ShaderMaterial in _bridge_mats:
+				bmat.set_shader_parameter("player_world_pos", _embedded_player_proxy.global_position)
+		_sync_live_cosmic_lighting(delta)
+		if not _embedded_is_dematerializing:
+			_update_proximity_prompts()
+		return
+
 	if player != null and camera != null:
 		camera_rig.update(camera, player.global_position, delta, config, false)
 		player.set_visibility_fade(1.0)
@@ -859,16 +978,20 @@ func _process(delta: float) -> void:
 
 
 func _sync_live_cosmic_lighting(delta: float) -> void:
-	if cosmos_backdrop == null or _station_lighting_sample == null:
+	if _station_lighting_sample == null:
 		return
-	cosmos_backdrop.sample_cosmic_lighting(_station_lighting_sample)
+	if cosmos_backdrop != null:
+		cosmos_backdrop.sample_cosmic_lighting(_station_lighting_sample)
+	elif embedded_mode and _embedded_cosmos_root != null and is_instance_valid(_embedded_cosmos_root):
+		var sample_pos: Vector2 = _embedded_cosmos_anchor_2d if _embedded_cosmos_anchor_2d != Vector2.INF else _embedded_cosmos_sample_pos_2d
+		CosmicLightingSamplerScript.sample_at(_embedded_cosmos_root, sample_pos, null, _station_lighting_sample)
+	else:
+		return
 
 	if _dir_light != null and is_instance_valid(_dir_light):
-		var l3: Vector3 = _station_lighting_sample.light_dir_3d
-		if l3.length_squared() > 0.001:
-			var yaw_l: float = clampf(rad_to_deg(atan2(-l3.x, maxf(absf(l3.z), 0.35))), -42.0, 42.0)
-			_dir_light.rotation_degrees = Vector3(-48.0, yaw_l, 0.0)
-		_dir_light.light_color = Color.WHITE.lerp(_station_lighting_sample.key_light_tint, clampf(_station_lighting_sample.star_tint_weight * 0.55, 0.0, 0.75))
+		var target_col: Color = Color.WHITE.lerp(_station_lighting_sample.key_light_tint, clampf(_station_lighting_sample.star_tint_weight * 0.55, 0.0, 0.75))
+		var col_w: float = clampf(1.0 - exp(-4.0 * maxf(delta, 0.016)), 0.0, 1.0)
+		_dir_light.light_color = _dir_light.light_color.lerp(target_col, col_w)
 
 	var key_t: Color = _station_lighting_sample.key_light_tint
 	var shd_t: Color = _station_lighting_sample.shadow_tint
@@ -896,6 +1019,8 @@ func _sync_live_cosmic_lighting(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if embedded_mode and _embedded_is_dematerializing:
+		return
 	var focus_owner: Control = get_viewport().gui_get_focus_owner() if get_viewport() != null else null
 	if focus_owner is LineEdit or focus_owner is TextEdit:
 		return
@@ -910,7 +1035,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	)
 
 	var mb_ev := event as InputEventMouseButton
-	if mb_ev != null and mb_ev.pressed and is_free_roam:
+	if mb_ev != null and mb_ev.pressed and is_free_roam and not embedded_mode:
 		if mb_ev.button_index == MOUSE_BUTTON_WHEEL_UP:
 			camera_rig.adjust_scroll_zoom(0.11)
 			return
@@ -972,7 +1097,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _is_departure_active() -> bool:
-	return departure_controller != null and departure_controller.is_departing()
+	return _embedded_is_dematerializing or (departure_controller != null and departure_controller.is_departing())
+
+
+func _is_body_near_capsule(body_3d: Node3D) -> bool:
+	if body_3d == null or not is_instance_valid(body_3d):
+		return false
+	if _capsule_area != null and _capsule_area.overlaps_body(body_3d):
+		return true
+	var cap_pos: Vector3 = config.capsule_pos if config != null else Vector3.ZERO
+	var dx: float = body_3d.global_position.x - cap_pos.x
+	var dz: float = body_3d.global_position.z - cap_pos.z
+	return (dx * dx + dz * dz) <= (2.05 * 2.05)
 
 
 func _handle_interact_press() -> void:
@@ -985,53 +1121,62 @@ func _handle_interact_press() -> void:
 		return
 	if modal_coordinator != null and modal_coordinator.is_any_modal_open():
 		return
-	if player == null:
+	var active_p: Node3D = _get_active_player_node()
+	if active_p == null:
 		return
-	if _capsule_area != null and _capsule_area.overlaps_body(player):
+	if _is_body_near_capsule(active_p):
 		trigger_capsule_focus(true)
 		return
 	for st: StationNodeScript in _all_stations():
-		if st.is_player_inside(player):
+		if st.is_player_inside(active_p):
 			st.trigger_interaction()
 			return
-	if east_wing != null and east_wing.try_interact(player):
+	if east_wing != null and east_wing.try_interact(active_p):
 		return
 	if west_sanctuary != null:
-		west_sanctuary.try_interact(player)
+		west_sanctuary.try_interact(active_p)
 
 
 func trigger_capsule_focus(open_pilot_panel: bool = false) -> void:
-	if _is_departure_active() or player == null:
+	var active_p: Node3D = _get_active_player_node()
+	if _is_departure_active() or active_p == null:
 		return
 	_is_capsule_focused = true
-	player.is_movement_locked = true
-	player.is_pose_override_active = true
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(true)
+		embedded_player_reposition_requested.emit(
+			config.capsule_pos + Vector3(0.0, layout_config.capsule_pad_hover_y if layout_config != null else 0.112, 0.0),
+			Vector2.DOWN,
+			true
+		)
+	elif player != null:
+		player.is_movement_locked = true
+		player.is_pose_override_active = true
 		player.set_closeup_shadow_suppressed(true)
-	player.global_position = config.capsule_pos + Vector3(0.0, layout_config.capsule_pad_hover_y if layout_config != null else 0.112, 0.0)
-	player.evaluate_platform_traversal(0.0, true)
-	player.face_front_idle(true)
+		player.global_position = config.capsule_pos + Vector3(0.0, layout_config.capsule_pad_hover_y if layout_config != null else 0.112, 0.0)
+		player.evaluate_platform_traversal(0.0, true)
+		player.face_front_idle(true)
 	if hud != null:
 		hud.set_clean_hud_visible(false)
 	if open_pilot_panel and modal_coordinator != null:
 		modal_coordinator.open_pilot_capsule(config.capsule_pos)
 	else:
-		camera_rig.set_mode(CameraRigScript.Mode.CAPSULE_PILOT_FOCUS, config.capsule_pos)
-		_refresh_hud_status()
+		_set_camera_mode(CameraRigScript.Mode.CAPSULE_PILOT_FOCUS, config.capsule_pos)
 
 
 func exit_capsule_focus() -> void:
 	_is_capsule_focused = false
 	if modal_coordinator != null and modal_coordinator.is_any_modal_open():
 		modal_coordinator.close_active_modal()
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(false)
+	elif player != null:
 		player.is_movement_locked = false
 		player.is_pose_override_active = false
 		player.set_closeup_shadow_suppressed(false)
 	if hud != null:
 		hud.set_clean_hud_visible(true)
-	camera_rig.set_mode(CameraRigScript.Mode.FREE_ROAM)
-	_refresh_hud_status()
+	_set_camera_mode(CameraRigScript.Mode.FREE_ROAM)
 
 
 func open_station_by_id(station_id: StringName) -> void:
@@ -1058,7 +1203,9 @@ func _on_station_interacted(station_node: Node3D) -> void:
 			progression_evaluator.acknowledge_module(station.station_id)
 		station.set_station_state(StationNodeScript.StationState.ONLINE)
 
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(true)
+	elif player != null:
 		player.is_movement_locked = true
 		player.face_front_idle(true)
 
@@ -1070,19 +1217,27 @@ func _on_station_interacted(station_node: Node3D) -> void:
 		&"skins_mirror":
 			if _skins_spotlight != null:
 				_skins_spotlight.light_energy = 2.45
-			if player != null:
+			var target_mirror_pos: Vector3 = station.global_position + Vector3(0.0, 0.098, 0.08)
+			if embedded_mode:
+				embedded_player_reposition_requested.emit(target_mirror_pos, Vector2.DOWN, true)
+				modal_coordinator.open_skins_mirror(target_mirror_pos)
+			elif player != null:
 				player.is_pose_override_active = true
 				player.set_closeup_shadow_suppressed(true)
-				player.global_position = station.global_position + Vector3(0.0, 0.098, 0.08)
+				player.global_position = target_mirror_pos
 				player.evaluate_platform_traversal(0.0, true)
 				player.face_front_idle(true)
 				modal_coordinator.open_skins_mirror(player.global_position)
 			else:
 				modal_coordinator.open_skins_mirror(station.global_position)
 		&"talents_nexus":
-			if player != null:
+			var target_nexus_pos: Vector3 = station.global_position + Vector3(0.0, 0.02, -2.35)
+			if embedded_mode:
+				embedded_player_reposition_requested.emit(target_nexus_pos, Vector2.DOWN, false)
+				modal_coordinator.open_talents_nexus(station.global_position + Vector3(0.0, 0.35, 0.0))
+			elif player != null:
 				player.is_pose_override_active = true
-				player.global_position = station.global_position + Vector3(0.0, 0.02, -2.35)
+				player.global_position = target_nexus_pos
 				player.evaluate_platform_traversal(0.0, true)
 				var se_dir := Vector2(0.0, 1.0)
 				player.set_pose_override(se_dir, 0.0, se_dir, true)
@@ -1098,7 +1253,9 @@ func _on_station_interacted(station_node: Node3D) -> void:
 
 
 func _on_modal_opened(cam_mode: int, focus_pos: Vector3) -> void:
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(true)
+	elif player != null:
 		player.is_movement_locked = true
 	if hud != null:
 		hud.set_clean_hud_visible(false)
@@ -1109,7 +1266,9 @@ func _on_modal_closed() -> void:
 	_is_capsule_focused = false
 	if _skins_spotlight != null:
 		_skins_spotlight.light_energy = 0.65
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(false)
+	elif player != null:
 		player.is_movement_locked = false
 		player.is_pose_override_active = false
 		player.set_closeup_shadow_suppressed(false)
@@ -1118,20 +1277,24 @@ func _on_modal_closed() -> void:
 	_set_camera_mode(CameraRigScript.Mode.FREE_ROAM)
 
 
-func _on_pilot_changed(_char_id: StringName, accent_col: Color) -> void:
+func _on_pilot_changed(char_id: StringName, accent_col: Color) -> void:
 	set_pilot_accent_color(accent_col)
+	if embedded_mode:
+		embedded_pilot_selected.emit(char_id, accent_col)
 	_refresh_hud_status()
 
 
 func _on_companions_updated() -> void:
 	if east_wing != null:
-		east_wing.refresh_pets(player)
+		east_wing.refresh_pets(_get_active_player_node())
 	if modal_coordinator != null and right_station != null:
 		modal_coordinator.refresh_navigator_hologram(right_station, right_station.get_station_state() != StationNodeScript.StationState.CALIBRATING)
 
 
 func _on_gacha_focus_requested(focus_pos: Vector3) -> void:
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(true)
+	elif player != null:
 		player.is_movement_locked = true
 	if hud != null:
 		hud.set_clean_hud_visible(false)
@@ -1139,7 +1302,9 @@ func _on_gacha_focus_requested(focus_pos: Vector3) -> void:
 
 
 func _on_gacha_focus_exited() -> void:
-	if player != null:
+	if embedded_mode:
+		embedded_movement_lock_changed.emit(false)
+	elif player != null:
 		player.is_movement_locked = false
 	if hud != null:
 		hud.set_clean_hud_visible(true)
@@ -1157,6 +1322,9 @@ func _on_west_relic_interacted(trophy_id: StringName, focus_pos: Vector3) -> voi
 
 
 func _on_gacha_skin_equipped_live(equip_res: Dictionary) -> void:
+	if embedded_mode:
+		embedded_gacha_skin_equipped.emit(equip_res)
+		return
 	if player == null or player.rig_avatar == null:
 		return
 	var preset: PilotSkinPreset = equip_res.get("preset", null) as PilotSkinPreset
@@ -1211,6 +1379,8 @@ func _set_camera_mode(mode: CameraRigScript.Mode, focus_pos: Vector3 = Vector3.Z
 	if player != null and mode == CameraRigScript.Mode.FREE_ROAM and not _is_departure_active():
 		player.is_movement_locked = false
 	camera_rig.set_mode(mode, focus_pos)
+	if embedded_mode:
+		embedded_camera_focus_changed.emit(int(mode), focus_pos)
 	_refresh_hud_status()
 
 
@@ -1252,7 +1422,53 @@ func apply_launch_request(req: RunLaunchRequestScript, trigger_flash: bool = tru
 		modal_coordinator.set_active_request(active_launch_request)
 	if departure_controller != null:
 		departure_controller.set_pending_request(active_launch_request)
+	if embedded_mode:
+		embedded_launch_request_changed.emit(active_launch_request, trigger_flash)
 	_refresh_hud_status()
+
+
+func sync_embedded_player_3d(pos_3d: Vector3, sample_pos_2d: Vector2, is_flying: bool) -> void:
+	_embedded_cosmos_sample_pos_2d = sample_pos_2d
+	if _embedded_player_proxy != null:
+		_embedded_player_proxy.global_position = pos_3d
+	if _embedded_is_flying != is_flying:
+		_embedded_is_flying = is_flying
+		_refresh_hud_status()
+
+
+func update_embedded_perimeter_warning(world_3d: Vector3, dir_xz: Vector2, prog: float, sector: Dictionary) -> void:
+	_warn_progress_cached = prog
+	_warn_sector_cached = sector
+	if departure_controller != null:
+		departure_controller.update_embedded_compass(world_3d, dir_xz, prog, sector)
+	if hud != null:
+		hud.update_traversal_telemetry(_embedded_is_flying, prog, sector, _embedded_is_dematerializing)
+
+
+func start_embedded_dematerialization(origin_3d: Vector3) -> void:
+	if _embedded_is_dematerializing:
+		return
+	_embedded_is_dematerializing = true
+	_is_capsule_focused = false
+	if hud != null:
+		hud.set_clean_hud_visible(false)
+	if departure_controller != null:
+		departure_controller.start_embedded_dissolve_only(origin_3d)
+	else:
+		_embedded_is_dematerializing = false
+		embedded_demat_finished.emit()
+
+
+func is_any_hub_modal_or_panel_open() -> bool:
+	if _is_capsule_focused:
+		return true
+	if settings_modal != null and settings_modal.visible:
+		return true
+	if east_wing != null and east_wing.is_gacha_open():
+		return true
+	if modal_coordinator != null and modal_coordinator.is_any_modal_open():
+		return true
+	return false
 
 
 func set_west_mastery_override(level: int) -> void:
@@ -1323,9 +1539,10 @@ func _on_dev_back_to_workbench() -> void:
 
 
 func _update_proximity_prompts() -> void:
-	if player == null:
+	var active_p: Node3D = _get_active_player_node()
+	if active_p == null:
 		return
-	var is_dissolved: bool = departure_controller != null and departure_controller.is_dissolved_preview()
+	var is_dissolved: bool = _embedded_is_dematerializing or (departure_controller != null and departure_controller.is_dissolved_preview())
 	var is_free_roam: bool = (
 		camera_rig.get_mode() == CameraRigScript.Mode.FREE_ROAM
 		and not _is_departure_active()
@@ -1337,7 +1554,7 @@ func _update_proximity_prompts() -> void:
 	var pill_text: String = ""
 	var pill_col: Color = Color(0.95, 0.80, 0.34, 1.0)
 
-	var in_capsule: bool = _capsule_area != null and _capsule_area.overlaps_body(player)
+	var in_capsule: bool = _is_body_near_capsule(active_p)
 	if _capsule_label != null:
 		_capsule_label.visible = (in_capsule and is_free_roam)
 		_capsule_label.modulate = Color(0.96, 0.84, 0.48, 1.0)
@@ -1346,7 +1563,7 @@ func _update_proximity_prompts() -> void:
 		pill_col = Color(0.96, 0.84, 0.48, 1.0)
 
 	for st: StationNodeScript in _all_stations():
-		var inside: bool = st.is_player_inside(player)
+		var inside: bool = st.is_player_inside(active_p)
 		st.set_highlighted(inside)
 		st.set_prompt_suppressed(not is_free_roam)
 		if inside and is_free_roam and pill_text.is_empty():
@@ -1358,9 +1575,9 @@ func _update_proximity_prompts() -> void:
 				pill_col = Color(0.38, 1.0, 0.82, 1.0) if st.get_station_state() == StationNodeScript.StationState.NEWLY_UNLOCKED else Color(0.95, 0.80, 0.34, 1.0)
 
 	if east_wing != null:
-		east_wing.update_proximity(player, is_free_roam)
+		east_wing.update_proximity(active_p, is_free_roam)
 	if west_sanctuary != null:
-		west_sanctuary.update_proximity(player, is_free_roam)
+		west_sanctuary.update_proximity(active_p, is_free_roam)
 	if hud != null:
 		hud.set_interaction_prompt(pill_text, pill_col, is_free_roam and not pill_text.is_empty())
 
@@ -1372,7 +1589,10 @@ func _refresh_hud_status() -> void:
 	var m_txt: String = mode_names[clampi(int(camera_rig.get_mode()), 0, mode_names.size() - 1)]
 	var st_names: Array[String] = ["CALIBRATING", "NEWLY_UNLOCKED", "ONLINE"]
 	var st_txt: String = st_names[clampi(int(right_station.get_station_state()), 0, 2)] if right_station != null else "N/A"
-	var seed_v: int = cosmos_backdrop.get_preview_seed() if cosmos_backdrop != null else config.default_preview_seed
+	var seed_v: int = (
+		active_launch_request.cosmos_seed if (embedded_mode and active_launch_request != null)
+		else (cosmos_backdrop.get_preview_seed() if cosmos_backdrop != null else config.default_preview_seed)
+	)
 	var coord_code: String = active_launch_request.coordinate_code if active_launch_request != null else RunLaunchRequestScript.encode_coordinate_code(seed_v)
 	var badge: String = active_launch_request.get_seed_badge_text() if active_launch_request != null else ""
 
@@ -1382,8 +1602,8 @@ func _refresh_hud_status() -> void:
 	var pilot_name: String = cdata.display_name if cdata != null else String(cid).capitalize()
 
 	hud.update_status(m_txt, st_txt, seed_v, coord_code, badge, str(_active_progression_preset), pilot_name)
-	var is_flying: bool = player != null and player.is_flying_in_space
-	var is_dissolved: bool = departure_controller != null and departure_controller.is_dissolved_preview()
+	var is_flying: bool = _embedded_is_flying if embedded_mode else (player != null and player.is_flying_in_space)
+	var is_dissolved: bool = _embedded_is_dematerializing if embedded_mode else (departure_controller != null and departure_controller.is_dissolved_preview())
 	hud.update_traversal_telemetry(is_flying, _warn_progress_cached, _warn_sector_cached, is_dissolved)
 
 

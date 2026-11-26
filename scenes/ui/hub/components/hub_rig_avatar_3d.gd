@@ -230,9 +230,8 @@ func _apply_hub_rig_visuals(profile: PilotRigProfile, cfg: HubDioramaConfigScrip
 
 	_rig.set_recolor_method(1)
 	_rig.set_hair_style_mode(0)
-	_rig.set_shader_param_all("enable_inward_outline", false)
 	set_light_dir_2d(_light_dir_2d)
-	_rig.set_zoom_scale(cfg.rig_camera_zoom)
+	_rig.set_zoom_scale(1.05)
 	_rig.set_live_animations_enabled(true)
 	_rig.set_face_live_enabled(true)
 	_sync_rig_locomotion_mode(profile)
@@ -349,6 +348,9 @@ func set_camera_pitch_alignment(cam_pitch_deg: float, snap: bool = false) -> voi
 	_target_tilt_deg = lerpf(-3.5, cfg.avatar_tilt_deg, t_closeup)
 	if snap and _avatar_sprite != null:
 		_avatar_sprite.rotation_degrees.x = _target_tilt_deg
+	if _rig != null:
+		# t_closeup = 1.0 en FREE_ROAM lejano (líneas SDF más sólidas a 1.05x) y 0.0 en primer plano (1.85x)
+		_rig.set_zoom_scale(lerpf(1.85, 1.05, t_closeup))
 
 
 func set_showcase_lift_offset(extra_y: float) -> void:
@@ -500,7 +502,7 @@ func apply_station_lighting(sample: CosmicLightingSampleScript, delta: float) ->
 	if _integrate_3d_mat != null:
 		_integrate_3d_mat.set_shader_parameter("rim_tint", sample.rim_key_color)
 		_integrate_3d_mat.set_shader_parameter("shadow_tint", sample.shadow_tint.lerp(sample.key_light_tint, 0.35))
-		_integrate_3d_mat.set_shader_parameter("rim_strength", clampf(0.32 + sample.rim_tint_weight * 0.26, 0.25, 0.72))
+		_integrate_3d_mat.set_shader_parameter("rim_strength", clampf(0.14 + sample.rim_tint_weight * 0.14, 0.10, 0.34))
 	if _orbital_ring != null and is_instance_valid(_orbital_ring):
 		var eff_sample: CosmicLightingSampleScript = _rig.get_last_cosmic_lighting()
 		_orbital_ring.apply_cosmic_lighting(eff_sample if eff_sample != null else sample)

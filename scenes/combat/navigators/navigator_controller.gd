@@ -27,6 +27,18 @@ const NORMAL_SCAN_INTERVAL: float = 38.0
 var active_buff_duration: float = 0.0
 var is_buff_active: bool = false
 var caelia_shield_active: bool = false
+var is_hub_suppressed: bool = false
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+
+
+func refresh_navigator_selection() -> void:
+	var nav_id: StringName = SaveManager.get_selected_navigator()
+	navigator_data = NavigatorDataScript.get_navigator(nav_id)
+	if not navigator_data:
+		navigator_data = NavigatorDataScript.get_navigator(&"lyra")
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -60,7 +72,7 @@ func show_prologue_transmission(message: String, on_continue: Callable) -> void:
 			on_continue.call()
 
 func _process(delta: float) -> void:
-	if get_tree().paused:
+	if get_tree().paused or is_hub_suppressed:
 		return
 	if not is_instance_valid(player) or player.is_dead:
 		return

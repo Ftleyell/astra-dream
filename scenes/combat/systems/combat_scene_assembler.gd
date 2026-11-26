@@ -13,7 +13,7 @@ const NavControllerScript = preload("res://scenes/combat/navigators/navigator_co
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 const DialogueBackdropScene: PackedScene = preload("res://scenes/ui/dialogue/dialogue_backdrop_layer.tscn")
 
-static func assemble(game: MainGame, player: Player, hud: GameHUD) -> void:
+static func assemble(game: MainGame, player: Player, hud: GameHUD, spawn_pet_now: bool = true) -> void:
 	if not game:
 		return
 
@@ -21,7 +21,8 @@ static func assemble(game: MainGame, player: Player, hud: GameHUD) -> void:
 	_setup_directors_and_controllers(game, hud)
 
 	# 2. Companion Pet y Navigator
-	_spawn_companion_pet(game, player)
+	if spawn_pet_now:
+		spawn_companion_pet(game, player)
 	_spawn_navigator_controller(game, player, hud)
 
 	# 3. Setup de modales y coordinadores
@@ -86,7 +87,13 @@ static func _setup_directors_and_controllers(game: MainGame, hud: GameHUD) -> vo
 	game.telemetry_coordinator.setup(game, hud)
 
 static func _spawn_companion_pet(game: MainGame, player: Player) -> void:
-	if not CompanionPetScene or not is_instance_valid(player):
+	spawn_companion_pet(game, player)
+
+
+static func spawn_companion_pet(game: MainGame, player: Player) -> void:
+	if not CompanionPetScene or not is_instance_valid(player) or game == null:
+		return
+	if is_instance_valid(game.active_pet):
 		return
 	var pet_id: StringName = SaveManager.get_selected_pet()
 	var p_data: PetData = PetDataScript.get_pet(pet_id)

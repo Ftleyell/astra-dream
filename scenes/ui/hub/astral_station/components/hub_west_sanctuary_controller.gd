@@ -270,6 +270,16 @@ func _process(delta: float) -> void:
 			outer_ring.rotation.y -= delta * (0.95 + float(mastery) * 0.18)
 
 
+func _is_body_in_area_xz(area: Area3D, body: Node3D, radius: float) -> bool:
+	if area == null or body == null or not is_instance_valid(body):
+		return false
+	if area.overlaps_body(body):
+		return true
+	var dx: float = body.global_position.x - area.global_position.x
+	var dz: float = body.global_position.z - area.global_position.z
+	return (dx * dx + dz * dz) <= (radius * radius)
+
+
 func update_proximity(player_body: Node3D, allow_prompts: bool) -> void:
 	if player_body == null:
 		return
@@ -277,7 +287,7 @@ func update_proximity(player_body: Node3D, allow_prompts: bool) -> void:
 		var area: Area3D = entry.get("area", null) as Area3D
 		var lbl: Label3D = entry.get("label", null) as Label3D
 		if lbl != null and area != null:
-			lbl.visible = allow_prompts and area.overlaps_body(player_body)
+			lbl.visible = allow_prompts and _is_body_in_area_xz(area, player_body, 2.85)
 
 
 func try_interact(player_body: Node3D) -> bool:
@@ -285,7 +295,7 @@ func try_interact(player_body: Node3D) -> bool:
 		return false
 	for entry: Dictionary in _relics:
 		var area: Area3D = entry.get("area", null) as Area3D
-		if area != null and area.overlaps_body(player_body):
+		if area != null and _is_body_in_area_xz(area, player_body, 2.85):
 			var root: Node3D = entry["root"] as Node3D
 			relic_interacted.emit(entry["id"] as StringName, root.global_position)
 			return true

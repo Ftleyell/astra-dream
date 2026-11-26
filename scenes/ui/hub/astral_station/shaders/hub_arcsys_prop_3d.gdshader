@@ -164,14 +164,11 @@ void fragment() {
 }
 
 void light() {
-	float lit = max(dot(NORMAL, LIGHT), 0.0) * ATTENUATION;
-	float band_mid = smoothstep(0.02, 0.28, lit);
-	float band_hi = smoothstep(0.52, 0.76, lit);
-
-	float penumbra = band_mid * (1.0 - band_mid) * 3.2;
-	float ht = 0.5 + 0.5 * (sin(FRAGCOORD.x * 0.9) * sin(FRAGCOORD.y * 0.9));
-	float cel_intensity = 0.08 + band_mid * 0.62 + band_hi * 0.24;
-	cel_intensity *= (1.0 - penumbra * halftone_strength * 0.65 * ht);
+	float ndotl = max(dot(NORMAL, LIGHT), 0.0);
+	float shadow_f = smoothstep(0.12, 0.88, ATTENUATION);
+	float band_mid = smoothstep(0.06, 0.30, ndotl) * shadow_f;
+	float band_hi = smoothstep(0.52, 0.76, ndotl) * shadow_f;
+	float cel_intensity = 0.10 + band_mid * 0.60 + band_hi * 0.24;
 	vec3 eff_light = LIGHT_COLOR * mix(vec3(1.0), cosmic_key_tint.rgb, cosmic_light_mix * 0.45);
 	if (material_kind != 2) {
 		DIFFUSE_LIGHT = min(DIFFUSE_LIGHT + cel_intensity * eff_light, vec3(0.96));

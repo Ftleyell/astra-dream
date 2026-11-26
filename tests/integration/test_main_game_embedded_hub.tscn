@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/integration/test_main_game_embedded_hub.gd" id="1_test"]
+
+[node name="TestMainGameEmbeddedHub" type="Node"]
+script = ExtResource("1_test")

@@ -21,6 +21,19 @@ var pity_chance: float = 0.25
 var combat_root: Node2D = null
 var player_ref: Node2D = null
 var camera_ref: GameCamera2D = null
+var is_hub_suppressed: bool = false
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if suppressed:
+		cleanup()
+
+
+func _is_blocked_by_hub() -> bool:
+	if is_hub_suppressed:
+		return true
+	return combat_root != null and combat_root.has_method("is_hub_mode_active") and bool(combat_root.call("is_hub_mode_active"))
 
 func setup_subsystem(p_context: CombatContextScript) -> void:
 	super.setup_subsystem(p_context)
@@ -42,7 +55,7 @@ func initialize(combat_main: Node2D, player_node: Node2D, cam: GameCamera2D) -> 
 		combat_root.add_child(slot_machine_reward_modal)
 
 func evaluate_slot_machine_spawn(can_spawn: bool) -> bool:
-	if not can_spawn:
+	if _is_blocked_by_hub() or not can_spawn:
 		return false
 
 	var roll: float = randf()
@@ -55,14 +68,22 @@ func evaluate_slot_machine_spawn(can_spawn: bool) -> bool:
 		return false
 
 func spawn_slot_machine(spawn_pos: Vector2 = Vector2.INF) -> Node2D:
+	if _is_blocked_by_hub():
+		return null
 	if current_slot_machine != null and is_instance_valid(current_slot_machine):
 		return current_slot_machine
 	if not is_instance_valid(player_ref) or not combat_root:
 		return null
 
 	if spawn_pos == Vector2.INF:
-		var move_dir: Vector2 = player_ref.velocity.normalized() if player_ref.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
+		var move_dir: Vector2 = Vector2.ZERO
+		if combat_root.has_method("get_hub_launch_departure_direction"):
+			move_dir = combat_root.call("get_hub_launch_departure_direction")
+		if move_dir.length_squared() < 0.001:
+			move_dir = player_ref.velocity.normalized() if player_ref.velocity.length_squared() > 10.0 else Vector2.UP.rotated(randf_range(-PI, PI))
 		spawn_pos = player_ref.global_position + move_dir * 750.0
+		if combat_root.has_method("push_position_outside_hub_exclusion"):
+			spawn_pos = combat_root.call("push_position_outside_hub_exclusion", spawn_pos, move_dir, 140.0)
 
 	var beacon = SlotMachineBeaconScript.new()
 	beacon.global_position = spawn_pos
@@ -96,11 +117,17 @@ func _on_slot_machine_chest_opened(chest: Node2D) -> void:
 		slot_machine_reward_modal.show_reward(chest, player_ref)
 
 func spawn_slot_chest(pos: Vector2 = Vector2.INF) -> Node2D:
-	if not combat_root:
+	if _is_blocked_by_hub() or not combat_root:
 		return null
 	if pos == Vector2.INF:
-		var move_dir: Vector2 = player_ref.velocity.normalized() if (is_instance_valid(player_ref) and player_ref.velocity.length_squared() > 10.0) else Vector2.UP
+		var move_dir: Vector2 = Vector2.ZERO
+		if combat_root.has_method("get_hub_launch_departure_direction"):
+			move_dir = combat_root.call("get_hub_launch_departure_direction")
+		if move_dir.length_squared() < 0.001:
+			move_dir = player_ref.velocity.normalized() if (is_instance_valid(player_ref) and player_ref.velocity.length_squared() > 10.0) else Vector2.UP
 		pos = (player_ref.global_position if is_instance_valid(player_ref) else Vector2.ZERO) + move_dir * 300.0
+		if combat_root.has_method("push_position_outside_hub_exclusion"):
+			pos = combat_root.call("push_position_outside_hub_exclusion", pos, move_dir, 90.0)
 	var chest = SlotMachineChestScript.new()
 	chest.global_position = pos
 	chest.chest_opened.connect(_on_slot_machine_chest_opened)

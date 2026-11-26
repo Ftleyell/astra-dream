@@ -56,6 +56,20 @@ var _wings_override_timer: float = 0.0
 var _aberration_timer: float = 0.0
 var _is_dead: bool = false
 
+var _is_hub_mode: bool = false
+var _is_hub_flying: bool = false
+var _is_hub_loadout_showcase: bool = false
+var _hub_pose_override_active: bool = false
+var _hub_pose_dir: Vector2 = Vector2.DOWN
+var _hub_shadow_suppressed: bool = false
+var _hub_feet_offset_y_px: float = 54.0
+var _hub_wing_fold_pending: bool = false
+var _hub_wing_bloom_timer: float = 0.0
+var _hub_walk_speed_px: float = 440.0
+var _hub_flight_speed_px: float = 760.0
+var _hub_contact_shadow: Sprite2D = null
+var _hub_facing_dir: Vector2 = Vector2.DOWN
+
 
 func setup(p_player: CharacterBody2D, p_char_data: CharacterData) -> void:
 	_player = p_player
@@ -327,6 +341,10 @@ func _process(delta: float) -> void:
 	var ts: float = maxf(Engine.time_scale, 0.1)
 	var unscaled_delta: float = clampf(delta / ts, 0.0, 0.06)
 
+	if _is_hub_mode:
+		_process_hub_mode(unscaled_delta)
+		return
+
 	var mouse_world: Vector2 = _player.get_global_mouse_position()
 	var primary_aim_world: Vector2 = _weapon_ctrl.get_primary_aim_world_pos() if (_weapon_ctrl != null and is_instance_valid(_weapon_ctrl)) else mouse_world
 	var aim_vec: Vector2 = primary_aim_world - _player.global_position
@@ -472,7 +490,7 @@ func _resolve_cosmos_refs() -> void:
 
 
 func on_dash_executed(dash_dir: Vector2, cid: StringName) -> void:
-	if _is_dead or _rig == null:
+	if _is_dead or _rig == null or _is_hub_mode:
 		return
 	_rig.trigger_dash_burst(dash_dir)
 	var is_overfocus: bool = bool(_player != null and _player.get("is_focus_active")) or cid == &"valentina"
@@ -492,7 +510,7 @@ func on_dash_executed(dash_dir: Vector2, cid: StringName) -> void:
 
 
 func on_damage_taken(hit_dir: Vector2 = Vector2.ZERO, is_osp: bool = false) -> void:
-	if _is_dead or _rig == null:
+	if _is_dead or _rig == null or _is_hub_mode:
 		return
 	_rig.trigger_hit_react(hit_dir, 1.35 if is_osp else 1.0)
 	if is_osp:
@@ -513,7 +531,7 @@ func on_shield_absorbed() -> void:
 
 
 func on_bomb_used(_remaining: int = 0) -> void:
-	if _is_dead or _rig == null:
+	if _is_dead or _rig == null or _is_hub_mode:
 		return
 	_rig.trigger_impact_frame(_combat_cfg.bomb_impact_ms, _combat_cfg.bomb_impact_shake_px)
 	_wings_override_timer = maxf(_wings_override_timer, _combat_cfg.bomb_wings_bloom_sec)
@@ -523,7 +541,7 @@ func on_bomb_used(_remaining: int = 0) -> void:
 
 
 func on_weapon_fired(slot_idx: int, aim_dir: Vector2, is_active: bool) -> void:
-	if _is_dead:
+	if _is_dead or _is_hub_mode:
 		return
 	if _ring_ctrl != null and slot_idx >= 0:
 		_ring_ctrl.trigger_fire(slot_idx, false)
@@ -604,3 +622,253 @@ func get_aberration_rect() -> ColorRect:
 
 func get_combat_config() -> CombatRigConfigScript:
 	return _combat_cfg
+
+
+func is_hub_mode() -> bool:
+	return _is_hub_mode
+
+
+func is_hub_flying() -> bool:
+	return _is_hub_flying
+
+
+func set_hub_mode(enabled: bool, feet_offset_y_px: float = 54.0) -> void:
+	_is_hub_mode = enabled
+	_hub_feet_offset_y_px = feet_offset_y_px
+	if enabled:
+		_is_hub_loadout_showcase = false
+		_hub_pose_override_active = false
+		_hub_shadow_suppressed = false
+		_hub_wing_fold_pending = false
+		_hub_wing_bloom_timer = 0.0
+		_overfocus_was_active = false
+		_aberration_timer = 0.0
+		if _aberration_mat != null:
+			_aberration_mat.set_shader_parameter("strength_px", 0.0)
+		if _aberration_rect != null:
+			_aberration_rect.visible = false
+		if _ring_ctrl != null:
+			_ring_ctrl.visible = false
+			_ring_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
+		_ensure_hub_contact_shadow()
+		set_hub_traversal_state(false, true)
+	else:
+		_is_hub_loadout_showcase = false
+		_hub_pose_override_active = false
+		_hub_shadow_suppressed = false
+		_hub_wing_fold_pending = false
+		_hub_wing_bloom_timer = 0.0
+		if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
+			_hub_contact_shadow.visible = false
+		if _rig != null:
+			_rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT)
+			var zero_g_fps: float = _profile.stepped_fps if _profile != null else 15.0
+			_rig.set_stepped_fps(zero_g_fps)
+			var want_3d_wings: bool = _profile.prefer_3d_wings if _profile != null else true
+			_rig.set_3d_wings_enabled(want_3d_wings)
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_BLOOM, false)
+			_rig.trigger_3d_wings_pulse()
+			_wings_override_timer = 0.55
+		if _ring_ctrl != null:
+			_ring_ctrl.visible = true
+			_ring_ctrl.process_mode = Node.PROCESS_MODE_INHERIT
+			if _weapon_ctrl != null:
+				sync_equipped_weapons(_weapon_ctrl.equipped_weapons)
+		refresh_equipped_skins()
+
+
+func set_hub_traversal_state(is_flying: bool, instant: bool = false) -> void:
+	if _is_hub_flying == is_flying and not instant:
+		return
+	_is_hub_flying = is_flying
+	if _rig == null or not _is_hub_mode:
+		return
+
+	var want_zero_g: bool = is_flying or _is_hub_loadout_showcase
+	_rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT if want_zero_g else PlanarCombatRig.LocomotionMode.GROUNDED_HUB)
+	var zero_g_fps: float = _profile.stepped_fps if _profile != null else 15.0
+	_rig.set_stepped_fps(zero_g_fps if want_zero_g else 60.0)
+
+	if want_zero_g:
+		_hub_wing_fold_pending = false
+		_rig.set_3d_wings_enabled(_profile.prefer_3d_wings if _profile != null else true)
+		if instant:
+			_hub_wing_bloom_timer = 0.0
+			_rig.clear_3d_wings_manual_override()
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.IDLE_ZERO_G, true)
+		else:
+			_hub_wing_bloom_timer = 0.58
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_BLOOM, false)
+			_rig.trigger_3d_wings_pulse()
+		if _wings_skin_preset != null:
+			_rig.apply_wings_skin_preset(_wings_skin_preset, _wings_skin_stars)
+	else:
+		_hub_wing_bloom_timer = 0.0
+		if instant or not _rig.enable_3d_wings:
+			_hub_wing_fold_pending = false
+			_rig.clear_3d_wings_manual_override()
+			_rig.set_3d_wings_enabled(false)
+		else:
+			_hub_wing_fold_pending = true
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.SERAPH_FOLD, false)
+
+
+func set_hub_loadout_showcase(enabled: bool) -> void:
+	_is_hub_loadout_showcase = enabled
+	if not _is_hub_mode:
+		return
+	if enabled:
+		if _rig != null:
+			_rig.set_locomotion_mode(PlanarCombatRig.LocomotionMode.ZERO_G_FLIGHT)
+			_rig.set_stepped_fps(_profile.stepped_fps if _profile != null else 15.0)
+			_rig.set_3d_wings_enabled(_profile.prefer_3d_wings if _profile != null else true)
+			_rig.set_3d_wings_anim_state(AstralWings3DController.AnimState.IDLE_ZERO_G, false)
+			_rig.trigger_3d_wings_pulse()
+		if _ring_ctrl != null:
+			_ring_ctrl.visible = true
+			_ring_ctrl.process_mode = Node.PROCESS_MODE_INHERIT
+			_ring_ctrl.set_mouse_target_local(Vector2(0.0, 200.0))
+		refresh_equipped_skins()
+	else:
+		if _ring_ctrl != null:
+			_ring_ctrl.visible = false
+			_ring_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
+		set_hub_traversal_state(_is_hub_flying, true)
+
+
+func set_hub_pose_override(active: bool, dir: Vector2 = Vector2.DOWN, snap: bool = true) -> void:
+	_hub_pose_override_active = active
+	if dir.length_squared() > 0.001:
+		_hub_pose_dir = dir.normalized()
+		_hub_facing_dir = _hub_pose_dir
+	if active and _rig != null:
+		_rig.set_turbo_active(false)
+		_rig.set_locomotion_state(_hub_pose_dir, 0.0, _hub_pose_dir, snap)
+
+
+func set_hub_shadow_suppressed(suppressed: bool) -> void:
+	_hub_shadow_suppressed = suppressed
+	if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
+		_hub_contact_shadow.visible = _is_hub_mode and not suppressed and not _is_hub_flying and not _is_hub_loadout_showcase
+
+
+func feed_hub_walk_displacement(dist_m: float) -> void:
+	if _rig != null and _is_hub_mode and not _is_hub_flying and not _is_hub_loadout_showcase:
+		_rig.feed_world_displacement(dist_m)
+
+
+func set_hub_speed_refs(walk_px: float, flight_px: float) -> void:
+	_hub_walk_speed_px = maxf(walk_px, 1.0)
+	_hub_flight_speed_px = maxf(flight_px, 1.0)
+
+
+func on_hub_dash_started(dash_dir: Vector2) -> void:
+	if _is_dead or _rig == null or not _is_hub_mode:
+		return
+	if dash_dir.length_squared() > 0.001:
+		_hub_facing_dir = dash_dir.normalized()
+	_rig.trigger_dash_burst(_hub_facing_dir)
+	if _sandevistan_ctrl != null:
+		_sandevistan_ctrl.trigger_burst_impulse(_rig)
+	if _is_hub_flying:
+		_rig.trigger_3d_wings_pulse()
+
+
+func apply_live_gacha_skin(category: String, preset: PilotSkinPreset, stars: int) -> void:
+	if preset == null:
+		return
+	var clamp_stars: int = clampi(stars, 1, 3)
+	if category == "wings" or category == "ship":
+		_wings_skin_preset = preset
+		_wings_skin_stars = clamp_stars
+		if _rig != null:
+			_rig.apply_wings_skin_preset(preset, clamp_stars)
+	elif category == "weapon":
+		_weapon_skin_preset = preset
+		_weapon_skin_stars = clamp_stars
+		if _ring_ctrl != null:
+			_ring_ctrl.apply_skin_preset(preset, clamp_stars)
+	else:
+		_pilot_skin_preset = preset
+		_pilot_skin_stars = clamp_stars
+		if _rig != null:
+			_rig.apply_skin_preset(preset, clamp_stars)
+
+
+func _ensure_hub_contact_shadow() -> void:
+	if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
+		_hub_contact_shadow.visible = true
+		return
+	var grad := Gradient.new()
+	grad.offsets = PackedFloat32Array([0.0, 0.52, 1.0])
+	grad.colors = PackedColorArray([
+		Color(0.02, 0.02, 0.06, 0.44),
+		Color(0.02, 0.02, 0.06, 0.18),
+		Color(0.02, 0.02, 0.06, 0.0),
+	])
+	var tex := GradientTexture2D.new()
+	tex.width = 64
+	tex.height = 64
+	tex.gradient = grad
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(0.5, 0.0)
+	_hub_contact_shadow = Sprite2D.new()
+	_hub_contact_shadow.name = "HubContactShadow2D"
+	_hub_contact_shadow.texture = tex
+	_hub_contact_shadow.z_index = -1
+	add_child(_hub_contact_shadow)
+
+
+func _process_hub_mode(unscaled_delta: float) -> void:
+	if _hub_wing_bloom_timer > 0.0:
+		_hub_wing_bloom_timer = maxf(0.0, _hub_wing_bloom_timer - unscaled_delta)
+		if _hub_wing_bloom_timer <= 0.0 and (_is_hub_flying or _is_hub_loadout_showcase):
+			_rig.clear_3d_wings_manual_override()
+	if _hub_wing_fold_pending:
+		var w_ctrl: AstralWings3DController = _rig.get_3d_wings_controller()
+		if w_ctrl == null or w_ctrl.is_fold_complete():
+			_hub_wing_fold_pending = false
+			if not _is_hub_flying and not _is_hub_loadout_showcase:
+				_rig.clear_3d_wings_manual_override()
+				_rig.set_3d_wings_enabled(false)
+
+	var p_stats: CharacterStats = _player.get("stats") as CharacterStats
+	var max_spd: float = maxf(1.0, p_stats.get_stat(&"move_speed") if p_stats != null else 300.0)
+	var spd: float = _player.velocity.length()
+
+	var is_hub_dash_now: bool = _player.has_method("is_hub_dashing") and bool(_player.call("is_hub_dashing"))
+
+	if _hub_pose_override_active:
+		_rig.set_turbo_active(false)
+		_rig.set_locomotion_state(_hub_pose_dir, 0.0, _hub_pose_dir, false)
+	else:
+		var move_dir: Vector2 = _hub_facing_dir
+		if spd > 8.0:
+			move_dir = _player.velocity / spd
+			_hub_facing_dir = move_dir
+		var ref_spd: float = maxf(_hub_flight_speed_px, 1.0) if _is_hub_flying else maxf(_hub_walk_speed_px, 1.0)
+		var speed_norm: float = clampf(spd / ref_spd, 0.0, 1.25)
+		_rig.set_turbo_active(is_hub_dash_now)
+		_rig.set_locomotion_state(_hub_facing_dir, speed_norm, _hub_facing_dir, false)
+
+	_rig.set_hit_flash(0.0)
+
+	if _sandevistan_ctrl != null and (is_hub_dash_now or _sandevistan_ctrl.get_active_ghost_count() > 0 or _sandevistan_ctrl.get_sequence_progress() > 0.001):
+		_sandevistan_ctrl.step(unscaled_delta, _rig, _player.velocity if is_hub_dash_now else Vector2.ZERO, is_hub_dash_now)
+
+	if _hub_contact_shadow != null and is_instance_valid(_hub_contact_shadow):
+		var show_sh: bool = not _is_hub_flying and not _hub_shadow_suppressed and not _is_hub_loadout_showcase
+		_hub_contact_shadow.visible = show_sh
+		if show_sh:
+			var p_scale_y: float = maxf(absf(_player.scale.y) * absf(scale.y), 0.1)
+			var lift_norm: float = _rig.get_grounded_pelvis_lift_norm()
+			_hub_contact_shadow.position = Vector2(0.0, _hub_feet_offset_y_px / p_scale_y)
+			var sh_scale: float = 1.0 - lift_norm * 0.12
+			_hub_contact_shadow.scale = Vector2(1.42 * sh_scale, 0.50 * sh_scale)
+
+	if _is_hub_loadout_showcase and _ring_ctrl != null and _ring_ctrl.visible:
+		_ring_ctrl.set_mouse_target_local(Vector2(0.0, 200.0))
+		_ring_ctrl.step(unscaled_delta)
+
+	_step_cosmos_and_camera(unscaled_delta, false, max_spd)

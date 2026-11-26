@@ -69,7 +69,24 @@ func _on_solar_system_unstreamed(_system: Node, cell: Vector2i) -> void:
 	spawned_system_cells.erase(cell)
 
 
+func _get_main_game() -> Node:
+	if not is_inside_tree():
+		return null
+	var p: Node = get_parent()
+	if p != null and p.has_method("is_hub_mode_active"):
+		return p
+	var tree: SceneTree = get_tree()
+	return tree.get_first_node_in_group("main_game") if tree != null else null
+
+
+func _is_hub_mode_active() -> bool:
+	var mg: Node = _get_main_game()
+	return mg != null and mg.has_method("is_hub_mode_active") and bool(mg.call("is_hub_mode_active"))
+
+
 func _on_solar_system_streamed(system: Node, cell: Vector2i, star_slot: CosmosOrbitSlotScript, _planet_slots: Array) -> void:
+	if _is_hub_mode_active():
+		return
 	if spawned_system_cells.has(cell):
 		return
 	_prune_active_planets()
@@ -98,6 +115,8 @@ func _on_solar_system_streamed(system: Node, cell: Vector2i, star_slot: CosmosOr
 
 
 func _spawn_initial_test_planet() -> void:
+	if _is_hub_mode_active():
+		return
 	_acquire_player()
 	var center := player.global_position if is_instance_valid(player) else Vector2(960, 540)
 	var host_ctrl: CosmosHostController = _get_cosmos_controller()
@@ -107,28 +126,36 @@ func _spawn_initial_test_planet() -> void:
 			slots = host_ctrl.get_star_orbit_slots(center, 24000.0)
 
 		if not slots.is_empty():
-			var slot: CosmosOrbitSlotScript = slots[0] as CosmosOrbitSlotScript
 			var cam: Camera2D = _get_camera()
 			var root_node: CosmosRootNode = host_ctrl.cosmos_root
 			var t_global: float = root_node.get_global_time() if (root_node != null and is_instance_valid(root_node)) else 0.0
-			var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
-			if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
-				spawned_system_cells[slot.orbit_center_cell] = true
-				_instantiate_planet_at(slot_world_pos, slot)
-				return
+			for slot_obj in slots:
+				var slot: CosmosOrbitSlotScript = slot_obj as CosmosOrbitSlotScript
+				if slot == null:
+					continue
+				var slot_world_pos: Vector2 = CosmosOrbitalSlotTrackerScript.project_slot_to_world(slot, t_global, cam)
+				if _is_position_valid_for_planet(slot_world_pos, -1.0, true):
+					spawned_system_cells[slot.orbit_center_cell] = true
+					_instantiate_planet_at(slot_world_pos, slot)
+					return
 		# Si hay Cosmos Engine presente pero aún no hay estrellas disponibles, esperar al streaming
 		return
 
-
-	var preferred_pos := center + Vector2(1700.0, -400.0)
+	var mg: Node = _get_main_game()
+	var launch_dir: Vector2 = mg.call("get_hub_launch_departure_direction") if (mg != null and mg.has_method("get_hub_launch_departure_direction")) else Vector2.ZERO
+	var preferred_offset: Vector2 = launch_dir * 1750.0 if launch_dir.length_squared() > 0.001 else Vector2(1700.0, -400.0)
+	var preferred_pos: Vector2 = center + preferred_offset
+	if mg != null and mg.has_method("push_position_outside_hub_exclusion"):
+		preferred_pos = mg.call("push_position_outside_hub_exclusion", preferred_pos, launch_dir, 340.0)
 
 	if _is_position_valid_for_planet(preferred_pos):
 		_instantiate_planet_at(preferred_pos)
 		return
 
 	# Si la posición preferida entra en conflicto, buscar en abanico circular despejado
+	var start_ang: float = launch_dir.angle() if launch_dir.length_squared() > 0.001 else 0.0
 	for i in range(12):
-		var angle := (TAU / 12.0) * float(i)
+		var angle := start_ang + (TAU / 12.0) * float(i)
 		var test_pos := center + Vector2(cos(angle), sin(angle)) * 1750.0
 		if _is_position_valid_for_planet(test_pos):
 			_instantiate_planet_at(test_pos)
@@ -136,6 +163,8 @@ func _spawn_initial_test_planet() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if _is_hub_mode_active():
+		return
 	_acquire_player()
 	if not is_instance_valid(player):
 		return
@@ -164,6 +193,8 @@ func _physics_process(_delta: float) -> void:
 
 
 func _spawn_planet_ahead() -> bool:
+	if _is_hub_mode_active():
+		return false
 	if not planet_scene or not is_instance_valid(player):
 		return false
 
@@ -196,7 +227,10 @@ func _spawn_planet_ahead() -> bool:
 
 
 	# Calcular dirección base de avance del jugador (velocity o rotación)
-	var move_dir := player.velocity.normalized()
+	var mg: Node = _get_main_game()
+	var move_dir: Vector2 = mg.call("get_hub_launch_departure_direction") if (mg != null and mg.has_method("get_hub_launch_departure_direction")) else Vector2.ZERO
+	if move_dir.length_squared() < 0.01:
+		move_dir = player.velocity.normalized()
 	if move_dir.length_squared() < 0.01:
 		move_dir = Vector2.RIGHT.rotated(player.rotation if player.rotation != 0.0 else randf() * TAU)
 
@@ -236,6 +270,12 @@ func _spawn_planet_ahead() -> bool:
 
 
 func _is_position_valid_for_planet(pos: Vector2, min_dist: float = -1.0, is_orbital_slot: bool = false) -> bool:
+	var mg: Node = _get_main_game()
+	if mg != null and mg.has_method("is_position_allowed_for_combat_spawn"):
+		var ref_pos: Vector2 = player.global_position if is_instance_valid(player) else pos
+		if not bool(mg.call("is_position_allowed_for_combat_spawn", pos, ref_pos, 340.0, true)):
+			return false
+
 	var check_dist: float = min_planet_distance if min_dist <= 0.0 else min_dist
 	var check_dist_sq: float = check_dist * check_dist
 

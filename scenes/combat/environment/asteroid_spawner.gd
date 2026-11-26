@@ -18,12 +18,29 @@ var player: Player = null
 var spawn_timer: float = 0.0
 
 
+func _get_main_game() -> Node:
+	if not is_inside_tree():
+		return null
+	var p: Node = get_parent()
+	if p != null and p.has_method("is_hub_mode_active"):
+		return p
+	var tree: SceneTree = get_tree()
+	return tree.get_first_node_in_group("main_game") if tree != null else null
+
+
+func _is_blocked_by_hub() -> bool:
+	var mg: Node = _get_main_game()
+	return mg != null and mg.has_method("is_hub_mode_active") and bool(mg.call("is_hub_mode_active"))
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	spawn_timer = initial_spawn_delay
 
 
 func _process(delta: float) -> void:
+	if _is_blocked_by_hub():
+		return
 	spawn_timer -= delta
 	if spawn_timer <= 0.0:
 		spawn_timer = randf_range(spawn_interval * 0.8, spawn_interval * 1.2)
@@ -31,7 +48,7 @@ func _process(delta: float) -> void:
 
 
 func _try_spawn_asteroid() -> void:
-	if not asteroid_scene or not is_inside_tree():
+	if _is_blocked_by_hub() or not asteroid_scene or not is_inside_tree():
 		return
 
 	var tree := get_tree()
@@ -53,16 +70,36 @@ func _try_spawn_asteroid() -> void:
 
 
 func _spawn_single_asteroid(center: Vector2) -> void:
-	# Ángulo periférico con sesgo hacia el rumbo del jugador si está en movimiento
-	var base_angle := randf() * TAU
-	if is_instance_valid(player) and player.velocity.length_squared() > 100.0:
-		var heading := player.velocity.angle()
-		# 60% de probabilidad de aparecer en el arco frontal hacia donde navega el jugador
-		if randf() < 0.60:
-			base_angle = heading + randf_range(-PI * 0.45, PI * 0.45)
+	var mg: Node = _get_main_game()
+	var launch_dir: Vector2 = Vector2.ZERO
+	var cone_half: float = deg_to_rad(65.0)
+	if mg != null:
+		if mg.has_method("get_hub_launch_departure_direction"):
+			launch_dir = mg.call("get_hub_launch_departure_direction")
+		if mg.has_method("get_hub_launch_forward_cone_half_angle_rad"):
+			cone_half = float(mg.call("get_hub_launch_forward_cone_half_angle_rad"))
 
-	var dist := randf_range(spawn_distance_min, spawn_distance_max)
-	var spawn_pos := center + Vector2(cos(base_angle), sin(base_angle)) * dist
+	var has_vel: bool = is_instance_valid(player) and player.velocity.length_squared() > 100.0
+	var vel_angle: float = player.velocity.angle() if has_vel else 0.0
+	var has_filter: bool = mg != null and mg.has_method("is_position_allowed_for_combat_spawn")
+
+	var spawn_pos: Vector2 = center
+	var found_valid: bool = false
+	for _attempt: int in range(12):
+		var base_angle: float = randf() * TAU
+		if launch_dir.length_squared() > 0.001:
+			base_angle = launch_dir.angle() + randf_range(-cone_half, cone_half)
+		elif has_vel and randf() < 0.60:
+			base_angle = vel_angle + randf_range(-PI * 0.45, PI * 0.45)
+		var dist: float = randf_range(spawn_distance_min, spawn_distance_max)
+		spawn_pos = center + Vector2(cos(base_angle), sin(base_angle)) * dist
+		if not has_filter or bool(mg.call("is_position_allowed_for_combat_spawn", spawn_pos, center, 100.0, true)):
+			found_valid = true
+			break
+
+	if not found_valid and mg != null and mg.has_method("push_position_outside_hub_exclusion"):
+		var fb_dir: Vector2 = launch_dir if launch_dir.length_squared() > 0.001 else (player.velocity.normalized() if has_vel else Vector2.UP)
+		spawn_pos = mg.call("push_position_outside_hub_exclusion", center + fb_dir.normalized() * spawn_distance_max, fb_dir, 100.0)
 
 	# Vector de deriva cruzando el sector del jugador
 	var target_offset := Vector2(randf_range(-400.0, 400.0), randf_range(-400.0, 400.0))

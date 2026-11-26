@@ -14,6 +14,12 @@ enum SeedMode {
 	DAILY = 2,
 }
 
+enum EntryMode {
+	DIRECT_COMBAT = 0,
+	HUB = 1,
+}
+
+const MAIN_GAME_SCENE_PATH: String = "res://scenes/combat/main_game.tscn"
 const MAX_SEED: int = 0x7FFFFFFF
 const CODE_PREFIX: String = "ASTR-"
 const CODE_LEN: int = 6
@@ -37,6 +43,7 @@ var cosmos_sync_pos: Vector2 = Vector2.ZERO
 
 static var _pending_request: RunLaunchRequest = null
 static var _last_launched_request: RunLaunchRequest = null
+static var _pending_entry_mode: EntryMode = EntryMode.DIRECT_COMBAT
 
 
 static func normalize_seed(raw_seed: int) -> int:
@@ -158,6 +165,40 @@ static func get_last_launched() -> RunLaunchRequest:
 
 static func clear_pending() -> void:
 	_pending_request = null
+
+
+static func set_last_launched(req: RunLaunchRequest) -> void:
+	_last_launched_request = req.duplicate_request() if req != null else null
+
+
+static func request_hub_entry() -> void:
+	_pending_entry_mode = EntryMode.HUB
+	_pending_request = null
+
+
+static func request_direct_combat_entry() -> void:
+	_pending_entry_mode = EntryMode.DIRECT_COMBAT
+
+
+static func consume_entry_mode() -> EntryMode:
+	var mode: EntryMode = _pending_entry_mode
+	_pending_entry_mode = EntryMode.DIRECT_COMBAT
+	return mode
+
+
+static func peek_entry_mode() -> EntryMode:
+	return _pending_entry_mode
+
+
+static func transition_to_hub(tree: SceneTree) -> void:
+	request_hub_entry()
+	if tree == null:
+		return
+	var st: Node = tree.root.get_node_or_null("SceneTransition") if tree.root != null else null
+	if st != null and st.has_method("change_scene_to_file"):
+		st.call("change_scene_to_file", MAIN_GAME_SCENE_PATH)
+		return
+	tree.change_scene_to_file(MAIN_GAME_SCENE_PATH)
 
 
 static func can_record_highscores(req: RunLaunchRequest, cfg: HubProgressionConfigScript) -> bool:

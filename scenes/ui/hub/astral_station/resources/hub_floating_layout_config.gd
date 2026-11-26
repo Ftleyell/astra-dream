@@ -54,6 +54,32 @@ extends Resource
 @export var warning_radius: float = 24.5
 @export var launch_radius: float = 30.0
 @export var demat_duration_sec: float = 1.35
+
+@export_group("Embedded MainGame 2D-3D Parity")
+@export var embedded_px_per_meter_x: float = 84.0
+@export var embedded_camera_distance_m: float = 30.0
+@export var embedded_feet_offset_y_px: float = 54.0
+@export var embedded_walk_speed_px: float = 440.0
+@export var embedded_flight_speed_px: float = 760.0
+@export var embedded_hub_accel: float = 20.0
+@export var embedded_hub_friction: float = 18.0
+@export var embedded_hub_pivot_brake_mul: float = 2.4
+@export var embedded_hub_dash_speed_px: float = 1120.0
+@export var embedded_hub_dash_duration_sec: float = 0.20
+@export var embedded_hub_dash_cooldown_sec: float = 0.55
+@export var embedded_departure_burst_speed_px: float = 420.0
+@export var embedded_capsule_closeup_zoom: float = 2.60
+@export var embedded_skins_closeup_zoom: float = 2.50
+@export var embedded_station_closeup_zoom: float = 1.40
+@export var embedded_gacha_closeup_zoom: float = 1.35
+@export var embedded_trophy_closeup_zoom: float = 1.30
+@export var embedded_side_panel_camera_offset_x_px: float = 200.0
+@export var embedded_side_panel_camera_offset_y_px: float = -10.0
+@export var embedded_showcase_focus_feet_ratio: float = 0.92
+@export var embedded_hub_exclusion_radius_m: float = 29.5
+@export var embedded_hub_exclusion_post_launch_sec: float = 6.0
+@export var embedded_launch_forward_cone_half_angle_deg: float = 65.0
+@export var embedded_launch_min_forward_dot: float = 0.15
 @export var sectors_8dir: Array[Dictionary] = [
 	{"id": &"E", "label": "SECTOR ESTE · E", "color": Color(1.0, 0.24, 0.62, 1.0), "angle_deg": 0.0},
 	{"id": &"SE", "label": "SECTOR SURESTE · SE", "color": Color(1.0, 0.62, 0.22, 1.0), "angle_deg": 45.0},

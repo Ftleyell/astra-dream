@@ -7,6 +7,8 @@ extends Control
 ## y el panel integrado de Notas del Parche permanentemente visible y abierto.
 ## Al recibir cualquier input principal, transiciona cinematográficamente hacia el Hub 3D.
 
+const RunLaunchRequestScript := preload("res://core/systems/run_launch_request.gd")
+
 @onready var logo_texture: TextureRect = $MainHBox/LeftVBox.find_child("LogoTexture", true, false) as TextureRect
 @onready var title_label: Label = $MainHBox/LeftVBox.get_node_or_null("TitleLabel") as Label
 @onready var subtitle_label: Label = $MainHBox/LeftVBox.get_node_or_null("SubtitleLabel") as Label
@@ -99,7 +101,7 @@ func _trigger_continue() -> void:
 
 	var st = get_node_or_null("/root/SceneTransition")
 	if st and st.has_method("change_scene_to_file"):
-		st.change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+		RunLaunchRequestScript.transition_to_hub(get_tree())
 	elif fade_rect:
 		fade_rect.visible = true
 		fade_rect.modulate.a = 0.0
@@ -111,4 +113,4 @@ func _trigger_continue() -> void:
 
 
 func _go_to_hub() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(get_tree())

@@ -37,6 +37,7 @@ var _holo_screen_mesh: MeshInstance3D = null
 var _holo_screen_mat: ShaderMaterial = null
 var _label_3d: Label3D = null
 var _interact_area: Area3D = null
+var _interact_radius: float = 1.85
 var _body_materials: Array[ShaderMaterial] = []
 var _outline_mat: ShaderMaterial = null
 
@@ -180,6 +181,7 @@ func _ensure_nodes() -> void:
 		col_body.add_child(col_shape)
 		add_child(col_body)
 
+	_interact_radius = interact_radius
 	_interact_area = Area3D.new()
 	_interact_area.name = "InteractArea"
 	_interact_area.collision_layer = 0
@@ -293,9 +295,14 @@ func set_prompt_suppressed(suppressed: bool) -> void:
 
 
 func is_player_inside(body: Node3D) -> bool:
-	if _interact_area == null or body == null:
+	if body == null or not is_instance_valid(body):
 		return false
-	return _interact_area.overlaps_body(body)
+	if _interact_area != null and _interact_area.overlaps_body(body):
+		return true
+	var z_off: float = 0.25 if station_id != &"talents_nexus" else 0.0
+	var dx: float = body.global_position.x - global_position.x
+	var dz: float = body.global_position.z - (global_position.z + z_off)
+	return (dx * dx + dz * dz) <= (_interact_radius * _interact_radius)
 
 
 func trigger_interaction() -> void:

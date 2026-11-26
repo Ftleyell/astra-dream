@@ -54,6 +54,7 @@ func commit_launch(char_id: StringName, tree: SceneTree, launch_request: RunLaun
 		SaveManager.unequip_skin("pilot:" + cid_str)
 
 	if tree:
+		RunLaunchRequestScript.request_direct_combat_entry()
 		var root: Node = tree.root
 		if root and root.has_node("SceneTransition"):
 			var st: Node = root.get_node("SceneTransition")
@@ -66,11 +67,4 @@ func commit_launch(char_id: StringName, tree: SceneTree, launch_request: RunLaun
 func exit_to_hub(tree: SceneTree, speed_selector: CharacterSpeedSelector = null) -> void:
 	if speed_selector:
 		speed_selector.set_game_speed(1.0)
-	if tree:
-		var root: Node = tree.root
-		if root and root.has_node("SceneTransition"):
-			var st: Node = root.get_node("SceneTransition")
-			if st.has_method("change_scene_to_file"):
-				st.call("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
-				return
-		tree.call_deferred("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(tree)

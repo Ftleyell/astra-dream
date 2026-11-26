@@ -24,6 +24,7 @@ const CombatSatelliteCoordinator = preload("res://scenes/combat/systems/combat_s
 const CombatLootCoordinator = preload("res://scenes/combat/systems/combat_loot_coordinator.gd")
 const SpaceEnvironmentHostScript = preload("res://scenes/combat/environment/space_environment_host.gd")
 const RunLaunchRequestScript = preload("res://core/systems/run_launch_request.gd")
+const CombatHubSessionControllerScript = preload("res://scenes/combat/controllers/combat_hub_session_controller.gd")
 
 var modal_coordinator: CombatModalCoordinator = CombatModalCoordinator.new()
 var narrative_director: CombatNarrativeDirector = CombatNarrativeDirector.new()
@@ -37,6 +38,7 @@ var feedback_coordinator: RefCounted = CombatPlayerFeedbackCoordinatorScript.new
 var exp_batch_optimizer: RefCounted = CombatExpBatchOptimizerScript.new()
 var satellite_coordinator: CombatSatelliteCoordinator = CombatSatelliteCoordinator.new()
 var environment_host: SpaceEnvironmentHost = SpaceEnvironmentHostScript.new()
+var hub_session_controller: CombatHubSessionControllerScript = null
 var active_launch_request: RunLaunchRequestScript = null
 var run_director_seed: int = 0
 var run_loot_seed: int = 0
@@ -200,6 +202,26 @@ func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
 func _ready() -> void:
+	var entry_mode: int = RunLaunchRequestScript.consume_entry_mode()
+	if entry_mode == RunLaunchRequestScript.EntryMode.HUB and not SaveManager.is_resuming_run:
+		active_launch_request = RunLaunchRequestScript.create_random_auto()
+		run_seed = active_launch_request.cosmos_seed
+		run_director_seed = active_launch_request.run_director_seed
+		run_loot_seed = active_launch_request.run_loot_seed
+		Engine.time_scale = 1.0
+		add_to_group("main_game")
+		if enemy_spawner != null:
+			enemy_spawner.set_spawning_paused(true)
+		CombatBootstrapperScript.sync_character_loadout()
+		_setup_rival_queue()
+		CombatSceneAssemblerScript.assemble(self, player, hud, false)
+		CombatBootstrapperScript.launch_session(self, player, hud, true)
+		hub_session_controller = CombatHubSessionControllerScript.new() as CombatHubSessionControllerScript
+		hub_session_controller.name = "CombatHubSessionController"
+		add_child(hub_session_controller)
+		hub_session_controller.enter_hub_mode(self, active_launch_request)
+		return
+
 	var pending_req: RunLaunchRequestScript = RunLaunchRequestScript.consume_pending()
 	if pending_req != null:
 		active_launch_request = pending_req
@@ -295,7 +317,7 @@ func _trigger_cockpit_interlude() -> void: if narrative_director: narrative_dire
 
 
 func _process(delta: float) -> void:
-	if get_tree().paused or is_cinematic_or_death_active(): return
+	if get_tree().paused or is_cinematic_or_death_active() or is_hub_mode_active(): return
 	if telemetry_coordinator: telemetry_coordinator.tick(delta)
 	else: run_time_elapsed += delta
 	if encounter_controller: encounter_controller.process_tick(delta, is_pre_round, current_wave)
@@ -432,7 +454,39 @@ func is_cinematic_or_death_active() -> bool:
 func is_dialogue_active() -> bool: return narrative_director.is_dialogue_active() if narrative_director else false
 func is_upgrade_or_shop_modal_active() -> bool: return modal_coordinator.is_upgrade_or_shop_modal_active() if modal_coordinator else false
 func has_pending_upgrades() -> bool: return modal_coordinator.has_pending_upgrades() if modal_coordinator else false
+func is_hub_mode_active() -> bool:
+	return hub_session_controller != null and is_instance_valid(hub_session_controller) and hub_session_controller.is_hub_mode_active()
+
+func is_position_in_hub_exclusion_zone(world_pos: Vector2, extra_padding_px: float = 0.0) -> bool:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return false
+	return hub_session_controller.is_position_in_hub_exclusion_zone(world_pos, extra_padding_px)
+
+func is_position_allowed_for_combat_spawn(world_pos: Vector2, player_pos: Vector2, extra_padding_px: float = 0.0, require_forward_bias: bool = true) -> bool:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return true
+	return hub_session_controller.is_position_allowed_for_combat_spawn(world_pos, player_pos, extra_padding_px, require_forward_bias)
+
+func get_hub_launch_departure_direction() -> Vector2:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return Vector2.ZERO
+	return hub_session_controller.get_launch_departure_direction()
+
+func get_hub_launch_forward_cone_half_angle_rad() -> float:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return deg_to_rad(65.0)
+	return hub_session_controller.get_launch_forward_cone_half_angle_rad()
+
+func push_position_outside_hub_exclusion(world_pos: Vector2, fallback_dir: Vector2, extra_padding_px: float = 0.0) -> Vector2:
+	if hub_session_controller == null or not is_instance_valid(hub_session_controller):
+		return world_pos
+	return hub_session_controller.push_position_outside_hub_exclusion(world_pos, fallback_dir, extra_padding_px)
+
+func is_any_hub_modal_active() -> bool:
+	return hub_session_controller != null and is_instance_valid(hub_session_controller) and hub_session_controller.is_any_hub_modal_active()
+
 func is_any_combat_modal_active() -> bool:
+	if is_hub_mode_active(): return false
 	if ingame_debug_modal and ingame_debug_modal.is_open: return true
 	return modal_coordinator.is_any_combat_modal_active() if modal_coordinator else false
 

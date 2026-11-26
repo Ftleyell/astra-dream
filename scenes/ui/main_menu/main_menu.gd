@@ -1,6 +1,8 @@
 class_name MainMenu
 extends Control
 
+const RunLaunchRequestScript := preload("res://core/systems/run_launch_request.gd")
+
 @onready var continue_button: Button = get_node_or_null("CenterContainer/VBoxContainer/ButtonsContainer/ContinueButton")
 @onready var play_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/PlayButton
 @onready var hub_button: Button = $CenterContainer/VBoxContainer/ButtonsContainer/HubButton
@@ -18,9 +20,10 @@ func _ready() -> void:
 	get_tree().paused = false
 	_wire_hub_button()
 
-	# Redirigir automáticamente al nuevo Menú Principal HUD 3D si se carga como escena actual
+	# Redirigir automáticamente al Hub 3D integrado en MainGame si se carga como escena actual
 	if get_tree().current_scene == self or get_parent() == get_tree().root:
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+		RunLaunchRequestScript.request_hub_entry()
+		get_tree().call_deferred("change_scene_to_file", RunLaunchRequestScript.MAIN_GAME_SCENE_PATH)
 		return
 	if continue_button:
 		if SaveManager.has_active_run():
@@ -81,19 +84,19 @@ func _on_continue_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(get_tree())
 
 func _on_play_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(get_tree())
 
 func _on_hub_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("ui_click")
-	get_tree().change_scene_to_file("res://scenes/ui/hub/astral_station/astral_station_hub.tscn")
+	RunLaunchRequestScript.transition_to_hub(get_tree())
 
 func _on_highscores_pressed() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")

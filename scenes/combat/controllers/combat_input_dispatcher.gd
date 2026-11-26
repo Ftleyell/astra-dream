@@ -31,6 +31,9 @@ func handle_input(event: InputEvent) -> void:
 	if not is_instance_valid(main_game):
 		return
 
+	if main_game.has_method("is_hub_mode_active") and main_game.is_hub_mode_active():
+		return
+
 	# Durante secuencias cinemáticas o diálogos, consumir ESC para evitar desincronizar pausa
 	if main_game.has_method("is_cinematic_or_death_active") and main_game.is_cinematic_or_death_active():
 		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:

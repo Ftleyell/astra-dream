@@ -18,6 +18,23 @@ var continuous_spawn_timer: float = 0.0
 const CONTINUOUS_SPAWN_INTERVAL: float = 18.0
 const MAX_ACTIVE_CHESTS: int = 5
 var item_pool_manager: ItemPoolManager = null
+var is_hub_suppressed: bool = false
+
+
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if suppressed:
+		cleanup_all_chests()
+		continuous_spawn_timer = 0.0
+
+
+func _is_blocked_by_hub(container: Node = null) -> bool:
+	if is_hub_suppressed:
+		return true
+	var check_node: Node = container if container != null else get_parent()
+	if check_node != null and check_node.has_method("is_hub_mode_active") and bool(check_node.call("is_hub_mode_active")):
+		return true
+	return false
 
 func initialize(economy_cfg: ChestEconomyConfig, starting_paid_chests: int = 0) -> void:
 	config = economy_cfg
@@ -41,6 +58,8 @@ func on_new_wave(new_wave: int, green_card_stacks: int = 0) -> void:
 
 ## Chequeo continuo para invocar 1 cofre adicional cada 18s si no se alcanza el tope
 func update_continuous_spawner(delta: float, player_pos: Vector2, parent_container: Node2D, green_card_stacks: int = 0) -> void:
+	if _is_blocked_by_hub(parent_container):
+		return
 	# Limpieza de referencias inválidas
 	var valid_chests: Array[SpatialChest] = []
 	for c in active_chests:
@@ -64,7 +83,7 @@ func update_continuous_spawner(delta: float, player_pos: Vector2, parent_contain
 
 ## Genera el lote de cofres correspondiente a una nueva oleada dentro del radio del jugador
 func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, wave_num: int = 1, green_card_stacks: int = 0) -> void:
-	if not config or not is_instance_valid(parent_container):
+	if _is_blocked_by_hub(parent_container) or not config or not is_instance_valid(parent_container):
 		return
 
 	current_wave = wave_num
@@ -98,7 +117,7 @@ func spawn_wave_chests(player_pos: Vector2, parent_container: Node2D, wave_num: 
 		_spawn_single_chest(SpatialChest.ChestType.GOLDEN, player_pos, parent_container, green_card_stacks)
 
 func _spawn_single_chest(type: SpatialChest.ChestType, center_pos: Vector2, parent: Node2D, green_card_stacks: int) -> void:
-	if not chest_scene:
+	if _is_blocked_by_hub(parent) or not chest_scene:
 		return
 
 	var chest := chest_scene.instantiate() as SpatialChest
@@ -106,18 +125,7 @@ func _spawn_single_chest(type: SpatialChest.ChestType, center_pos: Vector2, pare
 	chest.economy_config = config
 	chest.item_pool = item_pool_manager
 
-	# Cálculo de posición dispersa en corona circular
-	var angle := randf() * TAU
-	var dist := randf_range(config.min_spawn_radius, config.max_spawn_radius)
-	var spawn_pos := center_pos + Vector2(cos(angle), sin(angle)) * dist
-
-	# Prevenir solapamiento con cofres existentes
-	for existing in active_chests:
-		if is_instance_valid(existing):
-			if spawn_pos.distance_squared_to(existing.global_position) < (180.0 * 180.0):
-				spawn_pos += Vector2(randf_range(-150.0, 150.0), randf_range(-150.0, 150.0))
-
-	chest.global_position = spawn_pos
+	chest.global_position = _resolve_valid_chest_position(center_pos, parent)
 	parent.add_child(chest)
 	chest.update_price_display(current_wave, local_chests_opened_this_wave, green_card_stacks)
 
@@ -165,6 +173,43 @@ const CHEST_MAX_DISTANCE: float = 1800.0
 const CHEST_RELOCATION_MIN_DIST: float = 1150.0
 const CHEST_RELOCATION_MAX_DIST: float = 1450.0
 
+func _has_chest_overlap(pos: Vector2) -> bool:
+	for existing in active_chests:
+		if is_instance_valid(existing):
+			if pos.distance_squared_to(existing.global_position) < (180.0 * 180.0):
+				return true
+	return false
+
+
+func _resolve_valid_chest_position(center_pos: Vector2, parent: Node2D) -> Vector2:
+	var launch_dir: Vector2 = Vector2.ZERO
+	var cone_half: float = deg_to_rad(65.0)
+	if is_instance_valid(parent):
+		if parent.has_method("get_hub_launch_departure_direction"):
+			launch_dir = parent.call("get_hub_launch_departure_direction")
+		if parent.has_method("get_hub_launch_forward_cone_half_angle_rad"):
+			cone_half = float(parent.call("get_hub_launch_forward_cone_half_angle_rad"))
+
+	var has_filter: bool = is_instance_valid(parent) and parent.has_method("is_position_allowed_for_combat_spawn")
+	for _attempt: int in range(16):
+		var angle: float = (launch_dir.angle() + randf_range(-cone_half, cone_half)) if launch_dir.length_squared() > 0.001 else (randf() * TAU)
+		var dist: float = randf_range(config.min_spawn_radius, config.max_spawn_radius)
+		var cand: Vector2 = center_pos + Vector2(cos(angle), sin(angle)) * dist
+		if has_filter and not bool(parent.call("is_position_allowed_for_combat_spawn", cand, center_pos, 90.0, true)):
+			continue
+		if not _has_chest_overlap(cand):
+			return cand
+
+	var fallback_dir: Vector2 = launch_dir if launch_dir.length_squared() > 0.001 else Vector2.UP.rotated(randf_range(-PI, PI))
+	var fallback_pos: Vector2 = center_pos + fallback_dir.normalized() * config.max_spawn_radius
+	if is_instance_valid(parent) and parent.has_method("push_position_outside_hub_exclusion"):
+		fallback_pos = parent.call("push_position_outside_hub_exclusion", fallback_pos, fallback_dir, 90.0)
+	if _has_chest_overlap(fallback_pos):
+		var perp: Vector2 = Vector2(-fallback_dir.y, fallback_dir.x).normalized()
+		fallback_pos += perp * 200.0 * (1.0 if (active_chests.size() % 2 == 0) else -1.0)
+	return fallback_pos
+
+
 ## Reubicación cuántica silenciosa de cofres desatendidos lejanos hacia adelante del jugador
 func _relocate_distant_chests(player_pos: Vector2, parent_container: Node2D) -> void:
 	var forward_dir: Vector2 = Vector2.ZERO
@@ -186,5 +231,8 @@ func _relocate_distant_chests(player_pos: Vector2, parent_container: Node2D) -> 
 			else:
 				spawn_angle = randf_range(0.0, TAU)
 			var offset_dist: float = randf_range(CHEST_RELOCATION_MIN_DIST, CHEST_RELOCATION_MAX_DIST)
-			chest.global_position = player_pos + Vector2.from_angle(spawn_angle) * offset_dist
+			var candidate: Vector2 = player_pos + Vector2.from_angle(spawn_angle) * offset_dist
+			if is_instance_valid(parent_container) and parent_container.has_method("is_position_in_hub_exclusion_zone") and bool(parent_container.call("is_position_in_hub_exclusion_zone", candidate, 90.0)):
+				candidate = parent_container.call("push_position_outside_hub_exclusion", candidate, forward_dir, 90.0)
+			chest.global_position = candidate
 

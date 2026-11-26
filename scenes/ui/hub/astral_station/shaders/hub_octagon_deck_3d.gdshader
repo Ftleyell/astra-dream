@@ -193,15 +193,12 @@ void fragment() {
 }
 
 void light() {
-	float lit = max(dot(NORMAL, LIGHT), 0.0) * ATTENUATION;
-	float band_mid = smoothstep(0.02, 0.28, lit);
-	float band_hi = smoothstep(0.50, 0.78, lit);
-
-	float penumbra = band_mid * (1.0 - band_mid) * 3.2;
-	float ht = 0.5 + 0.5 * (sin(FRAGCOORD.x * 0.9) * sin(FRAGCOORD.y * 0.9));
-	float cel_intensity = 0.10 + band_mid * 0.60 + band_hi * 0.24;
-	cel_intensity *= (1.0 - penumbra * halftone_strength * 0.60 * ht);
-	vec3 shadow_bounce = mix(shadow_tint.rgb * 0.26, vec3(1.0), band_mid);
+	float ndotl = max(dot(NORMAL, LIGHT), 0.0);
+	float shadow_f = smoothstep(0.12, 0.88, ATTENUATION);
+	float band_mid = smoothstep(0.06, 0.30, ndotl) * shadow_f;
+	float band_hi = smoothstep(0.50, 0.78, ndotl) * shadow_f;
+	float cel_intensity = 0.12 + band_mid * 0.58 + band_hi * 0.24;
+	vec3 shadow_bounce = mix(shadow_tint.rgb * 0.32, vec3(1.0), band_mid);
 	DIFFUSE_LIGHT = min(DIFFUSE_LIGHT + cel_intensity * LIGHT_COLOR * shadow_bounce, vec3(0.98));
 
 	float spec_weight = clamp((1.0 - ROUGHNESS) * 1.35, 0.0, 1.0);

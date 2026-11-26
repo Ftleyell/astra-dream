@@ -42,6 +42,7 @@ var _config: ConfigScript = null
 var _gacha_config: GachaConfigScript = DEFAULT_GACHA_CONFIG
 var _is_built: bool = false
 var _is_gacha_open: bool = false
+var embedded_mode: bool = false
 var _time_acc: float = 0.0
 
 var summoner: SummonerScript = null
@@ -67,9 +68,10 @@ var _followed_pet_id: StringName = &""
 var _lounge_pet_entries: Array[Dictionary] = []
 
 
-func setup(p_config: ConfigScript, p_player_target: Node3D = null) -> void:
+func setup(p_config: ConfigScript, p_player_target: Node3D = null, p_embedded_mode: bool = false) -> void:
 	_config = p_config
 	_player_follow_target = p_player_target
+	embedded_mode = p_embedded_mode
 	_ensure_built()
 	refresh_pets(p_player_target)
 
@@ -479,7 +481,7 @@ func refresh_pets(p_player_target: Node3D = null) -> void:
 		if not SaveManagerScript.is_pet_unlocked(p_data.pet_id):
 			continue
 
-		if p_data.pet_id == selected_id and _player_follow_target != null:
+		if p_data.pet_id == selected_id and _player_follow_target != null and not embedded_mode:
 			var follower: Dictionary = _create_pet_visual_node(p_data, "ActiveCompanionPet")
 			_followed_pet_node = follower["node"] as Node3D
 			_followed_pet_sprite = follower["sprite"] as Sprite3D
@@ -655,24 +657,34 @@ func is_gacha_open() -> bool:
 	return _is_gacha_open
 
 
+func _is_body_in_area_xz(area: Area3D, body: Node3D, radius: float) -> bool:
+	if area == null or body == null or not is_instance_valid(body):
+		return false
+	if area.overlaps_body(body):
+		return true
+	var dx: float = body.global_position.x - area.global_position.x
+	var dz: float = body.global_position.z - area.global_position.z
+	return (dx * dx + dz * dz) <= (radius * radius)
+
+
 func update_proximity(player_body: Node3D, allow_prompts: bool) -> void:
 	if player_body == null:
 		return
 	if _gacha_label != null and _gacha_area != null:
-		_gacha_label.visible = allow_prompts and _gacha_area.overlaps_body(player_body)
+		_gacha_label.visible = allow_prompts and _is_body_in_area_xz(_gacha_area, player_body, 2.55)
 		_gacha_label.modulate = COLOR_PSYCHOPOP_PINK
 	if _totem_label != null and _totem_area != null:
-		_totem_label.visible = allow_prompts and _totem_area.overlaps_body(player_body)
+		_totem_label.visible = allow_prompts and _is_body_in_area_xz(_totem_area, player_body, 2.35)
 		_totem_label.modulate = COLOR_PSYCHOPOP_CYAN
 
 
 func try_interact(player_body: Node3D) -> bool:
 	if player_body == null:
 		return false
-	if _gacha_area != null and _gacha_area.overlaps_body(player_body):
+	if _gacha_area != null and _is_body_in_area_xz(_gacha_area, player_body, 2.55):
 		open_gacha_station()
 		return true
-	if _totem_area != null and _totem_area.overlaps_body(player_body):
+	if _totem_area != null and _is_body_in_area_xz(_totem_area, player_body, 2.35):
 		if _totem_root != null:
 			telemetry_requested.emit(_totem_root.global_position)
 		return true

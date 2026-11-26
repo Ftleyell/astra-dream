@@ -116,6 +116,7 @@ var _was_bomb_pressed_during_menu: bool:
 	set(val): if bomb_controller: bomb_controller.was_bomb_pressed_during_menu = val
 
 var is_dead: bool = false
+var is_hub_mode: bool = false
 var current_health: float = 100.0
 
 # Economía de la Run delegada a PlayerEconomyComponent
@@ -293,6 +294,19 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 
+	if is_hub_mode:
+		_handle_movement(delta)
+		if locomotion_controller:
+			var hub_dash_dir: Vector2 = locomotion_controller.consume_just_started_hub_dash()
+			if hub_dash_dir.length_squared() > 0.001 and has_rig_v2():
+				rig_v2_controller.on_hub_dash_started(hub_dash_dir)
+			locomotion_controller.update_flight_kinematics(self, false, locomotion_controller.is_hub_dashing, delta)
+		_update_pilot_shader(delta, velocity.length_squared() > 10.0)
+		if bullet_server:
+			bullet_server.player_pos = global_position
+			bullet_server.player_invulnerable = true
+		return
+
 	if bomb_controller:
 		bomb_controller.update_suppression(delta)
 		if is_any_menu_or_modal_active():
@@ -414,7 +428,7 @@ func _execute_bomb() -> void:
 	if bomb_controller: bomb_controller.execute_bomb(self, bullet_server)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_dead:
+	if is_dead or is_hub_mode:
 		return
 	if event.is_action_pressed("bomb") and not event.is_echo():
 		if _can_trigger_bomb():
@@ -473,3 +487,81 @@ func add_dark_matter(amount: int) -> void:
 
 func _on_inventory_item_added(_it: ItemData, _cnt: int) -> void:
 	_update_conversion_core_stats()
+
+
+func set_hub_mode(enabled: bool, feet_offset_y_px: float = 54.0) -> void:
+	is_hub_mode = enabled
+	is_invulnerable = enabled
+	if locomotion_controller:
+		locomotion_controller.is_hub_mode = enabled
+		if not enabled:
+			locomotion_controller.hub_speed_override_px = -1.0
+			locomotion_controller.cancel_hub_dash()
+	if weapon_controller and weapon_controller.has_method("set_hub_suppressed"):
+		weapon_controller.call("set_hub_suppressed", enabled)
+	for child_name: String in ["OverheadHealthBar", "AimModeIndicator", "LaserChargeBar", "HitboxCore"]:
+		var ci: CanvasItem = get_node_or_null(child_name) as CanvasItem
+		if ci != null:
+			ci.visible = not enabled
+	if has_rig_v2():
+		rig_v2_controller.set_hub_mode(enabled, feet_offset_y_px)
+
+
+func set_hub_walk_speed_override(speed_px: float) -> void:
+	if locomotion_controller:
+		locomotion_controller.hub_speed_override_px = speed_px
+
+
+func configure_hub_motion(
+	accel: float,
+	friction: float,
+	pivot_mul: float,
+	dash_spd: float,
+	dash_dur: float,
+	dash_cd: float
+) -> void:
+	if locomotion_controller:
+		locomotion_controller.configure_hub_motion(accel, friction, pivot_mul, dash_spd, dash_dur, dash_cd)
+
+
+func is_hub_dashing() -> bool:
+	return locomotion_controller != null and locomotion_controller.is_hub_dashing
+
+
+func reapply_meta_progression_for_launch() -> void:
+	if character_data == null:
+		return
+	stats.initialize(character_data)
+	if progression_applier:
+		progression_applier.apply_skill_tree_bonuses(self, stats, character_data)
+		progression_applier.apply_trophy_bonuses(stats)
+	var max_hp: float = stats.get_stat(&"max_health")
+	current_health = max_hp
+	health_changed.emit(current_health, max_hp)
+	var debug_mgr: Node = get_node_or_null("/root/DebugManager")
+	if debug_mgr and debug_mgr.has_method("apply_to_player"):
+		debug_mgr.apply_to_player(self)
+	if has_rig_v2():
+		rig_v2_controller.refresh_equipped_skins()
+
+
+func reload_character_for_hub(char_id: StringName) -> void:
+	var roster: Dictionary = CharacterData.load_roster()
+	var next_data: CharacterData = roster.get(char_id, null) as CharacterData
+	if next_data == null:
+		return
+	character_data = next_data
+	_apply_visual_theme()
+	_setup_character_dash()
+	var w_ctrl: WeaponController = get_node_or_null("WeaponController") as WeaponController
+	if w_ctrl != null and character_data.starting_weapon != null:
+		w_ctrl.equipped_weapons.clear()
+		w_ctrl.add_weapon(character_data.starting_weapon)
+	if rig_v2_controller != null and is_instance_valid(rig_v2_controller):
+		remove_child(rig_v2_controller)
+		rig_v2_controller.queue_free()
+		rig_v2_controller = null
+	_setup_rig_v2_controller()
+	reapply_meta_progression_for_launch()
+	if is_hub_mode:
+		set_hub_mode(true)

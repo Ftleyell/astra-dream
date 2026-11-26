@@ -10,6 +10,7 @@ signal perimeter_warning_updated(progress: float, sector_info: Dictionary)
 signal departure_started(sector_info: Dictionary, direction_2d: Vector2)
 signal departure_completed(request: RunLaunchRequestScript, launched_combat: bool)
 signal hub_rematerialized()
+signal embedded_dissolve_completed()
 
 const ConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_art_lab_config.gd")
 const LayoutConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_floating_layout_config.gd")
@@ -35,6 +36,8 @@ var _world_3d_parent: Node3D = null
 var _is_departing: bool = false
 var _is_dissolved_preview: bool = false
 var _is_rematerializing: bool = false
+var _is_embedded_dissolving: bool = false
+var _embedded_dissolve_timer: float = 0.0
 var _departure_timer: float = 0.0
 var _demat_progress: float = 0.0
 var _departure_dir_2d: Vector2 = Vector2.UP
@@ -233,6 +236,10 @@ func rematerialize_hub(snap_player_to_center: bool = true) -> void:
 
 
 func _process(delta: float) -> void:
+	if _is_embedded_dissolving:
+		_step_embedded_dissolve(delta)
+		return
+
 	if _layout == null or _player == null:
 		return
 
@@ -367,6 +374,54 @@ func _finish_departure() -> void:
 		_player.is_pose_override_active = false
 
 	departure_completed.emit(req, launched_combat)
+
+
+func update_embedded_compass(world_3d: Vector3, dir_xz: Vector2, prog: float, sector: Dictionary) -> void:
+	_active_sector = sector
+	if _compass_arc_mesh == null:
+		return
+	if prog <= 0.001:
+		_compass_arc_mesh.visible = false
+		return
+	_compass_arc_mesh.visible = true
+	_compass_arc_mesh.position = Vector3(world_3d.x, 0.08, world_3d.z)
+	_compass_arc_mesh.rotation = Vector3(0.0, atan2(-dir_xz.x, -dir_xz.y), 0.0)
+	var sc: float = lerpf(0.95, 1.18, prog)
+	_compass_arc_mesh.scale = Vector3(sc, 1.0, sc)
+	var sec_col: Color = _active_sector.get("color", Color(0.14, 0.94, 1.0, 1.0)) as Color
+	if _compass_mats.size() >= 3:
+		_compass_mats[2].set_shader_parameter("base_color", sec_col)
+		_compass_mats[2].set_shader_parameter("pilot_accent_color", sec_col)
+		_compass_mats[2].set_shader_parameter("emissive_boost", lerpf(1.6, 3.4, prog))
+
+
+func start_embedded_dissolve_only(origin_3d: Vector3) -> void:
+	_is_embedded_dissolving = true
+	_embedded_dissolve_timer = 0.0
+	_demat_progress = 0.0
+	_departure_origin = origin_3d
+	if _compass_arc_mesh != null:
+		_compass_arc_mesh.visible = false
+	if _spark_root != null:
+		_spark_root.visible = true
+	_apply_demat_to_materials(0.0, _departure_origin)
+
+
+func _step_embedded_dissolve(delta: float) -> void:
+	var dur: float = maxf(_layout.demat_duration_sec if _layout != null else 1.35, 0.25)
+	_embedded_dissolve_timer += delta
+	var t: float = clampf(_embedded_dissolve_timer / dur, 0.0, 1.0)
+	var ease_t: float = t * t * (3.0 - 2.0 * t)
+	_demat_progress = ease_t
+	_apply_demat_to_materials(_demat_progress, _departure_origin)
+	_update_data_sparks(t)
+	if t >= 1.0:
+		_is_embedded_dissolving = false
+		_demat_progress = 1.0
+		_apply_demat_to_materials(1.0, _departure_origin)
+		if _spark_root != null:
+			_spark_root.visible = false
+		embedded_dissolve_completed.emit()
 
 
 func _apply_demat_to_materials(progress: float, origin: Vector3) -> void:

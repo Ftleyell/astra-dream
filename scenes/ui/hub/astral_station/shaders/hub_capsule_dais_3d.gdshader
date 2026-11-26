@@ -119,9 +119,10 @@ void fragment() {
 }
 
 void light() {
-	float lit = max(dot(NORMAL, LIGHT), 0.0) * ATTENUATION;
-	float band_mid = smoothstep(0.02, 0.28, lit);
-	float band_hi = smoothstep(0.52, 0.80, lit);
+	float ndotl = max(dot(NORMAL, LIGHT), 0.0);
+	float shadow_f = smoothstep(0.12, 0.88, ATTENUATION);
+	float band_mid = smoothstep(0.06, 0.30, ndotl) * shadow_f;
+	float band_hi = smoothstep(0.52, 0.80, ndotl) * shadow_f;
 	float cel_i = 0.12 + band_mid * 0.62 + band_hi * 0.24;
 	DIFFUSE_LIGHT = min(DIFFUSE_LIGHT + cel_i * LIGHT_COLOR, vec3(0.98));
 	vec3 h = normalize(LIGHT + VIEW);

@@ -27,6 +27,7 @@ var equipped_weapons: Array[WeaponInstanceData] = []
 var projectile_factory: WeaponProjectileFactory = WeaponProjectileFactoryScript.new()
 var targeting: CombatTargetingSystemScript = CombatTargetingSystemScript.new()
 var cooldown_tracker: WeaponCooldownTrackerScript = WeaponCooldownTrackerScript.new()
+var is_hub_suppressed: bool = false
 
 var is_manual_aim: bool:
 	get: return targeting.is_manual_aim
@@ -184,7 +185,17 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PAUSED:
 		cooldown_tracker.save_charge_memory_on_pause()
 
+func set_hub_suppressed(suppressed: bool) -> void:
+	is_hub_suppressed = suppressed
+	if suppressed and cooldown_tracker != null:
+		cooldown_tracker.is_charging = false
+		cooldown_tracker.charge_timer = 0.0
+		cooldown_tracker.is_fully_charged = false
+
+
 func _process(delta: float) -> void:
+	if is_hub_suppressed:
+		return
 	if player and (player.is_dead or player.is_movement_suppressed):
 		return
 	_handle_toggle_input()
