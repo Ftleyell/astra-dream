@@ -1,0 +1,362 @@
+[gd_resource type="Resource" script_class="SfxCueBank" format=3]
+
+[ext_resource type="Script" path="res://core/audio/sfx_cue_data.gd" id="1_rdrqq"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/laser_fire.wav" id="2_82unp"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/missile_fire.wav" id="3_3w4sp"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/explosion.wav" id="4_tkcw2"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/bomb.wav" id="5_m0fd3"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/player_hit.wav" id="6_0fvkq"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/dash.wav" id="7_3he36"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/exp_pickup.wav" id="8_vjoaq"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/heal.wav" id="9_ig10h"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/magnet.wav" id="10_qdvg7"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui_click.wav" id="11_vq2qu"]
+[ext_resource type="Script" path="res://core/audio/sfx_cue_bank.gd" id="12_j346t"]
+
+[sub_resource type="Resource" id="Resource_jotn3"]
+script = ExtResource("1_rdrqq")
+cue_id = &"laser"
+streams = Array[AudioStream]([ExtResource("2_82unp")])
+pitch_min = 0.9
+pitch_max = 1.12
+vol_jitter_db = 1.4
+min_interval_ms = 40
+density_attenuation_db = 4.0
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_pyudl"]
+script = ExtResource("1_rdrqq")
+cue_id = &"missile"
+streams = Array[AudioStream]([ExtResource("3_3w4sp")])
+pitch_min = 0.88
+pitch_max = 1.14
+vol_jitter_db = 1.4
+min_interval_ms = 50
+density_attenuation_db = 3.5
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_gquvq"]
+script = ExtResource("1_rdrqq")
+cue_id = &"explosion"
+priority = 0
+streams = Array[AudioStream]([ExtResource("4_tkcw2")])
+pitch_min = 0.78
+pitch_max = 1.2
+vol_jitter_db = 1.8
+min_interval_ms = 45
+density_attenuation_db = 4.5
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_fgp2v"]
+script = ExtResource("1_rdrqq")
+cue_id = &"bomb"
+bus_name = &"SFX_Heroic"
+priority = 3
+streams = Array[AudioStream]([ExtResource("5_m0fd3")])
+vol_jitter_db = 0.5
+min_interval_ms = 100
+max_polyphony = 2
+duck_combat_db = 6.5
+duck_duration_sec = 0.35
+
+[sub_resource type="Resource" id="Resource_15ghh"]
+script = ExtResource("1_rdrqq")
+cue_id = &"player_hit"
+bus_name = &"SFX_Heroic"
+priority = 3
+streams = Array[AudioStream]([ExtResource("6_0fvkq")])
+pitch_min = 0.92
+pitch_max = 1.08
+vol_jitter_db = 0.8
+min_interval_ms = 80
+max_polyphony = 2
+duck_combat_db = 5.5
+duck_duration_sec = 0.22
+
+[sub_resource type="Resource" id="Resource_7w661"]
+script = ExtResource("1_rdrqq")
+cue_id = &"dash"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("7_3he36")])
+pitch_min = 0.92
+pitch_max = 1.1
+min_interval_ms = 60
+max_polyphony = 3
+
+[sub_resource type="Resource" id="Resource_6kjx1"]
+script = ExtResource("1_rdrqq")
+cue_id = &"exp"
+bus_name = &"SFX_UI"
+streams = Array[AudioStream]([ExtResource("8_vjoaq")])
+pitch_min = 0.98
+pitch_max = 1.02
+max_polyphony = 5
+density_attenuation_db = 3.0
+use_exp_combo = true
+
+[sub_resource type="Resource" id="Resource_qd6bq"]
+script = ExtResource("1_rdrqq")
+cue_id = &"heal"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("9_ig10h")])
+vol_jitter_db = 0.8
+min_interval_ms = 60
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_psvss"]
+script = ExtResource("1_rdrqq")
+cue_id = &"magnet"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("10_qdvg7")])
+vol_jitter_db = 0.8
+min_interval_ms = 60
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_a6l66"]
+script = ExtResource("1_rdrqq")
+cue_id = &"ui_click"
+bus_name = &"SFX_UI"
+priority = 3
+streams = Array[AudioStream]([ExtResource("11_vq2qu")])
+pitch_min = 0.96
+pitch_max = 1.04
+vol_jitter_db = 0.6
+min_interval_ms = 28
+max_polyphony = 3
+
+[sub_resource type="Resource" id="Resource_fds3c"]
+script = ExtResource("1_rdrqq")
+cue_id = &"hub_footstep"
+base_volume_db = -3.0
+pitch_min = 0.9
+pitch_max = 1.12
+vol_jitter_db = 1.5
+min_interval_ms = 140
+max_polyphony = 3
+
+[sub_resource type="Resource" id="Resource_meq04"]
+script = ExtResource("1_rdrqq")
+cue_id = &"ui_hover"
+bus_name = &"SFX_UI"
+streams = Array[AudioStream]([ExtResource("11_vq2qu")])
+base_volume_db = -6.0
+pitch_min = 1.15
+pitch_max = 1.25
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_q05eh"]
+script = ExtResource("1_rdrqq")
+cue_id = &"ui_error"
+bus_name = &"SFX_UI"
+priority = 3
+streams = Array[AudioStream]([ExtResource("11_vq2qu")])
+base_volume_db = -2.0
+pitch_min = 0.68
+pitch_max = 0.76
+min_interval_ms = 80
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_rkj2x"]
+script = ExtResource("1_rdrqq")
+cue_id = &"menu_open"
+bus_name = &"SFX_UI"
+priority = 2
+streams = Array[AudioStream]([ExtResource("11_vq2qu")])
+pitch_min = 0.96
+pitch_max = 1.04
+min_interval_ms = 60
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_x3672"]
+script = ExtResource("1_rdrqq")
+cue_id = &"level_up"
+bus_name = &"SFX_Heroic"
+priority = 3
+streams = Array[AudioStream]([ExtResource("9_ig10h")])
+pitch_min = 0.98
+pitch_max = 1.04
+min_interval_ms = 80
+max_polyphony = 2
+duck_combat_db = 5.0
+duck_duration_sec = 0.3
+
+[sub_resource type="Resource" id="Resource_fdlo7"]
+script = ExtResource("1_rdrqq")
+cue_id = &"upgrade_obtained"
+bus_name = &"SFX_Heroic"
+priority = 3
+streams = Array[AudioStream]([ExtResource("9_ig10h")])
+pitch_min = 0.98
+pitch_max = 1.04
+min_interval_ms = 80
+max_polyphony = 2
+
+[sub_resource type="Resource" id="Resource_khwtf"]
+script = ExtResource("1_rdrqq")
+cue_id = &"item_pickup"
+bus_name = &"SFX_UI"
+priority = 2
+streams = Array[AudioStream]([ExtResource("8_vjoaq")])
+pitch_min = 0.95
+pitch_max = 1.05
+min_interval_ms = 45
+max_polyphony = 3
+
+[sub_resource type="Resource" id="Resource_w4jem"]
+script = ExtResource("1_rdrqq")
+cue_id = &"warning"
+bus_name = &"SFX_Heroic"
+priority = 3
+streams = Array[AudioStream]([ExtResource("5_m0fd3")])
+pitch_min = 0.98
+pitch_max = 1.02
+min_interval_ms = 150
+max_polyphony = 2
+duck_combat_db = 6.0
+duck_duration_sec = 0.35
+
+[sub_resource type="Resource" id="Resource_x8433"]
+script = ExtResource("1_rdrqq")
+cue_id = &"laser_heavy"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("2_82unp")])
+pitch_min = 0.72
+pitch_max = 0.84
+min_interval_ms = 70
+max_polyphony = 3
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_8xcht"]
+script = ExtResource("1_rdrqq")
+cue_id = &"impact"
+streams = Array[AudioStream]([ExtResource("6_0fvkq")])
+pitch_min = 0.88
+pitch_max = 1.12
+min_interval_ms = 45
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_3lpel"]
+script = ExtResource("1_rdrqq")
+cue_id = &"hit_bullet"
+priority = 0
+streams = Array[AudioStream]([ExtResource("6_0fvkq")])
+base_volume_db = -4.0
+pitch_min = 1.05
+pitch_max = 1.3
+density_attenuation_db = 4.0
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_xpi3f"]
+script = ExtResource("1_rdrqq")
+cue_id = &"satellite_plant"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("10_qdvg7")])
+pitch_min = 0.95
+pitch_max = 1.05
+min_interval_ms = 80
+max_polyphony = 2
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_namd2"]
+script = ExtResource("1_rdrqq")
+cue_id = &"satellite_activate"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("9_ig10h")])
+pitch_min = 0.96
+pitch_max = 1.04
+min_interval_ms = 80
+max_polyphony = 2
+allow_panning = true
+
+[sub_resource type="Resource" id="Resource_6u6ry"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_laser"
+streams = Array[AudioStream]([ExtResource("2_82unp")])
+pitch_min = 0.92
+pitch_max = 1.12
+vol_jitter_db = 1.2
+min_interval_ms = 38
+density_attenuation_db = 4.2
+
+[sub_resource type="Resource" id="Resource_0lhxa"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_railgun"
+priority = 2
+streams = Array[AudioStream]([ExtResource("2_82unp")])
+pitch_min = 0.82
+pitch_max = 0.96
+min_interval_ms = 55
+max_polyphony = 3
+density_attenuation_db = 3.0
+
+[sub_resource type="Resource" id="Resource_qsmuf"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_shotgun"
+streams = Array[AudioStream]([ExtResource("4_tkcw2")])
+pitch_max = 1.12
+vol_jitter_db = 1.2
+min_interval_ms = 55
+max_polyphony = 3
+density_attenuation_db = 3.5
+
+[sub_resource type="Resource" id="Resource_715be"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_missile"
+streams = Array[AudioStream]([ExtResource("3_3w4sp")])
+pitch_min = 0.88
+pitch_max = 1.14
+vol_jitter_db = 1.2
+min_interval_ms = 48
+density_attenuation_db = 3.8
+
+[sub_resource type="Resource" id="Resource_tanp6"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_blade"
+streams = Array[AudioStream]([ExtResource("7_3he36")])
+pitch_min = 1.02
+pitch_max = 1.22
+min_interval_ms = 45
+density_attenuation_db = 3.5
+
+[sub_resource type="Resource" id="Resource_62g0n"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_tesla"
+streams = Array[AudioStream]([ExtResource("7_3he36")])
+pitch_min = 1.12
+pitch_max = 1.36
+vol_jitter_db = 1.2
+min_interval_ms = 45
+density_attenuation_db = 4.0
+
+[sub_resource type="Resource" id="Resource_5tdgn"]
+script = ExtResource("1_rdrqq")
+cue_id = &"weapon_void"
+bus_name = &"SFX_Heroic"
+priority = 2
+streams = Array[AudioStream]([ExtResource("10_qdvg7")])
+pitch_min = 0.86
+pitch_max = 1.02
+vol_jitter_db = 0.9
+min_interval_ms = 65
+max_polyphony = 3
+density_attenuation_db = 3.0
+
+[resource]
+script = ExtResource("12_j346t")
+cues = Array[ExtResource("1_rdrqq")]([SubResource("Resource_jotn3"), SubResource("Resource_pyudl"), SubResource("Resource_gquvq"), SubResource("Resource_fgp2v"), SubResource("Resource_15ghh"), SubResource("Resource_7w661"), SubResource("Resource_6kjx1"), SubResource("Resource_qd6bq"), SubResource("Resource_psvss"), SubResource("Resource_a6l66"), SubResource("Resource_fds3c"), SubResource("Resource_meq04"), SubResource("Resource_q05eh"), SubResource("Resource_rkj2x"), SubResource("Resource_x3672"), SubResource("Resource_fdlo7"), SubResource("Resource_khwtf"), SubResource("Resource_w4jem"), SubResource("Resource_x8433"), SubResource("Resource_8xcht"), SubResource("Resource_3lpel"), SubResource("Resource_xpi3f"), SubResource("Resource_namd2"), SubResource("Resource_6u6ry"), SubResource("Resource_0lhxa"), SubResource("Resource_qsmuf"), SubResource("Resource_715be"), SubResource("Resource_tanp6"), SubResource("Resource_62g0n"), SubResource("Resource_5tdgn")])
+aliases = {
+"bomb_explode": "bomb",
+"exp_pickup": "exp",
+"laser_fire": "laser"
+}
+ambience_tracks = {
+"cosmos": "res://assets/audio/ambience/ambience_cosmos.ogg",
+"hub": "res://assets/audio/ambience/ambience_hub.ogg",
+"title": "res://assets/audio/ambience/ambience_cosmos.ogg"
+}

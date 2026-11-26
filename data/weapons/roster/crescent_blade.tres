@@ -7,7 +7,7 @@
 script = ExtResource("1_wpn")
 weapon_id = &"crescent_blade"
 weapon_name = "Sable Astral 'Crescent Slash'"
-description = "Espada dimensional que descarga tajos en medialuna (escala golpes con Proyectiles) y un torbellino 360° que destruye proyectiles hostiles."
+description = "Espada dimensional que descarga tajos en medialuna (escala golpes con Proyectiles) y un torbellino 360Â° que destruye proyectiles hostiles."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"blade", &"melee", &"dimensional"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.92, 0.86, 0.98, 1)
 orbital_chassis_color = Color(0.18, 0.09, 0.24, 1)
 orbital_crystal_color = Color(0.92, 0.18, 0.96, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_blade"
+passive_sfx_id = &"weapon_missile"

@@ -99,8 +99,11 @@ func _on_telegraph_completed() -> void:
 	_bullet_server.fire_alien_wave_lane(global_position, player.global_position, 2, 210.0, 65.0, 5.0)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser", 0.75, -1.0)
+	if audio_mgr:
+		if audio_mgr.has_method("play_sfx_at"):
+			audio_mgr.play_sfx_at("laser", global_position, 0.75, -1.0)
+		elif audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("laser", 0.75, -1.0)
 
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(2.2, 1.8), 0.07)

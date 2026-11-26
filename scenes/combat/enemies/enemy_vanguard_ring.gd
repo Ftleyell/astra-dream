@@ -96,8 +96,11 @@ func _on_telegraph_completed() -> void:
 	_bullet_server.fire_alien_ring_burst(global_position, 12, 175.0, rotation)
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("explosion", 0.9, -6.0)
+	if audio_mgr:
+		if audio_mgr.has_method("play_sfx_at"):
+			audio_mgr.play_sfx_at("explosion", global_position, 0.9, -6.0)
+		elif audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("explosion", 0.9, -6.0)
 
 	# Sacudida reactiva cinematográfica leve
 	var cam := get_viewport().get_camera_2d()

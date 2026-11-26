@@ -10,6 +10,7 @@ const InputRebindScript := preload("res://scenes/ui/pause_menu/components/pause_
 @onready var master_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MasterSlider
 @onready var music_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/MusicSlider
 @onready var sfx_slider: HSlider = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/SfxSlider
+@onready var ambience_slider: HSlider = get_node_or_null("Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid/AmbienceSlider")
 @onready var resolution_option: OptionButton = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/ResolutionOption
 @onready var fullscreen_check: CheckBox = $Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/FullscreenCheck
 @onready var hitbox_core_check: CheckBox = get_node_or_null("Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/DisplayGrid/HitboxCoreCheck")
@@ -46,6 +47,8 @@ func _ready() -> void:
 	master_slider.value_changed.connect(func(v): _on_volume_slider_changed("Master", v))
 	music_slider.value_changed.connect(func(v): _on_volume_slider_changed("Music", v))
 	sfx_slider.value_changed.connect(func(v): _on_volume_slider_changed("SFX", v))
+	if ambience_slider:
+		ambience_slider.value_changed.connect(func(v): _on_volume_slider_changed("Ambience", v))
 
 	deadzone_slider.value_changed.connect(_on_deadzone_changed)
 
@@ -61,6 +64,8 @@ func _ready() -> void:
 	UIFocusHelper.apply_cyber_focus(master_slider)
 	UIFocusHelper.apply_cyber_focus(music_slider)
 	UIFocusHelper.apply_cyber_focus(sfx_slider)
+	if ambience_slider:
+		UIFocusHelper.apply_cyber_focus(ambience_slider)
 	UIFocusHelper.apply_cyber_focus(deadzone_slider)
 
 func _sync_ui_with_settings_manager() -> void:
@@ -69,6 +74,8 @@ func _sync_ui_with_settings_manager() -> void:
 		master_slider.value = mgr.master_volume
 		music_slider.value = mgr.music_volume
 		sfx_slider.value = mgr.sfx_volume
+		if ambience_slider and "ambience_volume" in mgr:
+			ambience_slider.value = mgr.ambience_volume
 		fullscreen_check.button_pressed = mgr.fullscreen
 		if hitbox_core_check and mgr.has_method("is_core_hitbox_always_visible"):
 			hitbox_core_check.button_pressed = mgr.is_core_hitbox_always_visible()
@@ -133,7 +140,8 @@ func _on_volume_slider_changed(bus_name: String, value: float) -> void:
 		var m_val: float = master_slider.value
 		var mu_val: float = music_slider.value
 		var s_val: float = sfx_slider.value
-		AudioSettingsScript.save_audio(m_val, mu_val, s_val)
+		var a_val: float = ambience_slider.value if ambience_slider else -1.0
+		AudioSettingsScript.save_audio(m_val, mu_val, s_val, a_val)
 	else:
 		AudioSettingsScript.apply_bus_volume(bus_name, value)
 

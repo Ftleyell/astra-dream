@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"singularity_pulsar"
-weapon_name = "Pulsar 'Vórtice Singularity'"
-description = "Despliega una singularidad gravitacional que absorbe y tritura enemigos, acompañada de ondas de choque de rechazo perimetral."
+weapon_name = "Pulsar 'VÃ³rtice Singularity'"
+description = "Despliega una singularidad gravitacional que absorbe y tritura enemigos, acompaÃ±ada de ondas de choque de rechazo perimetral."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"void", &"gravity", &"aoe"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.82, 0.96, 0.9, 1)
 orbital_chassis_color = Color(0.09, 0.2, 0.18, 1)
 orbital_crystal_color = Color(0.14, 0.96, 0.58, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_void"
+passive_sfx_id = &"weapon_missile"

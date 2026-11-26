@@ -159,22 +159,51 @@ func _elevate_dialogic_layout() -> void:
 				if "layer" in layout:
 					layout.layer = 50
 
+func _is_hub_or_title_suppressed() -> bool:
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		return false
+	var main_g: Node = tree.get_first_node_in_group("main_game")
+	if main_g == null:
+		main_g = tree.current_scene
+	if main_g == null or not is_instance_valid(main_g):
+		return false
+	if main_g.has_method("is_hub_mode_active") and bool(main_g.call("is_hub_mode_active")):
+		return true
+	if main_g.has_method("is_title_or_materializing_active") and bool(main_g.call("is_title_or_materializing_active")):
+		return true
+	return false
+
+
 func _on_timeline_started() -> void:
 	_is_dialogue_active = true
+	if _is_hub_or_title_suppressed():
+		if backdrop_rect:
+			backdrop_rect.modulate.a = 0.0
+			backdrop_rect.visible = false
+		call_deferred("_on_speaker_updated", null)
+		return
 	_acquire_hud()
 	_elevate_dialogic_layout()
 	fade_in()
 	call_deferred("_on_speaker_updated", null)
+
 
 func _on_timeline_ended() -> void:
 	_is_dialogue_active = false
 	_stop_pet_wiggle()
 	_fade_out_all_glows()
 	if not hold_dimmer:
-		fade_out()
+		if not _is_hub_or_title_suppressed() or (backdrop_rect != null and backdrop_rect.visible):
+			fade_out()
+
 
 func fade_in(duration: float = 0.22) -> void:
 	if not backdrop_rect:
+		return
+	if _is_hub_or_title_suppressed():
+		backdrop_rect.modulate.a = 0.0
+		backdrop_rect.visible = false
 		return
 	_acquire_hud()
 	if is_instance_valid(_hud_layer):
@@ -196,6 +225,7 @@ func fade_in(duration: float = 0.22) -> void:
 	_fade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_fade_tween.tween_property(backdrop_rect, "modulate:a", 1.0, duration)
 
+
 func fade_out(duration: float = 0.22) -> void:
 	if not backdrop_rect:
 		return
@@ -205,7 +235,7 @@ func fade_out(duration: float = 0.22) -> void:
 	if duration <= 0.01:
 		backdrop_rect.modulate.a = 0.0
 		backdrop_rect.visible = false
-		if is_instance_valid(_hud_layer):
+		if is_instance_valid(_hud_layer) and not _is_hub_or_title_suppressed():
 			if _hud_layer.has_method("set_hud_visible"):
 				_hud_layer.call("set_hud_visible", true)
 			else:
@@ -217,7 +247,7 @@ func fade_out(duration: float = 0.22) -> void:
 	_fade_tween.chain().tween_callback(func() -> void:
 		if backdrop_rect:
 			backdrop_rect.visible = false
-		if is_instance_valid(_hud_layer):
+		if is_instance_valid(_hud_layer) and not _is_hub_or_title_suppressed():
 			if _hud_layer.has_method("set_hud_visible"):
 				_hud_layer.call("set_hud_visible", true)
 			else:

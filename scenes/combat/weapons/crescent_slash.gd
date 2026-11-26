@@ -84,7 +84,7 @@ func _execute_single_slash() -> void:
 	if is_inside_tree():
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("dash", 1.5 + float(current_flurry) * 0.12, 1.0)
+			audio_mgr.play_sfx("weapon_blade", 0.95 + float(current_flurry) * 0.08, 0.0)
 
 	_build_crescent_blade_geometry()
 	_animate_slash_fade()

@@ -38,7 +38,7 @@ static func emerge_boss(boss: Node2D, tear: Node2D = null, callback: Callable = 
 	# Sonido colosal de manifestación titánica
 	var audio_mgr := boss.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("bomb_explode", -1.0, 0.8)
+		audio_mgr.play_sfx("bomb_explode", 0.8, -1.0)
 
 	var cam := boss.get_tree().get_first_node_in_group("camera") as Camera2D
 	if cam and cam.has_method("add_trauma"):

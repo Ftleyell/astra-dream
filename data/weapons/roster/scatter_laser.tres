@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"scatter_laser"
-weapon_name = "Láser Dispersor 'Scatter Laser'"
-description = "Ráfaga de proyectiles láser de alta coherencia y precisión balística con perforación pesada."
+weapon_name = "LÃ¡ser Dispersor 'Scatter Laser'"
+description = "RÃ¡faga de proyectiles lÃ¡ser de alta coherencia y precisiÃ³n balÃ­stica con perforaciÃ³n pesada."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"laser", &"critical", &"kinetic"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.92, 0.96, 1, 1)
 orbital_chassis_color = Color(0.12, 0.2, 0.34, 1)
 orbital_crystal_color = Color(0.18, 0.95, 0.92, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_laser"
+passive_sfx_id = &"weapon_missile"

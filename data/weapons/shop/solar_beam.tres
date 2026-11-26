@@ -7,7 +7,7 @@
 script = ExtResource("1_wpn")
 weapon_id = &"solar_beam"
 weapon_name = "Rayo Solar Orbital"
-description = "Haz continuo de microondas solares de alta radiación térmica que perfora blindajes de manera sostenida."
+description = "Haz continuo de microondas solares de alta radiaciÃ³n tÃ©rmica que perfora blindajes de manera sostenida."
 icon = ExtResource("2_ico")
 rarity = 3
 tags = [&"solar", &"beam", &"thermal"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(1, 0.95, 0.8, 1)
 orbital_chassis_color = Color(0.24, 0.15, 0.08, 1)
 orbital_crystal_color = Color(1, 0.84, 0.2, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_laser"
+passive_sfx_id = &"weapon_missile"

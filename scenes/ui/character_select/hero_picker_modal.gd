@@ -122,7 +122,7 @@ func open_picker(p_roster: Array[CharacterData], p_current_id: StringName, p_ini
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 0.95)
+		audio_mgr.play_sfx(&"ui_hover", 0.95, 0.0)
 
 
 func close_picker() -> void:
@@ -191,7 +191,7 @@ func _cycle_hero(dir: int) -> void:
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
+		audio_mgr.play_sfx(&"ui_hover", 1.1, 0.0)
 
 
 func _select_index(idx: int) -> void:
@@ -212,14 +212,14 @@ func _confirm_selection() -> void:
 	if not char_data.is_playable_rework_ready or not SaveManager.is_character_unlocked(cid):
 		var audio_deny: Node = get_node_or_null("/root/AudioManager")
 		if audio_deny and audio_deny.has_method("play_sfx"):
-			audio_deny.play_sfx(&"ui_error", 0.0, 0.9)
+			audio_deny.play_sfx(&"ui_error", 0.9, 0.0)
 		return
 
 	_is_confirming = true
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.15)
+		audio_mgr.play_sfx(&"ui_click", 1.15, 0.0)
 
 	close_picker()
 	hero_confirmed.emit.call_deferred(cid)
@@ -228,7 +228,7 @@ func _confirm_selection() -> void:
 func _cancel_selection() -> void:
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 0.9)
+		audio_mgr.play_sfx(&"ui_click", 0.9, 0.0)
 
 	close_picker()
 	hero_cancelled.emit.call_deferred()

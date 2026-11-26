@@ -17,7 +17,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var cur_scene: Node = get_tree().current_scene if get_tree() != null else null
-	if cur_scene != null and cur_scene.has_method("is_hub_mode_active") and cur_scene.is_hub_mode_active():
+	if cur_scene != null and ((cur_scene.has_method("is_hub_mode_active") and cur_scene.is_hub_mode_active()) or (cur_scene.has_method("is_title_or_materializing_active") and cur_scene.is_title_or_materializing_active())):
 		if visible:
 			current_hold = 0.0
 			hide()

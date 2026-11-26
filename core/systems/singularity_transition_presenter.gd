@@ -128,6 +128,9 @@ func play_custom_transition(on_collapsed_callback: Callable = Callable(), min_ho
 
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	_overlay.visible = true
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr != null and audio_mgr.has_method("set_tactical_focus"):
+		audio_mgr.set_tactical_focus(1.0)
 
 	# Fase 0: Big Crunch
 	var crunch_dur: float = maxf(config.crunch_duration_sec, 0.05)
@@ -225,6 +228,9 @@ func change_scene_threaded(target_scene_path: String) -> void:
 
 
 func _finish_cleanup() -> void:
+	var audio_mgr := get_node_or_null("/root/AudioManager")
+	if audio_mgr != null and audio_mgr.has_method("set_tactical_focus"):
+		audio_mgr.set_tactical_focus(0.0)
 	if _overlay != null:
 		_overlay.visible = false
 		_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE

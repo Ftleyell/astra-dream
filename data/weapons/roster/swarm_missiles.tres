@@ -7,7 +7,7 @@
 script = ExtResource("1_wpn")
 weapon_id = &"swarm_missiles"
 weapon_name = "Lanzador de Micro-Misiles Enjambre"
-description = "Micro-cohetes teledirigidos en abanico con viraje continuo y bahías de drones."
+description = "Micro-cohetes teledirigidos en abanico con viraje continuo y bahÃ­as de drones."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"swarm", &"missile", &"kinetic"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.84, 0.9, 0.82, 1)
 orbital_chassis_color = Color(0.16, 0.2, 0.18, 1)
 orbital_crystal_color = Color(0.74, 0.98, 0.24, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_missile"
+passive_sfx_id = &"weapon_missile"

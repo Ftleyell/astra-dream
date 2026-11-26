@@ -12,6 +12,7 @@ var config: ConfigFile = ConfigFile.new()
 var master_volume: float = 0.8
 var music_volume: float = 0.7
 var sfx_volume: float = 0.85
+var ambience_volume: float = 0.75
 var resolution_size: Vector2i = Vector2i(1920, 1080)
 var fullscreen: bool = false
 var gamepad_deadzone: float = 0.15
@@ -30,6 +31,7 @@ func load_and_apply_settings() -> void:
 		master_volume = config.get_value("audio", "master", 0.8)
 		music_volume = config.get_value("audio", "music", 0.7)
 		sfx_volume = config.get_value("audio", "sfx", 0.85)
+		ambience_volume = float(config.get_value("audio", "ambience", 0.75))
 
 		var w := int(config.get_value("display", "width", 1920))
 		var h := int(config.get_value("display", "height", 1080))
@@ -52,6 +54,7 @@ func apply_all_settings() -> void:
 	set_bus_volume("Master", master_volume)
 	set_bus_volume("Music", music_volume)
 	set_bus_volume("SFX", sfx_volume)
+	set_bus_volume("Ambience", ambience_volume)
 
 	# 2. Aplicar Pantalla
 	if fullscreen:
@@ -72,17 +75,21 @@ func set_bus_volume(bus_name: String, linear_val: float) -> void:
 		AudioServer.set_bus_volume_db(idx, db_val)
 		AudioServer.set_bus_mute(idx, linear_val <= 0.0001)
 
-func save_audio_settings(p_master: float, p_music: float, p_sfx: float) -> void:
+func save_audio_settings(p_master: float, p_music: float, p_sfx: float, p_ambience: float = -1.0) -> void:
 	master_volume = p_master
 	music_volume = p_music
 	sfx_volume = p_sfx
+	if p_ambience >= 0.0:
+		ambience_volume = p_ambience
 	config.set_value("audio", "master", master_volume)
 	config.set_value("audio", "music", music_volume)
 	config.set_value("audio", "sfx", sfx_volume)
+	config.set_value("audio", "ambience", ambience_volume)
 	config.save(SETTINGS_PATH)
 	set_bus_volume("Master", master_volume)
 	set_bus_volume("Music", music_volume)
 	set_bus_volume("SFX", sfx_volume)
+	set_bus_volume("Ambience", ambience_volume)
 	settings_changed.emit()
 
 func save_display_settings(p_res: Vector2i, p_fullscreen: bool) -> void:
@@ -164,6 +171,7 @@ func save_all_settings() -> void:
 	config.set_value("audio", "master", master_volume)
 	config.set_value("audio", "music", music_volume)
 	config.set_value("audio", "sfx", sfx_volume)
+	config.set_value("audio", "ambience", ambience_volume)
 	config.set_value("display", "width", resolution_size.x)
 	config.set_value("display", "height", resolution_size.y)
 	config.set_value("display", "fullscreen", fullscreen)
@@ -195,13 +203,15 @@ func set_audio_volume(bus_name: String, linear_val: float) -> void:
 		"master": master_volume = linear_val
 		"music": music_volume = linear_val
 		"sfx": sfx_volume = linear_val
-	save_audio_settings(master_volume, music_volume, sfx_volume)
+		"ambience": ambience_volume = linear_val
+	save_audio_settings(master_volume, music_volume, sfx_volume, ambience_volume)
 
 func get_audio_volume(bus_name: String) -> float:
 	match bus_name.to_lower():
 		"master": return master_volume
 		"music": return music_volume
 		"sfx": return sfx_volume
+		"ambience": return ambience_volume
 	return 1.0
 
 func set_deadzone(p_deadzone: float) -> void:

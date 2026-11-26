@@ -231,7 +231,7 @@ func _set_index(new_idx: int, slide_direction: int = 0) -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
+		audio_mgr.play_sfx(&"ui_hover", 1.1, 0.0)
 
 func _display_current_sector(animate: bool = true, slide_direction: int = 0) -> void:
 	if _sectors.is_empty() or current_index < 0 or current_index >= _sectors.size():
@@ -361,7 +361,7 @@ func _on_select_pressed() -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.25)
+		audio_mgr.play_sfx(&"ui_click", 1.25, 0.0)
 
 	close_modal()
 

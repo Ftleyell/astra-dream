@@ -76,7 +76,7 @@ func trigger_ping() -> void:
 		return
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.6)
+		audio_mgr.play_sfx("ui_click", 1.6, 0.0)
 
 	if panel_container:
 		panel_container.pivot_offset = BOX_SIZE * 0.5

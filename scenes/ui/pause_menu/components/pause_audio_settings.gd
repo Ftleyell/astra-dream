@@ -24,10 +24,12 @@ static func apply_bus_volume(bus_name: String, linear_value: float) -> void:
 			AudioServer.set_bus_mute(bus_idx, false)
 			AudioServer.set_bus_volume_db(bus_idx, slider_to_db(linear_value))
 
-static func save_audio(master_vol: float, bgm_vol: float, sfx_vol: float) -> void:
+static func save_audio(master_vol: float, bgm_vol: float, sfx_vol: float, ambience_vol: float = -1.0) -> void:
 	apply_bus_volume("Master", master_vol)
 	apply_bus_volume("Music", bgm_vol)
 	apply_bus_volume("SFX", sfx_vol)
+	if ambience_vol >= 0.0:
+		apply_bus_volume("Ambience", ambience_vol)
 	var mgr = Engine.get_main_loop().root.get_node_or_null("/root/SettingsManager") if Engine.get_main_loop() else null
 	if mgr and mgr.has_method("save_audio_settings"):
-		mgr.save_audio_settings(master_vol, bgm_vol, sfx_vol)
+		mgr.save_audio_settings(master_vol, bgm_vol, sfx_vol, ambience_vol)

@@ -297,14 +297,14 @@ func _on_pet_index_changed(slide_direction: int = 0) -> void:
 	_display_current_pet(true, slide_direction, 0)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
+		audio_mgr.play_sfx(&"ui_hover", 1.1, 0.0)
 
 
 func _on_skin_index_changed(slide_v: int = 0) -> void:
 	_display_current_pet(true, 0, slide_v)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.2)
+		audio_mgr.play_sfx(&"ui_hover", 1.2, 0.0)
 
 
 func _display_current_pet(animate: bool = true, slide_h: int = 0, slide_v: int = 0) -> void:
@@ -365,7 +365,7 @@ func _on_select_pressed() -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.25)
+		audio_mgr.play_sfx(&"ui_click", 1.25, 0.0)
 
 	var pid: StringName = res.get("pet_id", &"")
 	var slot_key: String = res.get("slot_key", "")

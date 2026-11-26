@@ -24,8 +24,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	# Spawn sound si audio manager está activo
 	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.5, 3.0)
+	if audio_mgr and audio_mgr.has_method("play_sfx_at"):
+		audio_mgr.play_sfx_at("weapon_void", global_position, 0.95, 0.0)
+	elif audio_mgr and audio_mgr.has_method("play_sfx"):
+		audio_mgr.play_sfx("weapon_void", 0.95, 0.0)
 
 func _process(delta: float) -> void:
 	time_alive += delta

@@ -263,7 +263,7 @@ func _on_dim_overlay_gui_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx(&"ui_click", 0.0, 1.0)
+			audio_mgr.play_sfx(&"ui_click", 1.0, 0.0)
 		close_modal()
 
 
@@ -341,7 +341,7 @@ func _on_card_pressed(weapon_id: StringName) -> void:
 		_show_warning("¡MÍNIMO %d ARMAS OBLIGATORIAS PARA DESPLEGAR!" % min_active_weapons)
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx(&"ui_error", 0.0, 0.9)
+			audio_mgr.play_sfx(&"ui_error", 0.9, 0.0)
 		return
 
 	_data_controller.toggle_weapon(weapon_id)

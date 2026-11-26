@@ -111,7 +111,7 @@ func dispatch_active_fire(
 			count, proj_speed, size_stat
 		)
 
-	_play_fire_sfx(wdata.weapon_id)
+	_play_fire_sfx(wdata)
 
 	if player and "inventory" in player and player.inventory:
 		player.inventory.process_hit_procs(ctx, player)
@@ -187,7 +187,7 @@ func fire_homing_missiles(
 	var tree := Engine.get_main_loop() as SceneTree
 	var audio_mgr: Node = tree.root.get_node_or_null("AudioManager") if tree and tree.root else null
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("missile")
+		audio_mgr.play_sfx("weapon_missile")
 
 func maintain_orbital_drones(ctx: HitContext, desired_count: int, weapon_node: Node2D, spawn_parent: Node) -> void:
 	active_drones = active_drones.filter(func(d: Node2D) -> bool: return is_instance_valid(d))
@@ -199,16 +199,12 @@ func maintain_orbital_drones(ctx: HitContext, desired_count: int, weapon_node: N
 		spawn_parent.add_child(drone)
 		active_drones.append(drone)
 
-func _play_fire_sfx(weapon_id: StringName) -> void:
+func _play_fire_sfx(wdata: WeaponData) -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	var audio_mgr: Node = tree.root.get_node_or_null("AudioManager") if tree and tree.root else null
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		if weapon_id == &"titan_shotgun" or weapon_id == &"cluster_submunition":
-			audio_mgr.play_sfx("explosion", 1.2, 0.0)
-		elif weapon_id == &"tesla_arc" or weapon_id == &"hive_cannon":
-			audio_mgr.play_sfx("dash", 1.5, -2.0)
-		else:
-			audio_mgr.play_sfx("laser", 1.0, 0.0)
+		var sfx_id: String = String(wdata.fire_sfx_id) if wdata != null and wdata.fire_sfx_id != &"" else "weapon_laser"
+		audio_mgr.play_sfx(sfx_id, 1.0, 0.0)
 
 func check_and_trigger_point_blank_pulse(origin: Vector2, base_dmg: float, player: CharacterBody2D, spawn_parent: Node) -> bool:
 	var tree := Engine.get_main_loop() as SceneTree

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"rail_launcher"
-weapon_name = "Cañón de Riel 'Vanguard Mk.I'"
-description = "Haz láser de penetración lineal térmica concentrada acompañado de salvas pasivas de micro-misiles teledirigidos."
+weapon_name = "CaÃ±Ã³n de Riel 'Vanguard Mk.I'"
+description = "Haz lÃ¡ser de penetraciÃ³n lineal tÃ©rmica concentrada acompaÃ±ado de salvas pasivas de micro-misiles teledirigidos."
 icon = ExtResource("2_ico")
 rarity = 0
 tags = [&"laser", &"thermal", &"missile"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.84, 0.94, 1, 1)
 orbital_chassis_color = Color(0.1, 0.18, 0.3, 1)
 orbital_crystal_color = Color(0.12, 0.88, 1, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_railgun"
+passive_sfx_id = &"weapon_missile"

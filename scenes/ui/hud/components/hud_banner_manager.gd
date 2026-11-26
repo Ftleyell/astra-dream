@@ -46,7 +46,7 @@ func show_satellite_banner(index: int, hud_node: CanvasLayer) -> void:
 
 	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.55)
+		audio_mgr.play_sfx("ui_click", 1.55, 0.0)
 
 	_satellite_banner_tween = hud_node.create_tween()
 	_satellite_banner_tween.set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -90,7 +90,7 @@ func show_character_unlock_banner(_char_id: StringName, title_text: String, desc
 
 	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+		audio_mgr.play_sfx("ui_click", 1.8, 0.0)
 
 	_unlock_banner_tween = hud_node.create_tween()
 	_unlock_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -155,7 +155,7 @@ func show_rival_defeated_banner(pilot_id: StringName, pilot_name: String, _weapo
 
 	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.7)
+		audio_mgr.play_sfx("ui_click", 1.7, 0.0)
 
 	_rival_banner_tween = hud_node.create_tween()
 	_rival_banner_tween.set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -212,7 +212,7 @@ func show_tactical_alert_banner(title_text: String, subtitle_text: String, borde
 
 	var audio_mgr := hud_node.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.4)
+		audio_mgr.play_sfx("ui_click", 1.4, 0.0)
 
 	_tactical_alert_tween = hud_node.create_tween()
 	_tactical_alert_tween.set_parallel(true).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

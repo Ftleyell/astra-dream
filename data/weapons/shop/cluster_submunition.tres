@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"cluster_submunition"
-weapon_name = "Lanzador de Racimo 'Clúster'"
-description = "Cápsula balística pesada que estalla liberando submuniciones explosivas en cadena hacia el área designada."
+weapon_name = "Lanzador de Racimo 'ClÃºster'"
+description = "CÃ¡psula balÃ­stica pesada que estalla liberando submuniciones explosivas en cadena hacia el Ã¡rea designada."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"cluster", &"explosive", &"aoe"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.92, 0.84, 0.72, 1)
 orbital_chassis_color = Color(0.22, 0.16, 0.14, 1)
 orbital_crystal_color = Color(1, 0.46, 0.1, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_missile"
+passive_sfx_id = &"weapon_missile"

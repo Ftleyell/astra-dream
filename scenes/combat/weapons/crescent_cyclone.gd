@@ -99,8 +99,8 @@ func _start_cyclone() -> void:
 	if is_inside_tree():
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("dash", 1.8, 3.0)
-			audio_mgr.play_sfx("laser", 1.6, 0.0)
+			audio_mgr.play_sfx("weapon_blade", 1.05, 1.5)
+			audio_mgr.play_sfx("dash", 1.15, -1.0)
 	_clear_bullets()
 
 func _process(delta: float) -> void:

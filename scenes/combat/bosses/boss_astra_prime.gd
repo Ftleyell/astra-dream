@@ -256,7 +256,7 @@ func _finish_death() -> void:
 func _play_sfx(sfx_name: String, pitch: float = 1.0) -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(sfx_name, 1.0, pitch)
+		audio_mgr.play_sfx(sfx_name, pitch, -2.0)
 
 const BossEmergenceHelperScript = preload("res://scenes/combat/bosses/boss_emergence_helper.gd")
 

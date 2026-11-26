@@ -177,9 +177,24 @@ func _apply_title_or_hub_suppression(p_main_game: MainGame, p_initial_request: R
 		main_game.chest_director.set_hub_suppressed(true)
 	if main_game.loot_coordinator != null and main_game.loot_coordinator.has_method("set_hub_suppressed"):
 		main_game.loot_coordinator.set_hub_suppressed(true)
-	if is_instance_valid(main_game.hud):
-		main_game.hud.visible = false
+	_set_combat_hud_suppressed(true)
 	return true
+
+
+func _set_combat_hud_suppressed(suppressed: bool) -> void:
+	if main_game == null:
+		return
+	if is_instance_valid(main_game.hud):
+		if main_game.hud.has_method("set_hud_visible"):
+			main_game.hud.set_hud_visible(not suppressed)
+		else:
+			main_game.hud.visible = not suppressed
+	if is_instance_valid(main_game.skip_badge_layer):
+		if suppressed:
+			main_game.skip_badge_layer.hide()
+			main_game.skip_badge_layer.process_mode = Node.PROCESS_MODE_DISABLED
+		else:
+			main_game.skip_badge_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 func reapply_title_suppression() -> void:
@@ -199,8 +214,7 @@ func reapply_title_suppression() -> void:
 		main_game.chest_director.set_hub_suppressed(true)
 	if main_game.loot_coordinator != null and main_game.loot_coordinator.has_method("set_hub_suppressed"):
 		main_game.loot_coordinator.set_hub_suppressed(true)
-	if is_instance_valid(main_game.hud):
-		main_game.hud.visible = false
+	_set_combat_hud_suppressed(true)
 
 
 func _build_embedded_hub_nodes() -> bool:
@@ -303,6 +317,7 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 	if not _build_embedded_hub_nodes():
 		return
 	state = SessionState.HUB_ACTIVE
+	_set_combat_hud_suppressed(true)
 	hub_stage.set_embedded_input_suppressed(false)
 	if is_instance_valid(main_game.camera) and is_instance_valid(main_game.player):
 		main_game.camera.clear_cinematic_focus()
@@ -311,8 +326,11 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 		main_game.camera.target_zoom = 1.0
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
-	if audio_mgr != null and audio_mgr.has_method("play_music"):
-		audio_mgr.play_music("menu")
+	if audio_mgr != null:
+		if audio_mgr.has_method("play_music"):
+			audio_mgr.play_music("menu")
+		if audio_mgr.has_method("set_ambience"):
+			audio_mgr.set_ambience("hub")
 
 	schedule_first_time_tutorial_if_needed(0.55)
 
@@ -351,6 +369,7 @@ func activate_hub_from_title(allow_auto_tutorial: bool = true) -> void:
 	if main_game == null or hub_stage == null:
 		return
 	state = SessionState.HUB_ACTIVE
+	_set_combat_hud_suppressed(true)
 	_is_flying = false
 	_pending_fly_target = false
 	_hysteresis_timer = 0.0
@@ -369,6 +388,7 @@ func suspend_hub_for_title() -> void:
 	if is_hub_tutorial_active():
 		tutorial_director.finish_tutorial(true)
 	state = SessionState.TITLE_STANDBY
+	_set_combat_hud_suppressed(true)
 	if display_sprite != null:
 		display_sprite.visible = false
 	if hub_stage != null:
@@ -753,7 +773,7 @@ func launch_combat_seamlessly(departure_hub_xz: Vector2 = Vector2(0.0, -30.5)) -
 	CombatBootstrapperScript.initialize_session(main_game, main_game.player, main_game.hud)
 
 	if is_instance_valid(main_game.hud):
-		main_game.hud.visible = true
+		_set_combat_hud_suppressed(false)
 		if is_instance_valid(main_game.player) and main_game.player.character_data != null and main_game.hud.has_method("update_pilot_abilities"):
 			main_game.hud.update_pilot_abilities(main_game.player.character_data)
 		main_game.hud.offset = Vector2(0.0, -24.0)
@@ -768,8 +788,11 @@ func launch_combat_seamlessly(departure_hub_xz: Vector2 = Vector2(0.0, -30.5)) -
 				tw.tween_property(ci, "modulate:a", orig_a, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
-	if audio_mgr != null and audio_mgr.has_method("play_music"):
-		audio_mgr.play_music("combat")
+	if audio_mgr != null:
+		if audio_mgr.has_method("play_music"):
+			audio_mgr.play_music("combat")
+		if audio_mgr.has_method("set_ambience"):
+			audio_mgr.set_ambience("cosmos")
 
 	if is_instance_valid(main_game.player):
 		main_game.last_anchor_pos = main_game.player.global_position

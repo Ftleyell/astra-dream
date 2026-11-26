@@ -48,7 +48,7 @@ func _ready_custom() -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.7)
+		audio_mgr.play_sfx("item_pickup", 1.7, 0.0)
 
 func _setup_overhead_hud() -> void:
 	hp_bar = ProgressBar.new()
@@ -223,7 +223,7 @@ func _on_die_extra() -> void:
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
 		audio_mgr.play_sfx("explosion", 0.85)
-		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+		audio_mgr.play_sfx("upgrade_obtained", 1.8, 0.0)
 
 func _spawn_jackpot_fountain(p_node: Node) -> void:
 	for i in range(12):

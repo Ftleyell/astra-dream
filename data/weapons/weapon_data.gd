@@ -86,3 +86,7 @@ var name: String:
 @export var orbital_chassis_color: Color = Color(0.12, 0.16, 0.25, 1.0)
 @export var orbital_crystal_color: Color = Color(0.92, 0.14, 0.32, 1.0)
 @export var orbital_mesh_id: StringName = &"rail_lance"
+
+@export_group("Audio")
+@export var fire_sfx_id: StringName = &"weapon_laser"
+@export var passive_sfx_id: StringName = &"weapon_missile"

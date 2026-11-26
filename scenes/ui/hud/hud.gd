@@ -184,6 +184,10 @@ func set_hud_visible(p_visible: bool) -> void:
 	var tracker_layer := get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
 	if tracker_layer:
 		tracker_layer.visible = p_visible
+	if is_instance_valid(stats_dock_layer):
+		stats_dock_layer.visible = p_visible
+	if not p_visible and is_instance_valid(combat_stats_dock):
+		combat_stats_dock.visible = false
 
 func _process(delta: float) -> void:
 	if target_reticle and is_instance_valid(player):

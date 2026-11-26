@@ -27,6 +27,8 @@ func setup_combat_stats_dock(hud: CanvasLayer) -> void:
 	stats_dock_layer.add_child(combat_stats_dock)
 
 func handle_input(hud: CanvasLayer, player: Player, event: InputEvent) -> void:
+	if hud == null or not hud.visible:
+		return
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		if event.keycode == KEY_TAB:
 			if not combat_stats_dock:

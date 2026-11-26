@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"singularity_cannon"
-weapon_name = "Cañón de Singularidad"
-description = "Micro-agujero negro balístico que colapsa masivamente al final de su trayectoria."
+weapon_name = "CaÃ±Ã³n de Singularidad"
+description = "Micro-agujero negro balÃ­stico que colapsa masivamente al final de su trayectoria."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"void", &"gravity", &"aoe"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.76, 0.74, 0.88, 1)
 orbital_chassis_color = Color(0.11, 0.08, 0.22, 1)
 orbital_crystal_color = Color(0.66, 0.22, 1, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_void"
+passive_sfx_id = &"weapon_missile"

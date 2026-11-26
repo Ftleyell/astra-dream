@@ -84,7 +84,7 @@ func _ready() -> void:
 	# Sonido ominoso de ruptura espaciotemporal inicial
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("laser_heavy", -1.5, 0.65)
+		audio_mgr.play_sfx("laser_heavy", 0.65, -1.5)
 
 	queue_redraw()
 
@@ -227,7 +227,7 @@ func _detonate_clearance_shockwave() -> void:
 	# Sonido de implosión y choque sónico dimensional
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("bomb_explode", 0.0, 1.2)
+		audio_mgr.play_sfx("bomb_explode", 1.2, 0.0)
 
 	# Partículas radiales de choque fractal
 	_shockwave_particles.clear()
@@ -302,7 +302,7 @@ func start_collapse() -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("bomb_explode", -2.5, 0.8)
+		audio_mgr.play_sfx("bomb_explode", 0.8, -2.5)
 
 
 func _draw() -> void:

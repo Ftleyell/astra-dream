@@ -222,6 +222,9 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 	assert_true(mg.title_session_controller != null and mg.title_session_controller.is_title_active(), "Debe estar en TITLE_ACTIVE")
 	assert_true(not SceneTransition.is_transitioning, "El arranque a Title Screen no debe disparar SceneTransition/Singularidad")
 	assert_true(mg.hub_session_controller != null and (mg.hub_session_controller.display_sprite == null or not mg.hub_session_controller.display_sprite.visible), "Hub 3D debe diferirse/ocultarse en TITLE_ACTIVE inicial")
+	assert_true(not mg.hud.visible, "HUD de combate debe permanecer oculto en TITLE_ACTIVE")
+	var tracker_layer_title: CanvasLayer = mg.hud.get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
+	assert_true(tracker_layer_title == null or not tracker_layer_title.visible, "SatelliteTrackerLayer debe permanecer oculto en TITLE_ACTIVE")
 	assert_true(int(mg.get("_deferred_title_assembly_stage")) == 0, "En EntryMode.TITLE el ensamblado de combate debe quedar diferido inicialmente")
 
 	# Acelerar secuencia Title -> Hub para verificación rápida en test
@@ -243,6 +246,9 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 		await get_tree().process_frame
 	assert_true(mg.is_hub_mode_active(), "Al aterrizar la piloto debe activar HUB_ACTIVE")
 	assert_true(mg.hub_session_controller.display_sprite.visible and mg.player.visible, "Display 3D y Player deben quedar visibles en HUB_ACTIVE")
+	assert_true(not mg.hud.visible, "HUD de combate debe permanecer oculto al aterrizar en HUB_ACTIVE")
+	var tracker_layer_hub: CanvasLayer = mg.hud.get_node_or_null("SatelliteTrackerLayer") as CanvasLayer
+	assert_true(tracker_layer_hub == null or not tracker_layer_hub.visible, "SatelliteTrackerLayer debe permanecer oculto al aterrizar en HUB_ACTIVE")
 
 	# Verificar botón ? Guía en HUD y lanzamiento manual del tutorial con blindaje Dialogic/NarrativeDirector
 	var hub_stage: AstralStationHub = mg.hub_session_controller.get_hub_stage()
@@ -254,11 +260,21 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 	assert_true(mg.hub_session_controller.is_hub_tutorial_active(), "Tutorial de Mochi debe quedar activo en Hub embebido")
 	assert_true(not get_tree().paused, "Tutorial del Hub no debe pausar el SceneTree")
 	assert_true(not mg.hud.visible, "HUD de combate debe seguir oculto durante el tutorial del Hub (blindaje NarrativeDirector)")
+	var backdrop_layer: Node = mg.get_node_or_null("DialogueBackdropLayer")
+	var backdrop_rect: Control = backdrop_layer.get_node_or_null("BackdropRect") as Control if backdrop_layer != null else null
+	assert_true(backdrop_rect == null or not backdrop_rect.visible, "DialogueBackdropLayer no debe oscurecer el Hub 3D durante el tutorial")
+	assert_true(mg.skip_badge_layer == null or not mg.skip_badge_layer.visible, "SkipBadgeLayer de combate debe permanecer oculto durante el tutorial del Hub")
 
 	mg.hub_session_controller.get_tutorial_director().finish_tutorial(false)
-	await _await_frames(2)
+	await get_tree().create_timer(0.35, true).timeout
 	assert_true(not mg.hub_session_controller.is_hub_tutorial_active(), "Tutorial debe cerrarse limpiamente")
 	assert_true(SaveManager.is_hub_tutorial_completed(), "Terminar el tutorial debe persistir hub_tutorial_completed = true")
+	assert_true(not mg.hud.visible, "HUD de combate NO debe proyectarse sobre el Hub 3D tras cerrar el tutorial (post fade_out)")
+	assert_true(tracker_layer_hub == null or not tracker_layer_hub.visible, "SatelliteTrackerLayer NO debe mostrarse tras cerrar el tutorial del Hub")
+	if backdrop_layer != null and backdrop_layer.has_method("fade_out"):
+		backdrop_layer.call("fade_out", 0.05)
+		await get_tree().create_timer(0.1, true).timeout
+		assert_true(not mg.hud.visible, "DialogueBackdropLayer.fade_out no debe reactivar HUD de combate en HUB_ACTIVE")
 
 	# Retorno seamless Hub -> Título sobre el mismo Cosmos
 	mg.return_from_hub_to_title()

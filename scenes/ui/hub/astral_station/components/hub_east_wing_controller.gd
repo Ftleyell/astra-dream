@@ -29,6 +29,7 @@ const OutlineShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_ar
 const HoloScreenShader = preload("res://scenes/ui/hub/astral_station/shaders/hub_console_holo_screen.gdshader")
 const CircleShadowShader = preload("res://shaders/retro_circle_shadow.gdshader")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
+const PetBubble3DScript = preload("res://scenes/pets/rig/pet_bubble_3d.gd")
 const SaveManagerScript = preload("res://core/autoloads/save_manager.gd")
 const CosmeticsManagerScript = preload("res://core/systems/cosmetics_manager.gd")
 
@@ -65,7 +66,7 @@ var _beacon_entries: Array[Dictionary] = []
 
 var _player_follow_target: Node3D = null
 var _followed_pet_node: Node3D = null
-var _followed_pet_sprite: Sprite3D = null
+var _followed_pet_bubble: PetBubble3D = null
 var _followed_pet_id: StringName = &""
 var _lounge_pet_entries: Array[Dictionary] = []
 
@@ -481,7 +482,7 @@ func refresh_pets(p_player_target: Node3D = null) -> void:
 	if _followed_pet_node != null and is_instance_valid(_followed_pet_node):
 		_followed_pet_node.queue_free()
 		_followed_pet_node = null
-		_followed_pet_sprite = null
+		_followed_pet_bubble = null
 
 	for entry: Dictionary in _lounge_pet_entries:
 		var node: Node3D = entry.get("node", null) as Node3D
@@ -501,56 +502,50 @@ func refresh_pets(p_player_target: Node3D = null) -> void:
 		if not SaveManagerScript.is_pet_unlocked(p_data.pet_id):
 			continue
 
-		if p_data.pet_id == selected_id and _player_follow_target != null and not embedded_mode:
-			var follower: Dictionary = _create_pet_visual_node(p_data, "ActiveCompanionPet")
-			_followed_pet_node = follower["node"] as Node3D
-			_followed_pet_sprite = follower["sprite"] as Sprite3D
-			_followed_pet_node.position = _player_follow_target.global_position + Vector3(-1.1, 0.04, 0.8)
-			add_child(_followed_pet_node)
-		else:
-			var orb_pet: Dictionary = _create_pet_visual_node(p_data, "OrbitPet_%s" % str(p_data.pet_id), true)
-			var lp_node: Node3D = orb_pet["node"] as Node3D
-			var init_ang: float = float(orb_idx) * 2.1
-			lp_node.position = orbit_center + Vector3(cos(init_ang) * PET_ORBIT_RADIUS, 0.55, sin(init_ang) * PET_ORBIT_RADIUS)
-			add_child(lp_node)
-			_lounge_pet_entries.append({
-				"node": lp_node,
-				"sprite": orb_pet["sprite"],
-				"center": orbit_center,
-				"angle_offset": init_ang,
-				"phase": float(orb_idx) * 1.35,
-			})
-			orb_idx += 1
+		if p_data.pet_id == selected_id:
+			if _player_follow_target != null and not embedded_mode:
+				var follower: Dictionary = _create_pet_visual_node(p_data, "ActiveCompanionPet")
+				_followed_pet_node = follower["node"] as Node3D
+				_followed_pet_bubble = follower["bubble"] as PetBubble3D
+				_followed_pet_node.position = _player_follow_target.global_position + Vector3(-1.1, 0.04, 0.8)
+				add_child(_followed_pet_node)
+			# En embedded_mode la pet equipada ya acompaña a Valentina como CompanionPet 3D
+			continue
+
+		var orb_pet: Dictionary = _create_pet_visual_node(p_data, "OrbitPet_%s" % str(p_data.pet_id), true)
+		var lp_node: Node3D = orb_pet["node"] as Node3D
+		var init_ang: float = float(orb_idx) * 2.1
+		lp_node.position = orbit_center + Vector3(cos(init_ang) * PET_ORBIT_RADIUS, 0.55, sin(init_ang) * PET_ORBIT_RADIUS)
+		add_child(lp_node)
+		_lounge_pet_entries.append({
+			"node": lp_node,
+			"bubble": orb_pet["bubble"],
+			"center": orbit_center,
+			"angle_offset": init_ang,
+			"phase": float(orb_idx) * 1.35,
+			"prev_pos": lp_node.position,
+		})
+		orb_idx += 1
 
 
 func _create_pet_visual_node(p_data: PetData, node_name: String, with_orbit_ring: bool = false) -> Dictionary:
 	var root := Node3D.new()
 	root.name = node_name
 
-	var sprite := Sprite3D.new()
-	sprite.name = "PetSprite"
-	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	sprite.render_priority = 2
-	sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(sprite)
+	var bubble: PetBubble3D = PetBubble3DScript.new() as PetBubble3D
+	bubble.name = "PetBubble3D"
+	bubble.position = Vector3(0.0, 0.48, 0.0)
+	root.add_child(bubble)
 
-	var tex: Texture2D = p_data.get_icon_texture()
+	var radius_m: float = 0.40 if with_orbit_ring else 0.36
+	bubble.setup_pet(p_data.pet_id, radius_m)
+
 	var pid_str: String = String(p_data.pet_id).to_lower()
 	var slot_key: String = "pet:" + pid_str
 	var eq_skin: String = SaveManagerScript.get_equipped_skin(slot_key)
 	if not eq_skin.is_empty() and SaveManagerScript.is_skin_unlocked(eq_skin):
 		var stars: int = SaveManagerScript.get_skin_stars(eq_skin)
-		CosmeticsManagerScript.apply_skin_to_sprite3d(sprite, eq_skin, stars)
-		if sprite.texture != null:
-			tex = sprite.texture
-	else:
-		sprite.texture = tex
-		sprite.material_override = null
-
-	var tex_h: float = float(tex.get_height()) if is_instance_valid(tex) else 64.0
-	sprite.pixel_size = 0.011 * (64.0 / maxf(1.0, tex_h))
-	sprite.offset = Vector2(0.0, tex_h * 0.5)
+		bubble.apply_skin_by_id(eq_skin, stars)
 
 	if with_orbit_ring:
 		var halo := TorusMesh.new()
@@ -574,7 +569,7 @@ func _create_pet_visual_node(p_data: PetData, node_name: String, with_orbit_ring
 		var shadow := MeshInstance3D.new()
 		shadow.name = "PetShadow"
 		var quad := QuadMesh.new()
-		quad.size = Vector2(0.50, 0.50)
+		quad.size = Vector2(0.56, 0.56)
 		quad.orientation = PlaneMesh.FACE_Y
 		shadow.mesh = quad
 		var sh_mat := ShaderMaterial.new()
@@ -585,7 +580,7 @@ func _create_pet_visual_node(p_data: PetData, node_name: String, with_orbit_ring
 		shadow.position = Vector3(0.0, 0.012, 0.0)
 		root.add_child(shadow)
 
-	return {"node": root, "sprite": sprite}
+	return {"node": root, "bubble": bubble}
 
 
 func _process(delta: float) -> void:
@@ -619,33 +614,33 @@ func _process(delta: float) -> void:
 
 	for entry: Dictionary in _lounge_pet_entries:
 		var lp_node: Node3D = entry.get("node", null) as Node3D
-		var lp_sprite: Sprite3D = entry.get("sprite", null) as Sprite3D
+		var lp_bubble: PetBubble3D = entry.get("bubble", null) as PetBubble3D
 		var center: Vector3 = entry.get("center", Vector3(-10.20, 0.0, 10.20)) as Vector3
 		var ang0: float = float(entry.get("angle_offset", 0.0))
 		var ph: float = float(entry.get("phase", 0.0))
 		if lp_node != null and is_instance_valid(lp_node):
+			var prev_pos: Vector3 = entry.get("prev_pos", lp_node.position) as Vector3
 			var cur_ang: float = ang0 + _time_acc * 0.34
 			lp_node.position = center + Vector3(cos(cur_ang) * PET_ORBIT_RADIUS, 0.56 + sin(_time_acc * 2.2 + ph) * 0.12, sin(cur_ang) * PET_ORBIT_RADIUS)
-			if lp_sprite != null:
-				lp_sprite.flip_h = (-sin(cur_ang) < 0.0)
-				lp_sprite.position.y = 0.08 + absf(sin(_time_acc * 3.1 + ph)) * 0.045
+			var vel_3d: Vector3 = (lp_node.position - prev_pos) / maxf(delta, 0.001)
+			entry["prev_pos"] = lp_node.position
+			if lp_bubble != null and is_instance_valid(lp_bubble):
+				lp_bubble.set_velocity_hint_3d(vel_3d)
 
 	if _followed_pet_node != null and is_instance_valid(_followed_pet_node) and _player_follow_target != null and is_instance_valid(_player_follow_target):
 		var target_pos: Vector3 = _player_follow_target.global_position + Vector3(-1.05, 0.04, 0.75)
 		var cur: Vector3 = _followed_pet_node.position
 		var diff := Vector2(target_pos.x - cur.x, target_pos.z - cur.z)
 		var dist: float = diff.length()
+		var vel_3d := Vector3.ZERO
 		if dist > 0.25:
 			var step_v: Vector2 = diff.normalized() * minf(dist, 4.6 * delta)
 			_followed_pet_node.position.x += step_v.x
 			_followed_pet_node.position.z += step_v.y
 			_followed_pet_node.position.y = 0.04
-			if _followed_pet_sprite != null:
-				if absf(step_v.x) > 0.002:
-					_followed_pet_sprite.flip_h = (step_v.x < 0.0)
-				_followed_pet_sprite.position.y = absf(sin(_time_acc * 8.5)) * 0.065
-		elif _followed_pet_sprite != null:
-			_followed_pet_sprite.position.y = sin(_time_acc * 3.2) * 0.025
+			vel_3d = Vector3(step_v.x, 0.0, step_v.y) / maxf(delta, 0.001)
+		if _followed_pet_bubble != null and is_instance_valid(_followed_pet_bubble):
+			_followed_pet_bubble.set_velocity_hint_3d(vel_3d)
 
 
 func open_gacha_station() -> void:
@@ -777,6 +772,19 @@ func get_telemetry_totem_node() -> Node3D:
 
 func get_followed_pet_id() -> StringName:
 	return _followed_pet_id
+
+
+func get_lounge_pet_bubbles() -> Array[PetBubble3D]:
+	var out: Array[PetBubble3D] = []
+	for entry: Dictionary in _lounge_pet_entries:
+		var b: PetBubble3D = entry.get("bubble", null) as PetBubble3D
+		if b != null and is_instance_valid(b):
+			out.append(b)
+	return out
+
+
+func get_followed_pet_bubble() -> PetBubble3D:
+	return _followed_pet_bubble
 
 
 func get_gacha_highlight_bundle() -> Dictionary:

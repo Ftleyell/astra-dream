@@ -205,8 +205,11 @@ func enter_title_mode(play_reveal: bool = true, play_genesis_birth: bool = false
 			title_menu.show_menu(false)
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
-	if audio_mgr != null and audio_mgr.has_method("play_music"):
-		audio_mgr.play_music("menu")
+	if audio_mgr != null:
+		if audio_mgr.has_method("play_music"):
+			audio_mgr.play_music("menu")
+		if audio_mgr.has_method("set_ambience"):
+			audio_mgr.set_ambience("title")
 
 
 func _fire_genesis_big_bang_and_title_reveal() -> void:

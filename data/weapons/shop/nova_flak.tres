@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"nova_flak"
-weapon_name = "Batería Antiaérea 'Nova-Flak'"
-description = "Artillería pesada espacial que estalla en floraciones de metralla para pulverizar formaciones densas de cazas y drones."
+weapon_name = "BaterÃ­a AntiaÃ©rea 'Nova-Flak'"
+description = "ArtillerÃ­a pesada espacial que estalla en floraciones de metralla para pulverizar formaciones densas de cazas y drones."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"flak", &"explosive", &"aoe"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.94, 0.86, 0.82, 1)
 orbital_chassis_color = Color(0.2, 0.12, 0.14, 1)
 orbital_crystal_color = Color(1, 0.32, 0.28, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_shotgun"
+passive_sfx_id = &"weapon_missile"

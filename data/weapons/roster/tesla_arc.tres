@@ -7,7 +7,7 @@
 script = ExtResource("1_wpn")
 weapon_id = &"tesla_arc"
 weapon_name = "Proyector de Plasma 'Arco Tesla'"
-description = "Descargas de plasma cuántico que encadenan arcos eléctricos entre grupos de enemigos y emiten pulsos de latencia electromagnética."
+description = "Descargas de plasma cuÃ¡ntico que encadenan arcos elÃ©ctricos entre grupos de enemigos y emiten pulsos de latencia electromagnÃ©tica."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"electric", &"plasma", &"chain"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.86, 0.88, 1, 1)
 orbital_chassis_color = Color(0.14, 0.14, 0.32, 1)
 orbital_crystal_color = Color(0.48, 0.42, 1, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_tesla"
+passive_sfx_id = &"weapon_missile"

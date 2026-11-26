@@ -104,8 +104,11 @@ func _fire_telegraphed_shot() -> void:
 	var fired := bullet_server.fire_common_aimed_bullet(global_position, player.global_position, 190.0, 1)
 	if fired:
 		var audio_mgr := get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("laser", 0.75, -4.0)
+		if audio_mgr:
+			if audio_mgr.has_method("play_sfx_at"):
+				audio_mgr.play_sfx_at("laser", global_position, 0.75, -4.0)
+			elif audio_mgr.has_method("play_sfx"):
+				audio_mgr.play_sfx("laser", 0.75, -4.0)
 
 		# Rebote elástico de retroceso
 		var tw := create_tween()

@@ -105,7 +105,7 @@ func show_prologue_transmission(nav_data: Resource, message_text: String, on_con
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.3)
+		audio_mgr.play_sfx(&"ui_click", 1.3, 0.0)
 
 	_is_showing = true
 	_hide_timer = 99999.0
@@ -145,7 +145,7 @@ func show_transmission(nav_data: Resource, message_text: String, target_hint: St
 	# Reproducir audio de radio
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.3)
+		audio_mgr.play_sfx(&"ui_click", 1.3, 0.0)
 
 	slide_in()
 
@@ -169,7 +169,7 @@ func show_buff_activated(nav_data: Resource) -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.6)
+		audio_mgr.play_sfx(&"ui_click", 1.6, 0.0)
 
 	slide_in(4.0)
 

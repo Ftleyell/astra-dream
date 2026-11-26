@@ -14,6 +14,7 @@ const WORKBENCH_SCENES: Dictionary = {
 	"skill_ult": "res://sandbox/workbenches/skill_ult_workbench/skill_ult_workbench.tscn",
 	"hub_locomotion_lab": "res://sandbox/hub_art_lab/hub_locomotion_lab/hub_locomotion_lab.tscn",
 	"stela_intro_lab": "res://sandbox/workbenches/stela_intro_lab/stela_intro_lab.tscn",
+	"sfx_lab": "res://sandbox/workbenches/sfx_lab/sfx_lab.tscn",
 }
 
 const PILOT_RIG_LAB_SCENES: Dictionary = {
@@ -110,6 +111,13 @@ const CARD_SPECS: Array[Dictionary] = [
 		"accent": Color(0.95, 0.80, 0.34, 1.0),
 		"desc": "Logo cel 4 capas + Normal Map sobre Cosmos vivo, Transición Singularidad, Materialización Title→Hub y Tutorial Mochi 3D.",
 	},
+	{
+		"key": "sfx_lab",
+		"shortcut": "[0]",
+		"title": "SFX Audition & Curation Lab",
+		"accent": Color(0.68, 0.56, 1.0, 1.0),
+		"desc": "Explora packs externos (Shapeforms, Kenney, Sci-Fi UI), compara A/B con Prod, simula ráfagas/EXP y normaliza WAV a assets/audio/sfx/.",
+	},
 ]
 
 const RIG_LAB_NOTES: String = "Playbook Multi-Piloto: docs/PILOT_CREATION_PIPELINE.md · Scaffold: sandbox/pilot_rig_lab/tools/scaffold_new_pilot.py"
@@ -148,6 +156,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			launch_workbench("hub_locomotion_lab")
 		KEY_9:
 			launch_workbench("stela_intro_lab")
+		KEY_0:
+			launch_workbench("sfx_lab")
 
 
 func launch_workbench(key: String) -> void:
@@ -208,7 +218,7 @@ func _build_ui() -> void:
 	title_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..8] o elegí un entorno."
+	subtitle.text = "Entornos rápidos (F6) sobre escenas de producción y Pilot Rig Labs (Cast v2). Presioná [1..0] o elegí un entorno."
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95, 0.9))
 	title_vbox.add_child(subtitle)

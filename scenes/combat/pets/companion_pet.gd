@@ -402,7 +402,7 @@ func _spawn_claw_scratch_vfx(pos: Vector2) -> void:
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr != null and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+		audio_mgr.play_sfx("item_pickup", 1.8, -2.0)
 
 
 # ── 3. LUNA: PULSO PURPURINA (SANACIÓN + RALENTIZACIÓN) ─────────────────────

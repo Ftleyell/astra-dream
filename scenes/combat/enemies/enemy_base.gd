@@ -155,8 +155,11 @@ func _die() -> void:
 		bus.enemy_killed.emit(String(enemy_id))
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
-	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("explosion", randf_range(0.92, 1.08))
+	if audio_mgr:
+		if audio_mgr.has_method("play_sfx_at"):
+			audio_mgr.play_sfx_at("explosion", global_position, randf_range(0.92, 1.08))
+		elif audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("explosion", randf_range(0.92, 1.08))
 
 	if is_instance_valid(player):
 		if player.inventory:

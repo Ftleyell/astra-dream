@@ -38,7 +38,7 @@ func take_damage(
 			tw.tween_property(player, "modulate", Color.WHITE, 0.2)
 		var audio_mgr := player.get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("ui_click", 0.0, 1.8)
+			audio_mgr.play_sfx("impact", 1.3, -2.0)
 		return
 
 	# Capa de Escudo Inversor de Fase
@@ -52,7 +52,7 @@ func take_damage(
 			tw.tween_property(player, "modulate", Color.WHITE, 0.2)
 		var audio_mgr := player.get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("ui_click", 0.0, 2.2)
+			audio_mgr.play_sfx("impact", 1.5, -2.0)
 		return
 
 	# Mitigación por Armadura

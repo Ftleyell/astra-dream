@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"plasma_flak"
-weapon_name = "Cañón Flak de Plasma"
-description = "Dispersión pesada de plasma concentrado con violento empuje cinético y metralla secundaria."
+weapon_name = "CaÃ±Ã³n Flak de Plasma"
+description = "DispersiÃ³n pesada de plasma concentrado con violento empuje cinÃ©tico y metralla secundaria."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"heavy", &"shotgun", &"kinetic"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.86, 0.84, 0.78, 1)
 orbital_chassis_color = Color(0.18, 0.15, 0.14, 1)
 orbital_crystal_color = Color(1, 0.38, 0.14, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_shotgun"
+passive_sfx_id = &"weapon_missile"

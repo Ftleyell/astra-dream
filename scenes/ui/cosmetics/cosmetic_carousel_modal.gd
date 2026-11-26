@@ -194,7 +194,7 @@ func _on_dim_overlay_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		var audio_mgr := get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx(&"ui_click", 0.0, 1.0)
+			audio_mgr.play_sfx(&"ui_click", 1.0, 0.0)
 		close_modal()
 
 
@@ -250,7 +250,7 @@ func _cycle_skin(dir: int) -> void:
 
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.1)
+		audio_mgr.play_sfx(&"ui_hover", 1.1, 0.0)
 
 	_refresh_display()
 	_build_dots()
@@ -262,7 +262,7 @@ func _cycle_stars(dir: int) -> void:
 	_star_level = clampi(_star_level + dir, 1, 3)
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.2)
+		audio_mgr.play_sfx(&"ui_click", 1.2, 0.0)
 
 	_refresh_display()
 	_animate_stars_transition(dir)
@@ -273,7 +273,7 @@ func _confirm_equip() -> void:
 	_auto_equip_if_unlocked()
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.0)
+		audio_mgr.play_sfx(&"ui_click", 1.0, 0.0)
 	close_modal()
 
 

@@ -134,7 +134,7 @@ func _detonate_clearance_shockwave() -> void:
 	# Sonido estelar de onda expansiva
 	var audio_mgr := get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx("bomb_explode", 0.0, 1.4)
+		audio_mgr.play_sfx("bomb_explode", 1.4, 0.0)
 
 	# Generar partículas expansivas radiales
 	_shockwave_particles.clear()

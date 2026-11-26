@@ -216,7 +216,10 @@ func _ready() -> void:
 		if enemy_spawner != null:
 			enemy_spawner.set_spawning_paused(true)
 		if is_instance_valid(hud):
-			hud.visible = false
+			hud.set_hud_visible(false)
+		if is_instance_valid(skip_badge_layer):
+			skip_badge_layer.hide()
+			skip_badge_layer.process_mode = Node.PROCESS_MODE_DISABLED
 
 		if entry_mode == RunLaunchRequestScript.EntryMode.TITLE:
 			_deferred_title_assembly_stage = 0

@@ -128,7 +128,7 @@ func on_mouse_entered() -> void:
 			_pilot_hover_tween.tween_property(backlight_glow, "modulate:a", HOVER_LIVE_BACKLIGHT_ALPHA, 0.22)
 		var audio_live := live_banner_viewport.get_node_or_null("/root/AudioManager")
 		if audio_live and audio_live.has_method("play_sfx"):
-			audio_live.play_sfx(&"ui_hover", 0.0, 1.15)
+			audio_live.play_sfx(&"ui_hover", 1.15, 0.0)
 		return
 	if not fullbody_texture or not fullbody_texture.is_inside_tree():
 		return
@@ -142,7 +142,7 @@ func on_mouse_entered() -> void:
 
 	var audio_mgr := fullbody_texture.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_hover", 0.0, 1.15)
+		audio_mgr.play_sfx(&"ui_hover", 1.15, 0.0)
 
 
 func on_mouse_exited() -> void:
@@ -169,7 +169,7 @@ func on_button_pressed() -> void:
 	if has_live:
 		var audio_live := live_banner_viewport.get_node_or_null("/root/AudioManager")
 		if audio_live and audio_live.has_method("play_sfx"):
-			audio_live.play_sfx(&"ui_click", 0.0, 1.1)
+			audio_live.play_sfx(&"ui_click", 1.1, 0.0)
 		live_banner_viewport.trigger_hover_impulse(1.0)
 		if on_pilot_pressed_callback.is_valid():
 			on_pilot_pressed_callback.call()
@@ -178,7 +178,7 @@ func on_button_pressed() -> void:
 		return
 	var audio_mgr := fullbody_texture.get_node_or_null("/root/AudioManager")
 	if audio_mgr and audio_mgr.has_method("play_sfx"):
-		audio_mgr.play_sfx(&"ui_click", 0.0, 1.1)
+		audio_mgr.play_sfx(&"ui_click", 1.1, 0.0)
 
 	_on_fullbody_resized()
 	var tw := fullbody_texture.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

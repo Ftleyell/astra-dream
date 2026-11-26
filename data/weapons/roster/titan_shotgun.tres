@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_wpn")
 weapon_id = &"titan_shotgun"
-weapon_name = "Escopeta Sísmica 'Ruptura Titán'"
-description = "Devastador abanico de perdigones pesados con empuje violento a corta distancia y morteros sísmicos pasivos de área."
+weapon_name = "Escopeta SÃ­smica 'Ruptura TitÃ¡n'"
+description = "Devastador abanico de perdigones pesados con empuje violento a corta distancia y morteros sÃ­smicos pasivos de Ã¡rea."
 icon = ExtResource("2_ico")
 rarity = 1
 tags = [&"heavy", &"shotgun", &"kinetic"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(0.82, 0.8, 0.84, 1)
 orbital_chassis_color = Color(0.22, 0.1, 0.12, 1)
 orbital_crystal_color = Color(1, 0.22, 0.18, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_shotgun"
+passive_sfx_id = &"weapon_missile"

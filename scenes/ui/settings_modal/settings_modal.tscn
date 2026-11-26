@@ -177,6 +177,17 @@ max_value = 1.0
 step = 0.05
 value = 0.85
 
+[node name="AmbienceLabel" type="Label" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
+layout_mode = 2
+text = "Volumen Ambiente:"
+
+[node name="AmbienceSlider" type="HSlider" parent="Panel/VBoxContainer/TabContainer/Pantalla_Audio/VBox/AudioGrid"]
+custom_minimum_size = Vector2(340, 24)
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.75
+
 [node name="Teclado_Raton" type="MarginContainer" parent="Panel/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2

@@ -7,7 +7,7 @@
 script = ExtResource("1_wpn")
 weapon_id = &"solar_flare"
 weapon_name = "Eruptor Solar Orbital"
-description = "Erupción coronal dirigida que calcina formaciones hostiles a alta temperatura."
+description = "ErupciÃ³n coronal dirigida que calcina formaciones hostiles a alta temperatura."
 icon = ExtResource("2_ico")
 rarity = 2
 tags = [&"solar", &"thermal", &"aoe"]
@@ -32,3 +32,5 @@ orbital_armor_color = Color(1, 0.94, 0.78, 1)
 orbital_chassis_color = Color(0.26, 0.14, 0.08, 1)
 orbital_crystal_color = Color(1, 0.78, 0.14, 1)
 orbital_mesh_id = &"rail_lance"
+fire_sfx_id = &"weapon_void"
+passive_sfx_id = &"weapon_missile"

@@ -11,6 +11,8 @@ const CompanionPetScene: PackedScene = preload("res://scenes/combat/pets/compani
 const PetModalScene: PackedScene = preload("res://scenes/ui/character_select/pet_selection_modal.tscn")
 const GachaWardrobeScript = preload("res://scenes/ui/gacha/components/gacha_wardrobe_controller.gd")
 const GachaTheaterScript = preload("res://scenes/ui/gacha/components/gacha_reveal_theater.gd")
+const HubEastWingScript = preload("res://scenes/ui/hub/astral_station/components/hub_east_wing_controller.gd")
+const HubConfigScript = preload("res://scenes/ui/hub/astral_station/resources/hub_art_lab_config.gd")
 const CosmeticsManager = preload("res://core/systems/cosmetics_manager.gd")
 const PetDataScript = preload("res://data/pets/pet_data.gd")
 
@@ -27,7 +29,8 @@ func _run_tests() -> void:
 	await _test_companion_pet_hybrid_and_hub_mode()
 	await _test_pet_selection_modal_live_bubbles()
 	await _test_gacha_wardrobe_and_reveal_pet_preview()
-	pass_suite("Produccion 3D Bubble Pets verificada: configs .tres, skins shader, CompanionPet hibrido/Hub, CoverFlow y Gacha.")
+	await _test_hub_3d_lounge_pet_bubbles()
+	pass_suite("Produccion 3D Bubble Pets verificada: configs .tres, skins shader, CompanionPet hibrido/Hub, PetBubble3D Hub, CoverFlow y Gacha.")
 
 
 func _test_prod_configs_and_textures() -> void:
@@ -147,4 +150,39 @@ func _test_gacha_wardrobe_and_reveal_pet_preview() -> void:
 
 	card.queue_free()
 	host.queue_free()
+	await get_tree().process_frame
+
+
+func _test_hub_3d_lounge_pet_bubbles() -> void:
+	for pid: StringName in PET_IDS:
+		var b := PetBubble3D.new()
+		add_child(b)
+		b.setup_pet(pid, 0.40)
+		b.apply_skin_by_id("pet_mochi_cyber_neon", 3)
+		var rot0: Vector3 = b.get_sphere_pivot().rotation
+		b.step_animation(0.25)
+		assert_true(not b.get_sphere_pivot().rotation.is_equal_approx(rot0), "Esfera 3D real debe rotar para %s" % String(pid))
+		b.trigger_emote(&"roll_360")
+		assert_true(b.get_active_gesture() == &"roll_360", "PetBubble3D debe soportar gestos planos")
+		b.queue_free()
+
+	var east := HubEastWingScript.new() as HubEastWingScript
+	var cfg := HubConfigScript.new()
+	add_child(east)
+	east.setup(cfg, null, true)
+	await get_tree().process_frame
+
+	var lounge_bubbles: Array[PetBubble3D] = east.get_lounge_pet_bubbles()
+	var sel_pid: StringName = SaveManager.get_selected_pet()
+	for lb: PetBubble3D in lounge_bubbles:
+		assert_true(lb.get_pet_id() != sel_pid, "En embedded_mode la pet equipada no debe duplicarse en el Lounge")
+
+	east.setup(cfg, null, false)
+	east.embedded_mode = false
+	east.refresh_pets(null)
+	await get_tree().process_frame
+	for lb2: PetBubble3D in east.get_lounge_pet_bubbles():
+		assert_true(lb2.get_sphere_pivot() != null, "Cada pet del Lounge 3D debe ser una PetBubble3D")
+
+	east.queue_free()
 	await get_tree().process_frame
