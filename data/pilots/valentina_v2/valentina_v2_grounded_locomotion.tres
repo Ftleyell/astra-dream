@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="PilotGroundedLocomotionConfig" format=3]
+[gd_resource type="Resource" script_class="PilotGroundedLocomotionConfig" format=3 uid="uid://15e4pu8poq43"]
 
-[ext_resource type="Script" path="res://data/pilots/schemas/pilot_grounded_locomotion_config.gd" id="1_cfg"]
+[ext_resource type="Script" uid="uid://dcf4fb6bhu8j2" path="res://data/pilots/schemas/pilot_grounded_locomotion_config.gd" id="1_cfg"]
 
 [resource]
 script = ExtResource("1_cfg")
@@ -18,14 +18,6 @@ thigh_swing_back_rad = 0.17
 knee_pass_bend_rad = 0.28
 arm_shoulder_fwd_rad = 0.14
 arm_shoulder_back_rad = 0.12
-glide_stride_length_m = 12.0
-glide_contact_duty = 0.09
-glide_arc_height_rig_px = 90.0
-glide_stretch_amount = 0.046
-glide_3d_lift_m = 0.6
-glide_trail_knee_sweep_rad = 0.25
-glide_arm_grace_rad = 0.2
-ripple_inner_radius_m = 0.41000000000000003
 standing_families = {
 "e": {
 "ankle_lead_rot": 0.0,

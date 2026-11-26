@@ -79,6 +79,8 @@ func is_transition_active() -> bool:
 func _capture_viewport_snapshot() -> Texture2D:
 	if DisplayServer.get_name() == "headless":
 		return _get_fallback_texture()
+	if get_tree() == null or Engine.get_process_frames() <= 2:
+		return _get_fallback_texture()
 	var vp: Viewport = get_viewport()
 	if vp == null:
 		return _get_fallback_texture()
@@ -166,6 +168,7 @@ func play_custom_transition(on_collapsed_callback: Callable = Callable(), min_ho
 
 	await get_tree().process_frame
 	await get_tree().process_frame
+	await get_tree().process_frame
 
 	# Fase 2: Big Bang
 	_mat.set_shader_parameter("phase", Phase.BIG_BANG)
@@ -191,20 +194,30 @@ func change_scene_threaded(target_scene_path: String) -> void:
 	if _is_running or target_scene_path.is_empty():
 		return
 	await play_custom_transition(func() -> void:
+		if ResourceLoader.has_cached(target_scene_path):
+			var cached_scene: PackedScene = ResourceLoader.load(target_scene_path) as PackedScene
+			if cached_scene != null and get_tree().change_scene_to_packed(cached_scene) == OK:
+				return
 		var req_err: Error = ResourceLoader.load_threaded_request(target_scene_path, "", false, ResourceLoader.CACHE_MODE_REUSE)
 		if req_err != OK:
 			get_tree().change_scene_to_file(target_scene_path)
 			return
+		var timeout_sec: float = maxf(config.threaded_load_timeout_sec, 1.0) if config != null else 4.0
+		var timeout_msec: int = int(timeout_sec * 1000.0)
+		var load_start_msec: int = Time.get_ticks_msec()
 		while is_inside_tree():
 			var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(target_scene_path)
 			if status == ResourceLoader.THREAD_LOAD_LOADED:
 				var packed: PackedScene = ResourceLoader.load_threaded_get(target_scene_path) as PackedScene
-				if packed != null:
-					get_tree().change_scene_to_packed(packed)
-				else:
-					get_tree().change_scene_to_file(target_scene_path)
+				if packed != null and get_tree().change_scene_to_packed(packed) == OK:
+					return
+				get_tree().change_scene_to_file(target_scene_path)
 				return
 			elif status == ResourceLoader.THREAD_LOAD_FAILED or status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+				get_tree().change_scene_to_file(target_scene_path)
+				return
+			if (Time.get_ticks_msec() - load_start_msec) >= timeout_msec:
+				push_warning("SingularityTransitionPresenter: load_threaded timeout (%.2fs) para '%s'; usando fallback síncrono." % [timeout_sec, target_scene_path])
 				get_tree().change_scene_to_file(target_scene_path)
 				return
 			await get_tree().process_frame

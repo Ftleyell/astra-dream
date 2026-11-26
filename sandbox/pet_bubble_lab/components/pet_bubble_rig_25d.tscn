@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://cdia8shtpjsd4"]
+
+[ext_resource type="Script" path="res://sandbox/pet_bubble_lab/components/pet_bubble_rig_25d.gd" id="1_rig"]
+
+[node name="PetBubbleRig25D" type="Node2D" unique_id=204956045]
+script = ExtResource("1_rig")
+
+[node name="BackShell" type="ColorRect" parent="." unique_id=871497544]
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+mouse_filter = 2
+
+[node name="InnerParticles" type="CPUParticles2D" parent="." unique_id=746871897]
+amount = 14
+lifetime = 1.4
+emission_shape = 1
+emission_sphere_radius = 54.0
+gravity = Vector2(0, -10)
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+
+[node name="PetPivot" type="Node2D" parent="." unique_id=468049423]
+
+[node name="PetSprite" type="Sprite2D" parent="PetPivot" unique_id=2102844734]
+
+[node name="FlipGlint" type="ColorRect" parent="." unique_id=1618381058]
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+mouse_filter = 2
+
+[node name="FrontShell" type="ColorRect" parent="." unique_id=140693948]
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+mouse_filter = 2

@@ -90,28 +90,51 @@ static func save_run_state(main_game: Node) -> void:
 	if not state.is_empty():
 		SaveManager.save_active_run(state)
 
+static func _safe_int(data: Dictionary, key: String, default_val: int) -> int:
+	var val: Variant = data.get(key, default_val)
+	if val == null:
+		return default_val
+	return int(val)
+
+
+static func _safe_float(data: Dictionary, key: String, default_val: float) -> float:
+	var val: Variant = data.get(key, default_val)
+	if val == null:
+		return default_val
+	return float(val)
+
+
+static func _safe_bool(data: Dictionary, key: String, default_val: bool) -> bool:
+	var val: Variant = data.get(key, default_val)
+	if val == null:
+		return default_val
+	return bool(val)
+
+
 static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 	# 1. Variables de oleada y progresión global
-	if run_data.has("run_seed"):
-		main_game.set("run_seed", int(run_data["run_seed"]))
-	main_game.set("current_wave", int(run_data.get("current_wave", 1)))
-	main_game.set("wave_timer", float(run_data.get("wave_timer", 30.0)))
+	if run_data.get("run_seed") != null:
+		main_game.set("run_seed", _safe_int(run_data, "run_seed", 0))
+	var restored_wave_default: int = int(main_game.get("current_wave")) if main_game.get("current_wave") != null else 1
+	var current_wave_val: int = _safe_int(run_data, "current_wave", 1)
+	main_game.set("current_wave", current_wave_val)
+	main_game.set("wave_timer", _safe_float(run_data, "wave_timer", 30.0))
 
-	main_game.set("wave_satellites_spawned", int(run_data.get("wave_satellites_spawned", 0)))
-	main_game.set("satellites_collected_total", int(run_data.get("satellites_collected_total", 0)))
-	main_game.set("current_satellite_idx", int(run_data.get("current_satellite_idx", 1)))
-	main_game.set("run_time_elapsed", float(run_data.get("run_time_elapsed", 0.0)))
-	main_game.set("enemies_killed_count", int(run_data.get("enemies_killed_count", 0)))
-	main_game.set("bosses_defeated_count", int(run_data.get("bosses_defeated_count", 0)))
-	main_game.set("prologue_bonus_chosen", bool(run_data.get("prologue_bonus_chosen", true)))
-	main_game.set("_wave_encounter_checked_for_wave", int(run_data.get("_wave_encounter_checked_for_wave", main_game.get("current_wave"))))
-	main_game.set("_wave_encounter_spawned_for_wave", int(run_data.get("_wave_encounter_spawned_for_wave", main_game.get("current_wave"))))
-	var pity_val: Variant = run_data.get("_slot_machine_pity_chance")
-	main_game.set("_slot_machine_pity_chance", float(pity_val) if pity_val != null else 0.25)
+	main_game.set("wave_satellites_spawned", _safe_int(run_data, "wave_satellites_spawned", 0))
+	main_game.set("satellites_collected_total", _safe_int(run_data, "satellites_collected_total", 0))
+	main_game.set("current_satellite_idx", _safe_int(run_data, "current_satellite_idx", 1))
+	main_game.set("run_time_elapsed", _safe_float(run_data, "run_time_elapsed", 0.0))
+	main_game.set("enemies_killed_count", _safe_int(run_data, "enemies_killed_count", 0))
+	main_game.set("bosses_defeated_count", _safe_int(run_data, "bosses_defeated_count", 0))
+	main_game.set("prologue_bonus_chosen", _safe_bool(run_data, "prologue_bonus_chosen", true))
+	var wave_fallback: int = current_wave_val if current_wave_val > 0 else restored_wave_default
+	main_game.set("_wave_encounter_checked_for_wave", _safe_int(run_data, "_wave_encounter_checked_for_wave", wave_fallback))
+	main_game.set("_wave_encounter_spawned_for_wave", _safe_int(run_data, "_wave_encounter_spawned_for_wave", wave_fallback))
+	main_game.set("_slot_machine_pity_chance", _safe_float(run_data, "_slot_machine_pity_chance", 0.25))
 	main_game.set("_wave_encounter_pending", false)
 	if "chest_director" in main_game and main_game.chest_director:
-		if run_data.has("paid_chests_count"):
-			main_game.chest_director.paid_chests_count = int(run_data["paid_chests_count"])
+		if run_data.get("paid_chests_count") != null:
+			main_game.chest_director.paid_chests_count = _safe_int(run_data, "paid_chests_count", 0)
 		var restored_wave: int = int(run_data.get("current_wave", 1))
 		var green_cards: int = 0
 		var p_node = main_game.get("player")
@@ -231,4 +254,3 @@ static func restore_run_state(main_game: Node, run_data: Dictionary) -> void:
 			rmm = main_game.combat_context.run_modifier_manager
 		if rmm and rmm.has_method("restore_active_modifiers"):
 			rmm.restore_active_modifiers(run_data["run_modifiers"])
-

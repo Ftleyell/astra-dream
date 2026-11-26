@@ -1,31 +1,6 @@
-[gd_resource type="Resource" script_class="StelaLogoVfxConfig" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="StelaLogoVfxConfig" format=3 uid="uid://d074goachdth4"]
 
-[ext_resource type="Script" path="res://data/ui/stela_logo_vfx_config.gd" id="1_cfg"]
+[ext_resource type="Script" uid="uid://cka4uj4gxubx6" path="res://data/ui/stela_logo_vfx_config.gd" id="1_cfg"]
 
 [resource]
 script = ExtResource("1_cfg")
-normal_strength = 0.9
-cel_shadow_threshold = 0.16
-cel_spec_threshold = 0.72
-cosmos_light_mix = 0.68
-rim_intensity = 0.85
-gold_specular_intensity = 1.15
-shine_interval_sec = 4.2
-shine_duration_sec = 0.85
-medallion_rotation_speed = 0.06
-medallion_scale = 0.88
-astrolabe_outer_speed = 0.08
-astrolabe_inner_speed = -0.15
-astrolabe_alpha = 0.62
-astrolabe_primary_color = Color(0.58, 0.42, 0.98, 1)
-astrolabe_secondary_color = Color(0.18, 0.9, 1, 1)
-slash_angle_deg = -27.0
-slash_flow_speed = 1.9
-slash_intensity = 1.15
-slash_core_color = Color(1, 0.92, 1, 1)
-slash_mid_color = Color(0.76, 0.22, 1, 1)
-slash_edge_color = Color(0.14, 0.88, 1, 1)
-hover_amplitude_px = 6.0
-hover_freq_hz = 0.42
-reveal_duration_sec = 0.95
-dissolve_duration_sec = 0.55

@@ -55,7 +55,9 @@ func _ready() -> void:
 	assert(main_game.title_session_controller.get_logo_stage() != null, "StelaLogoStage debe estar montado en TitleScreenLayer")
 	var menu_ov: Control = main_game.title_session_controller.get_title_menu()
 	assert(menu_ov != null and menu_ov.find_child("PlayButton", true, false) != null, "TitleMenuOverlay debe exponer PlayButton")
-	assert(main_game.hub_session_controller != null and main_game.hub_session_controller.display_sprite != null and not main_game.hub_session_controller.display_sprite.visible, "Hub 3D debe permanecer oculto hasta pulsar JUGAR")
+	var play_btn: Button = menu_ov.call("get_play_button") as Button
+	assert(play_btn != null and play_btn.has_focus(), "El foco primario inicial en TitleMenuOverlay debe ser siempre PlayButton (JUGAR)")
+	assert(main_game.hub_session_controller != null and (main_game.hub_session_controller.display_sprite == null or not main_game.hub_session_controller.display_sprite.visible), "Hub 3D debe permanecer diferido/oculto hasta pulsar JUGAR")
 	assert(main_game.player != null and not main_game.player.visible, "Player 2D debe permanecer oculto en TITLE_ACTIVE")
 	print("  ✓ Stela Galactica Boot Preloader, PatchNotes y Live TitleScreen sobre Cosmos verificados.")
 	main_game.queue_free()

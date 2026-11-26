@@ -80,9 +80,13 @@ func _test_logo_stage_and_menu() -> void:
 	add_child(menu)
 	await _await_frames(1)
 	menu.set_continue_available(true)
-	assert_true(menu.get_continue_button().visible, "Botón CONTINUAR debe mostrarse si hay run activa")
+	assert_true(menu.get_continue_button().visible, "Botón REANUDAR INCURSIÓN debe mostrarse si hay run activa")
+	assert_true(menu.get_continue_button().text.contains("REANUDAR"), "Botón secundario de continuar debe decir REANUDAR INCURSIÓN")
+	assert_true(menu.get_play_button().get_index() < menu.get_continue_button().get_index(), "JUGAR debe ubicarse siempre arriba de REANUDAR INCURSIÓN")
+	menu.show_menu(false)
+	assert_true(menu.get_play_button().has_focus(), "El foco inicial (Enter) debe ir siempre a JUGAR, incluso si existe una run guardada")
 	menu.set_continue_available(false)
-	assert_true(not menu.get_continue_button().visible, "Botón CONTINUAR debe ocultarse si no hay run")
+	assert_true(not menu.get_continue_button().visible, "Botón REANUDAR INCURSIÓN debe ocultarse si no hay run")
 
 	menu.queue_free()
 	stage.queue_free()
@@ -216,7 +220,8 @@ func _test_production_title_hub_tutorial_and_prologue_guard() -> void:
 
 	assert_true(mg.is_title_or_materializing_active(), "MainGame debe arrancar activo en TitleScreen")
 	assert_true(mg.title_session_controller != null and mg.title_session_controller.is_title_active(), "Debe estar en TITLE_ACTIVE")
-	assert_true(mg.hub_session_controller != null and mg.hub_session_controller.display_sprite != null and not mg.hub_session_controller.display_sprite.visible, "Hub 3D debe permanecer oculto en TITLE_ACTIVE")
+	assert_true(not SceneTransition.is_transitioning, "El arranque a Title Screen no debe disparar SceneTransition/Singularidad")
+	assert_true(mg.hub_session_controller != null and (mg.hub_session_controller.display_sprite == null or not mg.hub_session_controller.display_sprite.visible), "Hub 3D debe diferirse/ocultarse en TITLE_ACTIVE inicial")
 
 	# Acelerar secuencia Title -> Hub para verificación rápida en test
 	var fast_seq := mg.title_session_controller.sequence_config.duplicate(true) as TitleToHubSeqScript

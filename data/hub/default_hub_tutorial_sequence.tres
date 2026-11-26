@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="HubTutorialSequenceConfig" load_steps=13 format=3]
+[gd_resource type="Resource" script_class="HubTutorialSequenceConfig" format=3 uid="uid://ddub3sibulrvk"]
 
-[ext_resource type="Script" path="res://data/hub/hub_tutorial_sequence_config.gd" id="1_seq"]
-[ext_resource type="Script" path="res://data/hub/hub_tutorial_step_data.gd" id="2_step"]
+[ext_resource type="Script" uid="uid://baii1bct5x3om" path="res://data/hub/hub_tutorial_sequence_config.gd" id="1_seq"]
+[ext_resource type="Script" uid="uid://c3ej7k16pxiut" path="res://data/hub/hub_tutorial_step_data.gd" id="2_step"]
 
 [sub_resource type="Resource" id="step_1"]
 script = ExtResource("2_step")
@@ -26,9 +26,6 @@ dialogue_text = "En la Cápsula Central podés cambiar de piloto y revisar su ar
 camera_zoom = 1.55
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(0.95, 0.16, 0.34, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.2
 
 [sub_resource type="Resource" id="step_3"]
@@ -40,9 +37,6 @@ dialogue_text = "Al norte está el Espejo de Skins: acá personalizás la aparie
 camera_zoom = 1.5
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(0.98, 0.36, 0.66, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.16
 
 [sub_resource type="Resource" id="step_4"]
@@ -54,9 +48,6 @@ dialogue_text = "La Consola Táctica controla tu Banlist, Tomos, velocidad del j
 camera_zoom = 1.5
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(1, 0.76, 0.24, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.16
 
 [sub_resource type="Resource" id="step_5"]
@@ -68,9 +59,6 @@ dialogue_text = "En el Ala Este brilla el Invocador Giroscópico: usá tus Ficha
 camera_zoom = 1.38
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(1, 0.14, 0.58, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.2
 
 [sub_resource type="Resource" id="step_6"]
@@ -82,9 +70,6 @@ dialogue_text = "El Tótem de Telemetría registra tus mejores incursiones, punt
 camera_zoom = 1.5
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(0.05, 0.94, 1, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.16
 
 [sub_resource type="Resource" id="step_7"]
@@ -93,12 +78,8 @@ step_id = &"talents_nexus"
 target_id = &"talents_nexus"
 station_badge = "Nexo de Talentos"
 dialogue_text = "Al sur, el Nexo de Talentos te permite invertir Biomasa en mejoras permanentes para fortalecer a tus pilotos."
-camera_zoom = 1.45
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(0.14, 0.92, 1, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.2
 
 [sub_resource type="Resource" id="step_8"]
@@ -110,9 +91,6 @@ dialogue_text = "¡Mi rincón favorito! En el Proyector de Compañía elegís a 
 camera_zoom = 1.5
 focus_offset_2d = Vector2(0, 120)
 highlight_color = Color(0.24, 0.96, 0.72, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.16
 
 [sub_resource type="Resource" id="step_9"]
@@ -124,9 +102,6 @@ dialogue_text = "En el Ala Oeste descansan las Reliquias de los colosos derrotad
 camera_zoom = 1.28
 focus_offset_2d = Vector2(0, 115)
 highlight_color = Color(0.75, 0.05, 1, 1)
-pulse_speed_hz = 2.6
-pulse_intensity = 1.25
-spotlight_enabled = true
 spotlight_radius = 0.25
 
 [sub_resource type="Resource" id="step_10"]
@@ -145,12 +120,4 @@ spotlight_radius = 0.28
 
 [resource]
 script = ExtResource("1_seq")
-typewriter_chars_per_sec = 48.0
-dialogue_panel_offset_y_px = 115.0
-dialogic_portrait_camera_offset_px = Vector2(150, 25)
-spotlight_blur_strength = 2.4
-spotlight_dim_strength = 0.56
-spotlight_softness = 0.16
-spotlight_dim_color = Color(0.035, 0.045, 0.11, 1)
-spotlight_focus_lift_y_px = -24.0
 steps = Array[ExtResource("2_step")]([SubResource("step_1"), SubResource("step_2"), SubResource("step_3"), SubResource("step_4"), SubResource("step_5"), SubResource("step_6"), SubResource("step_7"), SubResource("step_8"), SubResource("step_9"), SubResource("step_10")])

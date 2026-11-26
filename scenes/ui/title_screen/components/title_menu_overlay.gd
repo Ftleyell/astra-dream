@@ -58,20 +58,20 @@ func _build_ui() -> void:
 	_menu_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	center_holder.add_child(_menu_vbox)
 
-	_btn_continue = _make_menu_button("ContinueButton", "CONTINUAR", true)
-	_btn_continue.visible = _show_continue
-	_btn_continue.pressed.connect(func() -> void:
-		_play_ui_sfx("ui_click")
-		continue_requested.emit()
-	)
-	_menu_vbox.add_child(_btn_continue)
-
 	_btn_play = _make_menu_button("PlayButton", "JUGAR", true)
 	_btn_play.pressed.connect(func() -> void:
 		_play_ui_sfx("ui_click")
 		play_requested.emit()
 	)
 	_menu_vbox.add_child(_btn_play)
+
+	_btn_continue = _make_menu_button("ContinueButton", "REANUDAR INCURSIÓN", false)
+	_btn_continue.visible = _show_continue
+	_btn_continue.pressed.connect(func() -> void:
+		_play_ui_sfx("ui_click")
+		continue_requested.emit()
+	)
+	_menu_vbox.add_child(_btn_continue)
 
 	_btn_settings = _make_menu_button("SettingsButton", "AJUSTES", false)
 	_btn_settings.pressed.connect(func() -> void:
@@ -180,10 +180,9 @@ func set_continue_available(available: bool) -> void:
 func _wire_focus_chain() -> void:
 	if _btn_play == null:
 		return
-	var ordered: Array[Button] = []
+	var ordered: Array[Button] = [_btn_play]
 	if _btn_continue != null and _btn_continue.visible:
 		ordered.append(_btn_continue)
-	ordered.append(_btn_play)
 	if _btn_settings != null:
 		ordered.append(_btn_settings)
 	if _btn_quit != null:
@@ -198,27 +197,39 @@ func _wire_focus_chain() -> void:
 
 
 func focus_primary_button() -> void:
-	if _btn_continue != null and _btn_continue.visible:
-		_btn_continue.grab_focus()
-	elif _btn_play != null:
+	if _btn_play != null and not _btn_play.disabled:
 		_btn_play.grab_focus()
+
+
+func _set_buttons_interactive(enabled: bool) -> void:
+	var mode: Control.FocusMode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	for b: Button in [_btn_play, _btn_continue, _btn_settings, _btn_quit]:
+		if b == null:
+			continue
+		if not enabled and b.has_focus():
+			b.release_focus()
+		b.disabled = not enabled
+		b.focus_mode = mode
+	if _btn_notes != null:
+		_btn_notes.disabled = not enabled
 
 
 func show_menu(animated: bool = true) -> void:
 	visible = true
+	_set_buttons_interactive(true)
+	focus_primary_button()
 	if _active_tween != null and _active_tween.is_valid():
 		_active_tween.kill()
 	if not animated:
 		modulate.a = 1.0
-		focus_primary_button()
 		return
 	modulate.a = 0.0
 	_active_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_active_tween.tween_property(self, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_active_tween.tween_callback(focus_primary_button)
 
 
 func hide_menu(animated: bool = true) -> void:
+	_set_buttons_interactive(false)
 	if _active_tween != null and _active_tween.is_valid():
 		_active_tween.kill()
 	if not animated:

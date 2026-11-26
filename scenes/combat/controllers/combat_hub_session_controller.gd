@@ -144,7 +144,7 @@ func push_position_outside_hub_exclusion(world_pos: Vector2, fallback_dir: Vecto
 	return hub_origin_2d + Vector2(out_dir_m.x * target_r_m * _px_per_m_x, out_dir_m.y * target_r_m * _px_per_m_z)
 
 
-func _setup_embedded_hub_stack(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> bool:
+func _apply_title_or_hub_suppression(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> bool:
 	main_game = p_main_game
 	if main_game == null:
 		return false
@@ -179,6 +179,14 @@ func _setup_embedded_hub_stack(p_main_game: MainGame, p_initial_request: RunLaun
 		main_game.loot_coordinator.set_hub_suppressed(true)
 	if is_instance_valid(main_game.hud):
 		main_game.hud.visible = false
+	return true
+
+
+func _build_embedded_hub_nodes() -> bool:
+	if main_game == null:
+		return false
+	if hub_stage != null and is_instance_valid(hub_stage) and bridge != null and is_instance_valid(bridge):
+		return true
 
 	var cosmos_root: CosmosRootNode = _resolve_cosmos_root()
 	var player_rig_v2: Node = main_game.player.get_rig_v2_controller() if is_instance_valid(main_game.player) else null
@@ -269,7 +277,9 @@ func _setup_embedded_hub_stack(p_main_game: MainGame, p_initial_request: RunLaun
 
 
 func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> void:
-	if not _setup_embedded_hub_stack(p_main_game, p_initial_request):
+	if not _apply_title_or_hub_suppression(p_main_game, p_initial_request):
+		return
+	if not _build_embedded_hub_nodes():
 		return
 	state = SessionState.HUB_ACTIVE
 	hub_stage.set_embedded_input_suppressed(false)
@@ -287,18 +297,33 @@ func enter_hub_mode(p_main_game: MainGame, p_initial_request: RunLaunchRequestSc
 
 
 func prepare_hidden_for_title(p_main_game: MainGame, p_initial_request: RunLaunchRequestScript) -> void:
-	if not _setup_embedded_hub_stack(p_main_game, p_initial_request):
+	if not _apply_title_or_hub_suppression(p_main_game, p_initial_request):
 		return
 	state = SessionState.TITLE_STANDBY
-	if display_sprite != null:
-		display_sprite.visible = false
-	if hub_stage != null:
-		hub_stage.set_embedded_hidden_for_materialization()
-		hub_stage.set_embedded_input_suppressed(true)
 	if is_instance_valid(main_game.player):
 		main_game.player.visible = false
 		main_game.player.is_movement_suppressed = true
 		main_game.player.velocity = Vector2.ZERO
+
+
+func ensure_embedded_hub_built_hidden() -> bool:
+	if main_game == null:
+		return false
+	var already_built: bool = (hub_stage != null and is_instance_valid(hub_stage) and bridge != null and is_instance_valid(bridge))
+	if not already_built:
+		if not _build_embedded_hub_nodes():
+			return false
+		if state == SessionState.TITLE_STANDBY:
+			if display_sprite != null:
+				display_sprite.visible = false
+			if hub_stage != null:
+				hub_stage.set_embedded_hidden_for_materialization()
+				hub_stage.set_embedded_input_suppressed(true)
+			if is_instance_valid(main_game.player):
+				main_game.player.visible = false
+				main_game.player.is_movement_suppressed = true
+				main_game.player.velocity = Vector2.ZERO
+	return true
 
 
 func activate_hub_from_title(allow_auto_tutorial: bool = true) -> void:

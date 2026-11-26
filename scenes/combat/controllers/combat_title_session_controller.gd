@@ -40,6 +40,8 @@ var title_menu: TitleMenuOverlayScript = null
 var _settings_layer: CanvasLayer = null
 var _settings_modal: SettingsModal = null
 var _patch_notes_layer: CanvasLayer = null
+var _entry_fade_rect: ColorRect = null
+var _entry_fade_tween: Tween = null
 var _lighting_sample: CosmicLightingSampleScript = CosmicLightingSampleScript.new()
 var _title_cam_anchor: Vector2 = Vector2(960.0, 540.0)
 var _time_acc: float = 0.0
@@ -98,6 +100,14 @@ func _ensure_title_ui() -> void:
 	title_menu.set_continue_available(SaveManagerScript.has_active_run())
 	title_layer.add_child(title_menu)
 
+	_entry_fade_rect = ColorRect.new()
+	_entry_fade_rect.name = "EntryFadeBackdrop"
+	_entry_fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_entry_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_entry_fade_rect.color = Color(0.015, 0.018, 0.045, 1.0)
+	_entry_fade_rect.visible = false
+	title_layer.add_child(_entry_fade_rect)
+
 	title_menu.continue_requested.connect(_on_continue_requested)
 	title_menu.play_requested.connect(play_title_to_hub_sequence)
 	title_menu.settings_requested.connect(_open_settings_modal)
@@ -126,16 +136,37 @@ func enter_title_mode(play_reveal: bool = true) -> void:
 		main_game.camera.zoom = Vector2(zoom_v, zoom_v)
 
 	title_layer.visible = true
+	if _entry_fade_tween != null and _entry_fade_tween.is_valid():
+		_entry_fade_tween.kill()
+		_entry_fade_tween = null
 	if play_reveal:
+		if _entry_fade_rect != null:
+			_entry_fade_rect.visible = true
+			_entry_fade_rect.modulate.a = 1.0
+			_entry_fade_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+			_entry_fade_tween.tween_property(_entry_fade_rect, "modulate:a", 0.0, 0.50).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			_entry_fade_tween.tween_callback(func() -> void:
+				if _entry_fade_rect != null:
+					_entry_fade_rect.visible = false
+			)
+		if logo_stage != null and not logo_stage.entrance_completed.is_connected(_prewarm_hub_if_in_title):
+			logo_stage.entrance_completed.connect(_prewarm_hub_if_in_title, CONNECT_ONE_SHOT)
 		logo_stage.play_entrance()
 		title_menu.show_menu(true)
 	else:
+		if _entry_fade_rect != null:
+			_entry_fade_rect.visible = false
 		logo_stage.reset_visible()
 		title_menu.show_menu(false)
 
 	var audio_mgr: Node = get_node_or_null("/root/AudioManager")
 	if audio_mgr != null and audio_mgr.has_method("play_music"):
 		audio_mgr.play_music("menu")
+
+
+func _prewarm_hub_if_in_title() -> void:
+	if state == TitleState.TITLE_ACTIVE and hub_ctrl != null:
+		hub_ctrl.ensure_embedded_hub_built_hidden()
 
 
 func enter_title_mode_from_hub() -> void:
@@ -147,6 +178,8 @@ func enter_title_mode_from_hub() -> void:
 
 func play_title_to_hub_sequence() -> void:
 	if state != TitleState.TITLE_ACTIVE or main_game == null or hub_ctrl == null:
+		return
+	if not hub_ctrl.ensure_embedded_hub_built_hidden():
 		return
 	var bridge: ViewportBridgeScript = hub_ctrl.get_viewport_bridge()
 	var hub_stage: AstralStationHub = hub_ctrl.get_hub_stage()
@@ -402,6 +435,10 @@ func _kill_active_tween() -> void:
 
 func cleanup_for_combat() -> void:
 	_kill_active_tween()
+	if _entry_fade_tween != null and _entry_fade_tween.is_valid():
+		_entry_fade_tween.kill()
+	_entry_fade_tween = null
+	_entry_fade_rect = null
 	state = TitleState.INACTIVE
 	if title_layer != null and is_instance_valid(title_layer):
 		title_layer.queue_free()

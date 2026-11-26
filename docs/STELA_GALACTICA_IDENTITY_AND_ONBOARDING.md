@@ -10,21 +10,20 @@ La pantalla de título, la materialización de la Estación Astral y el combate 
 
 ```text
 project.godot (main_scene)
-  └─> title_screen.tscn (Boot Preloader liviano)
-        └─> SceneTransition [Singularidad + load_threaded_request]
-              └─> MainGame (EntryMode.TITLE)
-                    ├─ TITLE_ACTIVE ──(JUGAR)──> HUB_MATERIALIZING ──> HUB_ACTIVE
-                    │      ▲                                                │
-                    │      └──────────(Botón "Título" / Seamless)──────────┤
-                    │                                                       ▼
-                    └──(CONTINUAR)──> SceneTransition [Singularidad] ─> COMBAT_LIVE
+  └─> title_screen.tscn (Boot Preloader silencioso sin Singularidad, threaded load)
+        └─> MainGame (EntryMode.TITLE · fade-in continuo desde vacío cósmico)
+              ├─ TITLE_ACTIVE ──(JUGAR / Enter)──> HUB_MATERIALIZING ──> HUB_ACTIVE
+              │      ▲   └─(Pre-calentado diferido Hub 3D tras reveal)       │
+              │      └────────────────(Botón "Título" / Seamless)───────────┤
+              │                                                               ▼
+              └─(REANUDAR INCURSIÓN)──> SceneTransition [Singularidad] ─> COMBAT_LIVE
                                                                    (Despegue Zero-Rail)
 ```
 
 | Estado / Modo | Responsable | Qué hace |
 |---|---|---|
-| **Boot Preloader** | [`title_screen.gd`](../scenes/ui/title_screen/title_screen.gd) | Dispara de inmediato `RunLaunchRequest.transition_to_title()` con carga threaded durante la Singularidad. |
-| **`TITLE_ACTIVE`** | [`combat_title_session_controller.gd`](../scenes/combat/controllers/combat_title_session_controller.gd) | Deriva orbital suave sobre el Cosmos vivo, ilumina el logo con `CosmicLightingSampler` y muestra `TitleMenuOverlay` (`CONTINUAR`, `JUGAR`, `AJUSTES`, `Notas del Parche`, `SALIR`). |
+| **Boot Preloader** | [`title_screen.gd`](../scenes/ui/title_screen/title_screen.gd) | Carga `MainGame (EntryMode.TITLE)` en segundo plano con `ResourceLoader.load_threaded_request` **sin Singularidad**, evitando resets falsos ni cuelgues al abrir el juego. |
+| **`TITLE_ACTIVE`** | [`combat_title_session_controller.gd`](../scenes/combat/controllers/combat_title_session_controller.gd) | Fade-in continuo sobre el Cosmos vivo, ilumina el logo con `CosmicLightingSampler`, pre-calienta de forma diferida el Hub 3D al finalizar el reveal del logo y muestra `TitleMenuOverlay` (`JUGAR` siempre primero y con foco inicial para `[Enter]`, `REANUDAR INCURSIÓN` debajo si hay partida guardada, `AJUSTES`, `Notas del Parche`, `SALIR`). |
 | **`HUB_MATERIALIZING`** | `CombatTitleSessionController` + `AstralStationHub` | Disuelve el logo, desliza la cámara, materializa el Hub 3D del centro hacia afuera (`demat_invert = true`) y hace aterrizar a Valentina con Alas 3D y `HubLandingRippleVFX`. |
 | **`HUB_ACTIVE`** | [`combat_hub_session_controller.gd`](../scenes/combat/controllers/combat_hub_session_controller.gd) | Libre recorrido sobre el Hub 3D, estaciones/modales y `HubTutorialDirector` (primera visita o `? Guía` / `[F1]`). |
 | **`DEPARTING_DISSOLVE` → `COMBAT_LIVE`** | `CombatHubSessionController` | Despegue radial 8-dir sin pausa ni diálogo de prólogo; `CombatBootstrapper` otorga `+50` créditos iniciales de forma silenciosa en entradas directas. |
@@ -51,7 +50,7 @@ project.godot (main_scene)
   1. `Big Crunch`: contracción gravitacional del snapshot de pantalla hacia un punto blanco incandescente.
   2. `Singularity Hold`: punto vivo absorbiendo partículas radiales mientras corre `ResourceLoader.load_threaded_request()`.
   3. `Big Bang`: onda expansiva refractiva que revela la escena destino.
-- **Cuándo se usa:** únicamente al cambiar/recargar escena (arranque en Boot Preloader, retorno al Hub o Título desde Combate/Pausa/Game Over y botón `CONTINUAR`). El paso `Título ↔ Hub` y `Hub → Combate` ocurre en vivo sobre el mismo Cosmos sin pantalla de carga.
+- **Cuándo se usa:** únicamente al cambiar/recargar escena por reset real de universo (retorno al Hub o Título desde Combate/Pausa/Game Over y botón `REANUDAR INCURSIÓN`). El arranque frío desde `title_screen.tscn` y el paso `Título ↔ Hub ↔ Combate` ocurren de forma continua sin Singularidad ni pantalla de carga.
 - **Balance Data-Driven:** [`default_singularity_transition_config.tres`](../data/ui/default_singularity_transition_config.tres) y [`default_title_to_hub_sequence_config.tres`](../data/ui/default_title_to_hub_sequence_config.tres).
 
 ---

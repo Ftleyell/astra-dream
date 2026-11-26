@@ -8,6 +8,7 @@ extends Resource
 @export var crunch_duration_sec: float = 0.42
 @export var min_singularity_hold_sec: float = 0.35
 @export var big_bang_duration_sec: float = 0.62
+@export var threaded_load_timeout_sec: float = 4.0
 
 @export_group("Gravitational Collapse & Shockwave")
 @export var swirl_strength: float = 2.4
