@@ -35,6 +35,9 @@ var _burst_combo_step: int = 0
 
 var _tour_active: bool = false
 var _tour_steps: Array[Dictionary] = []
+var _tour_loader: Callable = Callable()
+var _tour_current_stream: AudioStream = null
+var _tour_current_layer2: AudioStream = null
 var _tour_idx: int = 0
 var _tour_rep: int = 0
 var _tour_timer: float = 0.0
@@ -57,6 +60,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	var safe_delta: float = minf(delta, 0.05)
 	if _primary_player != null:
 		if _primary_player.playing and _primary_duration > 0.0:
 			var ratio: float = clampf(_primary_player.get_playback_position() / _primary_duration, 0.0, 1.0)
@@ -67,13 +71,13 @@ func _process(delta: float) -> void:
 
 	if _burst_active and not _burst_streams.is_empty():
 		var interval: float = 1.0 / maxf(0.25, _burst_rate_hz)
-		_burst_accum += delta
+		_burst_accum += safe_delta
 		if _burst_accum >= interval:
 			_burst_accum -= interval
 			_fire_burst_step()
 
 	if _tour_active:
-		_process_tour(delta)
+		_process_tour(safe_delta)
 
 
 func is_burst_active() -> bool:
@@ -169,23 +173,30 @@ func is_tour_active() -> bool:
 	return _tour_active
 
 
-func start_tour(steps: Array[Dictionary]) -> void:
+func start_tour(steps: Array[Dictionary], stream_loader: Callable = Callable()) -> void:
 	stop_burst()
+	stop_sfx_voices()
 	_tour_steps = steps.duplicate()
+	_tour_loader = stream_loader
 	if _tour_steps.is_empty():
 		_tour_active = false
 		return
 	_tour_idx = 0
 	_tour_rep = 0
-	_tour_timer = 0.0
+	_tour_current_stream = null
+	_tour_current_layer2 = null
+	_tour_timer = 0.05
 	_tour_active = true
-	_fire_tour_step()
 
 
 func stop_tour() -> void:
 	if _tour_active:
 		_tour_active = false
 		_tour_steps.clear()
+		_tour_loader = Callable()
+		_tour_current_stream = null
+		_tour_current_layer2 = null
+		stop_sfx_voices()
 		tour_finished.emit()
 
 
@@ -203,8 +214,6 @@ func _fire_tour_step() -> void:
 		return
 	var step: Dictionary = _tour_steps[_tour_idx]
 	var slot_key: String = str(step.get("slot_key", ""))
-	var stream: AudioStream = step.get("stream", null) as AudioStream
-	var layer2: AudioStream = step.get("layer2", null) as AudioStream
 	var pitch: float = float(step.get("pitch", 1.0))
 	var vol_db: float = float(step.get("volume_db", 0.0))
 	var reps: int = maxi(1, int(step.get("repeat_count", 1)))
@@ -214,20 +223,34 @@ func _fire_tour_step() -> void:
 	if _tour_rep == 0:
 		stop_sfx_voices()
 		tour_step_changed.emit(slot_key, _tour_idx + 1, _tour_steps.size())
+		_tour_current_stream = step.get("stream", null) as AudioStream
+		_tour_current_layer2 = step.get("layer2", null) as AudioStream
+		if _tour_current_stream == null and _tour_loader.is_valid():
+			var loaded_v: Variant = _tour_loader.call(step)
+			if loaded_v is Dictionary:
+				var loaded: Dictionary = loaded_v as Dictionary
+				_tour_current_stream = loaded.get("stream", null) as AudioStream
+				if _tour_current_layer2 == null:
+					_tour_current_layer2 = loaded.get("layer2", null) as AudioStream
+		if _tour_current_stream == null:
+			_tour_current_stream = step.get("fallback_stream", null) as AudioStream
 
-	if stream != null:
+	if _tour_current_stream != null:
 		var p_use: float = pitch
 		if use_combo:
 			p_use = pitch * EXP_COMBO_STEPS[_tour_rep % EXP_COMBO_STEPS.size()]
-		play_stream_once(stream, p_use, vol_db, true, false)
-		if layer2 != null and _tour_rep == 0:
-			play_stream_once(layer2, pitch, vol_db - 3.0, false, false)
+		play_stream_once(_tour_current_stream, p_use, vol_db, true, false)
+		if _tour_current_layer2 != null and _tour_rep == 0:
+			play_stream_once(_tour_current_layer2, pitch, vol_db - 3.0, false, false)
 
 	_tour_rep += 1
 	if _tour_rep >= reps:
+		var clip_len: float = _tour_current_stream.get_length() if _tour_current_stream != null else 0.4
 		_tour_idx += 1
 		_tour_rep = 0
-		_tour_timer = gap + 0.25
+		_tour_current_stream = null
+		_tour_current_layer2 = null
+		_tour_timer = clampf(clip_len, 0.35, 1.25) + gap
 	else:
 		_tour_timer = 0.14 if use_combo else 0.18
 

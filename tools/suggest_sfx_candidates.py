@@ -123,6 +123,8 @@ def scan_audio_files(root_dirs: list[Path], max_files: int = 12000) -> list[dict
         for cur_root, dirnames, filenames in os.walk(root_dir):
             dirnames[:] = [d for d in sorted(dirnames) if d not in IGNORED_DIRS and not d.startswith(".")]
             for fname in sorted(filenames):
+                if fname.startswith("._"):
+                    continue
                 p = Path(cur_root) / fname
                 if p.suffix.lower() not in SUPPORTED_EXTS:
                     continue

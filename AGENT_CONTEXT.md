@@ -34,7 +34,8 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Cosméticos y Skins** | `core/systems/cosmetics_manager.gd` | `cosmetic_carousel_modal.gd`, `cosmetic_carousel_layout_builder.gd`, `shader_skin_live_preview.gd`, `shader_skin_swatch.gd` |
 | **Pilotos & Rig Valentina v2 (Prod.)** | `scenes/pilots/rig/planar_combat_rig.gd` | `scenes/pilots/{rig,shaders,vfx,weapons,banner}/`, `data/pilots/`, `assets/pilots/` (*Single Source of Truth*) |
 | **Estudio Arte & Rigs Pilotos (I+D)** | `sandbox/pilot_rig_lab/proto/planar_combat_rig_proto.tscn` | Labs interactivos (`proto/`, `face_lab/`, `vfx_lab/` + `valentina_skill_ult_studio.tscn`, `guns_lab/`, `3d_lab/`, `banner_lab/`, `dialogue_lab/`) consumiendo producción; docs `VALENTINA_V2_*.md` |
-| **Workbenches & Combat Gym (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn` | `sandbox/workbenches/{hud_workbench,dialogue_workbench,character_select_workbench,skill_ult_workbench,stela_intro_lab,shared}/`, `sandbox/hub_art_lab/` y `sandbox/combat_gym/combat_gym.tscn` consumiendo escenas reales de producción |
+| **Workbenches & Combat Gym (Sandbox)** | `sandbox/workbenches/workbench_hub.tscn` | `sandbox/workbenches/{sfx_lab,hud_workbench,dialogue_workbench,character_select_workbench,skill_ult_workbench,stela_intro_lab,shared}/`, `sandbox/hub_art_lab/` y `sandbox/combat_gym/combat_gym.tscn` consumiendo escenas reales de producción |
+| **Audio, SFX v2 & SfxLab** | `core/autoloads/audio_manager.gd` + `data/audio/default_sfx_cue_bank.tres` | `core/audio/{sfx_cue_data,sfx_cue_bank,sfx_density_tracker,audio_mix_director,ambience_crossfade_controller}.gd`, 7 buses (`default_bus_layout.tres`), 7 familias en `data/weapons/**/*.tres`, `tools/normalize_sfx.py`, lab [`SfxLab`](sandbox/workbenches/sfx_lab/sfx_lab.tscn) + librería en `sandbox/workbenches/sfx_lab/packs/` *(doc: [`docs/SFX_AUDIO_AND_LAB_GUIDE.md`](docs/SFX_AUDIO_AND_LAB_GUIDE.md), regla: [`.agents/rules/audio_sfx.md`](.agents/rules/audio_sfx.md))* |
 | **Persistencia y Guardado** | `core/autoloads/save_manager.gd` | Fachada estática -> `core/systems/persistence/` (`schemas/`, `meta_progression_state.gd`, `active_run_storage.gd`) |
 | **Pausa del Juego** | `core/autoloads/pause_arbitrator.gd` | Tokens concurrentes (`PauseArbitrator.acquire_pause(...)`) |
 
@@ -78,6 +79,7 @@ sandbox/pilot_rig_lab/tools/models/    <- Pesos ONNX / modelos locales
 sandbox/pilot_rig_lab/source_refs/     <- Arte crudo IA y workspaces offline (685+ archivos)
 assets/pilots/<pilot_id>/planar/       <- Asset packs PNG/JSON compilados en producción
 sandbox/pilot_rig_lab/backups/         <- Snapshot inmutable de baseline calibrado
+sandbox/workbenches/sfx_lab/packs/     <- Librería fuente de 699 OGGs (con .gdignore)
 ```
 
 ---
@@ -134,6 +136,8 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Skins 100% por Shaders (Fase 4)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_shader_skins_system"` |
 | **Combate In-Game Valentina v2 (Fase 5)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_player_valentina_v2_combat"` |
 | **Workbenches & Combat Gym (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"` |
+| **AudioManager v2 (Cues, Buses, Ambience)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_audio_manager_v2"` |
+| **SfxLab Workbench & Presets** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_sfx_lab" -TimeoutSeconds 35` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 
 ---

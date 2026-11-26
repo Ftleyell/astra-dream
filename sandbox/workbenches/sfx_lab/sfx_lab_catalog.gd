@@ -3,6 +3,9 @@ extends RefCounted
 ## Catálogo de slots SFX de Stela Galactica y persistencia del manifiesto de curación.
 
 const DEFAULT_MANIFEST_PATH: String = "user://sfx_lab_curation.json"
+const CURATED_PRESETS_PATH: String = "res://sandbox/workbenches/sfx_lab/curated_presets.json"
+const BUNDLED_PACKS_DIR: String = "res://sandbox/workbenches/sfx_lab/packs"
+const DEFAULT_CUSTOM_PRESETS_PATH: String = "user://sfx_lab_custom_presets.json"
 const ESSENTIAL_KEYS: Array[String] = [
 	"weapon_laser", "weapon_railgun", "weapon_blade", "weapon_shotgun", "weapon_missile",
 	"explosion", "bomb", "player_hit", "dash", "exp", "ui_click", "hub_footstep",
@@ -519,3 +522,93 @@ static func load_manifest(path: String = DEFAULT_MANIFEST_PATH) -> Dictionary:
 			dst["trim_silence"] = bool(src.get("trim_silence", dst.get("trim_silence", true)))
 			dst["mono"] = bool(src.get("mono", dst.get("mono", true)))
 	return base
+
+
+static func load_curated_presets(path: String = CURATED_PRESETS_PATH) -> Dictionary:
+	return _load_presets_dict(path)
+
+
+static func load_custom_presets(path: String = DEFAULT_CUSTOM_PRESETS_PATH) -> Dictionary:
+	return _load_presets_dict(path)
+
+
+static func _load_presets_dict(path: String) -> Dictionary:
+	if path.is_empty() or not FileAccess.file_exists(path):
+		return {}
+	var raw_text: String = FileAccess.get_file_as_string(path)
+	if raw_text.is_empty():
+		return {}
+	var parsed: Variant = JSON.parse_string(raw_text)
+	if not (parsed is Dictionary):
+		return {}
+	var root: Dictionary = parsed as Dictionary
+	var raw_presets: Variant = root.get("presets", {})
+	if raw_presets is Dictionary:
+		return raw_presets as Dictionary
+	return {}
+
+
+static func save_custom_preset(
+	preset_id: String,
+	label: String,
+	desc: String,
+	manifest_slots: Dictionary,
+	path: String = DEFAULT_CUSTOM_PRESETS_PATH
+) -> Error:
+	var existing: Dictionary = load_custom_presets(path)
+	var clean_slots: Dictionary = {}
+	for key_v: Variant in manifest_slots.keys():
+		var key: String = str(key_v)
+		var st_v: Variant = manifest_slots[key_v]
+		if st_v is Dictionary:
+			clean_slots[key] = (st_v as Dictionary).duplicate(true)
+	existing[preset_id] = {
+		"id": preset_id,
+		"label": label,
+		"desc": desc,
+		"slots": clean_slots,
+	}
+	var dir_path: String = path.get_base_dir()
+	if not dir_path.is_empty():
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir_path))
+	var f: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return FileAccess.get_open_error()
+	f.store_string(JSON.stringify({"version": 1, "presets": existing}, "\t"))
+	f.close()
+	return OK
+
+
+static func _resolve_file_with_ext_fallback(abs_or_res_path: String) -> String:
+	if abs_or_res_path.is_empty():
+		return ""
+	if FileAccess.file_exists(abs_or_res_path):
+		return abs_or_res_path
+	var ext: String = abs_or_res_path.get_extension().to_lower()
+	if ext == "wav":
+		var ogg_cand: String = abs_or_res_path.get_basename() + ".ogg"
+		if FileAccess.file_exists(ogg_cand):
+			return ogg_cand
+	elif ext == "ogg":
+		var wav_cand: String = abs_or_res_path.get_basename() + ".wav"
+		if FileAccess.file_exists(wav_cand):
+			return wav_cand
+	return ""
+
+
+static func resolve_preset_path(rel_or_abs: String, pack_dirs: Array[String]) -> String:
+	var clean: String = rel_or_abs.strip_edges().replace("\\", "/")
+	if clean.is_empty():
+		return ""
+	var direct_hit: String = _resolve_file_with_ext_fallback(clean)
+	if not direct_hit.is_empty():
+		return direct_hit
+	for d: String in pack_dirs:
+		var base_dir: String = d.strip_edges().replace("\\", "/")
+		var cand: String = _resolve_file_with_ext_fallback(base_dir.path_join(clean))
+		if not cand.is_empty():
+			return cand
+		var parent_cand: String = _resolve_file_with_ext_fallback(base_dir.get_base_dir().path_join(clean))
+		if not parent_cand.is_empty():
+			return parent_cand
+	return ""

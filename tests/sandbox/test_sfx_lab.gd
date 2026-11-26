@@ -38,13 +38,15 @@ func _run_tests() -> void:
 
 	var laser_wav: String = pack_dir.path_join("Shapeforms/laser_burst_01.wav")
 	var ui_wav: String = pack_dir.path_join("KenneyUI/ui_click_soft.wav")
+	var hd24_wav: String = pack_dir.path_join("Sonniss_Curated/beam_24bit_96k.wav")
 	_write_test_wav(laser_wav, 44100, 45.0, 90.0, 440.0)
 	_write_test_wav(ui_wav, 44100, 0.0, 70.0, 880.0)
+	_write_test_wav_24bit(hd24_wav, 96000, true, 120.0, 520.0)
 
 	await _test_catalog_and_manifest(manifest_path, laser_wav)
-	await _test_scanner_and_silence_detection(pack_dir, laser_wav, ui_wav)
+	await _test_scanner_and_silence_detection(pack_dir, laser_wav, ui_wav, hd24_wav)
 	await _test_exporter_ffmpeg_pipeline(laser_wav, ui_wav, out_dir, backup_dir)
-	await _test_sfx_lab_ui(pack_dir, manifest_path, out_dir, backup_dir)
+	await _test_sfx_lab_ui(pack_dir, manifest_path, out_dir, backup_dir, hd24_wav)
 
 	pass_suite("SfxLab, Scanner, Catalog y Normalizador FFmpeg verificados sin mutar producción")
 
@@ -79,15 +81,47 @@ func _test_catalog_and_manifest(manifest_path: String, sample_wav: String) -> vo
 	var loaded_laser: Dictionary = loaded_slots.get("laser", {}) as Dictionary
 	assert_true(is_equal_approx(float(loaded_laser.get("gain_db", 0.0)), -2.5), "load_manifest debe restaurar gain_db")
 	assert_true((loaded_laser.get("candidates", []) as Array).size() == 1, "load_manifest debe restaurar candidatos")
+
+	var curated: Dictionary = CatalogScript.load_curated_presets()
+	assert_true(curated.size() == 5, "curated_presets.json debe contener los 5 presets curados (actual: %d)" % curated.size())
+	for pid: String in ["stela_signature", "anime_sakuga", "cyberpunk_tactico", "cosmos_cinematico", "zen_antifatiga"]:
+		assert_true(curated.has(pid), "Debe existir preset curado '%s'" % pid)
+		var p_slots: Dictionary = (curated[pid] as Dictionary).get("slots", {}) as Dictionary
+		assert_true(p_slots.size() == 32, "Preset '%s' debe definir los 32 slots" % pid)
+	var resolved_sample: String = CatalogScript.resolve_preset_path("Shapeforms/laser_burst_01.wav", [_tmp_root_abs.path_join("packs")])
+	assert_true(resolved_sample == sample_wav, "resolve_preset_path debe resolver rutas relativas desde pack_dirs")
+
+	# Verificar fallback .wav -> .ogg sobre packs OGG empaquetados en el repo
+	var ogg_dir: String = _tmp_root_abs.path_join("packs_ogg")
+	var ogg_sample: String = ogg_dir.path_join("Shapeforms/laser_ogg_only.ogg")
+	DirAccess.make_dir_recursive_absolute(ogg_sample.get_base_dir())
+	var f_ogg: FileAccess = FileAccess.open(ogg_sample, FileAccess.WRITE)
+	if f_ogg != null:
+		f_ogg.store_string("OGG_STUB")
+		f_ogg.close()
+	var resolved_ogg: String = CatalogScript.resolve_preset_path("Shapeforms/laser_ogg_only.wav", [ogg_dir])
+	assert_true(resolved_ogg == ogg_sample, "resolve_preset_path debe resolver entradas .wav hacia .ogg cuando el pack usa OGG")
+
+	var bundled_abs: String = ProjectSettings.globalize_path(CatalogScript.BUNDLED_PACKS_DIR).replace("\\", "/")
+	if DirAccess.dir_exists_absolute(bundled_abs):
+		var bundled_arr: Array[String] = [bundled_abs]
+		for pid: String in ["stela_signature", "anime_sakuga", "cyberpunk_tactico", "cosmos_cinematico", "zen_antifatiga"]:
+			var p_slots: Dictionary = (curated[pid] as Dictionary).get("slots", {}) as Dictionary
+			for sk_v: Variant in p_slots.keys():
+				var st_d: Dictionary = p_slots[sk_v] as Dictionary
+				var cands_arr: Array = st_d.get("candidates", []) as Array
+				assert_true(not cands_arr.is_empty(), "Slot '%s' en '%s' debe tener candidatos" % [str(sk_v), pid])
+				var r_first: String = CatalogScript.resolve_preset_path(str(cands_arr[0]), bundled_arr)
+				assert_true(not r_first.is_empty(), "Debe resolver '%s' (%s/%s) contra sandbox/workbenches/sfx_lab/packs" % [str(cands_arr[0]), pid, str(sk_v)])
 	await _await_frames(1)
 
 
-func _test_scanner_and_silence_detection(pack_dir: String, laser_wav: String, ui_wav: String) -> void:
+func _test_scanner_and_silence_detection(pack_dir: String, laser_wav: String, ui_wav: String, hd24_wav: String) -> void:
 	assert_true(ScannerScript.normalize_path_input("  \"%s\"  " % pack_dir) == pack_dir.replace("\\", "/"), "normalize_path_input debe limpiar comillas y espacios")
 	var scan_res: Dictionary = ScannerScript.scan_directory("\"%s\"" % pack_dir)
 	var entries: Array[Dictionary] = scan_res.get("entries", []) as Array[Dictionary]
 	var packs: Array[String] = scan_res.get("packs", []) as Array[String]
-	assert_true(entries.size() == 2, "scan_directory debe encontrar los 2 WAVs de prueba")
+	assert_true(entries.size() == 3, "scan_directory debe encontrar los 3 WAVs de prueba")
 	assert_true(packs.has("Shapeforms") and packs.has("KenneyUI"), "Debe detectar subcarpetas de packs")
 
 	var favs: Dictionary = {ui_wav: true}
@@ -103,6 +137,14 @@ func _test_scanner_and_silence_detection(pack_dir: String, laser_wav: String, ui
 	var peaks: PackedFloat32Array = info.get("peaks", PackedFloat32Array()) as PackedFloat32Array
 	assert_true(peaks.size() == 128, "Debe extraer 128 bins de forma de onda")
 	assert_true(float(info.get("leading_silence_ms", 0.0)) >= 35.0, "Debe detectar >= 35 ms de silencio inicial en el WAV de prueba")
+
+	var hd_info: Dictionary = scanner.load_external_stream(hd24_wav)
+	assert_true(str(hd_info.get("error", "")).is_empty(), "Carga nativa de WAV 24-bit/96kHz no debe fallar: %s" % str(hd_info.get("error", "")))
+	assert_true(not bool(hd_info.get("decoded_fallback", true)), "WAV 24-bit/96kHz debe decodificarse nativamente sin subproceso Python")
+	var hd_wav: AudioStreamWAV = hd_info.get("stream", null) as AudioStreamWAV
+	assert_true(hd_wav != null and hd_wav.format == AudioStreamWAV.FORMAT_16_BITS, "WAV 24-bit debe convertirse a FORMAT_16_BITS")
+	assert_true(hd_wav != null and hd_wav.mix_rate == 48000 and hd_wav.stereo, "WAV 96kHz Stereo debe decimar a 48kHz Stereo")
+	assert_true((hd_info.get("peaks", PackedFloat32Array()) as PackedFloat32Array).size() == 128, "WAV 24-bit debe generar waveform completa")
 	await _await_frames(1)
 
 
@@ -137,7 +179,7 @@ func _test_exporter_ffmpeg_pipeline(laser_wav: String, ui_wav: String, out_dir: 
 	await _await_frames(1)
 
 
-func _test_sfx_lab_ui(pack_dir: String, manifest_path: String, out_dir: String, backup_dir: String) -> void:
+func _test_sfx_lab_ui(pack_dir: String, manifest_path: String, out_dir: String, backup_dir: String, hd24_wav: String) -> void:
 	var lab: SfxLabScript = SfxLabScene.instantiate() as SfxLabScript
 	assert_true(lab != null, "SfxLab debe instanciar desde sfx_lab.tscn")
 	add_child(lab)
@@ -145,7 +187,7 @@ func _test_sfx_lab_ui(pack_dir: String, manifest_path: String, out_dir: String, 
 
 	lab.set_manifest_path_for_test(manifest_path)
 	var count: int = lab.scan_external_folder("\"%s\"" % pack_dir)
-	assert_true(count == 2, "SfxLab debe escanear 2 archivos de prueba incluso con comillas")
+	assert_true(count == 3, "SfxLab debe escanear 3 archivos de prueba incluso con comillas")
 
 	# Probar descompresión de ZIP de prueba y suma multi-carpeta
 	var zip_path: String = _tmp_root_abs.path_join("extra_pack.zip")
@@ -159,24 +201,32 @@ func _test_sfx_lab_ui(pack_dir: String, manifest_path: String, out_dir: String, 
 		zp.close()
 	var unpack_res: Dictionary = lab.unpack_detected_zips(_tmp_root_abs.path_join("unpacked"), [zip_path])
 	assert_true(bool(unpack_res.get("ok", false)), "unpack_detected_zips debe extraer ZIP sin errores")
-	assert_true(lab._all_entries.size() == 3, "Tras descomprimir ZIP deben verse 3 archivos acumulados")
+	assert_true(lab._all_entries.size() == 4, "Tras descomprimir ZIP deben verse 4 archivos acumulados")
 
-	# Probar Perfiles Combinados 1-Clic, Alternativa y Tour del Perfil
+	# Probar Perfiles Combinados 1-Clic, auto-carga de slot al seleccionar, replace Main y Tour lazy
 	var armed: int = lab.apply_combined_profile("hibrido_stela", false)
 	assert_true(armed >= 10, "apply_combined_profile debe armar múltiples slots automáticamente (actual: %d)" % armed)
-	lab.select_slot_by_key("laser")
-	lab.cycle_slot_suggestion_alternative()
-	assert_true(lab.start_profile_tour(), "start_profile_tour debe iniciar la secuencia de audición")
-	await _await_frames(2)
-	lab.stop_all_audio()
+	lab.select_slot_by_key("laser", false)
+	assert_true(not lab._selected_candidate_abs.is_empty() and lab._current_stream_info.get("stream", null) != null, "Al seleccionar un slot con sonido asignado debe cargarse en el deck y waveform")
 
-	lab.select_slot_by_key("laser")
+	lab._selected_candidate_abs = hd24_wav
+	assert_true(lab.replace_main_candidate(), "replace_main_candidate debe reemplazar [Main] del slot")
+	var laser_cands: Array = (lab._get_current_slot_state().get("candidates", []) as Array)
+	assert_true(not laser_cands.is_empty() and str(laser_cands[0]) == hd24_wav, "replace_main_candidate debe ubicar el nuevo audio en index 0")
+
+	assert_true(lab.start_profile_tour(), "start_profile_tour debe iniciar el Tour lazy sin bloquear")
+	await _await_frames(5)
+	assert_true(lab._audition.is_tour_active(), "El Tour debe mantenerse activo avanzando sin auto-cancelarse por selección de slot")
+	lab.stop_all_audio()
+	assert_true(not lab._audition.is_tour_active(), "stop_all_audio debe detener el Tour limpiamente")
+
+	lab.select_slot_by_key("laser", false)
 	lab.select_candidate_index(0)
 	assert_true(lab.audition_selected(), "audition_selected debe reproducir el candidato actual")
 	assert_true(lab.stage_selected_candidate(), "stage_selected_candidate debe asignar candidato al slot")
 	assert_true(lab.assign_selected_as_layer2(), "assign_selected_as_layer2 debe asignar Capa 2")
 	assert_true(lab.audition_layered_slot(), "audition_layered_slot debe reproducir Capas 1+2")
-	assert_true(lab.run_candidate_suggester() == 3, "run_candidate_suggester debe analizar los 3 archivos")
+	assert_true(lab.run_candidate_suggester() == 4, "run_candidate_suggester debe analizar los 4 archivos")
 	lab.toggle_burst_preview(false)
 	await _await_frames(2)
 	lab.stop_all_audio()
@@ -184,6 +234,12 @@ func _test_sfx_lab_ui(pack_dir: String, manifest_path: String, out_dir: String, 
 	var exp_res: Dictionary = lab.export_current_slot(out_dir, backup_dir)
 	assert_true(bool(exp_res.get("ok", false)), "export_current_slot desde SfxLab debe completarse sin errores")
 	assert_true(FileAccess.file_exists(out_dir.path_join("laser_fire_layer2.wav")), "Debe exportar laser_fire_layer2.wav cuando hay Capa 2")
+
+	var custom_path: String = _tmp_root_abs.path_join("custom_presets.json")
+	assert_true(lab.save_current_as_custom_preset("Mi Test Preset", custom_path), "save_current_as_custom_preset debe guardar el estado actual")
+	var loaded_custom: Dictionary = CatalogScript.load_custom_presets(custom_path)
+	assert_true(loaded_custom.has("custom_user"), "Debe recargarse 'custom_user' desde custom_presets.json")
+	assert_true(lab.apply_curated_preset("custom_user", false) >= 1, "apply_curated_preset debe aplicar también presets custom guardados")
 
 	lab.queue_free()
 	await _await_frames(2)
@@ -221,6 +277,47 @@ func _write_test_wav(abs_path: String, sample_rate: int, silence_ms: float, tone
 		var sample_f: float = sin(TAU * freq_hz * t) * 0.5 * env
 		var s16: int = clampi(int(roundf(sample_f * 32767.0)), -32767, 32767)
 		buf.encode_s16(44 + (sil_samples + i) * 2, s16)
+
+	var f: FileAccess = FileAccess.open(abs_path, FileAccess.WRITE)
+	if f != null:
+		f.store_buffer(buf)
+		f.close()
+
+
+func _write_test_wav_24bit(abs_path: String, sample_rate: int, stereo: bool, duration_ms: float, freq_hz: float) -> void:
+	DirAccess.make_dir_recursive_absolute(abs_path.get_base_dir())
+	var channels: int = 2 if stereo else 1
+	var total_frames: int = maxi(1, int(roundf((duration_ms / 1000.0) * float(sample_rate))))
+	var frame_bytes: int = channels * 3
+	var data_bytes: int = total_frames * frame_bytes
+
+	var buf := PackedByteArray()
+	buf.resize(44 + data_bytes)
+	buf.encode_u8(0, 82); buf.encode_u8(1, 73); buf.encode_u8(2, 70); buf.encode_u8(3, 70)
+	buf.encode_u32(4, 36 + data_bytes)
+	buf.encode_u8(8, 87); buf.encode_u8(9, 65); buf.encode_u8(10, 86); buf.encode_u8(11, 69)
+	buf.encode_u8(12, 102); buf.encode_u8(13, 109); buf.encode_u8(14, 116); buf.encode_u8(15, 32)
+	buf.encode_u32(16, 16)
+	buf.encode_u16(20, 1)
+	buf.encode_u16(22, channels)
+	buf.encode_u32(24, sample_rate)
+	buf.encode_u32(28, sample_rate * frame_bytes)
+	buf.encode_u16(32, frame_bytes)
+	buf.encode_u16(34, 24)
+	buf.encode_u8(36, 100); buf.encode_u8(37, 97); buf.encode_u8(38, 116); buf.encode_u8(39, 97)
+	buf.encode_u32(40, data_bytes)
+
+	var off: int = 44
+	for i: int in range(total_frames):
+		var t: float = float(i) / float(sample_rate)
+		var sample_f: float = sin(TAU * freq_hz * t) * 0.45
+		var s24: int = clampi(int(roundf(sample_f * 8388607.0)), -8388607, 8388607)
+		var u24: int = s24 & 0xFFFFFF
+		for _c: int in range(channels):
+			buf[off] = u24 & 0xFF
+			buf[off + 1] = (u24 >> 8) & 0xFF
+			buf[off + 2] = (u24 >> 16) & 0xFF
+			off += 3
 
 	var f: FileAccess = FileAccess.open(abs_path, FileAccess.WRITE)
 	if f != null:

@@ -1,0 +1,1909 @@
+{
+  "version": 1,
+  "presets": {
+    "stela_signature": {
+      "id": "stela_signature",
+      "label": "★ Stela Signature (Híbrido Anime + Cósmico)",
+      "desc": "Equilibrio ideal: disparos cristalinos, UI holográfica limpia, cortes anime y Ults/Bosses con Capa 2.",
+      "slots": {
+        "laser": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Classic Blaster A Fire_03.wav",
+            "kenney_sci-fi-sounds/Audio/laserSmall_000.ogg",
+            "kenney_sci-fi-sounds/Audio/laserSmall_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav",
+            "kenney_sci-fi-sounds/Audio/thrusterFire_000.ogg",
+            "kenney_sci-fi-sounds/Audio/thrusterFire_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "explosion": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/EXPLDsgn_Explosion Small Blast Enemy Death Crunchy Boom Cartoon Noisy Crash Impact Delay 03_ESM_AG.wav",
+            "kenney_sci-fi-sounds/Audio/explosionCrunch_000.ogg",
+            "kenney_sci-fi-sounds/Audio/explosionCrunch_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.11,
+          "trim_silence": true,
+          "mono": true
+        },
+        "bomb": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Exit Wormhole Deceleration Boom_01.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_011.wav",
+          "gain_db": 0.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "player_hit": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/FGHTImpt_Combat Punch Impact Light Hit Delay Crunchy Vintage Quick Smack 05_ESM_AG.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_CLEAN_HEAVY_10.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": 0.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "dash": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Whoosh Short Light 03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/WHOOSH_AIRY_FLUTTER_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "exp": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - UI Interaction Elements/Ting Coins.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Basic Tones/Tone1A.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.0,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": true
+        },
+        "heal": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astonishment-001.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Glyph Activation Light 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "magnet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Empty Void Suction Riser_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Wind Chime Gust.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_click": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/FUI Button Beep Clean.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_1.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "hub_footstep": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/impactMetal_000.ogg",
+            "kenney_sci-fi-sounds/Audio/impactMetal_001.ogg",
+            "kenney_sci-fi-sounds/Audio/impactMetal_002.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.5,
+          "pitch_base": 1.15,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "ui_hover": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_Mid-High.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 1.12,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_error": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Error Triplet-5.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/UIGlitch_Error Tone_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "menu_open": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Hologram Menu Open-2.wav",
+            "Sonniss_Curated/Cinematic Sound Design - Ultra Transitions & Impacts/Woosh Sweep Slide Infographics Basic.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "level_up": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/DSGNStngr_Power Up Bright Positive Successful Light Saturation Crash Shimmer 05_ESM_AG.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Beacon.wav",
+          "gain_db": 0.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "upgrade_obtained": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/FUI Ping Triplet Echo.wav",
+            "Sonniss_Curated/Cinematic Sound Design - User Interface/Button Arp Twinkle.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "item_pickup": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Hybrid Game & UI Elements/Foley Coin Flip Single Fast.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/FUI Navigation Tone Stereo Flutter.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": true
+        },
+        "warning": {
+          "candidates": [
+            "Sonniss_Curated/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_QuarterNotes_013.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Cinematic Sound Design - Ultra Transitions & Impacts/Transition Braam Slow Dark Creepy.wav",
+          "gain_db": 0.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "laser_heavy": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Electron Impeller Charged Fire_02.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/ONE_SHOT_SPACE_TEAR.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "impact": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_PERCUSSIVE_HEAVY_08.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_METAL_WRENCH_HEAVIEST_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "hit_bullet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTImpt_Hit Marker_07.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_SHORT_04.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTRico_Ricochet Metallic_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.1,
+          "trim_silence": true,
+          "mono": true
+        },
+        "satellite_plant": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/MECHClik_Mine Deploy_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Activate Plinth 03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "satellite_activate": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/High-Tech Gadget Activate.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Symbol Activate 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "weapon_laser": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Classic Blaster A Fire_03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Plasma Rifle Fire_03.wav",
+            "kenney_sci-fi-sounds/Audio/laserSmall_002.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_railgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Electron Impeller Fire_07.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Particle Compressor Fire_01.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_CLEAN_HEAVY_10.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_shotgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Sci Fi Shotgun Fire_04.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Tormentor Shotgun Fire_05.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Grenade Launcher Fire_05.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_blade": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Slash Short 01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Swing Noise Slice 02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Dagger Slash 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_tesla": {
+          "candidates": [
+            "Sonniss_Curated/InMotionAudio - Arc/ELECArc_ArcDesign15_InMotionAudio_Arc.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Glitch and Noise Preview/Electric Glitch_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_void": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Hyperspeed Warp Jump Implosion_05.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/SCIEnrg_Energy Orb_05.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/SUB_DROP_DEEP.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ambience_cosmos": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Eerie Wormhole Ambience Loop_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_TUNDRA_LOOP_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        },
+        "ambience_hub": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Sci-Fi Drones/Roomtone Space Ship Interior Muted.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_SPACECRAFT_HOLD_LOOP.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        }
+      }
+    },
+    "anime_sakuga": {
+      "id": "anime_sakuga",
+      "label": "★ Anime Sakuga (Brillante & Rápido)",
+      "desc": "Inspirado en acción anime: brillos musicales en EXP/UI, tajos rápidos, impactos secos con eco y magia brillante.",
+      "slots": {
+        "laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserSmall_000.ogg",
+            "kenney_sci-fi-sounds/Audio/laserSmall_001.ogg",
+            "kenney_sci-fi-sounds/Audio/laserSmall_003.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.12,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Fly By Preview/Fly By Camera Explosive Speed 03.wav",
+            "kenney_sci-fi-sounds/Audio/thrusterFire_002.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.08,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "explosion": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/EXPLDsgn_Explosion Small Blast Enemy Death Crunchy Boom Cartoon Noisy Crash Impact Delay 03_ESM_AG.wav",
+            "kenney_sci-fi-sounds/Audio/explosionCrunch_003.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.1,
+          "trim_silence": true,
+          "mono": true
+        },
+        "bomb": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/DSGNStngr_Power Up Bright Positive Successful Light Saturation Crash Shimmer 05_ESM_AG.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Exit Wormhole Deceleration Boom_01.wav",
+          "gain_db": 0.5,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "player_hit": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/FGHTImpt_Combat Punch Impact Light Hit Delay Crunchy Vintage Quick Smack 05_ESM_AG.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "dash": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Whoosh Short Light 03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Swing Noise Slice 02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.12,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "exp": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Major/Tone1A_MajorTriadUp.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Fifth/Tone1A_FifthUp.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 1.08,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": true
+        },
+        "heal": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astonishment-001.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "magnet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Wind Chime Gust.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_click": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - User Interface/Interface Plucks Happy.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_Mid-High.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.5,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "hub_footstep": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/impactMetal_003.ogg",
+            "kenney_sci-fi-sounds/Audio/impactMetal_004.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 1.22,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "ui_hover": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Basic Tones/Tone1C.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.5,
+          "pitch_base": 1.15,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_error": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - System & UI Feedback Elements/Interface Sci-Fi Ping Down.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Error Triplet-5.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "menu_open": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Hybrid Game & UI Elements/Cofetti Whoosh Pluck Spill.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Hologram Menu Open-2.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "level_up": {
+          "candidates": [
+            "Sonniss_Curated/Epic Stock Media - Anime Game/DSGNStngr_Power Up Bright Positive Successful Light Saturation Crash Shimmer 05_ESM_AG.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Cinematic Sound Design - User Interface/Button Arp Twinkle.wav",
+          "gain_db": 0.5,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "upgrade_obtained": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Hybrid Game & UI Elements/Game Entry Happy Short.wav",
+            "Sonniss_Curated/Cinematic Sound Design - User Interface/Button Arp Twinkle.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "item_pickup": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - UI Interaction Elements/Ting Coins.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Octave/Tone1A_OctaveUp.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.5,
+          "pitch_base": 1.08,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "warning": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Old Terminal Alarm Loop.wav",
+            "Sonniss_Curated/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_QuarterNotes_013.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "laser_heavy": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Ion Pistol C Burst_02.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Cinematic Sound Design - Ultra Transitions & Impacts/Impact Hit Rapid Chord Reverb.wav",
+          "gain_db": 0.0,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "impact": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIGH_SNAP_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_PERCUSSIVE_HEAVY_08.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "hit_bullet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTImpt_Hit Marker_07.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_SHORT_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 1.12,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "satellite_plant": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Glyph Activation Light 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.06,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "satellite_activate": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astral travel-015.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "weapon_laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserSmall_000.ogg",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Classic Blaster A Fire_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.1,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_railgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Electron Impeller Charged Fire_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_shotgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNAuto_Sci Fi Shotgun Burst_03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Sci Fi Shotgun Fire_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Fly By Preview/Fly By Small Medium Spacecraft 03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.08,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_blade": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Dagger Slash 01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Slash Short 01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Swing Noise Slice 02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.12,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_tesla": {
+          "candidates": [
+            "Sonniss_Curated/InMotionAudio - Arc/ELECArc_ArcDesign15_InMotionAudio_Arc.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.1,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_void": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, action gesture, evil presence, onslaught-004.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Hyperspeed Warp Jump Implosion_05.wav",
+          "gain_db": -0.5,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ambience_cosmos": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, drone, tension, spellbound, evanescence-002.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        },
+        "ambience_hub": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Sci-Fi Drones/Roomtone Space Ship Interior Muted.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        }
+      }
+    },
+    "cyberpunk_tactico": {
+      "id": "cyberpunk_tactico",
+      "label": "★ Cyberpunk Táctico (Seco & Quirúrgico)",
+      "desc": "Estética militar/glitch: armas balísticas secas, UI con telemetría y glitches electrónicos de alta precisión.",
+      "slots": {
+        "laser": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNSupr_Silenced Pistol Fire Short_01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNAuto_Assault Rifle A Fire_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Grenade Launcher Fire_05.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.98,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "explosion": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/EXPLDsgn_Explosion Impact_14.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/EXPLDsgn_Explosion Rumble Distorted_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "bomb": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/EXPLDsgn_Implode_15.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/SUB_DROP_DEEP.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.98,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "player_hit": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_ELECTRIC_HEAVY_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_METAL_WRENCH_HEAVIEST_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "dash": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Glitch and Noise Preview/Short Transient Burst_01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTBy_Bullet By Centred Fast_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "exp": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/UIBeep_Lock On_05.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_2.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": true
+        },
+        "heal": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/SCIEnrg_Shield Activate Deactivate_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "magnet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/MOTRSrvo_Plasma Rifle Arm_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_click": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNMech_Mechanical_12.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/FUI Button Beep Clean.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "hub_footstep": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNMech_Arm Weapon Rattle_10.wav",
+            "kenney_sci-fi-sounds/Audio/impactMetal_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 1.05,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "ui_hover": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNMech_Scope Deactivate_06.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.5,
+          "pitch_base": 1.08,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_error": {
+          "candidates": [
+            "Sonniss_Curated/The Noisery - Rich Glitch/UIGlitch_Designed_Glitch_Corrupted_Data Error_The Noisery_Rich Glitch_06.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/UIGlitch_Error Tone_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "menu_open": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Glitch and Noise Preview/Future Hologram Turn Off_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Old Terminal Popup Appear Low.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "level_up": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/DSGNStngr_Kill Confirm Metallic_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "upgrade_obtained": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/SCIMisc_Reload Alien Tech_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/High-Tech Gadget Activate.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "item_pickup": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNMech_Insert Clip_04.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTShel_Shell Eject_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 1.04,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "warning": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BEEPTimer_Anticipation Beeps_05.wav",
+            "Sonniss_Curated/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_HalfNotes_003.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "laser_heavy": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNCano_Quad Cannon Fire Double_01.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/EXPLDsgn_Explosion Impact_14.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "impact": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_METAL_WRENCH_HEAVIEST_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_DESIGNED_HEAVY_23.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.98,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "hit_bullet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTRico_Ricochet Metallic_04.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTImpt_Hit Marker_07.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.0,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "satellite_plant": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/MECHClik_Mine Deploy_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "satellite_activate": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/SCIMisc_Arm Weapon Heavy_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "weapon_laser": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Particle Compressor Fire_01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Plasma Rifle Fire_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_railgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNCano_Quad Cannon Fire Double_01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Electron Impeller Fire_07.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_shotgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Tormentor Shotgun Fire_05.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Sci Fi Shotgun Fire_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Grenade Launcher Fire_05.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNAuto_RPU Mk2 Burst_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_blade": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Metal Impact Recoil 01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Slash Short 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_tesla": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Glitch and Noise Preview/Electric Glitch_01.wav",
+            "Sonniss_Curated/InMotionAudio - Arc/ELECArc_ArcDesign15_InMotionAudio_Arc.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 1.02,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_void": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Glitch and Noise Preview/Audio Jack Noise Triplet_01.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Hyperspeed Warp Jump Implosion_05.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/The Noisery - Rich Glitch/UIGlitch_User interface_Glitch_High_Electronic_The Noisery_Rich Glitch_05.wav",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ambience_cosmos": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_SIGNAL_LOOP.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        },
+        "ambience_hub": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_UNDERGROUND_POWER_STATION_LOOP.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        }
+      }
+    },
+    "cosmos_cinematico": {
+      "id": "cosmos_cinematico",
+      "label": "★ Cosmos Cinematográfico (Profundo & Épico)",
+      "desc": "Pegada de cine espacial: sub-graves en explosiones, Bass Drops en Ults/Vacío y Capa 2 masiva en armas pesadas.",
+      "slots": {
+        "laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserLarge_000.ogg",
+            "kenney_sci-fi-sounds/Audio/laserLarge_001.ogg",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Plasma Rifle Fire_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Spacecraft Preview/Thruster Ignite Oneshot_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "explosion": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Spacecraft Preview/Impact Asteroid Debris Tail_03.wav",
+            "Sonniss_Curated/Cinematic Sound Design - Colossal Impacts/Woosh Debris.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_075.wav",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.09,
+          "trim_silence": true,
+          "mono": true
+        },
+        "bomb": {
+          "candidates": [
+            "Sonniss_Curated/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_011.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Slow 10_344 Audio_Bass Drops & Downers.wav",
+          "gain_db": 0.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "player_hit": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_INTENSE_HEAVY_03.wav",
+            "Sonniss_Curated/344 Audio - Cinematic Fight Vol. 1/FGHTImpt_4 x Punch, Body 02_344 Audio_Cinematic Fight Vol 1.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "dash": {
+          "candidates": [
+            "Sonniss_Curated/344 Audio - Air Designed/AEROJet_Blast Off Clean_344 Audio_Air Designed.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Fly By Preview/Spacecraft Vehicle Fly By 05.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "exp": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone2/Basic Tones/Tone2A.wav",
+            "Sonniss_Curated/Cinematic Sound Design - System & UI Feedback Elements/Interface Sci-Fi Ping Down.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": true
+        },
+        "heal": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Glyph Activation Warm Aura.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "magnet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Empty Void Suction Riser_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_click": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_Low.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Old Terminal Popup Appear Low.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "hub_footstep": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/impactMetal_000.ogg",
+            "kenney_sci-fi-sounds/Audio/impactMetal_002.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "ui_hover": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_3.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_error": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - System & UI Feedback Elements/Interface Deny Low Fat Dark.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "menu_open": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Colossal Impacts/Impact Cut Sweep.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Hologram Menu Open-2.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "level_up": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Ultra Transitions & Impacts/Impact Hit Rapid Chord Reverb.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/SUB_DROP_DEEP.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "upgrade_obtained": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - System & UI Feedback Elements/Interface Arp Reveal Down Long.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "item_pickup": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Rotate Stone 03.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "warning": {
+          "candidates": [
+            "Sonniss_Curated/Federico Soler - Effective Trailer Alarms Vol. 2/EffectiveTrailer_Alarms_Vol2_WholeNotes_011.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Cinematic Sound Design - Ultra Transitions & Impacts/Transition Braam Slow Dark Creepy.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "laser_heavy": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/ONE_SHOT_SPACE_TEAR.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/344 Audio - Bass Drops & Downers Vol. 2/DSGNBass_Bass Drop & Downer Medium 15_344 Audio_Bass Drops & Downers Vol 2.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "impact": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_DESIGNED_HEAVY_74.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_DESIGNED_HEAVY_86.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -0.5,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "hit_bullet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/BLLTRico_Metallic_11.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_PERCUSSIVE_HEAVY_09.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "satellite_plant": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Raise Stone Pillar Long.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "satellite_activate": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Spacecraft Preview/Heavy Spacecraft Takeoff_01.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_214.wav",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "weapon_laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserLarge_002.ogg",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Particle Compressor Fire_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_railgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Electron Impeller Charged Fire_02.wav"
+          ],
+          "layer2_candidate": "Sonniss_Curated/344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Fast 16_344 Audio_Bass Drops & Downers.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.9,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_shotgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Tormentor Shotgun Fire_05.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_DESIGNED_HEAVY_23.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_missile": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Spacecraft Preview/Thruster Ignite Oneshot_02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNArtl_Rocket Launcher Fire_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_blade": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Recall Magic 02.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Slash Short 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_tesla": {
+          "candidates": [
+            "Sonniss_Curated/InMotionAudio - Arc/ELECArc_ArcPowerUpDesign04_InMotionAudio_Arc.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -1.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_void": {
+          "candidates": [
+            "Sonniss_Curated/344 Audio - Bass Drops & Downers Vol. 3/DSGNBass_Tone Downer (Reverb)_344 Audio_Bass Drops and Downers Vol 3.wav"
+          ],
+          "layer2_candidate": "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/ONE_SHOT_CINEMATIC_EFFECT_10.wav",
+          "gain_db": 0.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ambience_cosmos": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Sci-Fi Drones/Dark Industrial Ambience.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        },
+        "ambience_hub": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_SPACECRAFT_HOLD_LOOP.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        }
+      }
+    },
+    "zen_antifatiga": {
+      "id": "zen_antifatiga",
+      "label": "★ Zen Anti-Fatiga (Suave Runs Largas)",
+      "desc": "Cero estridentes: transientes redondeados, volumen moderado (-4 dB) y UI/EXP aterciopelada para sesiones de 30+ min.",
+      "slots": {
+        "laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserSmall_002.ogg",
+            "kenney_sci-fi-sounds/Audio/laserSmall_004.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "missile": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/thrusterFire_001.ogg",
+            "kenney_sci-fi-sounds/Audio/thrusterFire_003.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "explosion": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/lowFrequency_explosion_000.ogg",
+            "kenney_sci-fi-sounds/Audio/lowFrequency_explosion_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.08,
+          "trim_silence": true,
+          "mono": true
+        },
+        "bomb": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Exit Wormhole Deceleration Boom_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "player_hit": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_SHORT_04.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/PUNCH_CLEAN_HEAVY_10.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": true
+        },
+        "dash": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Whoosh Short Light 03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/WHOOSH_AIRY_FLUTTER_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "exp": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Basic Tones/Tone1A.wav",
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone2/Basic Tones/Tone2B.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -5.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": true
+        },
+        "heal": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Glyph Activation Light 01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "magnet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Wind Chime Gust.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_click": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Clicks/Click_Low.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "hub_footstep": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/impactMetal_002.ogg",
+            "kenney_sci-fi-sounds/Audio/impactMetal_003.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -7.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "ui_hover": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Holographic Tap Interaction.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -8.0,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ui_error": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - UI Interaction Elements/Deny Muted.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "menu_open": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Hologram Menu Open-2.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "level_up": {
+          "candidates": [
+            "Sonniss_Curated/Alexander Kopeikin - Emotion and Magic/magic, energy flow, astonishment-001.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -2.5,
+          "pitch_base": 0.98,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "upgrade_obtained": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/FUI Ping Triplet Echo.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "item_pickup": {
+          "candidates": [
+            "SCI-FI_UI_SFX_PACK/SCI-FI_UI_SFX_PACK/Tone1/Fifth/Tone1A_FifthUp.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": true
+        },
+        "warning": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Future UI Preview/Audio/Old Terminal Popup Appear Low.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.02,
+          "trim_silence": true,
+          "mono": false
+        },
+        "laser_heavy": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/LASRGun_Plasma Rifle Fire_03.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.0,
+          "pitch_base": 0.9,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "impact": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_SHORT_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "hit_bullet": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hit and Punch Preview/AUDIO/HIT_SLAP_07.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.07,
+          "trim_silence": true,
+          "mono": true
+        },
+        "satellite_plant": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Activate Glyph Forcefield.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "satellite_activate": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Arcane Activations Preview/AUDIO/Arcane Beacon.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.03,
+          "trim_silence": true,
+          "mono": false
+        },
+        "weapon_laser": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserSmall_002.ogg",
+            "kenney_sci-fi-sounds/Audio/laserSmall_004.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.95,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_railgun": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/laserLarge_000.ogg",
+            "kenney_sci-fi-sounds/Audio/laserLarge_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_shotgun": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Weapons Cyberpunk Arsenal Preview/AUDIO/GUNTech_Sci Fi Shotgun Fire_04.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.92,
+          "pitch_jitter": 0.05,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_missile": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/thrusterFire_000.ogg",
+            "kenney_sci-fi-sounds/Audio/thrusterFire_002.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.0,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_blade": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Whoosh Short Light 03.wav",
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Hack and Slash Melee Combat Preview/Blade Swing Noise Slice 02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.96,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_tesla": {
+          "candidates": [
+            "kenney_sci-fi-sounds/Audio/forceField_000.ogg",
+            "kenney_sci-fi-sounds/Audio/forceField_001.ogg"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -4.5,
+          "pitch_base": 0.98,
+          "pitch_jitter": 0.06,
+          "trim_silence": true,
+          "mono": true
+        },
+        "weapon_void": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Sci Fi Warp Speed Preview/Empty Void Suction Riser_02.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -3.5,
+          "pitch_base": 0.94,
+          "pitch_jitter": 0.04,
+          "trim_silence": true,
+          "mono": false
+        },
+        "ambience_cosmos": {
+          "candidates": [
+            "Shapeforms Audio Free Sound Effects/Shapeforms Audio Free Sound Effects/Dystopia ΓÇô Ambience and Drone Preview/AUDIO/AMBIENCE_TUNDRA_LOOP_01.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        },
+        "ambience_hub": {
+          "candidates": [
+            "Sonniss_Curated/Cinematic Sound Design - Sci-Fi Drones/Roomtone Space Ship Interior Muted.wav"
+          ],
+          "layer2_candidate": "",
+          "gain_db": -6.0,
+          "pitch_base": 1.0,
+          "pitch_jitter": 0.0,
+          "trim_silence": false,
+          "mono": false
+        }
+      }
+    }
+  }
+}

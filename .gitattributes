@@ -19,6 +19,11 @@ assets/characters/navigators/portraits/** -filter -diff -merge binary
 # UI assets (standard binary, excluded from Git LFS so they pull directly without LFS)
 assets/ui/** -filter -diff -merge binary
 
+# Production SFX/Ambience and SfxLab curated library (standard binary, excluded from Git LFS so collaborators pull directly without LFS)
+assets/audio/sfx/** -filter -diff -merge binary
+assets/audio/ambience/** -filter -diff -merge binary
+sandbox/workbenches/sfx_lab/packs/** -filter -diff -merge binary
+
 # Normalize line endings to LF for Godot text formats to prevent false dirty git status on Windows
 *.import text eol=lf
 *.gd text eol=lf

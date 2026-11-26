@@ -17,8 +17,11 @@ var _waveform: SfxWaveformPreview = null
 
 var _slot_specs: Array[Dictionary] = []
 var _profile_specs: Array[Dictionary] = []
+var _curated_presets: Dictionary = {}
+var _custom_presets: Dictionary = {}
 var _manifest: Dictionary = {}
 var _manifest_path: String = CatalogScript.DEFAULT_MANIFEST_PATH
+var _custom_presets_path: String = CatalogScript.DEFAULT_CUSTOM_PRESETS_PATH
 var _favorites_set: Dictionary = {} # abs_path -> true
 
 var _pack_dirs: Array[String] = []
@@ -40,14 +43,15 @@ var _path_edit: LineEdit = null
 var _unpack_zips_btn: Button = null
 var _bgm_opt: OptionButton = null
 var _step_progress_lbl: Label = null
-var _profile_opt: OptionButton = null
-var _only_empty_check: CheckBox = null
+var _preset_desc_lbl: Label = null
+var _preset_buttons: Dictionary = {} # preset_id -> Button
 var _tour_btn: Button = null
 var _slot_filter_opt: OptionButton = null
 var _slot_list: ItemList = null
 var _slot_info_lbl: Label = null
 var _keywords_row: HFlowContainer = null
 
+var _browser_hdr_lbl: Label = null
 var _pack_opt: OptionButton = null
 var _search_edit: LineEdit = null
 var _fav_only_check: CheckBox = null
@@ -79,6 +83,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_slot_specs = CatalogScript.get_slot_specs()
 	_profile_specs = CatalogScript.get_profile_specs()
+	_curated_presets = CatalogScript.load_curated_presets()
+	_custom_presets = CatalogScript.load_custom_presets(_custom_presets_path)
 	_manifest = CatalogScript.load_manifest(_manifest_path)
 	_sync_favorites_from_manifest()
 	_sync_pack_dirs_from_manifest()
@@ -93,7 +99,7 @@ func _ready() -> void:
 
 	_build_ui()
 	_refresh_slot_list()
-	select_slot_by_key(_selected_slot_key)
+	_refresh_preset_bar_buttons()
 	_update_progress_banner()
 
 	var vp: Viewport = get_viewport()
@@ -102,13 +108,22 @@ func _ready() -> void:
 			vp.files_dropped.connect(_on_files_dropped)
 
 	if _pack_dirs.is_empty() and DisplayServer.get_name() != "headless":
-		var default_packs_dir: String = OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS).path_join("Stela_SFX_Packs").replace("\\", "/")
-		if DirAccess.dir_exists_absolute(default_packs_dir):
-			_pack_dirs.append(default_packs_dir)
+		var bundled_dir: String = ProjectSettings.globalize_path(CatalogScript.BUNDLED_PACKS_DIR).replace("\\", "/")
+		var downloads_packs_dir: String = OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS).path_join("Stela_SFX_Packs").replace("\\", "/")
+		if DirAccess.dir_exists_absolute(bundled_dir):
+			_pack_dirs.append(bundled_dir)
+		elif DirAccess.dir_exists_absolute(downloads_packs_dir):
+			_pack_dirs.append(downloads_packs_dir)
 
 	if not _pack_dirs.is_empty():
 		_path_edit.text = "; ".join(_pack_dirs)
-		_rescan_pack_dirs(true)
+		_rescan_pack_dirs(false)
+		if DisplayServer.get_name() != "headless" and _count_staged_slots() == 0 and _curated_presets.has("stela_signature"):
+			apply_curated_preset("stela_signature", false, false)
+
+	select_slot_by_key(_selected_slot_key, false)
+	if DisplayServer.get_name() != "headless" and _slot_list != null:
+		_slot_list.grab_focus()
 
 
 func set_manifest_path_for_test(path: String) -> void:
@@ -151,7 +166,7 @@ func _input(event: InputEvent) -> void:
 			toggle_favorite_selected()
 			get_viewport().set_input_as_handled()
 		KEY_ENTER, KEY_KP_ENTER:
-			stage_selected_candidate()
+			replace_main_candidate()
 			get_viewport().set_input_as_handled()
 		KEY_ESCAPE:
 			_return_to_hub()
@@ -163,7 +178,7 @@ func scan_external_folder(dir_path: String) -> int:
 	_pack_dirs.clear()
 	if not clean_dir.is_empty() and DirAccess.dir_exists_absolute(clean_dir):
 		_pack_dirs.append(clean_dir)
-	return _rescan_pack_dirs(true)
+	return _rescan_pack_dirs(false)
 
 
 func add_external_folder(dir_path: String) -> int:
@@ -175,7 +190,7 @@ func add_external_folder(dir_path: String) -> int:
 		return _all_entries.size()
 	if not _pack_dirs.has(clean_dir):
 		_pack_dirs.append(clean_dir)
-	return _rescan_pack_dirs(true)
+	return _rescan_pack_dirs(false)
 
 
 func clear_external_folders() -> void:
@@ -198,7 +213,7 @@ func clear_external_folders() -> void:
 	_set_status("Lista de carpetas limpiada. Agregá carpetas o arrastralas a la ventana.")
 
 
-func _rescan_pack_dirs(auto_suggest: bool = true) -> int:
+func _rescan_pack_dirs(auto_suggest: bool = false) -> int:
 	_scanner.clear_cache()
 	var valid_dirs: Array[String] = []
 	for d: String in _pack_dirs:
@@ -234,20 +249,53 @@ func _rescan_pack_dirs(auto_suggest: bool = true) -> int:
 	if _all_entries.is_empty():
 		_set_status("Sin audios sueltos en %d carpeta(s)%s. Si están comprimidos, pulsá 'Descomprimir ZIPs'." % [_pack_dirs.size(), zip_note])
 	else:
-		_set_status("Listo: %d audios en %d pack(s)%s%s. Probá '⚡ Auto-Armar 32 Slots' arriba." % [_all_entries.size(), _available_packs.size(), zip_note, note])
+		_set_status("Listo: %d audios en %d pack(s)%s%s. Elegí un Preset arriba y usá ↑/↓ en Columna 1." % [_all_entries.size(), _available_packs.size(), zip_note, note])
 	return _all_entries.size()
 
 
-func select_slot_by_key(slot_key: String) -> void:
+func select_slot_by_key(slot_key: String, auto_play: bool = false) -> void:
 	_selected_slot_key = slot_key
 	for i: int in range(_slot_list.item_count):
 		var meta: String = str(_slot_list.get_item_metadata(i))
 		if meta == slot_key:
 			_suppress_ui_signals = true
 			_slot_list.select(i)
+			_slot_list.ensure_current_is_visible()
 			_suppress_ui_signals = false
 			break
 	_refresh_slot_inspector()
+	_load_slot_main_into_deck(auto_play)
+
+
+func _load_slot_main_into_deck(auto_play: bool = false) -> void:
+	var st: Dictionary = _get_current_slot_state()
+	var cands: Array = st.get("candidates", []) as Array
+	var main_path: String = str(cands[0]) if not cands.is_empty() else ""
+	if not main_path.is_empty() and FileAccess.file_exists(main_path):
+		_selected_candidate_abs = main_path
+		_selected_file_lbl.text = "[PRESET · Main] %s" % main_path.get_file()
+		_selected_file_lbl.add_theme_color_override("font_color", Color(0.45, 0.96, 0.78, 1.0))
+		_update_fav_button_label()
+		_current_stream_info = _scanner.load_external_stream(main_path)
+		_waveform.set_analysis(_current_stream_info)
+		if _staged_list != null and _staged_list.item_count > 0:
+			_suppress_ui_signals = true
+			_staged_list.select(0)
+			_suppress_ui_signals = false
+		if auto_play:
+			var l2: String = str(st.get("layer2_candidate", "")).strip_edges()
+			if not l2.is_empty() and FileAccess.file_exists(l2):
+				audition_layered_slot()
+			else:
+				audition_selected()
+	else:
+		_selected_candidate_abs = ""
+		_current_stream_info = {}
+		_selected_file_lbl.text = "[%s] Sin sonido asignado (elegí uno en Columna 2)" % _selected_slot_key
+		_selected_file_lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.90, 0.85))
+		_update_fav_button_label()
+		if _waveform != null:
+			_waveform.clear_preview("Este slot no tiene reemplazo asignado. Pulsá [A] para oír Producción actual.")
 
 
 func select_candidate_index(idx: int) -> void:
@@ -262,11 +310,12 @@ func select_candidate_index(idx: int) -> void:
 	_files_list.select(idx)
 	_suppress_ui_signals = false
 
-	_selected_file_lbl.text = str(entry.get("rel_path", _selected_candidate_abs.get_file()))
+	_selected_file_lbl.text = "[LIBRERÍA · sin asignar] %s" % str(entry.get("rel_path", _selected_candidate_abs.get_file()))
+	_selected_file_lbl.add_theme_color_override("font_color", Color(0.95, 0.85, 0.45, 1.0))
 	_update_fav_button_label()
 	_current_stream_info = _scanner.load_external_stream(_selected_candidate_abs)
 	_waveform.set_analysis(_current_stream_info)
-	if _auto_preview_check.button_pressed:
+	if _auto_preview_check.button_pressed and DisplayServer.get_name() != "headless":
 		audition_selected()
 
 
@@ -292,9 +341,9 @@ func audition_selected() -> bool:
 		return false
 	_audition.stop_burst()
 	_audition.stop_tour()
-	_burst_btn.text = "▶ Ráfaga Combate [R]"
+	_burst_btn.text = "▶ Ráfaga [R]"
 	if _tour_btn != null:
-		_tour_btn.text = "▶ Tour del Perfil"
+		_tour_btn.text = "▶ Tour (9 clave)"
 	var st: Dictionary = _get_current_slot_state()
 	var pitch: float = float(st.get("pitch_base", 1.0))
 	var gain_db: float = float(st.get("gain_db", 0.0))
@@ -303,9 +352,12 @@ func audition_selected() -> bool:
 
 
 func audition_production() -> bool:
-	_burst_btn.text = "▶ Ráfaga Combate [R]"
+	_burst_btn.text = "▶ Ráfaga [R]"
 	if _tour_btn != null:
-		_tour_btn.text = "▶ Tour del Perfil"
+		_tour_btn.text = "▶ Tour (9 clave)"
+	if _selected_file_lbl != null:
+		_selected_file_lbl.text = "[PROD ACTUAL] %s" % _selected_slot_key
+		_selected_file_lbl.add_theme_color_override("font_color", Color(0.75, 0.88, 1.0, 1.0))
 	var ok: bool = _audition.play_production_slot(_selected_slot_key)
 	if not ok:
 		_set_status("El slot '%s' aún no tiene audio cargado en AudioManager." % _selected_slot_key)
@@ -345,9 +397,9 @@ func toggle_burst_preview(force_exp_combo: bool = false) -> void:
 
 func stop_all_audio() -> void:
 	_audition.stop_all()
-	_burst_btn.text = "▶ Ráfaga Combate [R]"
+	_burst_btn.text = "▶ Ráfaga [R]"
 	if _tour_btn != null:
-		_tour_btn.text = "▶ Tour del Perfil"
+		_tour_btn.text = "▶ Tour (9 clave)"
 
 
 func toggle_favorite_selected() -> bool:
@@ -363,18 +415,50 @@ func toggle_favorite_selected() -> bool:
 	return _favorites_set.has(_selected_candidate_abs)
 
 
+func replace_main_candidate() -> bool:
+	if _selected_candidate_abs.is_empty():
+		_set_status("Elegí primero un sonido de la Columna 2 para reemplazar [%s]." % _selected_slot_key)
+		return false
+	var st: Dictionary = _get_current_slot_state()
+	var cands: Array[String] = []
+	for c_v: Variant in (st.get("candidates", []) as Array):
+		var s: String = str(c_v)
+		if not s.is_empty():
+			cands.append(s)
+	if cands.is_empty():
+		cands.append(_selected_candidate_abs)
+	else:
+		cands.erase(_selected_candidate_abs)
+		if cands.is_empty():
+			cands.append(_selected_candidate_abs)
+		else:
+			cands[0] = _selected_candidate_abs
+	st["candidates"] = cands
+	_selected_file_lbl.text = "[PRESET · Main] %s" % _selected_candidate_abs.get_file()
+	_selected_file_lbl.add_theme_color_override("font_color", Color(0.45, 0.96, 0.78, 1.0))
+	_refresh_staged_list()
+	_refresh_slot_list()
+	_update_progress_banner()
+	_set_status("Reemplazado [Main] de [%s] → %s" % [_selected_slot_key, _selected_candidate_abs.get_file()])
+	return true
+
+
 func stage_selected_candidate() -> bool:
 	if _selected_candidate_abs.is_empty():
 		return false
 	var st: Dictionary = _get_current_slot_state()
-	var cands: Array[String] = st.get("candidates", []) as Array[String]
+	var cands: Array[String] = []
+	for c_v: Variant in (st.get("candidates", []) as Array):
+		var s: String = str(c_v)
+		if not s.is_empty():
+			cands.append(s)
 	if not cands.has(_selected_candidate_abs):
 		cands.append(_selected_candidate_abs)
 		st["candidates"] = cands
 	_refresh_staged_list()
 	_refresh_slot_list()
 	_update_progress_banner()
-	_set_status("Asignado '%s' a [%s] (%d variante/s)." % [_selected_candidate_abs.get_file(), _selected_slot_key, cands.size()])
+	_set_status("Variante agregada a [%s]: %s (%d total)." % [_selected_slot_key, _selected_candidate_abs.get_file(), cands.size()])
 	return true
 
 
@@ -384,7 +468,11 @@ func unstage_selected_candidate() -> bool:
 		return false
 	var idx: int = sel[0]
 	var st: Dictionary = _get_current_slot_state()
-	var cands: Array[String] = st.get("candidates", []) as Array[String]
+	var cands: Array[String] = []
+	for c_v: Variant in (st.get("candidates", []) as Array):
+		var s: String = str(c_v)
+		if not s.is_empty():
+			cands.append(s)
 	if idx >= 0 and idx < cands.size():
 		cands.remove_at(idx)
 		st["candidates"] = cands
@@ -496,9 +584,12 @@ func _build_ui() -> void:
 	dl_btn.text = "Packs"
 	dl_btn.focus_mode = Control.FOCUS_NONE
 	dl_btn.pressed.connect(func() -> void:
+		var bundled_dir: String = ProjectSettings.globalize_path(CatalogScript.BUNDLED_PACKS_DIR).replace("\\", "/")
 		var dl_dir: String = OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
 		var packs_dir: String = dl_dir.path_join("Stela_SFX_Packs")
-		if DirAccess.dir_exists_absolute(packs_dir):
+		if DirAccess.dir_exists_absolute(bundled_dir):
+			add_external_folder(bundled_dir)
+		elif DirAccess.dir_exists_absolute(packs_dir):
 			add_external_folder(packs_dir)
 		elif not dl_dir.is_empty():
 			add_external_folder(dl_dir)
@@ -554,7 +645,7 @@ func _build_ui() -> void:
 	hub_btn.pressed.connect(_return_to_hub)
 	top_bar.add_child(hub_btn)
 
-	# --- Barra guía de 3 pasos + Perfiles Combinados 1-Clic ---
+	# --- Barra guía + Presets 1-Clic ---
 	var guide_panel := PanelContainer.new()
 	var g_style := StyleBoxFlat.new()
 	g_style.bg_color = Color(0.06, 0.08, 0.16, 0.96)
@@ -565,60 +656,49 @@ func _build_ui() -> void:
 	guide_panel.add_theme_stylebox_override("panel", g_style)
 	root_vbox.add_child(guide_panel)
 
-	var guide_row := HBoxContainer.new()
-	guide_row.add_theme_constant_override("separation", 8)
-	guide_panel.add_child(guide_row)
+	var guide_vbox := VBoxContainer.new()
+	guide_vbox.add_theme_constant_override("separation", 5)
+	guide_panel.add_child(guide_vbox)
 
-	_step_progress_lbl = Label.new()
-	_step_progress_lbl.text = "1. Packs: 0  →  2. Armados: 0/32  →  3. Exportar"
-	_step_progress_lbl.add_theme_font_size_override("font_size", 12)
-	_step_progress_lbl.add_theme_color_override("font_color", Color(0.55, 0.96, 0.80, 1.0))
-	guide_row.add_child(_step_progress_lbl)
+	var preset_row := HBoxContainer.new()
+	preset_row.add_theme_constant_override("separation", 6)
+	guide_vbox.add_child(preset_row)
 
-	var prof_lbl := Label.new()
-	prof_lbl.text = "|  Perfil:"
-	prof_lbl.add_theme_font_size_override("font_size", 12)
-	guide_row.add_child(prof_lbl)
+	var pres_lbl := Label.new()
+	pres_lbl.text = "PRESETS:"
+	pres_lbl.add_theme_font_size_override("font_size", 12)
+	pres_lbl.add_theme_color_override("font_color", Color(0.45, 0.96, 0.85, 1.0))
+	preset_row.add_child(pres_lbl)
 
-	_profile_opt = OptionButton.new()
-	_profile_opt.custom_minimum_size = Vector2(220.0, 0.0)
-	_profile_opt.focus_mode = Control.FOCUS_NONE
-	var active_prof_id: String = str(_manifest.get("active_profile_id", "hibrido_stela"))
-	var sel_prof_idx: int = 0
-	for i: int in range(_profile_specs.size()):
-		var ps: Dictionary = _profile_specs[i]
-		var pid: String = str(ps.get("id", ""))
-		_profile_opt.add_item(str(ps.get("label", pid)))
-		_profile_opt.set_item_metadata(i, pid)
-		if pid == active_prof_id:
-			sel_prof_idx = i
-	if _profile_specs.size() > 0:
-		_profile_opt.select(sel_prof_idx)
-	guide_row.add_child(_profile_opt)
+	_preset_buttons.clear()
+	var preset_defs: Array[Array] = [
+		["stela_signature", "1. Stela Signature"],
+		["anime_sakuga", "2. Anime Sakuga"],
+		["cyberpunk_tactico", "3. Cyberpunk"],
+		["cosmos_cinematico", "4. Cosmos"],
+		["zen_antifatiga", "5. Zen"],
+		["custom_user", "☆ Custom"],
+	]
+	for p_def: Array in preset_defs:
+		var pid: String = str(p_def[0])
+		var p_btn := Button.new()
+		p_btn.text = str(p_def[1])
+		p_btn.toggle_mode = true
+		p_btn.focus_mode = Control.FOCUS_NONE
+		p_btn.pressed.connect(func() -> void:
+			apply_curated_preset(pid, false, _auto_preview_check != null and _auto_preview_check.button_pressed)
+			if _slot_list != null:
+				_slot_list.grab_focus()
+		)
+		preset_row.add_child(p_btn)
+		_preset_buttons[pid] = p_btn
 
-	var apply_prof_btn := Button.new()
-	apply_prof_btn.text = "⚡ Auto-Armar 32 Slots"
-	apply_prof_btn.focus_mode = Control.FOCUS_NONE
-	apply_prof_btn.pressed.connect(func() -> void:
-		var pid: String = _get_selected_profile_id()
-		var only_empty: bool = _only_empty_check != null and _only_empty_check.button_pressed
-		apply_combined_profile(pid, only_empty)
-	)
-	guide_row.add_child(apply_prof_btn)
-
-	_only_empty_check = CheckBox.new()
-	_only_empty_check.text = "Solo vacíos"
-	_only_empty_check.focus_mode = Control.FOCUS_NONE
-	guide_row.add_child(_only_empty_check)
-
-	var alt_btn := Button.new()
-	alt_btn.text = "🎲 Otra Opción"
-	alt_btn.focus_mode = Control.FOCUS_NONE
-	alt_btn.pressed.connect(cycle_slot_suggestion_alternative)
-	guide_row.add_child(alt_btn)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preset_row.add_child(spacer)
 
 	_tour_btn = Button.new()
-	_tour_btn.text = "▶ Tour del Perfil"
+	_tour_btn.text = "▶ Tour (9 clave)"
 	_tour_btn.focus_mode = Control.FOCUS_NONE
 	_tour_btn.pressed.connect(func() -> void:
 		if _audition.is_tour_active():
@@ -626,13 +706,43 @@ func _build_ui() -> void:
 		else:
 			start_profile_tour()
 	)
-	guide_row.add_child(_tour_btn)
+	preset_row.add_child(_tour_btn)
+
+	var top_stop_btn := Button.new()
+	top_stop_btn.text = "■ Stop [S]"
+	top_stop_btn.focus_mode = Control.FOCUS_NONE
+	top_stop_btn.pressed.connect(stop_all_audio)
+	preset_row.add_child(top_stop_btn)
+
+	var save_custom_btn := Button.new()
+	save_custom_btn.text = "★ Guardar Custom"
+	save_custom_btn.focus_mode = Control.FOCUS_NONE
+	save_custom_btn.pressed.connect(func() -> void: save_current_as_custom_preset())
+	preset_row.add_child(save_custom_btn)
 
 	var gym_btn := Button.new()
 	gym_btn.text = "Combat Gym"
 	gym_btn.focus_mode = Control.FOCUS_NONE
 	gym_btn.pressed.connect(_open_combat_gym)
-	guide_row.add_child(gym_btn)
+	preset_row.add_child(gym_btn)
+
+	var guide_subrow := HBoxContainer.new()
+	guide_subrow.add_theme_constant_override("separation", 10)
+	guide_vbox.add_child(guide_subrow)
+
+	_step_progress_lbl = Label.new()
+	_step_progress_lbl.text = "Packs: 0 · Armados: 0/32"
+	_step_progress_lbl.add_theme_font_size_override("font_size", 11)
+	_step_progress_lbl.add_theme_color_override("font_color", Color(0.55, 0.96, 0.80, 1.0))
+	guide_subrow.add_child(_step_progress_lbl)
+
+	_preset_desc_lbl = Label.new()
+	_preset_desc_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_preset_desc_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_preset_desc_lbl.text = "Usá ↑/↓ en Columna 1 para escuchar cada slot del preset · [Space] Nuevo · [A] Prod Actual · [S] Stop"
+	_preset_desc_lbl.add_theme_font_size_override("font_size", 11)
+	_preset_desc_lbl.add_theme_color_override("font_color", Color(0.78, 0.86, 0.96, 0.92))
+	guide_subrow.add_child(_preset_desc_lbl)
 
 	# --- Cuerpo principal de 3 columnas ---
 	var columns := HBoxContainer.new()
@@ -678,7 +788,7 @@ func _build_ui() -> void:
 
 
 func _build_left_slots_panel(parent: HBoxContainer) -> void:
-	var panel := _make_column_panel(295.0, false)
+	var panel := _make_column_panel(340.0, false)
 	parent.add_child(panel)
 
 	var vbox := VBoxContainer.new()
@@ -688,7 +798,7 @@ func _build_left_slots_panel(parent: HBoxContainer) -> void:
 	panel.add_child(vbox)
 
 	var hdr := Label.new()
-	hdr.text = "1. SLOTS DEL JUEGO (32)"
+	hdr.text = "1. SLOTS DEL PRESET (↑/↓ escucha el sonido)"
 	hdr.add_theme_font_size_override("font_size", 13)
 	hdr.add_theme_color_override("font_color", Color(0.28, 0.92, 1.0, 1.0))
 	vbox.add_child(hdr)
@@ -712,7 +822,8 @@ func _build_left_slots_panel(parent: HBoxContainer) -> void:
 		if _suppress_ui_signals:
 			return
 		var key: String = str(_slot_list.get_item_metadata(idx))
-		select_slot_by_key(key)
+		var should_play: bool = _auto_preview_check != null and _auto_preview_check.button_pressed and DisplayServer.get_name() != "headless"
+		select_slot_by_key(key, should_play)
 	)
 	vbox.add_child(_slot_list)
 
@@ -721,17 +832,6 @@ func _build_left_slots_panel(parent: HBoxContainer) -> void:
 	_slot_info_lbl.add_theme_font_size_override("font_size", 11)
 	_slot_info_lbl.add_theme_color_override("font_color", Color(0.78, 0.86, 0.95, 0.9))
 	vbox.add_child(_slot_info_lbl)
-
-	var kw_lbl := Label.new()
-	kw_lbl.text = "Filtros rápidos sugeridos:"
-	kw_lbl.add_theme_font_size_override("font_size", 11)
-	kw_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.72, 1.0))
-	vbox.add_child(kw_lbl)
-
-	_keywords_row = HFlowContainer.new()
-	_keywords_row.add_theme_constant_override("h_separation", 4)
-	_keywords_row.add_theme_constant_override("v_separation", 4)
-	vbox.add_child(_keywords_row)
 
 
 func _build_center_browser_panel(parent: HBoxContainer) -> void:
@@ -744,18 +844,18 @@ func _build_center_browser_panel(parent: HBoxContainer) -> void:
 	vbox.add_theme_constant_override("separation", 6)
 	panel.add_child(vbox)
 
-	var hdr := Label.new()
-	hdr.text = "2. EXPLORADOR DE PACKS (↑/↓ auto-preview · Doble clic asigna)"
-	hdr.add_theme_font_size_override("font_size", 13)
-	hdr.add_theme_color_override("font_color", Color(0.28, 0.92, 1.0, 1.0))
-	vbox.add_child(hdr)
+	_browser_hdr_lbl = Label.new()
+	_browser_hdr_lbl.text = "2. REEMPLAZAR SONIDO DE [laser] (↑/↓ prueba · Doble clic reemplaza)"
+	_browser_hdr_lbl.add_theme_font_size_override("font_size", 13)
+	_browser_hdr_lbl.add_theme_color_override("font_color", Color(0.28, 0.92, 1.0, 1.0))
+	vbox.add_child(_browser_hdr_lbl)
 
 	var filter_row := HBoxContainer.new()
 	filter_row.add_theme_constant_override("separation", 6)
 	vbox.add_child(filter_row)
 
 	_pack_opt = OptionButton.new()
-	_pack_opt.custom_minimum_size = Vector2(180.0, 0.0)
+	_pack_opt.custom_minimum_size = Vector2(160.0, 0.0)
 	_pack_opt.focus_mode = Control.FOCUS_NONE
 	_pack_opt.add_item("Todos")
 	_pack_opt.item_selected.connect(func(_idx: int) -> void:
@@ -766,7 +866,7 @@ func _build_center_browser_panel(parent: HBoxContainer) -> void:
 
 	_search_edit = LineEdit.new()
 	_search_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_search_edit.placeholder_text = "Buscar por nombre/ruta (ej: laser sci, click, hit)..."
+	_search_edit.placeholder_text = "Buscar reemplazo (ej: laser, click, hit)..."
 	_search_edit.text_changed.connect(func(_txt: String) -> void: _apply_file_filters())
 	filter_row.add_child(_search_edit)
 
@@ -779,21 +879,32 @@ func _build_center_browser_panel(parent: HBoxContainer) -> void:
 	)
 	filter_row.add_child(clear_btn)
 
+	_keywords_row = HFlowContainer.new()
+	_keywords_row.add_theme_constant_override("h_separation", 4)
+	_keywords_row.add_theme_constant_override("v_separation", 4)
+	vbox.add_child(_keywords_row)
+
 	var opts_row := HBoxContainer.new()
-	opts_row.add_theme_constant_override("separation", 12)
+	opts_row.add_theme_constant_override("separation", 10)
 	vbox.add_child(opts_row)
 
 	_fav_only_check = CheckBox.new()
-	_fav_only_check.text = "★ Solo Favoritos"
+	_fav_only_check.text = "★ Favs"
 	_fav_only_check.focus_mode = Control.FOCUS_NONE
 	_fav_only_check.toggled.connect(func(_on: bool) -> void: _apply_file_filters())
 	opts_row.add_child(_fav_only_check)
 
 	_auto_preview_check = CheckBox.new()
-	_auto_preview_check.text = "Auto-Preview al navegar"
+	_auto_preview_check.text = "Auto-Preview"
 	_auto_preview_check.button_pressed = true
 	_auto_preview_check.focus_mode = Control.FOCUS_NONE
 	opts_row.add_child(_auto_preview_check)
+
+	var suggest_btn := Button.new()
+	suggest_btn.text = "Sugerir Top 5"
+	suggest_btn.focus_mode = Control.FOCUS_NONE
+	suggest_btn.pressed.connect(func() -> void: run_candidate_suggester())
+	opts_row.add_child(suggest_btn)
 
 	_files_count_lbl = Label.new()
 	_files_count_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -805,19 +916,20 @@ func _build_center_browser_panel(parent: HBoxContainer) -> void:
 
 	_files_list = ItemList.new()
 	_files_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_files_list.allow_reselect = true
 	_files_list.item_selected.connect(func(idx: int) -> void:
 		if not _suppress_ui_signals:
 			select_candidate_index(idx)
 	)
 	_files_list.item_activated.connect(func(idx: int) -> void:
 		select_candidate_index(idx)
-		stage_selected_candidate()
+		replace_main_candidate()
 	)
 	vbox.add_child(_files_list)
 
 
 func _build_right_deck_panel(parent: HBoxContainer) -> void:
-	var panel := _make_column_panel(390.0, false)
+	var panel := _make_column_panel(395.0, false)
 	parent.add_child(panel)
 
 	var vbox := VBoxContainer.new()
@@ -827,7 +939,7 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	panel.add_child(vbox)
 
 	var hdr := Label.new()
-	hdr.text = "3. DECK DE AUDICIÓN & EXPORTACIÓN"
+	hdr.text = "3. ESCUCHAR, COMPARAR A/B Y EXPORTAR"
 	hdr.add_theme_font_size_override("font_size", 13)
 	hdr.add_theme_color_override("font_color", Color(0.28, 0.92, 1.0, 1.0))
 	vbox.add_child(hdr)
@@ -847,14 +959,14 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	vbox.add_child(play_row1)
 
 	var play_b_btn := Button.new()
-	play_b_btn.text = "▶ Play [Space]"
+	play_b_btn.text = "▶ Nuevo [Space]"
 	play_b_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	play_b_btn.focus_mode = Control.FOCUS_NONE
 	play_b_btn.pressed.connect(audition_selected)
 	play_row1.add_child(play_b_btn)
 
 	var play_a_btn := Button.new()
-	play_a_btn.text = "▶ Prod [A]"
+	play_a_btn.text = "▶ Prod Actual [A]"
 	play_a_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	play_a_btn.focus_mode = Control.FOCUS_NONE
 	play_a_btn.pressed.connect(audition_production)
@@ -871,7 +983,7 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	vbox.add_child(play_row2)
 
 	_burst_btn = Button.new()
-	_burst_btn.text = "▶ Ráfaga Combate [R]"
+	_burst_btn.text = "▶ Ráfaga [R]"
 	_burst_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_burst_btn.focus_mode = Control.FOCUS_NONE
 	_burst_btn.pressed.connect(func() -> void: toggle_burst_preview(false))
@@ -936,9 +1048,9 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	)
 	flags_row.add_child(_mono_check)
 
-	# --- Candidatos asignados al slot ---
+	# --- Sonidos asignados al slot ---
 	var staged_hdr := Label.new()
-	staged_hdr.text = "Candidatos asignados al slot (primero = principal):"
+	staged_hdr.text = "Sonidos del slot (clic para escuchar · [Main] = principal):"
 	staged_hdr.add_theme_font_size_override("font_size", 11)
 	staged_hdr.add_theme_color_override("font_color", Color(1.0, 0.55, 0.72, 1.0))
 	vbox.add_child(staged_hdr)
@@ -946,13 +1058,18 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	_staged_list = ItemList.new()
 	_staged_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_staged_list.custom_minimum_size = Vector2(0.0, 86.0)
+	_staged_list.allow_reselect = true
 	_staged_list.item_selected.connect(func(idx: int) -> void:
+		if _suppress_ui_signals:
+			return
 		var st: Dictionary = _get_current_slot_state()
 		var cands: Array = st.get("candidates", []) as Array
 		if idx >= 0 and idx < cands.size():
 			var p: String = str(cands[idx])
 			_selected_candidate_abs = p
-			_selected_file_lbl.text = p.get_file()
+			var role_tag: String = "Main" if idx == 0 else "Var %d" % (idx + 1)
+			_selected_file_lbl.text = "[PRESET · %s] %s" % [role_tag, p.get_file()]
+			_selected_file_lbl.add_theme_color_override("font_color", Color(0.45, 0.96, 0.78, 1.0))
 			_update_fav_button_label()
 			_current_stream_info = _scanner.load_external_stream(p)
 			_waveform.set_analysis(_current_stream_info)
@@ -964,9 +1081,15 @@ func _build_right_deck_panel(parent: HBoxContainer) -> void:
 	stage_btns.add_theme_constant_override("separation", 6)
 	vbox.add_child(stage_btns)
 
+	var rep_btn := Button.new()
+	rep_btn.text = "Reemplazar Main [Enter]"
+	rep_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rep_btn.focus_mode = Control.FOCUS_NONE
+	rep_btn.pressed.connect(replace_main_candidate)
+	stage_btns.add_child(rep_btn)
+
 	var add_btn := Button.new()
-	add_btn.text = "Asignar [Enter]"
-	add_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_btn.text = "+ Variante"
 	add_btn.focus_mode = Control.FOCUS_NONE
 	add_btn.pressed.connect(stage_selected_candidate)
 	stage_btns.add_child(add_btn)
@@ -1131,11 +1254,16 @@ func _refresh_slot_list() -> void:
 		if filter_idx == 6 and cat != "Ambience":
 			continue
 
-		var status_tag: String = "[PROD]" if in_am else "[MISS]"
-		if staged_count > 0:
-			status_tag = "[STAGED x%d]" % staged_count
+		var status_tag: String = "PROD" if in_am else "VACÍO"
 		var star_pfx: String = "★ " if is_ess else ""
-		var text: String = "%s%s %s → %s" % [star_pfx, status_tag, key, str(spec.get("target_filename", ""))]
+		var cands_arr: Array = st.get("candidates", []) as Array
+		var text: String = ""
+		if staged_count > 0:
+			var main_file: String = str(cands_arr[0]).get_file()
+			var extra_suffix: String = " (+%d)" % (staged_count - 1) if staged_count > 1 else ""
+			text = "%s%s → %s%s" % [star_pfx, key, main_file, extra_suffix]
+		else:
+			text = "%s[%s] %s → (sin asignar)" % [star_pfx, status_tag, key]
 		var idx: int = _slot_list.add_item(text)
 		_slot_list.set_item_metadata(idx, key)
 		if staged_count > 0:
@@ -1154,13 +1282,14 @@ func _refresh_slot_inspector() -> void:
 	var spec: Dictionary = _get_slot_spec(_selected_slot_key)
 	var st: Dictionary = _get_current_slot_state()
 	var in_am: bool = bool(spec.get("in_audio_manager", false))
-	var prod_state: String = "Activo en AudioManager" if in_am else "Pendiente en AudioManager (invocado en código)"
-	_slot_info_lbl.text = "%s · %s\n%s\nPack ideal: %s" % [
+	var prod_state: String = "Activo en AudioManager" if in_am else "Pendiente en AudioManager"
+	_slot_info_lbl.text = "%s · %s\n%s" % [
 		str(spec.get("category", "")),
 		prod_state,
 		str(spec.get("description", "")),
-		str(spec.get("recommended_pack", "")),
 	]
+	if _browser_hdr_lbl != null:
+		_browser_hdr_lbl.text = "2. REEMPLAZAR SONIDO DE [%s] (↑/↓ prueba · Doble clic reemplaza)" % _selected_slot_key
 
 	for child: Node in _keywords_row.get_children():
 		child.queue_free()
@@ -1213,15 +1342,19 @@ func clear_layer2_candidate() -> void:
 
 func audition_layered_slot() -> bool:
 	var st: Dictionary = _get_current_slot_state()
-	var streams: Array[AudioStream] = _collect_staged_streams(st)
-	var main_stream: AudioStream = streams[0] if not streams.is_empty() else (_current_stream_info.get("stream", null) as AudioStream)
+	var cands: Array = st.get("candidates", []) as Array
+	var main_stream: AudioStream = null
+	if not cands.is_empty():
+		main_stream = _scanner.load_external_stream(str(cands[0])).get("stream", null) as AudioStream
+	if main_stream == null:
+		main_stream = _current_stream_info.get("stream", null) as AudioStream
 	if main_stream == null:
 		return false
 	_audition.stop_burst()
 	_audition.stop_tour()
-	_burst_btn.text = "▶ Ráfaga Combate [R]"
+	_burst_btn.text = "▶ Ráfaga [R]"
 	if _tour_btn != null:
-		_tour_btn.text = "▶ Tour del Perfil"
+		_tour_btn.text = "▶ Tour (9 clave)"
 	var pitch: float = float(st.get("pitch_base", 1.0))
 	var gain_db: float = float(st.get("gain_db", 0.0))
 	_audition.play_stream_once(main_stream, pitch, gain_db, true, true)
@@ -1358,6 +1491,124 @@ func apply_combined_profile(profile_id: String, only_empty_slots: bool = false) 
 	return applied_count
 
 
+func apply_curated_preset(preset_id: String, only_empty_slots: bool = false, auto_play_current: bool = false) -> int:
+	var preset: Dictionary = {}
+	if _curated_presets.has(preset_id):
+		preset = _curated_presets[preset_id] as Dictionary
+	elif _custom_presets.has(preset_id):
+		preset = _custom_presets[preset_id] as Dictionary
+	if preset.is_empty():
+		_set_status("Preset '%s' no encontrado." % preset_id)
+		return 0
+
+	var raw_slots: Variant = preset.get("slots", {})
+	if not (raw_slots is Dictionary):
+		return 0
+	var src_slots: Dictionary = raw_slots as Dictionary
+	var slots_dict: Dictionary = _manifest.get("slots", {}) as Dictionary
+	var applied_count: int = 0
+	_manifest["active_profile_id"] = preset_id
+
+	for spec: Dictionary in _slot_specs:
+		var key: String = str(spec.get("key", ""))
+		if not src_slots.has(key) or not (src_slots[key] is Dictionary):
+			continue
+		var cur_state: Dictionary = slots_dict.get(key, {}) as Dictionary
+		if only_empty_slots and not (cur_state.get("candidates", []) as Array).is_empty():
+			continue
+
+		var src: Dictionary = src_slots[key] as Dictionary
+		var resolved_cands: Array[String] = []
+		var raw_cands: Variant = src.get("candidates", [])
+		if raw_cands is Array:
+			for c_v: Variant in (raw_cands as Array):
+				var res_path: String = CatalogScript.resolve_preset_path(str(c_v), _pack_dirs)
+				if not res_path.is_empty() and not resolved_cands.has(res_path):
+					resolved_cands.append(res_path)
+		if resolved_cands.is_empty():
+			continue
+
+		var l2_res: String = CatalogScript.resolve_preset_path(str(src.get("layer2_candidate", "")), _pack_dirs)
+		cur_state["candidates"] = resolved_cands
+		cur_state["layer2_candidate"] = l2_res
+		cur_state["gain_db"] = float(src.get("gain_db", 0.0))
+		cur_state["pitch_base"] = float(src.get("pitch_base", 1.0))
+		cur_state["pitch_jitter"] = float(src.get("pitch_jitter", 0.08))
+		cur_state["trim_silence"] = bool(src.get("trim_silence", true))
+		cur_state["mono"] = bool(src.get("mono", bool(spec.get("default_mono", true))))
+		slots_dict[key] = cur_state
+		applied_count += 1
+
+	_refresh_preset_bar_buttons()
+	_refresh_slot_list()
+	_refresh_slot_inspector()
+	_load_slot_main_into_deck(auto_play_current and DisplayServer.get_name() != "headless")
+	_update_progress_banner()
+	var label_str: String = str(preset.get("label", preset_id))
+	var desc_str: String = str(preset.get("desc", ""))
+	if _preset_desc_lbl != null:
+		_preset_desc_lbl.text = "%s — %s" % [label_str, desc_str]
+	if applied_count == 0:
+		_set_status("Preset '%s' sin archivos resueltos en las carpetas actuales (cargá Stela_SFX_Packs)." % label_str)
+	else:
+		_set_status("%s (%d/32 slots listos). Usá ↑/↓ en Columna 1 para escuchar cada sonido." % [label_str, applied_count])
+	return applied_count
+
+
+func save_current_as_custom_preset(label: String = "Mi Preset Custom", custom_path_override: String = "") -> bool:
+	var target_path: String = custom_path_override if not custom_path_override.is_empty() else _custom_presets_path
+	var slots_dict: Dictionary = _manifest.get("slots", {}) as Dictionary
+	var pid: String = "custom_user"
+	var err: Error = CatalogScript.save_custom_preset(
+		pid,
+		"☆ Custom: %s" % label,
+		"Preset personalizado guardado desde SfxLab.",
+		slots_dict,
+		target_path
+	)
+	if err != OK:
+		_set_status("Error guardando preset custom (%d)." % int(err))
+		return false
+	_custom_presets = CatalogScript.load_custom_presets(target_path)
+	_manifest["active_profile_id"] = pid
+	_refresh_preset_bar_buttons()
+	_set_status("Preset custom guardado (%d/32 slots) — disponible en el botón '☆ Custom'." % _count_staged_slots())
+	return true
+
+
+func _refresh_preset_bar_buttons() -> void:
+	var active_id: String = str(_manifest.get("active_profile_id", "stela_signature"))
+	for pid_v: Variant in _preset_buttons.keys():
+		var pid: String = str(pid_v)
+		var btn: Button = _preset_buttons[pid] as Button
+		if btn == null:
+			continue
+		if pid == "custom_user":
+			btn.visible = _custom_presets.has("custom_user")
+		_suppress_ui_signals = true
+		btn.button_pressed = (pid == active_id)
+		_suppress_ui_signals = false
+	if _preset_desc_lbl != null:
+		var active_preset: Dictionary = {}
+		if _curated_presets.has(active_id):
+			active_preset = _curated_presets[active_id] as Dictionary
+		elif _custom_presets.has(active_id):
+			active_preset = _custom_presets[active_id] as Dictionary
+		if not active_preset.is_empty():
+			_preset_desc_lbl.text = "%s — %s" % [str(active_preset.get("label", active_id)), str(active_preset.get("desc", ""))]
+
+
+func _count_staged_slots() -> int:
+	var count: int = 0
+	var slots_dict: Dictionary = _manifest.get("slots", {}) as Dictionary
+	for spec: Dictionary in _slot_specs:
+		var k: String = str(spec.get("key", ""))
+		var st: Dictionary = slots_dict.get(k, {}) as Dictionary
+		if not (st.get("candidates", []) as Array).is_empty():
+			count += 1
+	return count
+
+
 func cycle_slot_suggestion_alternative() -> bool:
 	if _suggestions_by_slot.is_empty():
 		run_candidate_suggester()
@@ -1408,22 +1659,20 @@ func start_profile_tour() -> bool:
 	for key: String in tour_keys:
 		var spec: Dictionary = _get_slot_spec(key)
 		var st: Dictionary = slots_dict.get(key, {}) as Dictionary
-		var streams: Array[AudioStream] = _collect_staged_streams(st)
-		var main_stream: AudioStream = streams[0] if not streams.is_empty() else (AudioManager.sfx_streams.get(key, null) as AudioStream if AudioManager != null else null)
-		if main_stream == null:
+		var cands: Array = st.get("candidates", []) as Array
+		var main_path: String = str(cands[0]) if not cands.is_empty() else ""
+		var fallback_stream: AudioStream = AudioManager.sfx_streams.get(key, null) as AudioStream if AudioManager != null else null
+		if main_path.is_empty() and fallback_stream == null:
 			continue
-		var layer2_stream: AudioStream = null
-		var l2_path: String = str(st.get("layer2_candidate", "")).strip_edges()
-		if not l2_path.is_empty():
-			layer2_stream = _scanner.load_external_stream(l2_path).get("stream", null) as AudioStream
 		var is_exp: bool = bool(spec.get("use_combo", false))
 		steps.append({
 			"slot_key": key,
-			"stream": main_stream,
-			"layer2": layer2_stream,
+			"main_path": main_path,
+			"layer2_path": str(st.get("layer2_candidate", "")).strip_edges(),
+			"fallback_stream": fallback_stream,
 			"pitch": float(st.get("pitch_base", 1.0)),
 			"volume_db": float(st.get("gain_db", 0.0)),
-			"repeat_count": 5 if is_exp else (3 if key.begins_with("weapon_") else 1),
+			"repeat_count": 4 if is_exp else (3 if key == "weapon_laser" else 1),
 			"use_exp_combo": is_exp,
 			"gap_sec": 0.35,
 		})
@@ -1433,8 +1682,28 @@ func start_profile_tour() -> bool:
 		return false
 	if _tour_btn != null:
 		_tour_btn.text = "■ Detener Tour"
-	_audition.start_tour(steps)
+	_audition.start_tour(steps, _load_tour_step_streams)
 	return true
+
+
+func _load_tour_step_streams(step: Dictionary) -> Dictionary:
+	var main_path: String = str(step.get("main_path", "")).strip_edges()
+	var l2_path: String = str(step.get("layer2_path", "")).strip_edges()
+	var main_stream: AudioStream = null
+	var layer2_stream: AudioStream = null
+	if not main_path.is_empty() and FileAccess.file_exists(main_path):
+		var info: Dictionary = _scanner.load_external_stream(main_path)
+		main_stream = info.get("stream", null) as AudioStream
+		if main_stream != null and _waveform != null:
+			_current_stream_info = info
+			_selected_candidate_abs = main_path
+			_waveform.set_analysis(info)
+			if _selected_file_lbl != null:
+				_selected_file_lbl.text = "[TOUR] %s" % main_path.get_file()
+	if not l2_path.is_empty() and FileAccess.file_exists(l2_path):
+		var l2_info: Dictionary = _scanner.load_external_stream(l2_path)
+		layer2_stream = l2_info.get("stream", null) as AudioStream
+	return {"stream": main_stream, "layer2": layer2_stream}
 
 
 func _refresh_layer2_and_suggestions() -> void:
@@ -1653,22 +1922,14 @@ func _refresh_zip_button() -> void:
 
 
 func _get_selected_profile_id() -> String:
-	if _profile_opt == null or _profile_opt.selected < 0:
-		return "hibrido_stela"
-	return str(_profile_opt.get_item_metadata(_profile_opt.selected))
+	return str(_manifest.get("active_profile_id", "stela_signature"))
 
 
 func _update_progress_banner() -> void:
 	if _step_progress_lbl == null:
 		return
-	var staged_slots: int = 0
-	var slots_dict: Dictionary = _manifest.get("slots", {}) as Dictionary
-	for spec: Dictionary in _slot_specs:
-		var k: String = str(spec.get("key", ""))
-		var st: Dictionary = slots_dict.get(k, {}) as Dictionary
-		if not (st.get("candidates", []) as Array).is_empty():
-			staged_slots += 1
-	_step_progress_lbl.text = "1. Packs: %d  →  2. Armados: %d/%d  →  3. Exportar" % [
+	var staged_slots: int = _count_staged_slots()
+	_step_progress_lbl.text = "Packs: %d · Armados: %d/%d" % [
 		_all_entries.size(),
 		staged_slots,
 		_slot_specs.size(),
@@ -1676,13 +1937,13 @@ func _update_progress_banner() -> void:
 
 
 func _on_tour_step_changed(slot_key: String, step_idx: int, total: int) -> void:
-	select_slot_by_key(slot_key)
+	select_slot_by_key(slot_key, false)
 	_set_status("▶ Tour (%d/%d): probando [%s]..." % [step_idx, total, slot_key])
 
 
 func _on_tour_finished() -> void:
 	if _tour_btn != null:
-		_tour_btn.text = "▶ Tour del Perfil"
+		_tour_btn.text = "▶ Tour (9 clave)"
 
 
 func _open_combat_gym() -> void:

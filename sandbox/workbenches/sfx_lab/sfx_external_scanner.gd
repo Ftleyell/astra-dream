@@ -4,7 +4,8 @@ extends RefCounted
 
 const SUPPORTED_EXTENSIONS: Array[String] = ["wav", "ogg", "mp3", "flac", "aiff", "aif", "m4a", "opus"]
 const IGNORED_DIRS: Array[String] = [".git", ".godot", "__MACOSX", "node_modules"]
-const MAX_CACHE_ENTRIES: int = 48
+const MAX_CACHE_ENTRIES: int = 96
+const MAX_PREVIEW_SECONDS: float = 2.0
 const SILENCE_THRESHOLD: float = 0.015
 
 var _cache: Dictionary = {} # abs_path -> Dictionary
@@ -59,6 +60,9 @@ static func scan_directories(root_dirs: Array[String], max_files: int = 8000) ->
 					if not IGNORED_DIRS.has(item_name) and not item_name.begins_with("."):
 						subdirs.append(current + "/" + item_name)
 				else:
+					if item_name.begins_with("._"):
+						item_name = dir.get_next()
+						continue
 					var ext: String = item_name.get_extension().to_lower()
 					var abs_path: String = current + "/" + item_name
 					if ext == "zip":
@@ -169,7 +173,9 @@ func _load_external_uncached(abs_path: String) -> Dictionary:
 	var decoded_fallback_used: bool = false
 
 	if ext == "wav":
-		stream = AudioStreamWAV.load_from_file(abs_path)
+		stream = load_wav_fast_native(abs_path, MAX_PREVIEW_SECONDS)
+		if stream == null:
+			stream = AudioStreamWAV.load_from_file(abs_path)
 	elif ext == "ogg":
 		stream = AudioStreamOggVorbis.load_from_file(abs_path)
 	elif ext == "mp3":
@@ -182,13 +188,7 @@ func _load_external_uncached(abs_path: String) -> Dictionary:
 				stream = mp3
 
 	if stream == null:
-		var preview_wav: AudioStreamWAV = _decode_via_python_preview(abs_path)
-		if preview_wav != null:
-			stream = preview_wav
-			decoded_fallback_used = true
-
-	if stream == null:
-		return {"stream": null, "duration_ms": 0.0, "sample_rate": 0, "stereo": false, "leading_silence_ms": -1.0, "peaks": PackedFloat32Array(), "error": "No se pudo decodificar %s" % ext}
+		return {"stream": null, "duration_ms": 0.0, "sample_rate": 0, "stereo": false, "leading_silence_ms": -1.0, "peaks": PackedFloat32Array(), "decoded_fallback": false, "error": "Formato .%s no soportado en preview en vivo (usable al exportar)" % ext}
 
 	var duration_ms: float = stream.get_length() * 1000.0
 	var sample_rate: int = 44100
@@ -272,22 +272,172 @@ static func extract_wav_analysis(wav: AudioStreamWAV, bin_count: int = 128) -> D
 	return {"peaks": peaks, "leading_silence_ms": leading_silence_ms}
 
 
-static func _decode_via_python_preview(abs_path: String) -> AudioStreamWAV:
-	var script_abs: String = ProjectSettings.globalize_path("res://tools/normalize_sfx.py")
-	if not FileAccess.file_exists(script_abs):
+static func load_wav_fast_native(abs_path: String, max_preview_sec: float = MAX_PREVIEW_SECONDS) -> AudioStreamWAV:
+	## Decodificador nativo RIFF/WAV en GDScript puro (8/16/24/32-bit PCM, IEEE float 32-bit y
+	## WAVE_FORMAT_EXTENSIBLE) con decimation para 96/192 kHz y tope de lectura para preview instantáneo.
+	var f: FileAccess = FileAccess.open(abs_path, FileAccess.READ)
+	if f == null:
 		return null
-	var cache_dir: String = OS.get_user_data_dir().path_join("sfx_lab_cache")
-	DirAccess.make_dir_recursive_absolute(cache_dir)
-	var cache_wav: String = cache_dir.path_join("%d.wav" % abs_path.hash())
-	if not FileAccess.file_exists(cache_wav):
-		var args := PackedStringArray([
-			script_abs,
-			"--input", abs_path,
-			"--output", cache_wav,
-			"--decode-preview",
-		])
-		var output: Array = []
-		var exit_code: int = OS.execute("python", args, output, true)
-		if exit_code != 0:
-			return null
-	return AudioStreamWAV.load_from_file(cache_wav)
+	var file_len: int = f.get_length()
+	if file_len < 44:
+		f.close()
+		return null
+
+	var riff_id: String = f.get_buffer(4).get_string_from_ascii()
+	var _riff_size: int = f.get_32()
+	var wave_id: String = f.get_buffer(4).get_string_from_ascii()
+	if riff_id != "RIFF" or wave_id != "WAVE":
+		f.close()
+		return null
+
+	var found_fmt: bool = false
+	var found_data: bool = false
+	var audio_format: int = 0
+	var channels: int = 0
+	var sample_rate: int = 0
+	var bits_per_sample: int = 0
+	var data_offset: int = 0
+	var data_size: int = 0
+
+	while f.get_position() + 8 <= file_len:
+		var chunk_id: String = f.get_buffer(4).get_string_from_ascii()
+		var chunk_size: int = f.get_32()
+		var chunk_start: int = f.get_position()
+		if chunk_id == "fmt " and chunk_size >= 16 and chunk_start + 16 <= file_len:
+			audio_format = f.get_16()
+			channels = f.get_16()
+			sample_rate = f.get_32()
+			var _byte_rate: int = f.get_32()
+			var _block_align: int = f.get_16()
+			bits_per_sample = f.get_16()
+			if audio_format == 0xFFFE and chunk_size >= 40 and chunk_start + 26 <= file_len:
+				f.seek(chunk_start + 24)
+				audio_format = f.get_16()
+			found_fmt = true
+		elif chunk_id == "data":
+			data_offset = chunk_start
+			data_size = mini(chunk_size, maxi(0, file_len - chunk_start))
+			found_data = true
+
+		if found_fmt and found_data:
+			break
+		var next_pos: int = chunk_start + chunk_size + (chunk_size & 1)
+		if next_pos <= chunk_start or next_pos > file_len:
+			break
+		f.seek(next_pos)
+
+	if not found_fmt or not found_data:
+		f.close()
+		return null
+	if channels < 1 or sample_rate <= 0 or data_size <= 0:
+		f.close()
+		return null
+	var is_pcm: bool = audio_format == 1 and (bits_per_sample == 8 or bits_per_sample == 16 or bits_per_sample == 24 or bits_per_sample == 32)
+	var is_f32: bool = audio_format == 3 and bits_per_sample == 32
+	if not is_pcm and not is_f32:
+		f.close()
+		return null
+
+	var bytes_per_sample: int = bits_per_sample / 8
+	var frame_bytes: int = channels * bytes_per_sample
+	var total_frames: int = data_size / frame_bytes
+	if total_frames <= 0:
+		f.close()
+		return null
+
+	var decimate: int = 1
+	if sample_rate > 144000:
+		decimate = 4
+	elif sample_rate > 72000:
+		decimate = 2
+
+	var max_frames: int = int(maxf(0.25, max_preview_sec) * float(sample_rate))
+	var frames_to_read: int = mini(total_frames, max_frames)
+	if decimate > 1:
+		frames_to_read = (frames_to_read / decimate) * decimate
+	if frames_to_read <= 0:
+		f.close()
+		return null
+
+	f.seek(data_offset)
+	var raw: PackedByteArray = f.get_buffer(frames_to_read * frame_bytes)
+	f.close()
+	if raw.size() < frame_bytes:
+		return null
+	frames_to_read = mini(frames_to_read, raw.size() / frame_bytes)
+
+	var out_channels: int = mini(channels, 2)
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = maxi(8000, sample_rate / decimate)
+	wav.stereo = (out_channels == 2)
+
+	# Camino rápido para 16-bit PCM mono/estéreo sin decimation
+	if audio_format == 1 and bits_per_sample == 16 and decimate == 1 and channels <= 2:
+		wav.data = raw
+		return wav
+
+	var out_frames: int = frames_to_read / decimate
+	if out_frames <= 0:
+		return null
+	var out := PackedByteArray()
+	out.resize(out_frames * out_channels * 2)
+
+	var step_bytes: int = frame_bytes * decimate
+	var dst: int = 0
+	var src_frame_off: int = 0
+
+	if audio_format == 1 and bits_per_sample == 24:
+		for _i: int in range(out_frames):
+			out[dst] = raw[src_frame_off + 1]
+			out[dst + 1] = raw[src_frame_off + 2]
+			dst += 2
+			if out_channels == 2:
+				out[dst] = raw[src_frame_off + 4]
+				out[dst + 1] = raw[src_frame_off + 5]
+				dst += 2
+			src_frame_off += step_bytes
+	elif audio_format == 1 and bits_per_sample == 16:
+		for _i: int in range(out_frames):
+			out[dst] = raw[src_frame_off]
+			out[dst + 1] = raw[src_frame_off + 1]
+			dst += 2
+			if out_channels == 2:
+				out[dst] = raw[src_frame_off + 2]
+				out[dst + 1] = raw[src_frame_off + 3]
+				dst += 2
+			src_frame_off += step_bytes
+	elif audio_format == 1 and bits_per_sample == 32:
+		for _i: int in range(out_frames):
+			out[dst] = raw[src_frame_off + 2]
+			out[dst + 1] = raw[src_frame_off + 3]
+			dst += 2
+			if out_channels == 2:
+				out[dst] = raw[src_frame_off + 6]
+				out[dst + 1] = raw[src_frame_off + 7]
+				dst += 2
+			src_frame_off += step_bytes
+	elif audio_format == 3 and bits_per_sample == 32:
+		for _i: int in range(out_frames):
+			var s0: int = clampi(int(roundf(clampf(raw.decode_float(src_frame_off), -1.0, 1.0) * 32767.0)), -32767, 32767)
+			out.encode_s16(dst, s0)
+			dst += 2
+			if out_channels == 2:
+				var s1: int = clampi(int(roundf(clampf(raw.decode_float(src_frame_off + 4), -1.0, 1.0) * 32767.0)), -32767, 32767)
+				out.encode_s16(dst, s1)
+				dst += 2
+			src_frame_off += step_bytes
+	else:
+		# 8-bit unsigned PCM -> 16-bit signed PCM
+		for _i: int in range(out_frames):
+			var s0_8: int = (int(raw[src_frame_off]) - 128) << 8
+			out.encode_s16(dst, clampi(s0_8, -32768, 32767))
+			dst += 2
+			if out_channels == 2:
+				var s1_8: int = (int(raw[src_frame_off + 1]) - 128) << 8
+				out.encode_s16(dst, clampi(s1_8, -32768, 32767))
+				dst += 2
+			src_frame_off += step_bytes
+
+	wav.data = out
+	return wav
