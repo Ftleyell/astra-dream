@@ -17,6 +17,7 @@ Para ubicar el código de cualquier dominio, consulta esta tabla antes de abrir 
 | **Combate Raíz** | `scenes/combat/main_game.gd` | `combat_scene_assembler.gd`, `combat_context.gd`, `combat_wave_pipeline.gd`, `controllers/{combat_title_session_controller,combat_hub_session_controller}.gd`, `run_state_serializer.gd` |
 | **Jugador 2D** | `scenes/combat/player/player.gd` | `player_locomotion_controller.gd`, `player_damage_processor.gd`, `player_economy_component.gd`, `player_death_sequence_controller.gd`, `player_rig_v2_controller.gd`, `hub_landing_ripple_vfx.gd` |
 | **Arsenal y Armas** | `scenes/combat/player/weapon_controller.gd` | `combat_targeting_system.gd`, `weapon_cooldown_tracker.gd`, `weapon_projectile_factory.gd`, `behaviors/` |
+| **Rig Enemigos 2.5D (Prod. + ArtLab)** | `scenes/combat/enemies/rig/void_scarab_rig_25d.gd` | `enemy_visual_controller.gd`, `shaders/enemy_stylized_25d.gdshader`, `data/enemies/{default_enemy_visual_catalog.tres,void_scarab/*.tres}`, `sandbox/enemy_art_lab/` |
 | **Danmaku / Balas** | `core/autoloads/bullet_server.gd` (Hijo de MainGame) | Pool contiguo `PackedFloat32Array`, zero-allocation, espacio absoluto |
 | **Directores de Combate** | `scenes/combat/directors/` | `combat_boss_coordinator.gd`, `boss_encounter_spawner.gd`, `combat_narrative_director.gd` |
 | **Voces & Mumble Speech** | `core/audio/dialogic_mumble_bridge.gd` | `mumble_speech_controller.gd`, `data/voices/voice_profile_registry.gd`, `data/voices/profiles/*.tres` |
@@ -138,6 +139,7 @@ El harness `tools/run_tests.ps1` admite coincidencia recursiva por subcadena:
 | **Workbenches & Combat Gym (Sandbox)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "workbenches_and_combat_gym"` |
 | **AudioManager v2 (Cues, Buses, Ambience)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_audio_manager_v2"` |
 | **SfxLab Workbench & Presets** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_sfx_lab" -TimeoutSeconds 35` |
+| **Rig Enemigos 2.5D (Prod. + ArtLab)** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_enemy_25d_production"` · `-Test "test_enemy_art_lab"` |
 | **Regresión Completa Core** | `powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -CoreOnly` *(solo antes de cerrar tarea)* |
 
 ---

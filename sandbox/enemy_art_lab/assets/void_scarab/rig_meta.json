@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "enemy_id": "void_scarab",
+  "faction": "biomech",
+  "art_forward_axis": "UP_NEG_Y",
+  "px_scale_from_raw": 0.09661,
+  "parts": {
+    "body_core": {
+      "albedo_size": [
+        512,
+        512
+      ],
+      "ilm_sdf_size": [
+        1024,
+        1024
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "elytron_r": {
+      "albedo_size": [
+        384,
+        384
+      ],
+      "ilm_sdf_size": [
+        768,
+        768
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "inner_wing_r": {
+      "albedo_size": [
+        384,
+        384
+      ],
+      "ilm_sdf_size": [
+        768,
+        768
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "elytron_l": {
+      "albedo_size": [
+        384,
+        384
+      ],
+      "ilm_sdf_size": [
+        768,
+        768
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "inner_wing_l": {
+      "albedo_size": [
+        384,
+        384
+      ],
+      "ilm_sdf_size": [
+        768,
+        768
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "mandible_r": {
+      "albedo_size": [
+        256,
+        256
+      ],
+      "ilm_sdf_size": [
+        512,
+        512
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    },
+    "mandible_l": {
+      "albedo_size": [
+        256,
+        256
+      ],
+      "ilm_sdf_size": [
+        512,
+        512
+      ],
+      "ink_sdf_range_native_px": 8.0,
+      "outer_sdf_range_native_px": 24.0
+    }
+  },
+  "body_height_px": 367.0,
+  "elytron_hinge_uv": [
+    0.4036,
+    0.3359
+  ],
+  "elytron_hinge_px": [
+    155.0,
+    129.0
+  ],
+  "elytron_mount_art_px": [
+    0.0,
+    -47.5
+  ],
+  "inner_wing_hinge_uv": [
+    0.3438,
+    0.3516
+  ],
+  "inner_wing_hinge_px": [
+    132.0,
+    135.0
+  ],
+  "inner_wing_mount_art_px": [
+    11.0,
+    -27.5
+  ],
+  "mandible_hinge_px": [
+    118.0,
+    178.0
+  ],
+  "mandible_hinge_uv": [
+    0.4609,
+    0.6953
+  ],
+  "mandible_mount_art_px": [
+    24.0,
+    -68.0
+  ]
+}

@@ -38,6 +38,7 @@
 | Documento | Contenido |
 |---|---|
 | [`ART_DIRECTION_AND_PIPELINE.md`](ART_DIRECTION_AND_PIPELINE.md) | Dirección artística global y estándares visuales del proyecto. |
+| [`ENEMY_25D_RIG_SYSTEM.md`](ENEMY_25D_RIG_SYSTEM.md) | **Rig Enemigos 2.5D/3D (Void Scarab):** Single Source of Truth, shader SDF/ArcSys, catálogo de 11 variantes, `EnemyNodePool` y `EnemyArtLab`. |
 | [`SFX_AUDIO_AND_LAB_GUIDE.md`](SFX_AUDIO_AND_LAB_GUIDE.md) | **Sistema de Audio v2, SfxLab & Librería SFX:** arquitectura de 7 buses, 32 slots, presets curados, guía visual de `SfxLab`, pipeline CLI `normalize_sfx.py` y tabla contractual para agentes. |
 | [`MUMBLE_SPEECH_SYSTEM.md`](MUMBLE_SPEECH_SYSTEM.md) | Sistema híbrido de **Mumble Speech** data-driven (`VoiceProfileData` `.tres`), integración Dialogic/HUD y guía de fine-tuning. |
 | [`UI_REWORK_ART_DIRECTION.md`](UI_REWORK_ART_DIRECTION.md) | **Dirección aprobada para futuro Rework de UI (*Astral Pop-Ink* — Fusión B+D):** referencia visual, pilares técnicos y plan de profundización. |

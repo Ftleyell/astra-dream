@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="EnemyArchetypeVisualCatalog" format=3]
+
+[ext_resource type="Script" path="res://data/enemies/schemas/enemy_archetype_visual_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" path="res://data/enemies/schemas/enemy_archetype_visual_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Entry_drone"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_drone"
+display_label = "Void Scarab Base"
+size_multiplier = 1.0
+use_variant_recolor = false
+armor_tint = Color(0.22, 0.22, 0.36, 1)
+accent_tint = Color(0.68, 0.24, 0.96, 1)
+energy_tint = Color(0.22, 1, 0.56, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_kamikaze"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_kamikaze"
+display_label = "Crimson Overlord"
+size_multiplier = 0.94
+use_variant_recolor = true
+armor_tint = Color(0.44, 0.12, 0.18, 1)
+accent_tint = Color(1, 0.28, 0.32, 1)
+energy_tint = Color(1, 0.24, 0.22, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = true
+
+[sub_resource type="Resource" id="Entry_shooter"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_shooter"
+display_label = "Abyssal Sovereign"
+size_multiplier = 1.12
+use_variant_recolor = true
+armor_tint = Color(0.3, 0.16, 0.48, 1)
+accent_tint = Color(0.92, 0.38, 1, 1)
+energy_tint = Color(0.86, 0.32, 1, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_tank"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_tank"
+display_label = "Ironclad Juggernaut"
+size_multiplier = 1.48
+use_variant_recolor = true
+armor_tint = Color(0.34, 0.28, 0.22, 1)
+accent_tint = Color(1, 0.56, 0.18, 1)
+energy_tint = Color(1, 0.52, 0.14, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_splitter"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_splitter"
+display_label = "Bio-Mitosis Jade"
+size_multiplier = 1.14
+use_variant_recolor = true
+armor_tint = Color(0.14, 0.34, 0.28, 1)
+accent_tint = Color(0.54, 1, 0.24, 1)
+energy_tint = Color(0.28, 1, 0.62, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_splitter_micro"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_splitter_micro"
+display_label = "Mitosis Micro-Cell"
+size_multiplier = 0.96
+use_variant_recolor = true
+armor_tint = Color(0.14, 0.34, 0.28, 1)
+accent_tint = Color(0.54, 1, 0.24, 1)
+energy_tint = Color(0.28, 1, 0.62, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_micro_flock"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_micro_flock"
+display_label = "Swarmlet Mint"
+size_multiplier = 0.64
+use_variant_recolor = true
+armor_tint = Color(0.16, 0.32, 0.4, 1)
+accent_tint = Color(0.36, 1, 0.92, 1)
+energy_tint = Color(0.3, 0.94, 0.98, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = false
+
+[sub_resource type="Resource" id="Entry_assault_cone"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_assault_cone"
+display_label = "Solar Charger"
+size_multiplier = 1.34
+use_variant_recolor = true
+armor_tint = Color(0.42, 0.26, 0.12, 1)
+accent_tint = Color(1, 0.84, 0.24, 1)
+energy_tint = Color(1, 0.76, 0.18, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = true
+
+[sub_resource type="Resource" id="Entry_vanguard_ring"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_vanguard_ring"
+display_label = "Cobalt Vanguard"
+size_multiplier = 1.42
+use_variant_recolor = true
+armor_tint = Color(0.14, 0.26, 0.48, 1)
+accent_tint = Color(0.32, 0.92, 1, 1)
+energy_tint = Color(0.24, 0.9, 1, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = true
+
+[sub_resource type="Resource" id="Entry_specter_wave"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_specter_wave"
+display_label = "Astral Specter"
+size_multiplier = 1.24
+use_variant_recolor = true
+armor_tint = Color(0.26, 0.12, 0.44, 1)
+accent_tint = Color(1, 0.34, 0.86, 1)
+energy_tint = Color(0.78, 0.26, 1, 1)
+enable_rainbow_cycle = false
+enable_flight_ribbons = true
+
+[sub_resource type="Resource" id="Entry_rainbow"]
+script = ExtResource("2_entry")
+enemy_id = &"enemy_rainbow"
+display_label = "Prismatic Jackpot"
+size_multiplier = 1.32
+use_variant_recolor = true
+armor_tint = Color(0.42, 0.34, 0.2, 1)
+accent_tint = Color(1, 0.85, 0.25, 1)
+energy_tint = Color(1, 0.85, 0.25, 1)
+enable_rainbow_cycle = true
+enable_flight_ribbons = true
+
+[resource]
+script = ExtResource("1_catalog")
+combat_base_rig_scale = 0.175
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_drone"), SubResource("Entry_kamikaze"), SubResource("Entry_shooter"), SubResource("Entry_tank"), SubResource("Entry_splitter"), SubResource("Entry_splitter_micro"), SubResource("Entry_micro_flock"), SubResource("Entry_assault_cone"), SubResource("Entry_vanguard_ring"), SubResource("Entry_specter_wave"), SubResource("Entry_rainbow")])

@@ -78,6 +78,7 @@ Todos los servicios globales residen bajo `core/autoloads/` y están registrados
 | Contexto de Combate | `scenes/combat/combat_context.gd` | Contenedor de estado compartido (jugador, cámara, puntuación, tiempo de oleada). |
 | Pipeline de Oleadas | `scenes/combat/combat_wave_pipeline.gd` | Control del avance temporal de oleadas y eventos programados. |
 | Spawner de Enemigos | `scenes/combat/spawners/enemy_spawner.gd` | Spawns procedurales según pesos y composición de `EncounterTimelineConfig`. |
+| Rig Visual Enemigos 2.5D | `scenes/combat/enemies/rig/{void_scarab_rig_25d,enemy_visual_controller}.gd` | Rig procedural 7 piezas en producción (`combat_lite_mode`), catálogo `.tres` de variantes y pooling `EnemyBase`. |
 | Sesión Título Viva & Materialización | `scenes/combat/controllers/combat_title_session_controller.gd` | `TITLE_ACTIVE ↔ HUB_MATERIALIZING` (`StelaLogoStage`, `TitleMenuOverlay`, materialización del Hub 3D y fly-in de Valentina). |
 | Sesión Hub 3D Embebido | `scenes/combat/controllers/combat_hub_session_controller.gd` | Ciclo `TITLE_STANDBY ↔ HUB_ACTIVE → DEPARTING_DISSOLVE → COMBAT_LIVE` dentro de `MainGame`, `HubTutorialDirector`, exclusión de spawners y paridad 2D↔3D. |
 | Serializador de Estado | `scenes/combat/systems/run_state_serializer.gd` | Serializa y restaura `run_seed`, inventario, armas y estado de partida activa. |
@@ -342,6 +343,8 @@ powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "boss"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "rival_engagement_rules"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "proc_coefficients_and_osp"
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "phase5_boss_and_bullets"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_enemy_25d_production"
+powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "test_enemy_art_lab"
 
 # Economía, Satélites, Persistencia y Bifurcaciones
 powershell -ExecutionPolicy Bypass -File tools/run_tests.ps1 -Test "satellite_items"

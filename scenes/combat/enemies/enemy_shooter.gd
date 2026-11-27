@@ -89,13 +89,13 @@ func _begin_charge_up() -> void:
 	charge_timer = CHARGE_DURATION
 	# Telegrafiado visual: contracción y destello de advertencia
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector2(0.85, 0.85), CHARGE_DURATION * 0.8)
+	tw.tween_property(self, "scale", Vector2(1.75, 1.75), CHARGE_DURATION * 0.8)
 	tw.parallel().tween_property(self, "modulate", Color(2.0, 1.4, 1.4, 1.0), CHARGE_DURATION * 0.8)
 
 func _fire_telegraphed_shot() -> void:
-	# Restaurar modulación
+	# Restaurar modulación y escala base de EnemyBase (2.0)
 	modulate = Color(1.0, 1.0, 1.0, 1.0)
-	scale = Vector2(1.0, 1.0)
+	scale = Vector2(2.0, 2.0)
 
 	if not is_instance_valid(player) or not is_instance_valid(bullet_server):
 		return
@@ -112,5 +112,5 @@ func _fire_telegraphed_shot() -> void:
 
 		# Rebote elástico de retroceso
 		var tw := create_tween()
-		tw.tween_property(self, "scale", Vector2(1.15, 0.85), 0.06)
-		tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.12)
+		tw.tween_property(self, "scale", Vector2(2.25, 1.75), 0.06)
+		tw.tween_property(self, "scale", Vector2(2.0, 2.0), 0.12)

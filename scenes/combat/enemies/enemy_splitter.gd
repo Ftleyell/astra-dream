@@ -40,7 +40,7 @@ func _ready_custom() -> void:
 	var visual: Node = get_node_or_null("Visual")
 	var cell_core: Node = get_node_or_null("CellCore")
 	var tex_path := "res://assets/sprites/enemies/enemy_splitter.png"
-	if ResourceLoader.exists(tex_path):
+	if ResourceLoader.exists(tex_path) and get_node_or_null("SplitterSprite") == null:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			var spr := Sprite2D.new()

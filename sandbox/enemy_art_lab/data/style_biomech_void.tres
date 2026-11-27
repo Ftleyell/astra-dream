@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EnemyFactionStyle" format=3]
+
+[ext_resource type="Script" path="res://sandbox/enemy_art_lab/schemas/enemy_faction_style.gd" id="1_style"]
+
+[resource]
+script = ExtResource("1_style")
+relief_depth_px = 34.0
+shell_thickness_px = 4.0
+green_bounce_strength = 1.25
+studio_exposure = 0.7
+ambient_fill_strength = 1.1
+specular_strength = 0.0
+iridescence_strength = 0.0

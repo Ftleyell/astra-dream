@@ -22,9 +22,13 @@ var is_dying: bool = false
 var contact_cooldown: float = 0.0
 var pool_source: Node = null
 
+const EnemyVisualControllerScript = preload("res://scenes/combat/enemies/rig/enemy_visual_controller.gd")
+
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var damage_accumulator: Node2D = get_node_or_null("DamageAccumulator")
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
+
+var visual_controller: EnemyVisualController = null
 
 var exp_blob_scene: PackedScene = preload("res://scenes/combat/pickups/exp_blob.tscn")
 
@@ -47,9 +51,17 @@ func _ready() -> void:
 	_acquire_player()
 	_ready_custom()
 	_apply_silhouette_outline()
+	_setup_visual_rig()
 
 func _ready_custom() -> void:
 	pass
+
+func _setup_visual_rig() -> void:
+	if visual_controller == null or not is_instance_valid(visual_controller):
+		visual_controller = EnemyVisualControllerScript.new()
+		visual_controller.name = "EnemyVisualController"
+		add_child(visual_controller)
+	visual_controller.setup(self)
 
 func reset_from_pool(pos: Vector2) -> void:
 	global_position = pos
@@ -67,6 +79,11 @@ func reset_from_pool(pos: Vector2) -> void:
 	if "is_diving" in self:
 		set("is_diving", false)
 	_ready_custom()
+	_apply_silhouette_outline()
+	if visual_controller != null and is_instance_valid(visual_controller):
+		visual_controller.reset_for_pool()
+	else:
+		_setup_visual_rig()
 
 func _apply_silhouette_outline() -> void:
 	if not is_instance_valid(sprite):
@@ -114,6 +131,8 @@ func _handle_player_contact() -> void:
 			_on_contact_with_player()
 
 func _on_contact_with_player() -> void:
+	if visual_controller != null and is_instance_valid(visual_controller):
+		visual_controller.on_contact_bite()
 	if player.has_method("take_damage"):
 		player.take_damage(contact_damage)
 
@@ -134,10 +153,13 @@ func take_damage(arg) -> void:
 	if damage_accumulator and damage_accumulator.has_method("register_hit"):
 		damage_accumulator.register_hit(dmg, is_crit)
 
-	# Hit flash blanco
-	modulate = Color(3.0, 3.0, 3.0, 1.0)
-	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color.WHITE, 0.08)
+	if visual_controller != null and is_instance_valid(visual_controller):
+		visual_controller.on_hit()
+	else:
+		# Hit flash blanco legacy
+		modulate = Color(3.0, 3.0, 3.0, 1.0)
+		var tween := create_tween()
+		tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 
 	if current_health <= 0.0:
 		_die()
@@ -198,8 +220,12 @@ func _die() -> void:
 	if collision_shape:
 		collision_shape.set_deferred("disabled", true)
 	var tween := create_tween()
-	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.15)
-	tween.parallel().tween_property(self, "modulate", Color(1.0, 0.4, 0.1, 0.0), 0.15)
+	if visual_controller != null and is_instance_valid(visual_controller):
+		visual_controller.on_die()
+		tween.tween_property(self, "modulate:a", 0.0, 0.24)
+	else:
+		tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.15)
+		tween.parallel().tween_property(self, "modulate", Color(1.0, 0.4, 0.1, 0.0), 0.15)
 	if pool_source and is_instance_valid(pool_source) and pool_source.has_method("recycle_enemy"):
 		tween.tween_callback(func(): pool_source.call("recycle_enemy", self))
 	else:

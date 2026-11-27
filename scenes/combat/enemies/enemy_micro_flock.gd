@@ -21,7 +21,7 @@ func _ready_custom() -> void:
 	var visual: Node = get_node_or_null("Visual")
 	var core_glow: Node = get_node_or_null("CoreGlow")
 	var tex_path := "res://assets/sprites/enemies/enemy_micro_flock.png"
-	if ResourceLoader.exists(tex_path):
+	if ResourceLoader.exists(tex_path) and get_node_or_null("FlockSprite") == null:
 		var tex := load(tex_path) as Texture2D
 		if tex:
 			var spr := Sprite2D.new()

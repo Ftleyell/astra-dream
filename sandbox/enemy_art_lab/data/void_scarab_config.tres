@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyScarabRigConfig" format=3]
+
+[ext_resource type="Script" path="res://sandbox/enemy_art_lab/schemas/enemy_scarab_rig_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_scale = 0.7
+elytron_offset = Vector2(16, -24)
+elytron_open_pitch_deg = 63.0
+elytron_open_roll_deg = 51.0
+elytron_dome_height_px = 18.0
+elytron_rim_thickness_px = 1.0
+wing_shutter_speed = 65.0
+wing_wind_arcs_strength = 0.55
+mandible_offset = Vector2(24, -68)
+mandible_hinge_uv = Vector2(0.4609, 0.6953)
+breath_amp = 1.8
